@@ -1,4 +1,3 @@
-import type { Locale } from '../../shared/locale';
 import type { BookingRequest, BookingRequestOffer, BookingRequestParticipant, GiftCard, PromoCode } from '../db/schema';
 import { bookingRequestStatusDerive } from '../domain/bookingRequest';
 import type { GqlSFileUpload, GqlSUserBookingRequest, GqlSUserBookingRequestOffer } from '../graphql/generated';
@@ -14,7 +13,6 @@ export type ToGqlUserBookingRequestInput = {
     acceptedOfferPaymentStatus?: BookingRequestOffer['paymentStatus'] | null;
     promoCode?: PromoCode | null;
     giftCard?: GiftCard | null;
-    locale: Locale;
     now?: Date;
     kitchenDetailsPhotos?: GqlSFileUpload[];
 };

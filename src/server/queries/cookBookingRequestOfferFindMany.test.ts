@@ -24,8 +24,8 @@ function cookParent(cookId: string): GqlSCook {
     return { cookId } as unknown as GqlSCook;
 }
 
-async function setupCook() {
-    const setup = await commandSetup.withUser({ firstName: 'chef', lastName: 'User' });
+async function setupCook(overrides?: Parameters<typeof commandSetup.withUser>[0]) {
+    const setup = await commandSetup.withUser({ firstName: 'chef', lastName: 'User', ...overrides });
     await testDb.insert(cooks).values({ cookId: setup.user.userId });
     return setup;
 }
@@ -83,6 +83,20 @@ describe('cookBookingRequestOfferFindMany', () => {
             suggestedMenus: [],
             callBookings: [],
         });
+    });
+
+    it('localizes offer cost breakdown titles from the cook profile locale', async () => {
+        // Arrange
+        const { serverRuntime, requestingSession, user } = await setupCook({ locale: 'en' });
+        await insertOffer(user.userId);
+
+        // Act
+        const rows = await cookBookingRequestOfferFindMany(cookParent(user.userId), {}, requestingSession, serverRuntime);
+
+        // Assert
+        const lineTitles = rows[0]?.costBreakdown.lineItems.map((line) => line.title) ?? [];
+        expect(lineTitles).toEqual(expect.arrayContaining(['Menu price', 'Service fees']));
+        expect(rows[0]?.costBreakdown.total?.title).toBe('Total price');
     });
 
     it("excludes another cook's offers", async () => {

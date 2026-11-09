@@ -248,7 +248,6 @@ describe('toGqlUserBookingRequest', () => {
         const gql = toGqlUserBookingRequest({
             bookingRequest,
             offers: [gqlOffer],
-            locale: 'de',
         });
 
         expect(gql.status).toBe('OFFERS_WAITING_FOR_REVIEW');

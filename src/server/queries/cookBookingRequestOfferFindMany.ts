@@ -5,6 +5,7 @@ import { bookingRequestOfferListBucketDerive } from '../domain/bookingRequest';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSCook, GqlSCookBookingRequestOffer, GqlSCookBookingRequestOffersArgs, GqlSSession } from '../graphql/generated';
 import { cookBookingRequestOfferHydrate } from '../utils/cookBookingRequestOfferHydrate';
+import { userLocaleRequire } from '../utils/userLocaleRequire';
 
 export async function cookBookingRequestOfferFindMany(
     { cookId }: GqlSCook,
@@ -13,6 +14,7 @@ export async function cookBookingRequestOfferFindMany(
     serverRuntime: ServerRuntime,
 ): Promise<GqlSCookBookingRequestOffer[]> {
     try {
+        const locale = await userLocaleRequire(serverRuntime, cookId);
         const rows = await serverRuntime.db
             .select({
                 offer: bookingRequestOffers,
@@ -23,7 +25,7 @@ export async function cookBookingRequestOfferFindMany(
             .where(eq(bookingRequestOffers.cookId, cookId))
             .orderBy(desc(bookingRequestOffers.createdAt));
 
-        const offers = await cookBookingRequestOfferHydrate(rows, serverRuntime);
+        const offers = await cookBookingRequestOfferHydrate(rows, serverRuntime, locale);
         const bucket = args.criterion?.bucket;
         if (bucket == null) {
             return offers;

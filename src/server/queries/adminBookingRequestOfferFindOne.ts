@@ -4,6 +4,7 @@ import { bookingRequestOffers, bookingRequests } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminBookingRequestOffer, GqlSAdminBookingRequestOfferArgs, GqlSSession } from '../graphql/generated';
 import { adminBookingRequestOfferHydrate } from '../utils/adminBookingRequestOfferHydrate';
+import { userLocaleRequire } from '../utils/userLocaleRequire';
 
 export async function adminBookingRequestOfferFindOne(
     args: GqlSAdminBookingRequestOfferArgs,
@@ -11,6 +12,10 @@ export async function adminBookingRequestOfferFindOne(
     serverRuntime: ServerRuntime,
 ): Promise<GqlSAdminBookingRequestOffer | null> {
     try {
+        if (!requestingSession.userId) {
+            throw new Error('adminBookingRequestOfferFindOne: requesting session has no userId');
+        }
+        const locale = await userLocaleRequire(serverRuntime, requestingSession.userId);
         const [row] = await serverRuntime.db
             .select({
                 offer: bookingRequestOffers,
@@ -22,7 +27,7 @@ export async function adminBookingRequestOfferFindOne(
             .limit(1);
         if (!row) return null;
 
-        const [hydrated] = await adminBookingRequestOfferHydrate([row], serverRuntime);
+        const [hydrated] = await adminBookingRequestOfferHydrate([row], serverRuntime, locale);
         return hydrated ?? null;
     } catch (error) {
         serverRuntime.log.error(error, requestingSession);

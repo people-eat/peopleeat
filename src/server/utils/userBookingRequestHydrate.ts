@@ -2,6 +2,7 @@ import { asc, inArray } from 'drizzle-orm';
 
 import { bookingRequestOfferAddonLineAmountCents } from '../../shared/bookingRequestOfferAddonPrice';
 import { bookingRequestPaidParticipants } from '../../shared/bookingRequestOfferPriceGuidance';
+import type { Locale } from '../../shared/locale';
 import { DEFAULT_TIME_ZONE } from '../../shared/timeZone';
 import type { BookingRequest } from '../db/schema';
 import {
@@ -24,7 +25,11 @@ import { publicCooksByIdFindMany } from './publicCookHydrate';
 import { userTimeZonesByIdFindMany } from './publicUserHydrate';
 
 /** Batch-load nested user booking-request fields (participants, offers, call bookings, cooks, menus, discounts). */
-export async function userBookingRequestHydrate(rows: BookingRequest[], serverRuntime: ServerRuntime): Promise<GqlSUserBookingRequest[]> {
+export async function userBookingRequestHydrate(
+    rows: BookingRequest[],
+    serverRuntime: ServerRuntime,
+    locale: Locale,
+): Promise<GqlSUserBookingRequest[]> {
     if (rows.length === 0) return [];
 
     const bookingRequestIds = rows.map((row) => row.bookingRequestId);
@@ -144,7 +149,7 @@ export async function userBookingRequestHydrate(rows: BookingRequest[], serverRu
                     offer,
                     bookingRequest,
                     hasAcceptedAlternative: accepted != null && accepted.bookingRequestOfferId !== offer.bookingRequestOfferId,
-                    locale: 'de',
+                    locale,
                     cook,
                     cookTimeZone: cookTimeZoneById.get(offer.cookId) ?? DEFAULT_TIME_ZONE,
                     suggestedMenus,
@@ -166,7 +171,6 @@ export async function userBookingRequestHydrate(rows: BookingRequest[], serverRu
                 acceptedOfferPaymentStatus: accepted?.paymentStatus ?? null,
                 promoCode,
                 giftCard,
-                locale: 'de',
                 kitchenDetailsPhotos: kitchenDetailsPhotosByRequestId.get(bookingRequest.bookingRequestId) ?? [],
             }),
         );

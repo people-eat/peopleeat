@@ -198,8 +198,9 @@ Family and friends follow the owner’s offer board (cards + menus) via a revoca
 | `Menus.bookingRequestOfferId`, `Menus.copyOfMenuId` | Optional offer menu copies                                                                                        |
 
 Constraints: unique `(bookingRequestId, cookId)` on offers; partial unique one dual-accepted offer per request. Domain:
-`src/server/domain/bookingRequest.ts`, `bookingRequestOfferCostBreakdown.ts`. Customer hydrate (`userBookingRequestHydrate`) passes request
-promo / gift (+ participant count) into each offer’s cost breakdown.
+`src/server/domain/bookingRequest.ts`, `bookingRequestOfferCostBreakdown.ts`. Customer / cook / admin hydrates pass the **viewer’s**
+`Users.locale` (customer: `User.locale` parent; cook / admin: `userLocaleRequire`) into each offer’s `costBreakdown` titles, plus request
+promo / gift (+ participant count) on the customer path. Never hardcode `de` / `DEFAULT_LOCALE` for those labels.
 
 ### GraphQL / commands
 

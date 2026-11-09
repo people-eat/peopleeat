@@ -1,7 +1,6 @@
 import { inArray } from 'drizzle-orm';
 
 import { geoDistance } from '../../shared/geoDistance';
-import { DEFAULT_LOCALE } from '../../shared/locale';
 import type { BookingRequest, BookingRequestCook, Cook } from '../db/schema';
 import { bookingRequestParticipants, promoCodes } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -61,6 +60,10 @@ export async function cookBookingRequestHydrate(
     return visible.flatMap(({ bookingRequest, details }) => {
         const user = publicUsers.get(bookingRequest.userId);
         if (!user) return [];
+        const customerLocale = customerLocales.get(bookingRequest.userId);
+        if (customerLocale == null) {
+            throw new Error(`cookBookingRequestHydrate: locale missing for user ${bookingRequest.userId}`);
+        }
 
         const origin = cook.exactTravelOriginAddress;
         const event = bookingRequest.exactEventAddress;
@@ -81,7 +84,7 @@ export async function cookBookingRequestHydrate(
                 bookingRequest,
                 participants: participantsByRequest.get(bookingRequest.bookingRequestId) ?? [],
                 offers: [],
-                customerLocale: customerLocales.get(bookingRequest.userId) ?? DEFAULT_LOCALE,
+                customerLocale,
                 defaultOfferMessage: cook.defaultOfferMessage,
                 user,
                 estimatedTravelDistanceKm,

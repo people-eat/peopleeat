@@ -2,7 +2,7 @@ import { and, asc, eq, inArray } from 'drizzle-orm';
 
 import { bookingRequestOfferAddonLineAmountCents } from '../../shared/bookingRequestOfferAddonPrice';
 import { bookingRequestPaidParticipants } from '../../shared/bookingRequestOfferPriceGuidance';
-import { DEFAULT_LOCALE } from '../../shared/locale';
+import type { Locale } from '../../shared/locale';
 import {
     bookingRequestOffers,
     bookingRequestParticipants,
@@ -32,6 +32,7 @@ type AdminBookingRequestOfferRow = {
 export async function adminBookingRequestOfferHydrate(
     rows: AdminBookingRequestOfferRow[],
     serverRuntime: ServerRuntime,
+    locale: Locale,
 ): Promise<GqlSAdminBookingRequestOffer[]> {
     if (rows.length === 0) return [];
 
@@ -155,7 +156,7 @@ export async function adminBookingRequestOfferHydrate(
                 offer,
                 bookingRequest,
                 hasAcceptedAlternative: acceptedOfferId != null && acceptedOfferId !== offer.bookingRequestOfferId,
-                locale: DEFAULT_LOCALE,
+                locale,
                 cook: toGqlAdminCook(cookMatched.cook, cookMatched.status),
                 callBookings: callBookingsByOfferId.get(offer.bookingRequestOfferId) ?? [],
                 suggestedMenus,

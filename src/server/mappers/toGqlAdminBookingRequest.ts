@@ -1,4 +1,3 @@
-import type { Locale } from '../../shared/locale';
 import type { BookingRequest, BookingRequestOffer, BookingRequestParticipant, GiftCard, PromoCode } from '../db/schema';
 import { bookingRequestStatusDerive } from '../domain/bookingRequest';
 import type {
@@ -19,7 +18,6 @@ export type ToGqlAdminBookingRequestInput = {
     participants?: BookingRequestParticipant[];
     offers: GqlSAdminBookingRequestOffer[];
     acceptedOfferPaymentStatus?: BookingRequestOffer['paymentStatus'] | null;
-    locale: Locale;
     now?: Date;
     customer: GqlSAdminUser;
     cook: GqlSAdminCook | null;

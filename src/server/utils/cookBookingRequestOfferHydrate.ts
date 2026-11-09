@@ -2,8 +2,7 @@ import { and, asc, eq, inArray } from 'drizzle-orm';
 
 import { bookingRequestOfferAddonLineAmountCents } from '../../shared/bookingRequestOfferAddonPrice';
 import { bookingRequestPaidParticipants } from '../../shared/bookingRequestOfferPriceGuidance';
-import { DEFAULT_LOCALE } from '../../shared/locale';
-import { DEFAULT_TIME_ZONE } from '../../shared/timeZone';
+import type { Locale } from '../../shared/locale';
 import { bookingRequestOffers, bookingRequestParticipants, cookCallSlotBookings, cookOfferAddons, menus, promoCodes } from '../db/schema';
 import type { BookingRequest, BookingRequestOffer } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -24,6 +23,7 @@ type CookBookingRequestOfferRow = {
 export async function cookBookingRequestOfferHydrate(
     rows: CookBookingRequestOfferRow[],
     serverRuntime: ServerRuntime,
+    locale: Locale,
 ): Promise<GqlSCookBookingRequestOffer[]> {
     if (rows.length === 0) return [];
 
@@ -128,6 +128,10 @@ export async function cookBookingRequestOfferHydrate(
         if (!customer) {
             throw new Error(`cookBookingRequestOfferHydrate: customer user ${bookingRequest.userId} not found`);
         }
+        const customerTimeZone = customerTimeZoneById.get(bookingRequest.userId);
+        if (customerTimeZone == null) {
+            throw new Error(`cookBookingRequestOfferHydrate: time zone missing for user ${bookingRequest.userId}`);
+        }
         const suggestedMenus = await cookMenusWithCourses(serverRuntime.db, menusByOfferId.get(offer.bookingRequestOfferId) ?? []);
         const offerAddons = addonsByOfferId.get(offer.bookingRequestOfferId) ?? [];
         const requestParticipants = participantsByRequestId.get(offer.bookingRequestId) ?? [];
@@ -150,7 +154,7 @@ export async function cookBookingRequestOfferHydrate(
                 offer,
                 bookingRequest,
                 hasAcceptedAlternative: acceptedOfferId != null && acceptedOfferId !== offer.bookingRequestOfferId,
-                locale: DEFAULT_LOCALE,
+                locale,
                 callBookings: callBookingsByOfferId.get(offer.bookingRequestOfferId) ?? [],
                 suggestedMenus,
                 addons: offerAddons.map(toGqlCookOfferAddon),
@@ -162,9 +166,8 @@ export async function cookBookingRequestOfferHydrate(
                     participants: requestParticipants,
                     acceptedOfferPaymentStatus: acceptedOffer?.paymentStatus ?? null,
                     offerCount: totalOfferCountByRequestId.get(offer.bookingRequestId) ?? 0,
-                    locale: DEFAULT_LOCALE,
                     user: customer,
-                    customerTimeZone: customerTimeZoneById.get(bookingRequest.userId) ?? DEFAULT_TIME_ZONE,
+                    customerTimeZone,
                     estimatedTravelExpensesCents: offer.travelExpensesCents,
                     promoMinimumTotalAmountCustomerCents: bookingRequest.promoCodeId
                         ? (promoMinById.get(bookingRequest.promoCodeId) ?? null)

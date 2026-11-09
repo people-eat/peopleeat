@@ -12,6 +12,7 @@ import { adminBookingRequestCriterionWhere } from '../utils/adminBookingRequestC
 import { adminBookingRequestHydrate } from '../utils/adminBookingRequestHydrate';
 import { adminBookingRequestOrderBy } from '../utils/adminBookingRequestOrderBy';
 import { findManySkip, findManyTake } from '../utils/findManyTake';
+import { userLocaleRequire } from '../utils/userLocaleRequire';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const TOOL_TAKE_DEFAULT = 25;
@@ -24,6 +25,10 @@ export async function adminBookingRequestFindMany(
     serverRuntime: ServerRuntime,
 ): Promise<GqlSAdminBookingRequest[]> {
     try {
+        if (!requestingSession.userId) {
+            throw new Error('adminBookingRequestFindMany: requesting session has no userId');
+        }
+        const locale = await userLocaleRequire(serverRuntime, requestingSession.userId);
         const criterion = args.criterion;
         const where = adminBookingRequestCriterionWhere(criterion, serverRuntime.db);
 
@@ -35,7 +40,7 @@ export async function adminBookingRequestFindMany(
             .limit(findManyTake(criterion.take))
             .offset(findManySkip(criterion.skip));
 
-        return adminBookingRequestHydrate(rows, serverRuntime);
+        return adminBookingRequestHydrate(rows, serverRuntime, locale);
     } catch (error) {
         serverRuntime.log.error(error, requestingSession);
         throw error;

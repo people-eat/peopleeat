@@ -26,7 +26,7 @@ export async function userBookingRequestFindOne(
             return null;
         }
 
-        const [hydrated] = await userBookingRequestHydrate([bookingRequest], serverRuntime);
+        const [hydrated] = await userBookingRequestHydrate([bookingRequest], serverRuntime, parentUser.locale);
         return hydrated ?? null;
     } catch (error) {
         serverRuntime.log.error(error, requestingSession);

@@ -1,4 +1,3 @@
-import type { Locale } from '../../shared/locale';
 import type { BookingRequest, BookingRequestOffer, BookingRequestParticipant } from '../db/schema';
 import { bookingRequestStatusDerive } from '../domain/bookingRequest';
 import type { GqlSCookBookingRequestOfferContext, GqlSFileUpload, GqlSPublicUser } from '../graphql/generated';
@@ -14,7 +13,6 @@ export type ToGqlCookBookingRequestOfferContextInput = {
     participants?: BookingRequestParticipant[];
     acceptedOfferPaymentStatus?: BookingRequestOffer['paymentStatus'] | null;
     offerCount: number;
-    locale: Locale;
     now?: Date;
     user: GqlSPublicUser;
     customerTimeZone: string;

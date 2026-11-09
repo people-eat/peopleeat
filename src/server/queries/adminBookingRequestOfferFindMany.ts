@@ -6,6 +6,7 @@ import type { GqlSAdminBookingRequestOffer, GqlSAdminBookingRequestOffersArgs, G
 import { adminBookingRequestOfferCriterionWhere } from '../utils/adminBookingRequestOfferCriterionWhere';
 import { adminBookingRequestOfferHydrate } from '../utils/adminBookingRequestOfferHydrate';
 import { findManySkip, findManyTake } from '../utils/findManyTake';
+import { userLocaleRequire } from '../utils/userLocaleRequire';
 
 export async function adminBookingRequestOfferFindMany(
     args: GqlSAdminBookingRequestOffersArgs,
@@ -13,6 +14,10 @@ export async function adminBookingRequestOfferFindMany(
     serverRuntime: ServerRuntime,
 ): Promise<GqlSAdminBookingRequestOffer[]> {
     try {
+        if (!requestingSession.userId) {
+            throw new Error('adminBookingRequestOfferFindMany: requesting session has no userId');
+        }
+        const locale = await userLocaleRequire(serverRuntime, requestingSession.userId);
         const criterion = args.criterion;
         const where = adminBookingRequestOfferCriterionWhere(criterion);
         const orderBy =
@@ -34,7 +39,7 @@ export async function adminBookingRequestOfferFindMany(
             .limit(findManyTake(criterion.take))
             .offset(findManySkip(criterion.skip));
 
-        return adminBookingRequestOfferHydrate(rows, serverRuntime);
+        return adminBookingRequestOfferHydrate(rows, serverRuntime, locale);
     } catch (error) {
         serverRuntime.log.error(error, requestingSession);
         throw error;

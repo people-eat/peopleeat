@@ -21,7 +21,7 @@ export async function userBookingRequestFindMany(
             .where(eq(bookingRequests.userId, parentUser.userId))
             .orderBy(desc(bookingRequests.createdAt));
 
-        return userBookingRequestHydrate(rows, serverRuntime);
+        return userBookingRequestHydrate(rows, serverRuntime, parentUser.locale);
     } catch (error) {
         serverRuntime.log.error(error, requestingSession);
         throw error;

@@ -2,7 +2,7 @@ import { asc, eq, inArray } from 'drizzle-orm';
 
 import { bookingRequestOfferAddonLineAmountCents } from '../../shared/bookingRequestOfferAddonPrice';
 import { bookingRequestPaidParticipants } from '../../shared/bookingRequestOfferPriceGuidance';
-import { DEFAULT_LOCALE } from '../../shared/locale';
+import type { Locale } from '../../shared/locale';
 import type { BookingRequest } from '../db/schema';
 import {
     bookingRequestOffers,
@@ -28,7 +28,11 @@ import { bookingRequestOfferCookPayoutReadinessResolve } from './bookingRequestO
 import { cookMenusWithCourses } from './cookMenuHydrate';
 
 /** Batch-load nested admin booking-request fields (customer, offers, cooks, menus, discounts). */
-export async function adminBookingRequestHydrate(rows: BookingRequest[], serverRuntime: ServerRuntime): Promise<GqlSAdminBookingRequest[]> {
+export async function adminBookingRequestHydrate(
+    rows: BookingRequest[],
+    serverRuntime: ServerRuntime,
+    locale: Locale,
+): Promise<GqlSAdminBookingRequest[]> {
     if (rows.length === 0) return [];
 
     const bookingRequestIds = rows.map((row) => row.bookingRequestId);
@@ -173,7 +177,7 @@ export async function adminBookingRequestHydrate(rows: BookingRequest[], serverR
                     offer,
                     bookingRequest,
                     hasAcceptedAlternative: accepted != null && accepted.bookingRequestOfferId !== offer.bookingRequestOfferId,
-                    locale: DEFAULT_LOCALE,
+                    locale,
                     cook,
                     callBookings: callBookingsByOfferId.get(offer.bookingRequestOfferId) ?? [],
                     suggestedMenus,
@@ -195,7 +199,6 @@ export async function adminBookingRequestHydrate(rows: BookingRequest[], serverR
                 participants: requestParticipants,
                 offers: gqlOffers,
                 acceptedOfferPaymentStatus: accepted?.paymentStatus ?? null,
-                locale: DEFAULT_LOCALE,
                 customer,
                 cook: accepted ? (cooksById.get(accepted.cookId) ?? null) : null,
                 promoCode,

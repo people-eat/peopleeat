@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
-import { bookingRequests } from '../db/schema';
+import { bookingRequestOffers, bookingRequests, cooks } from '../db/schema';
 import type { GqlSUser } from '../graphql/generated';
 import { commandSetup, testDb } from '../test/commandTestUtils';
 import { userBookingRequestFindOne } from './userBookingRequestFindOne';
@@ -18,8 +18,8 @@ const sampleAddress = {
     country: 'DE',
 };
 
-function userParent(userId: string): GqlSUser {
-    return { userId } as unknown as GqlSUser;
+function userParent(userId: string, locale: GqlSUser['locale'] = 'de'): GqlSUser {
+    return { userId, locale } as unknown as GqlSUser;
 }
 
 async function insertBookingRequest(userId: string) {
@@ -36,6 +36,28 @@ async function insertBookingRequest(userId: string) {
         preferences: [],
     });
     return { bookingRequestId };
+}
+
+async function insertOffer(bookingRequestId: string, cookId: string) {
+    const bookingRequestOfferId = idCreate();
+    await testDb.insert(bookingRequestOffers).values({
+        bookingRequestOfferId,
+        bookingRequestId,
+        cookId,
+        cookAccepted: true,
+        userAccepted: null,
+        menuPriceCents: 20_000,
+        travelExpensesCents: 2_500,
+        paymentProviderFeeCents: 500,
+        platformFeePercentCook: 18,
+        platformFeePercentCustomer: 4,
+        platformFeeCentsCook: 3_600,
+        platformFeeCentsCustomer: 900,
+        payoutCentsCook: 18_400,
+        totalWithoutDiscountsCentsCustomer: 23_900,
+        paymentStatus: 'EMPTY',
+    });
+    return bookingRequestOfferId;
 }
 
 describe('userBookingRequestFindOne', () => {
@@ -83,5 +105,23 @@ describe('userBookingRequestFindOne', () => {
 
         // Assert
         expect(row).toBeNull();
+    });
+
+    it('localizes offer cost breakdown titles from the viewer locale', async () => {
+        // Arrange
+        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({ locale: 'en' });
+        const cook = await commandSetup.withUser({ firstName: 'Offer', lastName: 'Chef' });
+        await testDb.insert(cooks).values({ cookId: cook.user.userId, isVisible: true, isApprovedByAdmin: true });
+        const { bookingRequestId } = await insertBookingRequest(user.userId);
+        await insertOffer(bookingRequestId, cook.user.userId);
+
+        // Act
+        const row = await userBookingRequestFindOne(userParent(user.userId, 'en'), { bookingRequestId }, requestingSession, serverRuntime);
+
+        // Assert
+        const lineTitles = row?.offers[0]?.costBreakdown.lineItems.map((line) => line.title) ?? [];
+        expect(lineTitles).toEqual(expect.arrayContaining(['Menu price', 'Service fees']));
+        expect(row?.offers[0]?.costBreakdown.total?.title).toBe('Total price');
+        expect(lineTitles).not.toEqual(expect.arrayContaining(['Menüpreis', 'Servicegebühren']));
     });
 });

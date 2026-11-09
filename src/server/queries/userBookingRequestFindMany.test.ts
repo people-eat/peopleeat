@@ -18,8 +18,8 @@ const sampleAddress = {
     country: 'DE',
 };
 
-function userParent(userId: string): GqlSUser {
-    return { userId } as unknown as GqlSUser;
+function userParent(userId: string, locale: GqlSUser['locale'] = 'de'): GqlSUser {
+    return { userId, locale } as unknown as GqlSUser;
 }
 
 async function insertBookingRequest(userId: string, createdAt?: Date) {

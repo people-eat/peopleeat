@@ -61,7 +61,6 @@ describe('toGqlCookBookingRequestOfferContext', () => {
         const gql = toGqlCookBookingRequestOfferContext({
             bookingRequest,
             offerCount: 1,
-            locale: 'en',
             user: publicUser,
             customerTimeZone: 'Europe/Berlin',
             revealExactEventAddress: false,
@@ -74,7 +73,6 @@ describe('toGqlCookBookingRequestOfferContext', () => {
         const gql = toGqlCookBookingRequestOfferContext({
             bookingRequest,
             offerCount: 1,
-            locale: 'en',
             user: publicUser,
             customerTimeZone: 'Europe/Berlin',
             revealExactEventAddress: true,
