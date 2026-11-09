@@ -5,6 +5,7 @@ import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSMutationResult, GqlSSession, GqlSUserMutation, GqlSUserMutationCookCreateArgs } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
 import { cookCreatePayloadBuild } from '../utils/cookCreatePayloadBuild';
+import { cookPathNameAllocate } from '../utils/cookPathName';
 import { sessionEventCreate } from '../utils/sessionEventCreate';
 import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 
@@ -35,7 +36,8 @@ export async function userCookCreate(
             errorPrefix: 'userCookCreate',
         });
 
-        await serverRuntime.db.insert(cooks).values({ cookId: userId, ...cookPayload });
+        const pathName = await cookPathNameAllocate(serverRuntime.db, user.firstName, user.lastName);
+        await serverRuntime.db.insert(cooks).values({ cookId: userId, pathName, ...cookPayload });
 
         await sessionEventCreate(serverRuntime, {
             sessionId: requestingSession.sessionId,

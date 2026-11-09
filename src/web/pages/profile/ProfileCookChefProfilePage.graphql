@@ -3,6 +3,8 @@
 
 fragment ProfileCookChefProfileCook on Cook {
     cookId
+    pathName
+    previousPathNames
     biography
     biographySummary
     biographySummaryGenerating

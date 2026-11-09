@@ -213,6 +213,7 @@ async function adminTestimonialPublicPagePlacementsLoad(
             .select({
                 bookingRequestOfferId: bookingRequestOffers.bookingRequestOfferId,
                 cookId: cooks.cookId,
+                pathName: cooks.pathName,
                 stageName: cooks.stageName,
                 firstName: users.firstName,
                 lastName: users.lastName,
@@ -232,7 +233,7 @@ async function adminTestimonialPublicPagePlacementsLoad(
                 entityId: cook.cookId,
                 labelDe: label,
                 labelEn: label,
-                pathName: null,
+                pathName: cook.pathName,
                 index: null,
             });
         }

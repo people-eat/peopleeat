@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { describe, expect, it } from 'vitest';
 
+import { idCreate } from '../../shared/idCreate';
 import { admins, cooks, fileUploads } from '../db/schema';
 import { adminMutationParent, commandSetup, testDb } from '../test/commandTestUtils';
 import { adminCookUpdate } from './adminCookUpdate';
@@ -271,5 +272,26 @@ describe('adminCookUpdate', () => {
         expect(previous).toHaveLength(0);
         expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cookUser.user.userId });
         expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
+    });
+
+    it('renames pathName without a feature toggle', async () => {
+        const { admin, cookUser } = await seedAdminAndCook();
+        const token = idCreate().toLowerCase();
+        await testDb
+            .update(cooks)
+            .set({ pathName: `old-${token}` })
+            .where(eq(cooks.cookId, cookUser.user.userId));
+
+        const result = await adminCookUpdate(
+            adminMutationParent(admin.user.userId),
+            { cookId: cookUser.user.userId, input: { pathName: `New ${token}` } },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        expect(result).toEqual({ success: true, referenceId: cookUser.user.userId });
+        const [row] = await testDb.select().from(cooks).where(eq(cooks.cookId, cookUser.user.userId));
+        expect(row?.pathName).toBe(`new-${token}`);
+        expect(row?.previousPathNames).toEqual([`old-${token}`]);
     });
 });

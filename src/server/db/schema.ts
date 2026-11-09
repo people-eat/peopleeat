@@ -22,7 +22,7 @@ import {
 import type { ContentSection } from '../../shared/contentSection';
 import type { CookPresenceLinks } from '../../shared/cookPresenceLinks';
 import type { FeatureToggleKey } from '../../shared/featureToggle';
-import { NANO_ID_LENGTH } from '../../shared/idCreate';
+import { idCreate, NANO_ID_LENGTH } from '../../shared/idCreate';
 
 import type { Locale } from '../../shared/locale';
 import { occasionFormatsSectionEmpty } from '../../shared/occasionFormatsSection';
@@ -445,6 +445,12 @@ export const cooks = pgTable(
         isApprovedByAdmin: boolean().notNull().default(false),
         // Optional public display name; when set, public surfaces prefer it over firstName.
         stageName: varchar(),
+        // Public chef URL slug (`/chefs/<pathName>`). Unique. `$defaultFn` is a
+        // test-insert safety net; production create always allocates from names.
+        pathName: varchar()
+            .notNull()
+            .$defaultFn(() => idCreate()),
+        previousPathNames: text().array().notNull().default([]),
         exactTravelOriginAddress: jsonb().$type<CookTravelOriginAddress>(),
         biography: text().notNull().default(''),
         biographySummary: text().notNull().default(''),
@@ -491,6 +497,7 @@ export const cooks = pgTable(
             .onDelete('cascade'),
         index('Cooks_isApprovedByAdmin_idx').on(table.isApprovedByAdmin),
         index('Cooks_logoFileUploadId_idx').on(table.logoFileUploadId),
+        uniqueIndex('Cooks_pathName_uidx').on(table.pathName),
     ],
 );
 

@@ -126,6 +126,7 @@ describe('adminUserCreate', () => {
         const cookRows = await testDb.select().from(cooks).where(eq(cooks.cookId, result.referenceId!));
         expect(adminRows).toHaveLength(1);
         expect(cookRows).toHaveLength(1);
+        expect(cookRows[0]?.pathName).toMatch(/^cook-admin(?:-\d+)?$/);
         expect(cookRows[0]?.biography).toBe('Admin-created chef');
         expect(cookRows[0]?.exactTravelOriginAddress?.city).toBe('Berlin');
     });

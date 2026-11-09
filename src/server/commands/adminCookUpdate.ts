@@ -20,6 +20,7 @@ import {
     COOK_MINIMUM_TRAVEL_DISTANCE_KM,
     COOK_MINIMUM_TRAVEL_EXPENSES_AMOUNT,
 } from '../utils/cookCreatePayloadBuild';
+import { cookPathNameApply } from '../utils/cookPathName';
 import { cookTravelOriginAddressResolve } from '../utils/cookTravelOriginAddressResolve';
 import { fileUploadAssertOwned, PROFILE_PICTURE_MEDIA_TYPES } from '../utils/fileUploadAssertOwned';
 
@@ -53,6 +54,7 @@ async function cookUpdateAdminApply(
     const {
         isVisible,
         stageName,
+        pathName,
         biography,
         biographySummary,
         logoFileUploadId,
@@ -74,6 +76,7 @@ async function cookUpdateAdminApply(
     const hasField =
         isVisible !== undefined ||
         stageName !== undefined ||
+        pathName !== undefined ||
         biography !== undefined ||
         biographySummary !== undefined ||
         hasLogo ||
@@ -138,6 +141,19 @@ async function cookUpdateAdminApply(
     if (stageName !== undefined) {
         const normalizedStageName = stageName == null ? '' : textNormalizeTitled(stageName);
         patch.stageName = normalizedStageName.length === 0 ? null : normalizedStageName;
+    }
+    if (pathName !== undefined && pathName !== null) {
+        const [current] = await serverRuntime.db
+            .select({ cookId: cooks.cookId, pathName: cooks.pathName, previousPathNames: cooks.previousPathNames })
+            .from(cooks)
+            .where(eq(cooks.cookId, cookId))
+            .limit(1);
+        if (!current) {
+            throw new Error('adminCookUpdate: cook not found');
+        }
+        const applied = await cookPathNameApply(serverRuntime.db, current, pathName);
+        patch.pathName = applied.pathName;
+        patch.previousPathNames = applied.previousPathNames;
     }
     if (biography !== undefined && biography !== null) {
         patch.biography = textNormalizeProse(biography);

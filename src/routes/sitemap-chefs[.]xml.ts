@@ -13,7 +13,7 @@ export const Route = createFileRoute('/sitemap-chefs.xml')({
                 const body = contentSitemapXmlBuild(
                     environmentVariables.webPageUrl,
                     rows.map((row) => ({
-                        path: `/chefs/${row.cookId}`,
+                        path: `/chefs/${row.cook.pathName}`,
                         lastmod: row.lastModifiedAt.toISOString(),
                     })),
                 );

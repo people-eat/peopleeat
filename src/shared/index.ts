@@ -118,6 +118,13 @@ export type { FormatParticipantsInput, FormatParticipantsOptions } from './forma
 export { bookingRequestParticipantsFromCounts, bookingRequestParticipantsNormalize } from './bookingRequestParticipants';
 export type { BookingRequestParticipantDraft } from './bookingRequestParticipants';
 export { legalBodyDeNormalize } from './legalBodyDeNormalize';
+export {
+    cookPathNameCandidate,
+    cookPathNameFromNames,
+    cookPathNameNormalize,
+    cookPathNameSlugify,
+    cookPathNameTryNormalize,
+} from './cookPathName';
 export { cookMenuDefaultCourseTitles, cookMenuDraftTitle } from './cookMenuDraftDefaults';
 export { COOK_MENU_SUGGESTION_FILE_MAX } from './cookMenuSuggestion';
 export { DEFAULT_LOCALE, languageTagFromLocale, LOCALES } from './locale';

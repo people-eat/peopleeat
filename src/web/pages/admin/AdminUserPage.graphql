@@ -8,6 +8,8 @@
 
 fragment AdminUserCook on AdminCook {
     cookId
+    pathName
+    previousPathNames
     isVisible
     isApprovedByAdmin
     canCreateOffers

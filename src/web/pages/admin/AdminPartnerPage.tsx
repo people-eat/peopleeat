@@ -272,6 +272,7 @@ export function AdminPartnerPage({
 
     const previewCooks = assignedCooks.map((row) => ({
         cookId: row.cook.cookId,
+        pathName: row.cook.pathName,
         cuisineStyle: row.cook.cuisineStyle ?? null,
         cookingPhilosophy: row.cook.cookingPhilosophy ?? null,
         city: row.cook.exactTravelOriginAddress?.city ?? null,
@@ -710,6 +711,7 @@ export function AdminPartnerPage({
                                             isPubliclyListed: searched?.isPubliclyListed ?? false,
                                             cook: {
                                                 cookId,
+                                                pathName: cookId,
                                                 isVisible: searched?.isPubliclyListed ?? false,
                                                 isApprovedByAdmin: searched?.isPubliclyListed ?? false,
                                                 cuisineStyle: searched?.cuisineStyle ?? null,

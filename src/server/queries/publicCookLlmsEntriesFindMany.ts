@@ -5,7 +5,7 @@ import { users } from '../db/schema';
 import { publicVisibleCookIdsFindMany } from '../utils/publicVisibleCookIdsFindMany';
 
 export interface PublicCookLlmsEntry {
-    cookId: string;
+    pathName: string;
     displayName: string;
     city: string | null;
 }
@@ -31,7 +31,7 @@ export async function publicCookLlmsEntriesFindMany(db: Database): Promise<Publi
         const displayName = stageName || firstName;
         if (!displayName) continue;
         const city = row.cook.exactTravelOriginAddress?.city.trim() || row.cook.legacyCityName?.trim() || null;
-        entries.push({ cookId: row.cookId, displayName, city: city || null });
+        entries.push({ pathName: row.cook.pathName, displayName, city: city || null });
     }
     return entries;
 }

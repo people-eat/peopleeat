@@ -370,12 +370,23 @@ function AdminUserCookProfileBody({
                         value={formatDate(cook.lastModifiedAt, { locale, timeZone, dateStyle: 'medium' })}
                     />
                     <DetailField
+                        label={{ de: 'Öffentliche URL', en: 'Public URL' }[locale]}
+                        value={`/chefs/${cook.pathName}`}
+                        copyText={`/chefs/${cook.pathName}`}
+                    />
+                    {cook.previousPathNames.length > 0 ? (
+                        <DetailField
+                            label={{ de: 'Frühere Pfade', en: 'Previous paths' }[locale]}
+                            value={cook.previousPathNames.map((name) => `/chefs/${name}`).join(', ')}
+                        />
+                    ) : null}
+                    <DetailField
                         label={{ de: 'Öffentliches Profil', en: 'Public profile' }[locale]}
                         value={
                             publicProfileLive ? (
                                 <Link
-                                    to="/{-$locale}/chefs/$cookId"
-                                    params={{ cookId: cook.cookId }}
+                                    to="/{-$locale}/chefs/$pathName"
+                                    params={{ pathName: cook.pathName }}
                                     target="_blank"
                                     className="inline-flex items-center gap-1 text-sm text-foreground underline-offset-4 hover:underline"
                                 >

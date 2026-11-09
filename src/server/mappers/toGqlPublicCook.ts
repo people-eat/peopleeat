@@ -11,6 +11,7 @@ export function toGqlPublicCook(
     const publicUser = toGqlPublicUser(user, profilePicture);
     return {
         cookId: cook.cookId,
+        pathName: cook.pathName,
         user: stageName ? { ...publicUser, display: stageName } : publicUser,
         hasPublicProfile: cook.isVisible && cook.isApprovedByAdmin,
         stageName,

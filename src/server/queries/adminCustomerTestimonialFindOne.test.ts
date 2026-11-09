@@ -32,7 +32,7 @@ const offerFees = {
 
 async function seedOffer() {
     const cook = await commandSetup.withUser({ firstName: 'Nia', lastName: 'Chef' });
-    await testDb.insert(cooks).values({ cookId: cook.user.userId });
+    const [cookRow] = await testDb.insert(cooks).values({ cookId: cook.user.userId }).returning({ pathName: cooks.pathName });
     const customer = await commandSetup.withUser({ firstName: 'Ada', lastName: 'Guest' });
     const bookingRequestId = idCreate();
     const bookingRequestOfferId = idCreate();
@@ -52,7 +52,7 @@ async function seedOffer() {
         cookId: cook.user.userId,
         ...offerFees,
     });
-    return { cook, customer, bookingRequestOfferId };
+    return { cook, cookPathName: cookRow!.pathName, customer, bookingRequestOfferId };
 }
 
 describe('adminCustomerTestimonialFindOne', () => {
@@ -98,7 +98,7 @@ describe('adminCustomerTestimonialFindOne', () => {
     it('adds city and chef placements for a published offer-linked review', async () => {
         // Arrange
         const { serverRuntime, requestingSession } = await commandSetup();
-        const { cook, customer, bookingRequestOfferId } = await seedOffer();
+        const { cook, cookPathName, customer, bookingRequestOfferId } = await seedOffer();
         const customerTestimonialId = idCreate();
         await testDb.insert(customerTestimonials).values({
             customerTestimonialId,
@@ -155,7 +155,7 @@ describe('adminCustomerTestimonialFindOne', () => {
                     entityId: cook.user.userId,
                     labelDe: 'Nia Chef',
                     labelEn: 'Nia Chef',
-                    pathName: null,
+                    pathName: cookPathName,
                     index: null,
                 },
             ],

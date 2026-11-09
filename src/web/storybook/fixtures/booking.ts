@@ -17,6 +17,7 @@ export const fixtureOfferId = 'broFixture0000000001';
 
 export const fixturePublicCook: PublicCookCardCook = {
     cookId: fixtureCook.cookId,
+    pathName: 'anna-mueller',
     cuisineStyle: fixtureCook.cuisineStyle,
     cookingPhilosophy: fixtureCook.cookingPhilosophy,
     city: fixtureCook.city,

@@ -4,6 +4,8 @@
 
 fragment AdminUserCookProfileEditCook on AdminCook {
     cookId
+    pathName
+    previousPathNames
     stageName
     biography
     biographySummary

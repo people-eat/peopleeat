@@ -407,6 +407,7 @@ import { publicCookCustomerTestimonialRatingSummary } from '../queries/publicCoo
 import { publicCookCustomerTestimonialsFindMany } from '../queries/publicCookCustomerTestimonialsFindMany';
 import { publicCookFindMany } from '../queries/publicCookFindMany';
 import { publicCookFindOne } from '../queries/publicCookFindOne';
+import { publicCookFindOneByPathName } from '../queries/publicCookFindOneByPathName';
 import { publicCookMealFindMany } from '../queries/publicCookMealFindMany';
 import { publicLegalFind } from '../queries/publicLegalFind';
 import { publicOccasionFindMany } from '../queries/publicOccasionFindMany';
@@ -453,6 +454,7 @@ import { whatsAppMessagesFindMany } from '../queries/whatsAppMessagesFindMany';
 import { cookBiographySummaryGenerating } from '../utils/cookBiographySummaryGenerateSchedule';
 import { cookCallSlotsFindMany } from '../utils/cookCallSlotsFindMany';
 import { cookMealRelationshipsFind } from '../utils/cookMealRelationshipsFind';
+import { cookPathNameAvailability } from '../utils/cookPathName';
 import type {
     GqlSAdmin,
     GqlSAdminAiGeneration,
@@ -501,6 +503,7 @@ import type {
     GqlSAdminCookMenuArgs,
     GqlSAdminCookMenusArgs,
     GqlSAdminCookMenusCountsArgs,
+    GqlSAdminCookPathNameAvailableArgs,
     GqlSAdminCooksInTravelRadiusArgs,
     GqlSAdminCookTestimonial,
     GqlSAdminCookTestimonialArgs,
@@ -728,6 +731,7 @@ import type {
     GqlSCookMutationStripeOnboardingStartArgs,
     GqlSCookMutationUpdateArgs,
     GqlSCookOfferAddonArgs,
+    GqlSCookPathNameAvailableArgs,
     GqlSCookTestimonial,
     GqlSCustomerTestimonial,
     GqlSHumanChatMessage,
@@ -752,6 +756,7 @@ import type {
     GqlSPublicCookQuery,
     GqlSPublicCookQueryFindManyArgs,
     GqlSPublicCookQueryFindOneArgs,
+    GqlSPublicCookQueryFindOneByPathNameArgs,
     GqlSPublicOccasion,
     GqlSPublicOccasionQuery,
     GqlSPublicOccasionQueryFindOneByPathNameArgs,
@@ -1483,6 +1488,9 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             featureToggles() {
                 return adminFeatureToggleFindMany(serverRuntime);
             },
+            cookPathNameAvailable(_parent: GqlSAdmin, args: GqlSAdminCookPathNameAvailableArgs) {
+                return cookPathNameAvailability(serverRuntime.db, args.pathName, args.cookId);
+            },
             testimonials(_parent: GqlSAdmin, args: GqlSAdminTestimonialsArgs, requestingSession: GqlSSession) {
                 return adminTestimonialsFindMany(requestingSession, serverRuntime, args.criterion);
             },
@@ -1629,6 +1637,9 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
         },
         Cook: {
+            pathNameAvailable(parent: GqlSCook, args: GqlSCookPathNameAvailableArgs) {
+                return cookPathNameAvailability(serverRuntime.db, args.pathName, parent.cookId);
+            },
             rating(parent: GqlSCook) {
                 return publicCookCustomerTestimonialRatingSummary(parent.cookId, serverRuntime);
             },
@@ -2980,6 +2991,9 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             findOne(_parent: unknown, args: GqlSPublicCookQueryFindOneArgs) {
                 return publicCookFindOne(args, serverRuntime);
+            },
+            findOneByPathName(_parent: unknown, args: GqlSPublicCookQueryFindOneByPathNameArgs) {
+                return publicCookFindOneByPathName(args, serverRuntime);
             },
         },
         PublicCook: {

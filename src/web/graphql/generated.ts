@@ -68,6 +68,7 @@ export interface GqlCAdmin {
     cookMenu?: Maybe<GqlCAdminCookMenu>;
     cookMenus: Array<GqlCAdminCookMenu>;
     cookMenusCounts: Array<Scalars['Int']['output']>;
+    cookPathNameAvailable: GqlCCookPathNameAvailability;
     cookTestimonial?: Maybe<GqlCAdminCookTestimonial>;
     cooksInTravelRadius: Array<GqlCAdminCookInTravelRadiusPreview>;
     customerTestimonial?: Maybe<GqlCAdminCustomerTestimonial>;
@@ -289,6 +290,11 @@ export type GqlCAdminCookMenusArgs = {
 
 export type GqlCAdminCookMenusCountsArgs = {
     criteria: Array<GqlCAdminCookMenuCriterion>;
+};
+
+export type GqlCAdminCookPathNameAvailableArgs = {
+    cookId: Scalars['ID']['input'];
+    pathName: Scalars['String']['input'];
 };
 
 export type GqlCAdminCookTestimonialArgs = {
@@ -1057,7 +1063,9 @@ export interface GqlCAdminCook {
     maximumTravelDistance?: Maybe<Scalars['Int']['output']>;
     minimumParticipants?: Maybe<Scalars['Int']['output']>;
     minimumPriceAmount?: Maybe<Scalars['Int']['output']>;
+    pathName: Scalars['String']['output'];
     presenceLinks?: Maybe<GqlCCookPresenceLinks>;
+    previousPathNames: Array<Scalars['String']['output']>;
     rating: GqlCPublicCookRating;
     stageName?: Maybe<Scalars['String']['output']>;
     stripeAccountActive: Scalars['Boolean']['output'];
@@ -3313,7 +3321,10 @@ export interface GqlCCook {
     offerAddons: Array<GqlCCookOfferAddon>;
     offerMenus: Array<GqlCCookMenu>;
     onboardingSteps: Array<GqlCCookOnboardingStep>;
+    pathName: Scalars['String']['output'];
+    pathNameAvailable: GqlCCookPathNameAvailability;
     presenceLinks?: Maybe<GqlCCookPresenceLinks>;
+    previousPathNames: Array<Scalars['String']['output']>;
     rating: GqlCPublicCookRating;
     stageName?: Maybe<Scalars['String']['output']>;
     stripeAccountDetails?: Maybe<GqlCCookStripeAccountDetails>;
@@ -3378,6 +3389,10 @@ export type GqlCCookMenusCountsArgs = {
 
 export type GqlCCookOfferAddonArgs = {
     cookOfferAddonId: Scalars['ID']['input'];
+};
+
+export type GqlCCookPathNameAvailableArgs = {
+    pathName: Scalars['String']['input'];
 };
 
 export interface GqlCCookAnalytics {
@@ -4116,6 +4131,8 @@ export type GqlCCookOfferAddonUpsert = {
 export type GqlCCookOnboardingStep =
     'CHEF_PROFILE' | 'DEFAULT_OFFER_MESSAGE' | 'FIRST_MEAL' | 'FIRST_MENU' | 'FIRST_OFFER' | 'PROFILE_PICTURE' | 'TRAVEL' | 'WALLET';
 
+export type GqlCCookPathNameAvailability = 'AVAILABLE' | 'INVALID' | 'TAKEN';
+
 export interface GqlCCookPresenceLinks {
     __typename?: 'CookPresenceLinks';
     googleProfileUrl?: Maybe<Scalars['String']['output']>;
@@ -4257,6 +4274,7 @@ export type GqlCCookUpdate = {
     maximumTravelDistance?: InputMaybe<Scalars['Int']['input']>;
     minimumParticipants?: InputMaybe<Scalars['Int']['input']>;
     minimumPriceAmount?: InputMaybe<Scalars['Int']['input']>;
+    pathName?: InputMaybe<Scalars['String']['input']>;
     stageName?: InputMaybe<Scalars['String']['input']>;
     travelExpensesAmount?: InputMaybe<Scalars['Int']['input']>;
 };
@@ -4313,6 +4331,7 @@ export type GqlCFeatureToggleKey =
     | 'COOK_ANALYTICS'
     | 'COOK_BIOGRAPHY_AI_WRITE'
     | 'COOK_PRESENCE_LINKS'
+    | 'COOK_PUBLIC_PROFILE_PATH_NAME'
     | 'COOK_PUBLIC_PROFILE_SHARE'
     | 'COOK_WALLET_STRIPE_BALANCE'
     | 'LANDING_BOOKING_HOW_IT_WORKS'
@@ -4739,6 +4758,7 @@ export interface GqlCPublicCook {
     meals: Array<GqlCPublicCookMeal>;
     minimumParticipants?: Maybe<Scalars['Int']['output']>;
     minimumPriceAmount?: Maybe<Scalars['Int']['output']>;
+    pathName: Scalars['String']['output'];
     rating: GqlCPublicCookRating;
     stageName?: Maybe<Scalars['String']['output']>;
     testimonials: Array<GqlCCustomerTestimonial>;
@@ -4805,6 +4825,7 @@ export interface GqlCPublicCookQuery {
     __typename?: 'PublicCookQuery';
     findMany: Array<GqlCPublicCook>;
     findOne?: Maybe<GqlCPublicCook>;
+    findOneByPathName?: Maybe<GqlCPublicCook>;
 }
 
 export type GqlCPublicCookQueryFindManyArgs = {
@@ -4813,6 +4834,10 @@ export type GqlCPublicCookQueryFindManyArgs = {
 
 export type GqlCPublicCookQueryFindOneArgs = {
     cookId: Scalars['ID']['input'];
+};
+
+export type GqlCPublicCookQueryFindOneByPathNameArgs = {
+    pathName: Scalars['String']['input'];
 };
 
 export interface GqlCPublicCookRating {
@@ -6631,6 +6656,7 @@ export type GqlCContentSectionFieldsFragment =
 
 export type GqlCPublicCookCardFieldsFragment = {
     cookId: string;
+    pathName: string;
     cuisineStyle: string | null;
     cookingPhilosophy: string | null;
     city: string | null;
@@ -6742,6 +6768,7 @@ export type GqlCAdminTestimonialCardFieldsFragment =
 
 export type GqlCAdminCookCardFieldsFragment = {
     cookId: string;
+    pathName: string;
     isVisible: boolean;
     isApprovedByAdmin: boolean;
     cuisineStyle: string | null;
@@ -6833,6 +6860,7 @@ export type GqlCAdminCityFieldsFragment = {
         isPubliclyListed: boolean;
         cook: {
             cookId: string;
+            pathName: string;
             isVisible: boolean;
             isApprovedByAdmin: boolean;
             cuisineStyle: string | null;
@@ -6843,6 +6871,7 @@ export type GqlCAdminCityFieldsFragment = {
     }>;
     cooksInTravelRadius: Array<{
         cookId: string;
+        pathName: string;
         isVisible: boolean;
         isApprovedByAdmin: boolean;
         cuisineStyle: string | null;
@@ -6957,6 +6986,7 @@ export type GqlCPublicCityFieldsFragment = {
     >;
     featuredCooks: Array<{
         cookId: string;
+        pathName: string;
         cuisineStyle: string | null;
         cookingPhilosophy: string | null;
         city: string | null;
@@ -7093,6 +7123,7 @@ export type GqlCAdminPartnerFieldsFragment = {
         isPubliclyListed: boolean;
         cook: {
             cookId: string;
+            pathName: string;
             isVisible: boolean;
             isApprovedByAdmin: boolean;
             cuisineStyle: string | null;
@@ -7222,6 +7253,7 @@ export type GqlCPublicPartnerFieldsFragment = {
     >;
     featuredCooks: Array<{
         cookId: string;
+        pathName: string;
         cuisineStyle: string | null;
         cookingPhilosophy: string | null;
         city: string | null;
@@ -7383,6 +7415,7 @@ export type GqlCAdminOccasionFieldsFragment = {
         isPubliclyListed: boolean;
         cook: {
             cookId: string;
+            pathName: string;
             isVisible: boolean;
             isApprovedByAdmin: boolean;
             cuisineStyle: string | null;
@@ -7516,6 +7549,7 @@ export type GqlCPublicOccasionFieldsFragment = {
     >;
     featuredCooks: Array<{
         cookId: string;
+        pathName: string;
         cuisineStyle: string | null;
         cookingPhilosophy: string | null;
         city: string | null;
@@ -8745,6 +8779,7 @@ export type GqlCBookingRequestPlanPageQuery = {
             >;
             featuredCooks: Array<{
                 cookId: string;
+                pathName: string;
                 cuisineStyle: string | null;
                 cookingPhilosophy: string | null;
                 city: string | null;
@@ -8853,7 +8888,7 @@ export type GqlCBookingRequestSubmittedKitchenDetailsUpdateMutation = {
 };
 
 export type GqlCChefPageQueryVariables = Exact<{
-    cookId: string;
+    pathName: string;
 }>;
 
 export type GqlCChefPageQuery = {
@@ -8862,8 +8897,9 @@ export type GqlCChefPageQuery = {
         user: { admin: { adminId: string } | null; cook: { cookId: string } | null } | null;
     };
     publicCook: {
-        findOne: {
+        findOneByPathName: {
             cookId: string;
+            pathName: string;
             biography: string;
             biographySummary: string;
             cuisineStyle: string | null;
@@ -8966,6 +9002,7 @@ export type GqlCChefsPageQuery = {
     publicCook: {
         findMany: Array<{
             cookId: string;
+            pathName: string;
             cuisineStyle: string | null;
             cookingPhilosophy: string | null;
             city: string | null;
@@ -9080,6 +9117,7 @@ export type GqlCPublicCityPageQuery = {
             >;
             featuredCooks: Array<{
                 cookId: string;
+                pathName: string;
                 cuisineStyle: string | null;
                 cookingPhilosophy: string | null;
                 city: string | null;
@@ -9536,6 +9574,7 @@ export type GqlCPublicOccasionPageQuery = {
             >;
             featuredCooks: Array<{
                 cookId: string;
+                pathName: string;
                 cuisineStyle: string | null;
                 cookingPhilosophy: string | null;
                 city: string | null;
@@ -9697,6 +9736,7 @@ export type GqlCPublicPartnerPageQuery = {
             >;
             featuredCooks: Array<{
                 cookId: string;
+                pathName: string;
                 cuisineStyle: string | null;
                 cookingPhilosophy: string | null;
                 city: string | null;
@@ -13009,6 +13049,7 @@ export type GqlCAdminCityPageQuery = {
                         isPubliclyListed: boolean;
                         cook: {
                             cookId: string;
+                            pathName: string;
                             isVisible: boolean;
                             isApprovedByAdmin: boolean;
                             cuisineStyle: string | null;
@@ -13019,6 +13060,7 @@ export type GqlCAdminCityPageQuery = {
                     }>;
                     cooksInTravelRadius: Array<{
                         cookId: string;
+                        pathName: string;
                         isVisible: boolean;
                         isApprovedByAdmin: boolean;
                         cuisineStyle: string | null;
@@ -13208,6 +13250,7 @@ export type GqlCAdminCityPageUpdatesSubscription = {
                 isPubliclyListed: boolean;
                 cook: {
                     cookId: string;
+                    pathName: string;
                     isVisible: boolean;
                     isApprovedByAdmin: boolean;
                     cuisineStyle: string | null;
@@ -13218,6 +13261,7 @@ export type GqlCAdminCityPageUpdatesSubscription = {
             }>;
             cooksInTravelRadius: Array<{
                 cookId: string;
+                pathName: string;
                 isVisible: boolean;
                 isApprovedByAdmin: boolean;
                 cuisineStyle: string | null;
@@ -13276,6 +13320,15 @@ export type GqlCAdminCookInventoryCookPrefillQuery = {
             admin: { user: { userId: string; firstName: string; lastName: string; emailAddress: string | null } | null } | null;
         } | null;
     };
+};
+
+export type GqlCAdminCookPathNameAvailableQueryVariables = Exact<{
+    cookId: string;
+    pathName: string;
+}>;
+
+export type GqlCAdminCookPathNameAvailableQuery = {
+    currentSession: { user: { admin: { cookPathNameAvailable: Schema.GqlCCookPathNameAvailability } | null } | null };
 };
 
 export type GqlCAdminCookTestimonialDetailFragment = {
@@ -14852,6 +14905,7 @@ export type GqlCAdminOccasionPageQuery = {
                         isPubliclyListed: boolean;
                         cook: {
                             cookId: string;
+                            pathName: string;
                             isVisible: boolean;
                             isApprovedByAdmin: boolean;
                             cuisineStyle: string | null;
@@ -15090,6 +15144,7 @@ export type GqlCAdminOccasionPageUpdatesSubscription = {
                 isPubliclyListed: boolean;
                 cook: {
                     cookId: string;
+                    pathName: string;
                     isVisible: boolean;
                     isApprovedByAdmin: boolean;
                     cuisineStyle: string | null;
@@ -15997,6 +16052,7 @@ export type GqlCAdminPartnerPageQuery = {
                         isPubliclyListed: boolean;
                         cook: {
                             cookId: string;
+                            pathName: string;
                             isVisible: boolean;
                             isApprovedByAdmin: boolean;
                             cuisineStyle: string | null;
@@ -16257,6 +16313,7 @@ export type GqlCAdminPartnerPageUpdatesSubscription = {
                 isPubliclyListed: boolean;
                 cook: {
                     cookId: string;
+                    pathName: string;
                     isVisible: boolean;
                     isApprovedByAdmin: boolean;
                     cuisineStyle: string | null;
@@ -16968,6 +17025,8 @@ export type GqlCAdminCookTestimonialUpsertMutation = { admin: { cookTestimonialU
 
 export type GqlCAdminUserCookProfileEditCookFragment = {
     cookId: string;
+    pathName: string;
+    previousPathNames: Array<string>;
     stageName: string | null;
     biography: string;
     biographySummary: string;
@@ -17012,6 +17071,8 @@ export type GqlCAdminUserCookProfileEditPageQuery = {
                     lastName: string;
                     cook: {
                         cookId: string;
+                        pathName: string;
+                        previousPathNames: Array<string>;
                         stageName: string | null;
                         biography: string;
                         biographySummary: string;
@@ -17110,6 +17171,8 @@ export type GqlCAdminUserCreateMutation = { admin: { userCreate: { success: bool
 
 export type GqlCAdminUserCookFragment = {
     cookId: string;
+    pathName: string;
+    previousPathNames: Array<string>;
     isVisible: boolean;
     isApprovedByAdmin: boolean;
     canCreateOffers: boolean;
@@ -17245,6 +17308,8 @@ export type GqlCAdminUserPageQuery = {
                     }>;
                     cook: {
                         cookId: string;
+                        pathName: string;
+                        previousPathNames: Array<string>;
                         isVisible: boolean;
                         isApprovedByAdmin: boolean;
                         canCreateOffers: boolean;
@@ -20320,6 +20385,8 @@ export type GqlCProfileCookCallsCallSlotCancelMutation = {
 
 export type GqlCProfileCookChefProfileCookFragment = {
     cookId: string;
+    pathName: string;
+    previousPathNames: Array<string>;
     biography: string;
     biographySummary: string;
     biographySummaryGenerating: boolean;
@@ -20342,6 +20409,8 @@ export type GqlCProfileCookChefProfileUserFragment = {
     profilePicture: { fileUploadId: string; url: string } | null;
     cook: {
         cookId: string;
+        pathName: string;
+        previousPathNames: Array<string>;
         biography: string;
         biographySummary: string;
         biographySummaryGenerating: boolean;
@@ -20370,6 +20439,8 @@ export type GqlCProfileCookChefProfilePageQuery = {
             profilePicture: { fileUploadId: string; url: string } | null;
             cook: {
                 cookId: string;
+                pathName: string;
+                previousPathNames: Array<string>;
                 biography: string;
                 biographySummary: string;
                 biographySummaryGenerating: boolean;
@@ -20398,6 +20469,8 @@ export type GqlCProfileCookChefProfilePageUpdatesSubscription = {
         profilePicture: { fileUploadId: string; url: string } | null;
         cook: {
             cookId: string;
+            pathName: string;
+            previousPathNames: Array<string>;
             biography: string;
             biographySummary: string;
             biographySummaryGenerating: boolean;
@@ -21163,8 +21236,17 @@ export type GqlCProfileCookOfferAddonsPageCloneMutation = {
     user: { cook: { offerAddonCloneFromTemplate: { success: boolean; referenceId: string | null } } };
 };
 
+export type GqlCProfileCookPathNameAvailableQueryVariables = Exact<{
+    pathName: string;
+}>;
+
+export type GqlCProfileCookPathNameAvailableQuery = {
+    currentSession: { user: { cook: { pathNameAvailable: Schema.GqlCCookPathNameAvailability } | null } | null };
+};
+
 export type GqlCProfileCookPublicPageCookFragment = {
     cookId: string;
+    pathName: string;
     isVisible: boolean;
     isApprovedByAdmin: boolean;
     biography: string;
@@ -21189,6 +21271,7 @@ export type GqlCProfileCookPublicPageUserFragment = {
     admin: { adminId: string } | null;
     cook: {
         cookId: string;
+        pathName: string;
         isVisible: boolean;
         isApprovedByAdmin: boolean;
         biography: string;
@@ -21219,6 +21302,7 @@ export type GqlCProfileCookPublicPageQuery = {
             admin: { adminId: string } | null;
             cook: {
                 cookId: string;
+                pathName: string;
                 isVisible: boolean;
                 isApprovedByAdmin: boolean;
                 biography: string;
@@ -21249,6 +21333,7 @@ export type GqlCProfileCookPublicPageUpdatesSubscription = {
         admin: { adminId: string } | null;
         cook: {
             cookId: string;
+            pathName: string;
             isVisible: boolean;
             isApprovedByAdmin: boolean;
             biography: string;
@@ -21635,6 +21720,7 @@ export type GqlCProfileCustomerBookingRequestOfferCheckoutPageUserFragment = {
             configuredMenu: { title: string; courses: Array<{ title: string; meals: Array<{ mealImageUrl: string | null }> }> } | null;
             cook: {
                 cookId: string;
+                pathName: string;
                 hasPublicProfile: boolean;
                 city: string | null;
                 cuisineStyle: string | null;
@@ -21686,6 +21772,7 @@ export type GqlCProfileCustomerBookingRequestOfferCheckoutPageQuery = {
                     } | null;
                     cook: {
                         cookId: string;
+                        pathName: string;
                         hasPublicProfile: boolean;
                         city: string | null;
                         cuisineStyle: string | null;
@@ -21735,6 +21822,7 @@ export type GqlCProfileCustomerBookingRequestOfferCheckoutPageUpdatesSubscriptio
                 configuredMenu: { title: string; courses: Array<{ title: string; meals: Array<{ mealImageUrl: string | null }> }> } | null;
                 cook: {
                     cookId: string;
+                    pathName: string;
                     hasPublicProfile: boolean;
                     city: string | null;
                     cuisineStyle: string | null;
@@ -21816,6 +21904,7 @@ export type GqlCProfileCustomerBookingRequestOfferPageUserFragment = {
             } | null;
             cook: {
                 cookId: string;
+                pathName: string;
                 hasPublicProfile: boolean;
                 biography: string;
                 biographySummary: string;
@@ -22018,6 +22107,7 @@ export type GqlCProfileCustomerBookingRequestOfferPageQuery = {
                     } | null;
                     cook: {
                         cookId: string;
+                        pathName: string;
                         hasPublicProfile: boolean;
                         biography: string;
                         biographySummary: string;
@@ -22231,6 +22321,7 @@ export type GqlCProfileCustomerBookingRequestOfferPageUpdatesSubscription = {
                 } | null;
                 cook: {
                     cookId: string;
+                    pathName: string;
                     hasPublicProfile: boolean;
                     biography: string;
                     biographySummary: string;
@@ -24110,6 +24201,7 @@ export const AdminCookCardFieldsFragmentDoc = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isVisible' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
@@ -24466,6 +24558,7 @@ export const AdminCityFieldsFragmentDoc = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isVisible' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
@@ -24539,6 +24632,7 @@ export const PublicCookCardFieldsFragmentDoc = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'city' } },
@@ -24914,6 +25008,7 @@ export const PublicCityFieldsFragmentDoc = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'city' } },
@@ -25270,6 +25365,7 @@ export const AdminPartnerFieldsFragmentDoc = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isVisible' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
@@ -25598,6 +25694,7 @@ export const PublicPartnerFieldsFragmentDoc = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'city' } },
@@ -26014,6 +26111,7 @@ export const AdminOccasionFieldsFragmentDoc = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isVisible' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
@@ -26362,6 +26460,7 @@ export const PublicOccasionFieldsFragmentDoc = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'city' } },
@@ -31185,6 +31284,8 @@ export const AdminUserCookProfileEditCookFragmentDoc = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'stageName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummary' } },
@@ -31263,6 +31364,8 @@ export const AdminUserCookFragmentDoc = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isVisible' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'canCreateOffers' } },
@@ -34152,6 +34255,8 @@ export const ProfileCookChefProfileCookFragmentDoc = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummary' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummaryGenerating' } },
@@ -34231,6 +34336,8 @@ export const ProfileCookChefProfileUserFragmentDoc = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummary' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummaryGenerating' } },
@@ -34835,6 +34942,7 @@ export const ProfileCookPublicPageCookFragmentDoc = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isVisible' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
@@ -34927,6 +35035,7 @@ export const ProfileCookPublicPageUserFragmentDoc = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isVisible' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
@@ -35289,6 +35398,7 @@ export const ProfileCustomerBookingRequestOfferCheckoutPageUserFragmentDoc = {
                                                     kind: 'SelectionSet',
                                                     selections: [
                                                         { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'hasPublicProfile' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'city' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
@@ -35552,6 +35662,7 @@ export const ProfileCustomerBookingRequestOfferPageUserFragmentDoc = {
                                                     kind: 'SelectionSet',
                                                     selections: [
                                                         { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'hasPublicProfile' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'biographySummary' } },
@@ -42150,6 +42261,7 @@ export const BookingRequestPlanPageDocument = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'city' } },
@@ -42792,8 +42904,8 @@ export const ChefPageDocument = {
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'cookId' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'pathName' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
                 },
             ],
             selectionSet: {
@@ -42825,18 +42937,19 @@ export const ChefPageDocument = {
                             selections: [
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'findOne' },
+                                    name: { kind: 'Name', value: 'findOneByPathName' },
                                     arguments: [
                                         {
                                             kind: 'Argument',
-                                            name: { kind: 'Name', value: 'cookId' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'cookId' } },
+                                            name: { kind: 'Name', value: 'pathName' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'pathName' } },
                                         },
                                     ],
                                     selectionSet: {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'biographySummary' } },
                                             {
@@ -43396,6 +43509,7 @@ export const ChefsPageDocument = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'city' } },
@@ -43749,6 +43863,7 @@ export const PublicCityPageDocument = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'city' } },
@@ -45428,6 +45543,7 @@ export const PublicOccasionPageDocument = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'city' } },
@@ -45945,6 +46061,7 @@ export const PublicPartnerPageDocument = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'city' } },
@@ -56499,6 +56616,7 @@ export const AdminCityPageDocument = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isVisible' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
@@ -57104,6 +57222,7 @@ export const AdminCityPageUpdatesDocument = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isVisible' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
@@ -57413,6 +57532,76 @@ export const AdminCookInventoryCookPrefillDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminCookInventoryCookPrefillQuery, GqlCAdminCookInventoryCookPrefillQueryVariables>;
+export const AdminCookPathNameAvailableDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'AdminCookPathNameAvailable' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'cookId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'pathName' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'user' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'admin' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'cookPathNameAvailable' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'cookId' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'cookId' } },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'pathName' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'pathName' } },
+                                                                },
+                                                            ],
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminCookPathNameAvailableQuery, GqlCAdminCookPathNameAvailableQueryVariables>;
 export const AdminCookTestimonialPageDocument = {
     kind: 'Document',
     definitions: [
@@ -62268,6 +62457,7 @@ export const AdminOccasionPageDocument = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isVisible' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
@@ -63028,6 +63218,7 @@ export const AdminOccasionPageUpdatesDocument = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isVisible' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
@@ -66317,6 +66508,7 @@ export const AdminPartnerPageDocument = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isVisible' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
@@ -67135,6 +67327,7 @@ export const AdminPartnerPageUpdatesDocument = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isVisible' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
@@ -69989,6 +70182,8 @@ export const AdminUserCookProfileEditPageDocument = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'stageName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummary' } },
@@ -72273,6 +72468,8 @@ export const AdminUserPageDocument = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isVisible' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'canCreateOffers' } },
@@ -81375,6 +81572,8 @@ export const ProfileCookChefProfilePageDocument = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummary' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummaryGenerating' } },
@@ -81472,6 +81671,8 @@ export const ProfileCookChefProfilePageUpdatesDocument = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummary' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummaryGenerating' } },
@@ -83638,6 +83839,66 @@ export const ProfileCookOfferAddonsPageCloneDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCProfileCookOfferAddonsPageCloneMutation, GqlCProfileCookOfferAddonsPageCloneMutationVariables>;
+export const ProfileCookPathNameAvailableDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'ProfileCookPathNameAvailable' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'pathName' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'user' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'cook' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'pathNameAvailable' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'pathName' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'pathName' } },
+                                                                },
+                                                            ],
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCookPathNameAvailableQuery, GqlCProfileCookPathNameAvailableQueryVariables>;
 export const ProfileCookPublicPageDocument = {
     kind: 'Document',
     definitions: [
@@ -83679,6 +83940,7 @@ export const ProfileCookPublicPageDocument = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isVisible' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
@@ -83789,6 +84051,7 @@ export const ProfileCookPublicPageUpdatesDocument = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isVisible' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
@@ -85173,6 +85436,7 @@ export const ProfileCustomerBookingRequestOfferCheckoutPageDocument = {
                                                     kind: 'SelectionSet',
                                                     selections: [
                                                         { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'hasPublicProfile' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'city' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
@@ -85407,6 +85671,7 @@ export const ProfileCustomerBookingRequestOfferCheckoutPageUpdatesDocument = {
                                                     kind: 'SelectionSet',
                                                     selections: [
                                                         { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'hasPublicProfile' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'city' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
@@ -85841,6 +86106,7 @@ export const ProfileCustomerBookingRequestOfferPageDocument = {
                                                     kind: 'SelectionSet',
                                                     selections: [
                                                         { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'hasPublicProfile' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'biographySummary' } },
@@ -86489,6 +86755,7 @@ export const ProfileCustomerBookingRequestOfferPageUpdatesDocument = {
                                                     kind: 'SelectionSet',
                                                     selections: [
                                                         { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'hasPublicProfile' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'biographySummary' } },

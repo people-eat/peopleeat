@@ -28,7 +28,7 @@ export interface LlmsResource {
 }
 
 export interface LlmsChef {
-    cookId: string;
+    pathName: string;
     displayName: string;
     city: string | null;
 }
@@ -80,7 +80,7 @@ export function llmsTxtBuild(input: {
     const chefLines = input.chefs.map((chef) =>
         bullet(
             input.webPageUrl,
-            `/chefs/${chef.cookId}`,
+            `/chefs/${chef.pathName}`,
             chef.displayName,
             chef.city ? `Private chef in ${chef.city}.` : 'Private chef on peopleeat.',
         ),

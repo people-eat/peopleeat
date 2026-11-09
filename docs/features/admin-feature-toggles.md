@@ -138,9 +138,13 @@ Wired today:
   transactions on `/profile/wallet`; `Cook.stripeWallet` returns null when off for the cook `userId` (no Stripe balance calls)
 - **Cook analytics** (`COOK_ANALYTICS`) — shows overview KPIs and `/profile/analytics`; `Cook.analytics` returns null when off for the cook
   `userId`. See [cook-analytics.md](./cook-analytics.md)
-- **Cook public profile share** (`COOK_PUBLIC_PROFILE_SHARE`) — shows Share on `/chefs/$cookId` (top bar) and on `/profile/public` Preview;
-  missing row stays off. Public detail reads `Session.activeFeatureToggleKeys`; cook Preview uses the profile shell provider. See
+- **Cook public profile share** (`COOK_PUBLIC_PROFILE_SHARE`) — shows Share on `/chefs/$pathName` (top bar) and on `/profile/public`
+  Preview; missing row stays off. Public detail reads `Session.activeFeatureToggleKeys`; cook Preview uses the profile shell provider. See
   [public-chefs.md](./public-chefs.md) and [cook-profile.md](./cook-profile.md)
+- **Cook public URL** (`COOK_PUBLIC_PROFILE_PATH_NAME`) — shows the public chef URL editor on `/profile/chef-profile` (view and edit) with
+  live availability. `cookUpdate.pathName` rejects when off for the cook `userId`. Public `/chefs/<pathName>` URLs, sitemap, `llms.txt`, and
+  admin cook-profile edit stay always on. Missing row stays off. See [public-chefs.md](./public-chefs.md) and
+  [cook-profile.md](./cook-profile.md)
 - **Cook other profiles** (`COOK_PRESENCE_LINKS`) — shows website, Instagram, Google, Take a Chef, and other platform links on
   `/profile/chef-profile` (view and edit). `Cook.presenceLinks` is null and `presenceLinksReplace` rejects when off for the cook `userId`.
   Admin cook-profile view and edit always show and save the links. Customers never see them. See [cook-profile.md](./cook-profile.md)

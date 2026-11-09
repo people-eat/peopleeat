@@ -10,6 +10,7 @@ import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSMutationResult, GqlSMutationUserCreateArgs, GqlSSession } from '../graphql/generated';
 import { userKlaviyoProfileSync } from '../jobs/handlers/userKlaviyoProfileSync';
 import { cookCreatePayloadBuild } from '../utils/cookCreatePayloadBuild';
+import { cookPathNameAllocate } from '../utils/cookPathName';
 import { outboundEmailsUserIdBackfillByToEmail } from '../utils/outboundEmailsUserIdBackfillByToEmail';
 import { sessionEventCreate } from '../utils/sessionEventCreate';
 import { sessionUserBind } from './sessionUserBind';
@@ -136,7 +137,8 @@ export async function userCreate(
 
             await transaction.insert(users).values(userInsert);
             if (cookPayload) {
-                await transaction.insert(cooks).values({ cookId: newUserId, ...cookPayload });
+                const pathName = await cookPathNameAllocate(transaction, firstName, lastName);
+                await transaction.insert(cooks).values({ cookId: newUserId, pathName, ...cookPayload });
             }
             await outboundEmailsUserIdBackfillByToEmail(transaction, {
                 toEmail: emailAddress,

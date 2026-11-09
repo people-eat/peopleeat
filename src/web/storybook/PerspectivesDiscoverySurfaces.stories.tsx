@@ -38,6 +38,7 @@ function DiscoveryCollage() {
 
     const altCook = {
         cookId: fixtureCookAlt.cookId,
+        pathName: 'jonas-keller',
         cuisineStyle: fixtureCookAlt.cuisineStyle,
         cookingPhilosophy: fixtureCookAlt.cookingPhilosophy,
         city: fixtureCookAlt.city,

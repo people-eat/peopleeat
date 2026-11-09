@@ -2,6 +2,7 @@
 
 fragment ProfileCookPublicPageCook on Cook {
     cookId
+    pathName
     isVisible
     isApprovedByAdmin
     biography

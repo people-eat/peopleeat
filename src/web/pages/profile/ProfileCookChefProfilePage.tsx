@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router';
 import { Button } from '../../components/base/button';
 import { Skeleton } from '../../components/base/skeleton';
 import { CookDefaultOfferMessageReadout } from '../../components/CookDefaultOfferMessageFields';
+import { CookPathNameReadout } from '../../components/CookPathNameFields';
 import { CookPresenceLinksReadout } from '../../components/CookPresenceLinksEditor';
 import { cookProfileTagLabels, CookProfileTags } from '../../components/CookProfileTags';
 import { ProfilePinnedFooterLayout } from '../../components/ProfilePinnedFooterLayout';
@@ -29,6 +30,7 @@ function DetailField({ label, value }: { label: string; value: string }) {
 export function ProfileCookChefProfilePage({ data }: { data: GqlCProfileCookChefProfilePageQuery }) {
     const locale = useLocale();
     const presenceLinksEnabled = useFeatureToggleActive('COOK_PRESENCE_LINKS');
+    const pathNameEnabled = useFeatureToggleActive('COOK_PUBLIC_PROFILE_PATH_NAME');
     const seedUser = data.currentSession.user ?? null;
     const user = useUserUpdatesSeed(seedUser, ProfileCookChefProfilePageUpdatesDocument);
     const cook = user?.cook ?? null;
@@ -93,6 +95,9 @@ export function ProfileCookChefProfilePage({ data }: { data: GqlCProfileCookChef
                             )}
                         </dd>
                     </div>
+                    {pathNameEnabled ? (
+                        <CookPathNameReadout locale={locale} pathName={cook.pathName} previousPathNames={cook.previousPathNames} />
+                    ) : null}
                 </dl>
             </section>
 

@@ -13,6 +13,7 @@ import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminMutation, GqlSAdminMutationUserCreateArgs, GqlSMutationResult, GqlSSession } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
 import { cookCreatePayloadBuild } from '../utils/cookCreatePayloadBuild';
+import { cookPathNameAllocate } from '../utils/cookPathName';
 
 export async function adminUserCreate(
     { adminId }: GqlSAdminMutation,
@@ -95,7 +96,8 @@ export async function adminUserCreate(
                 await transaction.insert(admins).values(adminInsert);
             }
             if (cookPayload) {
-                await transaction.insert(cooks).values({ cookId: userId, ...cookPayload });
+                const pathName = await cookPathNameAllocate(transaction, firstName, lastName);
+                await transaction.insert(cooks).values({ cookId: userId, pathName, ...cookPayload });
             }
         });
 

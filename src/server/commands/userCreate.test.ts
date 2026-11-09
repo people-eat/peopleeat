@@ -119,6 +119,7 @@ describe('userCreate', () => {
 
         expect(result.success).toBe(true);
         const [cook] = await testDb.select().from(cooks).where(eq(cooks.cookId, result.referenceId!));
+        expect(cook?.pathName).toMatch(/^chef-ada(?:-\d+)?$/);
         expect(cook?.biography).toBe('I cook with love');
         expect(cook?.cuisineStyle).toBe('Italienisch');
         expect(cook?.cookingPhilosophy).toBe('Saisonal');

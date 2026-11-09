@@ -1013,8 +1013,8 @@ function OfferTabPanel({
                                 <h2 className="font-serif text-2xl/tight text-foreground">{cook.user.display}</h2>
                                 {cook.hasPublicProfile ? (
                                     <Link
-                                        to="/{-$locale}/chefs/$cookId"
-                                        params={{ cookId: cook.cookId }}
+                                        to="/{-$locale}/chefs/$pathName"
+                                        params={{ pathName: cook.pathName }}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="inline-flex text-muted-foreground hover:text-foreground"

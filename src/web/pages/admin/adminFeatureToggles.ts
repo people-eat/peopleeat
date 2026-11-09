@@ -12,6 +12,7 @@ const adminFeatureToggleLabels: Record<FeatureToggleKey, Record<Locale, string>>
     COOK_WALLET_STRIPE_BALANCE: { de: 'Wallet: Stripe-Guthaben', en: 'Wallet: Stripe balance' },
     COOK_ANALYTICS: { de: 'Koch: Analysen', en: 'Cook: analytics' },
     COOK_PUBLIC_PROFILE_SHARE: { de: 'Koch: Öffentliches Profil teilen', en: 'Cook: share public profile' },
+    COOK_PUBLIC_PROFILE_PATH_NAME: { de: 'Koch: Öffentliche URL', en: 'Cook: public URL' },
     COOK_PRESENCE_LINKS: { de: 'Koch: Weitere Profile', en: 'Cook: other profiles' },
     BOOKING_REQUEST_RESTRICTIONS: { de: 'Buchungsanfrage: Einschränkungen', en: 'Booking request: restrictions' },
     BOOKING_REQUEST_SETTING: { de: 'Buchungsanfrage: Innen / Außen', en: 'Booking request: indoor / outdoor' },
@@ -87,6 +88,10 @@ const adminFeatureToggleDescriptions: Record<FeatureToggleKey, Record<Locale, st
     COOK_PUBLIC_PROFILE_SHARE: {
         de: 'Zeigt Teilen auf der öffentlichen Kochseite und in der Vorschau unter /profile/public (nativer Share-Sheet bzw. Link kopieren).',
         en: 'Shows Share on the public chef page and on /profile/public Preview (native share sheet or copy link).',
+    },
+    COOK_PUBLIC_PROFILE_PATH_NAME: {
+        de: 'Zeigt den Editor für die öffentliche Koch-URL (/chefs/…) im Kochprofil. Öffentliche Seiten, Sitemap und Admin-Bearbeitung bleiben immer aktiv.',
+        en: 'Shows the public chef URL editor (/chefs/…) on the cook chef profile. Public pages, sitemap, and admin editing stay always on.',
     },
     COOK_PRESENCE_LINKS: {
         de: 'Zeigt weitere öffentliche Profile im Kochprofil (Website, Instagram, Google, Take a Chef und andere Plattformen). Nur für die Prüfung durch das Team, nicht für Kunden.',

@@ -2,10 +2,10 @@ import { webPageUrlGet } from '../seo/webPageUrlGet';
 import { DEFAULT_LOCALE } from './locale';
 import type { Locale } from './locale';
 
-export function publicChefUrl(cookId: string, locale: Locale): string {
+export function publicChefUrl(pathName: string, locale: Locale): string {
     const origin = webPageUrlGet();
     const prefix = locale === DEFAULT_LOCALE ? '' : `/${locale}`;
-    return `${origin}${prefix}/chefs/${cookId}`;
+    return `${origin}${prefix}/chefs/${pathName}`;
 }
 
 export type WebShareData = {

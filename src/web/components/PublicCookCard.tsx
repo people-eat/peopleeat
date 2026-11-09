@@ -11,6 +11,7 @@ import { CookProfileTags } from './CookProfileTags';
 
 export type PublicCookCardCook = {
     cookId: string;
+    pathName: string;
     cuisineStyle: string | null;
     cookingPhilosophy?: string | null;
     city: string | null;
@@ -140,7 +141,7 @@ export function PublicCookCard({
     }
 
     return (
-        <Link to="/{-$locale}/chefs/$cookId" params={{ cookId: cook.cookId }} className={cardClassName}>
+        <Link to="/{-$locale}/chefs/$pathName" params={{ pathName: cook.pathName }} className={cardClassName}>
             {body}
         </Link>
     );

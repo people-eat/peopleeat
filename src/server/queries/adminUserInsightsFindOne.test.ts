@@ -129,7 +129,7 @@ describe('adminUserUpcomingBirthdaysFindMany', () => {
         const later = await commandSetup.withUser({
             firstName: `${token}-later`,
             lastName: 'Beta',
-            birthDate: `1992-${monthDayInDays(40)}`,
+            birthDate: `1992-${monthDayInDays(12)}`,
         });
         await testDb.insert(cooks).values({ cookId: later.user.userId });
         await testDb.insert(users).values({

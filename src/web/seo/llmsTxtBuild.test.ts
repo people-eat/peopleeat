@@ -21,12 +21,12 @@ describe('llmsTxtBuild', () => {
             cities: [{ path: '/cities/berlin', title: 'Berlin', description: 'Chefs who cook in Berlin.' }],
             occasions: [],
             posts: [],
-            chefs: [{ cookId: 'cook-1', displayName: 'Anna', city: 'Berlin' }],
+            chefs: [{ pathName: 'anna-mueller', displayName: 'Anna', city: 'Berlin' }],
         });
 
         // Assert
         expect(body).toContain('[Berlin](https://example.com/en/cities/berlin): Chefs who cook in Berlin.');
-        expect(body).toContain('[Anna](https://example.com/en/chefs/cook-1): Private chef in Berlin.');
+        expect(body).toContain('[Anna](https://example.com/en/chefs/anna-mueller): Private chef in Berlin.');
         expect(body).toContain('[Home](https://example.com/en):');
         expect(body).not.toContain('## Occasions');
         expect(body).not.toContain('## Articles');

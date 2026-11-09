@@ -1,0 +1,9 @@
+query ProfileCookPathNameAvailable($pathName: String!) {
+    currentSession {
+        user {
+            cook {
+                pathNameAvailable(pathName: $pathName)
+            }
+        }
+    }
+}

@@ -1,4 +1,4 @@
-import { createFileRoute, notFound } from '@tanstack/react-router';
+import { createFileRoute, notFound, redirect } from '@tanstack/react-router';
 
 import { ChefPageDocument } from '../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../web/graphql/routeLoaderGraphqlClient';
@@ -10,29 +10,35 @@ import { jsonLdBreadcrumbList, jsonLdFaqPage, jsonLdHeadScripts, jsonLdPerson } 
 import { SITE_NAME } from '../../web/seo/seoConstants';
 import { seoMeta } from '../../web/seo/seoMeta';
 import { webPageUrlGet } from '../../web/seo/webPageUrlGet';
-import { localeFromParam } from '../../web/utils/locale';
+import { DEFAULT_LOCALE, localeFromParam } from '../../web/utils/locale';
 
-export const Route = createFileRoute('/{-$locale}/chefs_/$cookId')({
+export const Route = createFileRoute('/{-$locale}/chefs_/$pathName')({
     loader: async (ctx) => {
         const data = await routeLoaderGraphqlClient(ChefPageDocument, {
-            cookId: ctx.params.cookId,
+            pathName: ctx.params.pathName,
         })();
-        if (!data.publicCook.findOne) {
+        const cook = data.publicCook.findOneByPathName;
+        if (!cook) {
             throw notFound();
+        }
+        if (cook.pathName !== ctx.params.pathName) {
+            const locale = localeFromParam(ctx.params);
+            const prefix = locale === DEFAULT_LOCALE ? '' : `/${locale}`;
+            throw redirect({ href: `${prefix}/chefs/${cook.pathName}`, statusCode: 301 });
         }
         return data;
     },
     staleTime: 0,
     head: ({ params, loaderData }) => {
         const locale = localeFromParam(params);
-        const cook = loaderData?.publicCook.findOne;
+        const cook = loaderData?.publicCook.findOneByPathName;
         if (!cook) {
             return {};
         }
         const webPageUrl = webPageUrlGet();
         const name = cook.user.display;
         const cityLabel = chefPageCityLabel(locale, cook.city, cook.cityPage);
-        const path = `/chefs/${cook.cookId}`;
+        const path = `/chefs/${cook.pathName}`;
         const title = chefPageTitle(locale, name, cityLabel);
         const description = chefPageDescription(locale, {
             name,

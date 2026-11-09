@@ -4,6 +4,7 @@ import { sessions } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { SessionEventWebPageVisitedPayload } from '../domain/sessionEvent';
 import type { GqlSMutationResult, GqlSMutationSessionWebPageVisitCreateArgs, GqlSSession } from '../graphql/generated';
+import { cookFindByPathNameAny } from '../utils/cookPathName';
 import { sessionEventCreate } from '../utils/sessionEventCreate';
 
 export async function sessionWebPageVisitCreate(
@@ -25,7 +26,10 @@ export async function sessionWebPageVisitCreate(
         const input = args.input;
         const params: NonNullable<SessionEventWebPageVisitedPayload['params']> = {};
         if (input.cityId) params.cityId = input.cityId;
-        if (input.cookId) params.cookId = input.cookId;
+        if (input.cookId) {
+            const cook = await cookFindByPathNameAny(serverRuntime.db, input.cookId);
+            params.cookId = cook?.cookId ?? input.cookId;
+        }
         if (input.blogPostId) params.blogPostId = input.blogPostId;
         if (input.partnerId) params.partnerId = input.partnerId;
         if (input.occasionId) params.occasionId = input.occasionId;

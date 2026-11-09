@@ -85,7 +85,7 @@ import { Route as Char123LocaleChar125BlogPostsPathNameRouteImport } from './rou
 import { Route as Char123LocaleChar125BookingRequestChatRouteImport } from './routes/{-$locale}/booking-request_.chat'
 import { Route as Char123LocaleChar125BookingRequestFormRouteImport } from './routes/{-$locale}/booking-request_.form'
 import { Route as Char123LocaleChar125BookingRequestPlanRouteImport } from './routes/{-$locale}/booking-request_.plan'
-import { Route as Char123LocaleChar125ChefsCookIdRouteImport } from './routes/{-$locale}/chefs_.$cookId'
+import { Route as Char123LocaleChar125ChefsPathNameRouteImport } from './routes/{-$locale}/chefs_.$pathName'
 import { Route as Char123LocaleChar125CitiesPathNameRouteImport } from './routes/{-$locale}/cities_.$pathName'
 import { Route as Char123LocaleChar125OccasionsPathNameRouteImport } from './routes/{-$locale}/occasions_.$pathName'
 import { Route as Char123LocaleChar125PartnersPathNameRouteImport } from './routes/{-$locale}/partners_.$pathName'
@@ -619,10 +619,10 @@ const Char123LocaleChar125BookingRequestPlanRoute =
     path: '/booking-request/plan',
     getParentRoute: () => Char123LocaleChar125Route,
   } as any)
-const Char123LocaleChar125ChefsCookIdRoute =
-  Char123LocaleChar125ChefsCookIdRouteImport.update({
-    id: '/chefs_/$cookId',
-    path: '/chefs/$cookId',
+const Char123LocaleChar125ChefsPathNameRoute =
+  Char123LocaleChar125ChefsPathNameRouteImport.update({
+    id: '/chefs_/$pathName',
+    path: '/chefs/$pathName',
     getParentRoute: () => Char123LocaleChar125Route,
   } as any)
 const Char123LocaleChar125CitiesPathNameRoute =
@@ -1320,7 +1320,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/booking-request/chat': typeof Char123LocaleChar125BookingRequestChatRoute
   '/{-$locale}/booking-request/form': typeof Char123LocaleChar125BookingRequestFormRoute
   '/{-$locale}/booking-request/plan': typeof Char123LocaleChar125BookingRequestPlanRoute
-  '/{-$locale}/chefs/$cookId': typeof Char123LocaleChar125ChefsCookIdRoute
+  '/{-$locale}/chefs/$pathName': typeof Char123LocaleChar125ChefsPathNameRoute
   '/{-$locale}/cities/$pathName': typeof Char123LocaleChar125CitiesPathNameRoute
   '/{-$locale}/occasions/$pathName': typeof Char123LocaleChar125OccasionsPathNameRoute
   '/{-$locale}/partners/$pathName': typeof Char123LocaleChar125PartnersPathNameRoute
@@ -1492,7 +1492,7 @@ export interface FileRoutesByTo {
   '/{-$locale}/booking-request/chat': typeof Char123LocaleChar125BookingRequestChatRoute
   '/{-$locale}/booking-request/form': typeof Char123LocaleChar125BookingRequestFormRoute
   '/{-$locale}/booking-request/plan': typeof Char123LocaleChar125BookingRequestPlanRoute
-  '/{-$locale}/chefs/$cookId': typeof Char123LocaleChar125ChefsCookIdRoute
+  '/{-$locale}/chefs/$pathName': typeof Char123LocaleChar125ChefsPathNameRoute
   '/{-$locale}/cities/$pathName': typeof Char123LocaleChar125CitiesPathNameRoute
   '/{-$locale}/occasions/$pathName': typeof Char123LocaleChar125OccasionsPathNameRoute
   '/{-$locale}/partners/$pathName': typeof Char123LocaleChar125PartnersPathNameRoute
@@ -1668,7 +1668,7 @@ export interface FileRoutesById {
   '/{-$locale}/booking-request_/chat': typeof Char123LocaleChar125BookingRequestChatRoute
   '/{-$locale}/booking-request_/form': typeof Char123LocaleChar125BookingRequestFormRoute
   '/{-$locale}/booking-request_/plan': typeof Char123LocaleChar125BookingRequestPlanRoute
-  '/{-$locale}/chefs_/$cookId': typeof Char123LocaleChar125ChefsCookIdRoute
+  '/{-$locale}/chefs_/$pathName': typeof Char123LocaleChar125ChefsPathNameRoute
   '/{-$locale}/cities_/$pathName': typeof Char123LocaleChar125CitiesPathNameRoute
   '/{-$locale}/occasions_/$pathName': typeof Char123LocaleChar125OccasionsPathNameRoute
   '/{-$locale}/partners_/$pathName': typeof Char123LocaleChar125PartnersPathNameRoute
@@ -1845,7 +1845,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/booking-request/chat'
     | '/{-$locale}/booking-request/form'
     | '/{-$locale}/booking-request/plan'
-    | '/{-$locale}/chefs/$cookId'
+    | '/{-$locale}/chefs/$pathName'
     | '/{-$locale}/cities/$pathName'
     | '/{-$locale}/occasions/$pathName'
     | '/{-$locale}/partners/$pathName'
@@ -2017,7 +2017,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/booking-request/chat'
     | '/{-$locale}/booking-request/form'
     | '/{-$locale}/booking-request/plan'
-    | '/{-$locale}/chefs/$cookId'
+    | '/{-$locale}/chefs/$pathName'
     | '/{-$locale}/cities/$pathName'
     | '/{-$locale}/occasions/$pathName'
     | '/{-$locale}/partners/$pathName'
@@ -2192,7 +2192,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/booking-request_/chat'
     | '/{-$locale}/booking-request_/form'
     | '/{-$locale}/booking-request_/plan'
-    | '/{-$locale}/chefs_/$cookId'
+    | '/{-$locale}/chefs_/$pathName'
     | '/{-$locale}/cities_/$pathName'
     | '/{-$locale}/occasions_/$pathName'
     | '/{-$locale}/partners_/$pathName'
@@ -2856,11 +2856,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char123LocaleChar125BookingRequestPlanRouteImport
       parentRoute: typeof Char123LocaleChar125Route
     }
-    '/{-$locale}/chefs_/$cookId': {
-      id: '/{-$locale}/chefs_/$cookId'
-      path: '/chefs/$cookId'
-      fullPath: '/{-$locale}/chefs/$cookId'
-      preLoaderRoute: typeof Char123LocaleChar125ChefsCookIdRouteImport
+    '/{-$locale}/chefs_/$pathName': {
+      id: '/{-$locale}/chefs_/$pathName'
+      path: '/chefs/$pathName'
+      fullPath: '/{-$locale}/chefs/$pathName'
+      preLoaderRoute: typeof Char123LocaleChar125ChefsPathNameRouteImport
       parentRoute: typeof Char123LocaleChar125Route
     }
     '/{-$locale}/cities_/$pathName': {
@@ -3925,7 +3925,7 @@ interface Char123LocaleChar125RouteChildren {
   Char123LocaleChar125BookingRequestChatRoute: typeof Char123LocaleChar125BookingRequestChatRoute
   Char123LocaleChar125BookingRequestFormRoute: typeof Char123LocaleChar125BookingRequestFormRoute
   Char123LocaleChar125BookingRequestPlanRoute: typeof Char123LocaleChar125BookingRequestPlanRoute
-  Char123LocaleChar125ChefsCookIdRoute: typeof Char123LocaleChar125ChefsCookIdRoute
+  Char123LocaleChar125ChefsPathNameRoute: typeof Char123LocaleChar125ChefsPathNameRoute
   Char123LocaleChar125CitiesPathNameRoute: typeof Char123LocaleChar125CitiesPathNameRoute
   Char123LocaleChar125OccasionsPathNameRoute: typeof Char123LocaleChar125OccasionsPathNameRoute
   Char123LocaleChar125PartnersPathNameRoute: typeof Char123LocaleChar125PartnersPathNameRoute
@@ -3965,7 +3965,8 @@ const Char123LocaleChar125RouteChildren: Char123LocaleChar125RouteChildren = {
     Char123LocaleChar125BookingRequestFormRoute,
   Char123LocaleChar125BookingRequestPlanRoute:
     Char123LocaleChar125BookingRequestPlanRoute,
-  Char123LocaleChar125ChefsCookIdRoute: Char123LocaleChar125ChefsCookIdRoute,
+  Char123LocaleChar125ChefsPathNameRoute:
+    Char123LocaleChar125ChefsPathNameRoute,
   Char123LocaleChar125CitiesPathNameRoute:
     Char123LocaleChar125CitiesPathNameRoute,
   Char123LocaleChar125OccasionsPathNameRoute:

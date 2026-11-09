@@ -65,6 +65,7 @@ export interface GqlSAdmin {
     cookMenu?: Maybe<GqlSAdminCookMenu>;
     cookMenus: Array<GqlSAdminCookMenu>;
     cookMenusCounts: Array<Scalars['Int']['output']>;
+    cookPathNameAvailable: GqlSCookPathNameAvailability;
     cookTestimonial?: Maybe<GqlSAdminCookTestimonial>;
     cooksInTravelRadius: Array<GqlSAdminCookInTravelRadiusPreview>;
     customerTestimonial?: Maybe<GqlSAdminCustomerTestimonial>;
@@ -286,6 +287,11 @@ export type GqlSAdminCookMenusArgs = {
 
 export type GqlSAdminCookMenusCountsArgs = {
     criteria: Array<GqlSAdminCookMenuCriterion>;
+};
+
+export type GqlSAdminCookPathNameAvailableArgs = {
+    cookId: Scalars['ID']['input'];
+    pathName: Scalars['String']['input'];
 };
 
 export type GqlSAdminCookTestimonialArgs = {
@@ -1054,7 +1060,9 @@ export interface GqlSAdminCook {
     maximumTravelDistance?: Maybe<Scalars['Int']['output']>;
     minimumParticipants?: Maybe<Scalars['Int']['output']>;
     minimumPriceAmount?: Maybe<Scalars['Int']['output']>;
+    pathName: Scalars['String']['output'];
     presenceLinks?: Maybe<GqlSCookPresenceLinks>;
+    previousPathNames: Array<Scalars['String']['output']>;
     rating: GqlSPublicCookRating;
     stageName?: Maybe<Scalars['String']['output']>;
     stripeAccountActive: Scalars['Boolean']['output'];
@@ -3310,7 +3318,10 @@ export interface GqlSCook {
     offerAddons: Array<GqlSCookOfferAddon>;
     offerMenus: Array<GqlSCookMenu>;
     onboardingSteps: Array<GqlSCookOnboardingStep>;
+    pathName: Scalars['String']['output'];
+    pathNameAvailable: GqlSCookPathNameAvailability;
     presenceLinks?: Maybe<GqlSCookPresenceLinks>;
+    previousPathNames: Array<Scalars['String']['output']>;
     rating: GqlSPublicCookRating;
     stageName?: Maybe<Scalars['String']['output']>;
     stripeAccountDetails?: Maybe<GqlSCookStripeAccountDetails>;
@@ -3375,6 +3386,10 @@ export type GqlSCookMenusCountsArgs = {
 
 export type GqlSCookOfferAddonArgs = {
     cookOfferAddonId: Scalars['ID']['input'];
+};
+
+export type GqlSCookPathNameAvailableArgs = {
+    pathName: Scalars['String']['input'];
 };
 
 export interface GqlSCookAnalytics {
@@ -4113,6 +4128,8 @@ export type GqlSCookOfferAddonUpsert = {
 export type GqlSCookOnboardingStep =
     'CHEF_PROFILE' | 'DEFAULT_OFFER_MESSAGE' | 'FIRST_MEAL' | 'FIRST_MENU' | 'FIRST_OFFER' | 'PROFILE_PICTURE' | 'TRAVEL' | 'WALLET';
 
+export type GqlSCookPathNameAvailability = 'AVAILABLE' | 'INVALID' | 'TAKEN';
+
 export interface GqlSCookPresenceLinks {
     __typename?: 'CookPresenceLinks';
     googleProfileUrl?: Maybe<Scalars['String']['output']>;
@@ -4254,6 +4271,7 @@ export type GqlSCookUpdate = {
     maximumTravelDistance?: InputMaybe<Scalars['Int']['input']>;
     minimumParticipants?: InputMaybe<Scalars['Int']['input']>;
     minimumPriceAmount?: InputMaybe<Scalars['Int']['input']>;
+    pathName?: InputMaybe<Scalars['String']['input']>;
     stageName?: InputMaybe<Scalars['String']['input']>;
     travelExpensesAmount?: InputMaybe<Scalars['Int']['input']>;
 };
@@ -4310,6 +4328,7 @@ export type GqlSFeatureToggleKey =
     | 'COOK_ANALYTICS'
     | 'COOK_BIOGRAPHY_AI_WRITE'
     | 'COOK_PRESENCE_LINKS'
+    | 'COOK_PUBLIC_PROFILE_PATH_NAME'
     | 'COOK_PUBLIC_PROFILE_SHARE'
     | 'COOK_WALLET_STRIPE_BALANCE'
     | 'LANDING_BOOKING_HOW_IT_WORKS'
@@ -4736,6 +4755,7 @@ export interface GqlSPublicCook {
     meals: Array<GqlSPublicCookMeal>;
     minimumParticipants?: Maybe<Scalars['Int']['output']>;
     minimumPriceAmount?: Maybe<Scalars['Int']['output']>;
+    pathName: Scalars['String']['output'];
     rating: GqlSPublicCookRating;
     stageName?: Maybe<Scalars['String']['output']>;
     testimonials: Array<GqlSCustomerTestimonial>;
@@ -4802,6 +4822,7 @@ export interface GqlSPublicCookQuery {
     __typename?: 'PublicCookQuery';
     findMany: Array<GqlSPublicCook>;
     findOne?: Maybe<GqlSPublicCook>;
+    findOneByPathName?: Maybe<GqlSPublicCook>;
 }
 
 export type GqlSPublicCookQueryFindManyArgs = {
@@ -4810,6 +4831,10 @@ export type GqlSPublicCookQueryFindManyArgs = {
 
 export type GqlSPublicCookQueryFindOneArgs = {
     cookId: Scalars['ID']['input'];
+};
+
+export type GqlSPublicCookQueryFindOneByPathNameArgs = {
+    pathName: Scalars['String']['input'];
 };
 
 export interface GqlSPublicCookRating {
@@ -6292,6 +6317,7 @@ export type GqlSResolversTypes = ResolversObject<{
     CookOfferAddon: ResolverTypeWrapper<GqlSCookOfferAddon>;
     CookOfferAddonUpsert: GqlSCookOfferAddonUpsert;
     CookOnboardingStep: GqlSCookOnboardingStep;
+    CookPathNameAvailability: GqlSCookPathNameAvailability;
     CookPresenceLinks: ResolverTypeWrapper<GqlSCookPresenceLinks>;
     CookPresenceLinksUpdate: GqlSCookPresenceLinksUpdate;
     CookPresenceOtherPlatform: GqlSCookPresenceOtherPlatform;
@@ -7221,6 +7247,12 @@ export type GqlSAdminResolvers<
         ContextType,
         RequireFields<GqlSAdminCookMenusCountsArgs, 'criteria'>
     >;
+    cookPathNameAvailable?: Resolver<
+        GqlSResolversTypes['CookPathNameAvailability'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminCookPathNameAvailableArgs, 'cookId' | 'pathName'>
+    >;
     cookTestimonial?: Resolver<
         Maybe<GqlSResolversTypes['AdminCookTestimonial']>,
         ParentType,
@@ -7929,7 +7961,9 @@ export type GqlSAdminCookResolvers<
     maximumTravelDistance?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
     minimumParticipants?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
     minimumPriceAmount?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
+    pathName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     presenceLinks?: Resolver<Maybe<GqlSResolversTypes['CookPresenceLinks']>, ParentType, ContextType>;
+    previousPathNames?: Resolver<Array<GqlSResolversTypes['String']>, ParentType, ContextType>;
     rating?: Resolver<GqlSResolversTypes['PublicCookRating'], ParentType, ContextType>;
     stageName?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     stripeAccountActive?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
@@ -9986,7 +10020,15 @@ export type GqlSCookResolvers<
     offerAddons?: Resolver<Array<GqlSResolversTypes['CookOfferAddon']>, ParentType, ContextType>;
     offerMenus?: Resolver<Array<GqlSResolversTypes['CookMenu']>, ParentType, ContextType>;
     onboardingSteps?: Resolver<Array<GqlSResolversTypes['CookOnboardingStep']>, ParentType, ContextType>;
+    pathName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    pathNameAvailable?: Resolver<
+        GqlSResolversTypes['CookPathNameAvailability'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSCookPathNameAvailableArgs, 'pathName'>
+    >;
     presenceLinks?: Resolver<Maybe<GqlSResolversTypes['CookPresenceLinks']>, ParentType, ContextType>;
+    previousPathNames?: Resolver<Array<GqlSResolversTypes['String']>, ParentType, ContextType>;
     rating?: Resolver<GqlSResolversTypes['PublicCookRating'], ParentType, ContextType>;
     stageName?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     stripeAccountDetails?: Resolver<Maybe<GqlSResolversTypes['CookStripeAccountDetails']>, ParentType, ContextType>;
@@ -11239,6 +11281,7 @@ export type GqlSPublicCookResolvers<
     meals?: Resolver<Array<GqlSResolversTypes['PublicCookMeal']>, ParentType, ContextType>;
     minimumParticipants?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
     minimumPriceAmount?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
+    pathName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     rating?: Resolver<GqlSResolversTypes['PublicCookRating'], ParentType, ContextType>;
     stageName?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     testimonials?: Resolver<Array<GqlSResolversTypes['CustomerTestimonial']>, ParentType, ContextType>;
@@ -11311,6 +11354,12 @@ export type GqlSPublicCookQueryResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSPublicCookQueryFindOneArgs, 'cookId'>
+    >;
+    findOneByPathName?: Resolver<
+        Maybe<GqlSResolversTypes['PublicCook']>,
+        ParentType,
+        ContextType,
+        RequireFields<GqlSPublicCookQueryFindOneByPathNameArgs, 'pathName'>
     >;
 }>;
 
@@ -13154,6 +13203,12 @@ export const GqlSCookOnboardingStepSchema: z.ZodType<
     'CHEF_PROFILE' | 'DEFAULT_OFFER_MESSAGE' | 'FIRST_MEAL' | 'FIRST_MENU' | 'FIRST_OFFER' | 'PROFILE_PICTURE' | 'TRAVEL' | 'WALLET'
 > = z.enum(['CHEF_PROFILE', 'DEFAULT_OFFER_MESSAGE', 'FIRST_MEAL', 'FIRST_MENU', 'FIRST_OFFER', 'PROFILE_PICTURE', 'TRAVEL', 'WALLET']);
 
+export const GqlSCookPathNameAvailabilitySchema: z.ZodType<'AVAILABLE' | 'INVALID' | 'TAKEN', 'AVAILABLE' | 'INVALID' | 'TAKEN'> = z.enum([
+    'AVAILABLE',
+    'INVALID',
+    'TAKEN',
+]);
+
 export const GqlSCookPresenceOtherPlatformSchema: z.ZodType<
     'CHEF_MAISON' | 'COZYMEAL' | 'EATWITH' | 'OTHER' | 'YHUNGRY',
     'CHEF_MAISON' | 'COZYMEAL' | 'EATWITH' | 'OTHER' | 'YHUNGRY'
@@ -13207,6 +13262,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'COOK_ANALYTICS'
     | 'COOK_BIOGRAPHY_AI_WRITE'
     | 'COOK_PRESENCE_LINKS'
+    | 'COOK_PUBLIC_PROFILE_PATH_NAME'
     | 'COOK_PUBLIC_PROFILE_SHARE'
     | 'COOK_WALLET_STRIPE_BALANCE'
     | 'LANDING_BOOKING_HOW_IT_WORKS'
@@ -13232,6 +13288,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'COOK_ANALYTICS'
     | 'COOK_BIOGRAPHY_AI_WRITE'
     | 'COOK_PRESENCE_LINKS'
+    | 'COOK_PUBLIC_PROFILE_PATH_NAME'
     | 'COOK_PUBLIC_PROFILE_SHARE'
     | 'COOK_WALLET_STRIPE_BALANCE'
     | 'LANDING_BOOKING_HOW_IT_WORKS'
@@ -13258,6 +13315,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     'COOK_ANALYTICS',
     'COOK_BIOGRAPHY_AI_WRITE',
     'COOK_PRESENCE_LINKS',
+    'COOK_PUBLIC_PROFILE_PATH_NAME',
     'COOK_PUBLIC_PROFILE_SHARE',
     'COOK_WALLET_STRIPE_BALANCE',
     'LANDING_BOOKING_HOW_IT_WORKS',
@@ -14190,6 +14248,7 @@ export function GqlSCookUpdateSchema(): z.ZodObject<Properties<GqlSCookUpdate>> 
         maximumTravelDistance: z.number().nullish(),
         minimumParticipants: z.number().nullish(),
         minimumPriceAmount: z.number().nullish(),
+        pathName: z.string().nullish(),
         stageName: z.string().nullish(),
         travelExpensesAmount: z.number().nullish(),
     });

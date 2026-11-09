@@ -110,6 +110,7 @@ export function ProfileCookPublicPage({ data, search }: { data: GqlCProfileCookP
     const tab = resolvePublicTab(search.tab);
     const isLive = cook.isVisible && cook.isApprovedByAdmin;
     const cookId = cook.cookId;
+    const pathName = cook.pathName;
     const publishedMeals = cook.meals.filter((meal) => meal.publishedAt != null);
     const publicCatalogMeals = publishedMeals.filter((meal) => meal.imageUrl != null && meal.imageUrl.length > 0);
     const publishedWithoutImageCount = publishedMeals.length - publicCatalogMeals.length;
@@ -141,7 +142,7 @@ export function ProfileCookPublicPage({ data, search }: { data: GqlCProfileCookP
 
     async function copyPublicLink() {
         try {
-            await navigator.clipboard.writeText(publicChefUrl(cookId, locale));
+            await navigator.clipboard.writeText(publicChefUrl(pathName, locale));
             setCopied(true);
             toast.success({ de: 'Link kopiert', en: 'Link copied' }[locale]);
             window.setTimeout(() => setCopied(false), 2000);
@@ -226,7 +227,7 @@ export function ProfileCookPublicPage({ data, search }: { data: GqlCProfileCookP
                                             en: `Check out ${user.firstName} on peopleeat`,
                                         }[locale]
                                     }
-                                    url={publicChefUrl(cookId, locale)}
+                                    url={publicChefUrl(cook.pathName, locale)}
                                     disabled={!isLive}
                                 />
                             ) : null}
@@ -236,7 +237,7 @@ export function ProfileCookPublicPage({ data, search }: { data: GqlCProfileCookP
                             </Button>
                             {isLive ? (
                                 <Button type="button" variant="outline" size="sm" asChild>
-                                    <Link to="/{-$locale}/chefs/$cookId" params={{ cookId }} target="_blank">
+                                    <Link to="/{-$locale}/chefs/$pathName" params={{ pathName: cook.pathName }} target="_blank">
                                         <ExternalLinkIcon className="size-4" aria-hidden />
                                         {{ de: 'Öffnen', en: 'Open' }[locale]}
                                     </Link>
@@ -272,6 +273,7 @@ export function ProfileCookPublicPage({ data, search }: { data: GqlCProfileCookP
                                             interactive={false}
                                             cook={{
                                                 cookId,
+                                                pathName: cook.pathName,
                                                 cuisineStyle: cook.cuisineStyle,
                                                 cookingPhilosophy: cook.cookingPhilosophy,
                                                 city: cook.exactTravelOriginAddress?.city ?? null,

@@ -3,9 +3,9 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import { SparklesIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { useMutation } from 'urql';
+import { useMutation, useQuery } from 'urql';
 
-import { containsPhoneNumber, userDisplayName } from '../../../shared';
+import { containsPhoneNumber, cookPathNameTryNormalize, userDisplayName } from '../../../shared';
 import { cookDefaultOfferMessageFormFrom, cookDefaultOfferMessageUpdateFrom } from '../../../shared/cookDefaultOfferMessage';
 import {
     cookPresenceLinksEqual,
@@ -22,6 +22,7 @@ import { Spinner } from '../../components/base/spinner';
 import { Textarea } from '../../components/base/textarea';
 import { BiographySuggestionReview } from '../../components/BiographySuggestionReview';
 import { CookDefaultOfferMessageFields } from '../../components/CookDefaultOfferMessageFields';
+import { CookPathNameFields } from '../../components/CookPathNameFields';
 import { CookPresenceLinksFields, cookPresenceLinksIssueMessage } from '../../components/CookPresenceLinksEditor';
 import { ProfilePictureEditor } from '../../components/ProfilePictureEditor';
 import { ProfilePinnedFooterLayout } from '../../components/ProfilePinnedFooterLayout';
@@ -30,9 +31,11 @@ import {
     ProfileCookBiographySuggestDocument,
     ProfileCookChefProfilePageUpdatesDocument,
     ProfileCookChefProfileUserUpdateDocument,
+    ProfileCookPathNameAvailableDocument,
     ProfileCookPresenceLinksReplaceDocument,
     ProfileCookUpdateDocument,
 } from '../../graphql/generated';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useFeatureToggleActive } from '../../hooks/useFeatureToggleActive';
 import { useLocale } from '../../hooks/useLocale';
 import { useUserUpdatesSeed } from '../../hooks/useUserUpdatesSeed';
@@ -52,6 +55,7 @@ type ChefProfileFormValues = {
     biography: string;
     cuisineStyle: string;
     cookingPhilosophy: string;
+    pathName: string;
     presenceLinks: ReturnType<typeof cookPresenceLinksFormFrom>;
 } & ReturnType<typeof cookDefaultOfferMessageFormFrom>;
 
@@ -60,6 +64,7 @@ function formFromCook(next: GqlCProfileCookChefProfileCookFragment): ChefProfile
         biography: next.biography,
         cuisineStyle: next.cuisineStyle ?? '',
         cookingPhilosophy: next.cookingPhilosophy ?? '',
+        pathName: next.pathName,
         presenceLinks: cookPresenceLinksFormFrom(next.presenceLinks),
         ...cookDefaultOfferMessageFormFrom(next.defaultOfferMessage ?? null),
     };
@@ -76,6 +81,7 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
     const [, userUpdate] = useMutation(ProfileCookChefProfileUserUpdateDocument);
     const biographyAiWriteEnabled = useFeatureToggleActive('COOK_BIOGRAPHY_AI_WRITE');
     const presenceLinksEnabled = useFeatureToggleActive('COOK_PRESENCE_LINKS');
+    const pathNameEnabled = useFeatureToggleActive('COOK_PUBLIC_PROFILE_PATH_NAME');
     const [profilePictureBusy, setProfilePictureBusy] = useState(false);
     const [biographySuggestion, setBiographySuggestion] = useState<string | null>(null);
     const [summaryRefreshPending, setSummaryRefreshPending] = useState(false);
@@ -89,6 +95,7 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
                   biography: '',
                   cuisineStyle: '',
                   cookingPhilosophy: '',
+                  pathName: '',
                   presenceLinks: cookPresenceLinksFormFrom(null),
                   ...cookDefaultOfferMessageFormFrom(null),
               },
@@ -136,6 +143,7 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
                     biography: value.biography,
                     cuisineStyle: nextCuisine || null,
                     cookingPhilosophy: nextPhilosophy || null,
+                    ...(pathNameEnabled && value.pathName !== cook.pathName ? { pathName: value.pathName } : {}),
                     ...(defaultOfferMessage !== undefined ? { defaultOfferMessage } : {}),
                 },
             });
@@ -148,6 +156,7 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
                 biography: value.biography,
                 cuisineStyle: nextCuisine,
                 cookingPhilosophy: nextPhilosophy,
+                pathName: value.pathName,
                 presenceLinks: value.presenceLinks,
                 defaultOfferMessageMode: value.defaultOfferMessageMode,
                 defaultOfferMessageText: value.defaultOfferMessageText,
@@ -177,6 +186,22 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
     const isSubmitting = useSelector(form.store, (state) => state.isSubmitting);
     const isDirty = useSelector(form.store, (state) => state.isDirty);
     const biographyValue = useSelector(form.store, (state) => state.values.biography);
+    const pathNameValue = useSelector(form.store, (state) => state.values.pathName);
+    const debouncedPathName = useDebouncedValue(pathNameValue, 300);
+    const [{ data: pathNameAvailabilityData, fetching: pathNameChecking }] = useQuery({
+        query: ProfileCookPathNameAvailableDocument,
+        variables: { pathName: debouncedPathName },
+        pause: !pathNameEnabled || !cook || debouncedPathName.length === 0,
+    });
+    const pathNameAvailability = pathNameAvailabilityData?.currentSession.user?.cook?.pathNameAvailable ?? null;
+    const pathNameChanged = Boolean(pathNameEnabled && cook && pathNameValue !== cook.pathName);
+    const pathNameBlocked =
+        pathNameChanged &&
+        (pathNameValue !== debouncedPathName ||
+            pathNameChecking ||
+            pathNameAvailability === 'TAKEN' ||
+            pathNameAvailability === 'INVALID' ||
+            cookPathNameTryNormalize(pathNameValue) == null);
 
     useEffect(() => {
         if (!cook) return;
@@ -245,7 +270,7 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
                         <Button type="button" variant="outline" disabled={formBusy} asChild>
                             <Link to="/{-$locale}/profile/chef-profile">{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</Link>
                         </Button>
-                        <Button type="submit" form="chef-profile-form" disabled={formBusy || reviewingSuggestion}>
+                        <Button type="submit" form="chef-profile-form" disabled={formBusy || reviewingSuggestion || pathNameBlocked}>
                             {isSubmitting ? { de: 'Speichern…', en: 'Saving…' }[locale] : { de: 'Speichern', en: 'Save' }[locale]}
                         </Button>
                     </>
@@ -398,6 +423,31 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
                         </form.Field>
                     </div>
                 </section>
+
+                {pathNameEnabled ? (
+                    <section className="grid min-w-0 gap-4">
+                        <form.Field name="pathName">
+                            {(field) => (
+                                <CookPathNameFields
+                                    id="chef-path-name"
+                                    locale={locale}
+                                    value={field.state.value}
+                                    onChange={field.handleChange}
+                                    onBlur={field.handleBlur}
+                                    disabled={formBusy}
+                                    availability={
+                                        pathNameChanged
+                                            ? pathNameAvailability
+                                            : field.state.value === cook.pathName
+                                              ? 'AVAILABLE'
+                                              : pathNameAvailability
+                                    }
+                                    checking={pathNameChanged && (pathNameChecking || pathNameValue !== debouncedPathName)}
+                                />
+                            )}
+                        </form.Field>
+                    </section>
+                ) : null}
 
                 <section className="grid min-w-0 gap-4">
                     <form.Field name="defaultOfferMessageMode">

@@ -12,6 +12,8 @@ export function toGqlAdminCook(row: Cook, userStatus: UserStatus): GqlSAdminCook
     const testMode = stripeDashboardIsTestMode(environmentVariables.stripeSecretKey);
     return {
         cookId: row.cookId,
+        pathName: row.pathName,
+        previousPathNames: row.previousPathNames,
         // Populated by `AdminCook.user` field resolver (or hydrated by booking queries).
         user: undefined as unknown as GqlSAdminUser,
         isVisible: row.isVisible,

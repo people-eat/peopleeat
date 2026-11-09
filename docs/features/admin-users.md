@@ -82,13 +82,14 @@ self-serve delete — see [account.md](./account.md).
 **Cook profile** defaults to a read-only detail: approval/visibility/Stripe-active badges, optional rating summary, stage name, travel,
 Stripe account + Dashboard link, call scheduling + weekly windows, About logo, tags, biography/summary (with generating hint), default offer
 note (`null` / empty / custom text), other public profiles for review (website, Instagram, Google, Take a Chef, and named platforms; always
-visible to admins, not gated by `COOK_PRESENCE_LINKS`), public chef link when approved + visible, featured city/partner/occasion landings,
-and created/last-modified timestamps; then a **Finances** block with live Stripe requirements checklist + Connect available/pending balance
-and recent balance transactions (same data as the cook wallet page when `COOK_WALLET_STRIPE_BALANCE` is on — admin always loads it, not
-gated by that toggle; fetched only on this tab). Confirm-gated approve/revoke and public-visibility actions sit at the bottom. Legacy
-price/participant columns stay on `AdminCook` / `CookUpdate` but are not shown here (unused in product matching). **Edit** in the pinned
-footer opens `/admin/users/<userId>/cook-profile/edit`, where admins patch stage name, biography, biography summary, cuisine/philosophy
-catalogs, default offer note, and travel fields via `AdminMutation.cookUpdate`, and other public profiles via
+visible to admins, not gated by `COOK_PRESENCE_LINKS`), public URL (`/chefs/<pathName>` with copy and previous slugs), public chef link when
+approved + visible, featured city/partner/occasion landings, and created/last-modified timestamps; then a **Finances** block with live
+Stripe requirements checklist + Connect available/pending balance and recent balance transactions (same data as the cook wallet page when
+`COOK_WALLET_STRIPE_BALANCE` is on — admin always loads it, not gated by that toggle; fetched only on this tab). Confirm-gated
+approve/revoke and public-visibility actions sit at the bottom. Legacy price/participant columns stay on `AdminCook` / `CookUpdate` but are
+not shown here (unused in product matching). **Edit** in the pinned footer opens `/admin/users/<userId>/cook-profile/edit`, where admins
+patch stage name, public URL slug (live availability, always on, not gated by `COOK_PUBLIC_PROFILE_PATH_NAME`), biography, biography
+summary, cuisine/philosophy catalogs, default offer note, and travel fields via `AdminMutation.cookUpdate`, and other public profiles via
 `AdminMutation.cookPresenceLinksReplace` (legal acceptance asserted on the admin, not the cook). The About logo uses `CookLogoEditor` and
 saves immediately via `logoFileUploadId`. Admin can edit biography and summary manually. **Write with AI / Improve with AI** opens a
 side-by-side review; **Accept** fills the biography field (save still required; no auto summary job). The suggest mutation is gated by

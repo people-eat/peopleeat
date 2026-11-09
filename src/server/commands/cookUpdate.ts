@@ -18,7 +18,9 @@ import {
     COOK_MINIMUM_TRAVEL_DISTANCE_KM,
     COOK_MINIMUM_TRAVEL_EXPENSES_AMOUNT,
 } from '../utils/cookCreatePayloadBuild';
+import { cookPathNameApply } from '../utils/cookPathName';
 import { cookTravelOriginAddressResolve } from '../utils/cookTravelOriginAddressResolve';
+import { featureToggleIsEnabled } from '../utils/featureToggleIsEnabled';
 import { fileUploadAssertOwned, PROFILE_PICTURE_MEDIA_TYPES } from '../utils/fileUploadAssertOwned';
 
 export async function cookUpdate(
@@ -32,6 +34,7 @@ export async function cookUpdate(
     const {
         isVisible,
         stageName,
+        pathName,
         biography,
         logoFileUploadId,
         cuisineStyle,
@@ -53,6 +56,7 @@ export async function cookUpdate(
     const hasField =
         isVisible !== undefined ||
         stageName !== undefined ||
+        pathName !== undefined ||
         biography !== undefined ||
         hasLogo ||
         cuisineStyle !== undefined ||
@@ -116,6 +120,23 @@ export async function cookUpdate(
     if (stageName !== undefined) {
         const normalizedStageName = stageName == null ? '' : textNormalizeTitled(stageName);
         patch.stageName = normalizedStageName.length === 0 ? null : normalizedStageName;
+    }
+    if (pathName !== undefined && pathName !== null) {
+        const enabled = await featureToggleIsEnabled('COOK_PUBLIC_PROFILE_PATH_NAME', serverRuntime, cookId);
+        if (!enabled) {
+            throw new Error('cookUpdate: COOK_PUBLIC_PROFILE_PATH_NAME is disabled');
+        }
+        const [current] = await serverRuntime.db
+            .select({ cookId: cooks.cookId, pathName: cooks.pathName, previousPathNames: cooks.previousPathNames })
+            .from(cooks)
+            .where(eq(cooks.cookId, cookId))
+            .limit(1);
+        if (!current) {
+            throw new Error('cookUpdate: cook not found');
+        }
+        const applied = await cookPathNameApply(serverRuntime.db, current, pathName);
+        patch.pathName = applied.pathName;
+        patch.previousPathNames = applied.previousPathNames;
     }
     if (biography !== undefined && biography !== null) {
         patch.biography = textNormalizeProse(biography);
@@ -256,7 +277,7 @@ export function toolCookUpdate({
 }) {
     return tool({
         description: [
-            'Update the signed-in cook profile (visibility, stage name, biography, logo, cuisine, travel, pricing, call settings, default offer note).',
+            'Update the signed-in cook profile (visibility, stage name, public path name, biography, logo, cuisine, travel, pricing, call settings, default offer note).',
             'Only include fields that should change. cuisineStyle / cookingPhilosophy must be catalog values (or null to clear).',
             'stageName is an optional public display name (null / blank clears).',
             'defaultOfferMessage is the offer-create personal note (empty string starts each offer blank; omit to leave unchanged; null is ignored).',

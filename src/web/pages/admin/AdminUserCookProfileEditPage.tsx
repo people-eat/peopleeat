@@ -27,9 +27,11 @@ import { Textarea } from '../../components/base/textarea';
 import { BiographySuggestionReview } from '../../components/BiographySuggestionReview';
 import { CookDefaultOfferMessageFields } from '../../components/CookDefaultOfferMessageFields';
 import { CookLogoEditor } from '../../components/CookLogoEditor';
+import { CookPathNameFields } from '../../components/CookPathNameFields';
 import { CookPresenceLinksFields, cookPresenceLinksIssueMessage } from '../../components/CookPresenceLinksEditor';
 import type { GqlCAdminUserCookProfileEditPageQuery, GqlCLocationSuggestion } from '../../graphql/generated';
 import {
+    AdminCookPathNameAvailableDocument,
     AdminUserCookPresenceLinksReplaceDocument,
     AdminUserCookProfileEditBiographySuggestDocument,
     AdminUserCookProfileEditBiographySummarySuggestDocument,
@@ -63,6 +65,7 @@ const COOK_PROFILE_EDIT_FORM_ID = 'admin-user-cook-profile-edit-form';
 
 type CookFormValues = {
     stageName: string;
+    pathName: string;
     biography: string;
     biographySummary: string;
     cuisineStyle: string;
@@ -90,6 +93,7 @@ function euroTextToCents(value: string): number | null {
 function formFromCook(cook: AdminCookRow): CookFormValues {
     return {
         stageName: cook.stageName ?? '',
+        pathName: cook.pathName,
         biography: cook.biography,
         biographySummary: cook.biographySummary,
         cuisineStyle: cook.cuisineStyle ?? '',
@@ -239,6 +243,7 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
                 cookId,
                 input: {
                     stageName: value.stageName.trim() || null,
+                    ...(value.pathName !== cook.pathName ? { pathName: value.pathName } : {}),
                     biography: value.biography,
                     biographySummary: value.biographySummary,
                     cuisineStyle: value.cuisineStyle.trim() || null,
@@ -267,6 +272,7 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
     const locationSearchText = useSelector(form.store, (state) => state.values.locationSearchText);
     const selectedLocation = useSelector(form.store, (state) => state.values.selectedLocation);
     const biographyValue = useSelector(form.store, (state) => state.values.biography);
+    const pathNameValue = useSelector(form.store, (state) => state.values.pathName);
     const reviewingSuggestion = biographySuggestion != null;
     const aiBusy = biographySuggestFetching || summarySuggestFetching;
     const formBusy = isSubmitting || aiBusy || reviewingSuggestion || logoBusy;
@@ -323,6 +329,17 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
         form.setFieldValue('biographySummary', suggestion);
     }
 
+    const debouncedPathName = useDebouncedValue(pathNameValue, 300);
+    const pathNameChanged = pathNameValue !== cook.pathName;
+    const [{ data: pathNameAvailabilityData, fetching: pathNameChecking }] = useQuery({
+        query: AdminCookPathNameAvailableDocument,
+        variables: { cookId, pathName: debouncedPathName },
+        pause: debouncedPathName.length === 0,
+    });
+    const pathNameAvailability = pathNameAvailabilityData?.currentSession.user?.admin?.cookPathNameAvailable ?? null;
+    const pathNameBlocked =
+        pathNameChanged &&
+        (pathNameValue !== debouncedPathName || pathNameChecking || pathNameAvailability === 'TAKEN' || pathNameAvailability === 'INVALID');
     const debouncedLocationSearch = useDebouncedValue(locationSearchText, 300);
     const [{ data: suggestionsData }] = useQuery({
         query: AdminUserCookProfileEditLocationSuggestionsDocument,
@@ -354,7 +371,7 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
                                 {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
                             </Link>
                         </Button>
-                        <Button type="submit" form={COOK_PROFILE_EDIT_FORM_ID} disabled={formBusy || !isDirty}>
+                        <Button type="submit" form={COOK_PROFILE_EDIT_FORM_ID} disabled={formBusy || !isDirty || pathNameBlocked}>
                             {isSubmitting ? { de: 'Speichern…', en: 'Saving…' }[locale] : { de: 'Speichern', en: 'Save' }[locale]}
                         </Button>
                     </>
@@ -395,6 +412,39 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
                                     onBlur={field.handleBlur}
                                     onChange={(event) => field.handleChange(event.target.value)}
                                 />
+                            </div>
+                        )}
+                    </form.Field>
+
+                    <form.Field name="pathName">
+                        {(field) => (
+                            <div className="grid min-w-0 gap-3">
+                                <CookPathNameFields
+                                    id="admin-cook-path-name"
+                                    locale={locale}
+                                    value={field.state.value}
+                                    onChange={field.handleChange}
+                                    onBlur={field.handleBlur}
+                                    disabled={formBusy}
+                                    availability={
+                                        pathNameChanged
+                                            ? pathNameAvailability
+                                            : field.state.value === cook.pathName
+                                              ? 'AVAILABLE'
+                                              : pathNameAvailability
+                                    }
+                                    checking={pathNameChanged && (pathNameChecking || pathNameValue !== debouncedPathName)}
+                                />
+                                {cook.previousPathNames.length > 0 ? (
+                                    <p className="text-sm text-muted-foreground">
+                                        {
+                                            {
+                                                de: `Frühere Pfade: ${cook.previousPathNames.map((name) => `/chefs/${name}`).join(', ')}`,
+                                                en: `Previous paths: ${cook.previousPathNames.map((name) => `/chefs/${name}`).join(', ')}`,
+                                            }[locale]
+                                        }
+                                    </p>
+                                ) : null}
                             </div>
                         )}
                     </form.Field>

@@ -42,8 +42,8 @@ export function webPageKeyFromPath(pathWithoutLocale: string): WebPageVisitMatch
     if (path === '/privacy-policy') return { webPageKey: 'PRIVACY_POLICY' };
     if (path === '/log-on' || path === '/sign-in') return { webPageKey: 'SIGN_IN' };
 
-    // Chef detail uses a nanoId cookId in the path. Slug-based city/partner/
-    // occasion/blog detail pages rely on `path` for identity (no id in URL).
+    // Chef detail captures the URL segment; session-event create resolves slug
+    // or legacy cookId to the stable cookId so analytics survive a rename.
     const chefsMatch = /^\/chefs\/([^/]+)$/.exec(path);
     if (chefsMatch?.[1]) return { webPageKey: 'CHEFS', params: { cookId: chefsMatch[1] } };
 

@@ -900,6 +900,11 @@ type Cook {
     stripeWallet: CookStripeWallet
     # Optional public display name; when set, `PublicCook.user.display` prefers it over firstName.
     stageName: String
+    # Public chef URL slug (`/chefs/<pathName>`).
+    pathName: String!
+    previousPathNames: [String!]!
+    # Live uniqueness for the chef-profile editor. Own current slug is AVAILABLE.
+    pathNameAvailable(pathName: String!): CookPathNameAvailability!
     # Full address for the cook; public surfaces should only expose `city` (and
     # optionally city-level coords derived from it) — see cook-profile.md.
     exactTravelOriginAddress: CookTravelOriginAddress
@@ -1232,6 +1237,9 @@ input CookUpdate {
     isVisible: Boolean
     # Optional public display name. Null / blank clears.
     stageName: String
+    # Public chef URL slug. Omit = no change. Cook mutation rejects when
+    # COOK_PUBLIC_PROFILE_PATH_NAME is off. Admin always accepts.
+    pathName: String
     biography: String
     # Admin-only. Ignored on `CookMutation.update` (cooks cannot edit the summary;
     # it is AI-generated on cook biography save). Applied by `AdminMutation.cookUpdate`.
@@ -1852,8 +1860,10 @@ type PublicCookCityPage {
 type PublicCook {
     cookId: ID!
     user: PublicUser!
-    # True when `/chefs/$cookId` would resolve (visibility + admin approval). Nested on offers for link gating; listing still filters server-side.
+    # True when `/chefs/$pathName` would resolve (visibility + admin approval). Nested on offers for link gating; listing still filters server-side.
     hasPublicProfile: Boolean!
+    # Public chef URL slug (`/chefs/<pathName>`).
+    pathName: String!
     # Optional public display name; when set, `user.display` prefers it over firstName.
     stageName: String
     biography: String!
@@ -3567,6 +3577,9 @@ type AdminCook {
     featuredOn: [AdminCookFeaturedLanding!]!
     # Optional public display name; when set, public surfaces prefer it over firstName.
     stageName: String
+    # Public chef URL slug (`/chefs/<pathName>`).
+    pathName: String!
+    previousPathNames: [String!]!
     createdAt: DateTime!
     lastModifiedAt: DateTime!
 }
@@ -3606,7 +3619,7 @@ type AdminTestimonialPublicPagePlacement {
     entityId: ID!
     labelDe: String!
     labelEn: String!
-    # Content-page pathName when curated; null for CHEF (public route uses cookId).
+    # Content-page or chef public pathName.
     pathName: String
     # Curation order on city / partner / occasion; null for CHEF.
     index: Int
@@ -4412,6 +4425,8 @@ type Admin {
     # user-detail testimonials tab). Typed find-one stays separate — ids are not
     # unique across the two tables.
     testimonials(criterion: AdminTestimonialCriterion): [AdminTestimonial!]!
+    # Live uniqueness for the admin cook-profile pathName editor. Ungated.
+    cookPathNameAvailable(cookId: ID!, pathName: String!): CookPathNameAvailability!
     customerTestimonial(customerTestimonialId: ID!): AdminCustomerTestimonial
     cookTestimonial(cookTestimonialId: ID!): AdminCookTestimonial
 
@@ -5986,7 +6001,7 @@ input GeoCoordinatesInput {
 }
 
 # Public chefs listing / detail — `isVisible && isApprovedByAdmin` only.
-# Detail is keyed by `cookId` for now; slug URLs are planned (see public-chefs.md).
+# Detail is keyed by pathName (current, previous, or legacy cookId). See public-chefs.md.
 # `findMany` lists cooks with ≥1 published meal; optional `searchText` and
 # `geoCoordinates` (travel-radius filter — for city pages later).
 
@@ -5997,8 +6012,15 @@ input PublicCookFindManyCriterion {
     geoCoordinates: GeoCoordinatesInput
 }
 
+enum CookPathNameAvailability {
+    AVAILABLE
+    INVALID
+    TAKEN
+}
+
 type PublicCookQuery {
     findOne(cookId: ID!): PublicCook
+    findOneByPathName(pathName: String!): PublicCook
     findMany(criterion: PublicCookFindManyCriterion): [PublicCook!]!
 }
 
@@ -6075,6 +6097,7 @@ enum FeatureToggleKey {
     COOK_WALLET_STRIPE_BALANCE
     COOK_ANALYTICS
     COOK_PUBLIC_PROFILE_SHARE
+    COOK_PUBLIC_PROFILE_PATH_NAME
     COOK_PRESENCE_LINKS
     BOOKING_REQUEST_RESTRICTIONS
     BOOKING_REQUEST_SETTING

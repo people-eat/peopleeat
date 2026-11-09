@@ -15,7 +15,7 @@ import { publicChefUrl } from '../utils/webShare';
 
 export function ChefPage({ data }: { data: GqlCChefPageQuery }) {
     const locale = useLocale();
-    const cook = data.publicCook.findOne!;
+    const cook = data.publicCook.findOneByPathName!;
     const [, trackDiscovery] = useMutation(ChefsDiscoveryTrackDocument);
     const shareEnabled = featureToggleIsActive(data.currentSession.activeFeatureToggleKeys, 'COOK_PUBLIC_PROFILE_SHARE');
     const displayName = cook.user.display;
@@ -89,7 +89,7 @@ export function ChefPage({ data }: { data: GqlCChefPageQuery }) {
                                         en: `Check out ${displayName} on peopleeat`,
                                     }[locale]
                                 }
-                                url={publicChefUrl(cook.cookId, locale)}
+                                url={publicChefUrl(cook.pathName, locale)}
                                 variant="secondary"
                                 onShared={onShared}
                             />

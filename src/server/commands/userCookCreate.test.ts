@@ -43,6 +43,7 @@ describe('userCookCreate', () => {
 
         expect(result).toEqual({ success: true, referenceId: user.userId });
         const [cook] = await testDb.select().from(cooks).where(eq(cooks.cookId, user.userId));
+        expect(cook?.pathName).toMatch(/^test-user(?:-\d+)?$/);
         expect(cook?.isVisible).toBe(false);
         expect(cook?.isApprovedByAdmin).toBe(false);
         expect(cook?.biography).toBe('I cook with love');

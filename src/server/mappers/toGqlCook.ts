@@ -53,6 +53,10 @@ export function toGqlCookEventAddress(
 export function toGqlCook(row: Cook, userStatus: UserStatus): GqlSCook {
     return {
         cookId: row.cookId,
+        pathName: row.pathName,
+        previousPathNames: row.previousPathNames,
+        // Field resolver checks uniqueness live.
+        pathNameAvailable: 'AVAILABLE',
         isVisible: row.isVisible,
         isApprovedByAdmin: row.isApprovedByAdmin,
         canCreateOffers: cookCanCreateOffersDerive(row, userStatus),

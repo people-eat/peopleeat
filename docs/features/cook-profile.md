@@ -15,21 +15,24 @@ Signed-in cooks manage these areas under `/profile/*`:
    Attention (not Getting started). Completed steps disappear. When both lanes are empty, a calm “you’re all set” note points to the
    sidebar.
 2. **Chef profile** (`/profile/chef-profile`) is a read-only view of biography, biography summary, and cuisine style / cooking philosophy as
-   the shared `CookProfileTags` pills, plus a private **default offer note** (customers never see this on the public chef page). **Edit**
-   opens the form with a dirty-gated footer (Save only when the form is dirty; otherwise **Back to profile**). The default offer note has
-   three states: **not set** (`null`, Getting started item; offer create still uses the peopleeat greeting), **empty** (start blank each
-   offer), or **custom text** (prefill). Saving chef profile without changing that section leaves `null` as `null`. Profile picture can be
-   changed or removed there (same crop/upload flow as account — [profile-pictures.md](./profile-pictures.md)). When
-   `COOK_BIOGRAPHY_AI_WRITE` is on, cooks can **Write with AI** / **Improve with AI** (spinner while generating): the suggestion opens a
-   **side-by-side review** (textarea hidden while reviewing); **Accept** fills the biography field so the cook can edit further before Save;
-   **Discard** leaves the form unchanged. When the toggle is off, the button is hidden and the suggest mutation rejects. Biography summary
-   is view-only for cooks and regenerates automatically in the background (best-effort job) whenever they save a non-empty biography —
-   **always**, independent of the AI-write toggle. A biography save **stays on the edit page** (toast + summary skeleton via
-   `Cook.biographySummaryGenerating`); cuisine/philosophy-only saves still navigate back to the read-only view. Clearing the biography
-   clears the summary and cancels any pending summary job. Public surfaces keep showing the last good summary until the job finishes. Admins
-   edit both fields and regenerate the summary on demand; admin enhance uses the same review/accept-into-form pattern (no auto summary) and
-   is gated by the same toggle on the server — see [admin-users.md](./admin-users.md) and
-   [admin-feature-toggles.md](./admin-feature-toggles.md). When `COOK_PRESENCE_LINKS` is on, the same view and edit page include **Other
+   the shared `CookProfileTags` pills, plus a private **default offer note** (customers never see this on the public chef page). When
+   `COOK_PUBLIC_PROFILE_PATH_NAME` is on, the same view and edit page include **Public URL** (`/chefs/<pathName>` with copy, slug input,
+   live availability). Changing the slug keeps the old address as a redirect; the last name in the URL is public even though the page still
+   shows first name or stage name. When the toggle is off, the section is hidden and `cookUpdate` rejects `pathName`. Public
+   `/chefs/<pathName>` still works. **Edit** opens the form with a dirty-gated footer (Save only when the form is dirty; otherwise **Back to
+   profile**). The default offer note has three states: **not set** (`null`, Getting started item; offer create still uses the peopleeat
+   greeting), **empty** (start blank each offer), or **custom text** (prefill). Saving chef profile without changing that section leaves
+   `null` as `null`. Profile picture can be changed or removed there (same crop/upload flow as account —
+   [profile-pictures.md](./profile-pictures.md)). When `COOK_BIOGRAPHY_AI_WRITE` is on, cooks can **Write with AI** / **Improve with AI**
+   (spinner while generating): the suggestion opens a **side-by-side review** (textarea hidden while reviewing); **Accept** fills the
+   biography field so the cook can edit further before Save; **Discard** leaves the form unchanged. When the toggle is off, the button is
+   hidden and the suggest mutation rejects. Biography summary is view-only for cooks and regenerates automatically in the background
+   (best-effort job) whenever they save a non-empty biography — **always**, independent of the AI-write toggle. A biography save **stays on
+   the edit page** (toast + summary skeleton via `Cook.biographySummaryGenerating`); cuisine/philosophy-only saves still navigate back to
+   the read-only view. Clearing the biography clears the summary and cancels any pending summary job. Public surfaces keep showing the last
+   good summary until the job finishes. Admins edit both fields and regenerate the summary on demand; admin enhance uses the same
+   review/accept-into-form pattern (no auto summary) and is gated by the same toggle on the server — see [admin-users.md](./admin-users.md)
+   and [admin-feature-toggles.md](./admin-feature-toggles.md). When `COOK_PRESENCE_LINKS` is on, the same view and edit page include **Other
    profiles** (website, Instagram, Google profile, Take a Chef, and up to five more: Yhangry, Cozymeal, Eatwith, ChefMaison, or a named
    platform). The copy says the peopleeat team uses the links to review the profile and customers never see them. Blank fields clear the
    document. The cook mutation rejects when the toggle is off for that cook. Admins always see and edit the same links on the user
@@ -41,7 +44,7 @@ Signed-in cooks manage these areas under `/profile/*`:
    customer WYSIWYG: static `PublicCookCard` (same column width as the public listing grid) plus detail preview of the saved profile and
    published meals that have images — even when customers would not see the page yet — with Share / Copy link / Open when live. **Share**
    (gated by `COOK_PUBLIC_PROFILE_SHARE`) opens the browser native share sheet when available (`navigator.share`), otherwise copies the
-   absolute `/chefs/$cookId` URL (same toast as Copy link). Manage controls public visibility (`isVisible` with a confirm dialog before
+   absolute `/chefs/$pathName` URL (same toast as Copy link). Manage controls public visibility (`isVisible` with a confirm dialog before
    save) and the landscape About additional picture (`CookLogoEditor`; 16:9 `logo` crop; `CookUpdate.logoFileUploadId` immediate save;
    without a picture the public About column shows the peopleeat benefits fallback — [public-chefs.md](./public-chefs.md)). Published meals
    without an image are omitted from the preview and called out on Manage with a warning banner (count badge on the Manage tab). Both
@@ -132,9 +135,13 @@ changes. Customers still only see city, never the pin or street.
 ## Implementation
 
 - Analytics overview strip: `Cook.analytics` on `ProfilePage` (past month); full page in [cook-analytics.md](./cook-analytics.md)
-- Schema: `Cooks` in `src/server/db/schema.ts` (`logoFileUploadId` → `FileUploads`; optional `stageName` public display name;
-  `lastModifiedAt` bumped on cook-row writes; import-preserved `legacyCityName` / `legacyLatitude` / `legacyLongitude` — `legacyCityName`
-  falls back for public cook city when exact origin city is empty; lat/lng stay storage-only); domain helpers `src/server/domain/cook.ts`
+- Schema: `Cooks` in `src/server/db/schema.ts` (`logoFileUploadId` → `FileUploads`; optional `stageName` public display name; unique
+  `pathName` + `previousPathNames` for public chef URLs; `lastModifiedAt` bumped on cook-row writes; import-preserved `legacyCityName` /
+  `legacyLatitude` / `legacyLongitude` — `legacyCityName` falls back for public cook city when exact origin city is empty; lat/lng stay
+  storage-only); domain helpers `src/server/domain/cook.ts`; slug helpers `src/shared/cookPathName.ts` / `src/server/utils/cookPathName.ts`
+- Public URL: `Cook.pathName` / `PublicCook.pathName` / `AdminCook.pathName`; `previousPathNames` on cook/admin only; optional
+  `CookUpdate.pathName` (cook gated by `COOK_PUBLIC_PROFILE_PATH_NAME`, admin always). UI `CookPathNameFields` / `CookPathNameReadout` on
+  chef profile (toggle) and admin cook-profile (always). Live availability: `Cook.pathNameAvailable` / `Admin.cookPathNameAvailable`
 - Stage name: `Cook.stageName` / `PublicCook.stageName` / `AdminCook.stageName`; `CookUpdate.stageName` (null / blank clears). Public
   `PublicCook.user.display` prefers a non-empty stage name over first name.
 - Additional picture (API: logo): `Cook.logo` / `PublicCook.logo` (`FileUpload`); `CookUpdate.logoFileUploadId` (null clears); public GET

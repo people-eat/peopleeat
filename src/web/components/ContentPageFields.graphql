@@ -58,6 +58,7 @@ fragment ContentSectionFields on ContentSection {
 
 fragment PublicCookCardFields on PublicCook {
     cookId
+    pathName
     cuisineStyle
     cookingPhilosophy
     city
@@ -169,6 +170,7 @@ fragment AdminTestimonialCardFields on AdminTestimonial {
 
 fragment AdminCookCardFields on AdminCook {
     cookId
+    pathName
     isVisible
     isApprovedByAdmin
     cuisineStyle

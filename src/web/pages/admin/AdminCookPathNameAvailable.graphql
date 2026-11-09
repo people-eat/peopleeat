@@ -1,0 +1,9 @@
+query AdminCookPathNameAvailable($cookId: ID!, $pathName: String!) {
+    currentSession {
+        user {
+            admin {
+                cookPathNameAvailable(cookId: $cookId, pathName: $pathName)
+            }
+        }
+    }
+}

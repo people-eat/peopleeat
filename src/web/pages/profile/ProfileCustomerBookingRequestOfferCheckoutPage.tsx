@@ -83,8 +83,8 @@ function CheckoutCookSummary({ cook, locale }: { cook: CheckoutOffer['cook']; lo
                         <h2 className="font-serif text-xl/tight text-foreground">{cook.user.display}</h2>
                         {cook.hasPublicProfile ? (
                             <Link
-                                to="/{-$locale}/chefs/$cookId"
-                                params={{ cookId: cook.cookId }}
+                                to="/{-$locale}/chefs/$pathName"
+                                params={{ pathName: cook.pathName }}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-flex text-muted-foreground hover:text-foreground"

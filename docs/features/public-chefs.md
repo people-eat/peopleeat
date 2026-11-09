@@ -17,7 +17,7 @@ Visitors discover admin-approved cooks with published meals that have images and
   Only cooks with at least one published meal that has an image appear.
 - Page title and description from the managed chefs web-page SEO entry.
 
-**Detail** (`/chefs/$cookId`)
+**Detail** (`/chefs/$pathName`)
 
 Shared profile layout (`ChefProfileView`, container-query driven):
 
@@ -51,6 +51,11 @@ Missing or non-public cooks return not found. Detail does not require a catalog-
 same layout under profile public preview (preview meal list also omits published meals without images and surfaces a warning count); live
 URL sharing is gated on visibility.
 
+Canonical public URL is `/chefs/<pathName>` (and `/en/chefs/<pathName>`). The platform auto-assigns a slug from first name + last name
+(German transliteration so Müller → mueller; collisions get `-2`, `-3`, …). Renaming archives the old slug. Requests to a previous slug or
+the legacy `/chefs/<cookId>` 301 to the current path. Canonical identity stays `cookId`. Non-public cooks 404 even on old URLs (no redirect
+to a private profile). Anonymize keeps the slug so it is not reused.
+
 **Visibility**
 
 Public listing requires cook visibility and admin approval and an active user account (not banned or anonymized). Street addresses and
@@ -67,25 +72,21 @@ the city center — [cities.md](./cities.md). Partner pages use curated cooks on
 
 ### Alternatives considered
 
-| Approach                              | Notes                                     |
-| ------------------------------------- | ----------------------------------------- |
-| Nested public cook namespace on query | Matches other public content namespaces   |
-| Flat find-many on root query          | Works; rejected for consistency           |
-| Slug URLs from day one                | Better SEO; deferred — no slug column yet |
-| Public menus on detail                | Deferred; meals first                     |
+| Approach                              | Notes                                       |
+| ------------------------------------- | ------------------------------------------- |
+| Nested public cook namespace on query | Matches other public content namespaces     |
+| Flat find-many on root query          | Works; rejected for consistency             |
+| Slug URLs from day one                | Better SEO; deferred until pathName shipped |
+| Public menus on detail                | Deferred; meals first                       |
 
 ### Chosen
 
-Public cook list and detail by cook id for now. Lean public cook type with nested published meals that have images. Search text and optional
-geo radius filter (used on city pages, not on the global list).
+Public cook list by cook id internally; public detail by `pathName` with 301 from previous slugs and cook id. Lean public cook type with
+nested published meals that have images. Search text and optional geo radius filter (used on city pages, not on the global list).
 
 ## Next steps
 
-**Public slug URLs (SEO)**
-
-Move detail URLs from opaque ids to a readable slug (first name + city, normalized), with cook-editable slug, permanent redirects from
-former slugs, and optional redirect from id URLs. Canonical identity stays the internal cook id; implement when slug storage and edit UI
-ship.
+None for public slug URLs. Cook self-serve slug editing stays behind `COOK_PUBLIC_PROFILE_PATH_NAME`.
 
 ## Implementation
 
@@ -99,12 +100,19 @@ ship.
   (`@container`) / `SectionCookHero` / meals / about / testimonials, `PublicCookCard` / `SectionFeaturedCooks` for list and content-page
   featured cooks, `CookProfileTags` on detail hero; About uses `PublicCook.logo` or `CookAboutBenefitsFallback`; detail multi-column layouts
   use `@2xl` / `@3xl` / `@5xl` (not early `@sm` / `@md`) so browser resize and profile public preview stay readable
-- Share: `ShareButton` + `webShareOrCopy` / `publicChefUrl` (`src/web/utils/webShare.ts`); gated by `COOK_PUBLIC_PROFILE_SHARE`; hero Share
-  only from `ChefPage` (discovery `chefsDiscoveryShareKey`, secondary variant); cook Preview toolbar Share / Copy / Open when live
+- Share: `ShareButton` + `webShareOrCopy` / `publicChefUrl(pathName)` (`src/web/utils/webShare.ts`); gated by `COOK_PUBLIC_PROFILE_SHARE`;
+  hero Share only from `ChefPage` (discovery `chefsDiscoveryShareKey`, secondary variant); cook Preview toolbar Share / Copy / Open when
+  live
 - Cook preview: `ProfileCookPublicPage` at `/profile/public` — Preview tab (default; Share / Copy / Open + static `PublicCookCard` + detail
   WYSIWYG) and Manage tab (`?tab=manage`; visibility + additional picture); both previews use `Cook.rating`; testimonials section still
   omitted on preview
-- Routes: `chefs.tsx`, `chefs_.$cookId.tsx` (`chefPageSeo` title/description, `Person` + FAQ + breadcrumb JSON-LD), `profile/public.tsx`
+- Routes: `chefs.tsx`, `chefs_.$pathName.tsx` (loader `findOneByPathName`, 301 when the segment is a previous slug or cookId, `chefPageSeo`
+  title/description, `Person` + FAQ + breadcrumb JSON-LD), `profile/public.tsx`
+- Path names: `Cooks.pathName` unique + `previousPathNames`; helpers `src/shared/cookPathName.ts` / `src/server/utils/cookPathName.ts`;
+  GraphQL `pathName` on `PublicCook` / `Cook` / `AdminCook`, `findOneByPathName`, `Cook.pathNameAvailable` / `Admin.cookPathNameAvailable`;
+  auto-assign on `userCreate` / `userCookCreate` / `adminUserCreate`; SQL backfill in `drizzle/0031_same_dorian_gray.sql`. Cook self-serve
+  edit gated by `COOK_PUBLIC_PROFILE_PATH_NAME`; admin edit always on. Public hrefs (`PublicCookCard`, sitemap, `llms.txt`, JSON-LD) use
+  `pathName`. Session visits resolve slug → stable `cookId`.
 - City link: `PublicCook.cityPage`, matched in `publicCookCityPageMatch` from published city names
 - Sitemap: `/sitemap-chefs.xml` in index
 

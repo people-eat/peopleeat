@@ -73,6 +73,7 @@ fragment ProfileCustomerBookingRequestOfferPageUser on User {
             cookTimeZone
             cook {
                 cookId
+                pathName
                 hasPublicProfile
                 biography
                 biographySummary

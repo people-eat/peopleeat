@@ -1,4 +1,4 @@
-query ChefPage($cookId: ID!) {
+query ChefPage($pathName: String!) {
     currentSession {
         activeFeatureToggleKeys
         user {
@@ -6,8 +6,9 @@ query ChefPage($cookId: ID!) {
         }
     }
     publicCook {
-        findOne(cookId: $cookId) {
+        findOneByPathName(pathName: $pathName) {
             cookId
+            pathName
             biography
             biographySummary
             logo {

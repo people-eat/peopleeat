@@ -177,6 +177,7 @@ export function AdminCityPage({ data, cityId, search }: { data: GqlCAdminCityPag
 
     const previewCooks = assignedCooks.map((row) => ({
         cookId: row.cook.cookId,
+        pathName: row.cook.pathName,
         cuisineStyle: row.cook.cuisineStyle ?? null,
         cookingPhilosophy: row.cook.cookingPhilosophy ?? null,
         city: row.cook.exactTravelOriginAddress?.city ?? null,
@@ -371,6 +372,7 @@ export function AdminCityPage({ data, cityId, search }: { data: GqlCAdminCityPag
                                                 isPubliclyListed: false,
                                                 cook: {
                                                     cookId,
+                                                    pathName: cookId,
                                                     isVisible: false,
                                                     isApprovedByAdmin: false,
                                                     cuisineStyle: null,

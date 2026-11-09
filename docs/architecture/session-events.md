@@ -95,7 +95,8 @@ Admin descriptions mark these with “(Legacy)” / “(legacy)”.
   `SessionEvents_webPageVisit_webPageKey_createdAt_idx` on `(payload->>'webPageKey', createdAt)` where `type = 'WEB_PAGE_VISITED'`.
 - Cook analytics profile-view counts use a second partial index `SessionEvents_webPageVisit_chefs_cookId_createdAt_idx` on
   `(payload->'params'->>'cookId', createdAt)` where `type = 'WEB_PAGE_VISITED'` and `webPageKey = 'CHEFS'` (human sessions only in the
-  query). See [cook-analytics.md](../features/cook-analytics.md).
+  query). Chef visits capture the URL segment, then `sessionWebPageVisitCreate` resolves slug or legacy id to the stable `cookId` so a
+  rename does not split analytics. See [cook-analytics.md](../features/cook-analytics.md).
 - Booking-form funnel queries exclude bots, sessions whose user is admin or cook, and **admin impersonation sessions**
   (`Sessions.impersonationReturnSessionId IS NOT NULL`). Cook offer funnel cohorts are notified cooks (excluding admins); create-UI
   mid-steps still come from human cook sessions. Cook public-profile visit counts also drop impersonation sessions.

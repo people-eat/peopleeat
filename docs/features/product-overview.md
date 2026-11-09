@@ -70,8 +70,8 @@ Ship a stable brand, auth, and content foundation first; deliver booking and mar
 - Deploy topology: `.github/workflows/pipeline.yml`, `docs/infrastructure.md`
 - Public route stubs (SEO + sitemap; page bodies still placeholders): `/gift-card` (purchase live), `/booking-request`, `/chef-sign-up`,
   `/imprint`, `/terms-and-conditions`, `/privacy-policy`. Content pages live: `/cities`, `/partners`, `/occasions`, `/blog-posts` (+
-  `$pathName` details), `/chefs` (+ `$cookId` detail — see [public-chefs.md](./public-chefs.md)), `/about-us`, `/how-to-become-a-chef`. See
-  [cities.md](./cities.md), [partners.md](./partners.md), [occasions.md](./occasions.md), [blog-posts.md](./blog-posts.md),
+  `$pathName` details), `/chefs` (+ `$pathName` detail — see [public-chefs.md](./public-chefs.md)), `/about-us`, `/how-to-become-a-chef`.
+  See [cities.md](./cities.md), [partners.md](./partners.md), [occasions.md](./occasions.md), [blog-posts.md](./blog-posts.md),
   [about-us.md](./about-us.md), [how-to-become-a-chef.md](./how-to-become-a-chef.md). Transactional stubs with `noindex`:
   `/booking-request/form`, `/booking-request/chat`
 - Cook inventory: [cook-meals.md](./cook-meals.md), [cook-menus.md](./cook-menus.md)

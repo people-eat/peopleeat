@@ -1,7 +1,8 @@
 import { eq } from 'drizzle-orm';
 import { describe, expect, it, vi } from 'vitest';
 
-import { cooks, fileUploads } from '../db/schema';
+import { idCreate } from '../../shared/idCreate';
+import { cooks, featureToggles, fileUploads } from '../db/schema';
 import type { CookCreate } from '../db/schema';
 import { commandSetup, cookMutationParent, findLogsForSession, testDb } from '../test/commandTestUtils';
 import { cookUpdate } from './cookUpdate';
@@ -386,5 +387,48 @@ describe('cookUpdate', () => {
         expect(row!.logoFileUploadId).toBeNull();
         const gone = await testDb.select().from(fileUploads).where(eq(fileUploads.fileUploadId, upload.fileUploadId));
         expect(gone).toHaveLength(0);
+    });
+
+    it('rejects pathName when COOK_PUBLIC_PROFILE_PATH_NAME is disabled', async () => {
+        const token = idCreate().toLowerCase();
+        const { serverRuntime, requestingSession, user } = await setupCook({ pathName: `old-${token}` });
+        await testDb
+            .insert(featureToggles)
+            .values({ featureToggleKey: 'COOK_PUBLIC_PROFILE_PATH_NAME', enabled: false })
+            .onConflictDoUpdate({
+                target: featureToggles.featureToggleKey,
+                set: { enabled: false },
+            });
+
+        await expect(
+            cookUpdate(cookMutationParent(user.userId), { input: { pathName: `new-${token}` } }, requestingSession, serverRuntime),
+        ).rejects.toThrow(/COOK_PUBLIC_PROFILE_PATH_NAME is disabled/);
+
+        const [row] = await testDb.select().from(cooks).where(eq(cooks.cookId, user.userId));
+        expect(row?.pathName).toBe(`old-${token}`);
+    });
+
+    it('renames pathName and archives the previous slug when the toggle is on', async () => {
+        const token = idCreate().toLowerCase();
+        const { serverRuntime, requestingSession, user } = await setupCook({ pathName: `old-${token}` });
+        await testDb
+            .insert(featureToggles)
+            .values({ featureToggleKey: 'COOK_PUBLIC_PROFILE_PATH_NAME', enabled: true })
+            .onConflictDoUpdate({
+                target: featureToggles.featureToggleKey,
+                set: { enabled: true },
+            });
+
+        const result = await cookUpdate(
+            cookMutationParent(user.userId),
+            { input: { pathName: `New ${token}` } },
+            requestingSession,
+            serverRuntime,
+        );
+
+        expect(result).toEqual({ success: true, referenceId: user.userId });
+        const [row] = await testDb.select().from(cooks).where(eq(cooks.cookId, user.userId));
+        expect(row?.pathName).toBe(`new-${token}`);
+        expect(row?.previousPathNames).toEqual([`old-${token}`]);
     });
 });
