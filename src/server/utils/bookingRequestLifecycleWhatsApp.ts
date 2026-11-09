@@ -1,7 +1,13 @@
 import { eq, inArray } from 'drizzle-orm';
 
-import { formatDate, formatTime } from '../../shared/formatDate';
+import {
+    formatBookingEventDate,
+    formatBookingEventTime,
+    formatBookingEventWhenFromCountry,
+    formatBookingWhenJoined,
+} from '../../shared/formatBookingWhen';
 import type { Locale } from '../../shared/locale';
+import { formatTimeZonePlaceLabel, timeZoneFromCountry } from '../../shared/timeZone';
 import { bookingRequests, users } from '../db/schema';
 import { notificationWhatsAppAllowed } from '../domain/notificationSettings';
 import type { UserNotificationSettingsStored } from '../domain/notificationSettings';
@@ -34,21 +40,47 @@ async function userByIdFind(serverRuntime: ServerRuntime, userId: string): Promi
     return row ?? null;
 }
 
-async function bookingRequestDateTimeFind(serverRuntime: ServerRuntime, bookingRequestId: string): Promise<Date | null> {
+type BookingRequestEvent = {
+    dateTime: Date;
+    country: string;
+    city: string;
+};
+
+async function bookingRequestEventFind(serverRuntime: ServerRuntime, bookingRequestId: string): Promise<BookingRequestEvent | null> {
     const [row] = await serverRuntime.db
-        .select({ dateTime: bookingRequests.dateTime })
+        .select({ dateTime: bookingRequests.dateTime, exactEventAddress: bookingRequests.exactEventAddress })
         .from(bookingRequests)
         .where(eq(bookingRequests.bookingRequestId, bookingRequestId))
         .limit(1);
-    return row?.dateTime ?? null;
+    if (!row) return null;
+    return { dateTime: row.dateTime, country: row.exactEventAddress.country, city: row.exactEventAddress.city };
 }
 
-function eventDateLabel(dateTime: Date, user: WhatsAppUser): string {
-    return formatDate(dateTime, { locale: user.locale, dateStyle: 'full', timeZone: user.timeZone });
+function eventDateLabel(event: BookingRequestEvent, user: WhatsAppUser): string {
+    return formatBookingEventDate({
+        instant: event.dateTime,
+        locale: user.locale,
+        venueTimeZone: timeZoneFromCountry(event.country),
+        dateStyle: 'full',
+    });
 }
 
-function eventTimeLabel(dateTime: Date, user: WhatsAppUser): string {
-    return formatTime(dateTime, { locale: user.locale, timeStyle: 'short', timeZone: user.timeZone });
+function eventTimeLabel(event: BookingRequestEvent, user: WhatsAppUser): string {
+    const venueTimeZone = timeZoneFromCountry(event.country);
+    const formatted = formatBookingEventWhenFromCountry({
+        instant: event.dateTime,
+        locale: user.locale,
+        viewerTimeZone: user.timeZone,
+        venueCountry: event.country,
+        venueCity: event.city,
+    });
+    const time = formatBookingEventTime({ instant: event.dateTime, locale: user.locale, venueTimeZone });
+    if (formatted.secondary == null) return time;
+    const place = event.city.trim() || formatTimeZonePlaceLabel(venueTimeZone);
+    return formatBookingWhenJoined({
+        primary: place.length > 0 ? `${time} in ${place}` : time,
+        secondary: formatted.secondary,
+    });
 }
 
 async function sendSafely(serverRuntime: ServerRuntime, label: string, entityId: string, send: () => Promise<unknown>): Promise<void> {
@@ -106,23 +138,24 @@ export async function userBookingRequestCreateWhatsAppSend(
     serverRuntime: ServerRuntime,
     args: { bookingRequestId: string; customerUserId: string; dateTime: Date },
 ): Promise<void> {
+    const event = (await bookingRequestEventFind(serverRuntime, args.bookingRequestId)) ?? {
+        dateTime: args.dateTime,
+        country: '',
+        city: '',
+    };
     await templateSend(serverRuntime, {
         label: 'userBookingRequestCreateWhatsAppSend',
         entityId: args.bookingRequestId,
         recipientUserId: args.customerUserId,
         purpose: 'BOOKING_REQUEST_CREATED',
         relatedEntity: { type: 'BOOKING_REQUEST', id: args.bookingRequestId },
-        bodyParameters: (customer) => [
-            customer.firstName,
-            eventDateLabel(args.dateTime, customer),
-            eventTimeLabel(args.dateTime, customer),
-        ],
+        bodyParameters: (customer) => [customer.firstName, eventDateLabel(event, customer), eventTimeLabel(event, customer)],
     });
 }
 
 export async function bookingRequestCookNotifyWhatsAppSend(
     serverRuntime: ServerRuntime,
-    args: { bookingRequestId: string; cookUserId: string; city: string; dateTime: Date },
+    args: { bookingRequestId: string; cookUserId: string; city: string; country?: string | null; dateTime: Date },
 ): Promise<void> {
     await templateSend(serverRuntime, {
         label: 'bookingRequestCookNotifyWhatsAppSend',
@@ -130,7 +163,11 @@ export async function bookingRequestCookNotifyWhatsAppSend(
         recipientUserId: args.cookUserId,
         purpose: 'BOOKING_REQUEST_COOK_NOTIFY',
         relatedEntity: { type: 'BOOKING_REQUEST', id: args.bookingRequestId },
-        bodyParameters: (cook) => [cook.firstName, args.city, eventDateLabel(args.dateTime, cook)],
+        bodyParameters: (cook) => [
+            cook.firstName,
+            args.city,
+            eventDateLabel({ dateTime: args.dateTime, country: args.country ?? '', city: args.city }, cook),
+        ],
     });
 }
 
@@ -156,6 +193,7 @@ export async function cookBookingRequestOfferCreateWhatsAppSend(
         customerUserId: string;
         cookFirstName: string;
         dateTime: Date;
+        venueCountry?: string | null;
         menusLabel: string;
     },
 ): Promise<void> {
@@ -165,7 +203,12 @@ export async function cookBookingRequestOfferCreateWhatsAppSend(
         recipientUserId: args.customerUserId,
         purpose: 'BOOKING_REQUEST_OFFER_CREATED',
         relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
-        bodyParameters: (customer) => [customer.firstName, args.cookFirstName, eventDateLabel(args.dateTime, customer), args.menusLabel],
+        bodyParameters: (customer) => [
+            customer.firstName,
+            args.cookFirstName,
+            eventDateLabel({ dateTime: args.dateTime, country: args.venueCountry ?? '', city: '' }, customer),
+            args.menusLabel,
+        ],
     });
 }
 
@@ -173,8 +216,8 @@ export async function cookBookingRequestOfferSuggestedMenusUpdateWhatsAppSend(
     serverRuntime: ServerRuntime,
     args: { bookingRequestOfferId: string; bookingRequestId: string; customerUserId: string; cookFirstName: string },
 ): Promise<void> {
-    const dateTime = await bookingRequestDateTimeFind(serverRuntime, args.bookingRequestId);
-    if (!dateTime) {
+    const event = await bookingRequestEventFind(serverRuntime, args.bookingRequestId);
+    if (!event) {
         serverRuntime.log.info(
             `cookBookingRequestOfferSuggestedMenusUpdateWhatsAppSend: skip ${args.bookingRequestOfferId} (booking request not found)`,
         );
@@ -187,7 +230,7 @@ export async function cookBookingRequestOfferSuggestedMenusUpdateWhatsAppSend(
         recipientUserId: args.customerUserId,
         purpose: 'BOOKING_REQUEST_OFFER_MENU_UPDATED',
         relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
-        bodyParameters: (customer) => [customer.firstName, args.cookFirstName, eventDateLabel(dateTime, customer)],
+        bodyParameters: (customer) => [customer.firstName, args.cookFirstName, eventDateLabel(event, customer)],
     });
 }
 
@@ -200,8 +243,8 @@ export async function userBookingRequestOfferAcceptCookWhatsAppSend(
         customerFirstName: string;
     },
 ): Promise<void> {
-    const dateTime = await bookingRequestDateTimeFind(serverRuntime, args.bookingRequestId);
-    if (!dateTime) {
+    const event = await bookingRequestEventFind(serverRuntime, args.bookingRequestId);
+    if (!event) {
         serverRuntime.log.info(
             `userBookingRequestOfferAcceptCookWhatsAppSend: skip ${args.bookingRequestOfferId} (booking request not found)`,
         );
@@ -214,7 +257,7 @@ export async function userBookingRequestOfferAcceptCookWhatsAppSend(
         recipientUserId: args.cookUserId,
         purpose: 'BOOKING_REQUEST_OFFER_ACCEPTED_COOK',
         relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
-        bodyParameters: (cook) => [cook.firstName, args.customerFirstName, eventDateLabel(dateTime, cook)],
+        bodyParameters: (cook) => [cook.firstName, args.customerFirstName, eventDateLabel(event, cook)],
     });
 }
 
@@ -250,14 +293,14 @@ export async function userBookingRequestReactionReminderWhatsAppSend(
     serverRuntime: ServerRuntime,
     args: { bookingRequestId: string; customerUserId: string },
 ): Promise<void> {
-    const dateTime = await bookingRequestDateTimeFind(serverRuntime, args.bookingRequestId);
-    if (!dateTime) return;
+    const event = await bookingRequestEventFind(serverRuntime, args.bookingRequestId);
+    if (!event) return;
     await templateSend(serverRuntime, {
         label: 'userBookingRequestReactionReminderWhatsAppSend',
         entityId: args.bookingRequestId,
         recipientUserId: args.customerUserId,
         purpose: 'BOOKING_REQUEST_REACTION_REMINDER',
         relatedEntity: { type: 'BOOKING_REQUEST', id: args.bookingRequestId },
-        bodyParameters: (customer) => [customer.firstName, eventDateLabel(dateTime, customer)],
+        bodyParameters: (customer) => [customer.firstName, eventDateLabel(event, customer)],
     });
 }

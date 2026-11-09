@@ -278,6 +278,8 @@ export function AdminBookingRequestsPage({
             bookingRequestId: request.bookingRequestId,
             createdAt: request.createdAt,
             dateTime: request.dateTime,
+            venueCountry: request.exactEventAddress.country,
+            venueCity: request.exactEventAddress.city,
             occasion: request.occasion,
             status: request.status,
             publicationStatus: request.publicationStatus,

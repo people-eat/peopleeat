@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 
 import { isCallJoinable } from '../../shared';
+import type { BookingWhenPeer } from '../../shared';
 import { useLocale } from '../hooks/useLocale';
 import { cn } from '../utils/cn';
 import { Button } from './base/button';
@@ -33,6 +34,7 @@ export type BookingRequestOfferCallTabProps = {
     callDurationMinutes?: number;
     callSlots?: readonly BookingRequestOfferScheduleCallSlot[];
     peerDisplayName?: string;
+    callTimePeers?: readonly BookingWhenPeer[];
     occasion?: string | null;
     bookingRequestId?: string;
     requestDocument?: DocumentInput;
@@ -53,6 +55,7 @@ export function BookingRequestOfferCallTab({
     callDurationMinutes = 30,
     callSlots,
     peerDisplayName,
+    callTimePeers,
     occasion,
     bookingRequestId,
     requestDocument,
@@ -178,6 +181,7 @@ export function BookingRequestOfferCallTab({
                         callDurationMinutes={callDurationMinutes}
                         callSlots={callSlots}
                         peerDisplayName={peerDisplayName}
+                        callTimePeers={callTimePeers}
                         occasion={occasion}
                         bookingRequestId={bookingRequestId}
                         requestDocument={requestDocument}

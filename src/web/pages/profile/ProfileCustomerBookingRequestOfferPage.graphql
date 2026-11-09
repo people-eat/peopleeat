@@ -70,6 +70,7 @@ fragment ProfileCustomerBookingRequestOfferPageUser on User {
                     }
                 }
             }
+            cookTimeZone
             cook {
                 cookId
                 hasPublicProfile

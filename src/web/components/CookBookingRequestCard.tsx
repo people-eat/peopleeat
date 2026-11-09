@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { CalendarIcon, MapPinIcon, UsersIcon } from 'lucide-react';
 
-import { formatCurrency, formatDate, formatParticipants } from '../../shared';
+import { formatBookingEventDateFromCountry, formatCurrency, formatDate, formatParticipants } from '../../shared';
 import { useLocale } from '../hooks/useLocale';
 import { useTimeZone } from '../hooks/useTimeZone';
 import { cn } from '../utils/cn';
@@ -16,6 +16,7 @@ export type CookBookingRequestCardRequest = {
     exactEventAddress: {
         displayText: string;
         city: string;
+        country?: string | null;
     };
     participants: { type: 'ADULT' | 'DISCOUNTED' | string }[];
     cookPoolDetails?: {
@@ -40,7 +41,13 @@ export function CookBookingRequestCard({ request, variant }: { request: CookBook
                 <h2 className="line-clamp-1 font-semibold leading-snug">{request.occasion}</h2>
                 <p className="flex min-w-0 items-center gap-2 text-sm text-foreground">
                     <CalendarIcon className="size-4 shrink-0 text-muted-foreground/70" aria-hidden />
-                    <span className="truncate">{formatDate(request.dateTime, { locale, timeZone, dateStyle: 'full' })}</span>
+                    <span className="truncate">
+                        {formatBookingEventDateFromCountry({
+                            instant: request.dateTime,
+                            locale,
+                            venueCountry: request.exactEventAddress.country,
+                        })}
+                    </span>
                 </p>
                 <p className="flex min-w-0 items-center gap-2 text-sm text-foreground">
                     <UsersIcon className="size-4 shrink-0 text-muted-foreground/70" aria-hidden />

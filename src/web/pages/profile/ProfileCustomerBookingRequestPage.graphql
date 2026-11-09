@@ -80,6 +80,7 @@ fragment ProfileCustomerBookingRequestPageUser on User {
             configuredMenu {
                 title
             }
+            cookTimeZone
             cook {
                 cookId
                 city

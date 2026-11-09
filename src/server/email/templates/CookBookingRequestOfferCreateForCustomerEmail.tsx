@@ -11,6 +11,7 @@ import {
 interface CookBookingRequestOfferCreateForCustomerEmailProps {
     locale: Locale;
     timeZone: string;
+    venueCountry?: string | null;
     webPageUrl: string;
     recipientFirstName?: string;
     cookFirstName: string;
@@ -25,6 +26,7 @@ interface CookBookingRequestOfferCreateForCustomerEmailProps {
 export function CookBookingRequestOfferCreateForCustomerEmail({
     locale,
     timeZone,
+    venueCountry,
     webPageUrl,
     recipientFirstName,
     cookFirstName,
@@ -53,6 +55,7 @@ export function CookBookingRequestOfferCreateForCustomerEmail({
             <BookingRequestEmailDetails
                 locale={locale}
                 timeZone={timeZone}
+                venueCountry={venueCountry}
                 occasion={occasion}
                 dateTime={dateTime}
                 address={address}

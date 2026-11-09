@@ -1,12 +1,20 @@
 import type { ReactNode } from 'react';
 
-import { bookingRequestSettingLabel, formatCurrency, formatDateTime, formatParticipants, languageTagFromLocale } from '../../shared';
+import {
+    bookingRequestSettingLabel,
+    formatBookingEventWhen,
+    formatCurrency,
+    formatParticipants,
+    languageTagFromLocale,
+    timeZoneFromCountry,
+} from '../../shared';
 import type { BookingRequestSetting } from '../../shared';
 import { cn } from '../utils/cn';
 import type { Locale } from '../utils/locale';
 import { Avatar, AvatarFallback, AvatarImage } from './base/avatar';
 import { BookingRequestKitchenDetailsFactContent, bookingRequestKitchenDetailsHasFacts } from './BookingRequestVenueConditionsFacts';
 import type { BookingRequestVenueKitchenDetailsFact } from './BookingRequestVenueConditionsFacts';
+import { BookingWhenLabel } from './BookingWhenLabel';
 
 export type CookBookingRequestSummaryCardParticipant = {
     bookingRequestParticipantId: string;
@@ -73,6 +81,8 @@ export function CookBookingRequestSummaryCard({
     dateTimeAction,
     setting,
     kitchenDetails,
+    venueCountry,
+    venueCity,
 }: {
     locale: Locale;
     timeZone: string;
@@ -89,10 +99,29 @@ export function CookBookingRequestSummaryCard({
     dateTimeAction?: (whenLabel: string) => ReactNode;
     setting?: BookingRequestSetting | null;
     kitchenDetails?: BookingRequestVenueKitchenDetailsFact | null;
+    venueCountry?: string | null;
+    venueCity?: string | null;
 }) {
     const hasMessage = message != null && message.text.trim().length > 0;
     const participantsWithRestrictions = participants.filter((participant) => participant.restrictions.length > 0);
-    const whenLabel = `${formatDateTime(dateTime, { locale, timeZone, dateStyle: 'full' })} (${formatRelativeDays(dateTime, locale)})`;
+    const venueTimeZone = timeZoneFromCountry(venueCountry);
+    const eventWhen = formatBookingEventWhen({
+        instant: dateTime,
+        locale,
+        viewerTimeZone: timeZone,
+        venueTimeZone,
+        venueCity,
+    });
+    const whenLabel = `${eventWhen.primary} (${formatRelativeDays(dateTime, locale)})`;
+    const whenValue =
+        dateTimeAction != null ? (
+            <>
+                {dateTimeAction(whenLabel)}
+                {eventWhen.secondary != null ? <div className="mt-1 text-sm text-muted-foreground">{eventWhen.secondary}</div> : null}
+            </>
+        ) : (
+            <BookingWhenLabel primary={whenLabel} secondary={eventWhen.secondary} />
+        );
     const kitchenHasFacts = bookingRequestKitchenDetailsHasFacts(kitchenDetails, locale);
 
     return (
@@ -122,10 +151,7 @@ export function CookBookingRequestSummaryCard({
                         }
                     />
                 ) : null}
-                <DetailField
-                    label={{ de: 'Datum & Uhrzeit', en: 'Date & time' }[locale]}
-                    value={dateTimeAction != null ? dateTimeAction(whenLabel) : whenLabel}
-                />
+                <DetailField label={{ de: 'Datum & Uhrzeit', en: 'Date & time' }[locale]} value={whenValue} />
                 <DetailField
                     label={{ de: 'Präferenzen', en: 'Preferences' }[locale]}
                     value={preferences.length > 0 ? preferences.join(', ') : { de: 'Keine Präferenzen', en: 'No preferences' }[locale]}

@@ -2,6 +2,7 @@ import { calendarEventIcs } from './calendarEventIcs';
 import type { CalendarEventIcsInput } from './calendarEventIcs';
 import { formatTime } from './formatDate';
 import type { Locale } from './locale';
+import { formatTimeZonePlaceLabel } from './timeZone';
 
 const CALL_CALENDAR_ALARM_MINUTES = 15;
 const BOOKING_EVENT_DURATION_MS = 4 * 60 * 60 * 1000;
@@ -50,6 +51,7 @@ export function callCalendarEventIcs(input: Parameters<typeof callCalendarEventI
 export function bookingEventCalendarIcsInput(input: {
     locale: Locale;
     timeZone: string;
+    venueCity?: string | null;
     occasion: string;
     peerName: string;
     guestCount: number;
@@ -62,9 +64,11 @@ export function bookingEventCalendarIcsInput(input: {
     const peer = input.peerName.trim() || { de: 'Gast', en: 'Guest' }[input.locale];
     const occasion = input.occasion.trim() || { de: 'Abendessen', en: 'Dinner' }[input.locale];
     const time = formatTime(input.start, { locale: input.locale, timeZone: input.timeZone, timeStyle: 'short' });
+    const place = input.venueCity?.trim() || formatTimeZonePlaceLabel(input.timeZone);
+    const timeWithPlace = place.length > 0 ? { de: `${time} in ${place}`, en: `${time} in ${place}` }[input.locale] : time;
     const description = {
-        de: `Beginn um ${time}. Die Dauer stimmt ihr im Chat ab. Gäste: ${input.guestCount}.\n${input.bookingUrl}`,
-        en: `Starts at ${time}. You agree the length in chat. Guests: ${input.guestCount}.\n${input.bookingUrl}`,
+        de: `Beginn um ${timeWithPlace}. Die Dauer stimmt ihr im Chat ab. Gäste: ${input.guestCount}.\n${input.bookingUrl}`,
+        en: `Starts at ${timeWithPlace}. You agree the length in chat. Guests: ${input.guestCount}.\n${input.bookingUrl}`,
     }[input.locale];
     return {
         start: input.start,

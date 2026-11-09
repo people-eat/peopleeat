@@ -3,6 +3,7 @@ import { and, asc, eq, inArray } from 'drizzle-orm';
 import { bookingRequestOfferAddonLineAmountCents } from '../../shared/bookingRequestOfferAddonPrice';
 import { bookingRequestPaidParticipants } from '../../shared/bookingRequestOfferPriceGuidance';
 import { DEFAULT_LOCALE } from '../../shared/locale';
+import { DEFAULT_TIME_ZONE } from '../../shared/timeZone';
 import { bookingRequestOffers, bookingRequestParticipants, cookCallSlotBookings, cookOfferAddons, menus, promoCodes } from '../db/schema';
 import type { BookingRequest, BookingRequestOffer } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -75,6 +76,7 @@ export async function cookBookingRequestOfferHydrate(
         bookingRequestKitchenDetailsPhotosByRequestIdFind(serverRuntime, bookingRequestIds),
     ]);
     const publicUsers = publicUsersResult.byId;
+    const customerTimeZoneById = publicUsersResult.timeZoneById;
 
     const promoMinById = new Map(promoRows.map((row) => [row.promoCodeId, row.minimumTotalAmountCustomerCents ?? null] as const));
 
@@ -162,6 +164,7 @@ export async function cookBookingRequestOfferHydrate(
                     offerCount: totalOfferCountByRequestId.get(offer.bookingRequestId) ?? 0,
                     locale: DEFAULT_LOCALE,
                     user: customer,
+                    customerTimeZone: customerTimeZoneById.get(bookingRequest.userId) ?? DEFAULT_TIME_ZONE,
                     estimatedTravelExpensesCents: offer.travelExpensesCents,
                     promoMinimumTotalAmountCustomerCents: bookingRequest.promoCodeId
                         ? (promoMinById.get(bookingRequest.promoCodeId) ?? null)

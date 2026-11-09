@@ -79,6 +79,7 @@ export async function adminBookingRequestCooksNotify(
             occasion: bookingRequest.occasion,
             dateTime: bookingRequest.dateTime,
             city: bookingRequest.exactEventAddress.city,
+            country: bookingRequest.exactEventAddress.country,
         });
 
         await Promise.all([serverRuntime.publish.userUpdates({ userId: bookingRequest.userId }), serverRuntime.publish.adminUpdates()]);

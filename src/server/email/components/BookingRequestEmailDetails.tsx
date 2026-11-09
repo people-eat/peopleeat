@@ -1,11 +1,13 @@
-import { formatDate } from '../../../shared/formatDate';
+import { formatBookingEventDate } from '../../../shared/formatBookingWhen';
 import type { Locale } from '../../../shared/locale';
+import { timeZoneFromCountry } from '../../../shared/timeZone';
 import { EmailSectionHeading } from './EmailSectionHeading';
 import { EmailText } from './EmailText';
 
 export type BookingRequestEmailDetailsProps = {
     locale: Locale;
     timeZone: string;
+    venueCountry?: string | null;
     occasion: string;
     dateTime: Date;
     address: string;
@@ -27,6 +29,7 @@ function detailLine(label: string, value: string) {
 export function BookingRequestEmailDetails({
     locale,
     timeZone,
+    venueCountry,
     occasion,
     dateTime,
     address,
@@ -37,7 +40,13 @@ export function BookingRequestEmailDetails({
     travelAndFeesNote = false,
 }: BookingRequestEmailDetailsProps) {
     const heading = { de: 'Buchungsdetails', en: 'Booking details' }[locale];
-    const when = formatDate(dateTime, { locale, dateStyle: 'long', weekday: true, timeZone });
+    const when = formatBookingEventDate({
+        instant: dateTime,
+        locale,
+        venueTimeZone: venueCountry != null ? timeZoneFromCountry(venueCountry) : timeZone,
+        dateStyle: 'long',
+        weekday: true,
+    });
     const labels = {
         priceClass: { de: 'Menükategorie', en: 'Menu category' }[locale],
         occasion: { de: 'Anlass', en: 'Occasion' }[locale],

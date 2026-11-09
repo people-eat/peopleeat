@@ -87,8 +87,12 @@ create / negotiate and for customer booking / accept / pay paths; a ban auto-dec
    admin stay without the button. A new download does not update an entry already in a calendar. Later changes are sentences on existing
    mail: cancel asks people who already received a file to remove the evening; an admin date change that clears cook acceptance asks those
    people to remove the old evening (no new file); when the cook accepts again and the customer had already accepted, both get a fresh file
-   if the customer already had one, otherwise only the cook does. Chat rules: [booking-offer-chat.md](./booking-offer-chat.md). Calls:
-   [booking-request-offer-calls.md](./booking-request-offer-calls.md).
+   if the customer already had one, otherwise only the cook does. Event clock times are **venue-local** (country → IANA; city label on
+   mismatch). When the viewer’s profile offset differs from the venue at that instant, a muted second line shows their local time.
+   Same-offset pairs (Berlin / Zurich / Paris in CET/CEST) stay a single unlabeled line. Date-only inbox and pool cards use the venue
+   calendar day so the date cannot split across zones. Admin request detail adds cook and customer IANA lines when those offsets differ from
+   the venue. Chat rules: [booking-offer-chat.md](./booking-offer-chat.md). Calls:
+   [booking-request-offer-calls.md](./booking-request-offer-calls.md). Formatting: [i18n.md](../architecture/i18n.md).
 
 Admins can create / edit offers, cancel cancelable requests, and hand a dual-accepted offer to another cook (close old + create/upgrade new;
 never mutate `cookId` in place) — [admin-booking-requests.md](./admin-booking-requests.md). After a customer freezes a configured menu on an

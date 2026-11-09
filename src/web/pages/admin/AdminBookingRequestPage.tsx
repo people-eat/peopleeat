@@ -9,9 +9,10 @@ import { pipe, subscribe } from 'wonka';
 
 import {
     bookingRequestSettingLabel,
+    DEFAULT_TIME_ZONE,
+    formatBookingEventWhenAdminFromCountry,
     formatCurrency,
     formatDate,
-    formatDateTime,
     formatParticipants,
     userDisplayName,
 } from '../../../shared';
@@ -46,6 +47,7 @@ import {
     bookingRequestKitchenDetailsHasFacts,
 } from '../../components/BookingRequestVenueConditionsFacts';
 import { BookingStatusPill } from '../../components/BookingStatusPill';
+import { BookingWhenLabel } from '../../components/BookingWhenLabel';
 import type { GqlCAdminBookingRequestPageQuery, GqlCAdminBookingRequestPageRequestFragment } from '../../graphql/generated';
 import {
     AdminBookingRequestCancelDocument,
@@ -624,7 +626,19 @@ function AdminBookingRequestDetailFields({ bookingRequest }: { bookingRequest: A
                 <Separator />
                 <DetailField
                     label={{ de: 'Termin', en: 'Event' }[locale]}
-                    value={formatDateTime(bookingRequest.dateTime, { locale, timeZone, dateStyle: 'full' })}
+                    value={
+                        <BookingWhenLabel
+                            {...formatBookingEventWhenAdminFromCountry({
+                                instant: bookingRequest.dateTime,
+                                locale,
+                                venueCountry: address.country,
+                                venueCity: address.city,
+                                customerTimeZone: bookingRequest.customer.timeZone,
+                                cookTimeZone: bookingRequest.cook?.user.timeZone ?? DEFAULT_TIME_ZONE,
+                                viewerTimeZone: timeZone,
+                            })}
+                        />
+                    }
                 />
                 <Separator />
                 <DetailField

@@ -144,6 +144,7 @@ describe('toGqlCookBookingRequestOffer', () => {
                 canceledAt: null,
                 participants: [],
                 user: { display: 'Customer', createdAt: new Date('2026-01-01T00:00:00.000Z'), profilePicture: null },
+                customerTimeZone: 'Europe/Berlin',
             },
         });
 
@@ -215,6 +216,7 @@ describe('toGqlUserBookingRequestOffer', () => {
             hasAcceptedAlternative: false,
             locale: 'de',
             cook: publicCook,
+            cookTimeZone: 'Europe/Berlin',
             promoCode: {
                 redeemCode: 'DEMO',
                 amountCents: 5_000,
@@ -240,6 +242,7 @@ describe('toGqlUserBookingRequest', () => {
             hasAcceptedAlternative: false,
             locale: 'de',
             cook: publicCook,
+            cookTimeZone: 'Europe/Berlin',
         });
         const gql = toGqlUserBookingRequest({
             bookingRequest,

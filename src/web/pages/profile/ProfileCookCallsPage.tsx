@@ -371,7 +371,13 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                                         <div className="@container/call-when grid min-w-0 gap-0.5">
                                             <CardTitle className="font-medium">{booking.customer.display}</CardTitle>
                                             <p className="text-sm text-foreground">
-                                                <BookingOfferCallWhen start={start} end={end} locale={locale} timeZone={timeZone} />
+                                                <BookingOfferCallWhen
+                                                    start={start}
+                                                    end={end}
+                                                    locale={locale}
+                                                    timeZone={timeZone}
+                                                    peers={[{ name: booking.customer.display, timeZone: booking.customer.timeZone }]}
+                                                />
                                             </p>
                                         </div>
                                         <CardAction>

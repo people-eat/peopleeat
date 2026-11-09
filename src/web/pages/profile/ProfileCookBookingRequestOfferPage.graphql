@@ -193,6 +193,7 @@ fragment ProfileCookBookingRequestOfferPageUser on User {
                         url
                     }
                 }
+                customerTimeZone
             }
             messages {
                 ...HumanChatMessageFields

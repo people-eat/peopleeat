@@ -8,9 +8,10 @@ import { useMutation } from 'urql';
 import {
     bookingRequestOfferChatCanSend,
     bookingRequestPaidParticipants,
+    formatBookingEventWhenFromCountry,
     formatCountryName,
     formatCurrency,
-    formatDateTime,
+    timeZoneFromCountry,
     userDisplayName,
 } from '../../../shared';
 import { bookingRequestOfferStatusHue, bookingRequestOfferStatusLabel } from '../../../shared/bookingRequestOfferStatus';
@@ -51,6 +52,7 @@ import {
     BookingRequestOfferTestimonialPanel,
 } from '../../components/BookingRequestOfferTestimonialPanel';
 import { BookingStatusPill } from '../../components/BookingStatusPill';
+import { BookingWhenLabel } from '../../components/BookingWhenLabel';
 import { CookBookingRequestSummaryCard } from '../../components/CookBookingRequestSummaryCard';
 import { CookMenuCard } from '../../components/CookMenuCard';
 import { OfferMenuConfigured } from '../../components/OfferMenuConfigured';
@@ -567,6 +569,9 @@ export function ProfileCookBookingRequestOfferPage({
                                         profilePictureUrl: offer.bookingRequest.user.profilePicture?.url,
                                     },
                                 ]}
+                                callTimePeers={[
+                                    { name: offer.bookingRequest.user.display, timeZone: offer.bookingRequest.customerTimeZone },
+                                ]}
                                 viewerRole="cook"
                                 onSend={async (message, fileUploadIds) => {
                                     const result = await sendChatMessage({ bookingRequestOfferId, message, fileUploadIds });
@@ -668,7 +673,10 @@ export function ProfileCookBookingRequestOfferPage({
                                 activeCallRoom={offer.activeCallRoom ?? null}
                                 callSchedulingEnabled={cook.callSchedulingEnabled}
                                 callDurationMinutes={cook.callDurationMinutes}
-                                peerDisplayName={request.user.display}
+                                peerDisplayName={offer.bookingRequest.user.display}
+                                callTimePeers={[
+                                    { name: offer.bookingRequest.user.display, timeZone: offer.bookingRequest.customerTimeZone },
+                                ]}
                                 occasion={request.occasion}
                                 bookingRequestId={request.bookingRequestId}
                                 requestDocument={ProfileCookBookingRequestOfferCallSlotRequestDocument}
@@ -798,8 +806,19 @@ function OfferTabPanel({
             {showEventCalendar ? (
                 <BookingEventCalendarLink
                     locale={locale}
-                    whenLabel={formatDateTime(request.dateTime, { locale, timeZone, dateStyle: 'full' })}
-                    timeZone={timeZone}
+                    whenLabel={
+                        <BookingWhenLabel
+                            {...formatBookingEventWhenFromCountry({
+                                instant: request.dateTime,
+                                locale,
+                                viewerTimeZone: timeZone,
+                                venueCountry: request.exactEventAddress.country,
+                                venueCity: request.exactEventAddress.city,
+                            })}
+                        />
+                    }
+                    timeZone={timeZoneFromCountry(request.exactEventAddress.country)}
+                    venueCity={request.exactEventAddress.city}
                     occasion={request.occasion}
                     peerName={request.user.display}
                     guestCount={request.participants.length}
@@ -1042,6 +1061,8 @@ function RequestTabPanel({
             timeZone={timeZone}
             occasion={request.occasion}
             dateTime={request.dateTime}
+            venueCountry={request.exactEventAddress.country}
+            venueCity={request.exactEventAddress.city}
             participants={request.participants}
             preferences={request.preferences}
             eventLocation={eventLocation}
@@ -1064,7 +1085,8 @@ function RequestTabPanel({
                           <BookingEventCalendarLink
                               locale={locale}
                               whenLabel={whenLabel}
-                              timeZone={timeZone}
+                              timeZone={timeZoneFromCountry(request.exactEventAddress.country)}
+                              venueCity={request.exactEventAddress.city}
                               occasion={request.occasion}
                               peerName={request.user.display}
                               guestCount={request.participants.length}

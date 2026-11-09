@@ -1,4 +1,4 @@
-import { formatDate } from '../../shared';
+import { formatBookingEventDateFromCountry } from '../../shared';
 import type { UserAttentionKind } from '../../shared/attentionCopy';
 import { userAttentionCopy, userAttentionKindTone } from '../../shared/attentionCopy';
 import { bookingRequestStatusLabel } from '../../shared/bookingRequestStatus';
@@ -66,6 +66,7 @@ export type CustomerOverviewRequest = {
     exactEventAddress: {
         displayText: string;
         city: string;
+        country?: string | null;
     };
 };
 
@@ -153,7 +154,11 @@ export function profilePageCustomerOverview(
                   bookingRequestId: nextRequest.bookingRequestId,
                   occasion: nextRequest.occasion,
                   city: requestCity(nextRequest),
-                  dateLabel: formatDate(nextRequest.dateTime, { locale, timeZone, dateStyle: 'full' }),
+                  dateLabel: formatBookingEventDateFromCountry({
+                      instant: nextRequest.dateTime,
+                      locale,
+                      venueCountry: nextRequest.exactEventAddress.country,
+                  }),
                   status: nextRequest.status,
                   statusLabel: bookingRequestStatusLabel(nextRequest.status, locale, 'customer'),
                   activeRequestCount: activeRequests.length,

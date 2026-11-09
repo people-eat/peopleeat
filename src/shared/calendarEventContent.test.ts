@@ -22,5 +22,6 @@ describe('bookingEventCalendarIcs', () => {
         expect(ics).toContain('TRIGGER:-PT1440M');
         expect(ics).toContain('SUMMARY:Dinner with Ada');
         expect(ics).toContain('UID:booking-request-req-1@peopleeat');
+        expect(ics).toContain('Starts at 6:00 PM in Berlin');
     });
 });

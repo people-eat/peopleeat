@@ -1,10 +1,12 @@
-import { formatDate, formatTime } from '../../../shared/formatDate';
+import { formatBookingEventWhenFromCountry, formatBookingWhenJoined } from '../../../shared/formatBookingWhen';
 import type { Locale } from '../../../shared/locale';
 import { EmailButton, EmailLayout, EmailText } from '../components';
 
 interface UserBookingRequestOfferAcceptForCookEmailProps {
     locale: Locale;
     timeZone: string;
+    venueCountry?: string | null;
+    venueCity?: string | null;
     webPageUrl: string;
     recipientFirstName?: string;
     customerFirstName: string;
@@ -17,6 +19,8 @@ interface UserBookingRequestOfferAcceptForCookEmailProps {
 export function UserBookingRequestOfferAcceptForCookEmail({
     locale,
     timeZone,
+    venueCountry,
+    venueCity,
     webPageUrl,
     recipientFirstName,
     customerFirstName,
@@ -34,7 +38,16 @@ export function UserBookingRequestOfferAcceptForCookEmail({
         de: `Tolle Neuigkeiten! ${customerFirstName} hat deinen Menüvorschlag akzeptiert. Jetzt könnt ihr die letzten Details direkt im Chat auf peopleeat besprechen.`,
         en: `Great news! ${customerFirstName} accepted your menu proposal. You can now sort out the remaining details together in chat on peopleeat.`,
     }[locale];
-    const when = `${formatDate(startAt, { locale, timeZone, weekday: true, dateStyle: 'long' })}, ${formatTime(startAt, { locale, timeZone, timeStyle: 'short' })}`;
+    const when = formatBookingWhenJoined(
+        formatBookingEventWhenFromCountry({
+            instant: startAt,
+            locale,
+            viewerTimeZone: timeZone,
+            venueCountry,
+            venueCity,
+            dateStyle: 'long',
+        }),
+    );
     const eventLine = { de: `${occasion} · ${when}`, en: `${occasion} · ${when}` }[locale];
     const venueLine = { de: `Ort: ${venue}`, en: `Venue: ${venue}` }[locale];
     const calendarNote = {

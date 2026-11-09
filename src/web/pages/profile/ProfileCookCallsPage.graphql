@@ -12,6 +12,7 @@ fragment ProfileCookCallsSlotBooking on CookCallSlotBooking {
     cookMessage
     customer {
         display
+        timeZone
     }
 }
 

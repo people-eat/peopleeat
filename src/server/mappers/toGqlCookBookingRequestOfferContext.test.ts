@@ -63,6 +63,7 @@ describe('toGqlCookBookingRequestOfferContext', () => {
             offerCount: 1,
             locale: 'en',
             user: publicUser,
+            customerTimeZone: 'Europe/Berlin',
             revealExactEventAddress: false,
         });
         expect(gql.invoiceAddress).toBeNull();
@@ -75,6 +76,7 @@ describe('toGqlCookBookingRequestOfferContext', () => {
             offerCount: 1,
             locale: 'en',
             user: publicUser,
+            customerTimeZone: 'Europe/Berlin',
             revealExactEventAddress: true,
         });
         expect(gql.invoiceAddress).toEqual({

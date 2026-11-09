@@ -7,7 +7,10 @@ import { notificationEmailAllowed } from '../domain/notificationSettings';
 import type { NotificationAudience, UserNotificationSettingsStored } from '../domain/notificationSettings';
 import type { OutboundEmailPurpose } from '../domain/outboundEmail';
 import type { ServerRuntime } from '../domain/ServerRuntime';
-import { bookingRequestOfferCallSlotOfferUrls } from '../email/components/bookingRequestOfferCallSlotEmailFormat';
+import {
+    bookingRequestOfferCallSlotOfferUrls,
+    formatCallSlotWhenSecondary,
+} from '../email/components/bookingRequestOfferCallSlotEmailFormat';
 import {
     BookingRequestOfferCallSlotCancelForCookEmail,
     bookingRequestOfferCallSlotCancelForCookEmailSubject,
@@ -56,6 +59,7 @@ type CallSlotEmailContext = {
     endAt: Date;
     occasion: string;
     eventDateTime: Date;
+    eventCountry: string;
     customerUserId: string;
     cookId: string;
     customer: {
@@ -73,6 +77,18 @@ type CallSlotEmailContext = {
         notificationSettings: UserNotificationSettingsStored;
     };
 };
+
+function callWhenSecondaryFor(context: CallSlotEmailContext, recipient: 'COOK' | 'CUSTOMER'): string | undefined {
+    const viewer = recipient === 'COOK' ? context.cookUser : context.customer;
+    const peer = recipient === 'COOK' ? context.customer : context.cookUser;
+    return formatCallSlotWhenSecondary({
+        startAt: context.startAt,
+        endAt: context.endAt,
+        locale: viewer.locale,
+        viewerTimeZone: viewer.timeZone,
+        peer: { name: peer.firstName, timeZone: peer.timeZone },
+    });
+}
 
 function sendCallSlotEmail(
     serverRuntime: ServerRuntime,
@@ -97,6 +113,7 @@ async function callSlotEmailContextLoad(serverRuntime: ServerRuntime, cookCallSl
             customerUserId: bookingRequests.userId,
             occasion: bookingRequests.occasion,
             eventDateTime: bookingRequests.dateTime,
+            exactEventAddress: bookingRequests.exactEventAddress,
             cookId: bookingRequestOffers.cookId,
             bookingRequestOfferId: bookingRequestOffers.bookingRequestOfferId,
         })
@@ -151,6 +168,7 @@ async function callSlotEmailContextLoad(serverRuntime: ServerRuntime, cookCallSl
         endAt: row.booking.endAt,
         occasion: row.occasion,
         eventDateTime: row.eventDateTime,
+        eventCountry: row.exactEventAddress.country,
         customerUserId: row.customerUserId,
         cookId: row.cookId,
         customer: customerWithEmail,
@@ -230,7 +248,9 @@ export async function bookingRequestOfferCallSlotRequestEmailSend(
                             recipientFirstName: context.cookUser.firstName,
                             senderFirstName: context.customer.firstName,
                             startAt: context.startAt,
+                            whenSecondary: callWhenSecondaryFor(context, args.recipient),
                             eventDateTime: context.eventDateTime,
+                            venueCountry: context.eventCountry,
                             occasion: context.occasion,
                             offerUrl: urls.cook,
                         }),
@@ -264,7 +284,9 @@ export async function bookingRequestOfferCallSlotRequestEmailSend(
                         recipientFirstName: context.customer.firstName,
                         senderFirstName: context.cookUser.firstName,
                         startAt: context.startAt,
+                        whenSecondary: callWhenSecondaryFor(context, args.recipient),
                         eventDateTime: context.eventDateTime,
+                        venueCountry: context.eventCountry,
                         occasion: context.occasion,
                         offerUrl: urls.customer,
                     }),
@@ -315,6 +337,7 @@ export async function bookingRequestOfferCallSlotConfirmEmailSend(
                             recipientFirstName: context.cookUser.firstName,
                             accepterFirstName: context.customer.firstName,
                             startAt: context.startAt,
+                            whenSecondary: callWhenSecondaryFor(context, args.recipient),
                             offerUrl: urls.cook,
                         }),
                         purpose: 'CALL_SLOT_BOOKING_CONFIRM',
@@ -358,6 +381,7 @@ export async function bookingRequestOfferCallSlotConfirmEmailSend(
                         recipientFirstName: context.customer.firstName,
                         accepterFirstName: context.cookUser.firstName,
                         startAt: context.startAt,
+                        whenSecondary: callWhenSecondaryFor(context, args.recipient),
                         offerUrl: urls.customer,
                     }),
                     purpose: 'CALL_SLOT_BOOKING_CONFIRM',
@@ -510,6 +534,7 @@ export async function bookingRequestOfferCallSlotCancelEmailSend(
                             recipientFirstName: context.cookUser.firstName,
                             cancelerFirstName: context.customer.firstName,
                             startAt: context.startAt,
+                            whenSecondary: callWhenSecondaryFor(context, args.recipient),
                             reason: args.reason,
                             wasConfirmed: args.wasConfirmed,
                             offerUrl: urls.cook,
@@ -548,6 +573,7 @@ export async function bookingRequestOfferCallSlotCancelEmailSend(
                         recipientFirstName: context.customer.firstName,
                         cancelerFirstName: context.cookUser.firstName,
                         startAt: context.startAt,
+                        whenSecondary: callWhenSecondaryFor(context, args.recipient),
                         reason: args.reason,
                         wasConfirmed: args.wasConfirmed,
                         offerUrl: urls.customer,

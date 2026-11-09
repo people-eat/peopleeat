@@ -4,7 +4,8 @@ import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
-import { formatDate, formatTime } from '../../shared';
+import { formatBookingCallScheduleCaption, formatDate, formatTime } from '../../shared';
+import type { BookingWhenPeer } from '../../shared';
 import { compareCookCallSlotBookings } from '../../shared/cookCallSlotBookingStatus';
 import { useLocale } from '../hooks/useLocale';
 import { useTimeZone } from '../hooks/useTimeZone';
@@ -44,6 +45,7 @@ export type BookingRequestOfferScheduleTabProps = {
     /** Customer slot picker — free slots from the cook. */
     callSlots?: readonly BookingRequestOfferScheduleCallSlot[];
     peerDisplayName?: string;
+    callTimePeers?: readonly BookingWhenPeer[];
     occasion?: string | null;
     /** Customer offer URLs need the request id. Cook URLs use the offer id only. */
     bookingRequestId?: string;
@@ -110,6 +112,7 @@ export function BookingRequestOfferScheduleTab({
     callDurationMinutes,
     callSlots = [],
     peerDisplayName,
+    callTimePeers,
     occasion,
     bookingRequestId,
     requestDocument,
@@ -139,6 +142,11 @@ export function BookingRequestOfferScheduleTab({
 
     const sortedBookings = useMemo(() => [...callBookings].sort(compareCookCallSlotBookings), [callBookings]);
     const hasConfirmed = sortedBookings.some((booking) => booking.status === 'CONFIRMED');
+    const scheduleCaption = formatBookingCallScheduleCaption({
+        locale,
+        viewerTimeZone: timeZone,
+        peers: callTimePeers ?? [],
+    });
 
     const dateBuckets = useMemo(() => {
         const slotsByDate = new Map<string, { date: Date; slots: BookingRequestOfferScheduleCallSlot[] }>();
@@ -297,6 +305,7 @@ export function BookingRequestOfferScheduleTab({
                                 timeZone={timeZone}
                                 callDurationMinutes={callDurationMinutes}
                                 peerDisplayName={peerDisplayName}
+                                callTimePeers={callTimePeers}
                                 calendarOfferUrl={calendarOfferUrl}
                                 occasion={occasion}
                                 busy={busy}
@@ -350,6 +359,7 @@ export function BookingRequestOfferScheduleTab({
                             timeZone={timeZone}
                             callDurationMinutes={callDurationMinutes}
                             peerDisplayName={peerDisplayName}
+                            callTimePeers={callTimePeers}
                             calendarOfferUrl={calendarOfferUrl}
                             occasion={occasion}
                             busy={busy}
@@ -388,6 +398,7 @@ export function BookingRequestOfferScheduleTab({
                         <CardDescription>{{ de: 'Wähle einen Zeitpunkt', en: 'Pick a time' }[locale]}</CardDescription>
                     </CardHeader>
                     <CardContent className={cn('grid gap-4', bookingOfferCallCardSectionClassName)}>
+                        {scheduleCaption ? <p className="text-sm text-muted-foreground">{scheduleCaption}</p> : null}
                         {dateBuckets.length === 0 ? (
                             <p className="text-sm text-muted-foreground">
                                 {
@@ -465,6 +476,7 @@ export function BookingRequestOfferScheduleTab({
                         </CardDescription>
                     </CardHeader>
                     <CardContent className={cn('grid gap-4', bookingOfferCallCardSectionClassName)}>
+                        {scheduleCaption ? <p className="text-sm text-muted-foreground">{scheduleCaption}</p> : null}
                         <label className="grid gap-1.5 text-sm">
                             <span className="font-medium">{{ de: 'Beginn', en: 'Start' }[locale]}</span>
                             <DateTimePicker

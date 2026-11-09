@@ -2,6 +2,7 @@ import { asc, inArray } from 'drizzle-orm';
 
 import { bookingRequestOfferAddonLineAmountCents } from '../../shared/bookingRequestOfferAddonPrice';
 import { bookingRequestPaidParticipants } from '../../shared/bookingRequestOfferPriceGuidance';
+import { DEFAULT_TIME_ZONE } from '../../shared/timeZone';
 import type { BookingRequest } from '../db/schema';
 import {
     bookingRequestOffers,
@@ -20,6 +21,7 @@ import { toGqlUserBookingRequestOffer } from '../mappers/toGqlUserBookingRequest
 import { bookingRequestKitchenDetailsPhotosByRequestIdFind } from './bookingRequestKitchenDetailsPhotosHydrate';
 import { publicCookMenusWithCourses } from './cookMenuHydrate';
 import { publicCooksByIdFindMany } from './publicCookHydrate';
+import { userTimeZonesByIdFindMany } from './publicUserHydrate';
 
 /** Batch-load nested user booking-request fields (participants, offers, call bookings, cooks, menus, discounts). */
 export async function userBookingRequestHydrate(rows: BookingRequest[], serverRuntime: ServerRuntime): Promise<GqlSUserBookingRequest[]> {
@@ -62,7 +64,10 @@ export async function userBookingRequestHydrate(rows: BookingRequest[], serverRu
     }
 
     const cookIds = [...new Set(offers.map((offer) => offer.cookId))];
-    const cooksById = await publicCooksByIdFindMany(serverRuntime.db, cookIds);
+    const [cooksById, cookTimeZoneById] = await Promise.all([
+        publicCooksByIdFindMany(serverRuntime.db, cookIds),
+        userTimeZonesByIdFindMany(serverRuntime.db, cookIds),
+    ]);
 
     const offerIds = offers.map((offer) => offer.bookingRequestOfferId);
     const [callBookingRows, suggestedMenuRows, offerAddonRows] = await Promise.all([
@@ -141,6 +146,7 @@ export async function userBookingRequestHydrate(rows: BookingRequest[], serverRu
                     hasAcceptedAlternative: accepted != null && accepted.bookingRequestOfferId !== offer.bookingRequestOfferId,
                     locale: 'de',
                     cook,
+                    cookTimeZone: cookTimeZoneById.get(offer.cookId) ?? DEFAULT_TIME_ZONE,
                     suggestedMenus,
                     addons: offerAddons.map(toGqlPublicCookOfferAddon),
                     selectedAddonCostLines,

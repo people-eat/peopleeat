@@ -3551,6 +3551,7 @@ export interface GqlCCookBookingRequestOfferContext {
     __typename?: 'CookBookingRequestOfferContext';
     bookingRequestId: Scalars['ID']['output'];
     canceledAt?: Maybe<Scalars['DateTime']['output']>;
+    customerTimeZone: Scalars['TimeZone']['output'];
     dateTime: Scalars['DateTime']['output'];
     exactEventAddress: GqlCCookTravelOriginAddress;
     expiresAt?: Maybe<Scalars['DateTime']['output']>;
@@ -3660,6 +3661,7 @@ export type GqlCCookCallSlotBookingCriterion = {
 export interface GqlCCookCallSlotBookingCustomer {
     __typename?: 'CookCallSlotBookingCustomer';
     display: Scalars['String']['output'];
+    timeZone: Scalars['TimeZone']['output'];
 }
 
 export type GqlCCookCallSlotBookingStatus = 'CANCELED' | 'COMPLETED' | 'CONFIRMED' | 'DECLINED' | 'PENDING';
@@ -5242,6 +5244,7 @@ export interface GqlCUserBookingRequestOffer {
     cookAccepted?: Maybe<Scalars['Boolean']['output']>;
     cookDeclinationReason?: Maybe<Scalars['String']['output']>;
     cookId: Scalars['ID']['output'];
+    cookTimeZone: Scalars['TimeZone']['output'];
     costBreakdown: GqlCCostBreakdown;
     createdAt: Scalars['DateTime']['output'];
     customerReceiptFileUpload?: Maybe<GqlCFileUpload>;
@@ -9801,7 +9804,7 @@ export type GqlCProfilePageUserFragment = {
         status: Schema.GqlCBookingRequestStatus;
         occasion: string;
         dateTime: string;
-        exactEventAddress: { displayText: string; city: string };
+        exactEventAddress: { displayText: string; city: string; country: string };
         participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
         offers: Array<{
             bookingRequestOfferId: string;
@@ -9866,7 +9869,7 @@ export type GqlCProfilePageQuery = {
                 status: Schema.GqlCBookingRequestStatus;
                 occasion: string;
                 dateTime: string;
-                exactEventAddress: { displayText: string; city: string };
+                exactEventAddress: { displayText: string; city: string; country: string };
                 participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
                 offers: Array<{
                     bookingRequestOfferId: string;
@@ -9931,7 +9934,7 @@ export type GqlCProfilePageUpdatesSubscription = {
             status: Schema.GqlCBookingRequestStatus;
             occasion: string;
             dateTime: string;
-            exactEventAddress: { displayText: string; city: string };
+            exactEventAddress: { displayText: string; city: string; country: string };
             participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
             offers: Array<{
                 bookingRequestOfferId: string;
@@ -11138,7 +11141,14 @@ export type GqlCAdminBookingRequestOfferPageOfferFragment = {
         callSchedulingEnabled: boolean;
         callDurationMinutes: number;
         exactTravelOriginAddress: { city: string } | null;
-        user: { userId: string; firstName: string; lastName: string; emailAddress: string | null; profilePicture: { url: string } | null };
+        user: {
+            userId: string;
+            firstName: string;
+            lastName: string;
+            emailAddress: string | null;
+            timeZone: string;
+            profilePicture: { url: string } | null;
+        };
     };
     callBookings: Array<{
         cookCallSlotBookingId: string;
@@ -11257,8 +11267,16 @@ export type GqlCAdminBookingRequestOfferPageRequestFragment = {
     bookingRequestId: string;
     occasion: string;
     dateTime: string;
+    exactEventAddress: { city: string; country: string; displayText: string };
     participants: Array<{ type: Schema.GqlCBookingRequestParticipantType }>;
-    customer: { userId: string; firstName: string; lastName: string; emailAddress: string | null; profilePicture: { url: string } | null };
+    customer: {
+        userId: string;
+        firstName: string;
+        lastName: string;
+        emailAddress: string | null;
+        timeZone: string;
+        profilePicture: { url: string } | null;
+    };
     cooksInTravelRadius: Array<{
         estimatedTravelDistanceKm: number;
         cook: {
@@ -11283,12 +11301,14 @@ export type GqlCAdminBookingRequestOfferPageQuery = {
                     bookingRequestId: string;
                     occasion: string;
                     dateTime: string;
+                    exactEventAddress: { city: string; country: string; displayText: string };
                     participants: Array<{ type: Schema.GqlCBookingRequestParticipantType }>;
                     customer: {
                         userId: string;
                         firstName: string;
                         lastName: string;
                         emailAddress: string | null;
+                        timeZone: string;
                         profilePicture: { url: string } | null;
                     };
                     cooksInTravelRadius: Array<{
@@ -11390,6 +11410,7 @@ export type GqlCAdminBookingRequestOfferPageQuery = {
                             firstName: string;
                             lastName: string;
                             emailAddress: string | null;
+                            timeZone: string;
                             profilePicture: { url: string } | null;
                         };
                     };
@@ -11536,12 +11557,14 @@ export type GqlCAdminBookingRequestOfferPageUpdatesSubscription = {
             bookingRequestId: string;
             occasion: string;
             dateTime: string;
+            exactEventAddress: { city: string; country: string; displayText: string };
             participants: Array<{ type: Schema.GqlCBookingRequestParticipantType }>;
             customer: {
                 userId: string;
                 firstName: string;
                 lastName: string;
                 emailAddress: string | null;
+                timeZone: string;
                 profilePicture: { url: string } | null;
             };
             cooksInTravelRadius: Array<{
@@ -11639,6 +11662,7 @@ export type GqlCAdminBookingRequestOfferPageUpdatesSubscription = {
                     firstName: string;
                     lastName: string;
                     emailAddress: string | null;
+                    timeZone: string;
                     profilePicture: { url: string } | null;
                 };
             };
@@ -12073,8 +12097,11 @@ export type GqlCAdminBookingRequestPageRequestFragment = {
         name: string;
         restrictions: Array<string>;
     }>;
-    customer: { userId: string; firstName: string; lastName: string; emailAddress: string | null };
-    cook: { cookId: string; user: { userId: string; firstName: string; lastName: string; emailAddress: string | null } } | null;
+    customer: { userId: string; firstName: string; lastName: string; emailAddress: string | null; timeZone: string };
+    cook: {
+        cookId: string;
+        user: { userId: string; firstName: string; lastName: string; emailAddress: string | null; timeZone: string };
+    } | null;
     promoCode: { promoCodeId: string; redeemCode: string; amountCents: number } | null;
     giftCard: { giftCardId: string; redeemCode: string; balanceCents: number } | null;
     cooksInTravelRadius: Array<{
@@ -12206,10 +12233,10 @@ export type GqlCAdminBookingRequestPageQuery = {
                         name: string;
                         restrictions: Array<string>;
                     }>;
-                    customer: { userId: string; firstName: string; lastName: string; emailAddress: string | null };
+                    customer: { userId: string; firstName: string; lastName: string; emailAddress: string | null; timeZone: string };
                     cook: {
                         cookId: string;
-                        user: { userId: string; firstName: string; lastName: string; emailAddress: string | null };
+                        user: { userId: string; firstName: string; lastName: string; emailAddress: string | null; timeZone: string };
                     } | null;
                     promoCode: { promoCodeId: string; redeemCode: string; amountCents: number } | null;
                     giftCard: { giftCardId: string; redeemCode: string; balanceCents: number } | null;
@@ -12345,8 +12372,11 @@ export type GqlCAdminBookingRequestPageUpdatesSubscription = {
                 name: string;
                 restrictions: Array<string>;
             }>;
-            customer: { userId: string; firstName: string; lastName: string; emailAddress: string | null };
-            cook: { cookId: string; user: { userId: string; firstName: string; lastName: string; emailAddress: string | null } } | null;
+            customer: { userId: string; firstName: string; lastName: string; emailAddress: string | null; timeZone: string };
+            cook: {
+                cookId: string;
+                user: { userId: string; firstName: string; lastName: string; emailAddress: string | null; timeZone: string };
+            } | null;
             promoCode: { promoCodeId: string; redeemCode: string; amountCents: number } | null;
             giftCard: { giftCardId: string; redeemCode: string; balanceCents: number } | null;
             cooksInTravelRadius: Array<{
@@ -12516,7 +12546,7 @@ export type GqlCAdminBookingRequestsPageQuery = {
                     dateTime: string;
                     publicationStatus: Schema.GqlCBookingRequestPublicationStatus;
                     createdAt: string;
-                    exactEventAddress: { city: string; displayText: string };
+                    exactEventAddress: { city: string; country: string; displayText: string };
                     participants: Array<{ type: Schema.GqlCBookingRequestParticipantType }>;
                     offers: Array<{
                         bookingRequestOfferId: string;
@@ -18685,6 +18715,7 @@ export type GqlCProfileCookBookingRequestOfferPageUserFragment = {
                 maxOfferAmountCents: number | null;
                 minOfferAmountHardCents: number | null;
                 setting: Schema.GqlCBookingRequestSetting | null;
+                customerTimeZone: string;
                 exactEventAddress: {
                     displayText: string;
                     addressLine1: string;
@@ -18889,6 +18920,7 @@ export type GqlCProfileCookBookingRequestOfferPageQuery = {
                         maxOfferAmountCents: number | null;
                         minOfferAmountHardCents: number | null;
                         setting: Schema.GqlCBookingRequestSetting | null;
+                        customerTimeZone: string;
                         exactEventAddress: {
                             displayText: string;
                             addressLine1: string;
@@ -19100,6 +19132,7 @@ export type GqlCProfileCookBookingRequestOfferPageUpdatesSubscription = {
                     maxOfferAmountCents: number | null;
                     minOfferAmountHardCents: number | null;
                     setting: Schema.GqlCBookingRequestSetting | null;
+                    customerTimeZone: string;
                     exactEventAddress: {
                         displayText: string;
                         addressLine1: string;
@@ -19445,7 +19478,8 @@ export type GqlCProfileCookBookingRequestOfferCardFragment = {
         status: Schema.GqlCBookingRequestStatus;
         occasion: string;
         dateTime: string;
-        exactEventAddress: { displayText: string; city: string };
+        customerTimeZone: string;
+        exactEventAddress: { displayText: string; city: string; country: string };
         participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
         user: { display: string };
     };
@@ -19477,7 +19511,8 @@ export type GqlCProfileCookBookingRequestOffersPageUserFragment = {
                 status: Schema.GqlCBookingRequestStatus;
                 occasion: string;
                 dateTime: string;
-                exactEventAddress: { displayText: string; city: string };
+                customerTimeZone: string;
+                exactEventAddress: { displayText: string; city: string; country: string };
                 participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
                 user: { display: string };
             };
@@ -19504,7 +19539,8 @@ export type GqlCProfileCookBookingRequestOffersPageUserFragment = {
                 status: Schema.GqlCBookingRequestStatus;
                 occasion: string;
                 dateTime: string;
-                exactEventAddress: { displayText: string; city: string };
+                customerTimeZone: string;
+                exactEventAddress: { displayText: string; city: string; country: string };
                 participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
                 user: { display: string };
             };
@@ -19531,7 +19567,8 @@ export type GqlCProfileCookBookingRequestOffersPageUserFragment = {
                 status: Schema.GqlCBookingRequestStatus;
                 occasion: string;
                 dateTime: string;
-                exactEventAddress: { displayText: string; city: string };
+                customerTimeZone: string;
+                exactEventAddress: { displayText: string; city: string; country: string };
                 participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
                 user: { display: string };
             };
@@ -19569,7 +19606,8 @@ export type GqlCProfileCookBookingRequestOffersPageQuery = {
                         status: Schema.GqlCBookingRequestStatus;
                         occasion: string;
                         dateTime: string;
-                        exactEventAddress: { displayText: string; city: string };
+                        customerTimeZone: string;
+                        exactEventAddress: { displayText: string; city: string; country: string };
                         participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
                         user: { display: string };
                     };
@@ -19596,7 +19634,8 @@ export type GqlCProfileCookBookingRequestOffersPageQuery = {
                         status: Schema.GqlCBookingRequestStatus;
                         occasion: string;
                         dateTime: string;
-                        exactEventAddress: { displayText: string; city: string };
+                        customerTimeZone: string;
+                        exactEventAddress: { displayText: string; city: string; country: string };
                         participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
                         user: { display: string };
                     };
@@ -19623,7 +19662,8 @@ export type GqlCProfileCookBookingRequestOffersPageQuery = {
                         status: Schema.GqlCBookingRequestStatus;
                         occasion: string;
                         dateTime: string;
-                        exactEventAddress: { displayText: string; city: string };
+                        customerTimeZone: string;
+                        exactEventAddress: { displayText: string; city: string; country: string };
                         participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
                         user: { display: string };
                     };
@@ -19662,7 +19702,8 @@ export type GqlCProfileCookBookingRequestOffersPageUpdatesSubscription = {
                     status: Schema.GqlCBookingRequestStatus;
                     occasion: string;
                     dateTime: string;
-                    exactEventAddress: { displayText: string; city: string };
+                    customerTimeZone: string;
+                    exactEventAddress: { displayText: string; city: string; country: string };
                     participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
                     user: { display: string };
                 };
@@ -19689,7 +19730,8 @@ export type GqlCProfileCookBookingRequestOffersPageUpdatesSubscription = {
                     status: Schema.GqlCBookingRequestStatus;
                     occasion: string;
                     dateTime: string;
-                    exactEventAddress: { displayText: string; city: string };
+                    customerTimeZone: string;
+                    exactEventAddress: { displayText: string; city: string; country: string };
                     participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
                     user: { display: string };
                 };
@@ -19716,7 +19758,8 @@ export type GqlCProfileCookBookingRequestOffersPageUpdatesSubscription = {
                     status: Schema.GqlCBookingRequestStatus;
                     occasion: string;
                     dateTime: string;
-                    exactEventAddress: { displayText: string; city: string };
+                    customerTimeZone: string;
+                    exactEventAddress: { displayText: string; city: string; country: string };
                     participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
                     user: { display: string };
                 };
@@ -19923,7 +19966,7 @@ export type GqlCProfileCookBookingRequestPoolCardFragment = {
     occasion: string;
     dateTime: string;
     estimatedCookPayoutCents: number;
-    exactEventAddress: { displayText: string; city: string };
+    exactEventAddress: { displayText: string; city: string; country: string };
     participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
     cookPoolDetails: {
         declinedAt: string | null;
@@ -19942,7 +19985,7 @@ export type GqlCProfileCookBookingRequestPoolPageUserFragment = {
             occasion: string;
             dateTime: string;
             estimatedCookPayoutCents: number;
-            exactEventAddress: { displayText: string; city: string };
+            exactEventAddress: { displayText: string; city: string; country: string };
             participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
             cookPoolDetails: {
                 declinedAt: string | null;
@@ -19956,7 +19999,7 @@ export type GqlCProfileCookBookingRequestPoolPageUserFragment = {
             occasion: string;
             dateTime: string;
             estimatedCookPayoutCents: number;
-            exactEventAddress: { displayText: string; city: string };
+            exactEventAddress: { displayText: string; city: string; country: string };
             participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
             cookPoolDetails: {
                 declinedAt: string | null;
@@ -19981,7 +20024,7 @@ export type GqlCProfileCookBookingRequestPoolPageQuery = {
                     occasion: string;
                     dateTime: string;
                     estimatedCookPayoutCents: number;
-                    exactEventAddress: { displayText: string; city: string };
+                    exactEventAddress: { displayText: string; city: string; country: string };
                     participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
                     cookPoolDetails: {
                         declinedAt: string | null;
@@ -19995,7 +20038,7 @@ export type GqlCProfileCookBookingRequestPoolPageQuery = {
                     occasion: string;
                     dateTime: string;
                     estimatedCookPayoutCents: number;
-                    exactEventAddress: { displayText: string; city: string };
+                    exactEventAddress: { displayText: string; city: string; country: string };
                     participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
                     cookPoolDetails: {
                         declinedAt: string | null;
@@ -20021,7 +20064,7 @@ export type GqlCProfileCookBookingRequestPoolPageUpdatesSubscription = {
                 occasion: string;
                 dateTime: string;
                 estimatedCookPayoutCents: number;
-                exactEventAddress: { displayText: string; city: string };
+                exactEventAddress: { displayText: string; city: string; country: string };
                 participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
                 cookPoolDetails: {
                     declinedAt: string | null;
@@ -20035,7 +20078,7 @@ export type GqlCProfileCookBookingRequestPoolPageUpdatesSubscription = {
                 occasion: string;
                 dateTime: string;
                 estimatedCookPayoutCents: number;
-                exactEventAddress: { displayText: string; city: string };
+                exactEventAddress: { displayText: string; city: string; country: string };
                 participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
                 cookPoolDetails: {
                     declinedAt: string | null;
@@ -20058,7 +20101,7 @@ export type GqlCProfileCookCallsSlotBookingFragment = {
     initiator: Schema.GqlCCookCallSlotBookingActor;
     customerMessage: string | null;
     cookMessage: string | null;
-    customer: { display: string };
+    customer: { display: string; timeZone: string };
 };
 
 export type GqlCProfileCookCallsCookFragment = {
@@ -20088,7 +20131,7 @@ export type GqlCProfileCookCallsCookFragment = {
         initiator: Schema.GqlCCookCallSlotBookingActor;
         customerMessage: string | null;
         cookMessage: string | null;
-        customer: { display: string };
+        customer: { display: string; timeZone: string };
     }>;
 };
 
@@ -20121,7 +20164,7 @@ export type GqlCProfileCookCallsUserFragment = {
             initiator: Schema.GqlCCookCallSlotBookingActor;
             customerMessage: string | null;
             cookMessage: string | null;
-            customer: { display: string };
+            customer: { display: string; timeZone: string };
         }>;
     } | null;
 };
@@ -20163,7 +20206,7 @@ export type GqlCProfileCookCallsPageQuery = {
                     initiator: Schema.GqlCCookCallSlotBookingActor;
                     customerMessage: string | null;
                     cookMessage: string | null;
-                    customer: { display: string };
+                    customer: { display: string; timeZone: string };
                 }>;
             } | null;
         } | null;
@@ -20205,7 +20248,7 @@ export type GqlCProfileCookCallsPageUpdatesSubscription = {
                 initiator: Schema.GqlCCookCallSlotBookingActor;
                 customerMessage: string | null;
                 cookMessage: string | null;
-                customer: { display: string };
+                customer: { display: string; timeZone: string };
             }>;
         } | null;
     };
@@ -21755,6 +21798,7 @@ export type GqlCProfileCustomerBookingRequestOfferPageUserFragment = {
             userUnreadNotificationCount: number;
             menuPriceCents: number;
             travelExpensesCents: number;
+            cookTimeZone: string;
             testimonialMissing: boolean;
             addonPriceCents: number;
             paymentStatus: Schema.GqlCBookingRequestOfferPaymentStatus;
@@ -21956,6 +22000,7 @@ export type GqlCProfileCustomerBookingRequestOfferPageQuery = {
                     userUnreadNotificationCount: number;
                     menuPriceCents: number;
                     travelExpensesCents: number;
+                    cookTimeZone: string;
                     testimonialMissing: boolean;
                     addonPriceCents: number;
                     paymentStatus: Schema.GqlCBookingRequestOfferPaymentStatus;
@@ -22168,6 +22213,7 @@ export type GqlCProfileCustomerBookingRequestOfferPageUpdatesSubscription = {
                 userUnreadNotificationCount: number;
                 menuPriceCents: number;
                 travelExpensesCents: number;
+                cookTimeZone: string;
                 testimonialMissing: boolean;
                 addonPriceCents: number;
                 paymentStatus: Schema.GqlCBookingRequestOfferPaymentStatus;
@@ -22545,6 +22591,7 @@ export type GqlCProfileCustomerBookingRequestPageUserFragment = {
             totalCentsCustomer: number | null;
             preparationsCompletedAt: string | null;
             canRequestParticipantAmendment: boolean;
+            cookTimeZone: string;
             participantAmendment: {
                 requestedAt: string;
                 claimedAt: string | null;
@@ -22647,6 +22694,7 @@ export type GqlCProfileCustomerBookingRequestPageQuery = {
                     totalCentsCustomer: number | null;
                     preparationsCompletedAt: string | null;
                     canRequestParticipantAmendment: boolean;
+                    cookTimeZone: string;
                     participantAmendment: {
                         requestedAt: string;
                         claimedAt: string | null;
@@ -22754,6 +22802,7 @@ export type GqlCProfileCustomerBookingRequestPageUpdatesSubscription = {
                 totalCentsCustomer: number | null;
                 preparationsCompletedAt: string | null;
                 canRequestParticipantAmendment: boolean;
+                cookTimeZone: string;
                 participantAmendment: {
                     requestedAt: string;
                     claimedAt: string | null;
@@ -22885,7 +22934,7 @@ export type GqlCProfileCustomerBookingRequestsPageUserFragment = {
         status: Schema.GqlCBookingRequestStatus;
         occasion: string;
         dateTime: string;
-        exactEventAddress: { displayText: string; city: string };
+        exactEventAddress: { displayText: string; city: string; country: string };
         participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
         offers: Array<{
             bookingRequestOfferId: string;
@@ -22914,7 +22963,7 @@ export type GqlCProfileCustomerBookingRequestsPageQuery = {
                 status: Schema.GqlCBookingRequestStatus;
                 occasion: string;
                 dateTime: string;
-                exactEventAddress: { displayText: string; city: string };
+                exactEventAddress: { displayText: string; city: string; country: string };
                 participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
                 offers: Array<{
                     bookingRequestOfferId: string;
@@ -22944,7 +22993,7 @@ export type GqlCProfileCustomerBookingRequestsPageUpdatesSubscription = {
             status: Schema.GqlCBookingRequestStatus;
             occasion: string;
             dateTime: string;
-            exactEventAddress: { displayText: string; city: string };
+            exactEventAddress: { displayText: string; city: string; country: string };
             participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
             offers: Array<{
                 bookingRequestOfferId: string;
@@ -27474,6 +27523,7 @@ export const ProfilePageUserFragmentDoc = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'country' } },
                                         ],
                                     },
                                 },
@@ -28378,6 +28428,7 @@ export const AdminBookingRequestOfferPageOfferFragmentDoc = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'profilePicture' },
@@ -28660,6 +28711,18 @@ export const AdminBookingRequestOfferPageRequestFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'dateTime' } },
                     {
                         kind: 'Field',
+                        name: { kind: 'Name', value: 'exactEventAddress' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
                         name: { kind: 'Name', value: 'participants' },
                         selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'type' } }] },
                     },
@@ -28673,6 +28736,7 @@ export const AdminBookingRequestOfferPageRequestFragmentDoc = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'profilePicture' },
@@ -28967,6 +29031,7 @@ export const AdminBookingRequestPageRequestFragmentDoc = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
                             ],
                         },
                     },
@@ -28987,6 +29052,7 @@ export const AdminBookingRequestPageRequestFragmentDoc = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
                                         ],
                                     },
                                 },
@@ -32843,6 +32909,7 @@ export const ProfileCookBookingRequestOfferPageUserFragmentDoc = {
                                                                 ],
                                                             },
                                                         },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'customerTimeZone' } },
                                                     ],
                                                 },
                                             },
@@ -33121,9 +33188,11 @@ export const ProfileCookBookingRequestOfferCardFragmentDoc = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'country' } },
                                         ],
                                     },
                                 },
+                                { kind: 'Field', name: { kind: 'Name', value: 'customerTimeZone' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'participants' },
@@ -33304,9 +33373,11 @@ export const ProfileCookBookingRequestOffersPageUserFragmentDoc = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'country' } },
                                         ],
                                     },
                                 },
+                                { kind: 'Field', name: { kind: 'Name', value: 'customerTimeZone' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'participants' },
@@ -33663,6 +33734,7 @@ export const ProfileCookBookingRequestPoolCardFragmentDoc = {
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'country' } },
                             ],
                         },
                     },
@@ -33792,6 +33864,7 @@ export const ProfileCookBookingRequestPoolPageUserFragmentDoc = {
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'country' } },
                             ],
                         },
                     },
@@ -33846,7 +33919,13 @@ export const ProfileCookCallsSlotBookingFragmentDoc = {
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'customer' },
-                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'display' } }] },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
+                            ],
+                        },
                     },
                 ],
             },
@@ -33935,7 +34014,13 @@ export const ProfileCookCallsCookFragmentDoc = {
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'customer' },
-                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'display' } }] },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
+                            ],
+                        },
                     },
                 ],
             },
@@ -33983,7 +34068,13 @@ export const ProfileCookCallsUserFragmentDoc = {
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'customer' },
-                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'display' } }] },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
+                            ],
+                        },
                     },
                 ],
             },
@@ -35453,6 +35544,7 @@ export const ProfileCustomerBookingRequestOfferPageUserFragmentDoc = {
                                                     ],
                                                 },
                                             },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'cookTimeZone' } },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'cook' },
@@ -36063,6 +36155,7 @@ export const ProfileCustomerBookingRequestPageUserFragmentDoc = {
                                                     selections: [{ kind: 'Field', name: { kind: 'Name', value: 'title' } }],
                                                 },
                                             },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'cookTimeZone' } },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'cook' },
@@ -36212,6 +36305,7 @@ export const ProfileCustomerBookingRequestsPageUserFragmentDoc = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'country' } },
                                         ],
                                     },
                                 },
@@ -46376,6 +46470,7 @@ export const ProfilePageDocument = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'country' } },
                                         ],
                                     },
                                 },
@@ -46625,6 +46720,7 @@ export const ProfilePageUpdatesDocument = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'country' } },
                                         ],
                                     },
                                 },
@@ -51122,6 +51218,18 @@ export const AdminBookingRequestOfferPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'dateTime' } },
                     {
                         kind: 'Field',
+                        name: { kind: 'Name', value: 'exactEventAddress' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
                         name: { kind: 'Name', value: 'participants' },
                         selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'type' } }] },
                     },
@@ -51135,6 +51243,7 @@ export const AdminBookingRequestOfferPageDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'profilePicture' },
@@ -51434,6 +51543,7 @@ export const AdminBookingRequestOfferPageDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'profilePicture' },
@@ -51784,6 +51894,18 @@ export const AdminBookingRequestOfferPageUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'dateTime' } },
                     {
                         kind: 'Field',
+                        name: { kind: 'Name', value: 'exactEventAddress' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
                         name: { kind: 'Name', value: 'participants' },
                         selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'type' } }] },
                     },
@@ -51797,6 +51919,7 @@ export const AdminBookingRequestOfferPageUpdatesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'profilePicture' },
@@ -52096,6 +52219,7 @@ export const AdminBookingRequestOfferPageUpdatesDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'profilePicture' },
@@ -53652,6 +53776,7 @@ export const AdminBookingRequestPageDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
                             ],
                         },
                     },
@@ -53672,6 +53797,7 @@ export const AdminBookingRequestPageDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
                                         ],
                                     },
                                 },
@@ -54057,6 +54183,7 @@ export const AdminBookingRequestPageUpdatesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
                             ],
                         },
                     },
@@ -54077,6 +54204,7 @@ export const AdminBookingRequestPageUpdatesDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
                                         ],
                                     },
                                 },
@@ -54907,6 +55035,7 @@ export const AdminBookingRequestsPageDocument = {
                                                                             kind: 'SelectionSet',
                                                                             selections: [
                                                                                 { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'country' } },
                                                                                 {
                                                                                     kind: 'Field',
                                                                                     name: { kind: 'Name', value: 'displayText' },
@@ -76751,6 +76880,7 @@ export const ProfileCookBookingRequestOfferPageDocument = {
                                                                 ],
                                                             },
                                                         },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'customerTimeZone' } },
                                                     ],
                                                 },
                                             },
@@ -77336,6 +77466,7 @@ export const ProfileCookBookingRequestOfferPageUpdatesDocument = {
                                                                 ],
                                                             },
                                                         },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'customerTimeZone' } },
                                                     ],
                                                 },
                                             },
@@ -78948,9 +79079,11 @@ export const ProfileCookBookingRequestOffersPageDocument = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'country' } },
                                         ],
                                     },
                                 },
+                                { kind: 'Field', name: { kind: 'Name', value: 'customerTimeZone' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'participants' },
@@ -79151,9 +79284,11 @@ export const ProfileCookBookingRequestOffersPageUpdatesDocument = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'country' } },
                                         ],
                                     },
                                 },
+                                { kind: 'Field', name: { kind: 'Name', value: 'customerTimeZone' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'participants' },
@@ -80144,6 +80279,7 @@ export const ProfileCookBookingRequestPoolPageDocument = {
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'country' } },
                             ],
                         },
                     },
@@ -80293,6 +80429,7 @@ export const ProfileCookBookingRequestPoolPageUpdatesDocument = {
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'country' } },
                             ],
                         },
                     },
@@ -80465,7 +80602,13 @@ export const ProfileCookCallsPageDocument = {
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'customer' },
-                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'display' } }] },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
+                            ],
+                        },
                     },
                 ],
             },
@@ -80603,7 +80746,13 @@ export const ProfileCookCallsPageUpdatesDocument = {
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'customer' },
-                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'display' } }] },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
+                            ],
+                        },
                     },
                 ],
             },
@@ -85684,6 +85833,7 @@ export const ProfileCustomerBookingRequestOfferPageDocument = {
                                                     ],
                                                 },
                                             },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'cookTimeZone' } },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'cook' },
@@ -86331,6 +86481,7 @@ export const ProfileCustomerBookingRequestOfferPageUpdatesDocument = {
                                                     ],
                                                 },
                                             },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'cookTimeZone' } },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'cook' },
@@ -88027,6 +88178,7 @@ export const ProfileCustomerBookingRequestPageDocument = {
                                                     selections: [{ kind: 'Field', name: { kind: 'Name', value: 'title' } }],
                                                 },
                                             },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'cookTimeZone' } },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'cook' },
@@ -88336,6 +88488,7 @@ export const ProfileCustomerBookingRequestPageUpdatesDocument = {
                                                     selections: [{ kind: 'Field', name: { kind: 'Name', value: 'title' } }],
                                                 },
                                             },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'cookTimeZone' } },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'cook' },
@@ -89065,6 +89218,7 @@ export const ProfileCustomerBookingRequestsPageDocument = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'country' } },
                                         ],
                                     },
                                 },
@@ -89192,6 +89346,7 @@ export const ProfileCustomerBookingRequestsPageUpdatesDocument = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'country' } },
                                         ],
                                     },
                                 },

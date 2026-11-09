@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router';
 import { Fragment, useState } from 'react';
 
 import { containsPhoneNumber } from '../../shared';
+import type { BookingWhenPeer } from '../../shared';
 import { groupMessagesByDate, peerUserMessageStreak } from '../chat/chatTranscript';
 import { useComposerFileAttachments } from '../chat/useComposerFileAttachments';
 import type { GqlCHumanChatMessageFieldsFragment } from '../graphql/generated';
@@ -12,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarGroup, AvatarImage } from './base/avatar'
 import { ChatTranscriptShell } from './base/chat-transcript-shell';
 import { MessageScrollerItem } from './base/message-scroller';
 import { StatusAlert } from './base/status-alert';
+import { BookingOfferTimeProvider } from './BookingOfferTimeContext';
 import { HumanChatMessage } from './chat-message';
 import { ChatDateMarker } from './chat-message/ChatDateMarker';
 import { MessageComposer } from './MessageComposer';
@@ -92,6 +94,7 @@ export function BookingRequestOfferChat({
     onDeleteMessage,
     onReactMessage,
     peers,
+    callTimePeers,
     viewerRole,
     className,
 }: {
@@ -107,6 +110,7 @@ export function BookingRequestOfferChat({
     /** When set and `BOOKING_REQUEST_OFFER_CHAT_REACTIONS` is on (incl. admin shell), peer bubbles get a reaction picker. */
     onReactMessage?: (chatMessageId: string, emoji: string) => Promise<boolean>;
     peers: ReadonlyArray<BookingRequestOfferChatPeer>;
+    callTimePeers?: readonly BookingWhenPeer[];
     viewerRole: BookingRequestOfferChatViewerRole;
     className?: string;
 }) {
@@ -135,110 +139,112 @@ export function BookingRequestOfferChat({
               }[viewerRole][locale];
 
     return (
-        <div className={cn('grid min-h-0 flex-1 grid-rows-[1fr_auto] md:grid-rows-[auto_1fr_auto]', className)}>
-            <ConciergePresenceBanner peers={peers} title={presenceTitle} body={presenceBody} className="hidden md:flex" />
-            <ChatTranscriptShell
-                mode="human"
-                jumpToLatestLabel={{ de: 'Zum neuesten springen', en: 'Jump to latest' }[locale]}
-                contentClassName="w-full gap-3"
-                className="min-h-0 min-w-0"
-                viewportClassName="px-1 sm:px-2"
-            >
-                <MessageScrollerItem className="md:hidden">
-                    <ConciergePresenceBanner peers={peers} title={presenceTitle} body={presenceBody} className="mb-0 px-0 sm:px-0" />
-                </MessageScrollerItem>
-                {messages.length === 0 ? (
-                    <MessageScrollerItem>
-                        <p className="flex min-h-48 flex-1 items-center justify-center px-4 text-center text-sm text-muted-foreground">
-                            {
-                                (canSend
-                                    ? {
-                                          de: 'Noch keine Nachrichten. Schreibe die erste Nachricht.',
-                                          en: 'No messages yet. Send the first message.',
-                                      }
-                                    : {
-                                          de: 'Noch keine Nachrichten.',
-                                          en: 'No messages yet.',
-                                      })[locale]
-                            }
-                        </p>
+        <BookingOfferTimeProvider callPeers={callTimePeers ?? []}>
+            <div className={cn('grid min-h-0 flex-1 grid-rows-[1fr_auto] md:grid-rows-[auto_1fr_auto]', className)}>
+                <ConciergePresenceBanner peers={peers} title={presenceTitle} body={presenceBody} className="hidden md:flex" />
+                <ChatTranscriptShell
+                    mode="human"
+                    jumpToLatestLabel={{ de: 'Zum neuesten springen', en: 'Jump to latest' }[locale]}
+                    contentClassName="w-full gap-3"
+                    className="min-h-0 min-w-0"
+                    viewportClassName="px-1 sm:px-2"
+                >
+                    <MessageScrollerItem className="md:hidden">
+                        <ConciergePresenceBanner peers={peers} title={presenceTitle} body={presenceBody} className="mb-0 px-0 sm:px-0" />
                     </MessageScrollerItem>
-                ) : (
-                    groupedMessages.flatMap((group) => [
-                        <MessageScrollerItem key={`date-${group.date}`}>
-                            <ChatDateMarker date={group.date} locale={locale} />
-                        </MessageScrollerItem>,
-                        ...group.messages.map((message, index) => {
-                            const streak = peerUserMessageStreak(group.messages, index);
-                            return (
-                                <MessageScrollerItem key={message.chatMessageId} className={streak.continued ? '-mt-1.5' : undefined}>
-                                    <HumanChatMessage
-                                        message={message}
-                                        showAuthorName={streak.showName}
-                                        showAuthorAvatar={streak.showAvatar}
-                                        onEditUserMessage={onEditMessage}
-                                        onVisibilityChangeUserMessage={onVisibilityChangeMessage}
-                                        onDeleteUserMessage={onDeleteMessage}
-                                        onReactUserMessage={
-                                            reactionsEnabled && onReactMessage
-                                                ? (chatMessageId, emoji) => onReactMessage(chatMessageId, emoji)
-                                                : undefined
-                                        }
-                                    />
-                                </MessageScrollerItem>
-                            );
-                        }),
-                    ])
-                )}
-            </ChatTranscriptShell>
-            {canSend ? (
-                <div className="flex flex-col gap-2 px-1 pt-3 pb-(--chat-composer-pb) sm:px-2">
-                    {draftContainsPhoneNumber ? (
-                        <StatusAlert tone="warning">
-                            {
+                    {messages.length === 0 ? (
+                        <MessageScrollerItem>
+                            <p className="flex min-h-48 flex-1 items-center justify-center px-4 text-center text-sm text-muted-foreground">
                                 {
-                                    de: 'Das Teilen von Telefonnummern ist nicht erlaubt. Bitte bleibe für Absprachen hier im Chat.',
-                                    en: 'Sharing phone numbers is not allowed. Please keep arrangements in this chat.',
-                                }[locale]
-                            }
-                        </StatusAlert>
-                    ) : null}
-                    <MessageComposer
-                        value={draft}
-                        onValueChange={setDraft}
-                        busy={busy}
-                        sendDisabled={draftContainsPhoneNumber}
-                        showDisclaimer={false}
-                        ariaLabel={{ de: 'Nachricht an Angebot', en: 'Offer message' }[locale]}
-                        attachments={attachments}
-                        onAttachmentsAdd={onAttachmentsAdd}
-                        onAttachmentRemove={onAttachmentRemove}
-                        onSubmit={async () => {
-                            const text = draft.trim();
-                            if ((!text && !hasUploaded) || busy) return false;
-                            if (text.length > 0 && containsPhoneNumber(text)) return false;
-                            const sentAttachments = attachments;
-                            const fileUploadIds = uploadedFileUploadIds;
-                            setBusy(true);
-                            setDraft('');
-                            clearAttachments();
-                            try {
-                                const ok = await onSend(text, fileUploadIds);
-                                if (!ok) {
-                                    setDraft(text);
-                                    restoreAttachments(sentAttachments);
+                                    (canSend
+                                        ? {
+                                              de: 'Noch keine Nachrichten. Schreibe die erste Nachricht.',
+                                              en: 'No messages yet. Send the first message.',
+                                          }
+                                        : {
+                                              de: 'Noch keine Nachrichten.',
+                                              en: 'No messages yet.',
+                                          })[locale]
                                 }
-                                return ok;
-                            } finally {
-                                setBusy(false);
-                            }
-                        }}
-                    />
-                </div>
-            ) : (
-                // Match the composer’s `pt-3` gap when there is no send bar (e.g. admin review above a pinned footer).
-                <div className="pt-3" aria-hidden />
-            )}
-        </div>
+                            </p>
+                        </MessageScrollerItem>
+                    ) : (
+                        groupedMessages.flatMap((group) => [
+                            <MessageScrollerItem key={`date-${group.date}`}>
+                                <ChatDateMarker date={group.date} locale={locale} />
+                            </MessageScrollerItem>,
+                            ...group.messages.map((message, index) => {
+                                const streak = peerUserMessageStreak(group.messages, index);
+                                return (
+                                    <MessageScrollerItem key={message.chatMessageId} className={streak.continued ? '-mt-1.5' : undefined}>
+                                        <HumanChatMessage
+                                            message={message}
+                                            showAuthorName={streak.showName}
+                                            showAuthorAvatar={streak.showAvatar}
+                                            onEditUserMessage={onEditMessage}
+                                            onVisibilityChangeUserMessage={onVisibilityChangeMessage}
+                                            onDeleteUserMessage={onDeleteMessage}
+                                            onReactUserMessage={
+                                                reactionsEnabled && onReactMessage
+                                                    ? (chatMessageId, emoji) => onReactMessage(chatMessageId, emoji)
+                                                    : undefined
+                                            }
+                                        />
+                                    </MessageScrollerItem>
+                                );
+                            }),
+                        ])
+                    )}
+                </ChatTranscriptShell>
+                {canSend ? (
+                    <div className="flex flex-col gap-2 px-1 pt-3 pb-(--chat-composer-pb) sm:px-2">
+                        {draftContainsPhoneNumber ? (
+                            <StatusAlert tone="warning">
+                                {
+                                    {
+                                        de: 'Das Teilen von Telefonnummern ist nicht erlaubt. Bitte bleibe für Absprachen hier im Chat.',
+                                        en: 'Sharing phone numbers is not allowed. Please keep arrangements in this chat.',
+                                    }[locale]
+                                }
+                            </StatusAlert>
+                        ) : null}
+                        <MessageComposer
+                            value={draft}
+                            onValueChange={setDraft}
+                            busy={busy}
+                            sendDisabled={draftContainsPhoneNumber}
+                            showDisclaimer={false}
+                            ariaLabel={{ de: 'Nachricht an Angebot', en: 'Offer message' }[locale]}
+                            attachments={attachments}
+                            onAttachmentsAdd={onAttachmentsAdd}
+                            onAttachmentRemove={onAttachmentRemove}
+                            onSubmit={async () => {
+                                const text = draft.trim();
+                                if ((!text && !hasUploaded) || busy) return false;
+                                if (text.length > 0 && containsPhoneNumber(text)) return false;
+                                const sentAttachments = attachments;
+                                const fileUploadIds = uploadedFileUploadIds;
+                                setBusy(true);
+                                setDraft('');
+                                clearAttachments();
+                                try {
+                                    const ok = await onSend(text, fileUploadIds);
+                                    if (!ok) {
+                                        setDraft(text);
+                                        restoreAttachments(sentAttachments);
+                                    }
+                                    return ok;
+                                } finally {
+                                    setBusy(false);
+                                }
+                            }}
+                        />
+                    </div>
+                ) : (
+                    // Match the composer’s `pt-3` gap when there is no send bar (e.g. admin review above a pinned footer).
+                    <div className="pt-3" aria-hidden />
+                )}
+            </div>
+        </BookingOfferTimeProvider>
     );
 }

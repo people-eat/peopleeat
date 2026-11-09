@@ -1,4 +1,5 @@
-import { formatDate, formatTime } from '../../shared';
+import { formatBookingCallWhen, formatDate, formatTime } from '../../shared';
+import type { BookingWhenPeer } from '../../shared';
 import { callCalendarEventIcsInput } from '../../shared/calendarEventContent';
 import type {
     CookCallSlotBookingActor,
@@ -49,6 +50,7 @@ export type BookingRequestOfferCallBookingCardProps = {
     timeZone: string;
     callDurationMinutes: number;
     peerDisplayName?: string;
+    callTimePeers?: readonly BookingWhenPeer[];
     /** Confirmed-slot calendar file. Hidden for admin. */
     calendarOfferUrl?: string;
     occasion?: string | null;
@@ -77,20 +79,32 @@ export function BookingOfferCallWhen({
     end,
     locale,
     timeZone,
+    peers,
 }: {
     start: string | Date;
     end: string | Date;
     locale: Locale;
     timeZone: string;
+    peers?: readonly BookingWhenPeer[];
 }) {
     const dateLabel = formatDate(start, { locale, timeZone, weekday: true });
     const rangeLabel = `${formatCallTime(start, locale, timeZone)}–${formatCallTime(end, locale, timeZone)}${locale === 'de' ? ' Uhr' : ''}`;
+    const secondary = formatBookingCallWhen({
+        startAt: start,
+        endAt: end,
+        locale,
+        viewerTimeZone: timeZone,
+        peers,
+    }).secondary;
 
     return (
         <>
             <span className="block @min-[19rem]/call-when:inline">{dateLabel}</span>
             <span className="hidden @min-[19rem]/call-when:inline"> · </span>
             <span className="block whitespace-nowrap @min-[19rem]/call-when:inline">{rangeLabel}</span>
+            {secondary != null && secondary.length > 0 ? (
+                <span className="mt-0.5 block whitespace-pre-line text-sm font-normal text-muted-foreground">{secondary}</span>
+            ) : null}
         </>
     );
 }
@@ -111,6 +125,7 @@ export function BookingRequestOfferCallBookingCard({
     timeZone,
     callDurationMinutes,
     peerDisplayName,
+    callTimePeers,
     calendarOfferUrl,
     occasion,
     busy,
@@ -165,11 +180,11 @@ export function BookingRequestOfferCallBookingCard({
                     {peerDisplayName ? <CardTitle className="font-medium">{peerDisplayName}</CardTitle> : null}
                     {peerDisplayName ? (
                         <p className="text-sm text-foreground">
-                            <BookingOfferCallWhen start={start} end={end} locale={locale} timeZone={timeZone} />
+                            <BookingOfferCallWhen start={start} end={end} locale={locale} timeZone={timeZone} peers={callTimePeers} />
                         </p>
                     ) : (
                         <CardTitle className="text-sm font-medium">
-                            <BookingOfferCallWhen start={start} end={end} locale={locale} timeZone={timeZone} />
+                            <BookingOfferCallWhen start={start} end={end} locale={locale} timeZone={timeZone} peers={callTimePeers} />
                         </CardTitle>
                     )}
                     <CardDescription className="text-xs">

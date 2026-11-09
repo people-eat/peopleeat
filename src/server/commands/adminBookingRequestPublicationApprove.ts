@@ -72,6 +72,7 @@ export async function adminBookingRequestPublicationApprove(
             occasion: bookingRequest.occasion,
             dateTime: bookingRequest.dateTime,
             city: bookingRequest.exactEventAddress.city,
+            country: bookingRequest.exactEventAddress.country,
         });
 
         await slackNotifyBookingRequestPublicationApproved(serverRuntime, {

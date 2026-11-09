@@ -1642,6 +1642,8 @@ type BookingRequestOfferParticipantAmendment {
 
 type CookCallSlotBookingCustomer {
     display: String!
+    # Customer's profile IANA zone. Used on cook call surfaces when offsets differ.
+    timeZone: TimeZone!
 }
 
 type CookCallSlotBooking {
@@ -2054,6 +2056,8 @@ type UserBookingRequestOffer {
     customerReceiptFileUpload: FileUpload
     createdAt: DateTime!
     cook: PublicCook!
+    # Cook's profile IANA zone. Used to label times when cook and customer offsets differ. Not on PublicUser.
+    cookTimeZone: TimeZone!
     suggestedMenus: [PublicCookMenu!]!
     # Offer-attached extras the customer may toggle before accept.
     addons: [PublicCookOfferAddon!]!
@@ -2104,6 +2108,8 @@ type CookBookingRequestOfferContext {
     canceledAt: DateTime
     participants: [BookingRequestParticipant!]!
     user: PublicUser!
+    # Customer's profile IANA zone. Used to label times when cook and customer offsets differ. Not on PublicUser.
+    customerTimeZone: TimeZone!
 }
 
 # Cook offer inbox — suggested menus are cook-owned `CookMenu` copies.

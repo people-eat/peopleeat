@@ -1,10 +1,12 @@
-import { formatDate } from '../../../shared/formatDate';
+import { formatBookingEventDate } from '../../../shared/formatBookingWhen';
 import type { Locale } from '../../../shared/locale';
+import { timeZoneFromCountry } from '../../../shared/timeZone';
 import { EmailButton, EmailLayout, EmailText } from '../components';
 
 interface BookingRequestCooksNotifyForCookEmailProps {
     locale: Locale;
     timeZone: string;
+    venueCountry?: string | null;
     webPageUrl: string;
     recipientFirstName?: string;
     occasion: string;
@@ -16,6 +18,7 @@ interface BookingRequestCooksNotifyForCookEmailProps {
 export function BookingRequestCooksNotifyForCookEmail({
     locale,
     timeZone,
+    venueCountry,
     webPageUrl,
     recipientFirstName,
     occasion,
@@ -23,7 +26,13 @@ export function BookingRequestCooksNotifyForCookEmail({
     city,
     poolUrl,
 }: BookingRequestCooksNotifyForCookEmailProps) {
-    const when = formatDate(dateTime, { locale, dateStyle: 'long', weekday: true, timeZone });
+    const when = formatBookingEventDate({
+        instant: dateTime,
+        locale,
+        venueTimeZone: venueCountry != null ? timeZoneFromCountry(venueCountry) : timeZone,
+        dateStyle: 'long',
+        weekday: true,
+    });
     const subject = bookingRequestCooksNotifyForCookEmailSubject(locale);
     const preview = {
         de: `Neue Anfrage in ${city} („${occasion}“): jetzt Menü vorschlagen`,

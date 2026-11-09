@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm';
 
 import { bookingEventCalendarIcs } from '../../shared/calendarEventContent';
 import type { Locale } from '../../shared/locale';
+import { timeZoneFromCountry } from '../../shared/timeZone';
 import { bookingRequestParticipants, bookingRequests } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import { bookingRequestEmailCookOfferUrl, bookingRequestEmailCustomerRequestUrl } from '../email/components/bookingRequestEmailUrls';
@@ -64,7 +65,8 @@ export async function bookingEventCalendarAttachment(
     return calendarFileAttachment(
         bookingEventCalendarIcs({
             locale: input.locale,
-            timeZone: input.timeZone,
+            timeZone: timeZoneFromCountry(request.displayText.country),
+            venueCity: request.displayText.city,
             occasion: request.occasion,
             peerName: input.peerName,
             guestCount: participants.length,

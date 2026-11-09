@@ -136,6 +136,7 @@ export async function userBookingRequestCreate(
                 occasion,
                 dateTime: input.dateTime,
                 city: exactEventAddress.city,
+                country: exactEventAddress.country,
             });
             await bookingRequestPoolCooksPublish(
                 serverRuntime,

@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { CalendarIcon, InfoIcon, MapPinIcon, UserIcon, UsersIcon } from 'lucide-react';
 
-import { formatCurrency, formatDate, formatParticipants } from '../../shared';
+import { formatBookingEventDateFromCountry, formatCurrency, formatParticipants } from '../../shared';
 import type { BookingRequestOfferStatus } from '../../shared/bookingRequestOfferStatus';
 import { bookingRequestOfferStatusHue, bookingRequestOfferStatusLabel } from '../../shared/bookingRequestOfferStatus';
 import { useLocale } from '../hooks/useLocale';
@@ -29,7 +29,9 @@ export type CookBookingRequestOfferCardOffer = {
         exactEventAddress: {
             displayText: string;
             city: string;
+            country?: string | null;
         };
+        customerTimeZone?: string;
         participants: { type: 'ADULT' | 'DISCOUNTED' | string }[];
         user: { display: string };
     };
@@ -41,7 +43,13 @@ export function CookBookingRequestOfferCard({ offer }: { offer: CookBookingReque
     const request = offer.bookingRequest;
     const location =
         request.exactEventAddress.city.trim().length > 0 ? request.exactEventAddress.city : request.exactEventAddress.displayText;
-    const callHint = callBookingOverviewHint(offer.callBookings, 'cook', locale, timeZone);
+    const callHint = callBookingOverviewHint(
+        offer.callBookings,
+        'cook',
+        locale,
+        timeZone,
+        request.customerTimeZone != null ? [{ name: request.user.display, timeZone: request.customerTimeZone }] : undefined,
+    );
     const mutuallyAccepted = offer.cookAccepted && offer.userAccepted;
     const amountCents = mutuallyAccepted ? offer.payoutCentsCook : offer.totalWithoutDiscountsCentsCustomer;
     const amountLabel = mutuallyAccepted
@@ -108,7 +116,13 @@ export function CookBookingRequestOfferCard({ offer }: { offer: CookBookingReque
                 </p>
                 <p className="flex min-w-0 items-center gap-2 text-sm text-foreground">
                     <CalendarIcon className="size-4 shrink-0 text-muted-foreground/70" aria-hidden />
-                    <span className="truncate">{formatDate(request.dateTime, { locale, timeZone, dateStyle: 'full' })}</span>
+                    <span className="truncate">
+                        {formatBookingEventDateFromCountry({
+                            instant: request.dateTime,
+                            locale,
+                            venueCountry: request.exactEventAddress.country,
+                        })}
+                    </span>
                 </p>
                 <p className="flex min-w-0 items-center gap-2 text-sm text-foreground">
                     <UsersIcon className="size-4 shrink-0 text-muted-foreground/70" aria-hidden />

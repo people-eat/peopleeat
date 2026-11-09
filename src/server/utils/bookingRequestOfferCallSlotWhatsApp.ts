@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm';
 
+import { formatBookingEventDateFromCountry, formatBookingWhenJoined } from '../../shared';
 import { bookingRequestOffers, bookingRequests, cookCallSlotBookings, users } from '../db/schema';
 import type { CookCallSlotBookingStatus } from '../domain/bookingRequest';
 import { notificationWhatsAppAllowed } from '../domain/notificationSettings';
@@ -7,7 +8,11 @@ import type { UserNotificationSettingsStored } from '../domain/notificationSetti
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { OutboundWhatsAppPurpose } from '../domain/whatsapp';
 import { whatsappPhoneNumberNormalize } from '../domain/whatsapp';
-import { formatCallSlotDate, formatCallSlotTime } from '../email/components/bookingRequestOfferCallSlotEmailFormat';
+import {
+    formatCallSlotDate,
+    formatCallSlotTime,
+    formatCallSlotWhenSecondary,
+} from '../email/components/bookingRequestOfferCallSlotEmailFormat';
 
 async function sendSafely(serverRuntime: ServerRuntime, label: string, entityId: string, send: () => Promise<unknown>): Promise<void> {
     try {
@@ -26,8 +31,10 @@ type CallSlotWhatsAppContext = {
     bookingRequestOfferId: string;
     bookingRequestId: string;
     startAt: Date;
+    endAt: Date;
     occasion: string;
     bookingRequestDateTime: Date;
+    eventCountry: string;
     customerUserId: string;
     cookId: string;
     customer: {
@@ -57,6 +64,7 @@ async function callSlotWhatsAppContextLoad(
             customerUserId: bookingRequests.userId,
             occasion: bookingRequests.occasion,
             bookingRequestDateTime: bookingRequests.dateTime,
+            exactEventAddress: bookingRequests.exactEventAddress,
             cookId: bookingRequestOffers.cookId,
             bookingRequestOfferId: bookingRequestOffers.bookingRequestOfferId,
         })
@@ -109,8 +117,10 @@ async function callSlotWhatsAppContextLoad(
         bookingRequestOfferId: row.bookingRequestOfferId,
         bookingRequestId: row.bookingRequestId,
         startAt: row.booking.startAt,
+        endAt: row.booking.endAt,
         occasion: row.occasion,
         bookingRequestDateTime: row.bookingRequestDateTime,
+        eventCountry: row.exactEventAddress.country,
         customerUserId: row.customerUserId,
         cookId: row.cookId,
         customer: {
@@ -157,9 +167,25 @@ async function recipientSend(
         return;
     }
 
+    const peer = args.recipient === 'COOK' ? args.context.customer : args.context.cookUser;
     const dateLabel = formatCallSlotDate(args.context.startAt, user.locale, user.timeZone);
-    const timeLabel = formatCallSlotTime(args.context.startAt, user.locale, user.timeZone);
-    const bookingRequestDateLabel = formatCallSlotDate(args.context.bookingRequestDateTime, user.locale, user.timeZone);
+    const timeLabel = formatBookingWhenJoined({
+        primary: formatCallSlotTime(args.context.startAt, user.locale, user.timeZone),
+        secondary: formatCallSlotWhenSecondary({
+            startAt: args.context.startAt,
+            endAt: args.context.endAt,
+            locale: user.locale,
+            viewerTimeZone: user.timeZone,
+            peer: { name: peer.firstName, timeZone: peer.timeZone },
+        }),
+    });
+    const bookingRequestDateLabel = formatBookingEventDateFromCountry({
+        instant: args.context.bookingRequestDateTime,
+        locale: user.locale,
+        venueCountry: args.context.eventCountry,
+        dateStyle: 'long',
+        weekday: true,
+    });
     const bodyParameters =
         args.purpose === 'CALL_SLOT_BOOKING_CANCEL' || args.purpose === 'CALL_SLOT_BOOKING_DECLINE'
             ? [

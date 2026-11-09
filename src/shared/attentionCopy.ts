@@ -1,4 +1,4 @@
-import { cookCallSlotBookingWhenFormat } from './cookCallSlotBookingStatus';
+import { formatBookingCallWhen, formatBookingWhenJoined } from './formatBookingWhen';
 import { formatDate, formatTime } from './formatDate';
 import type { Locale } from './locale';
 import type { StatusTone } from './statusTone';
@@ -92,7 +92,14 @@ export function userAttentionCopy(
 ): AttentionCopy {
     const when =
         item.callStartAt != null && item.callEndAt != null
-            ? cookCallSlotBookingWhenFormat({ startAt: item.callStartAt, endAt: item.callEndAt }, locale, timeZone)
+            ? formatBookingWhenJoined(
+                  formatBookingCallWhen({
+                      startAt: item.callStartAt,
+                      endAt: item.callEndAt,
+                      locale,
+                      viewerTimeZone: timeZone,
+                  }),
+              )
             : '';
     const upcomingCallTitle = { de: 'Bevorstehender Call', en: 'Upcoming call' }[locale];
     const openCall = { de: 'Zum Anruf', en: 'Open call' }[locale];

@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { CalendarIcon, MapPinIcon, UsersIcon } from 'lucide-react';
 
-import { formatDate, formatParticipants } from '../../shared';
+import { formatBookingEventDateFromCountry, formatParticipants } from '../../shared';
 import { bookingRequestStatusHue, bookingRequestStatusLabel } from '../../shared/bookingRequestStatus';
 import type { Locale } from '../../shared/locale';
 import type { GqlCBookingRequestStatus } from '../graphql/generated';
@@ -43,6 +43,7 @@ export type CustomerBookingRequestCardRequest = {
     exactEventAddress: {
         displayText: string;
         city: string;
+        country?: string | null;
     };
     participants: CustomerBookingRequestCardParticipant[];
     offers: CustomerBookingRequestCardOffer[];
@@ -283,7 +284,13 @@ export function CustomerBookingRequestCard({
                     <h2 className="line-clamp-1 pr-8 font-semibold leading-snug">{request.occasion}</h2>
                     <p className="flex min-w-0 items-center gap-2 text-sm text-foreground">
                         <CalendarIcon className="size-4 shrink-0 text-muted-foreground/70" aria-hidden />
-                        <span className="truncate">{formatDate(request.dateTime, { locale, timeZone, dateStyle: 'full' })}</span>
+                        <span className="truncate">
+                            {formatBookingEventDateFromCountry({
+                                instant: request.dateTime,
+                                locale,
+                                venueCountry: request.exactEventAddress.country,
+                            })}
+                        </span>
                     </p>
                     <p className="flex min-w-0 items-center gap-2 text-sm text-foreground">
                         <UsersIcon className="size-4 shrink-0 text-muted-foreground/70" aria-hidden />

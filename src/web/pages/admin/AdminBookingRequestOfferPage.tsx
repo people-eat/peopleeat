@@ -681,6 +681,17 @@ export function AdminBookingRequestOfferPage({
                                                         userId: offer.cook.user.userId,
                                                     },
                                                 ]}
+                                                callTimePeers={[
+                                                    ...(request
+                                                        ? [
+                                                              {
+                                                                  name: adminBookingRequestCustomerLabel(request.customer),
+                                                                  timeZone: request.customer.timeZone,
+                                                              },
+                                                          ]
+                                                        : []),
+                                                    { name: userDisplayName(offer.cook.user), timeZone: offer.cook.user.timeZone },
+                                                ]}
                                                 viewerRole="admin"
                                                 onSend={async (message, fileUploadIds) => {
                                                     const result = await sendChatMessage({ bookingRequestOfferId, message, fileUploadIds });
@@ -807,6 +818,17 @@ export function AdminBookingRequestOfferPage({
                                                 callSchedulingEnabled={offer.cook.callSchedulingEnabled}
                                                 callDurationMinutes={offer.cook.callDurationMinutes}
                                                 peerDisplayName={request ? adminBookingRequestCustomerLabel(request.customer) : undefined}
+                                                callTimePeers={[
+                                                    ...(request
+                                                        ? [
+                                                              {
+                                                                  name: adminBookingRequestCustomerLabel(request.customer),
+                                                                  timeZone: request.customer.timeZone,
+                                                              },
+                                                          ]
+                                                        : []),
+                                                    { name: userDisplayName(offer.cook.user), timeZone: offer.cook.user.timeZone },
+                                                ]}
                                             >
                                                 <AdminBookingRequestOfferCallRecordingsSection recordings={offer.callRecordings} />
                                             </BookingRequestOfferCallTab>

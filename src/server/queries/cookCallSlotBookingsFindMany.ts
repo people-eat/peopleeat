@@ -43,7 +43,12 @@ export async function cookCallSlotBookingsFindMany(
         }
 
         const rows = await serverRuntime.db
-            .select({ booking: cookCallSlotBookings, customerFirstName: users.firstName, occasion: bookingRequests.occasion })
+            .select({
+                booking: cookCallSlotBookings,
+                customerFirstName: users.firstName,
+                customerTimeZone: users.timeZone,
+                occasion: bookingRequests.occasion,
+            })
             .from(cookCallSlotBookings)
             .innerJoin(users, eq(users.userId, cookCallSlotBookings.userId))
             .innerJoin(bookingRequestOffers, eq(bookingRequestOffers.bookingRequestOfferId, cookCallSlotBookings.bookingRequestOfferId))
@@ -51,8 +56,8 @@ export async function cookCallSlotBookingsFindMany(
             .where(and(...parts))
             .orderBy(asc(cookCallSlotBookings.startAt));
 
-        return rows.map(({ booking, customerFirstName, occasion }) =>
-            toGqlCookCallSlotBooking(booking, { display: customerFirstName }, occasion),
+        return rows.map(({ booking, customerFirstName, customerTimeZone, occasion }) =>
+            toGqlCookCallSlotBooking(booking, { display: customerFirstName, timeZone: customerTimeZone }, occasion),
         );
     } catch (error) {
         serverRuntime.log.error(error, requestingSession);

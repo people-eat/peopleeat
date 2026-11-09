@@ -18,6 +18,7 @@ query AdminBookingRequestsPage($criterion: AdminBookingRequestCriterion!) {
                     createdAt
                     exactEventAddress {
                         city
+                        country
                         displayText
                     }
                     participants {

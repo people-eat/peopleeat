@@ -1,4 +1,4 @@
-import { formatDate, formatTime } from '../../../shared/formatDate';
+import { formatBookingEventWhenFromCountry, formatBookingWhenJoined } from '../../../shared/formatBookingWhen';
 import type { Locale } from '../../../shared/locale';
 import {
     BookingRequestEmailBookingNumber,
@@ -11,6 +11,8 @@ import {
 interface BookingRequestOfferPaymentFinalizeForCustomerEmailProps {
     locale: Locale;
     timeZone: string;
+    venueCountry?: string | null;
+    venueCity?: string | null;
     webPageUrl: string;
     recipientFirstName?: string;
     cookFirstName: string;
@@ -23,6 +25,8 @@ interface BookingRequestOfferPaymentFinalizeForCustomerEmailProps {
 export function BookingRequestOfferPaymentFinalizeForCustomerEmail({
     locale,
     timeZone,
+    venueCountry,
+    venueCity,
     webPageUrl,
     recipientFirstName,
     cookFirstName,
@@ -44,7 +48,16 @@ export function BookingRequestOfferPaymentFinalizeForCustomerEmail({
         de: `Klasse, dass du dich für das Menü von ${cookFirstName} entschieden hast! Es wird garantiert eine unvergessliche Erfahrung. Wir freuen uns, dass du dabei bist. Jetzt kannst du alle weiteren Details direkt mit dem Koch besprechen.`,
         en: `Great choice on ${cookFirstName}'s menu! It will be an unforgettable experience. We're glad you're in. You can now discuss all remaining details directly with the chef.`,
     }[locale];
-    const when = `${formatDate(startAt, { locale, timeZone, weekday: true, dateStyle: 'long' })}, ${formatTime(startAt, { locale, timeZone, timeStyle: 'short' })}`;
+    const when = formatBookingWhenJoined(
+        formatBookingEventWhenFromCountry({
+            instant: startAt,
+            locale,
+            viewerTimeZone: timeZone,
+            venueCountry,
+            venueCity,
+            dateStyle: 'long',
+        }),
+    );
     const calendarNote = {
         de: 'Im Anhang ist eine Kalenderdatei. Die Uhrzeit ist der Beginn, und sie erinnert dich einen Tag vorher.',
         en: 'A calendar file is attached. The time is the start, and it reminds you the day before.',

@@ -9,7 +9,7 @@ import {
     bookingRequestKitchenDetailsDraftIsEmpty,
     bookingRequestPriceClassLabel,
     bookingRequestSettingLabel,
-    formatDateTime,
+    formatBookingEventWhenFromCountry,
     formatParticipants,
 } from '../../../shared';
 import { bookingRequestStatusHue, bookingRequestStatusLabel } from '../../../shared/bookingRequestStatus';
@@ -44,6 +44,7 @@ import {
     bookingRequestKitchenDetailsHasFacts,
 } from '../../components/BookingRequestVenueConditionsFacts';
 import { BookingStatusPill } from '../../components/BookingStatusPill';
+import { BookingWhenLabel } from '../../components/BookingWhenLabel';
 import { CustomerBookingRequestOfferCard } from '../../components/CustomerBookingRequestOfferCard';
 import { ProfilePinnedFooterLayout } from '../../components/ProfilePinnedFooterLayout';
 import { UserBookingRequestChurnDialog } from '../../components/UserBookingRequestChurnDialog';
@@ -346,7 +347,17 @@ export function ProfileCustomerBookingRequestPage({
                         ) : null}
                         <DetailField
                             label={{ de: 'Datum & Uhrzeit', en: 'Date & time' }[locale]}
-                            value={formatDateTime(request.dateTime, { locale, timeZone, dateStyle: 'full' })}
+                            value={
+                                <BookingWhenLabel
+                                    {...formatBookingEventWhenFromCountry({
+                                        instant: request.dateTime,
+                                        locale,
+                                        viewerTimeZone: timeZone,
+                                        venueCountry: request.exactEventAddress.country,
+                                        venueCity: request.exactEventAddress.city,
+                                    })}
+                                />
+                            }
                         />
                         <DetailField
                             label={{ de: 'Präferenzen', en: 'Preferences' }[locale]}

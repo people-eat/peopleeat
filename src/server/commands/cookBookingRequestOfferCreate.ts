@@ -267,6 +267,7 @@ export async function cookBookingRequestOfferCreate(
             occasion: bookingRequest.occasion,
             dateTime: bookingRequest.dateTime,
             address: bookingRequest.exactEventAddress.displayText,
+            venueCountry: bookingRequest.exactEventAddress.country,
             suggestedMenuTitles: menuTitles,
         });
 

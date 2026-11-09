@@ -1,4 +1,11 @@
-import { DEFAULT_TIME_ZONE, formatCountryName, formatCurrency, formatDate, formatTime } from '../../shared';
+import {
+    DEFAULT_TIME_ZONE,
+    formatBookingEventWhenFromCountry,
+    formatBookingWhenJoined,
+    formatCountryName,
+    formatCurrency,
+    formatDate,
+} from '../../shared';
 import type { Locale } from '../../shared/locale';
 import { GIFT_CARD_RECEIPT_ISSUER_LINES } from '../../shared/siteBranding';
 import { cn } from '../utils/cn';
@@ -24,6 +31,8 @@ type DocumentBase = {
     eventAt: Date;
     bookingRequestId: string;
     occasion: string;
+    venueCountry?: string | null;
+    venueCity?: string | null;
     invoiceAddress: BookingRequestOfferPaymentDocumentAddress | null;
 };
 
@@ -55,7 +64,15 @@ export function BookingRequestOfferPaymentDocumentPage(props: BookingRequestOffe
     const locale = props.locale;
     const timeZone = props.timeZone || DEFAULT_TIME_ZONE;
     const paidAt = formatDate(props.paidAt, { locale, timeZone, dateStyle: 'long' });
-    const eventAt = `${formatDate(props.eventAt, { locale, timeZone, weekday: true, dateStyle: 'long' })}, ${formatTime(props.eventAt, { locale, timeZone, timeStyle: 'short' })}`;
+    const eventAt = formatBookingWhenJoined(
+        formatBookingEventWhenFromCountry({
+            instant: props.eventAt,
+            locale,
+            viewerTimeZone: timeZone,
+            venueCountry: props.venueCountry,
+            venueCity: props.venueCity,
+        }),
+    );
     const title =
         props.kind === 'customer-receipt'
             ? { de: 'Zahlungsbeleg', en: 'Payment receipt' }[locale]

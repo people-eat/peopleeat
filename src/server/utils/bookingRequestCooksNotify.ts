@@ -17,6 +17,7 @@ export type BookingRequestCooksNotifyContext = {
     occasion: string;
     dateTime: Date;
     city: string;
+    country?: string | null;
 };
 
 /**
@@ -78,6 +79,7 @@ export async function bookingRequestCooksNotify(
                         react: BookingRequestCooksNotifyForCookEmail({
                             locale,
                             timeZone: cookUser.timeZone,
+                            venueCountry: context.country,
                             webPageUrl,
                             recipientFirstName: cookUser.firstName,
                             occasion: context.occasion,
@@ -107,6 +109,7 @@ export async function bookingRequestCooksNotify(
                 bookingRequestId: context.bookingRequestId,
                 cookUserId: cookUser.userId,
                 city,
+                country: context.country,
                 dateTime: context.dateTime,
             });
         }),

@@ -4,12 +4,13 @@ import type { BookingRequestOfferFieldsInput } from './bookingRequestOfferFields
 
 export type ToGqlUserBookingRequestOfferInput = BookingRequestOfferFieldsInput & {
     cook: GqlSPublicCook;
+    cookTimeZone: string;
     suggestedMenus?: GqlSPublicCookMenu[];
     addons?: GqlSPublicCookOfferAddon[];
 };
 
 export function toGqlUserBookingRequestOffer(input: ToGqlUserBookingRequestOfferInput): GqlSUserBookingRequestOffer {
-    const { cook, suggestedMenus = [], addons = [], ...fieldsInput } = input;
+    const { cook, cookTimeZone, suggestedMenus = [], addons = [], ...fieldsInput } = input;
     const {
         cookUnreadNotificationCount: _cookUnread,
         canCompletePreparations: _canCompletePreparations,
@@ -18,6 +19,7 @@ export function toGqlUserBookingRequestOffer(input: ToGqlUserBookingRequestOffer
     return {
         ...fields,
         cook,
+        cookTimeZone,
         suggestedMenus,
         addons,
         customerReceiptFileUpload: null,

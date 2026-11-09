@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import { bookingEventCalendarIcsInput } from '../../shared/calendarEventContent';
 import { downloadCalendarEvent } from '../utils/downloadCalendarEvent';
 import type { Locale } from '../utils/locale';
@@ -14,9 +16,10 @@ export function BookingEventCalendarLink({
     location,
     bookingPath,
     bookingRequestId,
+    venueCity,
 }: {
     locale: Locale;
-    whenLabel: string;
+    whenLabel: ReactNode;
     timeZone: string;
     occasion: string;
     peerName: string;
@@ -25,6 +28,7 @@ export function BookingEventCalendarLink({
     location: string;
     bookingPath: string;
     bookingRequestId: string;
+    venueCity?: string | null;
 }) {
     return (
         <AddToCalendarLink
@@ -37,6 +41,7 @@ export function BookingEventCalendarLink({
                     ...bookingEventCalendarIcsInput({
                         locale,
                         timeZone,
+                        venueCity,
                         occasion,
                         peerName,
                         guestCount,

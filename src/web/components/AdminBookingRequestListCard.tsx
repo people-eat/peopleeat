@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { CalendarIcon, MapPinIcon, UserIcon, UsersIcon } from 'lucide-react';
 
-import { formatDate, formatDateTime, formatParticipants, userDisplayName } from '../../shared';
+import { formatBookingEventDateFromCountry, formatDate, formatDateTime, formatParticipants, userDisplayName } from '../../shared';
 import type { BookingRequestOfferStatus } from '../../shared/bookingRequestOfferStatus';
 import { bookingRequestOfferStatusLabel } from '../../shared/bookingRequestOfferStatus';
 import { bookingRequestStatusHue, bookingRequestStatusLabel } from '../../shared/bookingRequestStatus';
@@ -42,7 +42,7 @@ export type AdminBookingRequestListCardRequest = {
     occasion: string;
     dateTime: string;
     createdAt: string;
-    exactEventAddress: { city: string; displayText: string };
+    exactEventAddress: { city: string; displayText: string; country?: string | null };
     participants: { type: string }[];
     customer: { userId: string; firstName: string; lastName: string; emailAddress: string | null };
     offers: AdminBookingRequestListCardOffer[];
@@ -371,7 +371,13 @@ export function AdminBookingRequestListCard({ request }: { request: AdminBooking
                     >
                         <p className="flex min-w-0 items-center gap-2 text-sm text-foreground">
                             <CalendarIcon className="size-4 shrink-0 text-muted-foreground/70" aria-hidden />
-                            <span className="truncate">{formatDate(request.dateTime, { locale, timeZone, dateStyle: 'full' })}</span>
+                            <span className="truncate">
+                                {formatBookingEventDateFromCountry({
+                                    instant: request.dateTime,
+                                    locale,
+                                    venueCountry: request.exactEventAddress.country,
+                                })}
+                            </span>
                         </p>
                         <p className="flex min-w-0 items-center gap-2 text-sm text-foreground">
                             <UsersIcon className="size-4 shrink-0 text-muted-foreground/70" aria-hidden />

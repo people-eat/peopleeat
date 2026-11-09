@@ -9,6 +9,7 @@ export interface BookingRequestOfferCallSlotConfirmBodyProps {
     recipientFirstName?: string;
     accepterFirstName: string;
     startAt: Date;
+    whenSecondary?: string | null;
     offerUrl: string;
 }
 
@@ -19,6 +20,7 @@ export function BookingRequestOfferCallSlotConfirmBody({
     recipientFirstName,
     accepterFirstName,
     startAt,
+    whenSecondary,
     offerUrl,
 }: BookingRequestOfferCallSlotConfirmBodyProps) {
     const callDate = formatCallSlotDate(startAt, locale, timeZone);
@@ -50,6 +52,7 @@ export function BookingRequestOfferCallSlotConfirmBody({
             <EmailText>{intro}</EmailText>
             <EmailText style={{ marginBottom: '4px' }}>{callDate}</EmailText>
             <EmailText>{callTime}</EmailText>
+            {whenSecondary ? <EmailText>{whenSecondary}</EmailText> : null}
             <EmailText>{reminderNote}</EmailText>
             <EmailText>{calendarNote}</EmailText>
             <EmailButton href={offerUrl}>{linkLabel}</EmailButton>

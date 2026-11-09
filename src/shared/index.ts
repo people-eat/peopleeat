@@ -97,6 +97,19 @@ export type {
     FormatMonthYearOptions,
     FormatTimeOptions,
 } from './formatDate';
+export {
+    formatBookingCallScheduleCaption,
+    formatBookingCallWhen,
+    formatBookingEventDate,
+    formatBookingEventDateFromCountry,
+    formatBookingEventTime,
+    formatBookingEventWhen,
+    formatBookingEventWhenAdmin,
+    formatBookingEventWhenAdminFromCountry,
+    formatBookingEventWhenFromCountry,
+    formatBookingWhenJoined,
+} from './formatBookingWhen';
+export type { BookingWhenFormatted, BookingWhenPeer } from './formatBookingWhen';
 export { formatDuration, formatHms } from './formatDuration';
 export { WHATSAPP_VOICE_MESSAGE_PREVIEW_BODY } from './whatsappVoiceMessage';
 export { formatIsoDate } from './formatIsoDate';
@@ -108,7 +121,7 @@ export { legalBodyDeNormalize } from './legalBodyDeNormalize';
 export { cookMenuDefaultCourseTitles, cookMenuDraftTitle } from './cookMenuDraftDefaults';
 export { COOK_MENU_SUGGESTION_FILE_MAX } from './cookMenuSuggestion';
 export { DEFAULT_LOCALE, languageTagFromLocale, LOCALES } from './locale';
-export { DEFAULT_TIME_ZONE } from './timeZone';
+export { DEFAULT_TIME_ZONE, formatTimeZonePlaceLabel, timeZoneFromCountry, timeZoneOffsetAt, timeZonesDifferAt } from './timeZone';
 export type { Locale } from './locale';
 export { toStripeCountryCode } from './toStripeCountryCode';
 export { userDisplayName } from './userDisplayName';

@@ -17,6 +17,7 @@ export type ToGqlCookBookingRequestOfferContextInput = {
     locale: Locale;
     now?: Date;
     user: GqlSPublicUser;
+    customerTimeZone: string;
     estimatedTravelExpensesCents?: number | null;
     promoMinimumTotalAmountCustomerCents?: number | null;
     /** Exact venue is only for this cook after both sides accepted their offer. */
@@ -32,6 +33,7 @@ export function toGqlCookBookingRequestOfferContext(input: ToGqlCookBookingReque
         offerCount,
         now,
         user,
+        customerTimeZone,
         estimatedTravelExpensesCents = null,
         promoMinimumTotalAmountCustomerCents = null,
         revealExactEventAddress = false,
@@ -75,5 +77,6 @@ export function toGqlCookBookingRequestOfferContext(input: ToGqlCookBookingReque
         canceledAt: bookingRequest.canceledAt ?? null,
         participants: participants.map(toGqlBookingRequestParticipant),
         user,
+        customerTimeZone,
     };
 }

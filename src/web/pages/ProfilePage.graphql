@@ -48,6 +48,7 @@ fragment ProfilePageUser on User {
         exactEventAddress {
             displayText
             city
+            country
         }
         participants {
             bookingRequestParticipantId

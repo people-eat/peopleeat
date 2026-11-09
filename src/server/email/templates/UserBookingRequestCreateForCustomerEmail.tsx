@@ -11,6 +11,7 @@ import {
 interface UserBookingRequestCreateForCustomerEmailProps {
     locale: Locale;
     timeZone: string;
+    venueCountry?: string | null;
     webPageUrl: string;
     recipientFirstName?: string;
     bookingRequestId: string;
@@ -26,6 +27,7 @@ interface UserBookingRequestCreateForCustomerEmailProps {
 export function UserBookingRequestCreateForCustomerEmail({
     locale,
     timeZone,
+    venueCountry,
     webPageUrl,
     recipientFirstName,
     bookingRequestId,
@@ -83,6 +85,7 @@ export function UserBookingRequestCreateForCustomerEmail({
             <BookingRequestEmailDetails
                 locale={locale}
                 timeZone={timeZone}
+                venueCountry={venueCountry}
                 occasion={occasion}
                 dateTime={dateTime}
                 address={address}

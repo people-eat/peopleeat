@@ -2,7 +2,10 @@ import { eq } from 'drizzle-orm';
 
 import { bookingRequestOffers, bookingRequests, cookCallSlotBookings, users } from '../../db/schema';
 import { notificationEmailAllowed } from '../../domain/notificationSettings';
-import { bookingRequestOfferCallSlotOfferUrls } from '../../email/components/bookingRequestOfferCallSlotEmailFormat';
+import {
+    bookingRequestOfferCallSlotOfferUrls,
+    formatCallSlotWhenSecondary,
+} from '../../email/components/bookingRequestOfferCallSlotEmailFormat';
 import {
     BookingRequestOfferCallSlotReminderForCookEmail,
     bookingRequestOfferCallSlotReminderForCookEmailSubject,
@@ -95,6 +98,13 @@ export const bookingRequestOfferCallSlotReminder: QueuedJobDefinition<BookingReq
                         webPageUrl,
                         recipientFirstName: customerWithEmail.firstName,
                         startAt: row.booking.startAt,
+                        whenSecondary: formatCallSlotWhenSecondary({
+                            startAt: row.booking.startAt,
+                            endAt: row.booking.endAt,
+                            locale: customerLocale,
+                            viewerTimeZone: customerWithEmail.timeZone,
+                            peer: { name: cookUserWithEmail.firstName, timeZone: cookUserWithEmail.timeZone },
+                        }),
                         counterpartyFirstName: cookUserWithEmail.firstName,
                         offerUrl: urls.customer,
                     }),
@@ -116,6 +126,13 @@ export const bookingRequestOfferCallSlotReminder: QueuedJobDefinition<BookingReq
                         webPageUrl,
                         recipientFirstName: cookUserWithEmail.firstName,
                         startAt: row.booking.startAt,
+                        whenSecondary: formatCallSlotWhenSecondary({
+                            startAt: row.booking.startAt,
+                            endAt: row.booking.endAt,
+                            locale: cookLocale,
+                            viewerTimeZone: cookUserWithEmail.timeZone,
+                            peer: { name: customerWithEmail.firstName, timeZone: customerWithEmail.timeZone },
+                        }),
                         counterpartyFirstName: customerWithEmail.firstName,
                         offerUrl: urls.cook,
                     }),

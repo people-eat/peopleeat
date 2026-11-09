@@ -1,6 +1,6 @@
 import { createColumnHelper } from '@tanstack/react-table';
 
-import { formatDate, formatDateTime, userDisplayName } from '../../../shared';
+import { formatBookingEventWhenFromCountry, formatBookingWhenJoined, formatDate, userDisplayName } from '../../../shared';
 import { bookingRequestStatusHue, bookingRequestStatusLabel } from '../../../shared/bookingRequestStatus';
 import type { Locale } from '../../../shared/locale';
 import { Badge } from '../../components/base/badge';
@@ -13,6 +13,8 @@ export type AdminBookingRequestsTableRow = {
     bookingRequestId: string;
     createdAt: string;
     dateTime: string;
+    venueCountry?: string | null;
+    venueCity?: string | null;
     occasion: string;
     status: GqlCBookingRequestStatus;
     publicationStatus: GqlCBookingRequestPublicationStatus;
@@ -54,7 +56,15 @@ export function adminBookingRequestsColumns(locale: Locale, timeZone: string) {
             ),
             cell: ({ row }) => (
                 <span className="text-sm tabular-nums">
-                    {formatDateTime(row.original.dateTime, { locale, timeZone, dateStyle: 'full' })}
+                    {formatBookingWhenJoined(
+                        formatBookingEventWhenFromCountry({
+                            instant: row.original.dateTime,
+                            locale,
+                            viewerTimeZone: timeZone,
+                            venueCountry: row.original.venueCountry,
+                            venueCity: row.original.venueCity,
+                        }),
+                    )}
                 </span>
             ),
         }),

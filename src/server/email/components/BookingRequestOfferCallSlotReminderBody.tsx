@@ -8,6 +8,7 @@ export interface BookingRequestOfferCallSlotReminderBodyProps {
     webPageUrl: string;
     recipientFirstName?: string;
     startAt: Date;
+    whenSecondary?: string | null;
     counterpartyFirstName: string;
     offerUrl: string;
 }
@@ -18,6 +19,7 @@ export function BookingRequestOfferCallSlotReminderBody({
     webPageUrl,
     recipientFirstName,
     startAt,
+    whenSecondary,
     counterpartyFirstName,
     offerUrl,
 }: BookingRequestOfferCallSlotReminderBodyProps) {
@@ -46,6 +48,7 @@ export function BookingRequestOfferCallSlotReminderBody({
             <EmailText>{intro}</EmailText>
             <EmailText style={{ marginBottom: '4px' }}>{callDate}</EmailText>
             <EmailText>{callTime}</EmailText>
+            {whenSecondary ? <EmailText>{whenSecondary}</EmailText> : null}
             <EmailText>{closing}</EmailText>
             <EmailButton href={offerUrl}>{linkLabel}</EmailButton>
         </EmailLayout>

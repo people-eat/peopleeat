@@ -9,6 +9,7 @@ export interface BookingRequestOfferCallSlotCancelBodyProps {
     recipientFirstName?: string;
     cancelerFirstName: string;
     startAt: Date;
+    whenSecondary?: string | null;
     reason?: string;
     wasConfirmed: boolean;
     offerUrl: string;
@@ -21,6 +22,7 @@ export function BookingRequestOfferCallSlotCancelBody({
     recipientFirstName,
     cancelerFirstName,
     startAt,
+    whenSecondary,
     reason,
     wasConfirmed,
     offerUrl,
@@ -67,6 +69,7 @@ export function BookingRequestOfferCallSlotCancelBody({
             <EmailText>{intro}</EmailText>
             <EmailText style={{ marginBottom: '4px' }}>{callDate}</EmailText>
             <EmailText>{callTime}</EmailText>
+            {whenSecondary ? <EmailText>{whenSecondary}</EmailText> : null}
             {reasonLine ? <EmailText>{reasonLine}</EmailText> : null}
             <EmailText>{nextStep}</EmailText>
             {calendarRemoval ? <EmailText>{calendarRemoval}</EmailText> : null}

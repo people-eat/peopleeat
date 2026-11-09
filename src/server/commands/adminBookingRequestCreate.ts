@@ -120,6 +120,7 @@ export async function adminBookingRequestCreate(
                 occasion,
                 dateTime: input.dateTime,
                 city: exactEventAddress.city,
+                country: exactEventAddress.country,
             });
         }
         await bookingRequestPoolCooksPublish(

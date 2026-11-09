@@ -207,6 +207,7 @@ export async function userBookingRequestCreateEmailSend(
                         occasion: bookingRequest.occasion,
                         dateTime: bookingRequest.dateTime,
                         address: bookingRequest.exactEventAddress.displayText,
+                        venueCountry: bookingRequest.exactEventAddress.country,
                         priceClassLabel: priceClassLabelResolve(bookingRequest.priceClassType, locale),
                         adultCount,
                         discountedCount,
@@ -385,6 +386,7 @@ export async function cookBookingRequestOfferCreateEmailSend(
         occasion: string;
         dateTime: Date;
         address: string;
+        venueCountry?: string | null;
         suggestedMenuTitles: string[];
     },
 ): Promise<void> {
@@ -420,6 +422,7 @@ export async function cookBookingRequestOfferCreateEmailSend(
                         occasion: args.occasion,
                         dateTime: args.dateTime,
                         address: args.address,
+                        venueCountry: args.venueCountry,
                         suggestedMenuTitles: args.suggestedMenuTitles,
                         offerUrl: bookingRequestEmailCustomerOfferUrl(webPageUrl, args.bookingRequestId, args.bookingRequestOfferId),
                     }),
@@ -435,6 +438,7 @@ export async function cookBookingRequestOfferCreateEmailSend(
             customerUserId: args.customerUserId,
             cookFirstName: cook.firstName,
             dateTime: args.dateTime,
+            venueCountry: args.venueCountry,
             menusLabel: args.suggestedMenuTitles.join(', '),
         }),
     ]);
@@ -560,6 +564,8 @@ export async function userBookingRequestOfferAcceptEmailSend(
                         customerFirstName: customer.firstName,
                         occasion: request.occasion,
                         startAt: request.dateTime,
+                        venueCountry: request.exactEventAddress.country,
+                        venueCity: request.exactEventAddress.city,
                         venue: request.exactEventAddress.displayText,
                         chatUrl: bookingRequestEmailCookOfferUrl(webPageUrl, args.bookingRequestOfferId, 'chat'),
                     }),
@@ -713,7 +719,11 @@ export async function bookingEventCalendarRestoredEmailSend(
     if (!customer || !cook) return;
 
     const [request] = await serverRuntime.db
-        .select({ occasion: bookingRequests.occasion, dateTime: bookingRequests.dateTime })
+        .select({
+            occasion: bookingRequests.occasion,
+            dateTime: bookingRequests.dateTime,
+            exactEventAddress: bookingRequests.exactEventAddress,
+        })
         .from(bookingRequests)
         .where(eq(bookingRequests.bookingRequestId, args.bookingRequestId))
         .limit(1);
@@ -748,6 +758,8 @@ export async function bookingEventCalendarRestoredEmailSend(
                             recipientFirstName: cook.firstName,
                             occasion: request.occasion,
                             startAt: request.dateTime,
+                            venueCountry: request.exactEventAddress.country,
+                            venueCity: request.exactEventAddress.city,
                             bookingUrl: bookingRequestEmailCookOfferUrl(webPageUrl, args.bookingRequestOfferId, 'offer'),
                         }),
                         purpose: 'BOOKING_EVENT_CALENDAR',
@@ -789,6 +801,8 @@ export async function bookingEventCalendarRestoredEmailSend(
                                 recipientFirstName: customer.firstName,
                                 occasion: request.occasion,
                                 startAt: request.dateTime,
+                                venueCountry: request.exactEventAddress.country,
+                                venueCity: request.exactEventAddress.city,
                                 bookingUrl: bookingRequestEmailCustomerRequestUrl(webPageUrl, args.bookingRequestId),
                             }),
                             purpose: 'BOOKING_EVENT_CALENDAR',
@@ -825,7 +839,11 @@ export async function bookingRequestOfferPaymentConfirmedEmailSend(
     const locale = customer.locale;
     const webPageUrl = environmentVariables.webPageUrl;
     const [request] = await serverRuntime.db
-        .select({ dateTime: bookingRequests.dateTime, occasion: bookingRequests.occasion })
+        .select({
+            dateTime: bookingRequests.dateTime,
+            occasion: bookingRequests.occasion,
+            exactEventAddress: bookingRequests.exactEventAddress,
+        })
         .from(bookingRequests)
         .where(eq(bookingRequests.bookingRequestId, args.bookingRequest.bookingRequestId))
         .limit(1);
@@ -883,6 +901,8 @@ export async function bookingRequestOfferPaymentConfirmedEmailSend(
                         recipientFirstName: customer.firstName,
                         cookFirstName: cook.firstName,
                         startAt: request.dateTime,
+                        venueCountry: request.exactEventAddress.country,
+                        venueCity: request.exactEventAddress.city,
                         bookingRequestId: args.bookingRequest.bookingRequestId,
                         receiptAttached: pdfs?.customerReceipt != null,
                         chatUrl: bookingRequestEmailCustomerOfferUrl(

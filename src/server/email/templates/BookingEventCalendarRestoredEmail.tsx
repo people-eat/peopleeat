@@ -1,10 +1,12 @@
-import { formatDate, formatTime } from '../../../shared/formatDate';
+import { formatBookingEventWhenFromCountry, formatBookingWhenJoined } from '../../../shared/formatBookingWhen';
 import type { Locale } from '../../../shared/locale';
 import { EmailButton, EmailLayout, EmailText } from '../components';
 
 interface BookingEventCalendarRestoredEmailProps {
     locale: Locale;
     timeZone: string;
+    venueCountry?: string | null;
+    venueCity?: string | null;
     webPageUrl: string;
     recipientFirstName?: string;
     occasion: string;
@@ -15,6 +17,8 @@ interface BookingEventCalendarRestoredEmailProps {
 export function BookingEventCalendarRestoredEmail({
     locale,
     timeZone,
+    venueCountry,
+    venueCity,
     webPageUrl,
     recipientFirstName,
     occasion,
@@ -22,7 +26,16 @@ export function BookingEventCalendarRestoredEmail({
     bookingUrl,
 }: BookingEventCalendarRestoredEmailProps) {
     const subject = bookingEventCalendarRestoredEmailSubject(locale);
-    const when = `${formatDate(startAt, { locale, timeZone, weekday: true, dateStyle: 'long' })}, ${formatTime(startAt, { locale, timeZone, timeStyle: 'short' })}`;
+    const when = formatBookingWhenJoined(
+        formatBookingEventWhenFromCountry({
+            instant: startAt,
+            locale,
+            viewerTimeZone: timeZone,
+            venueCountry,
+            venueCity,
+            dateStyle: 'long',
+        }),
+    );
     const preview = {
         de: 'Der Abend ist bestätigt. Die Kalenderdatei ist im Anhang',
         en: 'The evening is confirmed. The calendar file is attached',

@@ -1,3 +1,5 @@
+import type { BookingWhenPeer } from '../../../shared';
+import { formatBookingCallWhen } from '../../../shared/formatBookingWhen';
 import { formatDate, formatTime } from '../../../shared/formatDate';
 import type { Locale } from '../../../shared/locale';
 
@@ -16,6 +18,22 @@ export function formatCallSlotTime(value: Date, locale: Locale, timeZone: string
         timeStyle: 'short',
         timeZone,
     });
+}
+
+export function formatCallSlotWhenSecondary(input: {
+    startAt: Date;
+    endAt: Date;
+    locale: Locale;
+    viewerTimeZone: string;
+    peer: BookingWhenPeer;
+}): string | undefined {
+    return formatBookingCallWhen({
+        startAt: input.startAt,
+        endAt: input.endAt,
+        locale: input.locale,
+        viewerTimeZone: input.viewerTimeZone,
+        peers: [input.peer],
+    }).secondary;
 }
 
 export function bookingRequestOfferCallSlotOfferUrls(webPageUrl: string, bookingRequestId: string, bookingRequestOfferId: string) {

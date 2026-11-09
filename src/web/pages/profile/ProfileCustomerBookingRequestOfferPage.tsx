@@ -13,7 +13,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
-import { bookingRequestOfferChatCanSend, formatDateTime, userDisplayName } from '../../../shared';
+import { bookingRequestOfferChatCanSend, formatBookingEventWhenFromCountry, timeZoneFromCountry, userDisplayName } from '../../../shared';
 import { bookingRequestOfferStatusHue, bookingRequestOfferStatusLabel } from '../../../shared/bookingRequestOfferStatus';
 import {
     AlertDialog,
@@ -51,6 +51,7 @@ import {
     BookingRequestOfferTestimonialPanel,
 } from '../../components/BookingRequestOfferTestimonialPanel';
 import { BookingStatusPill } from '../../components/BookingStatusPill';
+import { BookingWhenLabel } from '../../components/BookingWhenLabel';
 import { CookProfileTags } from '../../components/CookProfileTags';
 import { CostBreakdownPanel } from '../../components/CostBreakdownPanel';
 import { CustomerBookingRequestOfferDeclineDialog } from '../../components/CustomerBookingRequestOfferDeclineDialog';
@@ -610,6 +611,7 @@ export function ProfileCustomerBookingRequestOfferPage({
                                         profilePictureUrl: offer.cook.user.profilePicture?.url,
                                     },
                                 ]}
+                                callTimePeers={[{ name: offer.cook.user.display, timeZone: offer.cookTimeZone }]}
                                 viewerRole="customer"
                                 onSend={async (message, fileUploadIds) => {
                                     const result = await sendOfferChatMessage({ bookingRequestOfferId, message, fileUploadIds });
@@ -711,6 +713,7 @@ export function ProfileCustomerBookingRequestOfferPage({
                                 callDurationMinutes={offer.cook.callDurationMinutes}
                                 callSlots={offer.cook.callSlots}
                                 peerDisplayName={offer.cook.user.display}
+                                callTimePeers={[{ name: offer.cook.user.display, timeZone: offer.cookTimeZone }]}
                                 occasion={request.occasion}
                                 bookingRequestId={bookingRequestId}
                                 requestDocument={ProfileCustomerBookingRequestOfferCallSlotRequestDocument}
@@ -881,8 +884,19 @@ function OfferTabPanel({
                 <div className={cn(hasMenu && '@5xl:col-span-2')}>
                     <BookingEventCalendarLink
                         locale={locale}
-                        whenLabel={formatDateTime(request.dateTime, { locale, timeZone, dateStyle: 'full' })}
-                        timeZone={timeZone}
+                        whenLabel={
+                            <BookingWhenLabel
+                                {...formatBookingEventWhenFromCountry({
+                                    instant: request.dateTime,
+                                    locale,
+                                    viewerTimeZone: timeZone,
+                                    venueCountry: request.exactEventAddress.country,
+                                    venueCity: request.exactEventAddress.city,
+                                })}
+                            />
+                        }
+                        timeZone={timeZoneFromCountry(request.exactEventAddress.country)}
+                        venueCity={request.exactEventAddress.city}
                         occasion={request.occasion}
                         peerName={offer.cook.user.display}
                         guestCount={request.participants.length}

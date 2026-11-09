@@ -25,6 +25,7 @@ export type CustomerBookingRequestOfferCardOffer = {
     configuredMenu: { title: string } | null;
     suggestedMenus: { title: string }[];
     callBookings?: readonly CallBookingOverviewItem[];
+    cookTimeZone?: string;
     cook: {
         city: string | null;
         cuisineStyle: string | null;
@@ -77,7 +78,13 @@ export function CustomerBookingRequestOfferCard({
         : offer.suggestedMenus.length > 0
           ? offer.suggestedMenus.map((menu) => menu.title).join(', ')
           : null;
-    const callHint = callBookingOverviewHint(offer.callBookings, 'customer', locale, timeZone);
+    const callHint = callBookingOverviewHint(
+        offer.callBookings,
+        'customer',
+        locale,
+        timeZone,
+        offer.cookTimeZone != null ? [{ name: offer.cook.user.display, timeZone: offer.cookTimeZone }] : undefined,
+    );
     const reviewMissing = offer.testimonialMissing === true;
     const reviewIsPrimaryAction = reviewMissing && !callHint?.openCall;
     const search = callHint?.openCall ? { tab: 'call' as const } : reviewMissing ? { tab: 'testimonial' as const } : undefined;

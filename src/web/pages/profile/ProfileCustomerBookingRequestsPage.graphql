@@ -12,6 +12,7 @@ fragment ProfileCustomerBookingRequestsPageUser on User {
         exactEventAddress {
             displayText
             city
+            country
         }
         participants {
             bookingRequestParticipantId

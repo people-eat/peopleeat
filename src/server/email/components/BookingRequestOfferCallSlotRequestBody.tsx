@@ -1,3 +1,4 @@
+import { formatBookingEventDateFromCountry } from '../../../shared/formatBookingWhen';
 import type { Locale } from '../../../shared/locale';
 import { formatCallSlotDate, formatCallSlotTime } from './bookingRequestOfferCallSlotEmailFormat';
 import { EmailButton, EmailLayout, EmailText } from './index';
@@ -9,7 +10,9 @@ export interface BookingRequestOfferCallSlotRequestBodyProps {
     recipientFirstName?: string;
     senderFirstName: string;
     startAt: Date;
+    whenSecondary?: string | null;
     eventDateTime: Date;
+    venueCountry?: string | null;
     occasion: string;
     offerUrl: string;
 }
@@ -21,13 +24,21 @@ export function BookingRequestOfferCallSlotRequestBody({
     recipientFirstName,
     senderFirstName,
     startAt,
+    whenSecondary,
     eventDateTime,
+    venueCountry,
     occasion,
     offerUrl,
 }: BookingRequestOfferCallSlotRequestBodyProps) {
     const callDate = formatCallSlotDate(startAt, locale, timeZone);
     const callTime = formatCallSlotTime(startAt, locale, timeZone);
-    const eventDate = formatCallSlotDate(eventDateTime, locale, timeZone);
+    const eventDate = formatBookingEventDateFromCountry({
+        instant: eventDateTime,
+        locale,
+        venueCountry,
+        dateStyle: 'long',
+        weekday: true,
+    });
     const preview = {
         de: `${senderFirstName} möchte dich per Video-Call kennenlernen. Termin bestätigen`,
         en: `${senderFirstName} wants to meet you on a video call. Confirm the time`,
@@ -64,6 +75,7 @@ export function BookingRequestOfferCallSlotRequestBody({
             <EmailText style={{ marginBottom: '8px' }}>{proposalHeading}</EmailText>
             <EmailText style={{ marginBottom: '4px' }}>{callDate}</EmailText>
             <EmailText>{callTime}</EmailText>
+            {whenSecondary ? <EmailText>{whenSecondary}</EmailText> : null}
             <EmailText style={{ marginBottom: '8px' }}>{eventHeading}</EmailText>
             <EmailText style={{ marginBottom: '4px' }}>
                 {eventDateLabel}: {eventDate}

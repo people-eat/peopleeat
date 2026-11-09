@@ -1,3 +1,4 @@
+import { DEFAULT_TIME_ZONE } from '../../shared';
 import type { CookCallSlotBooking } from '../db/schema';
 import type { GqlSCookCallSlotBooking, GqlSCookCallSlotBookingCustomer } from '../graphql/generated';
 
@@ -22,7 +23,7 @@ export function toGqlCookCallSlotBooking(
         canceledBy: row.canceledBy ?? null,
         canceledReason: row.canceledReason ?? null,
         videoCallRoomId: row.videoCallRoomId ?? null,
-        customer: customer ?? { display: '' },
+        customer: customer ?? { display: '', timeZone: DEFAULT_TIME_ZONE },
         createdAt: row.createdAt,
         lastModifiedAt: row.lastModifiedAt,
     };

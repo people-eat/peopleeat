@@ -1,4 +1,5 @@
 import { CalendarPlusIcon } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 import { cn } from '../utils/cn';
 import type { Locale } from '../utils/locale';
@@ -8,7 +9,7 @@ type AddToCalendarLinkProps = {
     locale: Locale;
     onClick: () => void;
     className?: string;
-} & ({ appearance?: 'button'; whenLabel: string } | { appearance: 'action' });
+} & ({ appearance?: 'button'; whenLabel: ReactNode } | { appearance: 'action' });
 
 /** `button` is the free-standing date cluster. `action` is a small button in a card's action row. */
 export function AddToCalendarLink({ locale, onClick, className, ...rest }: AddToCalendarLinkProps) {

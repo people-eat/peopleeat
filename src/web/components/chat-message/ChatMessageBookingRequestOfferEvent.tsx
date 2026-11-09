@@ -16,21 +16,31 @@ import {
     VideoIcon,
 } from 'lucide-react';
 
-import { bookingRequestOfferPriceCalculate, formatCurrency, formatDate, formatTime } from '../../../shared';
+import {
+    bookingRequestOfferPriceCalculate,
+    formatBookingCallWhen,
+    formatBookingWhenJoined,
+    formatCurrency,
+    formatDate,
+    formatTime,
+} from '../../../shared';
+import type { BookingWhenPeer } from '../../../shared';
 import type { GqlCChatMessageBookingRequestOfferEvent, GqlCChatMessageBookingRequestOfferEventType } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { cn } from '../../utils/cn';
 import type { StatusTone } from '../base/status';
 import { statusBadgeToneClass, statusIconToneClass } from '../base/status';
+import { useBookingOfferTimeContext } from '../BookingOfferTimeContext';
 import { MessageRow, Timestamp } from './shared';
 
 /** Compact centered milestone pill for a booking-request offer domain event. */
 export function ChatMessageBookingRequestOfferEventView({ message }: { message: GqlCChatMessageBookingRequestOfferEvent }) {
     const locale = useLocale();
     const timeZone = useTimeZone();
+    const callPeers = useBookingOfferTimeContext()?.callPeers ?? [];
     const label = chatMessageBookingRequestOfferEventLabel(message.type, locale);
-    const detail = chatMessageBookingRequestOfferEventDetail(message, locale, timeZone);
+    const detail = chatMessageBookingRequestOfferEventDetail(message, locale, timeZone, callPeers);
     const tone = offerEventTone(message.type);
     const Icon = offerEventIcon(message.type);
 
@@ -268,6 +278,7 @@ function chatMessageBookingRequestOfferEventDetail(
     message: GqlCChatMessageBookingRequestOfferEvent,
     locale: 'de' | 'en',
     timeZone: string,
+    peers: readonly BookingWhenPeer[] = [],
 ): string | null {
     const payload = message.payload;
     if (typeof payload !== 'object' || payload === null || Array.isArray(payload)) return null;
@@ -307,7 +318,15 @@ function chatMessageBookingRequestOfferEventDetail(
             if (typeof record.endAt === 'string') {
                 const end = new Date(record.endAt);
                 if (!Number.isNaN(end.getTime())) {
-                    return `${datePart} · ${startTime}–${formatTime(end, { locale, timeZone })}`;
+                    return formatBookingWhenJoined(
+                        formatBookingCallWhen({
+                            startAt: start,
+                            endAt: end,
+                            locale,
+                            viewerTimeZone: timeZone,
+                            peers,
+                        }),
+                    );
                 }
             }
             return `${datePart} · ${startTime}`;

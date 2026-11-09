@@ -326,6 +326,8 @@ export function ProfileCookBookingRequestPage({
                     timeZone={timeZone}
                     occasion={request.occasion}
                     dateTime={request.dateTime}
+                    venueCountry={request.exactEventAddress.country}
+                    venueCity={request.exactEventAddress.city}
                     participants={request.participants}
                     preferences={request.preferences}
                     eventLocation={eventLocation}

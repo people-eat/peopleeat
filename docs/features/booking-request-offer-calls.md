@@ -38,6 +38,12 @@ tab shows the video grid (and recording notice) while connected.
 appointment** comes first, then **Zum Kalender hinzufügen** / **Add to calendar**, then go to call. Opening cancel replaces that row with
 the reason field and its actions, lined up with the rest of the card.
 
+**Time zones** — Call times stay in the viewer’s zone (when they sit down). When the peer’s profile offset differs at start, confirmed and
+pending cards, chat milestones, `/profile/calls`, emails, and WhatsApp add a second line (`12:00–12:15 Uhr für Anna (New York)`). The slot
+list stays single-time. One caption above the picker: **Zeiten in deiner Zeitzone. Anna ist in New York (6 Stunden hinter dir).** Cook
+availability derivation is unchanged (cook wall-clock). Dinner times on the same offer stay venue-primary; see
+[booking-offers.md](./booking-offers.md) and [i18n.md](../architecture/i18n.md).
+
 Appointment rows on the Call tab and on `/profile/calls` list confirmed calls first, then pending, then declined, then canceled and
 completed. Within a status, the earlier start time comes first.
 

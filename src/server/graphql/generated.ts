@@ -3548,6 +3548,7 @@ export interface GqlSCookBookingRequestOfferContext {
     __typename?: 'CookBookingRequestOfferContext';
     bookingRequestId: Scalars['ID']['output'];
     canceledAt?: Maybe<Scalars['DateTime']['output']>;
+    customerTimeZone: Scalars['TimeZone']['output'];
     dateTime: Scalars['DateTime']['output'];
     exactEventAddress: GqlSCookTravelOriginAddress;
     expiresAt?: Maybe<Scalars['DateTime']['output']>;
@@ -3657,6 +3658,7 @@ export type GqlSCookCallSlotBookingCriterion = {
 export interface GqlSCookCallSlotBookingCustomer {
     __typename?: 'CookCallSlotBookingCustomer';
     display: Scalars['String']['output'];
+    timeZone: Scalars['TimeZone']['output'];
 }
 
 export type GqlSCookCallSlotBookingStatus = 'CANCELED' | 'COMPLETED' | 'CONFIRMED' | 'DECLINED' | 'PENDING';
@@ -5239,6 +5241,7 @@ export interface GqlSUserBookingRequestOffer {
     cookAccepted?: Maybe<Scalars['Boolean']['output']>;
     cookDeclinationReason?: Maybe<Scalars['String']['output']>;
     cookId: Scalars['ID']['output'];
+    cookTimeZone: Scalars['TimeZone']['output'];
     costBreakdown: GqlSCostBreakdown;
     createdAt: Scalars['DateTime']['output'];
     customerReceiptFileUpload?: Maybe<GqlSFileUpload>;
@@ -10195,6 +10198,7 @@ export type GqlSCookBookingRequestOfferContextResolvers<
 > = ResolversObject<{
     bookingRequestId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     canceledAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
+    customerTimeZone?: Resolver<GqlSResolversTypes['TimeZone'], ParentType, ContextType>;
     dateTime?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     exactEventAddress?: Resolver<GqlSResolversTypes['CookTravelOriginAddress'], ParentType, ContextType>;
     expiresAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -10281,6 +10285,7 @@ export type GqlSCookCallSlotBookingCustomerResolvers<
     ParentType extends GqlSResolversParentTypes['CookCallSlotBookingCustomer'] = GqlSResolversParentTypes['CookCallSlotBookingCustomer'],
 > = ResolversObject<{
     display?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    timeZone?: Resolver<GqlSResolversTypes['TimeZone'], ParentType, ContextType>;
 }>;
 
 export type GqlSCookMealResolvers<
@@ -11739,6 +11744,7 @@ export type GqlSUserBookingRequestOfferResolvers<
     cookAccepted?: Resolver<Maybe<GqlSResolversTypes['Boolean']>, ParentType, ContextType>;
     cookDeclinationReason?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     cookId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    cookTimeZone?: Resolver<GqlSResolversTypes['TimeZone'], ParentType, ContextType>;
     costBreakdown?: Resolver<GqlSResolversTypes['CostBreakdown'], ParentType, ContextType>;
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     customerReceiptFileUpload?: Resolver<Maybe<GqlSResolversTypes['FileUpload']>, ParentType, ContextType>;
