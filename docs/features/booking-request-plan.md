@@ -39,10 +39,12 @@ venue.
    assignments via `SectionPageTestimonials` with `columns={2}` (sidebar width) and per-card detail dialogs.
 3. **Step 2 (contact)** — centered `max-w-md` column (no sticky summary), matching the classic form auth width. Required wishes / allergies
    message first, then `AuthIdentityGate` (OTP / passkey / profile; `firstName` seeded from query when registering; register heading
-   omitted, submit labeled “Buchungsanfrage senden” / “Send booking request”; `onReady` creates once message is filled and latest
-   privacy/terms are accepted). Already signed-in visitors get the same explicit send CTA. Back uses the standard `Button variant="link"` +
-   `ArrowLeftIcon` pattern. The plan asks for guest counts, not individual names. Create stores one participant per guest with the same
-   default names as the multi-step form (Erwachsener 1 / Adult 1, Kind 1 / Child 1).
+   omitted, submit labeled “Buchungsanfrage senden” / “Send booking request”; `onReady` creates the booking request automatically after a
+   successful sign-in or registration once the message is filled and latest privacy/terms are accepted — one click covers account +
+   request). The gate stays mounted after auth so that handoff is not lost to a remount race; children show a retry send CTA if create
+   fails. Already signed-in visitors get the same explicit send CTA (no auto-submit on load). Back uses the standard
+   `Button variant="link"` + `ArrowLeftIcon` pattern. The plan asks for guest counts, not individual names. Create stores one participant
+   per guest with the same default names as the multi-step form (Erwachsener 1 / Adult 1, Kind 1 / Child 1).
 4. Cooks are redirected to `/profile` (same as the multi-step form). Page is `noindex`.
 
 Visitors without a venue id use the same route. Venue resolution order: URL venue params → venue `locationAddress` → empty (Combobox).

@@ -582,7 +582,10 @@ export function BookingRequestPlanPage({
     const navigate = useNavigate({ from: '/{-$locale}/booking-request/plan' });
     const [session, setSession] = useState<PlanSession>(loaderData.currentSession);
     const venue = loaderData.publicPartnerVenue.findOne ?? null;
-    const signedIn = sessionAuthPhase(session) === 'signedIn';
+    // Keep AuthIdentityGate mounted after OTP / register so its onReady effect can create the
+    // booking request in the same click. Unmounting on signedIn raced that effect and forced a
+    // second "Send booking request" press.
+    const [startedSignedIn] = useState(() => sessionAuthPhase(loaderData.currentSession) === 'signedIn');
     const settingEnabled = featureToggleIsActive(session.activeFeatureToggleKeys, 'BOOKING_REQUEST_SETTING');
     const [step, setStep] = useState<BookingRequestPlanStep>(() => (search.step === 'contact' ? 'contact' : 'details'));
     const [detailsEditorOpen, setDetailsEditorOpen] = useState(false);
@@ -1581,7 +1584,7 @@ export function BookingRequestPlanPage({
                                         )}
                                     </form.Field>
 
-                                    {!signedIn ? (
+                                    {!startedSignedIn ? (
                                         <div className="grid gap-4">
                                             <h2 className="text-lg font-medium">
                                                 {{ de: 'Deine Kontaktdaten', en: 'Your contact details' }[locale]}
@@ -1599,11 +1602,37 @@ export function BookingRequestPlanPage({
                                                 footer={(gateSession, sessionRefresh) => (
                                                     <AuthIdentityGateLogOnFooter session={gateSession} sessionRefresh={sessionRefresh} />
                                                 )}
-                                            />
+                                            >
+                                                {() => (
+                                                    <div className="grid gap-3">
+                                                        <Button
+                                                            type="button"
+                                                            size="lg"
+                                                            className="w-full"
+                                                            disabled={busy || authBusy || values.originalMessage.trim().length === 0}
+                                                            onClick={() => void submitBooking()}
+                                                        >
+                                                            {
+                                                                {
+                                                                    de: busy ? 'Anfrage wird gesendet…' : 'Buchungsanfrage senden',
+                                                                    en: busy ? 'Sending request…' : 'Send booking request',
+                                                                }[locale]
+                                                            }
+                                                            {!busy ? <ArrowRightIcon className="size-4" /> : null}
+                                                        </Button>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {
+                                                                {
+                                                                    de: 'Unverbindlich. Es erfolgt noch keine Zahlung.',
+                                                                    en: 'Non-binding. No payment is made yet.',
+                                                                }[locale]
+                                                            }
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </AuthIdentityGate>
                                         </div>
-                                    ) : null}
-
-                                    {signedIn ? (
+                                    ) : (
                                         <div className="grid gap-3">
                                             <Button
                                                 type="button"
@@ -1624,7 +1653,7 @@ export function BookingRequestPlanPage({
                                                 }
                                             </p>
                                         </div>
-                                    ) : null}
+                                    )}
                                 </div>
                             </div>
                         )}

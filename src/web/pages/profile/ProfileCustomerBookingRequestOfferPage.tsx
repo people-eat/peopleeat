@@ -56,8 +56,8 @@ import { CookProfileTags } from '../../components/CookProfileTags';
 import { CostBreakdownPanel } from '../../components/CostBreakdownPanel';
 import { CustomerBookingRequestOfferDeclineDialog } from '../../components/CustomerBookingRequestOfferDeclineDialog';
 import { ExpandableText } from '../../components/ExpandableText';
-import { OfferMenuConfiguration, offerMenuDefaultSelections } from '../../components/OfferMenuConfiguration';
 import type { OfferMenuCourseSelection } from '../../components/OfferMenuConfiguration';
+import { OfferMenuConfiguration, offerMenuDefaultSelections } from '../../components/OfferMenuConfiguration';
 import { OfferMenuConfigured } from '../../components/OfferMenuConfigured';
 import { OfferSuggestedMenuCard } from '../../components/OfferSuggestedMenuCard';
 import { ProfilePinnedFooterLayout } from '../../components/ProfilePinnedFooterLayout';
@@ -91,8 +91,8 @@ import { useTimeZone } from '../../hooks/useTimeZone';
 import { useUserUpdatesSeed } from '../../hooks/useUserUpdatesSeed';
 import { bookingPaymentPullIsPast } from '../../utils/bookingPaymentPullIsPast';
 import { cn } from '../../utils/cn';
-import { localePath } from '../../utils/locale';
 import type { Locale } from '../../utils/locale';
+import { localePath } from '../../utils/locale';
 import { offerAddonPriceLabel } from '../../utils/offerAddonPriceLabel';
 
 export {
