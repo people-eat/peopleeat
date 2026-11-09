@@ -1,8 +1,19 @@
 import { defineConfig, devices } from '@playwright/test';
 import { config } from 'dotenv';
 
+import { environmentVariablesTestSource } from './src/server/env/environmentVariablesTestSource';
+
 config({ path: '.env.test' });
 config({ path: '.env.local', override: true });
+
+// Same gap-fill as e2e/env.ts so Playwright's webServer can boot before
+// fixtures import. Does not override keys already set by CI or .env*.
+for (const [key, value] of Object.entries(environmentVariablesTestSource())) {
+    if (key === 'DATABASE_URL') continue;
+    if (process.env[key] === undefined && value !== undefined) {
+        process.env[key] = value;
+    }
+}
 
 const baseURL = (process.env.WEB_PAGE_URL ?? 'http://localhost:3000').replace(/\/$/, '');
 const isCi = Boolean(process.env.CI);

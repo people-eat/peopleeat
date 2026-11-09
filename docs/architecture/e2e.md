@@ -115,8 +115,10 @@ saves as draft. Anonymous actor asserts public list omits the title and detail i
 sees the list title and detail headline. Shared steps live in `contentPageUi.ts`.
 
 Env: load `.env.test`, then `.env.local` with `override: true` so `sessionCookieName` matches `npm run dev` (Vite reads `.env.local`; dotenv
-does not override keys set by an earlier file unless asked). Keep `DATABASE_URL` aligned between those files for local runs. CI sets env
-vars explicitly and starts the app via Playwright `webServer` — see [infrastructure.md](../infrastructure.md#gate-jobs).
+does not override keys set by an earlier file unless asked). Keep `DATABASE_URL` aligned between those files for local runs. Both
+`playwright.config.ts` and `e2e/env.ts` then fill missing always-required keys from `environmentVariablesTestSource()` (except
+`DATABASE_URL`) so the Vite `webServer` can boot before fixtures load. CI still sets env vars explicitly and starts the app via Playwright
+`webServer` — see [infrastructure.md](../infrastructure.md#gate-jobs).
 
 ## Alternatives considered
 
