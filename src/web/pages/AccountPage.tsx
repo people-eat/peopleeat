@@ -560,6 +560,51 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                 <TimeZoneField value={timeZoneDraft} onValueChange={(next) => void onTimeZoneChange(next)} disabled={actionBusy} />
             </AccountCard>
 
+            <AccountCard
+                title={{ de: 'Benachrichtigungen', en: 'Notifications' }[locale]}
+                description={
+                    {
+                        de: 'Lege fest, wobei wir dir schreiben. In der App bleibt alles sichtbar. Anmeldecodes, Zahlungen und Support gehen immer an deine E-Mail.',
+                        en: 'Choose what we write to you about. Everything still shows in the app. Sign-in codes, payments, and support always go to your email.',
+                    }[locale]
+                }
+            >
+                <AccountNotificationSettings
+                    value={user.notificationSettings}
+                    hasPhoneNumber={hasPhoneNumber}
+                    isCook={user.cook != null}
+                    disabled={actionBusy}
+                    onAddPhone={openPhoneDialog}
+                    onSave={async (notificationSettings) => {
+                        setBusy(true);
+                        try {
+                            const result = await userUpdate({ user: { notificationSettings } });
+                            if (result.error || !result.data?.user.userUpdate.success) {
+                                throw result.error ?? new Error('Could not save.');
+                            }
+                        } finally {
+                            setBusy(false);
+                        }
+                    }}
+                />
+            </AccountCard>
+
+            <AccountCard
+                title={{ de: 'Konto löschen', en: 'Delete account' }[locale]}
+                description={
+                    {
+                        de: 'Personenbezogene Daten werden entfernt. Du kannst dich danach nicht mehr anmelden.',
+                        en: 'Personal profile data will be removed. You will not be able to sign in afterwards.',
+                    }[locale]
+                }
+            >
+                <div className="flex justify-end">
+                    <Button type="button" variant="destructive" size="sm" disabled={actionBusy} onClick={openDeleteDialog}>
+                        {{ de: 'Konto löschen', en: 'Delete account' }[locale]}
+                    </Button>
+                </div>
+            </AccountCard>
+
             <AccountCard title={{ de: 'Anmeldung und Sicherheit', en: 'Sign-in and security' }[locale]}>
                 <div className="grid gap-3">
                     <h2 className="text-sm font-medium text-foreground">{{ de: 'Passkeys', en: 'Passkeys' }[locale]}</h2>
@@ -719,51 +764,6 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                             }
                         />
                     </div>
-                </div>
-            </AccountCard>
-
-            <AccountCard
-                title={{ de: 'Benachrichtigungen', en: 'Notifications' }[locale]}
-                description={
-                    {
-                        de: 'Lege fest, wobei wir dir schreiben. In der App bleibt alles sichtbar. Anmeldecodes, Zahlungen und Support gehen immer an deine E-Mail.',
-                        en: 'Choose what we write to you about. Everything still shows in the app. Sign-in codes, payments, and support always go to your email.',
-                    }[locale]
-                }
-            >
-                <AccountNotificationSettings
-                    value={user.notificationSettings}
-                    hasPhoneNumber={hasPhoneNumber}
-                    isCook={user.cook != null}
-                    disabled={actionBusy}
-                    onAddPhone={openPhoneDialog}
-                    onSave={async (notificationSettings) => {
-                        setBusy(true);
-                        try {
-                            const result = await userUpdate({ user: { notificationSettings } });
-                            if (result.error || !result.data?.user.userUpdate.success) {
-                                throw result.error ?? new Error('Could not save.');
-                            }
-                        } finally {
-                            setBusy(false);
-                        }
-                    }}
-                />
-            </AccountCard>
-
-            <AccountCard
-                title={{ de: 'Konto löschen', en: 'Delete account' }[locale]}
-                description={
-                    {
-                        de: 'Personenbezogene Daten werden entfernt. Du kannst dich danach nicht mehr anmelden.',
-                        en: 'Personal profile data will be removed. You will not be able to sign in afterwards.',
-                    }[locale]
-                }
-            >
-                <div className="flex justify-end">
-                    <Button type="button" variant="destructive" size="sm" disabled={actionBusy} onClick={openDeleteDialog}>
-                        {{ de: 'Konto löschen', en: 'Delete account' }[locale]}
-                    </Button>
                 </div>
             </AccountCard>
 

@@ -4,7 +4,7 @@ Signed-in people choose which automatic emails and WhatsApp messages they get, b
 
 ## Behavior
 
-Open **Account** and use the **Notifications** card under **Sign-in and security**.
+Open **Account** and use the **Notifications** card under **How we reach you**.
 
 The card says sign-in codes, payments, and support always go to the account email. Those have no switch. Cook approval is the same kind of
 mail and is not listed as a row. Everything still shows in the app. Concierge replies are not affected.

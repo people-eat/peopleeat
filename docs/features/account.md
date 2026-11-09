@@ -15,13 +15,13 @@ On the account page, settings sit in cards:
 - **How we reach you**: the email address (also the address used to sign in; change it via OTP to the new address) and the phone number
   (country code required, saved with `userUpdate`). Preferred communication (message, WhatsApp, call, email) is how the concierge reaches
   you, not which automatic messages are sent. Switch language and time zone.
-- **Sign-in and security**: list, add, and remove passkeys. Enable, confirm, and disable authenticator-app two-factor (QR + recovery codes).
-  List signed-in devices by browser and device. Signing out another device, signing out here, or signing out everywhere else each asks for
-  confirmation first. The confirm button is destructive. Everywhere-else sits before sign-out-here, both at the end of the card. Add-passkey
-  sits at the end of its section.
 - **Notifications**: email and WhatsApp on or off per topic. Cook topics appear only when the account has a cook profile. Sign-in codes,
   payments, and support always go to the account email. See [notification-settings.md](./notification-settings.md).
-- **Delete account** is the last card, with the action at the end of the card.
+- **Delete account**: the action sits at the end of the card.
+- **Sign-in and security** is the last card: list, add, and remove passkeys. Enable, confirm, and disable authenticator-app two-factor (QR
+  + recovery codes). List signed-in devices by browser and device. Signing out another device, signing out here, or signing out everywhere
+  else each asks for confirmation first. The confirm button is destructive. Everywhere-else sits before sign-out-here, both at the end of
+  the card. Add-passkey sits at the end of its section.
 - Privacy, terms, and imprint stay as quiet links under the cards.
 
 Language switches via the shared LanguageSwitcher (cookie + URL path). Changing language while signed in opens a hard confirm when the route
