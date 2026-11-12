@@ -85,6 +85,7 @@ tables stay; only GraphQL/commands collapse.
 - Hard gate: `assertLegalAcceptanceCurrent` on user and admin mutations (except accept paths, locale-only `userUpdate`, and impersonation
   sessions)
 
-Live updates: admin legal mutations publish admin updates; pages seed from loader and replace from subscription (no refetch).
+Live updates: admin legal mutations publish admin updates; pages seed from loader and replace from subscription (no refetch). Draft editor
+fields only reseed from the push when the form is clean, so typing is not wiped by unrelated `adminUpdates` traffic.
 
 See [admin-shell.md](./admin-shell.md), [sign-in.md](./sign-in.md), [admin-users.md](./admin-users.md).

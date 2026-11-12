@@ -151,7 +151,7 @@ Admin catalog pages use the same loop on `adminUpdates` with an `Admin` fragment
 - `src/web/chat/useChatTurnLiveUpdates.tsx` — assistant chat turn snapshot merge (`chatTurnUpdates`).
 - `src/web/pages/admin/AdminLegalDocumentPage.tsx` — admin legal kind hub seed-and-subscribe via `adminUpdates`.
 - `src/web/pages/admin/AdminLegalDraftPage.tsx` / `AdminLegalVersionPage.tsx` — same catalog subscription for draft editor and published
-  version view.
+  version view; draft editor reseeds body/summary only when `!dirty`.
 - `src/web/pages/profile/ProfileCookMealsPage.tsx` / `ProfileCookMealPage.tsx` — cook-owned meals via `userUpdates`.
 - `src/web/pages/profile/ProfileCookMenusPage.tsx` / `ProfileCookMenuPage.tsx` — cook-owned menus via `userUpdates`.
 

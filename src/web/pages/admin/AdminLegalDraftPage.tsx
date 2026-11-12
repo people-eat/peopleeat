@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { legalBodyDeNormalize } from '../../../shared/legalBodyDeNormalize';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import {
     AlertDialog,
@@ -73,9 +74,14 @@ export function AdminLegalDraftPage({ data, kind }: { data: GqlCAdminLegalDocume
     const client = useClient();
     const seedAdmin = data.currentSession.user?.admin ?? null;
     const [admin, setAdmin] = useState<GqlCAdminLegalDocumentPageAdminFragment | null>(seedAdmin);
-
-    const [bodyDe, setBodyDe] = useState('');
-    const [changeSummaryDe, setChangeSummaryDe] = useState('');
+    const [bodyDe, setBodyDe] = useState(() => {
+        if (!seedAdmin) return '';
+        return adminLegalDraftRow(adminLegalRowsFromAdmin(seedAdmin, kind))?.bodyDe ?? '';
+    });
+    const [changeSummaryDe, setChangeSummaryDe] = useState(() => {
+        if (!seedAdmin) return '';
+        return adminLegalDraftRow(adminLegalRowsFromAdmin(seedAdmin, kind))?.changeSummaryDe ?? '';
+    });
     const [busy, setBusy] = useState(false);
     const [publishOpen, setPublishOpen] = useState(false);
     const [mobileSurface, setMobileSurface] = useState<'edit' | 'preview'>('edit');
@@ -112,17 +118,19 @@ export function AdminLegalDraftPage({ data, kind }: { data: GqlCAdminLegalDocume
 
     useEffect(() => {
         if (!admin) return;
-        if (draftId === null) {
-            void navigate({
-                to: adminLegalKindTo(kind),
-                params: { kind },
-                replace: true,
-            });
-            return;
-        }
+        if (draftId !== null) return;
+        void navigate({
+            to: adminLegalKindTo(kind),
+            params: { kind },
+            replace: true,
+        });
+    }, [admin, draftId, kind, navigate]);
+
+    useEffect(() => {
+        if (draftId === null || dirty) return;
         setBodyDe(draftBodyDe ?? '');
         setChangeSummaryDe(draftChangeSummaryDe ?? '');
-    }, [admin, kind, draftId, draftBodyDe, draftChangeSummaryDe, navigate]);
+    }, [draftId, draftBodyDe, draftChangeSummaryDe, dirty]);
 
     const onSaveDraft = useEffectEvent(async () => {
         if (!canSave) return;
@@ -136,6 +144,8 @@ export function AdminLegalDraftPage({ data, kind }: { data: GqlCAdminLegalDocume
                 toast.error({ de: 'Entwurf konnte nicht gespeichert werden.', en: 'Could not save draft.' }[locale]);
                 return;
             }
+            setBodyDe(legalBodyDeNormalize(bodyDe));
+            setChangeSummaryDe(changeSummaryDe.trim());
             toast.success({ de: 'Entwurf gespeichert.', en: 'Draft saved.' }[locale]);
         } finally {
             setBusy(false);
