@@ -65,7 +65,9 @@ The upload and download routes are likewise consumer-agnostic:
      [testimonials.md](./testimonials.md)), or
   7. the session user is a **peer** on an offer or support chat that attaches the upload (`BookingRequestOfferEventAttachments` /
      `SupportRequestMessageAttachments` — customer, cook, or admin for offers; owning customer or admin for support), or the request owner /
-     a pool-eligible cook / an admin on `BookingRequestKitchenDetailsPhotos`, or
+     a pool-eligible cook / an admin on `BookingRequestKitchenDetailsPhotos`, or a **customer / cook / admin** on an offer whose
+     offer-scoped menus (meal options) or frozen `configuredMenu` snapshot reference the id as a meal image — including **draft** meals
+     (public publish is not required for offer peers; see [booking.md](./booking.md) and [cook-meals.md](../features/cook-meals.md)), or
   8. the session user is an **admin** and any content page (draft or published) or any meal (including drafts / soft-deleted) references the
      id (see [`content-sections.md`](./content-sections.md)), or
   9. the session user is an **admin** and any customer or cook testimonial (including `PENDING_REVIEW`) lists the URL in `imageUrls`, or

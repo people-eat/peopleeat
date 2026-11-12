@@ -5,6 +5,7 @@ import { environmentVariables } from '../../server/env/environmentVariablesCreat
 import { clientIpFromRequest } from '../../server/utils/clientIpFromRequest';
 import {
     fileUploadAccessibleViaBookingRequestKitchenDetails,
+    fileUploadAccessibleViaBookingRequestOfferMeal,
     fileUploadAccessibleViaOfferChat,
     fileUploadAccessibleViaSupportRequest,
     fileUploadReferencedAsCookLogo,
@@ -41,7 +42,9 @@ const log = loggerCreate(db);
 //   5. referenced by a published, non-deleted cook meal image
 //   6. referenced by a published customer/cook testimonial `imageUrls` entry (public)
 //   7. signed-in peer on an offer / support chat that attaches the upload,
-//      or the request owner / pool cook / admin on kitchen-details photos
+//      or the request owner / pool cook / admin on kitchen-details photos,
+//      or a customer / cook / admin on an offer whose menus or configuredMenu
+//      reference the meal image (draft meals included)
 //   8. signed-in admin + referenced by any draft/published content page or any meal
 //   9. signed-in admin + referenced by any customer/cook testimonial `imageUrls`
 //  10. signed-in admin + gift-card receipt/voucher PDF or outbound-email attachment
@@ -98,7 +101,8 @@ export const Route = createFileRoute('/api/file-uploads_/$fileUploadId')({
                     isChatPeerAccess =
                         (await fileUploadAccessibleViaOfferChat(db, fileUpload.fileUploadId, session.userId)) ||
                         (await fileUploadAccessibleViaSupportRequest(db, fileUpload.fileUploadId, session.userId)) ||
-                        (await fileUploadAccessibleViaBookingRequestKitchenDetails(db, fileUpload.fileUploadId, session.userId));
+                        (await fileUploadAccessibleViaBookingRequestKitchenDetails(db, fileUpload.fileUploadId, session.userId)) ||
+                        (await fileUploadAccessibleViaBookingRequestOfferMeal(db, fileUpload.fileUploadId, session.userId));
                     allowed = isChatPeerAccess;
                 }
                 if (!allowed && session.userId) {

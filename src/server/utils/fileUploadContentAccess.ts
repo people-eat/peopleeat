@@ -17,6 +17,9 @@ import {
     customerTestimonials,
     giftCards,
     meals,
+    menuCourseMealOptions,
+    menuCourses,
+    menus,
     occasions,
     outboundEmailAttachments,
     partnerVenues,
@@ -317,6 +320,65 @@ export async function fileUploadReferencedByPublishedMeal(db: Database, fileUplo
 export async function fileUploadReferencedByAnyMeal(db: Database, fileUploadId: string): Promise<boolean> {
     const [hit] = await db.select({ mealId: meals.mealId }).from(meals).where(eq(meals.imageFileUploadId, fileUploadId)).limit(1);
     return Boolean(hit);
+}
+
+/** True when an offer `configuredMenu` snapshot stores this upload as a meal image URL. */
+function configuredMenuContainsMealImageUrl(fileUploadId: string) {
+    const url = fileUploadPublicUrl(fileUploadId);
+    return sql`exists (
+        select 1
+        from jsonb_array_elements(coalesce(${bookingRequestOffers.configuredMenu}->'courses', '[]'::jsonb)) as course(value),
+             jsonb_array_elements(coalesce(course.value->'meals', '[]'::jsonb)) as meal(value)
+        where meal.value->>'mealImageUrl' = ${url}
+    )`;
+}
+
+/**
+ * True when `userId` may download a meal image because it appears on an offer they
+ * can see: offer-scoped menu meal options (including draft meals) or a frozen
+ * `configuredMenu` snapshot. Customer, cook, or admin.
+ */
+export async function fileUploadAccessibleViaBookingRequestOfferMeal(db: Database, fileUploadId: string, userId: string): Promise<boolean> {
+    if (await userIsAdmin(db, userId)) {
+        const [menuHit] = await db
+            .select({ bookingRequestOfferId: menus.bookingRequestOfferId })
+            .from(meals)
+            .innerJoin(menuCourseMealOptions, eq(menuCourseMealOptions.mealId, meals.mealId))
+            .innerJoin(menuCourses, eq(menuCourses.courseId, menuCourseMealOptions.courseId))
+            .innerJoin(menus, eq(menus.menuId, menuCourses.menuId))
+            .where(and(eq(meals.imageFileUploadId, fileUploadId), isNotNull(menus.bookingRequestOfferId)))
+            .limit(1);
+        if (menuHit) return true;
+
+        const [configuredHit] = await db
+            .select({ bookingRequestOfferId: bookingRequestOffers.bookingRequestOfferId })
+            .from(bookingRequestOffers)
+            .where(configuredMenuContainsMealImageUrl(fileUploadId))
+            .limit(1);
+        return Boolean(configuredHit);
+    }
+
+    const peerOnOffer = or(eq(bookingRequests.userId, userId), eq(bookingRequestOffers.cookId, userId));
+
+    const [menuHit] = await db
+        .select({ bookingRequestOfferId: bookingRequestOffers.bookingRequestOfferId })
+        .from(meals)
+        .innerJoin(menuCourseMealOptions, eq(menuCourseMealOptions.mealId, meals.mealId))
+        .innerJoin(menuCourses, eq(menuCourses.courseId, menuCourseMealOptions.courseId))
+        .innerJoin(menus, eq(menus.menuId, menuCourses.menuId))
+        .innerJoin(bookingRequestOffers, eq(bookingRequestOffers.bookingRequestOfferId, menus.bookingRequestOfferId))
+        .innerJoin(bookingRequests, eq(bookingRequests.bookingRequestId, bookingRequestOffers.bookingRequestId))
+        .where(and(eq(meals.imageFileUploadId, fileUploadId), peerOnOffer))
+        .limit(1);
+    if (menuHit) return true;
+
+    const [configuredHit] = await db
+        .select({ bookingRequestOfferId: bookingRequestOffers.bookingRequestOfferId })
+        .from(bookingRequestOffers)
+        .innerJoin(bookingRequests, eq(bookingRequests.bookingRequestId, bookingRequestOffers.bookingRequestId))
+        .where(and(configuredMenuContainsMealImageUrl(fileUploadId), peerOnOffer))
+        .limit(1);
+    return Boolean(configuredHit);
 }
 
 /**

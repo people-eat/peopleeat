@@ -1,16 +1,44 @@
+import { eq } from 'drizzle-orm';
 import { describe, expect, it } from 'vitest';
 
 import { fileUploadPublicUrl } from '../../shared/contentSection';
 import { idCreate } from '../../shared/idCreate';
 import { fileUploadCreate } from '../commands/fileUploadCreate';
-import { customerTestimonials, giftCards, outboundEmailAttachments, outboundEmails } from '../db/schema';
+import {
+    bookingRequestOffers,
+    bookingRequests,
+    cooks,
+    customerTestimonials,
+    giftCards,
+    meals,
+    menuCourseMealOptions,
+    menuCourses,
+    menus,
+    outboundEmailAttachments,
+    outboundEmails,
+} from '../db/schema';
+import type { BookingRequestOfferConfiguredMenu } from '../domain/bookingRequest';
 import { commandSetup, testDb } from '../test/commandTestUtils';
 import {
+    fileUploadAccessibleViaBookingRequestOfferMeal,
     fileUploadReferencedByAnyTestimonial,
     fileUploadReferencedByGiftCardPdf,
     fileUploadReferencedByOutboundEmailAttachment,
+    fileUploadReferencedByPublishedMeal,
     fileUploadReferencedByPublishedTestimonial,
 } from './fileUploadContentAccess';
+
+const berlin = {
+    displayText: 'Berlin',
+    latitude: 52.52,
+    longitude: 13.405,
+    addressLine1: 'Street 1',
+    addressLine2: '',
+    city: 'Berlin',
+    postCode: '10115',
+    state: 'BE',
+    country: 'DE',
+};
 
 describe('fileUploadContentAccess invoice helpers', () => {
     it('detects a gift-card invoice file upload', async () => {
@@ -140,5 +168,150 @@ describe('fileUploadContentAccess testimonial helpers', () => {
         expect(await fileUploadReferencedByPublishedTestimonial(testDb, pendingUpload.fileUploadId)).toBe(false);
         expect(await fileUploadReferencedByAnyTestimonial(testDb, pendingUpload.fileUploadId)).toBe(true);
         expect(await fileUploadReferencedByAnyTestimonial(testDb, idCreate())).toBe(false);
+    });
+});
+
+describe('fileUploadContentAccess offer meal images', () => {
+    async function seedOfferWithDraftMealImage() {
+        const cook = await commandSetup.withUser({ firstName: 'Chef', lastName: 'Cook' });
+        const customer = await commandSetup.withUser({ firstName: 'Host', lastName: 'Customer' });
+        const stranger = await commandSetup.withUser({ firstName: 'Other', lastName: 'Person' });
+
+        await testDb.insert(cooks).values({
+            cookId: cook.user.userId,
+            isVisible: true,
+            isApprovedByAdmin: true,
+            exactTravelOriginAddress: berlin,
+            travelExpensesAmount: 25,
+            maximumTravelDistance: 100,
+            stripeAccountId: 'acct_meal_image',
+            stripeAccountActive: true,
+        });
+
+        const upload = await fileUploadCreate(testDb, {
+            userId: cook.user.userId,
+            filename: 'draft-steak.jpg',
+            mediaType: 'image/jpeg',
+            bytes: Buffer.from('steak'),
+        });
+
+        const mealId = idCreate();
+        await testDb.insert(meals).values({
+            mealId,
+            cookId: cook.user.userId,
+            title: 'Draft steak',
+            description: 'Not published',
+            imageFileUploadId: upload.fileUploadId,
+            publishedAt: null,
+        });
+
+        const bookingRequestId = idCreate();
+        await testDb.insert(bookingRequests).values({
+            bookingRequestId,
+            userId: customer.user.userId,
+            occasion: 'Birthday',
+            dateTime: new Date('2026-12-15T18:00:00.000Z'),
+            exactEventAddress: berlin,
+            priceClassType: 'MEDIUM',
+            originalMessage: 'Looking for a chef',
+            publicationStatus: 'PUBLICATION_AUTO_APPROVED',
+            preferences: [],
+        });
+
+        const bookingRequestOfferId = idCreate();
+        await testDb.insert(bookingRequestOffers).values({
+            bookingRequestOfferId,
+            bookingRequestId,
+            cookId: cook.user.userId,
+            cookAccepted: true,
+            userAccepted: null,
+            userUnreadNotificationCount: 0,
+            cookUnreadNotificationCount: 0,
+            menuPriceCents: 40_000,
+            travelExpensesCents: 2_000,
+            paymentProviderFeeCents: 800,
+            platformFeePercentCook: 18,
+            platformFeePercentCustomer: 4,
+            platformFeeCentsCook: 7_200,
+            platformFeeCentsCustomer: 1_600,
+            payoutCentsCook: 34_800,
+            totalWithoutDiscountsCentsCustomer: 45_000,
+            totalCentsCustomer: 45_000,
+            giftCardAppliedCents: 0,
+            paymentStatus: 'EMPTY',
+        });
+
+        return { cook, customer, stranger, upload, mealId, bookingRequestOfferId };
+    }
+
+    it('lets the offer customer download a draft meal image via the offer menu', async () => {
+        const seed = await seedOfferWithDraftMealImage();
+
+        const menuId = idCreate();
+        const courseId = idCreate();
+        await testDb.insert(menus).values({
+            menuId,
+            cookId: seed.cook.user.userId,
+            bookingRequestOfferId: seed.bookingRequestOfferId,
+            title: 'Offer menu',
+            description: 'Courses',
+        });
+        await testDb.insert(menuCourses).values({
+            courseId,
+            menuId,
+            cookId: seed.cook.user.userId,
+            index: 0,
+            title: 'Main',
+            mealSelectionLimit: 1,
+        });
+        await testDb.insert(menuCourseMealOptions).values({
+            mealOptionId: idCreate(),
+            courseId,
+            cookId: seed.cook.user.userId,
+            mealId: seed.mealId,
+            index: 0,
+        });
+
+        expect(await fileUploadReferencedByPublishedMeal(testDb, seed.upload.fileUploadId)).toBe(false);
+        expect(await fileUploadAccessibleViaBookingRequestOfferMeal(testDb, seed.upload.fileUploadId, seed.customer.user.userId)).toBe(
+            true,
+        );
+        expect(await fileUploadAccessibleViaBookingRequestOfferMeal(testDb, seed.upload.fileUploadId, seed.cook.user.userId)).toBe(true);
+        expect(await fileUploadAccessibleViaBookingRequestOfferMeal(testDb, seed.upload.fileUploadId, seed.stranger.user.userId)).toBe(
+            false,
+        );
+    });
+
+    it('lets the offer customer download a draft meal image via configuredMenu snapshot', async () => {
+        const seed = await seedOfferWithDraftMealImage();
+        const configuredMenu = {
+            menuId: idCreate(),
+            title: 'Configured',
+            description: '',
+            courses: [
+                {
+                    title: 'Main',
+                    meals: [
+                        {
+                            mealTitle: 'Draft steak',
+                            mealDescription: 'Not published',
+                            mealImageUrl: fileUploadPublicUrl(seed.upload.fileUploadId),
+                        },
+                    ],
+                },
+            ],
+        } satisfies BookingRequestOfferConfiguredMenu;
+
+        await testDb
+            .update(bookingRequestOffers)
+            .set({ configuredMenu })
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, seed.bookingRequestOfferId));
+
+        expect(await fileUploadAccessibleViaBookingRequestOfferMeal(testDb, seed.upload.fileUploadId, seed.customer.user.userId)).toBe(
+            true,
+        );
+        expect(await fileUploadAccessibleViaBookingRequestOfferMeal(testDb, seed.upload.fileUploadId, seed.stranger.user.userId)).toBe(
+            false,
+        );
     });
 });

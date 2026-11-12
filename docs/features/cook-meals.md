@@ -99,7 +99,9 @@ blocking: a course blocks delete when this meal is its only active option.
   `publicCookMealCatalogWhere` — shared published + non-deleted + image gate for public meal list and cook listing
 - Mappers: `toGqlCookMeal`, `toGqlAdminCookMeal`
 - Guard: `guardCookMutation`
-- File GET: published non-deleted meal images public; admins read any — [file-storage.md](../architecture/file-storage.md)
+- File GET: published non-deleted meal images public; offer peers (customer / cook / admin) may also download meal images that appear on
+  that offer’s menus or `configuredMenu` even when the meal is still a draft; admins read any —
+  [file-storage.md](../architecture/file-storage.md)
 - UI: `CookMealCard` (cook/admin manage; missing-image popover + published-without-image status badge; `showStatusBadge={false}` hides those
   plus the missing-image chip, used on AI menu review; optional Add picture), `CustomerMealCard` (horizontal consume on offers/checkout;
   `variant="marketing"` on public cook page), shared `MealDetailsDialog`, `CookMealImageField`, `CookMealEditorDialog` (menu-edit
