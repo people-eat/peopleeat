@@ -2424,6 +2424,20 @@ export interface GqlSAdminUser {
     userId: Scalars['ID']['output'];
 }
 
+export interface GqlSAdminUserAgeBySegment {
+    __typename?: 'AdminUserAgeBySegment';
+    actualCustomers: GqlSAdminUserAgeStat;
+    cooks: GqlSAdminUserAgeStat;
+    potentialCustomers: GqlSAdminUserAgeStat;
+}
+
+export interface GqlSAdminUserAgeStat {
+    __typename?: 'AdminUserAgeStat';
+    averageAge?: Maybe<Scalars['Float']['output']>;
+    birthDateSampleSize: Scalars['Int']['output'];
+    medianAge?: Maybe<Scalars['Float']['output']>;
+}
+
 export type GqlSAdminUserCreate = {
     asAdmin?: Scalars['Boolean']['input'];
     birthDate: Scalars['Date']['input'];
@@ -2452,11 +2466,9 @@ export type GqlSAdminUserCriterion = {
 export interface GqlSAdminUserInsights {
     __typename?: 'AdminUserInsights';
     accountCount: Scalars['Int']['output'];
-    averageAge?: Maybe<Scalars['Float']['output']>;
-    birthDateSampleSize: Scalars['Int']['output'];
+    ageBySegment: GqlSAdminUserAgeBySegment;
     googleLinkedAccountCount: Scalars['Int']['output'];
     locales: Array<GqlSAdminUserLocaleStat>;
-    medianAge?: Maybe<Scalars['Float']['output']>;
     passkeyAccountCount: Scalars['Int']['output'];
     preferredCommunication: Array<GqlSAdminUserPreferredCommunicationStat>;
     timeZones: Array<GqlSAdminUserTimeZoneStat>;
@@ -6156,6 +6168,8 @@ export type GqlSResolversTypes = ResolversObject<{
     AdminTimeBucket: ResolverTypeWrapper<GqlSAdminTimeBucket>;
     AdminTimeBucketGranularity: GqlSAdminTimeBucketGranularity;
     AdminUser: ResolverTypeWrapper<GqlSAdminUser>;
+    AdminUserAgeBySegment: ResolverTypeWrapper<GqlSAdminUserAgeBySegment>;
+    AdminUserAgeStat: ResolverTypeWrapper<GqlSAdminUserAgeStat>;
     AdminUserCreate: GqlSAdminUserCreate;
     AdminUserCriterion: GqlSAdminUserCriterion;
     AdminUserInsights: ResolverTypeWrapper<GqlSAdminUserInsights>;
@@ -6751,6 +6765,8 @@ export type GqlSResolversParentTypes = ResolversObject<{
     AdminTestimonialPublicPagePlacement: GqlSAdminTestimonialPublicPagePlacement;
     AdminTimeBucket: GqlSAdminTimeBucket;
     AdminUser: GqlSAdminUser;
+    AdminUserAgeBySegment: GqlSAdminUserAgeBySegment;
+    AdminUserAgeStat: GqlSAdminUserAgeStat;
     AdminUserCreate: GqlSAdminUserCreate;
     AdminUserCriterion: GqlSAdminUserCriterion;
     AdminUserInsights: GqlSAdminUserInsights;
@@ -9269,16 +9285,32 @@ export type GqlSAdminUserResolvers<
     userId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
 }>;
 
+export type GqlSAdminUserAgeBySegmentResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminUserAgeBySegment'] = GqlSResolversParentTypes['AdminUserAgeBySegment'],
+> = ResolversObject<{
+    actualCustomers?: Resolver<GqlSResolversTypes['AdminUserAgeStat'], ParentType, ContextType>;
+    cooks?: Resolver<GqlSResolversTypes['AdminUserAgeStat'], ParentType, ContextType>;
+    potentialCustomers?: Resolver<GqlSResolversTypes['AdminUserAgeStat'], ParentType, ContextType>;
+}>;
+
+export type GqlSAdminUserAgeStatResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminUserAgeStat'] = GqlSResolversParentTypes['AdminUserAgeStat'],
+> = ResolversObject<{
+    averageAge?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
+    birthDateSampleSize?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    medianAge?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
+}>;
+
 export type GqlSAdminUserInsightsResolvers<
     ContextType = any,
     ParentType extends GqlSResolversParentTypes['AdminUserInsights'] = GqlSResolversParentTypes['AdminUserInsights'],
 > = ResolversObject<{
     accountCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
-    averageAge?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
-    birthDateSampleSize?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    ageBySegment?: Resolver<GqlSResolversTypes['AdminUserAgeBySegment'], ParentType, ContextType>;
     googleLinkedAccountCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     locales?: Resolver<Array<GqlSResolversTypes['AdminUserLocaleStat']>, ParentType, ContextType>;
-    medianAge?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
     passkeyAccountCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     preferredCommunication?: Resolver<Array<GqlSResolversTypes['AdminUserPreferredCommunicationStat']>, ParentType, ContextType>;
     timeZones?: Resolver<Array<GqlSResolversTypes['AdminUserTimeZoneStat']>, ParentType, ContextType>;
@@ -12410,6 +12442,8 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     AdminTestimonialPublicPagePlacement?: GqlSAdminTestimonialPublicPagePlacementResolvers<ContextType>;
     AdminTimeBucket?: GqlSAdminTimeBucketResolvers<ContextType>;
     AdminUser?: GqlSAdminUserResolvers<ContextType>;
+    AdminUserAgeBySegment?: GqlSAdminUserAgeBySegmentResolvers<ContextType>;
+    AdminUserAgeStat?: GqlSAdminUserAgeStatResolvers<ContextType>;
     AdminUserInsights?: GqlSAdminUserInsightsResolvers<ContextType>;
     AdminUserLocaleStat?: GqlSAdminUserLocaleStatResolvers<ContextType>;
     AdminUserPreferredCommunicationStat?: GqlSAdminUserPreferredCommunicationStatResolvers<ContextType>;

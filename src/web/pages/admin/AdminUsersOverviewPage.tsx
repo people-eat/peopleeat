@@ -380,27 +380,52 @@ export function AdminUsersOverviewPage({ data, search }: { data: GqlCAdminUsersO
                     <p className="text-sm text-muted-foreground">
                         {
                             {
-                                de: 'Altersstatistik und nächste Geburtstage (nur Konten mit Geburtsdatum, anonymisierte ausgeschlossen).',
-                                en: 'Age stats and next birthdays (accounts with a birth date only, anonymized excluded).',
+                                de: 'Altersstatistik nach Segment und nächste Geburtstage (nur Konten mit Geburtsdatum, anonymisierte ausgeschlossen). Köche: mit Koch-Zeile. Tatsächliche Kunden: ohne Koch-Zeile und mit mindestens einem beidseitig akzeptierten Angebot. Potenzielle Kunden: ohne Koch-Zeile und ohne beidseitige Akzeptanz.',
+                                en: 'Age stats by segment and next birthdays (accounts with a birth date only, anonymized excluded). Cooks: cook row present. Actual customers: no cook row and at least one dual-accepted offer. Potential customers: no cook row and no dual acceptance.',
                             }[locale]
                         }
                     </p>
-                    <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                        <AdminOverviewStatCard
-                            label={{ de: 'Medianalter', en: 'Median age' }[locale]}
-                            value={insights?.medianAge ?? 0}
-                            displayValue={formatAgeYears(insights?.medianAge, locale)}
-                        />
-                        <AdminOverviewStatCard
-                            label={{ de: 'Durchschnittsalter', en: 'Average age' }[locale]}
-                            value={insights?.averageAge ?? 0}
-                            displayValue={formatAgeYears(insights?.averageAge, locale)}
-                        />
-                        <AdminOverviewStatCard
-                            label={{ de: 'Mit Geburtsdatum', en: 'With birth date' }[locale]}
-                            value={insights?.birthDateSampleSize ?? 0}
-                        />
-                    </dl>
+                    <div className="grid gap-4 sm:grid-cols-3 sm:items-start">
+                        {(
+                            [
+                                {
+                                    key: 'cooks',
+                                    label: { de: 'Köche', en: 'Cooks' }[locale],
+                                    age: insights?.ageBySegment.cooks,
+                                },
+                                {
+                                    key: 'potentialCustomers',
+                                    label: { de: 'Potenzielle Kunden', en: 'Potential customers' }[locale],
+                                    age: insights?.ageBySegment.potentialCustomers,
+                                },
+                                {
+                                    key: 'actualCustomers',
+                                    label: { de: 'Tatsächliche Kunden', en: 'Actual customers' }[locale],
+                                    age: insights?.ageBySegment.actualCustomers,
+                                },
+                            ] as const
+                        ).map((segment) => (
+                            <div key={segment.key} className="grid gap-3">
+                                <h3 className="text-base font-medium">{segment.label}</h3>
+                                <dl className="grid gap-2">
+                                    <AdminOverviewStatCard
+                                        label={{ de: 'Medianalter', en: 'Median age' }[locale]}
+                                        value={segment.age?.medianAge ?? 0}
+                                        displayValue={formatAgeYears(segment.age?.medianAge, locale)}
+                                    />
+                                    <AdminOverviewStatCard
+                                        label={{ de: 'Durchschnittsalter', en: 'Average age' }[locale]}
+                                        value={segment.age?.averageAge ?? 0}
+                                        displayValue={formatAgeYears(segment.age?.averageAge, locale)}
+                                    />
+                                    <AdminOverviewStatCard
+                                        label={{ de: 'Mit Geburtsdatum', en: 'With birth date' }[locale]}
+                                        value={segment.age?.birthDateSampleSize ?? 0}
+                                    />
+                                </dl>
+                            </div>
+                        ))}
+                    </div>
                     <h3 className="text-base font-medium">{{ de: 'Kommende Geburtstage', en: 'Upcoming birthdays' }[locale]}</h3>
                     {upcomingBirthdays.length === 0 ? (
                         <p className="text-sm text-muted-foreground">

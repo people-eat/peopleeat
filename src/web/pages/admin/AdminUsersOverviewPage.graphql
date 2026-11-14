@@ -21,9 +21,23 @@ query AdminUsersOverviewPage(
                 }
                 userInsights {
                     accountCount
-                    medianAge
-                    averageAge
-                    birthDateSampleSize
+                    ageBySegment {
+                        cooks {
+                            medianAge
+                            averageAge
+                            birthDateSampleSize
+                        }
+                        potentialCustomers {
+                            medianAge
+                            averageAge
+                            birthDateSampleSize
+                        }
+                        actualCustomers {
+                            medianAge
+                            averageAge
+                            birthDateSampleSize
+                        }
+                    }
                     preferredCommunication {
                         preferredCommunication
                         count

@@ -2427,6 +2427,20 @@ export interface GqlCAdminUser {
     userId: Scalars['ID']['output'];
 }
 
+export interface GqlCAdminUserAgeBySegment {
+    __typename?: 'AdminUserAgeBySegment';
+    actualCustomers: GqlCAdminUserAgeStat;
+    cooks: GqlCAdminUserAgeStat;
+    potentialCustomers: GqlCAdminUserAgeStat;
+}
+
+export interface GqlCAdminUserAgeStat {
+    __typename?: 'AdminUserAgeStat';
+    averageAge?: Maybe<Scalars['Float']['output']>;
+    birthDateSampleSize: Scalars['Int']['output'];
+    medianAge?: Maybe<Scalars['Float']['output']>;
+}
+
 export type GqlCAdminUserCreate = {
     asAdmin?: Scalars['Boolean']['input'];
     birthDate: Scalars['Date']['input'];
@@ -2455,11 +2469,9 @@ export type GqlCAdminUserCriterion = {
 export interface GqlCAdminUserInsights {
     __typename?: 'AdminUserInsights';
     accountCount: Scalars['Int']['output'];
-    averageAge?: Maybe<Scalars['Float']['output']>;
-    birthDateSampleSize: Scalars['Int']['output'];
+    ageBySegment: GqlCAdminUserAgeBySegment;
     googleLinkedAccountCount: Scalars['Int']['output'];
     locales: Array<GqlCAdminUserLocaleStat>;
-    medianAge?: Maybe<Scalars['Float']['output']>;
     passkeyAccountCount: Scalars['Int']['output'];
     preferredCommunication: Array<GqlCAdminUserPreferredCommunicationStat>;
     timeZones: Array<GqlCAdminUserTimeZoneStat>;
@@ -17797,12 +17809,14 @@ export type GqlCAdminUsersOverviewPageQuery = {
                 userRegistrations: Array<{ bucketStart: string; count: number }>;
                 userInsights: {
                     accountCount: number;
-                    medianAge: number | null;
-                    averageAge: number | null;
-                    birthDateSampleSize: number;
                     googleLinkedAccountCount: number;
                     passkeyAccountCount: number;
                     totpAccountCount: number;
+                    ageBySegment: {
+                        cooks: { medianAge: number | null; averageAge: number | null; birthDateSampleSize: number };
+                        potentialCustomers: { medianAge: number | null; averageAge: number | null; birthDateSampleSize: number };
+                        actualCustomers: { medianAge: number | null; averageAge: number | null; birthDateSampleSize: number };
+                    };
                     preferredCommunication: Array<{ preferredCommunication: Schema.GqlCUserPreferredCommunication | null; count: number }>;
                     locales: Array<{ locale: Schema.GqlCLocale; count: number }>;
                     timeZones: Array<{ timeZone: string; count: number }>;
@@ -73938,9 +73952,87 @@ export const AdminUsersOverviewPageDocument = {
                                                                 kind: 'SelectionSet',
                                                                 selections: [
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'accountCount' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'medianAge' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'averageAge' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'birthDateSampleSize' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'ageBySegment' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'cooks' },
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'medianAge' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'averageAge' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: {
+                                                                                                    kind: 'Name',
+                                                                                                    value: 'birthDateSampleSize',
+                                                                                                },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'potentialCustomers' },
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'medianAge' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'averageAge' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: {
+                                                                                                    kind: 'Name',
+                                                                                                    value: 'birthDateSampleSize',
+                                                                                                },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'actualCustomers' },
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'medianAge' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'averageAge' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: {
+                                                                                                    kind: 'Name',
+                                                                                                    value: 'birthDateSampleSize',
+                                                                                                },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
                                                                     {
                                                                         kind: 'Field',
                                                                         name: { kind: 'Name', value: 'preferredCommunication' },

@@ -15,8 +15,11 @@ with `type` preselected (Total clears the filter).
 **Insights** (all non-anonymized accounts, independent of the chart range): ranked breakdowns for preferred communication, locale, and top
 time zones (count + share of non-anonymized accounts), plus overlapping linked-method counts (Google linked, passkey present, authenticator
 app enrolled). Copy must not imply a partition: one account can have Google and a passkey. **Age and birthdays** follows with median +
-average age and birth-date sample size, then upcoming birthdays (name links to the user detail; type badges for cook / customer / admin;
-shows next date and age they turn). Median is the primary age signal; average stays for comparison when the distribution is skewed.
+average age and birth-date sample size **split by segment** (cooks, potential customers, actual customers), then upcoming birthdays (name
+links to the user detail; type badges for cook / customer / admin; shows next date and age they turn). Segments are mutually exclusive among
+non-anonymized accounts with a birth date: **cooks** (cook row), **actual customers** (no cook row + ≥1 dual-accepted offer on a booking
+request they own), **potential customers** (no cook row + no dual-accepted offer). Median is the primary age signal per segment; average
+stays for comparison when the distribution is skewed.
 
 ### List — `/admin/users/list`
 
@@ -119,8 +122,8 @@ detail with URL tabs; manual create with optional admin and cook payloads.
 
 ## Implementation
 
-- SDL: `AdminUser`, types, criterion, registrations, `AdminUserInsights` / upcoming birthday types, create, admin note update in
-  `schema.graphqls`
+- SDL: `AdminUser`, types, criterion, registrations, `AdminUserInsights` / `AdminUserAgeBySegment` / `AdminUserAgeStat` / upcoming birthday
+  types, create, admin note update in `schema.graphqls`
 - Queries: `adminUserFindMany`, `adminUserCounts`, `adminUserRegistrationsFindMany`, `adminUserInsightsFindOne`,
   `adminUserUpcomingBirthdaysFindMany`, `adminUserFindOne`; `adminUserPasskeysFindMany`, `adminUserTimeBasedOneTimePasswordFindOne`, and
   `adminUserOauthIdentitiesFindMany` on `AdminUser` (skipped unless the selection asks for them); criterion helpers

@@ -3445,18 +3445,33 @@ type AdminUserTimeZoneStat {
     count: Int!
 }
 
+# Median / mean age for one cohort on the users overview.
+# Null ages when the cohort has no birth dates. See docs/features/admin-users.md.
+type AdminUserAgeStat {
+    # Median completed years of age. Prefer over `averageAge` when outliers skew the mean.
+    medianAge: Float
+    # Mean completed years of age.
+    averageAge: Float
+    # Users contributing to this cohort's age stats (non-null birth date, not anonymized).
+    birthDateSampleSize: Int!
+}
+
+# Age stats split by cook vs customer conversion. Segments are mutually exclusive
+# among non-anonymized accounts with a birth date: cooks (cook row), actual
+# customers (no cook row + ≥1 dual-accepted offer on a booking request they own),
+# potential customers (no cook row + no dual-accepted offer).
+type AdminUserAgeBySegment {
+    cooks: AdminUserAgeStat!
+    potentialCustomers: AdminUserAgeStat!
+    actualCustomers: AdminUserAgeStat!
+}
+
 # Demographic / preference aggregates for the users overview. Excludes
 # anonymized accounts. See docs/features/admin-users.md.
 type AdminUserInsights {
     # Non-anonymized accounts (denominator for preference / locale / zone shares).
     accountCount: Int!
-    # Median completed years of age among users with a birth date. Null when none.
-    # Prefer this over `averageAge` when a few outliers would skew the mean.
-    medianAge: Float
-    # Mean completed years of age among users with a birth date. Null when none.
-    averageAge: Float
-    # Users contributing to age stats (non-null birth date, not anonymized).
-    birthDateSampleSize: Int!
+    ageBySegment: AdminUserAgeBySegment!
     preferredCommunication: [AdminUserPreferredCommunicationStat!]!
     locales: [AdminUserLocaleStat!]!
     # Sorted by count descending. Cap is applied in the query (top zones).

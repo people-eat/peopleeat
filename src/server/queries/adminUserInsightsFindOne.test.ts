@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
-import { authOauthIdentities, authPasskeys, authTimeBasedOneTimePasswords, cooks, users } from '../db/schema';
+import {
+    authOauthIdentities,
+    authPasskeys,
+    authTimeBasedOneTimePasswords,
+    bookingRequestOffers,
+    bookingRequests,
+    cooks,
+    users,
+} from '../db/schema';
 import { commandSetup, testDb } from '../test/commandTestUtils';
 import { adminUserInsightsFindOne } from './adminUserInsightsFindOne';
 import { adminUserUpcomingBirthdaysFindMany } from './adminUserUpcomingBirthdaysFindMany';
@@ -14,6 +22,18 @@ function monthDayInDays(daysFromToday: number): string {
     const day = String(date.getDate()).padStart(2, '0');
     return `${month}-${day}`;
 }
+
+const sampleAddress = {
+    displayText: 'Musterstraße 1, 80331 München',
+    latitude: 48.137,
+    longitude: 11.575,
+    addressLine1: 'Musterstraße 1',
+    addressLine2: '',
+    city: 'München',
+    postCode: '80331',
+    state: 'BY',
+    country: 'DE',
+};
 
 describe('adminUserInsightsFindOne', () => {
     it('aggregates age, preferred communication, locale, and time zone', async () => {
@@ -59,11 +79,16 @@ describe('adminUserInsightsFindOne', () => {
         const insights = await adminUserInsightsFindOne(admin.requestingSession, admin.serverRuntime);
 
         // Assert
-        expect(insights.birthDateSampleSize).toBeGreaterThanOrEqual(3);
-        expect(insights.medianAge).not.toBeNull();
-        expect(insights.medianAge!).toBeGreaterThan(0);
-        expect(insights.averageAge).not.toBeNull();
-        expect(insights.averageAge!).toBeGreaterThan(0);
+        const totalWithBirthDate =
+            insights.ageBySegment.cooks.birthDateSampleSize +
+            insights.ageBySegment.potentialCustomers.birthDateSampleSize +
+            insights.ageBySegment.actualCustomers.birthDateSampleSize;
+        expect(totalWithBirthDate).toBeGreaterThanOrEqual(3);
+        expect(insights.ageBySegment.potentialCustomers.birthDateSampleSize).toBeGreaterThanOrEqual(3);
+        expect(insights.ageBySegment.potentialCustomers.medianAge).not.toBeNull();
+        expect(insights.ageBySegment.potentialCustomers.medianAge!).toBeGreaterThan(0);
+        expect(insights.ageBySegment.potentialCustomers.averageAge).not.toBeNull();
+        expect(insights.ageBySegment.potentialCustomers.averageAge!).toBeGreaterThan(0);
 
         const whatsApp = insights.preferredCommunication.find((row) => row.preferredCommunication === 'WHATS_APP');
         expect(whatsApp?.count).toBeGreaterThanOrEqual(2);
@@ -77,6 +102,137 @@ describe('adminUserInsightsFindOne', () => {
         // Anonymized Honolulu row must not appear as a time-zone bucket from this seed.
         // Other tests may have seeded Honolulu; only assert our non-anon zones are present.
         expect(insights.timeZones.some((row) => row.timeZone === 'America/New_York')).toBe(true);
+    });
+
+    it('splits age stats into cooks, potential customers, and actual customers', async () => {
+        const token = `age-seg-${idCreate().slice(0, 8)}`;
+        const admin = await commandSetup.withUser({
+            firstName: `${token}-admin`,
+            lastName: 'User',
+        });
+
+        const cook = await commandSetup.withUser({
+            firstName: `${token}-cook`,
+            lastName: 'User',
+            birthDate: '1985-01-01',
+        });
+        await testDb.insert(cooks).values({ cookId: cook.user.userId });
+
+        // Customer with a pending (not dual-accepted) offer stays potential.
+        const potential = await commandSetup.withUser({
+            firstName: `${token}-potential`,
+            lastName: 'User',
+            birthDate: '1995-01-01',
+        });
+        const pendingRequestId = idCreate();
+        await testDb.insert(bookingRequests).values({
+            bookingRequestId: pendingRequestId,
+            userId: potential.user.userId,
+            occasion: 'Birthday',
+            dateTime: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+            exactEventAddress: sampleAddress,
+            priceClassType: 'MEDIUM',
+            originalMessage: 'Please cook for us.',
+            publicationStatus: 'PUBLICATION_AUTO_APPROVED',
+            preferences: [],
+        });
+        await testDb.insert(bookingRequestOffers).values({
+            bookingRequestOfferId: idCreate(),
+            bookingRequestId: pendingRequestId,
+            cookId: cook.user.userId,
+            cookAccepted: true,
+            userAccepted: null,
+            menuPriceCents: 20_000,
+            travelExpensesCents: 2_500,
+            paymentProviderFeeCents: 500,
+            platformFeePercentCook: 18,
+            platformFeePercentCustomer: 4,
+            platformFeeCentsCook: 3_600,
+            platformFeeCentsCustomer: 900,
+            payoutCentsCook: 18_400,
+            totalWithoutDiscountsCentsCustomer: 23_900,
+            paymentStatus: 'EMPTY',
+        });
+
+        const actual = await commandSetup.withUser({
+            firstName: `${token}-actual`,
+            lastName: 'User',
+            birthDate: '1975-01-01',
+        });
+        const bookingRequestId = idCreate();
+        await testDb.insert(bookingRequests).values({
+            bookingRequestId,
+            userId: actual.user.userId,
+            occasion: 'Birthday',
+            dateTime: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+            exactEventAddress: sampleAddress,
+            priceClassType: 'MEDIUM',
+            originalMessage: 'Please cook for us.',
+            publicationStatus: 'PUBLICATION_AUTO_APPROVED',
+            preferences: [],
+        });
+        await testDb.insert(bookingRequestOffers).values({
+            bookingRequestOfferId: idCreate(),
+            bookingRequestId,
+            cookId: cook.user.userId,
+            cookAccepted: true,
+            userAccepted: true,
+            menuPriceCents: 20_000,
+            travelExpensesCents: 2_500,
+            paymentProviderFeeCents: 500,
+            platformFeePercentCook: 18,
+            platformFeePercentCustomer: 4,
+            platformFeeCentsCook: 3_600,
+            platformFeeCentsCustomer: 900,
+            payoutCentsCook: 18_400,
+            totalWithoutDiscountsCentsCustomer: 23_900,
+            paymentStatus: 'EMPTY',
+        });
+
+        // Dual-accepted offer without birth date must not inflate sample sizes.
+        const actualNoBirthDate = await commandSetup.withUser({
+            firstName: `${token}-actual-no-birth`,
+            lastName: 'User',
+            birthDate: null,
+        });
+        const bookingRequestIdNoBirthDate = idCreate();
+        await testDb.insert(bookingRequests).values({
+            bookingRequestId: bookingRequestIdNoBirthDate,
+            userId: actualNoBirthDate.user.userId,
+            occasion: 'Birthday',
+            dateTime: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+            exactEventAddress: sampleAddress,
+            priceClassType: 'MEDIUM',
+            originalMessage: 'Please cook for us.',
+            publicationStatus: 'PUBLICATION_AUTO_APPROVED',
+            preferences: [],
+        });
+        await testDb.insert(bookingRequestOffers).values({
+            bookingRequestOfferId: idCreate(),
+            bookingRequestId: bookingRequestIdNoBirthDate,
+            cookId: cook.user.userId,
+            cookAccepted: true,
+            userAccepted: true,
+            menuPriceCents: 20_000,
+            travelExpensesCents: 2_500,
+            paymentProviderFeeCents: 500,
+            platformFeePercentCook: 18,
+            platformFeePercentCustomer: 4,
+            platformFeeCentsCook: 3_600,
+            platformFeeCentsCustomer: 900,
+            payoutCentsCook: 18_400,
+            totalWithoutDiscountsCentsCustomer: 23_900,
+            paymentStatus: 'EMPTY',
+        });
+
+        const insights = await adminUserInsightsFindOne(admin.requestingSession, admin.serverRuntime);
+
+        expect(insights.ageBySegment.cooks.birthDateSampleSize).toBeGreaterThanOrEqual(1);
+        expect(insights.ageBySegment.potentialCustomers.birthDateSampleSize).toBeGreaterThanOrEqual(1);
+        expect(insights.ageBySegment.actualCustomers.birthDateSampleSize).toBeGreaterThanOrEqual(1);
+        expect(insights.ageBySegment.cooks.medianAge).not.toBeNull();
+        expect(insights.ageBySegment.potentialCustomers.medianAge).not.toBeNull();
+        expect(insights.ageBySegment.actualCustomers.medianAge).not.toBeNull();
     });
 
     it('counts overlapping Google, passkey, and authenticator-app links', async () => {
