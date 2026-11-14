@@ -173,7 +173,7 @@ export function ProfileCookInvitePage({ data }: { data: GqlCProfileCookInvitePag
                         width={COOK_INVITE_ILLUSTRATION.width}
                         height={COOK_INVITE_ILLUSTRATION.height}
                         alt={illustrationAlt}
-                        className="h-auto w-full max-w-xs sm:max-w-[14rem]"
+                        className="h-auto w-full max-w-xs sm:max-w-56"
                     />
                 </div>
             </div>
