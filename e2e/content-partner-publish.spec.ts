@@ -25,7 +25,8 @@ test('admin creates venue draft then publishes to public', async ({ browser }) =
         await admin.page.goto('/en/admin/partners');
         await clickUntilUrl(
             admin.page,
-            admin.page.getByRole('button', { name: 'New partner' }),
+            // Header + empty-state both expose "New partner"; prefer the header CTA.
+            admin.page.getByRole('button', { name: 'New partner' }).first(),
             /\/en\/admin\/partners\/?$/,
             /\/en\/admin\/partner-venues\/[^/]+$/,
         );

@@ -45,7 +45,7 @@ describe('cookBookingRequestDecline', () => {
     it('inserts a bookingRequestCooks row when none exists and publishes', async () => {
         // Arrange
         const { serverRuntime, requestingSession, user } = await setupCook();
-        const { bookingRequestId } = await insertCustomerBookingRequest();
+        const { customer, bookingRequestId } = await insertCustomerBookingRequest();
 
         // Act
         const result = await cookBookingRequestDecline(
@@ -64,14 +64,15 @@ describe('cookBookingRequestDecline', () => {
         expect(details?.declinedAt).toBeTruthy();
         expect(details?.declinationReason).toBe('Too far this week');
         expect(details?.menuEvaluationLoading).toBe(false);
-        expect(serverRuntime.publish.userUpdates).toHaveBeenCalledTimes(1);
+        expect(serverRuntime.publish.userUpdates).toHaveBeenCalledTimes(2);
         expect(serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: user.userId });
+        expect(serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
     });
 
     it('updates an existing bookingRequestCooks row when one already exists', async () => {
         // Arrange — pre-seed the join row (e.g. after an open).
         const { serverRuntime, requestingSession, user } = await setupCook();
-        const { bookingRequestId } = await insertCustomerBookingRequest();
+        const { customer, bookingRequestId } = await insertCustomerBookingRequest();
         const openedAt = new Date(Date.now() - 60_000);
         await testDb.insert(bookingRequestCooks).values({
             cookId: user.userId,
@@ -97,7 +98,9 @@ describe('cookBookingRequestDecline', () => {
         expect(details?.declinedAt).toBeTruthy();
         expect(details?.declinationReason).toBe('Already booked');
         expect(details?.firstOpenedAt?.getTime()).toBe(openedAt.getTime());
+        expect(serverRuntime.publish.userUpdates).toHaveBeenCalledTimes(2);
         expect(serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: user.userId });
+        expect(serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
     });
 
     it('trims the reason before persisting', async () => {

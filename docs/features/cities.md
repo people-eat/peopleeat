@@ -53,8 +53,8 @@ stock hero and CTA image fallbacks.
 - City columns: first-section bilingual copy and optional image (FK to `FileUploads`)
 - Static fallbacks: `public/city/find-a-chef-in-city-section/fine-dining.webp`, `public/city/cta/chef-preparing.webp` via
   `src/web/pages/cityPageAssets.ts`
-- Admin: `/admin/cities` (shared admin list cards; debounced client search in URL `q`; create requires map center),
-  `/admin/cities/$cityId` (center, first section, cook assignment with listing warnings)
+- Admin: `/admin/cities` (shared admin list cards; debounced client search in URL `q`; create requires map center), `/admin/cities/$cityId`
+  (center, first section, cook assignment with listing warnings)
 - Admin editor order: SEO → city name/center → hero → first section → cooks → testimonials → configurable sections
 - Public: list + detail via `ContentPageView` (hero fallback, ChefForAnyOccasion, featured cooks, testimonials, HowItWorks, sections,
   SectionCities, KnownFrom)
