@@ -5,6 +5,8 @@ import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSMutationResult, GqlSSession, GqlSUserMutation, GqlSUserMutationCookCreateArgs } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
 import { cookCreatePayloadBuild } from '../utils/cookCreatePayloadBuild';
+import { cookInviteAttributionResolve } from '../utils/cookInviteAttributionResolve';
+import { cookInviteRewardUnlock } from '../utils/cookInviteRewardUnlock';
 import { cookPathNameAllocate } from '../utils/cookPathName';
 import { sessionEventCreate } from '../utils/sessionEventCreate';
 import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
@@ -36,8 +38,25 @@ export async function userCookCreate(
             errorPrefix: 'userCookCreate',
         });
 
+        const attribution = await cookInviteAttributionResolve({
+            inviteCookId: input.inviteCookId,
+            inviteeUserId: userId,
+            inviteeEmailAddress: user.emailAddress,
+            inviteePhoneNumber: user.phoneNumber,
+            db: serverRuntime.db,
+        });
+
         const pathName = await cookPathNameAllocate(serverRuntime.db, user.firstName, user.lastName);
-        await serverRuntime.db.insert(cooks).values({ cookId: userId, pathName, ...cookPayload });
+        await serverRuntime.db.insert(cooks).values({
+            cookId: userId,
+            pathName,
+            ...cookPayload,
+            ...(attribution ?? {}),
+        });
+
+        if (attribution?.inviteReward.unlockKind === 'SIGN_UP') {
+            await cookInviteRewardUnlock(serverRuntime, { inviteeCookId: userId });
+        }
 
         await sessionEventCreate(serverRuntime, {
             sessionId: requestingSession.sessionId,
@@ -46,6 +65,9 @@ export async function userCookCreate(
         });
 
         await serverRuntime.publish.userUpdates({ userId });
+        if (attribution) {
+            await serverRuntime.publish.userUpdates({ userId: attribution.invitedByCookId });
+        }
 
         const { slackNotifyCookSignUp } = await import('../slack/slackNotifyAdjacent');
         await slackNotifyCookSignUp(serverRuntime, {

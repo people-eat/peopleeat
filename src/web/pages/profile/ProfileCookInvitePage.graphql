@@ -1,0 +1,41 @@
+fragment ProfileCookInviteInvitee on CookInvitee {
+    cookId
+    display
+    registered
+    approved
+    firstOfferCreated
+    firstEvent
+    rewardUnlocked
+}
+
+fragment ProfileCookInviteCook on Cook {
+    cookId
+    isApprovedByAdmin
+    inviteOpenFeeCreditRemainingBookings
+    invitees {
+        ...ProfileCookInviteInvitee
+    }
+}
+
+fragment ProfileCookInviteUser on User {
+    userId
+    cook {
+        ...ProfileCookInviteCook
+    }
+}
+
+query ProfileCookInvitePage {
+    currentSession {
+        sessionId
+        activeFeatureToggleKeys
+        user {
+            ...ProfileCookInviteUser
+        }
+    }
+}
+
+subscription ProfileCookInvitePageUpdates {
+    userUpdates {
+        ...ProfileCookInviteUser
+    }
+}

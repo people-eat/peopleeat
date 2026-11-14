@@ -1062,6 +1062,9 @@ export interface GqlCAdminCook {
     defaultOfferMessage?: Maybe<Scalars['String']['output']>;
     exactTravelOriginAddress?: Maybe<GqlCCookTravelOriginAddress>;
     featuredOn: Array<GqlCAdminCookFeaturedLanding>;
+    inviteReward?: Maybe<Scalars['JSON']['output']>;
+    inviteRewards: Array<GqlCAdminCookInviteReward>;
+    invitedByCookId?: Maybe<Scalars['ID']['output']>;
     isApprovedByAdmin: Scalars['Boolean']['output'];
     isVisible: Scalars['Boolean']['output'];
     lastModifiedAt: Scalars['DateTime']['output'];
@@ -1105,6 +1108,17 @@ export interface GqlCAdminCookInTravelRadiusPreview {
 }
 
 export type GqlCAdminCookInventoryStatus = 'DELETED' | 'DRAFT' | 'PUBLISHED';
+
+export interface GqlCAdminCookInviteReward {
+    __typename?: 'AdminCookInviteReward';
+    consumption: Scalars['JSON']['output'];
+    cookInviteRewardId: Scalars['ID']['output'];
+    createdAt: Scalars['DateTime']['output'];
+    fromInviteeCookId: Scalars['ID']['output'];
+    lastModifiedAt: Scalars['DateTime']['output'];
+    status: Scalars['String']['output'];
+    terms: Scalars['JSON']['output'];
+}
 
 export interface GqlCAdminCookMeal {
     __typename?: 'AdminCookMeal';
@@ -1507,6 +1521,7 @@ export interface GqlCAdminMutation {
     cookApprovalUpdate: GqlCMutationResult;
     cookBiographySuggest: Scalars['String']['output'];
     cookBiographySummarySuggest: Scalars['String']['output'];
+    cookInviteRewardRevoke: GqlCMutationResult;
     cookMealDelete: GqlCMutationResult;
     cookMealUpsert: GqlCMutationResult;
     cookMenuCopy: GqlCMutationResult;
@@ -1733,6 +1748,10 @@ export type GqlCAdminMutationCookBiographySuggestArgs = {
 export type GqlCAdminMutationCookBiographySummarySuggestArgs = {
     biography: Scalars['String']['input'];
     cookId: Scalars['ID']['input'];
+};
+
+export type GqlCAdminMutationCookInviteRewardRevokeArgs = {
+    cookInviteRewardId: Scalars['ID']['input'];
 };
 
 export type GqlCAdminMutationCookMealDeleteArgs = {
@@ -3354,6 +3373,8 @@ export interface GqlCCook {
     cuisineStyle?: Maybe<Scalars['String']['output']>;
     defaultOfferMessage?: Maybe<Scalars['String']['output']>;
     exactTravelOriginAddress?: Maybe<GqlCCookTravelOriginAddress>;
+    inviteOpenFeeCreditRemainingBookings: Scalars['Int']['output'];
+    invitees: Array<GqlCCookInvitee>;
     isApprovedByAdmin: Scalars['Boolean']['output'];
     isVisible: Scalars['Boolean']['output'];
     lastModifiedAt: Scalars['DateTime']['output'];
@@ -3743,9 +3764,21 @@ export type GqlCCookCreate = {
     cookingPhilosophy?: InputMaybe<Scalars['String']['input']>;
     cuisineStyle?: InputMaybe<Scalars['String']['input']>;
     exactTravelOriginAddress: Scalars['String']['input'];
+    inviteCookId?: InputMaybe<Scalars['ID']['input']>;
     maximumTravelDistance: Scalars['Int']['input'];
     travelExpensesAmount: Scalars['Int']['input'];
 };
+
+export interface GqlCCookInvitee {
+    __typename?: 'CookInvitee';
+    approved: Scalars['Boolean']['output'];
+    cookId: Scalars['ID']['output'];
+    display: Scalars['String']['output'];
+    firstEvent: Scalars['Boolean']['output'];
+    firstOfferCreated: Scalars['Boolean']['output'];
+    registered: Scalars['Boolean']['output'];
+    rewardUnlocked: Scalars['Boolean']['output'];
+}
 
 export interface GqlCCookMeal {
     __typename?: 'CookMeal';
@@ -4388,6 +4421,7 @@ export type GqlCFeatureToggleKey =
     | 'BOOKING_REQUEST_SETTING'
     | 'COOK_ANALYTICS'
     | 'COOK_BIOGRAPHY_AI_WRITE'
+    | 'COOK_INVITE'
     | 'COOK_PRESENCE_LINKS'
     | 'COOK_PUBLIC_PROFILE_PATH_NAME'
     | 'COOK_PUBLIC_PROFILE_SHARE'
@@ -17405,6 +17439,8 @@ export type GqlCAdminUserCookFragment = {
     cuisineStyle: string | null;
     cookingPhilosophy: string | null;
     defaultOfferMessage: string | null;
+    invitedByCookId: string | null;
+    inviteReward: unknown;
     travelExpensesAmount: number;
     maximumTravelDistance: number | null;
     callSchedulingEnabled: boolean;
@@ -17423,6 +17459,15 @@ export type GqlCAdminUserCookFragment = {
         country: string;
     } | null;
     logo: { fileUploadId: string; url: string } | null;
+    inviteRewards: Array<{
+        cookInviteRewardId: string;
+        fromInviteeCookId: string;
+        terms: unknown;
+        consumption: unknown;
+        status: string;
+        createdAt: string;
+        lastModifiedAt: string;
+    }>;
     presenceLinks: {
         websiteUrl: string | null;
         instagramUrl: string | null;
@@ -17543,6 +17588,8 @@ export type GqlCAdminUserPageQuery = {
                         cuisineStyle: string | null;
                         cookingPhilosophy: string | null;
                         defaultOfferMessage: string | null;
+                        invitedByCookId: string | null;
+                        inviteReward: unknown;
                         travelExpensesAmount: number;
                         maximumTravelDistance: number | null;
                         callSchedulingEnabled: boolean;
@@ -17583,6 +17630,15 @@ export type GqlCAdminUserPageQuery = {
                             country: string;
                         } | null;
                         logo: { fileUploadId: string; url: string } | null;
+                        inviteRewards: Array<{
+                            cookInviteRewardId: string;
+                            fromInviteeCookId: string;
+                            terms: unknown;
+                            consumption: unknown;
+                            status: string;
+                            createdAt: string;
+                            lastModifiedAt: string;
+                        }>;
                         presenceLinks: {
                             websiteUrl: string | null;
                             instagramUrl: string | null;
@@ -20773,6 +20829,97 @@ export type GqlCProfileCookChefProfileUserUpdateMutationVariables = Exact<{
 }>;
 
 export type GqlCProfileCookChefProfileUserUpdateMutation = { user: { userUpdate: { success: boolean } } };
+
+export type GqlCProfileCookInviteInviteeFragment = {
+    cookId: string;
+    display: string;
+    registered: boolean;
+    approved: boolean;
+    firstOfferCreated: boolean;
+    firstEvent: boolean;
+    rewardUnlocked: boolean;
+};
+
+export type GqlCProfileCookInviteCookFragment = {
+    cookId: string;
+    isApprovedByAdmin: boolean;
+    inviteOpenFeeCreditRemainingBookings: number;
+    invitees: Array<{
+        cookId: string;
+        display: string;
+        registered: boolean;
+        approved: boolean;
+        firstOfferCreated: boolean;
+        firstEvent: boolean;
+        rewardUnlocked: boolean;
+    }>;
+};
+
+export type GqlCProfileCookInviteUserFragment = {
+    userId: string;
+    cook: {
+        cookId: string;
+        isApprovedByAdmin: boolean;
+        inviteOpenFeeCreditRemainingBookings: number;
+        invitees: Array<{
+            cookId: string;
+            display: string;
+            registered: boolean;
+            approved: boolean;
+            firstOfferCreated: boolean;
+            firstEvent: boolean;
+            rewardUnlocked: boolean;
+        }>;
+    } | null;
+};
+
+export type GqlCProfileCookInvitePageQueryVariables = Exact<{ [key: string]: never }>;
+
+export type GqlCProfileCookInvitePageQuery = {
+    currentSession: {
+        sessionId: string;
+        activeFeatureToggleKeys: Array<Schema.GqlCFeatureToggleKey>;
+        user: {
+            userId: string;
+            cook: {
+                cookId: string;
+                isApprovedByAdmin: boolean;
+                inviteOpenFeeCreditRemainingBookings: number;
+                invitees: Array<{
+                    cookId: string;
+                    display: string;
+                    registered: boolean;
+                    approved: boolean;
+                    firstOfferCreated: boolean;
+                    firstEvent: boolean;
+                    rewardUnlocked: boolean;
+                }>;
+            } | null;
+        } | null;
+    };
+};
+
+export type GqlCProfileCookInvitePageUpdatesSubscriptionVariables = Exact<{ [key: string]: never }>;
+
+export type GqlCProfileCookInvitePageUpdatesSubscription = {
+    userUpdates: {
+        userId: string;
+        cook: {
+            cookId: string;
+            isApprovedByAdmin: boolean;
+            inviteOpenFeeCreditRemainingBookings: number;
+            invitees: Array<{
+                cookId: string;
+                display: string;
+                registered: boolean;
+                approved: boolean;
+                firstOfferCreated: boolean;
+                firstEvent: boolean;
+                rewardUnlocked: boolean;
+            }>;
+        } | null;
+    };
+};
 
 export type GqlCProfileCookMealPageUserFragment = {
     userId: string;
@@ -31936,6 +32083,24 @@ export const AdminUserCookFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'defaultOfferMessage' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'invitedByCookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'inviteReward' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'inviteRewards' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'cookInviteRewardId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'fromInviteeCookId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'terms' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'consumption' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'lastModifiedAt' } },
+                            ],
+                        },
+                    },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'presenceLinks' },
@@ -34952,6 +35117,133 @@ export const ProfileCookChefProfileUserFragmentDoc = {
         },
     ],
 } as unknown as DocumentNode<GqlCProfileCookChefProfileUserFragment, unknown>;
+export const ProfileCookInviteInviteeFragmentDoc = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookInviteInvitee' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookInvitee' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'registered' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'approved' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstOfferCreated' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstEvent' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'rewardUnlocked' } },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCookInviteInviteeFragment, unknown>;
+export const ProfileCookInviteCookFragmentDoc = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookInviteCook' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Cook' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'inviteOpenFeeCreditRemainingBookings' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'invitees' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookInviteInvitee' } }],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookInviteInvitee' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookInvitee' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'registered' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'approved' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstOfferCreated' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstEvent' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'rewardUnlocked' } },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCookInviteCookFragment, unknown>;
+export const ProfileCookInviteUserFragmentDoc = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookInviteUser' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'User' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'cook' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookInviteCook' } }],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookInviteInvitee' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookInvitee' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'registered' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'approved' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstOfferCreated' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstEvent' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'rewardUnlocked' } },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookInviteCook' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Cook' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'inviteOpenFeeCreditRemainingBookings' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'invitees' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookInviteInvitee' } }],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCookInviteUserFragment, unknown>;
 export const ProfileCookMealPageUserFragmentDoc = {
     kind: 'Document',
     definitions: [
@@ -74089,6 +74381,24 @@ export const AdminUserPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'defaultOfferMessage' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'invitedByCookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'inviteReward' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'inviteRewards' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'cookInviteRewardId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'fromInviteeCookId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'terms' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'consumption' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'lastModifiedAt' } },
+                            ],
+                        },
+                    },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'presenceLinks' },
@@ -83683,6 +83993,177 @@ export const ProfileCookChefProfileUserUpdateDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCProfileCookChefProfileUserUpdateMutation, GqlCProfileCookChefProfileUserUpdateMutationVariables>;
+export const ProfileCookInvitePageDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'ProfileCookInvitePage' },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'sessionId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'activeFeatureToggleKeys' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'user' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookInviteUser' } }],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookInviteInvitee' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookInvitee' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'registered' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'approved' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstOfferCreated' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstEvent' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'rewardUnlocked' } },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookInviteCook' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Cook' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'inviteOpenFeeCreditRemainingBookings' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'invitees' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookInviteInvitee' } }],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookInviteUser' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'User' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'cook' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookInviteCook' } }],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCookInvitePageQuery, GqlCProfileCookInvitePageQueryVariables>;
+export const ProfileCookInvitePageUpdatesDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'subscription',
+            name: { kind: 'Name', value: 'ProfileCookInvitePageUpdates' },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'userUpdates' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookInviteUser' } }],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookInviteInvitee' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookInvitee' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'registered' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'approved' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstOfferCreated' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstEvent' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'rewardUnlocked' } },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookInviteCook' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Cook' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'inviteOpenFeeCreditRemainingBookings' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'invitees' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookInviteInvitee' } }],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookInviteUser' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'User' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'cook' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookInviteCook' } }],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCookInvitePageUpdatesSubscription, GqlCProfileCookInvitePageUpdatesSubscriptionVariables>;
 export const ProfileCookMealPageDocument = {
     kind: 'Document',
     definitions: [

@@ -14,6 +14,7 @@ const adminFeatureToggleLabels: Record<FeatureToggleKey, Record<Locale, string>>
     COOK_PUBLIC_PROFILE_SHARE: { de: 'Koch: Öffentliches Profil teilen', en: 'Cook: share public profile' },
     COOK_PUBLIC_PROFILE_PATH_NAME: { de: 'Koch: Öffentliche URL', en: 'Cook: public URL' },
     COOK_PRESENCE_LINKS: { de: 'Koch: Weitere Profile', en: 'Cook: other profiles' },
+    COOK_INVITE: { de: 'Koch: Köche einladen', en: 'Cook: invite chefs' },
     BOOKING_REQUEST_RESTRICTIONS: { de: 'Buchungsanfrage: Einschränkungen', en: 'Booking request: restrictions' },
     BOOKING_REQUEST_SETTING: { de: 'Buchungsanfrage: Innen / Außen', en: 'Booking request: indoor / outdoor' },
     BOOKING_REQUEST_KITCHEN_DETAILS: { de: 'Buchungsanfrage: Küchendetails', en: 'Booking request: kitchen details' },
@@ -100,6 +101,10 @@ const adminFeatureToggleDescriptions: Record<FeatureToggleKey, Record<Locale, st
     COOK_PRESENCE_LINKS: {
         de: 'Zeigt weitere öffentliche Profile im Kochprofil (Website, Instagram, Google, Take a Chef und andere Plattformen). Nur für die Prüfung durch das Team, nicht für Kunden.',
         en: 'Shows other public profiles on the cook chef profile (website, Instagram, Google, Take a Chef, and other platforms). For team review only, not for customers.',
+    },
+    COOK_INVITE: {
+        de: 'Zeigt „Köche einladen“ in der Koch-Seitenleiste und unter /profile/invite. Attribution und Belohnungen laufen unabhängig vom Schalter weiter.',
+        en: 'Shows Invite chefs in the cook sidebar and on /profile/invite. Attribution and rewards keep working when the toggle is off.',
     },
     BOOKING_REQUEST_RESTRICTIONS: {
         de: 'Zeigt den Schritt für Ernährungseinschränkungen in der Anfrage und die zugehörigen Editoren. Bei Aus sind neue Werte serverseitig leer.',

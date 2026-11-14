@@ -150,6 +150,8 @@ Wired today:
 - **Cook other profiles** (`COOK_PRESENCE_LINKS`) — shows website, Instagram, Google, Take a Chef, and other platform links on
   `/profile/chef-profile` (view and edit). `Cook.presenceLinks` is null and `presenceLinksReplace` rejects when off for the cook `userId`.
   Admin cook-profile view and edit always show and save the links. Customers never see them. See [cook-profile.md](./cook-profile.md)
+- **Cook invite** (`COOK_INVITE`) — shows Invite chefs in the cook sidebar and `/profile/invite`. Entry-point only: attribution, unlock, and
+  fee credits keep working when the toggle is off. Missing row stays off. See [cook-invite.md](./cook-invite.md)
 - **AI menu evaluation** (`AI_MENU_EVALUATION`) — cook open / refresh / apply gates use the cook `userId`
 - **AI menu create** (`AI_MENU_CREATE`) — shows from scratch vs from text/file when a cook creates a menu (library and offer create /
   edit-menus); `menuSuggestionFromText` / `menuSuggestionApply` reject when off for the cook `userId`. Admin **Create menu** stays a blank

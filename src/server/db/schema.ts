@@ -20,6 +20,7 @@ import {
 } from 'drizzle-orm/pg-core';
 
 import type { ContentSection } from '../../shared/contentSection';
+import type { CookInviteConsumption, CookInviteReward, CookInviteRewardStatus } from '../../shared/cookInviteReward';
 import type { CookPresenceLinks } from '../../shared/cookPresenceLinks';
 import type { FeatureToggleKey } from '../../shared/featureToggle';
 import { idCreate, NANO_ID_LENGTH } from '../../shared/idCreate';
@@ -469,6 +470,12 @@ export const cooks = pgTable(
         // Offer-create personal-note default. Null = not configured (onboarding +
         // platform greeting). Empty string = start blank each offer. See cook-profile.md.
         defaultOfferMessage: text(),
+        // Cook-to-cook invite attribution. Set once at create; never overwritten.
+        // See docs/features/cook-invite.md.
+        invitedByCookId: nanoId(),
+        // Frozen invite program snapshot (discriminated unlock + benefit). Null when
+        // not invited. Live program changes must not rewrite this column.
+        inviteReward: jsonb().$type<CookInviteReward | null>(),
         travelExpensesAmount: integer().notNull().default(25),
         maximumTravelDistance: integer(),
         minimumPriceAmount: integer(),
@@ -496,8 +503,15 @@ export const cooks = pgTable(
         })
             .onUpdate('cascade')
             .onDelete('cascade'),
+        foreignKey({
+            columns: [table.invitedByCookId],
+            foreignColumns: [table.cookId],
+        })
+            .onUpdate('cascade')
+            .onDelete('set null'),
         index('Cooks_isApprovedByAdmin_idx').on(table.isApprovedByAdmin),
         index('Cooks_logoFileUploadId_idx').on(table.logoFileUploadId),
+        index('Cooks_invitedByCookId_idx').on(table.invitedByCookId),
         uniqueIndex('Cooks_pathName_uidx').on(table.pathName),
     ],
 );
@@ -505,6 +519,41 @@ export const cooks = pgTable(
 export type Cook = typeof cooks.$inferSelect;
 
 export type CookCreate = typeof cooks.$inferInsert;
+
+// Inviter fee-credit ledger minted when an invitee hits the frozen unlock milestone.
+// See docs/features/cook-invite.md.
+export const cookInviteRewards = pgTable(
+    'CookInviteRewards',
+    {
+        cookInviteRewardId: nanoId().primaryKey(),
+        cookId: nanoId().notNull(),
+        fromInviteeCookId: nanoId().notNull(),
+        terms: jsonb().$type<CookInviteReward>().notNull(),
+        consumption: jsonb().$type<CookInviteConsumption>().notNull(),
+        status: varchar().$type<CookInviteRewardStatus>().notNull().default('OPEN'),
+        createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+        lastModifiedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+    },
+    (table) => [
+        foreignKey({
+            columns: [table.cookId],
+            foreignColumns: [cooks.cookId],
+        })
+            .onUpdate('cascade')
+            .onDelete('cascade'),
+        foreignKey({
+            columns: [table.fromInviteeCookId],
+            foreignColumns: [cooks.cookId],
+        })
+            .onUpdate('cascade')
+            .onDelete('cascade'),
+        uniqueIndex('CookInviteRewards_fromInviteeCookId_uidx').on(table.fromInviteeCookId),
+        index('CookInviteRewards_cookId_status_idx').on(table.cookId, table.status),
+    ],
+);
+
+export type CookInviteRewardRow = typeof cookInviteRewards.$inferSelect;
+export type CookInviteRewardCreate = typeof cookInviteRewards.$inferInsert;
 
 // Recurring weekly windows for cook discovery calls. `dayOfWeek` matches
 // JS `Date.getDay()` (0 = Sunday … 6 = Saturday). Minutes are inclusive start /
@@ -1961,6 +2010,9 @@ export const bookingRequestOffers = pgTable(
             onUpdate: 'cascade',
             onDelete: 'set null',
         }),
+        // Invite fee-credit applied at cook offer create. Consumed when this offer
+        // becomes PAYED. See docs/features/cook-invite.md.
+        cookInviteRewardId: nanoId(),
         // pg-boss job ids for `bookingRequestOfferTestimonialReminder` sends —
         // scheduled once payment succeeds, rescheduled on event dateTime
         // change, cancelled on booking cancel. See `scheduleTestimonialReminderJobs.ts`.
@@ -1987,6 +2039,12 @@ export const bookingRequestOffers = pgTable(
         })
             .onUpdate('cascade')
             .onDelete('cascade'),
+        foreignKey({
+            columns: [table.cookInviteRewardId],
+            foreignColumns: [cookInviteRewards.cookInviteRewardId],
+        })
+            .onUpdate('cascade')
+            .onDelete('set null'),
         uniqueIndex('BookingRequestOffers_bookingRequestId_cookId_uidx').on(table.bookingRequestId, table.cookId),
         // At most one dual-accepted offer per request.
         uniqueIndex('BookingRequestOffers_oneAccepted_uidx')
@@ -1999,6 +2057,7 @@ export const bookingRequestOffers = pgTable(
         index('BookingRequestOffers_adminChatReviewPendingCount_idx').on(table.adminChatReviewPendingCount),
         index('BookingRequestOffers_customerReceiptFileUploadId_idx').on(table.customerReceiptFileUploadId),
         index('BookingRequestOffers_cookStatementFileUploadId_idx').on(table.cookStatementFileUploadId),
+        index('BookingRequestOffers_cookInviteRewardId_idx').on(table.cookInviteRewardId),
     ],
 );
 

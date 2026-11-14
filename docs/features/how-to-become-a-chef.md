@@ -38,6 +38,8 @@ Bilingual copy and layout; CTAs to chef sign-up and profile based on whether the
 
 - Chef-specific FAQ block (accordion still mirrors customer booking FAQs from the home page).
 - Chef sign-up CTAs point at `/chef-sign-up` (travel fields; richer profile on chef profile later).
+- Optional cook-to-cook invite deep-link (`/chef-sign-up?invite=…`) once [cook-invite.md](./cook-invite.md) ships; keep recruitment pages
+  free of commission numbers until commercial confirms.
 
 ## Implementation
 

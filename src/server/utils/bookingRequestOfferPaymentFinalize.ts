@@ -388,6 +388,16 @@ export async function bookingRequestOfferPaymentFinalize(
             bookingRequestId: bookingRequest.bookingRequestId,
             bookingRequestOfferId: offer.bookingRequestOfferId,
         });
+        const { cookInviteRewardUnlockAfterInviteePaid, cookInviteRewardConsume } = await import('./cookInviteRewardUnlock');
+        await cookInviteRewardUnlockAfterInviteePaid(serverRuntime, { inviteeCookId: offer.cookId });
+        if (offer.cookInviteRewardId != null) {
+            try {
+                await cookInviteRewardConsume(serverRuntime.db, { cookInviteRewardId: offer.cookInviteRewardId });
+                await serverRuntime.publish.userUpdates({ userId: offer.cookId });
+            } catch (error) {
+                serverRuntime.log.error(error);
+            }
+        }
     }
 
     await bookingRequestOfferPaymentConfirmedEmailSend(serverRuntime, { offer, bookingRequest });

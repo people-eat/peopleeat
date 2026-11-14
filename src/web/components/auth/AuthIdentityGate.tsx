@@ -65,6 +65,7 @@ export function AuthIdentityGate({
     children,
     footer,
     includeCook = false,
+    inviteCookId = null,
     requireProfileDetails = true,
     externalSubmit = false,
     profileInitialValues,
@@ -86,6 +87,8 @@ export function AuthIdentityGate({
     footer?: (session: AuthSession, sessionRefresh: AuthSessionRefresh) => ReactNode;
     /** When true, registration collects cook profile fields and passes `cook` on `userCreate`. */
     includeCook?: boolean;
+    /** Optional inviter cook id from `/chef-sign-up?invite=`. */
+    inviteCookId?: string | null;
     /**
      * When true (default), registration requires phone, birth date, and
      * preferred communication. Gift-card purchase passes false so those fields
@@ -346,6 +349,7 @@ export function AuthIdentityGate({
                         hideSubmitButton={externalSubmit}
                         busy={busy}
                         includeCook={includeCook}
+                        inviteCookId={inviteCookId}
                         requireProfileDetails={requireProfileDetails}
                         initialValues={{
                             ...profileInitialValuesFromOauthTicket(oauthTicket, requireProfileDetails),

@@ -40,6 +40,17 @@ fragment AdminUserCook on AdminCook {
     cuisineStyle
     cookingPhilosophy
     defaultOfferMessage
+    invitedByCookId
+    inviteReward
+    inviteRewards {
+        cookInviteRewardId
+        fromInviteeCookId
+        terms
+        consumption
+        status
+        createdAt
+        lastModifiedAt
+    }
     presenceLinks {
         websiteUrl
         instagramUrl

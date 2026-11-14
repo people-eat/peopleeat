@@ -11,9 +11,13 @@ import { webPageUrlGet } from '../../web/seo/webPageUrlGet';
 import { localeFromParam } from '../../web/utils/locale';
 
 export const Route = createFileRoute('/{-$locale}/chef-sign-up')({
-    validateSearch: (search: Record<string, unknown>): { market?: ExpansionMarketSlug } => {
+    validateSearch: (search: Record<string, unknown>): { market?: ExpansionMarketSlug; invite?: string } => {
         const market = expansionMarketFromParam(typeof search.market === 'string' ? search.market : undefined);
-        return market ? { market: market.slug } : {};
+        const invite = typeof search.invite === 'string' && search.invite.trim().length > 0 ? search.invite.trim() : undefined;
+        return {
+            ...(market ? { market: market.slug } : {}),
+            ...(invite ? { invite } : {}),
+        };
     },
     loader: async ({ params }) => {
         const data = await routeLoaderGraphqlClient(ChefSignUpPageDocument)();
@@ -41,6 +45,7 @@ export const Route = createFileRoute('/{-$locale}/chef-sign-up')({
         });
     },
     component() {
-        return <ChefSignUpPage loaderData={Route.useLoaderData()} marketSlug={Route.useSearch().market} />;
+        const search = Route.useSearch();
+        return <ChefSignUpPage loaderData={Route.useLoaderData()} marketSlug={search.market} inviteCookId={search.invite} />;
     },
 });

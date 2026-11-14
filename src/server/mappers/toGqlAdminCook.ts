@@ -38,6 +38,10 @@ export function toGqlAdminCook(row: Cook, userStatus: UserStatus): GqlSAdminCook
         cookingPhilosophy: row.cookingPhilosophy ?? null,
         presenceLinks: cookPresenceLinksFromStored(row.presenceLinks),
         defaultOfferMessage: row.defaultOfferMessage ?? null,
+        invitedByCookId: row.invitedByCookId ?? null,
+        inviteReward: row.inviteReward ?? null,
+        // Field resolver loads minted rewards for this cook as inviter.
+        inviteRewards: [],
         // Field resolver populates from published customer testimonials.
         rating: undefined as unknown as GqlSPublicCookRating,
         travelExpensesAmount: row.travelExpensesAmount,

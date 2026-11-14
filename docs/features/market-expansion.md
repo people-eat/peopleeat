@@ -59,6 +59,8 @@ for NL/CH is blocked until guest launch. City pages, extra locales, and CHF stay
 - Confirm any founding-chef fee or commission term before putting a number on the pages.
 - Before guest launch: publish city pages, lift the NL/CH booking notice, legal review, CHF for Swiss payouts if needed.
 - Optional later: Dutch copy for NL SEO; French/Italian for CH.
+- Cook-to-cook invites ([cook-invite.md](./cook-invite.md)) may attribute founding chefs now; fee credits stay locked until guest bookings
+  exist. Do not invent invite commission copy on these pages until commercial confirms (same rule as founding-chef fee discounts).
 
 ## Implementation
 

@@ -9,6 +9,7 @@ import {
     PackagePlusIcon,
     PhoneIcon,
     RadarIcon,
+    UserPlusIcon,
     UtensilsIcon,
     WalletIcon,
 } from 'lucide-react';
@@ -19,6 +20,7 @@ export type CookNavSlug =
     | 'booking-request-pool'
     | 'booking-request-offers'
     | 'analytics'
+    | 'invite'
     | 'chef-profile'
     | 'travel'
     | 'public'
@@ -67,6 +69,17 @@ export const COOK_NAV_ROUTES: readonly CookNavRoute[] = [
             en: 'Profile views, response times, offers, and conversion.',
         },
         icon: BarChart3Icon,
+    },
+    {
+        slug: 'invite',
+        path: '/profile/invite',
+        to: '/{-$locale}/profile/invite',
+        title: { de: 'Köche einladen', en: 'Invite chefs' },
+        description: {
+            de: 'Lade Köche ein, die du kennst, und verfolge ihren Fortschritt.',
+            en: 'Invite chefs you know and track their progress.',
+        },
+        icon: UserPlusIcon,
     },
     {
         slug: 'chef-profile',

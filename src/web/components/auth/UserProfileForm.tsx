@@ -47,6 +47,7 @@ export function UserProfileForm({
     busy,
     submitLabel,
     includeCook = false,
+    inviteCookId = null,
     requireProfileDetails = true,
     formId,
     hideSubmitButton = false,
@@ -57,6 +58,8 @@ export function UserProfileForm({
     submitLabel: string;
     /** When true, collect required cook profile fields and attach `cook` on submit. */
     includeCook?: boolean;
+    /** Optional inviter cook id from `/chef-sign-up?invite=`. */
+    inviteCookId?: string | null;
     /**
      * When true (default), phone, birth date, and preferred communication are
      * required. Gift-card purchase sets this false — GraphQL `UserCreate`
@@ -116,7 +119,7 @@ export function UserProfileForm({
             if (!birthDate) errors.birthDate = requiredMessage;
             if (!preferredCommunication) errors.preferredCommunication = preferredMessage;
         }
-        if (includeCook && 'error' in cookCreateInputFromFields(cookFields)) {
+        if (includeCook && 'error' in cookCreateInputFromFields(cookFields, { inviteCookId })) {
             errors.cook = { de: 'Bitte vervollständige das Koch-Profil.', en: 'Please complete the chef profile.' }[locale];
         }
         if (!acceptedTermsAndConditions) errors.terms = acceptMessage;
@@ -139,7 +142,7 @@ export function UserProfileForm({
 
         let cook: GqlCCookCreate | undefined;
         if (includeCook) {
-            const built = cookCreateInputFromFields(cookFields);
+            const built = cookCreateInputFromFields(cookFields, { inviteCookId });
             if ('error' in built) {
                 nextErrors.push('cook');
                 toast.error(

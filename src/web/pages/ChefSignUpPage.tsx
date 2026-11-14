@@ -54,7 +54,15 @@ function chefSignUpFormReady(value: ChefSignUpFormValues): boolean {
     );
 }
 
-export function ChefSignUpPage({ loaderData, marketSlug }: { loaderData: GqlCChefSignUpPageQuery; marketSlug?: ExpansionMarketSlug }) {
+export function ChefSignUpPage({
+    loaderData,
+    marketSlug,
+    inviteCookId,
+}: {
+    loaderData: GqlCChefSignUpPageQuery;
+    marketSlug?: ExpansionMarketSlug;
+    inviteCookId?: string;
+}) {
     const locale = useLocale();
     const market = expansionMarketFromParam(marketSlug);
     const [success, setSuccess] = useState(Boolean(loaderData.currentSession.user?.cook));
@@ -132,6 +140,7 @@ export function ChefSignUpPage({ loaderData, marketSlug }: { loaderData: GqlCChe
                     exactTravelOriginAddress: value.selectedLocation.displayText,
                     travelExpensesAmount: cents,
                     maximumTravelDistance: distance,
+                    ...(inviteCookId ? { inviteCookId } : {}),
                 },
             });
             if (result.error || !result.data?.user.cookCreate.success) {
@@ -169,6 +178,16 @@ export function ChefSignUpPage({ loaderData, marketSlug }: { loaderData: GqlCChe
             <div className="mx-auto grid w-full max-w-lg flex-1 content-start gap-10 p-8">
                 <div className="grid gap-3">
                     <h1 className="font-serif text-3xl tracking-tight">{chefSignUpPageTitle[locale]}</h1>
+                    {inviteCookId && !alreadyCook ? (
+                        <StatusAlert tone="info" title={{ de: 'Einladung von einem Koch', en: 'Invited by a chef' }[locale]}>
+                            {
+                                {
+                                    de: 'Du wurdest von einem peopleeat-Koch eingeladen. Deine Registrierung wird dem einladenden Koch zugeordnet.',
+                                    en: 'A peopleeat chef invited you. Your registration will be attributed to that chef.',
+                                }[locale]
+                            }
+                        </StatusAlert>
+                    ) : null}
                     {market ? (
                         <StatusAlert tone="info" title={market.foundingChefTitle[locale]}>
                             {
@@ -213,6 +232,7 @@ export function ChefSignUpPage({ loaderData, marketSlug }: { loaderData: GqlCChe
                     <AuthIdentityGate
                         initialSession={session}
                         includeCook
+                        inviteCookId={inviteCookId ?? null}
                         footer={(gateSession, sessionRefresh) => (
                             <AuthIdentityGateLogOnFooter session={gateSession} sessionRefresh={sessionRefresh} />
                         )}

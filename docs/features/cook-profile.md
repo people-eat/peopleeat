@@ -107,6 +107,13 @@ suggestions and driving distance; wallet page owns one-shot return/refresh handl
 - On public profile, show when the cook is featured on city or partner landing pages.
 - Cook self-serve UI to edit `stageName` (API + public display already support it; admins can edit on user detail).
 
+### Cook-to-cook invite (planned)
+
+Approved cooks share a personal invite link from the profile shell and see each invitee’s progress (registered → approved → first offer →
+first event). When the frozen program’s unlock milestone is reached (v1: first event), the inviter earns the promised reward. Attribution
+uses `invitedByCookId` plus a discriminated JSON freeze on the invitee cook row. Full product options and chosen MVP:
+[cook-invite.md](./cook-invite.md).
+
 ### Cook scrape on sign-up (planned)
 
 Speed up chef onboarding by optionally importing public profile material during `/chef-sign-up` (or the first profile visit).

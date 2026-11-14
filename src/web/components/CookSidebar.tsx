@@ -65,6 +65,7 @@ export function CookSidebar({
     const client = useClient();
     const { active: impersonating } = useSessionImpersonation();
     const analyticsEnabled = useFeatureToggleActive('COOK_ANALYTICS');
+    const inviteEnabled = useFeatureToggleActive('COOK_INVITE');
     const offerAddonsEnabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_ADDONS');
     const [poolReviewCount, setPoolReviewCount] = useState(poolReviewCountSeed);
     const [offersUnreadCount, setOffersUnreadCount] = useState(offersUnreadCountSeed);
@@ -114,6 +115,7 @@ export function CookSidebar({
         },
         ...COOK_NAV_ROUTES.filter((route) => {
             if (route.slug === 'analytics') return analyticsEnabled;
+            if (route.slug === 'invite') return inviteEnabled;
             if (route.slug === 'offer-addons') return offerAddonsEnabled;
             return true;
         }).map((route) => {

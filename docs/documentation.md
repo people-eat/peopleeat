@@ -100,6 +100,7 @@ docs/
 │   ├── route-errors.md           # Customer route error page (replaces TanStack default)
 │   ├── cookie-consent.md         # Session cookie banner + analytics gating
 │   ├── cook-shell.md             # Floating sidebar cook profile chrome
+│   ├── cook-invite.md            # Cook-to-cook invite + fee credit
 │   ├── cook-meals.md             # Cook meal list/create/edit + admin meals
 │   ├── cook-menus.md             # Cook menu list/create/edit + admin menus
 │   ├── customer-shell.md         # Floating sidebar customer profile chrome

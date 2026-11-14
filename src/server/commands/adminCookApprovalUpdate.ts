@@ -41,6 +41,8 @@ export async function adminCookApprovalUpdate(
 
         if (!wasApproved && isApprovedByAdmin) {
             await adminCookApprovalUpdateEmailSend(serverRuntime, { cookId });
+            const { cookInviteRewardUnlock } = await import('../utils/cookInviteRewardUnlock');
+            await cookInviteRewardUnlock(serverRuntime, { inviteeCookId: cookId });
         }
 
         return { success: true, referenceId: cookId };

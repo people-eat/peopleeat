@@ -12,6 +12,8 @@ export const featureToggleKeys = [
     'COOK_PUBLIC_PROFILE_SHARE',
     'COOK_PUBLIC_PROFILE_PATH_NAME',
     'COOK_PRESENCE_LINKS',
+    // Cook profile invite entry (sidebar / invite page). Attribution and rewards stay on.
+    'COOK_INVITE',
     'BOOKING_REQUEST_RESTRICTIONS',
     'BOOKING_REQUEST_SETTING',
     'BOOKING_REQUEST_KITCHEN_DETAILS',

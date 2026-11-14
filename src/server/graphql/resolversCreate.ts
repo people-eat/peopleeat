@@ -46,6 +46,7 @@ import { adminCityUpsert } from '../commands/adminCityUpsert';
 import { adminCookApprovalUpdate } from '../commands/adminCookApprovalUpdate';
 import { adminCookBiographySuggest } from '../commands/adminCookBiographySuggest';
 import { adminCookBiographySummarySuggest } from '../commands/adminCookBiographySummarySuggest';
+import { adminCookInviteRewardRevoke } from '../commands/adminCookInviteRewardRevoke';
 import { adminCookMealDelete } from '../commands/adminCookMealDelete';
 import { adminCookMealUpsert } from '../commands/adminCookMealUpsert';
 import { adminCookMenuCopy } from '../commands/adminCookMenuCopy';
@@ -571,6 +572,7 @@ import type {
     GqlSAdminMutationCookApprovalUpdateArgs,
     GqlSAdminMutationCookBiographySuggestArgs,
     GqlSAdminMutationCookBiographySummarySuggestArgs,
+    GqlSAdminMutationCookInviteRewardRevokeArgs,
     GqlSAdminMutationCookMealDeleteArgs,
     GqlSAdminMutationCookMealUpsertArgs,
     GqlSAdminMutationCookMenuCopyArgs,
@@ -1743,6 +1745,14 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             onboardingSteps(parent: GqlSCook, _: unknown, requestingSession: GqlSSession) {
                 return cookOnboardingStepsFindMany(parent, requestingSession, serverRuntime);
             },
+            async invitees(parent: GqlSCook) {
+                const { cookInviteesFindMany } = await import('../queries/cookInviteesFindMany');
+                return cookInviteesFindMany(serverRuntime.db, parent.cookId);
+            },
+            async inviteOpenFeeCreditRemainingBookings(parent: GqlSCook) {
+                const { cookInviteOpenFeeCreditRemainingCount } = await import('../queries/cookInviteesFindMany');
+                return cookInviteOpenFeeCreditRemainingCount(serverRuntime.db, parent.cookId);
+            },
         },
         CookCallSlotBooking: {
             customer(parent: GqlSCookCallSlotBooking, _: unknown, requestingSession: GqlSSession) {
@@ -2112,6 +2122,10 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             stripeWallet(parent: GqlSAdminCook, _: unknown, requestingSession: GqlSSession) {
                 return adminCookStripeWalletFindOne(parent, requestingSession, serverRuntime);
             },
+            async inviteRewards(parent: GqlSAdminCook) {
+                const { adminCookInviteRewardsFindMany } = await import('../queries/adminCookInviteRewardsFindMany');
+                return adminCookInviteRewardsFindMany(parent.cookId, serverRuntime);
+            },
         },
         AdminMutation: {
             userCreate(parent: GqlSAdminMutation, args: GqlSAdminMutationUserCreateArgs, requestingSession: GqlSSession) {
@@ -2150,6 +2164,13 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             cookApprovalUpdate(parent: GqlSAdminMutation, args: GqlSAdminMutationCookApprovalUpdateArgs, requestingSession: GqlSSession) {
                 return adminCookApprovalUpdate(parent, args, requestingSession, serverRuntime);
+            },
+            cookInviteRewardRevoke(
+                parent: GqlSAdminMutation,
+                args: GqlSAdminMutationCookInviteRewardRevokeArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return adminCookInviteRewardRevoke(parent, args, requestingSession, serverRuntime);
             },
             cookUpdate(parent: GqlSAdminMutation, args: GqlSAdminMutationCookUpdateArgs, requestingSession: GqlSSession) {
                 return adminCookUpdate(parent, args, requestingSession, serverRuntime);

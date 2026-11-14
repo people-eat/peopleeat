@@ -78,6 +78,7 @@ const offer = {
     payoutDateTime: null,
     customerReceiptFileUploadId: null,
     cookStatementFileUploadId: null,
+    cookInviteRewardId: null,
     testimonialMemoryNudgeJobId: null,
     testimonialReminderMorningJobId: null,
     testimonialReminderEveningJobId: null,

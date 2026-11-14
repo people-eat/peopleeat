@@ -152,12 +152,15 @@ export async function cookBookingRequestOfferCreate(
             existingTravelDistanceKm: affinity?.travelDistanceKm ?? null,
         });
         const travelExpensesCents = Math.round(travelDistanceKm * cook.travelExpensesAmount * 2);
+        const { cookInviteOpenFeeCreditFindOne } = await import('../utils/cookInviteRewardUnlock');
+        const inviteCredit = await cookInviteOpenFeeCreditFindOne(serverRuntime.db, cookId);
         // Attached addons start unselected (unless REQUIRED), so create-time
         // addonPriceCents is 0 until the customer selects.
         const price = bookingRequestOfferPriceCalculate({
             menuPriceCents: input.menuPriceCents,
             travelExpensesCents,
             addonPriceCents: 0,
+            ...(inviteCredit != null ? { platformFeePercentCook: inviteCredit.platformFeePercentCook } : {}),
         });
 
         let promoMinimumTotalAmountCustomerCents: number | null = null;
@@ -200,6 +203,7 @@ export async function cookBookingRequestOfferCreate(
                 payoutCentsCook: price.payoutCentsCook,
                 totalWithoutDiscountsCentsCustomer: price.totalWithoutDiscountsCentsCustomer,
                 paymentStatus: 'EMPTY',
+                cookInviteRewardId: inviteCredit?.cookInviteRewardId ?? null,
             });
 
             for (const sourceMenuId of uniqueMenuIds) {
@@ -253,6 +257,9 @@ export async function cookBookingRequestOfferCreate(
 
         await bookingRequestNoOffersNotifyCancel(serverRuntime, input.bookingRequestId);
         await bookingRequestReactionReminderSchedule(serverRuntime, { bookingRequestId: input.bookingRequestId });
+
+        const { cookInviteRewardUnlock } = await import('../utils/cookInviteRewardUnlock');
+        await cookInviteRewardUnlock(serverRuntime, { inviteeCookId: cookId });
 
         await Promise.all([
             serverRuntime.publish.userUpdates({ userId: cookId }),

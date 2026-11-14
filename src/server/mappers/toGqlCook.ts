@@ -109,6 +109,9 @@ export function toGqlCook(row: Cook, userStatus: UserStatus): GqlSCook {
         // Field resolvers derive overview to-dos and setup steps.
         attention: [],
         onboardingSteps: [],
+        // Field resolvers load invite progress and open fee-credit remaining.
+        invitees: [],
+        inviteOpenFeeCreditRemainingBookings: 0,
         lastModifiedAt: row.lastModifiedAt,
     };
 }

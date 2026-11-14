@@ -10,6 +10,8 @@ import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSMutationResult, GqlSMutationUserCreateArgs, GqlSSession } from '../graphql/generated';
 import { userKlaviyoProfileSync } from '../jobs/handlers/userKlaviyoProfileSync';
 import { cookCreatePayloadBuild } from '../utils/cookCreatePayloadBuild';
+import { cookInviteAttributionResolve } from '../utils/cookInviteAttributionResolve';
+import { cookInviteRewardUnlock } from '../utils/cookInviteRewardUnlock';
 import { cookPathNameAllocate } from '../utils/cookPathName';
 import { outboundEmailsUserIdBackfillByToEmail } from '../utils/outboundEmailsUserIdBackfillByToEmail';
 import { sessionEventCreate } from '../utils/sessionEventCreate';
@@ -136,9 +138,25 @@ export async function userCreate(
             };
 
             await transaction.insert(users).values(userInsert);
-            if (cookPayload) {
+            let invitedByCookId: string | undefined;
+            let inviteUnlockSignUp = false;
+            if (cookPayload && cookInput) {
+                const attribution = await cookInviteAttributionResolve({
+                    inviteCookId: cookInput.inviteCookId,
+                    inviteeUserId: newUserId,
+                    inviteeEmailAddress: emailAddress,
+                    inviteePhoneNumber: phoneNumber,
+                    db: transaction as unknown as ServerRuntime['db'],
+                });
+                invitedByCookId = attribution?.invitedByCookId;
+                inviteUnlockSignUp = attribution?.inviteReward.unlockKind === 'SIGN_UP';
                 const pathName = await cookPathNameAllocate(transaction, firstName, lastName);
-                await transaction.insert(cooks).values({ cookId: newUserId, pathName, ...cookPayload });
+                await transaction.insert(cooks).values({
+                    cookId: newUserId,
+                    pathName,
+                    ...cookPayload,
+                    ...(attribution ?? {}),
+                });
             }
             await outboundEmailsUserIdBackfillByToEmail(transaction, {
                 toEmail: emailAddress,
@@ -166,10 +184,23 @@ export async function userCreate(
                     .where(eq(authEmailOtps.authEmailOtpId, otp.authEmailOtpId));
             }
 
-            return { userId: newUserId, emailAddress, oauthProvider: oauthTicketValid ? oauthTicket.provider : null };
+            return {
+                userId: newUserId,
+                emailAddress,
+                oauthProvider: oauthTicketValid ? oauthTicket.provider : null,
+                cookCreated: Boolean(cookPayload),
+                invitedByCookId,
+                inviteUnlockSignUp,
+            };
         });
 
         await sessionUserBind(requestingSession.sessionId, created.userId, requestingSession, serverRuntime);
+        if (created.cookCreated && created.inviteUnlockSignUp) {
+            await cookInviteRewardUnlock(serverRuntime, { inviteeCookId: created.userId });
+        }
+        if (created.invitedByCookId) {
+            await serverRuntime.publish.userUpdates({ userId: created.invitedByCookId });
+        }
         await sessionEventCreate(serverRuntime, {
             sessionId: requestingSession.sessionId,
             type: 'USER_CREATE_SUCCESSFUL',

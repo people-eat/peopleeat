@@ -49,6 +49,7 @@ export function cookCreateFieldsReady(state: CookCreateFieldsState): boolean {
 
 export function cookCreateInputFromFields(
     state: CookCreateFieldsState,
+    options?: { inviteCookId?: string | null },
 ): { input: GqlCCookCreate } | { error: 'travelExpenses' | 'travelDistance' | 'incomplete' } {
     if (!state.selectedLocation?.displayText) {
         return { error: 'incomplete' };
@@ -61,11 +62,13 @@ export function cookCreateInputFromFields(
     if (!Number.isInteger(distance) || distance < 5 || distance > 250) {
         return { error: 'travelDistance' };
     }
+    const inviteCookId = options?.inviteCookId?.trim();
     return {
         input: {
             exactTravelOriginAddress: state.selectedLocation.displayText,
             travelExpensesAmount: cents,
             maximumTravelDistance: distance,
+            ...(inviteCookId ? { inviteCookId } : {}),
         },
     };
 }

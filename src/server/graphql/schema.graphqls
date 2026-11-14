@@ -989,7 +989,22 @@ type Cook {
     attention: [CookAttentionItem!]!
     # Remaining setup steps in display order; empty once the cook is set up.
     onboardingSteps: [CookOnboardingStep!]!
+    # Cooks this chef invited (attribution). Progress is derived. See cook-invite.md.
+    invitees: [CookInvitee!]!
+    # Sum of remaining OPEN fee-booking credits for this cook.
+    inviteOpenFeeCreditRemainingBookings: Int!
     lastModifiedAt: DateTime!
+}
+
+# Invitee progress for the inviting cook. See docs/features/cook-invite.md.
+type CookInvitee {
+    cookId: ID!
+    display: String!
+    registered: Boolean!
+    approved: Boolean!
+    firstOfferCreated: Boolean!
+    firstEvent: Boolean!
+    rewardUnlocked: Boolean!
 }
 
 enum CookPresenceOtherPlatform {
@@ -1231,6 +1246,8 @@ input CookCreate {
     cookingPhilosophy: String
     travelExpensesAmount: Int!
     maximumTravelDistance: Int!
+    # Optional inviter cook id from /chef-sign-up?invite=. Invalid values are ignored.
+    inviteCookId: ID
 }
 
 # Patch for cook profile / travel / call settings. At least one field required.
@@ -3623,6 +3640,12 @@ type AdminCook {
     presenceLinks: CookPresenceLinks
     # Same null / empty / text rules as `Cook.defaultOfferMessage`.
     defaultOfferMessage: String
+    # Cook-to-cook invite attribution. Null when not invited. See cook-invite.md.
+    invitedByCookId: ID
+    # Frozen invite program JSON. Null when not invited.
+    inviteReward: JSON
+    # Rewards minted for this cook as inviter.
+    inviteRewards: [AdminCookInviteReward!]!
     # Same aggregate as `PublicCook.rating` — published customer reviews on completed offers.
     rating: PublicCookRating!
     travelExpensesAmount: Int!
@@ -3642,6 +3665,16 @@ type AdminCook {
     # Public chef URL slug (`/chefs/<pathName>`).
     pathName: String!
     previousPathNames: [String!]!
+    createdAt: DateTime!
+    lastModifiedAt: DateTime!
+}
+
+type AdminCookInviteReward {
+    cookInviteRewardId: ID!
+    fromInviteeCookId: ID!
+    terms: JSON!
+    consumption: JSON!
+    status: String!
     createdAt: DateTime!
     lastModifiedAt: DateTime!
 }
@@ -5018,6 +5051,8 @@ type AdminMutation {
     # sessions tab. See docs/features/admin-sessions.md.
     terminateSessions(sessionIds: [ID!]!): MutationResult!
     cookApprovalUpdate(cookId: ID!, isApprovedByAdmin: Boolean!): MutationResult!
+    # Revoke an OPEN cook-invite reward (does not rewrite past offers). Returns reward id.
+    cookInviteRewardRevoke(cookInviteRewardId: ID!): MutationResult!
     # Patch cook profile fields for any cook (same shape as `CookUpdate`).
     # Returns `cookId` as `referenceId`. Does not auto-regenerate biographySummary.
     cookUpdate(cookId: ID!, input: CookUpdate!): MutationResult!
@@ -6186,6 +6221,8 @@ enum FeatureToggleKey {
     COOK_PUBLIC_PROFILE_SHARE
     COOK_PUBLIC_PROFILE_PATH_NAME
     COOK_PRESENCE_LINKS
+    # Cook profile invite entry (sidebar / invite page). Attribution and rewards stay on.
+    COOK_INVITE
     BOOKING_REQUEST_RESTRICTIONS
     BOOKING_REQUEST_SETTING
     BOOKING_REQUEST_KITCHEN_DETAILS

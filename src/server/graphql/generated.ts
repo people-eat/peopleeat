@@ -1059,6 +1059,9 @@ export interface GqlSAdminCook {
     defaultOfferMessage?: Maybe<Scalars['String']['output']>;
     exactTravelOriginAddress?: Maybe<GqlSCookTravelOriginAddress>;
     featuredOn: Array<GqlSAdminCookFeaturedLanding>;
+    inviteReward?: Maybe<Scalars['JSON']['output']>;
+    inviteRewards: Array<GqlSAdminCookInviteReward>;
+    invitedByCookId?: Maybe<Scalars['ID']['output']>;
     isApprovedByAdmin: Scalars['Boolean']['output'];
     isVisible: Scalars['Boolean']['output'];
     lastModifiedAt: Scalars['DateTime']['output'];
@@ -1102,6 +1105,17 @@ export interface GqlSAdminCookInTravelRadiusPreview {
 }
 
 export type GqlSAdminCookInventoryStatus = 'DELETED' | 'DRAFT' | 'PUBLISHED';
+
+export interface GqlSAdminCookInviteReward {
+    __typename?: 'AdminCookInviteReward';
+    consumption: Scalars['JSON']['output'];
+    cookInviteRewardId: Scalars['ID']['output'];
+    createdAt: Scalars['DateTime']['output'];
+    fromInviteeCookId: Scalars['ID']['output'];
+    lastModifiedAt: Scalars['DateTime']['output'];
+    status: Scalars['String']['output'];
+    terms: Scalars['JSON']['output'];
+}
 
 export interface GqlSAdminCookMeal {
     __typename?: 'AdminCookMeal';
@@ -1504,6 +1518,7 @@ export interface GqlSAdminMutation {
     cookApprovalUpdate: GqlSMutationResult;
     cookBiographySuggest: Scalars['String']['output'];
     cookBiographySummarySuggest: Scalars['String']['output'];
+    cookInviteRewardRevoke: GqlSMutationResult;
     cookMealDelete: GqlSMutationResult;
     cookMealUpsert: GqlSMutationResult;
     cookMenuCopy: GqlSMutationResult;
@@ -1730,6 +1745,10 @@ export type GqlSAdminMutationCookBiographySuggestArgs = {
 export type GqlSAdminMutationCookBiographySummarySuggestArgs = {
     biography: Scalars['String']['input'];
     cookId: Scalars['ID']['input'];
+};
+
+export type GqlSAdminMutationCookInviteRewardRevokeArgs = {
+    cookInviteRewardId: Scalars['ID']['input'];
 };
 
 export type GqlSAdminMutationCookMealDeleteArgs = {
@@ -3351,6 +3370,8 @@ export interface GqlSCook {
     cuisineStyle?: Maybe<Scalars['String']['output']>;
     defaultOfferMessage?: Maybe<Scalars['String']['output']>;
     exactTravelOriginAddress?: Maybe<GqlSCookTravelOriginAddress>;
+    inviteOpenFeeCreditRemainingBookings: Scalars['Int']['output'];
+    invitees: Array<GqlSCookInvitee>;
     isApprovedByAdmin: Scalars['Boolean']['output'];
     isVisible: Scalars['Boolean']['output'];
     lastModifiedAt: Scalars['DateTime']['output'];
@@ -3740,9 +3761,21 @@ export type GqlSCookCreate = {
     cookingPhilosophy?: InputMaybe<Scalars['String']['input']>;
     cuisineStyle?: InputMaybe<Scalars['String']['input']>;
     exactTravelOriginAddress: Scalars['String']['input'];
+    inviteCookId?: InputMaybe<Scalars['ID']['input']>;
     maximumTravelDistance: Scalars['Int']['input'];
     travelExpensesAmount: Scalars['Int']['input'];
 };
+
+export interface GqlSCookInvitee {
+    __typename?: 'CookInvitee';
+    approved: Scalars['Boolean']['output'];
+    cookId: Scalars['ID']['output'];
+    display: Scalars['String']['output'];
+    firstEvent: Scalars['Boolean']['output'];
+    firstOfferCreated: Scalars['Boolean']['output'];
+    registered: Scalars['Boolean']['output'];
+    rewardUnlocked: Scalars['Boolean']['output'];
+}
 
 export interface GqlSCookMeal {
     __typename?: 'CookMeal';
@@ -4385,6 +4418,7 @@ export type GqlSFeatureToggleKey =
     | 'BOOKING_REQUEST_SETTING'
     | 'COOK_ANALYTICS'
     | 'COOK_BIOGRAPHY_AI_WRITE'
+    | 'COOK_INVITE'
     | 'COOK_PRESENCE_LINKS'
     | 'COOK_PUBLIC_PROFILE_PATH_NAME'
     | 'COOK_PUBLIC_PROFILE_SHARE'
@@ -6097,6 +6131,7 @@ export type GqlSResolversTypes = ResolversObject<{
     AdminCookFeaturedLandingKind: GqlSAdminCookFeaturedLandingKind;
     AdminCookInTravelRadiusPreview: ResolverTypeWrapper<GqlSAdminCookInTravelRadiusPreview>;
     AdminCookInventoryStatus: GqlSAdminCookInventoryStatus;
+    AdminCookInviteReward: ResolverTypeWrapper<GqlSAdminCookInviteReward>;
     AdminCookMeal: ResolverTypeWrapper<GqlSAdminCookMeal>;
     AdminCookMealCriterion: GqlSAdminCookMealCriterion;
     AdminCookMealImageFilter: GqlSAdminCookMealImageFilter;
@@ -6381,6 +6416,7 @@ export type GqlSResolversTypes = ResolversObject<{
     CookCallSlotBookingCustomer: ResolverTypeWrapper<GqlSCookCallSlotBookingCustomer>;
     CookCallSlotBookingStatus: GqlSCookCallSlotBookingStatus;
     CookCreate: GqlSCookCreate;
+    CookInvitee: ResolverTypeWrapper<GqlSCookInvitee>;
     CookMeal: ResolverTypeWrapper<GqlSCookMeal>;
     CookMealCriterion: GqlSCookMealCriterion;
     CookMealRelationshipBookingRequestOffer: ResolverTypeWrapper<GqlSCookMealRelationshipBookingRequestOffer>;
@@ -6724,6 +6760,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
     AdminCook: GqlSAdminCook;
     AdminCookFeaturedLanding: GqlSAdminCookFeaturedLanding;
     AdminCookInTravelRadiusPreview: GqlSAdminCookInTravelRadiusPreview;
+    AdminCookInviteReward: GqlSAdminCookInviteReward;
     AdminCookMeal: GqlSAdminCookMeal;
     AdminCookMealCriterion: GqlSAdminCookMealCriterion;
     AdminCookMealUpsert: GqlSAdminCookMealUpsert;
@@ -6935,6 +6972,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
     CookCallSlotBookingCriterion: GqlSCookCallSlotBookingCriterion;
     CookCallSlotBookingCustomer: GqlSCookCallSlotBookingCustomer;
     CookCreate: GqlSCookCreate;
+    CookInvitee: GqlSCookInvitee;
     CookMeal: GqlSCookMeal;
     CookMealCriterion: GqlSCookMealCriterion;
     CookMealRelationshipBookingRequestOffer: GqlSCookMealRelationshipBookingRequestOffer;
@@ -8058,6 +8096,9 @@ export type GqlSAdminCookResolvers<
     defaultOfferMessage?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     exactTravelOriginAddress?: Resolver<Maybe<GqlSResolversTypes['CookTravelOriginAddress']>, ParentType, ContextType>;
     featuredOn?: Resolver<Array<GqlSResolversTypes['AdminCookFeaturedLanding']>, ParentType, ContextType>;
+    inviteReward?: Resolver<Maybe<GqlSResolversTypes['JSON']>, ParentType, ContextType>;
+    inviteRewards?: Resolver<Array<GqlSResolversTypes['AdminCookInviteReward']>, ParentType, ContextType>;
+    invitedByCookId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
     isApprovedByAdmin?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     isVisible?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     lastModifiedAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
@@ -8101,6 +8142,19 @@ export type GqlSAdminCookInTravelRadiusPreviewResolvers<
 > = ResolversObject<{
     cook?: Resolver<GqlSResolversTypes['AdminCook'], ParentType, ContextType>;
     estimatedTravelDistanceKm?: Resolver<GqlSResolversTypes['Float'], ParentType, ContextType>;
+}>;
+
+export type GqlSAdminCookInviteRewardResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminCookInviteReward'] = GqlSResolversParentTypes['AdminCookInviteReward'],
+> = ResolversObject<{
+    consumption?: Resolver<GqlSResolversTypes['JSON'], ParentType, ContextType>;
+    cookInviteRewardId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
+    fromInviteeCookId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    lastModifiedAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
+    status?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    terms?: Resolver<GqlSResolversTypes['JSON'], ParentType, ContextType>;
 }>;
 
 export type GqlSAdminCookMealResolvers<
@@ -8634,6 +8688,12 @@ export type GqlSAdminMutationResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSAdminMutationCookBiographySummarySuggestArgs, 'biography' | 'cookId'>
+    >;
+    cookInviteRewardRevoke?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminMutationCookInviteRewardRevokeArgs, 'cookInviteRewardId'>
     >;
     cookMealDelete?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -10154,6 +10214,8 @@ export type GqlSCookResolvers<
     cuisineStyle?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     defaultOfferMessage?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     exactTravelOriginAddress?: Resolver<Maybe<GqlSResolversTypes['CookTravelOriginAddress']>, ParentType, ContextType>;
+    inviteOpenFeeCreditRemainingBookings?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    invitees?: Resolver<Array<GqlSResolversTypes['CookInvitee']>, ParentType, ContextType>;
     isApprovedByAdmin?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     isVisible?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     lastModifiedAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
@@ -10491,6 +10553,19 @@ export type GqlSCookCallSlotBookingCustomerResolvers<
 > = ResolversObject<{
     display?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     timeZone?: Resolver<GqlSResolversTypes['TimeZone'], ParentType, ContextType>;
+}>;
+
+export type GqlSCookInviteeResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['CookInvitee'] = GqlSResolversParentTypes['CookInvitee'],
+> = ResolversObject<{
+    approved?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
+    cookId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    display?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    firstEvent?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
+    firstOfferCreated?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
+    registered?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
+    rewardUnlocked?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 
 export type GqlSCookMealResolvers<
@@ -12463,6 +12538,7 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     AdminCook?: GqlSAdminCookResolvers<ContextType>;
     AdminCookFeaturedLanding?: GqlSAdminCookFeaturedLandingResolvers<ContextType>;
     AdminCookInTravelRadiusPreview?: GqlSAdminCookInTravelRadiusPreviewResolvers<ContextType>;
+    AdminCookInviteReward?: GqlSAdminCookInviteRewardResolvers<ContextType>;
     AdminCookMeal?: GqlSAdminCookMealResolvers<ContextType>;
     AdminCookMenu?: GqlSAdminCookMenuResolvers<ContextType>;
     AdminCookMenuCourse?: GqlSAdminCookMenuCourseResolvers<ContextType>;
@@ -12595,6 +12671,7 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     CookCallSlot?: GqlSCookCallSlotResolvers<ContextType>;
     CookCallSlotBooking?: GqlSCookCallSlotBookingResolvers<ContextType>;
     CookCallSlotBookingCustomer?: GqlSCookCallSlotBookingCustomerResolvers<ContextType>;
+    CookInvitee?: GqlSCookInviteeResolvers<ContextType>;
     CookMeal?: GqlSCookMealResolvers<ContextType>;
     CookMealRelationshipBookingRequestOffer?: GqlSCookMealRelationshipBookingRequestOfferResolvers<ContextType>;
     CookMealRelationshipMenu?: GqlSCookMealRelationshipMenuResolvers<ContextType>;
@@ -13452,6 +13529,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'BOOKING_REQUEST_SETTING'
     | 'COOK_ANALYTICS'
     | 'COOK_BIOGRAPHY_AI_WRITE'
+    | 'COOK_INVITE'
     | 'COOK_PRESENCE_LINKS'
     | 'COOK_PUBLIC_PROFILE_PATH_NAME'
     | 'COOK_PUBLIC_PROFILE_SHARE'
@@ -13479,6 +13557,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'BOOKING_REQUEST_SETTING'
     | 'COOK_ANALYTICS'
     | 'COOK_BIOGRAPHY_AI_WRITE'
+    | 'COOK_INVITE'
     | 'COOK_PRESENCE_LINKS'
     | 'COOK_PUBLIC_PROFILE_PATH_NAME'
     | 'COOK_PUBLIC_PROFILE_SHARE'
@@ -13507,6 +13586,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     'BOOKING_REQUEST_SETTING',
     'COOK_ANALYTICS',
     'COOK_BIOGRAPHY_AI_WRITE',
+    'COOK_INVITE',
     'COOK_PRESENCE_LINKS',
     'COOK_PUBLIC_PROFILE_PATH_NAME',
     'COOK_PUBLIC_PROFILE_SHARE',
@@ -14324,6 +14404,7 @@ export function GqlSCookCreateSchema(): z.ZodObject<Properties<GqlSCookCreate>> 
         cookingPhilosophy: z.string().nullish(),
         cuisineStyle: z.string().nullish(),
         exactTravelOriginAddress: z.string(),
+        inviteCookId: z.string().nullish(),
         maximumTravelDistance: z.number(),
         travelExpensesAmount: z.number(),
     });
