@@ -10,15 +10,11 @@ export function AuthIdentityGateLogOnFooter({ session, sessionRefresh }: { sessi
 
     return (
         <div className="grid gap-3">
-            {googleOn ? (
-                <>
-                    <div className="relative text-center text-sm text-muted-foreground">
-                        <span>{{ de: 'oder', en: 'or' }[locale]}</span>
-                    </div>
-                    <AuthGoogleLogOn session={session} />
-                </>
-            ) : null}
-            <AuthPasskeyLogOn onSuccess={sessionRefresh} />
+            <div className="relative text-center text-sm text-muted-foreground">
+                <span>{{ de: 'oder', en: 'or' }[locale]}</span>
+            </div>
+            {googleOn ? <AuthGoogleLogOn session={session} /> : null}
+            <AuthPasskeyLogOn onSuccess={sessionRefresh} hideDivider />
         </div>
     );
 }
