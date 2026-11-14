@@ -21,6 +21,7 @@ off. Chat, review reminders, and new requests may have both channels off.
 **When you cook** (only when the account has a cook profile)
 
 - **New requests near you**: these can come often.
+- **Requests sent to you**: a guest requested you from your chef profile.
 - **Your offers**: changes, accepted or declined, menu, guest count, and calls.
 - **Messages from your guests**: an unread message.
 - **After the evening**: reminders about guests' reviews.

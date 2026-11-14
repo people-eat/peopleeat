@@ -53,6 +53,14 @@ query AdminBookingRequestsPage($criterion: AdminBookingRequestCriterion!) {
                             lastName
                         }
                     }
+                    requestedCook {
+                        cookId
+                        user {
+                            userId
+                            firstName
+                            lastName
+                        }
+                    }
                 }
                 bookingRequestsCounts(criteria: [$criterion])
             }

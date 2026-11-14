@@ -17,7 +17,7 @@ export type UserAttentionKind =
     | 'TESTIMONIAL_MISSING'
     | 'KITCHEN_DETAILS_MISSING';
 
-export type CookAttentionKind = 'APPROVAL_PENDING' | 'WALLET_RESET' | 'OFFER_CHAT_UNREAD' | 'CALL_UPCOMING';
+export type CookAttentionKind = 'APPROVAL_PENDING' | 'WALLET_RESET' | 'DIRECT_BOOKING_REQUEST' | 'OFFER_CHAT_UNREAD' | 'CALL_UPCOMING';
 
 export type CookOnboardingStep =
     'WALLET' | 'TRAVEL' | 'PROFILE_PICTURE' | 'CHEF_PROFILE' | 'FIRST_MEAL' | 'FIRST_MENU' | 'DEFAULT_OFFER_MESSAGE' | 'FIRST_OFFER';
@@ -176,6 +176,7 @@ export function cookAttentionKindTone(kind: CookAttentionKind): AttentionTone {
     switch (kind) {
         case 'WALLET_RESET':
         case 'OFFER_CHAT_UNREAD':
+        case 'DIRECT_BOOKING_REQUEST':
             return 'warning';
         case 'APPROVAL_PENDING':
         case 'CALL_UPCOMING':
@@ -206,6 +207,18 @@ export function cookAttentionCopy(
                     en: 'Please refresh your wallet before payouts can continue.',
                 }[locale],
                 actionLabel: { de: 'Zum Wallet', en: 'Go to wallet' }[locale],
+            };
+        case 'DIRECT_BOOKING_REQUEST':
+            return {
+                title:
+                    item.count === 1
+                        ? { de: 'Jemand hat dich direkt angefragt', en: 'Someone requested you' }[locale]
+                        : { de: `${item.count} direkte Anfragen`, en: `${item.count} direct requests` }[locale],
+                body: {
+                    de: 'Ein Gast hat dich über dein Kochprofil angefragt.',
+                    en: 'A guest requested you from your chef profile.',
+                }[locale],
+                actionLabel: { de: 'Zur Anfrage', en: 'Open request' }[locale],
             };
         case 'OFFER_CHAT_UNREAD':
             return offerChatUnreadCopy(item.count, locale);

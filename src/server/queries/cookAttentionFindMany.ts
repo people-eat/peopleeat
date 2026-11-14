@@ -5,6 +5,7 @@ import { cookStripeStatusDerive } from '../domain/cook';
 import { cookAttentionDerive } from '../domain/cookAttention';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSCook, GqlSCookAttentionItem, GqlSSession } from '../graphql/generated';
+import { cookBookingRequestPoolRowsFind } from '../utils/cookBookingRequestPoolRowsFind';
 import { cookCallSlotBookingsFindMany } from './cookCallSlotBookingsFindMany';
 
 const UPCOMING_CALL_WINDOW_DAYS = 14;
@@ -35,11 +36,17 @@ export async function cookAttentionFindMany(
             return [];
         }
 
+        const poolRows = await cookBookingRequestPoolRowsFind(cook, { onlyDeclined: false }, serverRuntime);
+        const directRequests = poolRows
+            .filter((row) => row.bookingRequest.requestedCookId === cook.cookId)
+            .map((row) => ({ bookingRequestId: row.bookingRequest.bookingRequestId }));
+
         const nextCall = upcomingCalls[0];
         return cookAttentionDerive({
             isApprovedByAdmin: cook.isApprovedByAdmin,
             stripeStatus: cookStripeStatusDerive(cook),
             offers,
+            directRequests,
             nextCall: nextCall
                 ? {
                       bookingRequestOfferId: nextCall.bookingRequestOfferId,

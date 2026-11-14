@@ -47,6 +47,7 @@ describe('parseBookingRequestFormSearch', () => {
             country: undefined,
             setting: undefined,
             step: 'message',
+            cookId: undefined,
         });
     });
 
@@ -150,6 +151,15 @@ describe('parseBookingRequestFormSearch', () => {
             dateTime: '2030-06-15T18:00:00.000Z',
         });
         expect(bookingRequestFormSearchEqual(a, b)).toBe(true);
+    });
+
+    it('keeps cookId through parse and draft rebuild', () => {
+        const search = parseBookingRequestFormSearch({ cookId: 'cook_abc', occasion: 'Birthday' });
+        expect(search.cookId).toBe('cook_abc');
+        const values = bookingRequestFormValuesFromSearch(search);
+        const next = bookingRequestFormSearchFromValues({ values, step: 'occasion', cookId: search.cookId });
+        expect(next.cookId).toBe('cook_abc');
+        expect(bookingRequestFormSearchEqual(search, { ...search, cookId: 'other' })).toBe(false);
     });
 
     it('preserves datetime bounds when rebuilding search from values', () => {

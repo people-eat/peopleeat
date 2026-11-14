@@ -1,7 +1,7 @@
 import type { BookingRequest, Cook } from '../db/schema';
 import { cookIsInTravelRadius } from './cookIsInTravelRadius';
 
-type PoolEligibilityRequest = Pick<BookingRequest, 'userId' | 'publicationStatus' | 'exactEventAddress'>;
+type PoolEligibilityRequest = Pick<BookingRequest, 'userId' | 'publicationStatus' | 'exactEventAddress' | 'requestedCookId'>;
 
 /**
  * Whether this cook may learn pool-level facts about a booking request
@@ -17,7 +17,13 @@ export function cookIsEligibleForBookingRequestPool(
     if (bookingRequest.userId === cook.cookId) {
         return false;
     }
-    if (bookingRequest.publicationStatus === 'PUBLICATION_APPROVED_BY_ADMIN') {
+    if (bookingRequest.requestedCookId === cook.cookId) {
+        return affinity?.notifiedAt != null;
+    }
+    if (
+        bookingRequest.publicationStatus === 'PUBLICATION_APPROVED_BY_ADMIN' ||
+        bookingRequest.publicationStatus === 'PUBLICATION_DIRECT_TO_COOK'
+    ) {
         return affinity?.notifiedAt != null;
     }
     if (bookingRequest.publicationStatus === 'PUBLICATION_AUTO_APPROVED') {

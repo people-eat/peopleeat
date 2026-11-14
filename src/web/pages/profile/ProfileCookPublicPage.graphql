@@ -5,6 +5,7 @@ fragment ProfileCookPublicPageCook on Cook {
     pathName
     isVisible
     isApprovedByAdmin
+    canCreateOffers
     biography
     biographySummary
     logo {

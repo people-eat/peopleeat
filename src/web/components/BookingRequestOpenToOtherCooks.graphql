@@ -1,0 +1,8 @@
+mutation BookingRequestOpenToOtherCooks($bookingRequestId: ID!) {
+    user {
+        bookingRequestOpenToOtherCooks(bookingRequestId: $bookingRequestId) {
+            success
+            referenceId
+        }
+    }
+}

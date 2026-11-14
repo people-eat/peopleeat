@@ -36,6 +36,19 @@ fragment ProfileCustomerBookingRequestPageUser on User {
             }
         }
         originalMessage
+        isExclusive
+        directRequestNeedsExpansion
+        requestedCook {
+            cookId
+            pathName
+            hasPublicProfile
+            user {
+                display
+                profilePicture {
+                    url
+                }
+            }
+        }
         preferences
         canceledAt
         cancellationReason

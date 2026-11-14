@@ -45,6 +45,7 @@ export type AdminBookingRequestListCardRequest = {
     exactEventAddress: { city: string; displayText: string; country?: string | null };
     participants: { type: string }[];
     customer: { userId: string; firstName: string; lastName: string; emailAddress: string | null };
+    requestedCook?: { cookId: string; user: { userId: string; firstName: string; lastName: string } } | null;
     offers: AdminBookingRequestListCardOffer[];
 };
 
@@ -320,7 +321,8 @@ export function AdminBookingRequestListCard({ request }: { request: AdminBooking
     const customerName = userDisplayName(request.customer);
     const location =
         request.exactEventAddress.city.trim().length > 0 ? request.exactEventAddress.city : request.exactEventAddress.displayText;
-    const needsPublicationReview = request.publicationStatus === 'PUBLICATION_BLOCKED_BY_ADMIN_REVIEW';
+    const showPublicationBadge =
+        request.publicationStatus === 'PUBLICATION_BLOCKED_BY_ADMIN_REVIEW' || request.publicationStatus === 'PUBLICATION_DIRECT_TO_COOK';
 
     return (
         <article
@@ -342,7 +344,7 @@ export function AdminBookingRequestListCard({ request }: { request: AdminBooking
                         <BookingStatusPill hue={bookingRequestStatusHue(request.status)}>
                             {bookingRequestStatusLabel(request.status, locale, 'admin')}
                         </BookingStatusPill>
-                        {needsPublicationReview ? (
+                        {showPublicationBadge ? (
                             <Badge variant="outline">{adminBookingRequestPublicationStatusLabel(request.publicationStatus, locale)}</Badge>
                         ) : null}
                     </div>

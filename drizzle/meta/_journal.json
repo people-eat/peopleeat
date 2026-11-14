@@ -232,6 +232,13 @@
             "when": 1794231000000,
             "tag": "0032_partners_and_partner_venues",
             "breakpoints": true
+        },
+        {
+            "idx": 33,
+            "version": "7",
+            "when": 1794670700542,
+            "tag": "0033_mean_shockwave",
+            "breakpoints": true
         }
     ]
 }

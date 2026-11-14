@@ -15,6 +15,7 @@ import {
     bookingRequestKitchenDetailsPhotosFromGql,
     BookingRequestKitchenDetailsSaveCard,
 } from '../components/BookingRequestKitchenDetailsFields';
+import { BookingRequestOpenToOtherCooksButton } from '../components/BookingRequestOpenToOtherCooksButton';
 import type { GqlCBookingRequestSubmittedPageQuery } from '../graphql/generated';
 import { BookingRequestSubmittedKitchenDetailsUpdateDocument } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
@@ -56,17 +57,22 @@ const SUBMITTED_STEP_IMAGES = [
     },
 ] as const;
 
-function nextSteps(locale: Locale): { title: string; body: string }[] {
+function nextSteps(locale: Locale, cookName: string | null): { title: string; body: string }[] {
     return [
         {
             title: {
                 de: 'Du erhältst einen individuellen Menüvorschlag',
                 en: 'You receive an individual menu proposal',
             }[locale],
-            body: {
-                de: 'Passende Köche in deiner Nähe erstellen individuelle Menüvorschläge für dein Event.',
-                en: 'Suitable chefs in your area will create individual menu proposals for your event.',
-            }[locale],
+            body: cookName
+                ? {
+                      de: `${cookName} schaut sich deine Anfrage an und schickt dir ein Angebot mit Menü und Preis.`,
+                      en: `${cookName} is reviewing your request and will send an offer with menu and price.`,
+                  }[locale]
+                : {
+                      de: 'Passende Köche in deiner Nähe erstellen individuelle Menüvorschläge für dein Event.',
+                      en: 'Suitable chefs in your area will create individual menu proposals for your event.',
+                  }[locale],
         },
         {
             title: {
@@ -104,7 +110,8 @@ export function BookingRequestSubmittedPage({
 }) {
     const locale = useLocale();
     const bookingRequest = data.currentSession.user?.bookingRequest;
-    const steps = nextSteps(locale);
+    const requestedCookName = bookingRequest?.requestedCook?.user.display ?? null;
+    const steps = nextSteps(locale, bookingRequest?.isExclusive ? requestedCookName : null);
     const kitchenEnabled = featureToggleIsActive(data.currentSession.activeFeatureToggleKeys, 'BOOKING_REQUEST_KITCHEN_DETAILS');
     const [, updateKitchenDetails] = useMutation(BookingRequestSubmittedKitchenDetailsUpdateDocument);
     const [kitchenDraft, setKitchenDraft] = useState(() => {
@@ -261,19 +268,31 @@ export function BookingRequestSubmittedPage({
                         tone="success"
                         title={bookingRequestSubmittedPageTitle[locale]}
                         action={
-                            <Button type="button" variant="outline" asChild>
-                                <Link to="/{-$locale}/profile/booking-requests/$bookingRequestId" params={{ bookingRequestId }}>
-                                    {{ de: 'Zur Anfrage', en: 'View request' }[locale]}
-                                </Link>
-                            </Button>
+                            <div className="flex flex-wrap items-center justify-end gap-2">
+                                {bookingRequest.isExclusive && requestedCookName ? (
+                                    <BookingRequestOpenToOtherCooksButton
+                                        bookingRequestId={bookingRequestId}
+                                        cookFirstName={requestedCookName}
+                                        prominence={bookingRequest.directRequestNeedsExpansion ? 'primary' : 'secondary'}
+                                    />
+                                ) : null}
+                                <Button type="button" variant="outline" asChild>
+                                    <Link to="/{-$locale}/profile/booking-requests/$bookingRequestId" params={{ bookingRequestId }}>
+                                        {{ de: 'Zur Anfrage', en: 'View request' }[locale]}
+                                    </Link>
+                                </Button>
+                            </div>
                         }
                     >
-                        {
-                            {
-                                de: 'Geeignete Köche in deiner Region haben deine Anfrage erhalten. Wir informieren dich, sobald Menüvorschläge vorliegen.',
-                                en: 'Suitable chefs in your area received your request. You will be notified once you get an offer.',
-                            }[locale]
-                        }
+                        {bookingRequest.isExclusive && requestedCookName
+                            ? {
+                                  de: `${requestedCookName} hat deine Anfrage erhalten. Du kannst sie jederzeit auch für andere Köche öffnen.`,
+                                  en: `${requestedCookName} received your request. You can open it to other chefs any time.`,
+                              }[locale]
+                            : {
+                                  de: 'Geeignete Köche in deiner Region haben deine Anfrage erhalten. Wir informieren dich, sobald Menüvorschläge vorliegen.',
+                                  en: 'Suitable chefs in your area received your request. You will be notified once you get an offer.',
+                              }[locale]}
                     </StatusAlert>
                 </div>
             </div>

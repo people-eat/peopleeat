@@ -31,6 +31,7 @@ export async function bookingRequestCooksNotify(
     serverRuntime: ServerRuntime,
     cookIds: string[],
     context: BookingRequestCooksNotifyContext,
+    options?: { direct?: boolean },
 ): Promise<void> {
     if (cookIds.length === 0) {
         return;
@@ -69,13 +70,14 @@ export async function bookingRequestCooksNotify(
                 return;
             }
             const locale = cookUser.locale;
-            const emailAllowed = notificationEmailAllowed(cookUser.notificationSettings, 'BOOKING_REQUEST_COOK_NOTIFY');
+            const emailPurpose = options?.direct ? 'BOOKING_REQUEST_COOK_DIRECT_NOTIFY' : 'BOOKING_REQUEST_COOK_NOTIFY';
+            const emailAllowed = notificationEmailAllowed(cookUser.notificationSettings, emailPurpose);
             const city = context.city.trim() || { de: 'deiner Nähe', en: 'your area' }[locale];
             try {
                 if (emailAllowed) {
                     await serverRuntime.email.send({
                         to: cookUser.emailAddress,
-                        subject: bookingRequestCooksNotifyForCookEmailSubject(locale),
+                        subject: bookingRequestCooksNotifyForCookEmailSubject(locale, { direct: options?.direct === true }),
                         react: BookingRequestCooksNotifyForCookEmail({
                             locale,
                             timeZone: cookUser.timeZone,
@@ -86,8 +88,9 @@ export async function bookingRequestCooksNotify(
                             dateTime: context.dateTime,
                             city,
                             poolUrl,
+                            direct: options?.direct === true,
                         }),
-                        purpose: 'BOOKING_REQUEST_COOK_NOTIFY',
+                        purpose: emailPurpose,
                         locale,
                         relatedEntity: { type: 'BOOKING_REQUEST', id: context.bookingRequestId },
                         userId: cookUser.userId,
@@ -105,13 +108,15 @@ export async function bookingRequestCooksNotify(
                 );
             }
 
-            await bookingRequestCookNotifyWhatsAppSend(serverRuntime, {
-                bookingRequestId: context.bookingRequestId,
-                cookUserId: cookUser.userId,
-                city,
-                country: context.country,
-                dateTime: context.dateTime,
-            });
+            if (!options?.direct) {
+                await bookingRequestCookNotifyWhatsAppSend(serverRuntime, {
+                    bookingRequestId: context.bookingRequestId,
+                    cookUserId: cookUser.userId,
+                    city,
+                    country: context.country,
+                    dateTime: context.dateTime,
+                });
+            }
         }),
     );
 }

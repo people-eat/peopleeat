@@ -13,6 +13,7 @@ import {
     formatParticipants,
 } from '../../../shared';
 import { bookingRequestStatusHue, bookingRequestStatusLabel } from '../../../shared/bookingRequestStatus';
+import type { Locale } from '../../../shared/locale';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -39,6 +40,7 @@ import {
 } from '../../components/BookingRequestKitchenDetailsFields';
 import type { BookingRequestKitchenDetailsPhoto } from '../../components/BookingRequestKitchenDetailsFields';
 import { BookingRequestOfferParticipantAmendmentCustomerPanel } from '../../components/BookingRequestOfferParticipantAmendmentPanel';
+import { BookingRequestOpenToOtherCooksButton } from '../../components/BookingRequestOpenToOtherCooksButton';
 import {
     BookingRequestKitchenDetailsFactContent,
     bookingRequestKitchenDetailsHasFacts,
@@ -73,6 +75,47 @@ export const profileCustomerBookingRequestPageDescription = {
 
 const CANCELABLE_STATUSES = new Set(['WAITING_FOR_OFFERS', 'OFFERS_WAITING_FOR_REVIEW', 'EXPIRED']);
 const UPDATABLE_STATUSES = new Set(['WAITING_FOR_OFFERS', 'OFFERS_WAITING_FOR_REVIEW']);
+
+function requestedCookIdentity(
+    cook: {
+        pathName: string;
+        hasPublicProfile: boolean;
+        user: { display: string; profilePicture: { url: string } | null };
+    },
+    isExclusive: boolean,
+    locale: Locale,
+) {
+    const subtitle = isExclusive
+        ? { de: 'Nur dieser Koch sieht die Anfrage.', en: 'Only this chef can see the request.' }[locale]
+        : {
+              de: `${cook.user.display} bleibt auf der Anfrage. Andere Köche in der Nähe können ebenfalls Angebote senden.`,
+              en: `${cook.user.display} stays on the request. Nearby chefs can send offers too.`,
+          }[locale];
+    const body = (
+        <>
+            <Avatar>
+                {cook.user.profilePicture?.url ? <AvatarImage src={cook.user.profilePicture.url} alt="" className="object-cover" /> : null}
+                <AvatarFallback>{initialsFromDisplay(cook.user.display)}</AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+                <p className="font-medium">{cook.user.display}</p>
+                <p className="text-sm text-muted-foreground">{subtitle}</p>
+            </div>
+        </>
+    );
+    if (cook.hasPublicProfile) {
+        return (
+            <Link
+                to="/{-$locale}/chefs/$pathName"
+                params={{ pathName: cook.pathName }}
+                className="flex min-w-0 items-center gap-3 underline-offset-4 hover:underline"
+            >
+                {body}
+            </Link>
+        );
+    }
+    return <div className="flex min-w-0 items-center gap-3">{body}</div>;
+}
 
 function initialsFromDisplay(display: string): string {
     const parts = display.trim().split(/\s+/u).filter(Boolean);
@@ -246,6 +289,31 @@ export function ProfileCustomerBookingRequestPage({
                         {bookingRequestStatusLabel(statusForPill, locale, 'customer')}
                     </BookingStatusPill>
                 </div>
+
+                {request.requestedCook ? (
+                    <section className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-4">
+                        {requestedCookIdentity(request.requestedCook, request.isExclusive, locale)}
+                        {request.isExclusive ? (
+                            <div className="flex min-w-0 flex-col items-stretch gap-2 sm:items-end">
+                                {request.directRequestNeedsExpansion ? (
+                                    <StatusAlert tone="warning">
+                                        {
+                                            {
+                                                de: `${request.requestedCook.user.display} kann diesmal nicht.`,
+                                                en: `${request.requestedCook.user.display} can't make it this time.`,
+                                            }[locale]
+                                        }
+                                    </StatusAlert>
+                                ) : null}
+                                <BookingRequestOpenToOtherCooksButton
+                                    bookingRequestId={bookingRequestId}
+                                    cookFirstName={request.requestedCook.user.display}
+                                    prominence={request.directRequestNeedsExpansion ? 'primary' : 'secondary'}
+                                />
+                            </div>
+                        ) : null}
+                    </section>
+                ) : null}
 
                 {pendingAmendment != null && pendingAmendmentOfferId != null ? (
                     <BookingRequestOfferParticipantAmendmentCustomerPanel

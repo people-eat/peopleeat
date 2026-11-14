@@ -35,6 +35,7 @@ export function adminBookingRequestPublicationStatusLabel(status: GqlCBookingReq
         PUBLICATION_BLOCKED_BY_ADMIN_REVIEW: { de: 'Admin-Prüfung', en: 'Admin review' },
         PUBLICATION_AUTO_APPROVED: { de: 'Auto-freigegeben', en: 'Auto-approved' },
         PUBLICATION_APPROVED_BY_ADMIN: { de: 'Admin-freigegeben', en: 'Admin-approved' },
+        PUBLICATION_DIRECT_TO_COOK: { de: 'Direktanfrage', en: 'Direct to cook' },
     }[status][locale];
 }
 

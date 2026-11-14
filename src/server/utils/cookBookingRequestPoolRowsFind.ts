@@ -52,6 +52,7 @@ export async function cookBookingRequestPoolRowsFind(
                 or(
                     eq(bookingRequests.publicationStatus, 'PUBLICATION_AUTO_APPROVED'),
                     and(eq(bookingRequests.publicationStatus, 'PUBLICATION_APPROVED_BY_ADMIN'), isNotNull(bookingRequestCooks.notifiedAt)),
+                    and(eq(bookingRequests.publicationStatus, 'PUBLICATION_DIRECT_TO_COOK'), isNotNull(bookingRequestCooks.notifiedAt)),
                 ),
                 onlyDeclined ? isNotNull(bookingRequestCooks.declinedAt) : isNull(bookingRequestCooks.declinedAt),
             ),
@@ -60,5 +61,11 @@ export async function cookBookingRequestPoolRowsFind(
 
     return rows
         .filter((row) => !row.hasAcceptedOffer && cookIsEligibleForBookingRequestPool(cook, row.bookingRequest, row.details))
-        .map(({ bookingRequest, details }) => ({ bookingRequest, details }));
+        .map(({ bookingRequest, details }) => ({ bookingRequest, details }))
+        .sort((a, b) => {
+            const aRequested = a.bookingRequest.requestedCookId === cookId ? 0 : 1;
+            const bRequested = b.bookingRequest.requestedCookId === cookId ? 0 : 1;
+            if (aRequested !== bRequested) return aRequested - bRequested;
+            return b.bookingRequest.createdAt.getTime() - a.bookingRequest.createdAt.getTime();
+        });
 }

@@ -22,6 +22,8 @@ Keys today:
 - Booking request restrictions
 - Booking request indoor / outdoor
 - Booking request kitchen details
+- Chef-page exclusive booking request (`BOOKING_REQUEST_COOK_DIRECT`: public chef CTA and form `cookId` only; existing direct rows stay
+  visible)
 - Offer chat emoji reactions
 - Offer participant and venue amendment after accept (cook-gated propose / accept)
 - Booking-request edit auto price-adjustment preview (customer headcount `priceImpact`)

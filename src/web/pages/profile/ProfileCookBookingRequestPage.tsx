@@ -256,6 +256,27 @@ export function ProfileCookBookingRequestPage({
                     ) : undefined
                 }
             >
+                {request.requestedByCustomer ? (
+                    <StatusAlert
+                        tone="info"
+                        title={
+                            request.isExclusive
+                                ? { de: 'Dieser Gast hat dich direkt angefragt', en: 'This guest requested you' }[locale]
+                                : {
+                                      de: 'Dieser Gast hat dich angefragt, die Anfrage ist auch für andere offen',
+                                      en: 'This guest requested you, and the request is also open to others',
+                                  }[locale]
+                        }
+                    >
+                        {
+                            {
+                                de: 'Die Anfrage kam über dein öffentliches Kochprofil.',
+                                en: 'This request came from your public chef profile.',
+                            }[locale]
+                        }
+                    </StatusAlert>
+                ) : null}
+
                 <StatusAlert tone="info" title={{ de: 'Was ist zu tun?', en: 'What to do?' }[locale]}>
                     <ul className="list-disc space-y-1 pl-4">
                         <li>

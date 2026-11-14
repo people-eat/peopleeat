@@ -1,6 +1,6 @@
 import type { BookingRequest, BookingRequestOffer, BookingRequestParticipant, GiftCard, PromoCode } from '../db/schema';
-import { bookingRequestStatusDerive } from '../domain/bookingRequest';
-import type { GqlSFileUpload, GqlSUserBookingRequest, GqlSUserBookingRequestOffer } from '../graphql/generated';
+import { bookingRequestDirectNeedsExpansion, bookingRequestIsExclusive, bookingRequestStatusDerive } from '../domain/bookingRequest';
+import type { GqlSFileUpload, GqlSPublicCook, GqlSUserBookingRequest, GqlSUserBookingRequestOffer } from '../graphql/generated';
 import { toGqlBookingRequestKitchenDetails } from './toGqlBookingRequestKitchenDetails';
 import { toGqlBookingRequestParticipant } from './toGqlBookingRequestParticipant';
 import { toGqlCookTravelOriginAddress } from './toGqlCook';
@@ -15,6 +15,9 @@ export type ToGqlUserBookingRequestInput = {
     giftCard?: GiftCard | null;
     now?: Date;
     kitchenDetailsPhotos?: GqlSFileUpload[];
+    requestedCook?: GqlSPublicCook | null;
+    requestedCookDeclined?: boolean;
+    requestedCookBanned?: boolean;
 };
 
 export function toGqlUserBookingRequest(input: ToGqlUserBookingRequestInput): GqlSUserBookingRequest {
@@ -27,6 +30,9 @@ export function toGqlUserBookingRequest(input: ToGqlUserBookingRequestInput): Gq
         giftCard,
         now,
         kitchenDetailsPhotos = [],
+        requestedCook = null,
+        requestedCookDeclined = false,
+        requestedCookBanned = false,
     } = input;
 
     return {
@@ -48,6 +54,17 @@ export function toGqlUserBookingRequest(input: ToGqlUserBookingRequestInput): Gq
         priceClassType: bookingRequest.priceClassType ?? null,
         originalMessage: bookingRequest.originalMessage,
         adjustedMessage: bookingRequest.adjustedMessage ?? null,
+        requestedCook,
+        isExclusive: bookingRequestIsExclusive(bookingRequest.publicationStatus),
+        directRequestNeedsExpansion: bookingRequestDirectNeedsExpansion({
+            publicationStatus: bookingRequest.publicationStatus,
+            requestedCookDeclined,
+            requestedCookBanned,
+            offers: offers.map((offer) => ({
+                cookAccepted: offer.cookAccepted ?? null,
+                userAccepted: offer.userAccepted ?? null,
+            })),
+        }),
         preferences: bookingRequest.preferences,
         invoiceAddress: bookingRequest.invoiceAddress ? toGqlInvoiceAddress(bookingRequest.invoiceAddress) : null,
         expiresAt: bookingRequest.expiresAt ?? null,

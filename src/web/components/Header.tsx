@@ -40,12 +40,15 @@ export function Header({
     overMedia = false,
     locale: localeProp,
     bookingRequestCtaUrl,
+    bookingRequestFormSearch,
 }: {
     user: PublicHeaderUser;
     overMedia?: boolean;
     locale?: Locale;
     /** When set (e.g. partner `firstSectionCtaUrl`), overrides the default booking-form link. */
     bookingRequestCtaUrl?: string | null;
+    /** Chef-page exclusive request: pass `cookId` so the form keeps the target. */
+    bookingRequestFormSearch?: { cookId?: string };
 }) {
     const routeLocale = useLocale();
     const locale = localeProp ?? routeLocale;
@@ -102,7 +105,9 @@ export function Header({
                         {trimmedBookingRequestCtaUrl ? (
                             <a href={trimmedBookingRequestCtaUrl}>{{ de: 'Anfrage senden', en: 'Send request' }[locale]}</a>
                         ) : (
-                            <Link to="/{-$locale}/booking-request/form">{{ de: 'Anfrage senden', en: 'Send request' }[locale]}</Link>
+                            <Link to="/{-$locale}/booking-request/form" search={bookingRequestFormSearch ?? {}}>
+                                {{ de: 'Anfrage senden', en: 'Send request' }[locale]}
+                            </Link>
                         )}
                     </HeroButton>
                 ) : null}

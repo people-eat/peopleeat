@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { describe, expect, it } from 'vitest';
 
-import { bookingRequestParticipants, bookingRequests, cooks, sessionEvents } from '../db/schema';
+import { bookingRequestCooks, bookingRequestParticipants, bookingRequests, cooks, featureToggles, sessionEvents } from '../db/schema';
 import { commandSetup, testDb, userMutationParent } from '../test/commandTestUtils';
 import { phoneNumberCreate } from '../test/phoneNumberCreate';
 import { userBookingRequestCreate } from './userBookingRequestCreate';
@@ -76,5 +76,85 @@ describe('userBookingRequestCreate', () => {
         await expect(
             userBookingRequestCreate(userMutationParent(user.userId), { input: sampleCreateInput }, requestingSession, serverRuntime),
         ).rejects.toThrow(/userBookingRequestCreate: cooks cannot create booking requests/);
+    });
+
+    it('creates an exclusive chef-page request when the toggle is on and the cook is offer-ready', async () => {
+        const customer = await commandSetup.withUser({
+            phoneNumber: phoneNumberCreate(),
+            birthDate: '1990-05-01',
+        });
+        const chef = await commandSetup.withUser({ firstName: 'Direct', lastName: 'Chef' });
+        await testDb.insert(cooks).values({
+            cookId: chef.user.userId,
+            isVisible: true,
+            isApprovedByAdmin: true,
+            stripeAccountId: 'acct_direct',
+            stripeAccountActive: true,
+            exactTravelOriginAddress: sampleAddress,
+        });
+        await testDb
+            .insert(featureToggles)
+            .values({ featureToggleKey: 'BOOKING_REQUEST_COOK_DIRECT', enabled: true })
+            .onConflictDoUpdate({
+                target: featureToggles.featureToggleKey,
+                set: { enabled: true },
+            });
+
+        const result = await userBookingRequestCreate(
+            userMutationParent(customer.user.userId),
+            { input: { ...sampleCreateInput, requestedCookId: chef.user.userId } },
+            customer.requestingSession,
+            customer.serverRuntime,
+        );
+
+        const [row] = await testDb.select().from(bookingRequests).where(eq(bookingRequests.bookingRequestId, result.referenceId!));
+        expect(row?.publicationStatus).toBe('PUBLICATION_DIRECT_TO_COOK');
+        expect(row?.requestedCookId).toBe(chef.user.userId);
+
+        const affinity = await testDb
+            .select()
+            .from(bookingRequestCooks)
+            .where(eq(bookingRequestCooks.bookingRequestId, result.referenceId!));
+        expect(affinity).toHaveLength(1);
+        expect(affinity[0]?.cookId).toBe(chef.user.userId);
+        expect(affinity[0]?.notifiedAt).toBeTruthy();
+
+        const events = await testDb.select().from(sessionEvents).where(eq(sessionEvents.sessionId, customer.requestingSession.sessionId));
+        const created = events.find((event) => event.type === 'BOOKING_REQUEST_CREATED');
+        expect(created?.payload).toMatchObject({ requestedCookId: chef.user.userId });
+    });
+
+    it('ignores requestedCookId when the entry toggle is off', async () => {
+        const customer = await commandSetup.withUser({
+            phoneNumber: phoneNumberCreate(),
+            birthDate: '1990-05-01',
+        });
+        const chef = await commandSetup.withUser({ firstName: 'Off', lastName: 'Chef' });
+        await testDb.insert(cooks).values({
+            cookId: chef.user.userId,
+            isVisible: true,
+            isApprovedByAdmin: true,
+            stripeAccountId: 'acct_off',
+            stripeAccountActive: true,
+            exactTravelOriginAddress: sampleAddress,
+        });
+        await testDb
+            .insert(featureToggles)
+            .values({ featureToggleKey: 'BOOKING_REQUEST_COOK_DIRECT', enabled: false })
+            .onConflictDoUpdate({
+                target: featureToggles.featureToggleKey,
+                set: { enabled: false },
+            });
+
+        const result = await userBookingRequestCreate(
+            userMutationParent(customer.user.userId),
+            { input: { ...sampleCreateInput, requestedCookId: chef.user.userId } },
+            customer.requestingSession,
+            customer.serverRuntime,
+        );
+
+        const [row] = await testDb.select().from(bookingRequests).where(eq(bookingRequests.bookingRequestId, result.referenceId!));
+        expect(row?.publicationStatus).toBe('PUBLICATION_AUTO_APPROVED');
+        expect(row?.requestedCookId).toBeNull();
     });
 });

@@ -4,24 +4,34 @@ import type { CookStripeStatus } from '../../shared/cookStripe';
 export type CookAttentionItem = {
     kind: CookAttentionKind;
     count: number;
+    bookingRequestId: string | null;
     bookingRequestOfferId: string | null;
     callStartAt: Date | null;
     customerDisplay: string | null;
 };
 
 function item(kind: CookAttentionKind, overrides: Partial<Omit<CookAttentionItem, 'kind'>> = {}): CookAttentionItem {
-    return { kind, count: 1, bookingRequestOfferId: null, callStartAt: null, customerDisplay: null, ...overrides };
+    return {
+        kind,
+        count: 1,
+        bookingRequestId: null,
+        bookingRequestOfferId: null,
+        callStartAt: null,
+        customerDisplay: null,
+        ...overrides,
+    };
 }
 
 /**
  * Cook overview to-dos, highest priority first: approval pending → wallet reset
- * → unread offer chat → next discovery call. `offers` newest first; unread
- * ties resolve to the earlier entry.
+ * → chef-page direct requests → unread offer chat → next discovery call.
+ * `offers` newest first; unread ties resolve to the earlier entry.
  */
 export function cookAttentionDerive(input: {
     isApprovedByAdmin: boolean;
     stripeStatus: CookStripeStatus;
     offers: readonly { bookingRequestOfferId: string; cookUnreadNotificationCount: number }[];
+    directRequests: readonly { bookingRequestId: string }[];
     nextCall: { bookingRequestOfferId: string; startAt: Date; customerDisplay: string } | null;
 }): CookAttentionItem[] {
     const items: CookAttentionItem[] = [];
@@ -31,6 +41,11 @@ export function cookAttentionDerive(input: {
     }
     if (input.isApprovedByAdmin && input.stripeStatus === 'ACTIVE_WAS_RESET') {
         items.push(item('WALLET_RESET'));
+    }
+
+    const firstDirect = input.directRequests[0];
+    if (firstDirect) {
+        items.push(item('DIRECT_BOOKING_REQUEST', { count: input.directRequests.length, bookingRequestId: firstDirect.bookingRequestId }));
     }
 
     let unreadTotal = 0;

@@ -1,0 +1,3 @@
+ALTER TABLE "BookingRequests" ADD COLUMN "requestedCookId" varchar(20);--> statement-breakpoint
+ALTER TABLE "BookingRequests" ADD CONSTRAINT "BookingRequests_requestedCookId_Cooks_cookId_fk" FOREIGN KEY ("requestedCookId") REFERENCES "public"."Cooks"("cookId") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+CREATE INDEX "BookingRequests_requestedCookId_idx" ON "BookingRequests" USING btree ("requestedCookId");

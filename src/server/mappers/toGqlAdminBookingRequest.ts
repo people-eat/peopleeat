@@ -25,6 +25,7 @@ export type ToGqlAdminBookingRequestInput = {
     giftCard?: GiftCard | null;
     promoMinimumTotalAmountCustomerCents?: number | null;
     kitchenDetailsPhotos?: GqlSFileUpload[];
+    requestedCook?: GqlSAdminCook | null;
 };
 
 export function toGqlAdminBookingRequest(input: ToGqlAdminBookingRequestInput): GqlSAdminBookingRequest {
@@ -40,6 +41,7 @@ export function toGqlAdminBookingRequest(input: ToGqlAdminBookingRequestInput): 
         giftCard,
         promoMinimumTotalAmountCustomerCents = null,
         kitchenDetailsPhotos = [],
+        requestedCook = null,
     } = input;
 
     const guidance = bookingRequestOfferPriceGuidanceFromRequest({
@@ -73,6 +75,7 @@ export function toGqlAdminBookingRequest(input: ToGqlAdminBookingRequestInput): 
         originalMessage: bookingRequest.originalMessage,
         adjustedMessage: bookingRequest.adjustedMessage ?? null,
         publicationStatus: bookingRequest.publicationStatus,
+        requestedCook,
         preferences: bookingRequest.preferences,
         invoiceAddress: bookingRequest.invoiceAddress ? toGqlInvoiceAddress(bookingRequest.invoiceAddress) : null,
         expiresAt: bookingRequest.expiresAt ?? null,

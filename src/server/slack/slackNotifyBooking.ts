@@ -50,6 +50,7 @@ export async function slackNotifyBookingRequestCreated(
         const participantCount = adultCount + discountedCount;
         const customerName = `${row.firstName} ${row.lastName}`;
         const publicationBlocked = row.bookingRequest.publicationStatus === 'PUBLICATION_BLOCKED_BY_ADMIN_REVIEW';
+        const chefPageDirect = row.bookingRequest.publicationStatus === 'PUBLICATION_DIRECT_TO_COOK';
 
         await bookingRequestSlackRootPost(serverRuntime, {
             bookingRequestId: args.bookingRequestId,
@@ -65,7 +66,7 @@ export async function slackNotifyBookingRequestCreated(
                 { label: 'Preisklasse', value: slackFormatPriceClass(row.bookingRequest.priceClassType) },
                 {
                     label: 'Status',
-                    value: publicationBlocked ? 'Wartet auf Admin-Freigabe' : 'Veröffentlicht',
+                    value: chefPageDirect ? 'Chef-page Direktanfrage' : publicationBlocked ? 'Wartet auf Admin-Freigabe' : 'Veröffentlicht',
                 },
             ],
             body: row.bookingRequest.originalMessage.trim() || undefined,

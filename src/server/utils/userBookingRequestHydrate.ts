@@ -6,6 +6,7 @@ import type { Locale } from '../../shared/locale';
 import { DEFAULT_TIME_ZONE } from '../../shared/timeZone';
 import type { BookingRequest } from '../db/schema';
 import {
+    bookingRequestCooks,
     bookingRequestOffers,
     bookingRequestParticipants,
     cookCallSlotBookings,
@@ -13,6 +14,7 @@ import {
     giftCards,
     menus,
     promoCodes,
+    users,
 } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSUserBookingRequest } from '../graphql/generated';
@@ -68,11 +70,32 @@ export async function userBookingRequestHydrate(
         offersByRequest.set(offer.bookingRequestId, list);
     }
 
-    const cookIds = [...new Set(offers.map((offer) => offer.cookId))];
-    const [cooksById, cookTimeZoneById] = await Promise.all([
+    const requestedCookIds = [...new Set(rows.map((row) => row.requestedCookId).filter((id): id is string => id != null))];
+    const cookIds = [...new Set([...offers.map((offer) => offer.cookId), ...requestedCookIds])];
+    const [cooksById, cookTimeZoneById, requestedCookUsers, requestedCookAffinity] = await Promise.all([
         publicCooksByIdFindMany(serverRuntime.db, cookIds),
         userTimeZonesByIdFindMany(serverRuntime.db, cookIds),
+        requestedCookIds.length === 0
+            ? Promise.resolve([])
+            : serverRuntime.db
+                  .select({ userId: users.userId, status: users.status })
+                  .from(users)
+                  .where(inArray(users.userId, requestedCookIds)),
+        requestedCookIds.length === 0
+            ? Promise.resolve([])
+            : serverRuntime.db
+                  .select({
+                      bookingRequestId: bookingRequestCooks.bookingRequestId,
+                      cookId: bookingRequestCooks.cookId,
+                      declinedAt: bookingRequestCooks.declinedAt,
+                  })
+                  .from(bookingRequestCooks)
+                  .where(inArray(bookingRequestCooks.bookingRequestId, bookingRequestIds)),
     ]);
+    const requestedCookStatusById = new Map(requestedCookUsers.map((row) => [row.userId, row.status]));
+    const declinedByRequestAndCook = new Set(
+        requestedCookAffinity.filter((row) => row.declinedAt != null).map((row) => `${row.bookingRequestId}:${row.cookId}`),
+    );
 
     const offerIds = offers.map((offer) => offer.bookingRequestOfferId);
     const [callBookingRows, suggestedMenuRows, offerAddonRows] = await Promise.all([
@@ -172,6 +195,13 @@ export async function userBookingRequestHydrate(
                 promoCode,
                 giftCard,
                 kitchenDetailsPhotos: kitchenDetailsPhotosByRequestId.get(bookingRequest.bookingRequestId) ?? [],
+                requestedCook: bookingRequest.requestedCookId ? (cooksById.get(bookingRequest.requestedCookId) ?? null) : null,
+                requestedCookDeclined: bookingRequest.requestedCookId
+                    ? declinedByRequestAndCook.has(`${bookingRequest.bookingRequestId}:${bookingRequest.requestedCookId}`)
+                    : false,
+                requestedCookBanned: bookingRequest.requestedCookId
+                    ? requestedCookStatusById.get(bookingRequest.requestedCookId) === 'BANNED'
+                    : false,
             }),
         );
     }

@@ -40,6 +40,43 @@ describe('sessionWebPageInteractionCreate', () => {
         });
     });
 
+    it('keeps cookId on chef-page form steps and book_cta clicks', async () => {
+        const { serverRuntime, requestingSession } = await commandSetup();
+        const cookId = idCreate();
+
+        const formResult = await sessionWebPageInteractionCreate(
+            {
+                input: {
+                    webPageKey: 'BOOKING_REQUEST_FORM',
+                    area: bookingRequestFormFunnelArea,
+                    interaction: { type: 'step_entered', step: 'occasion', cookId },
+                },
+            },
+            requestingSession,
+            serverRuntime,
+        );
+        const [formRow] = await testDb.select().from(sessionEvents).where(eq(sessionEvents.sessionEventId, formResult.referenceId!));
+        expect(formRow?.payload).toMatchObject({
+            interaction: { type: 'step_entered', step: 'occasion', cookId },
+        });
+
+        const clickResult = await sessionWebPageInteractionCreate(
+            {
+                input: {
+                    webPageKey: 'CHEFS',
+                    area: 'chefs',
+                    interaction: { type: 'click', key: 'book_cta', cookId },
+                },
+            },
+            requestingSession,
+            serverRuntime,
+        );
+        const [clickRow] = await testDb.select().from(sessionEvents).where(eq(sessionEvents.sessionEventId, clickResult.referenceId!));
+        expect(clickRow?.payload).toMatchObject({
+            interaction: { type: 'click', key: 'book_cta', cookId },
+        });
+    });
+
     it('rejects funnel steps outside the booking_request_form area', async () => {
         // Arrange
         const { serverRuntime, requestingSession } = await commandSetup();

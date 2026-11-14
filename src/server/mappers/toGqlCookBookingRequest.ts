@@ -2,7 +2,7 @@ import { bookingRequestSuggestedCookPayoutCents } from '../../shared/bookingRequ
 import { cookSuggestedOfferMessageResolve } from '../../shared/cookDefaultOfferMessage';
 import type { Locale } from '../../shared/locale';
 import type { BookingRequest, BookingRequestOffer, BookingRequestParticipant } from '../db/schema';
-import { bookingRequestStatusDerive } from '../domain/bookingRequest';
+import { bookingRequestIsExclusive, bookingRequestStatusDerive } from '../domain/bookingRequest';
 import type {
     GqlSBookingRequestCookPoolDetails,
     GqlSCookBookingRequest,
@@ -36,6 +36,7 @@ export type ToGqlCookBookingRequestInput = {
     promoMinimumTotalAmountCustomerCents?: number | null;
     cookPoolDetails?: GqlSBookingRequestCookPoolDetails | null;
     kitchenDetailsPhotos?: GqlSFileUpload[];
+    cookId: string;
 };
 
 export function toGqlCookBookingRequest(input: ToGqlCookBookingRequestInput): GqlSCookBookingRequest {
@@ -53,6 +54,7 @@ export function toGqlCookBookingRequest(input: ToGqlCookBookingRequestInput): Gq
         promoMinimumTotalAmountCustomerCents = null,
         cookPoolDetails = null,
         kitchenDetailsPhotos = [],
+        cookId,
     } = input;
 
     const travelExpensesCents = estimatedTravelExpensesCents ?? 0;
@@ -107,5 +109,7 @@ export function toGqlCookBookingRequest(input: ToGqlCookBookingRequestInput): Gq
         estimatedTravelExpensesCents,
         estimatedCookPayoutCents,
         cookPoolDetails,
+        requestedByCustomer: bookingRequest.requestedCookId === cookId,
+        isExclusive: bookingRequestIsExclusive(bookingRequest.publicationStatus),
     };
 }

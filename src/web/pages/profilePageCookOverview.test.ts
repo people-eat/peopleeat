@@ -18,7 +18,15 @@ function cookFixture(overrides: Partial<GqlCProfilePageCookStatusFragment> = {})
 function attentionItem(
     overrides: Partial<GqlCProfilePageCookStatusFragment['attention'][number]>,
 ): GqlCProfilePageCookStatusFragment['attention'][number] {
-    return { kind: 'APPROVAL_PENDING', count: 1, bookingRequestOfferId: null, callStartAt: null, customerDisplay: null, ...overrides };
+    return {
+        kind: 'APPROVAL_PENDING',
+        count: 1,
+        bookingRequestId: null,
+        bookingRequestOfferId: null,
+        callStartAt: null,
+        customerDisplay: null,
+        ...overrides,
+    };
 }
 
 describe('profilePageCookOverview', () => {

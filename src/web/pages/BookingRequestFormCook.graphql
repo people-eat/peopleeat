@@ -1,0 +1,15 @@
+query BookingRequestFormCook($cookId: ID!) {
+    publicCook {
+        findOne(cookId: $cookId) {
+            cookId
+            pathName
+            canReceiveDirectRequests
+            user {
+                display
+                profilePicture {
+                    url
+                }
+            }
+        }
+    }
+}

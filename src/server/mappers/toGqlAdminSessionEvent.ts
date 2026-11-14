@@ -12,6 +12,10 @@ const STATIC_DESCRIPTIONS = {
     WEB_PAGE_VISITED: { de: 'Seite besucht', en: 'Page visited' },
     WEB_PAGE_INTERACTION: { de: 'Seiteninteraktion', en: 'Page interaction' },
     BOOKING_REQUEST_CREATED: { de: 'Buchungsanfrage erstellt', en: 'Booking request created' },
+    BOOKING_REQUEST_OPENED_TO_OTHER_COOKS: {
+        de: 'Buchungsanfrage für andere Köche geöffnet',
+        en: 'Booking request opened to other cooks',
+    },
     BOOKING_REQUEST_CANCELED: { de: 'Buchungsanfrage storniert', en: 'Booking request canceled' },
     BOOKING_REQUEST_OFFER_ACCEPTED: { de: 'Angebot akzeptiert', en: 'Offer accepted' },
     BOOKING_REQUEST_OFFER_DECLINED: { de: 'Angebot abgelehnt', en: 'Offer declined' },
@@ -171,6 +175,18 @@ function bookingCreatedDescription(payload: SessionEventPayload<'BOOKING_REQUEST
     return {
         de: `Buchungsanfrage erstellt (${payload.bookingRequestId})`,
         en: `Booking request created (${payload.bookingRequestId})`,
+        link: `/admin/booking-requests/${payload.bookingRequestId}`,
+    };
+}
+
+function bookingOpenedToOtherCooksDescription(payload: SessionEventPayload<'BOOKING_REQUEST_OPENED_TO_OTHER_COOKS'>): {
+    de: string;
+    en: string;
+    link: string;
+} {
+    return {
+        de: `Buchungsanfrage für andere Köche geöffnet (${payload.bookingRequestId})`,
+        en: `Booking request opened to other cooks (${payload.bookingRequestId})`,
         link: `/admin/booking-requests/${payload.bookingRequestId}`,
     };
 }
@@ -344,6 +360,15 @@ export function toGqlAdminSessionEvent(event: SessionEvent, isImpersonation = fa
             }
             case 'BOOKING_REQUEST_CREATED': {
                 const copy = bookingCreatedDescription(event.payload as SessionEventPayload<'BOOKING_REQUEST_CREATED'>);
+                descriptionDe = copy.de;
+                descriptionEn = copy.en;
+                link = copy.link;
+                break;
+            }
+            case 'BOOKING_REQUEST_OPENED_TO_OTHER_COOKS': {
+                const copy = bookingOpenedToOtherCooksDescription(
+                    event.payload as SessionEventPayload<'BOOKING_REQUEST_OPENED_TO_OTHER_COOKS'>,
+                );
                 descriptionDe = copy.de;
                 descriptionEn = copy.en;
                 link = copy.link;

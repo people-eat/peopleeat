@@ -13,6 +13,7 @@ export type CookBookingRequestCardRequest = {
     occasion: string;
     dateTime: string;
     estimatedCookPayoutCents: number;
+    estimatedTravelDistanceKm?: number | null;
     exactEventAddress: {
         displayText: string;
         city: string;
@@ -23,6 +24,8 @@ export type CookBookingRequestCardRequest = {
         declinedAt?: string | null;
         declinationReason?: string | null;
     } | null;
+    requestedByCustomer?: boolean;
+    isExclusive?: boolean;
 };
 
 export function CookBookingRequestCard({ request, variant }: { request: CookBookingRequestCardRequest; variant: 'open' | 'declined' }) {
@@ -35,9 +38,18 @@ export function CookBookingRequestCard({ request, variant }: { request: CookBook
     const content = (
         <>
             <div className="flex flex-col gap-3">
-                <BookingStatusPill hue={isDeclined ? 'red' : 'green'} className="w-fit self-end">
-                    {isDeclined ? { de: 'Ausgeblendet', en: 'Hidden' }[locale] : { de: 'Neue Anfrage', en: 'New request' }[locale]}
-                </BookingStatusPill>
+                <div className="flex flex-wrap items-center justify-end gap-2">
+                    {request.requestedByCustomer ? (
+                        <BookingStatusPill hue="purple" className="w-fit">
+                            {request.isExclusive
+                                ? { de: 'Hat dich angefragt', en: 'Requested you' }[locale]
+                                : { de: 'Hat dich angefragt, auch für andere offen', en: 'Requested you, also open to others' }[locale]}
+                        </BookingStatusPill>
+                    ) : null}
+                    <BookingStatusPill hue={isDeclined ? 'red' : 'green'} className="w-fit">
+                        {isDeclined ? { de: 'Ausgeblendet', en: 'Hidden' }[locale] : { de: 'Neue Anfrage', en: 'New request' }[locale]}
+                    </BookingStatusPill>
+                </div>
                 <h2 className="line-clamp-1 font-semibold leading-snug">{request.occasion}</h2>
                 <p className="flex min-w-0 items-center gap-2 text-sm text-foreground">
                     <CalendarIcon className="size-4 shrink-0 text-muted-foreground/70" aria-hidden />
@@ -57,6 +69,16 @@ export function CookBookingRequestCard({ request, variant }: { request: CookBook
                     <MapPinIcon className="size-4 shrink-0 text-muted-foreground/70" aria-hidden />
                     <span className="truncate">{location}</span>
                 </p>
+                {request.requestedByCustomer && request.estimatedTravelDistanceKm != null ? (
+                    <p className="text-sm text-muted-foreground">
+                        {
+                            {
+                                de: `ca. ${request.estimatedTravelDistanceKm.toFixed(0)} km`,
+                                en: `about ${request.estimatedTravelDistanceKm.toFixed(0)} km`,
+                            }[locale]
+                        }
+                    </p>
+                ) : null}
                 {isDeclined && request.cookPoolDetails?.declinedAt ? (
                     <p className="truncate text-sm font-medium">
                         {{ de: 'Abgelehnt am', en: 'Declined at' }[locale]}{' '}

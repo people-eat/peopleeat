@@ -103,6 +103,7 @@ export async function cookBookingRequestHydrate(
                       }
                     : null,
                 kitchenDetailsPhotos: kitchenDetailsPhotosByRequestId.get(bookingRequest.bookingRequestId) ?? [],
+                cookId: cook.cookId,
             }),
         ];
     });

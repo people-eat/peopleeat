@@ -45,6 +45,11 @@ export function adminOutboundEmailPurposeLabel(purpose: GqlCAdminOutboundEmailPu
         CALL_SLOT_BOOKING_CANCEL: { de: 'Anruf-Stornierung', en: 'Call cancellation' },
         CALL_SLOT_BOOKING_REMINDER: { de: 'Anruf-Erinnerung', en: 'Call reminder' },
         BOOKING_REQUEST_COOK_NOTIFY: { de: 'Buchungsanfrage an Koch', en: 'Booking request to cook' },
+        BOOKING_REQUEST_COOK_DIRECT_NOTIFY: { de: 'Direktanfrage an Koch', en: 'Direct request to cook' },
+        BOOKING_REQUEST_DIRECT_NEEDS_EXPANSION: {
+            de: 'Direktanfrage: Koch kann nicht',
+            en: 'Direct request: cook unavailable',
+        },
         BOOKING_REQUEST_CREATED: { de: 'Buchungsanfrage erstellt', en: 'Booking request created' },
         BOOKING_REQUEST_UPDATED: { de: 'Buchungsanfrage geändert', en: 'Booking request updated' },
         BOOKING_EVENT_CALENDAR: { de: 'Kalender', en: 'Calendar' },

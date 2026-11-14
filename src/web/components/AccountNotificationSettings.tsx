@@ -65,6 +65,16 @@ const cookRows: NotificationRow[] = [
         description: { de: 'Kann häufig kommen.', en: 'These can come often.' },
     },
     {
+        domain: 'cookDirectRequest',
+        confirmLastChannel: false,
+        title: { de: 'Direktanfragen an dich', en: 'Requests sent to you' },
+        operatorTitle: { de: 'Direktanfragen an den Koch', en: 'Direct requests to the cook' },
+        description: {
+            de: 'Wenn ein Gast dich über dein Kochprofil anfragt.',
+            en: 'When a guest requests you from your chef profile.',
+        },
+    },
+    {
         domain: 'cookOffer',
         confirmLastChannel: true,
         title: { de: 'Deine Angebote', en: 'Your offers' },

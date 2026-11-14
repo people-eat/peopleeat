@@ -5,6 +5,7 @@ import { textNormalizeProseTitled, textNormalizeSingleLine, textNormalizeTitled 
 import type { BookingRequestCreate, BookingRequestParticipantCreate } from '../db/schema';
 import { bookingRequestParticipants, bookingRequests, cooks, users } from '../db/schema';
 import type { BookingRequestExactEventAddress } from '../domain/bookingRequest';
+import { LARGE_GROUP_PARTICIPANT_THRESHOLD } from '../domain/bookingRequest';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSMutationResult, GqlSSession, GqlSUserMutation, GqlSUserMutationBookingRequestCreateArgs } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
@@ -12,6 +13,7 @@ import { slackNotifyBookingRequestCreated } from '../slack/slackNotifyBooking';
 import { applyDiscountToBookingRequest } from '../utils/applyDiscountToBookingRequest';
 import { bookingRequestAdjustedMessageGenerateScheduleIfEnabled } from '../utils/bookingRequestAdjustedMessageGenerateSchedule';
 import { bookingRequestCooksNotify } from '../utils/bookingRequestCooksNotify';
+import { bookingRequestDirectCookResolve } from '../utils/bookingRequestDirectCookResolve';
 import { bookingRequestExpireNotifySchedule } from '../utils/bookingRequestExpireNotifySchedule';
 import { bookingRequestExpiresAt } from '../utils/bookingRequestExpiresAt';
 import { userBookingRequestCreateEmailSend } from '../utils/bookingRequestLifecycleEmails';
@@ -21,8 +23,6 @@ import { bookingRequestPoolCooksPublish } from '../utils/bookingRequestPoolCooks
 import { bookingRequestSettingPrepareForWrite } from '../utils/bookingRequestSettingPrepareForWrite';
 import { cookIdsCanCreateOffersFind } from '../utils/cookIdsCanCreateOffersFind';
 import { sessionEventCreate } from '../utils/sessionEventCreate';
-
-const LARGE_GROUP_PARTICIPANT_THRESHOLD = 12;
 
 export async function userBookingRequestCreate(
     { userId }: GqlSUserMutation,
@@ -85,8 +85,15 @@ export async function userBookingRequestCreate(
         }
 
         const bookingRequestId = idCreate();
-        const publicationStatus =
-            participants.length >= LARGE_GROUP_PARTICIPANT_THRESHOLD ? 'PUBLICATION_BLOCKED_BY_ADMIN_REVIEW' : 'PUBLICATION_AUTO_APPROVED';
+        const requestedCook = await bookingRequestDirectCookResolve(serverRuntime, {
+            requestedCookId: input.requestedCookId,
+            customerUserId: userId,
+        });
+        const publicationStatus = requestedCook
+            ? 'PUBLICATION_DIRECT_TO_COOK'
+            : participants.length >= LARGE_GROUP_PARTICIPANT_THRESHOLD
+              ? 'PUBLICATION_BLOCKED_BY_ADMIN_REVIEW'
+              : 'PUBLICATION_AUTO_APPROVED';
 
         const bookingRequestInsert: BookingRequestCreate = {
             bookingRequestId,
@@ -98,6 +105,7 @@ export async function userBookingRequestCreate(
             preferences,
             priceClassType: input.priceClassType,
             publicationStatus,
+            requestedCookId: requestedCook?.cookId ?? null,
             expiresAt: bookingRequestExpiresAt(input.dateTime),
             setting: setting ?? null,
         };
@@ -124,7 +132,34 @@ export async function userBookingRequestCreate(
         }
 
         let cooksNotifiedCount = 0;
-        if (publicationStatus === 'PUBLICATION_AUTO_APPROVED') {
+        if (publicationStatus === 'PUBLICATION_DIRECT_TO_COOK' && requestedCook) {
+            cooksNotifiedCount = 1;
+            await bookingRequestCooksNotify(
+                serverRuntime,
+                [requestedCook.cookId],
+                {
+                    bookingRequestId,
+                    occasion,
+                    dateTime: input.dateTime,
+                    city: exactEventAddress.city,
+                    country: exactEventAddress.country,
+                },
+                { direct: true },
+            );
+            await bookingRequestPoolCooksPublish(
+                serverRuntime,
+                [
+                    {
+                        bookingRequestId,
+                        userId,
+                        publicationStatus,
+                        exactEventAddress,
+                        requestedCookId: requestedCook.cookId,
+                    },
+                ],
+                [requestedCook.cookId],
+            );
+        } else if (publicationStatus === 'PUBLICATION_AUTO_APPROVED') {
             const cookIds = await cookIdsCanCreateOffersFind(
                 serverRuntime,
                 { latitude: exactEventAddress.latitude, longitude: exactEventAddress.longitude },
@@ -140,7 +175,7 @@ export async function userBookingRequestCreate(
             });
             await bookingRequestPoolCooksPublish(
                 serverRuntime,
-                [{ bookingRequestId, userId, publicationStatus, exactEventAddress }],
+                [{ bookingRequestId, userId, publicationStatus, exactEventAddress, requestedCookId: null }],
                 cookIds,
             );
         }
@@ -168,7 +203,7 @@ export async function userBookingRequestCreate(
         await sessionEventCreate(serverRuntime, {
             sessionId: requestingSession.sessionId,
             type: 'BOOKING_REQUEST_CREATED',
-            payload: { bookingRequestId },
+            payload: { bookingRequestId, ...(requestedCook ? { requestedCookId: requestedCook.cookId } : {}) },
         });
 
         await Promise.all([serverRuntime.publish.userUpdates({ userId }), serverRuntime.publish.adminUpdates()]);

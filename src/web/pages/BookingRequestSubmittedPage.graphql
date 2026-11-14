@@ -8,6 +8,18 @@ query BookingRequestSubmittedPage($bookingRequestId: ID!) {
             userId
             bookingRequest(bookingRequestId: $bookingRequestId) {
                 bookingRequestId
+                isExclusive
+                directRequestNeedsExpansion
+                requestedCook {
+                    cookId
+                    pathName
+                    user {
+                        display
+                        profilePicture {
+                            url
+                        }
+                    }
+                }
                 kitchenDetails {
                     availability
                     fridgeSpace

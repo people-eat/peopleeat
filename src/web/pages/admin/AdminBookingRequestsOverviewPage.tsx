@@ -34,6 +34,7 @@ const ADMIN_BOOKING_REQUEST_COUNT_CRITERIA: GqlCAdminBookingRequestCriterion[] =
     { publicationStatuses: ['PUBLICATION_BLOCKED_BY_ADMIN_REVIEW'] },
     { publicationStatuses: ['PUBLICATION_AUTO_APPROVED'] },
     { publicationStatuses: ['PUBLICATION_APPROVED_BY_ADMIN'] },
+    { publicationStatuses: ['PUBLICATION_DIRECT_TO_COOK'] },
 ];
 
 const ADMIN_BOOKING_REQUEST_RANKING_TAKE = 5;
@@ -86,7 +87,7 @@ export function AdminBookingRequestsOverviewPage({
     const navigate = useNavigate({ from: '/{-$locale}/admin/booking-requests' });
     const range = adminOverviewRangeResolve(search);
     const admin = data.currentSession.user?.admin;
-    const [total = 0, blocked = 0, autoApproved = 0, adminApproved = 0] = admin?.bookingRequestsCounts ?? [];
+    const [total = 0, blocked = 0, autoApproved = 0, adminApproved = 0, directToCook = 0] = admin?.bookingRequestsCounts ?? [];
     const buckets = admin?.bookingRequestCreations ?? [];
     const occasionStats = admin?.bookingRequestOccasionStats ?? [];
     const creationMonthStats = admin?.bookingRequestCreationMonthStats ?? [];
@@ -124,6 +125,12 @@ export function AdminBookingRequestsOverviewPage({
             label: adminBookingRequestPublicationStatusLabel('PUBLICATION_APPROVED_BY_ADMIN', locale),
             value: adminApproved,
             publicationStatus: 'PUBLICATION_APPROVED_BY_ADMIN',
+        },
+        {
+            key: 'direct',
+            label: adminBookingRequestPublicationStatusLabel('PUBLICATION_DIRECT_TO_COOK', locale),
+            value: directToCook,
+            publicationStatus: 'PUBLICATION_DIRECT_TO_COOK',
         },
     ];
 

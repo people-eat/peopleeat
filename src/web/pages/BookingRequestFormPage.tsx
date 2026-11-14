@@ -71,6 +71,7 @@ import type {
     GqlCUserBookingRequestExactEventAddressInput,
 } from '../graphql/generated';
 import {
+    BookingRequestFormCookDocument,
     BookingRequestFormCreateDocument,
     BookingRequestFormFunnelTrackDocument,
     BookingRequestFormLocationSuggestionsDocument,
@@ -171,7 +172,12 @@ function exactEventAddressEqual(a: GqlCUserBookingRequestExactEventAddressInput,
     );
 }
 
-function stepCopy(step: ContentStep | 'auth', locale: Locale): { sideBarTitle: string; title: string; subTitle?: string } {
+function stepCopy(
+    step: ContentStep | 'auth',
+    locale: Locale,
+    cookFirstName?: string | null,
+): { sideBarTitle: string; title: string; subTitle?: string } {
+    const cookName = cookFirstName?.trim() || null;
     const copy = {
         occasion: {
             sideBarTitle: { de: 'Anlass', en: 'Occasion' }[locale],
@@ -199,14 +205,25 @@ function stepCopy(step: ContentStep | 'auth', locale: Locale): { sideBarTitle: s
         priceClass: {
             sideBarTitle: { de: 'Preisklasse', en: 'Price Class' }[locale],
             title: { de: 'Wie möchtest du den Anlass verbringen?', en: 'How would you like to spend the event?' }[locale],
+            subTitle: cookName
+                ? {
+                      de: `Die Preisklasse hilft ${cookName}, ein passendes Angebot zusammenzustellen.`,
+                      en: `The price class helps ${cookName} put together a fitting offer.`,
+                  }[locale]
+                : undefined,
         },
         preferences: {
             sideBarTitle: { de: 'Präferenzen', en: 'Preferences' }[locale],
             title: { de: 'Wie möchtest du das Menü gerne haben?', en: 'How would you like your menu to be?' }[locale],
-            subTitle: {
-                de: 'Teile deine Wünsche und Vorlieben mit den Köchen.',
-                en: 'Share your wishes and preferences with the chefs.',
-            }[locale],
+            subTitle: cookName
+                ? {
+                      de: `Teile deine Wünsche und Vorlieben mit ${cookName}.`,
+                      en: `Share your wishes and preferences with ${cookName}.`,
+                  }[locale]
+                : {
+                      de: 'Teile deine Wünsche und Vorlieben mit den Köchen.',
+                      en: 'Share your wishes and preferences with the chefs.',
+                  }[locale],
         },
         restrictions: {
             sideBarTitle: { de: 'Einschränkungen', en: 'Restrictions' }[locale],
@@ -225,10 +242,15 @@ function stepCopy(step: ContentStep | 'auth', locale: Locale): { sideBarTitle: s
                 de: 'Möchtest du uns noch ein paar Einzelheiten mitteilen?',
                 en: 'Would you like to share a few more details?',
             }[locale],
-            subTitle: {
-                de: 'Teile uns gerne mehr über deinen Anlass mit.',
-                en: 'Please tell us more about your event.',
-            }[locale],
+            subTitle: cookName
+                ? {
+                      de: `Teile ${cookName} gerne mehr über deinen Anlass mit.`,
+                      en: `Tell ${cookName} more about your event.`,
+                  }[locale]
+                : {
+                      de: 'Teile uns gerne mehr über deinen Anlass mit.',
+                      en: 'Please tell us more about your event.',
+                  }[locale],
         },
         auth: {
             sideBarTitle: '',
@@ -252,6 +274,7 @@ function createInputFromValues(
     participants: readonly BookingRequestParticipantDraft[],
     confirmedDiscount: ConfirmedDiscount | null,
     settingEnabled: boolean,
+    requestedCookId?: string | null,
 ): GqlCUserBookingRequestCreate | null {
     if (!values.exactEventAddress || !values.priceClassType) return null;
     if (values.adultCount < 1) return null;
@@ -270,6 +293,7 @@ function createInputFromValues(
         priceClassType: values.priceClassType,
         redeemCode: confirmedDiscount?.redeemCode ?? null,
         setting: settingEnabled ? bookingRequestSettingFromChoice(values.settingChoice) : null,
+        requestedCookId: requestedCookId ?? null,
     };
 }
 
@@ -298,6 +322,16 @@ export function BookingRequestFormPage({
     const signedIn = sessionAuthPhase(session) === 'signedIn';
     const restrictionsEnabled = featureToggleIsActive(session.activeFeatureToggleKeys, 'BOOKING_REQUEST_RESTRICTIONS');
     const settingEnabled = featureToggleIsActive(session.activeFeatureToggleKeys, 'BOOKING_REQUEST_SETTING');
+    const cookDirectToggleOn = featureToggleIsActive(session.activeFeatureToggleKeys, 'BOOKING_REQUEST_COOK_DIRECT');
+    const [{ data: cookData, fetching: cookFetching }] = useQuery({
+        query: BookingRequestFormCookDocument,
+        variables: { cookId: search.cookId ?? '' },
+        pause: search.cookId == null,
+    });
+    const requestedCook = cookData?.publicCook.findOne ?? null;
+    const honorDirect = cookDirectToggleOn && requestedCook?.canReceiveDirectRequests === true;
+    const waitingForDirectCook = search.cookId != null && cookDirectToggleOn && cookFetching;
+    const leftoverCookId = search.cookId != null && !honorDirect && !waitingForDirectCook;
     const contentSteps = bookingRequestFormContentSteps(restrictionsEnabled);
     const [step, setStep] = useState<FormStep>(() => initialStepFromSearch(search, signedIn, contentSteps));
     const [busy, setBusy] = useState(false);
@@ -369,7 +403,11 @@ export function BookingRequestFormPage({
             input: {
                 webPageKey: 'BOOKING_REQUEST_FORM',
                 area: bookingRequestFormFunnelArea,
-                interaction: { type, step: funnelStep },
+                interaction: {
+                    type,
+                    step: funnelStep,
+                    ...(search.cookId ? { cookId: search.cookId } : {}),
+                },
             },
         });
     });
@@ -436,6 +474,7 @@ export function BookingRequestFormPage({
             step: draft.step,
             minDateTime: search.minDateTime,
             maxDateTime: search.maxDateTime,
+            cookId: search.cookId,
         });
         if (bookingRequestFormSearchEqual(nextSearch, search)) return;
         void navigate({ search: nextSearch, replace: true });
@@ -459,6 +498,7 @@ export function BookingRequestFormPage({
                 return;
             }
             toast.success({ de: 'Buchungsanfrage erstellt.', en: 'Booking request created.' }[locale]);
+            trackFunnelStep('step_completed', 'created');
             await navigate({
                 to: '/{-$locale}/booking-request/$bookingRequestId/submitted',
                 params: { bookingRequestId: created.referenceId },
@@ -478,7 +518,13 @@ export function BookingRequestFormPage({
             );
             return;
         }
-        const input = createInputFromValues(values, participants, confirmedDiscount, settingEnabled);
+        const input = createInputFromValues(
+            values,
+            participants,
+            confirmedDiscount,
+            settingEnabled,
+            honorDirect ? requestedCook?.cookId : null,
+        );
         if (!input) {
             toast.error(
                 {
@@ -553,7 +599,12 @@ export function BookingRequestFormPage({
                 input: {
                     webPageKey: 'BOOKING_REQUEST_FORM',
                     area: bookingRequestFormFunnelArea,
-                    interaction: { type: 'step_completed', step: 'location', setting },
+                    interaction: {
+                        type: 'step_completed',
+                        step: 'location',
+                        setting,
+                        ...(search.cookId ? { cookId: search.cookId } : {}),
+                    },
                 },
             });
         } else {
@@ -581,7 +632,8 @@ export function BookingRequestFormPage({
             : contentSteps
                   .slice(0, Math.max(0, contentStepIndex))
                   .map((contentStep) => completedStepSummary(contentStep, values, participants, locale, timeZone));
-    const copy = stepCopy(step === 'auth' ? 'auth' : step, locale);
+    const cookFirstName = honorDirect ? (requestedCook?.user.display ?? null) : null;
+    const copy = stepCopy(step === 'auth' ? 'auth' : step, locale, cookFirstName);
     const defaultPreferences = defaultBookingRequestPreferences(locale);
     const preferenceOptionsCustom = values.preferences.filter((preference) => !defaultPreferences.includes(preference));
     const preferenceOptions = [...defaultPreferences, ...preferenceOptionsCustom].filter((option) =>
@@ -631,6 +683,38 @@ export function BookingRequestFormPage({
             <div className="flex min-h-0 flex-1 flex-col pt-14">
                 <div data-scroll-restoration-id="booking-form" className="min-h-0 flex-1 overflow-y-auto scrollbar-gutter-stable">
                     <div className="mx-auto w-full max-w-7xl lg:mt-20">
+                        {leftoverCookId ? (
+                            <div className="px-4 pt-4">
+                                <StatusAlert tone="info">
+                                    {
+                                        {
+                                            de: 'Diese Anfrage geht an Köche in deiner Nähe, nicht nur an einen bestimmten Koch.',
+                                            en: 'This request goes to chefs nearby, not only to one chef.',
+                                        }[locale]
+                                    }
+                                </StatusAlert>
+                            </div>
+                        ) : null}
+                        {honorDirect && requestedCook ? (
+                            <div className="px-4 pt-4">
+                                <StatusAlert
+                                    tone="info"
+                                    title={
+                                        {
+                                            de: `Anfrage an ${requestedCook.user.display}`,
+                                            en: `Request for ${requestedCook.user.display}`,
+                                        }[locale]
+                                    }
+                                >
+                                    {
+                                        {
+                                            de: 'Nur dieser Koch sieht deine Anfrage zuerst. Du kannst sie später auch für andere öffnen.',
+                                            en: 'Only this chef sees your request first. You can open it to others later.',
+                                        }[locale]
+                                    }
+                                </StatusAlert>
+                            </div>
+                        ) : null}
                         <BookingRequestFormStepLayout
                             stepNumber={stepNumber}
                             stepCount={stepCount}
@@ -850,6 +934,16 @@ export function BookingRequestFormPage({
                                                             />
                                                         )}
                                                     </form.Field>
+                                                ) : null}
+                                                {honorDirect && values.exactEventAddress ? (
+                                                    <p className="text-sm text-muted-foreground">
+                                                        {
+                                                            {
+                                                                de: 'Dieser Koch kann auch anreisen, wenn der Ort etwas weiter weg ist.',
+                                                                en: 'This chef can still come if the venue is a bit farther than usual.',
+                                                            }[locale]
+                                                        }
+                                                    </p>
                                                 ) : null}
                                             </div>
                                         );
@@ -1126,7 +1220,14 @@ export function BookingRequestFormPage({
                                                 required
                                                 value={field.state.value}
                                                 onChange={(event) => field.handleChange(event.target.value)}
-                                                placeholder={{ de: 'Nachricht an die Köche', en: 'Message for the chefs' }[locale]}
+                                                placeholder={
+                                                    cookFirstName
+                                                        ? {
+                                                              de: `Nachricht an ${cookFirstName}`,
+                                                              en: `Message for ${cookFirstName}`,
+                                                          }[locale]
+                                                        : { de: 'Nachricht an die Köche', en: 'Message for the chefs' }[locale]
+                                                }
                                                 disabled={busy}
                                                 rows={8}
                                             />
@@ -1252,7 +1353,12 @@ export function BookingRequestFormPage({
                         next={{
                             label:
                                 step === 'message' && signedIn
-                                    ? { de: 'Anfrage senden', en: 'Send request' }[locale]
+                                    ? honorDirect && requestedCook
+                                        ? {
+                                              de: `Anfrage an ${requestedCook.user.display} senden`,
+                                              en: `Send ${requestedCook.user.display} a request`,
+                                          }[locale]
+                                        : { de: 'Anfrage senden', en: 'Send request' }[locale]
                                     : { de: 'Weiter', en: 'Next' }[locale],
                             onClick: goNext,
                             disabled: nextDisabled,

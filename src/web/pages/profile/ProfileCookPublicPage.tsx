@@ -96,6 +96,7 @@ function visibilityConfirmCopy({
 export function ProfileCookPublicPage({ data, search }: { data: GqlCProfileCookPublicPageQuery; search: ProfileCookPublicSearch }) {
     const locale = useLocale();
     const shareEnabled = useFeatureToggleActive('COOK_PUBLIC_PROFILE_SHARE');
+    const cookDirectEnabled = useFeatureToggleActive('BOOKING_REQUEST_COOK_DIRECT');
     const seedUser = data.currentSession.user ?? null;
     const user = useUserUpdatesSeed(seedUser, ProfileCookPublicPageUpdatesDocument);
     const [copied, setCopied] = useState(false);
@@ -287,8 +288,33 @@ export function ProfileCookPublicPage({ data, search }: { data: GqlCProfileCookP
                                     </li>
                                 </ul>
                             </section>
-                            <Header user={user} locale={locale} />
-                            <ChefProfileView cook={view} />
+                            <Header
+                                user={user}
+                                locale={locale}
+                                bookingRequestFormSearch={
+                                    cookDirectEnabled && cook.canCreateOffers && cook.isVisible && cook.exactTravelOriginAddress != null
+                                        ? { cookId: cook.cookId }
+                                        : undefined
+                                }
+                            />
+                            <ChefProfileView
+                                cook={view}
+                                bookCta={
+                                    cookDirectEnabled && cook.canCreateOffers && cook.isVisible && cook.exactTravelOriginAddress != null
+                                        ? {
+                                              cookId: cook.cookId,
+                                              label: {
+                                                  de: `Anfrage an ${user.firstName} senden`,
+                                                  en: `Send ${user.firstName} a request`,
+                                              }[locale],
+                                              underline: {
+                                                  de: 'Kostenlos und unverbindlich. Du erhältst ein Angebot mit Menü und Preis.',
+                                                  en: 'Free, with no commitment. They send an offer with menu and price.',
+                                              }[locale],
+                                          }
+                                        : undefined
+                                }
+                            />
                             <Footer locale={locale} />
                         </div>
                     </div>

@@ -7,14 +7,16 @@ create / negotiate and for customer booking / accept / pay paths; a ban auto-dec
 ## Behavior
 
 1. **Cook** sees published requests in `/profile/booking-request-pool` (open / declined tabs; list cards show event date only, exact time is
-   on the request detail). Open pool cards show an approximate cook payout row (**Verdiene ca.** / **Make about**) from
-   `estimatedCookPayoutCents`. Pool detail shows venue as post code, city, and country only (not the street), plus kitchen details then
-   indoor/outdoor as soon as they exist (not dual-accept gated), with a quiet hint that the exact address is shared after mutual accept and
-   is already used for travel expense calculations. The pinned footer repeats the same approximate payout (soft suggested price × paid
-   participants, travel, cook platform fee — same breakdown as offer create). Footer stacks payout above equal-width decline / make-offer on
-   narrow panes; from `@md` payout sits left of the button pair. Opening a request marks it viewed (which stamps Google Routes travel
-   distance onto `BookingRequestCooks` so estimated travel expenses match offer create); they may decline with a reason, or start **Make
-   offer** when Stripe Connect and travel origin are ready. After decline, if more open requests remain they return to the open pool
+   on the request detail). Chef-page leads (`requestedByCustomer`) pin above radius traffic with a **Requested you** badge (after expand:
+   also open to others). Direct requests notify via `BOOKING_REQUEST_COOK_DIRECT_NOTIFY` (email + in-app; not the nearby WhatsApp template)
+   and raise cook attention `DIRECT_BOOKING_REQUEST`. Open pool cards show an approximate cook payout row (**Verdiene ca.** / **Make
+   about**) from `estimatedCookPayoutCents`. Pool detail shows venue as post code, city, and country only (not the street), plus kitchen
+   details then indoor/outdoor as soon as they exist (not dual-accept gated), with a quiet hint that the exact address is shared after
+   mutual accept and is already used for travel expense calculations. The pinned footer repeats the same approximate payout (soft suggested
+   price × paid participants, travel, cook platform fee — same breakdown as offer create). Footer stacks payout above equal-width decline /
+   make-offer on narrow panes; from `@md` payout sits left of the button pair. Opening a request marks it viewed (which stamps Google Routes
+   travel distance onto `BookingRequestCooks` so estimated travel expenses match offer create); they may decline with a reason, or start
+   **Make offer** when Stripe Connect and travel origin are ready. After decline, if more open requests remain they return to the open pool
    (Tinder-style review); if that was the last open request, decline lands on the declined tab, never an empty open pool. After offer
    create, a non-dismissible success alert confirms the guest was notified and offers **Go to offer**; when more open pool items remain it
    also offers **Review more requests** (opens the open pool). Stale notify-email deep links use `Cook.bookingRequestLookup`: pool-eligible

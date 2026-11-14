@@ -394,6 +394,7 @@ type UserNotificationSettings {
     customerChat: UserNotificationChannelSettings!
     customerReview: UserNotificationChannelSettings!
     cookNewRequest: UserNotificationChannelSettings!
+    cookDirectRequest: UserNotificationChannelSettings!
     cookOffer: UserNotificationChannelSettings!
     cookChat: UserNotificationChannelSettings!
     cookReview: UserNotificationChannelSettings!
@@ -410,6 +411,7 @@ input UserNotificationSettingsInput {
     customerChat: UserNotificationChannelSettingsInput
     customerReview: UserNotificationChannelSettingsInput
     cookNewRequest: UserNotificationChannelSettingsInput
+    cookDirectRequest: UserNotificationChannelSettingsInput
     cookOffer: UserNotificationChannelSettingsInput
     cookChat: UserNotificationChannelSettingsInput
     cookReview: UserNotificationChannelSettingsInput
@@ -1033,6 +1035,8 @@ enum CookAttentionKind {
     APPROVAL_PENDING
     # Stripe asked for updated details after the account was active.
     WALLET_RESET
+    # Guest asked this cook from the public chef page. `bookingRequestId` is the pool item.
+    DIRECT_BOOKING_REQUEST
     # Unread offer chat; `count` = total unread, target = offer with the most.
     OFFER_CHAT_UNREAD
     # Next PENDING / CONFIRMED discovery call starting within 14 days.
@@ -1041,8 +1045,9 @@ enum CookAttentionKind {
 
 type CookAttentionItem {
     kind: CookAttentionKind!
-    # Unread messages (OFFER_CHAT_UNREAD); otherwise 1.
+    # Unread messages (OFFER_CHAT_UNREAD) or open direct requests; otherwise 1.
     count: Int!
+    bookingRequestId: ID
     bookingRequestOfferId: ID
     # Set for CALL_UPCOMING.
     callStartAt: DateTime
@@ -1526,6 +1531,7 @@ enum BookingRequestPublicationStatus {
     PUBLICATION_BLOCKED_BY_ADMIN_REVIEW
     PUBLICATION_AUTO_APPROVED
     PUBLICATION_APPROVED_BY_ADMIN
+    PUBLICATION_DIRECT_TO_COOK
 }
 
 enum BookingRequestParticipantType {
@@ -1891,6 +1897,8 @@ type PublicCook {
     testimonials: [CustomerTestimonial!]!
     # Aggregate rating built from `testimonials`. `reviewCount: 0` when none.
     rating: PublicCookRating!
+    # True when a chef-page exclusive request can go to this cook (public, Stripe ready, travel origin).
+    canReceiveDirectRequests: Boolean!
 }
 
 type PublicCookMeal {
@@ -2387,6 +2395,12 @@ type UserBookingRequest {
     originalMessage: String!
     adjustedMessage: String
     # publicationStatus is admin-only (AdminBookingRequest). Exposing it to customers is a planned feature.
+    # Chef this request was sent to from a public chef page. Null on marketplace creates.
+    requestedCook: PublicCook
+    # True while publication is DIRECT_TO_COOK (only this cook sees it).
+    isExclusive: Boolean!
+    # Exclusive and the requested cook has no live path (decline / ban). Prominence for expand.
+    directRequestNeedsExpansion: Boolean!
     preferences: [String!]!
     invoiceAddress: InvoiceAddress
     expiresAt: DateTime
@@ -2546,6 +2560,10 @@ type CookBookingRequest {
     # participants, travel estimate, cook platform fee). Pool-detail UX.
     estimatedCookPayoutCents: Int!
     cookPoolDetails: BookingRequestCookPoolDetails
+    # True when this cook is `requestedCookId` (chef-page lead, including after expand).
+    requestedByCustomer: Boolean!
+    # True while publication is still DIRECT_TO_COOK (only this cook sees it).
+    isExclusive: Boolean!
 }
 
 type AdminBookingRequestCookInTravelRadius {
@@ -2583,6 +2601,8 @@ type AdminBookingRequest {
     originalMessage: String!
     adjustedMessage: String
     publicationStatus: BookingRequestPublicationStatus!
+    # Chef-page target. Survives expansion. Null on marketplace creates.
+    requestedCook: AdminCook
     preferences: [String!]!
     invoiceAddress: InvoiceAddress
     expiresAt: DateTime
@@ -2852,6 +2872,8 @@ input AdminBookingRequestCriterion {
     promoCodeId: ID
     createdAtFrom: DateTime
     createdAtTo: DateTime
+    # Exclusive chef-page requests older than 24h with no offer from the requested cook.
+    staleDirect: Boolean
     sortField: AdminBookingRequestSortField
     sortDirection: SortDirection
 }
@@ -3129,6 +3151,8 @@ input UserBookingRequestCreate {
     setting: BookingRequestSetting
     # Optional promo / gift-card code applied on create (invalid code fails create).
     redeemCode: String
+    # Public chef-page target. Ignored when the entry toggle is off or the cook cannot receive direct requests.
+    requestedCookId: ID
 }
 
 type UserMutation {
@@ -3160,8 +3184,10 @@ type UserMutation {
     emailAddressUpdateOtpRequest(emailAddress: EmailAddress!, locale: Locale!): MutationResult!
     # Verify the OTP and update `Users.emailAddress`.
     emailAddressUpdateOtpVerify(code: String!): MutationResult!
-    # Creates a customer booking request + radius cook notifies.
+    # Creates a customer booking request + radius cook notifies (or one cook when `requestedCookId` is honored).
     bookingRequestCreate(input: UserBookingRequestCreate!): MutationResult!
+    # Open an exclusive chef-page request to other cooks. Idempotent. Under 12 auto-notifies radius; 12+ waits for admin review.
+    bookingRequestOpenToOtherCooks(bookingRequestId: ID!): MutationResult!
     # Apply or clear a promo / gift-card redeem code on an owned booking request.
     # Pass `redeemCode` null/empty to clear. Returns redeem code as `referenceId` on apply.
     bookingRequestDiscountUpdate(bookingRequestId: ID!, redeemCode: String): MutationResult!
@@ -4672,6 +4698,8 @@ enum AdminOutboundEmailPurpose {
     CALL_SLOT_BOOKING_CANCEL
     CALL_SLOT_BOOKING_REMINDER
     BOOKING_REQUEST_COOK_NOTIFY
+    BOOKING_REQUEST_COOK_DIRECT_NOTIFY
+    BOOKING_REQUEST_DIRECT_NEEDS_EXPANSION
     BOOKING_REQUEST_CREATED
     BOOKING_REQUEST_UPDATED
     BOOKING_EVENT_CALENDAR
@@ -6140,6 +6168,8 @@ enum FeatureToggleKey {
     BOOKING_REQUEST_RESTRICTIONS
     BOOKING_REQUEST_SETTING
     BOOKING_REQUEST_KITCHEN_DETAILS
+    # Chef-page CTA attaches cookId to the booking form. Missing row is off.
+    BOOKING_REQUEST_COOK_DIRECT
     BOOKING_REQUEST_OFFER_CHAT_REACTIONS
     BOOKING_REQUEST_OFFER_AMENDMENT
     BOOKING_REQUEST_OFFER_PRICE_IMPACT_PREVIEW

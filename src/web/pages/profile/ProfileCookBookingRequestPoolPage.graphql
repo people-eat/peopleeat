@@ -6,6 +6,7 @@ fragment ProfileCookBookingRequestPoolCard on CookBookingRequest {
     occasion
     dateTime
     estimatedCookPayoutCents
+    estimatedTravelDistanceKm
     exactEventAddress {
         displayText
         city
@@ -21,6 +22,8 @@ fragment ProfileCookBookingRequestPoolCard on CookBookingRequest {
         notifiedAt
         firstOpenedAt
     }
+    requestedByCustomer
+    isExclusive
 }
 
 fragment ProfileCookBookingRequestPoolPageUser on User {

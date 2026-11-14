@@ -32,6 +32,12 @@ export type SectionCookHeroCook = {
     rating?: SectionCookHeroRating;
 };
 
+export type SectionCookHeroBookCta = {
+    cookId?: string;
+    label: string;
+    underline: string;
+};
+
 function initialsFromName(name: string): string {
     const parts = name.trim().split(/\s+/).filter(Boolean);
     if (parts.length === 0) return '?';
@@ -69,6 +75,7 @@ export function SectionCookHero({
     showChefsIndexLink = true,
     onBookCtaClick,
     shareButton,
+    bookCta,
 }: {
     cook: SectionCookHeroCook;
     showChefsIndexLink?: boolean;
@@ -76,6 +83,7 @@ export function SectionCookHero({
     onBookCtaClick?: () => void;
     /** Optional Share control top-right beside the chefs index link (public chef page only). */
     shareButton?: ReactNode;
+    bookCta?: SectionCookHeroBookCta;
 }) {
     const locale = useLocale();
     const showTopBar = showChefsIndexLink || shareButton != null;
@@ -142,17 +150,20 @@ export function SectionCookHero({
 
                     <div className="inline-grid min-w-64 justify-items-stretch gap-2 self-center pt-2 @3xl:self-start">
                         <Button asChild size="lg" className="px-8">
-                            <Link to="/{-$locale}/booking-request/form" onClick={onBookCtaClick}>
-                                {{ de: 'Anfrage senden', en: 'Send request' }[locale]}
+                            <Link
+                                to="/{-$locale}/booking-request/form"
+                                search={bookCta?.cookId ? { cookId: bookCta.cookId } : {}}
+                                onClick={onBookCtaClick}
+                            >
+                                {bookCta?.label ?? { de: 'Anfrage senden', en: 'Send request' }[locale]}
                             </Link>
                         </Button>
                         <p className="text-center text-sm text-muted-foreground @3xl:text-left">
-                            {
+                            {bookCta?.underline ??
                                 {
                                     de: 'Unverbindlich und kostenlos',
                                     en: 'Free of charge and without obligation',
-                                }[locale]
-                            }
+                                }[locale]}
                         </p>
                     </div>
                 </div>

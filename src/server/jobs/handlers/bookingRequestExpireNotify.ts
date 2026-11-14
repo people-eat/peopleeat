@@ -30,6 +30,7 @@ export const bookingRequestExpireNotify: QueuedJobDefinition<BookingRequestExpir
                 canceledAt: bookingRequests.canceledAt,
                 publicationStatus: bookingRequests.publicationStatus,
                 exactEventAddress: bookingRequests.exactEventAddress,
+                requestedCookId: bookingRequests.requestedCookId,
             })
             .from(bookingRequests)
             .where(eq(bookingRequests.bookingRequestId, data.bookingRequestId))

@@ -5,6 +5,7 @@ import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSCookMutation, GqlSMutationResult, GqlSSession } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
 import { slackNotifyCookRequestDecline } from '../slack/slackNotifyBooking';
+import { userBookingRequestDirectNeedsExpansionEmailSend } from '../utils/bookingRequestLifecycleEmails';
 import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 
 export async function cookBookingRequestDecline(
@@ -23,7 +24,7 @@ export async function cookBookingRequestDecline(
         }
 
         const [bookingRequest] = await serverRuntime.db
-            .select({ bookingRequestId: bookingRequests.bookingRequestId })
+            .select({ bookingRequestId: bookingRequests.bookingRequestId, userId: bookingRequests.userId })
             .from(bookingRequests)
             .where(eq(bookingRequests.bookingRequestId, input.bookingRequestId))
             .limit(1);
@@ -57,7 +58,11 @@ export async function cookBookingRequestDecline(
                 .where(and(eq(bookingRequestCooks.cookId, cookId), eq(bookingRequestCooks.bookingRequestId, input.bookingRequestId)));
         }
 
-        await serverRuntime.publish.userUpdates({ userId: cookId });
+        await Promise.all([
+            serverRuntime.publish.userUpdates({ userId: cookId }),
+            serverRuntime.publish.userUpdates({ userId: bookingRequest.userId }),
+        ]);
+        await userBookingRequestDirectNeedsExpansionEmailSend(serverRuntime, input.bookingRequestId);
 
         const [cookUser] = await serverRuntime.db
             .select({ firstName: users.firstName, lastName: users.lastName })

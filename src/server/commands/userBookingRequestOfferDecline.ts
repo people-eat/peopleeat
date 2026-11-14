@@ -11,7 +11,10 @@ import type {
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
 import { slackNotifyOfferDecline } from '../slack/slackNotifyBooking';
-import { userBookingRequestOfferDeclineEmailSend } from '../utils/bookingRequestLifecycleEmails';
+import {
+    userBookingRequestDirectNeedsExpansionEmailSend,
+    userBookingRequestOfferDeclineEmailSend,
+} from '../utils/bookingRequestLifecycleEmails';
 import { bookingRequestOfferNegotiationAssert } from '../utils/bookingRequestOfferNegotiationAssert';
 import {
     bookingRequestOfferPendingCallSlotsClose,
@@ -103,6 +106,8 @@ export async function userBookingRequestOfferDecline(
             name: customer ? `${customer.firstName} ${customer.lastName}` : userId,
             reason,
         });
+
+        await userBookingRequestDirectNeedsExpansionEmailSend(serverRuntime, row.bookingRequest.bookingRequestId);
 
         await sessionEventCreate(serverRuntime, {
             sessionId: requestingSession.sessionId,

@@ -46,6 +46,7 @@ query ChefPage($pathName: String!) {
                 averageRating
                 reviewCount
             }
+            canReceiveDirectRequests
         }
     }
 }

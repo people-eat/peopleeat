@@ -41,6 +41,7 @@ function snapshot(
         userId: idCreate(),
         publicationStatus: 'PUBLICATION_AUTO_APPROVED' as const,
         exactEventAddress: origin,
+        requestedCookId: null,
         ...rest,
     };
 }

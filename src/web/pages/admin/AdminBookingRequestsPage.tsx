@@ -50,6 +50,7 @@ const ADMIN_BOOKING_REQUEST_PUBLICATION_STATUSES: GqlCBookingRequestPublicationS
     'PUBLICATION_BLOCKED_BY_ADMIN_REVIEW',
     'PUBLICATION_AUTO_APPROVED',
     'PUBLICATION_APPROVED_BY_ADMIN',
+    'PUBLICATION_DIRECT_TO_COOK',
 ];
 
 const ADMIN_BOOKING_REQUEST_STATUSES: GqlCBookingRequestStatus[] = [
@@ -81,6 +82,7 @@ export type AdminBookingRequestsSearch = {
     dir?: 'asc' | 'desc';
     /** Omit or `grid` = card grid (default). `list` = table. */
     view?: AdminBookingRequestsView;
+    staleDirect?: boolean;
 };
 
 const GRID_SORT_OPTIONS = [
@@ -132,7 +134,8 @@ export function parseAdminBookingRequestsSearch(search: Record<string, unknown>)
     const pageSize = parseAdminListPageSize(search);
     const { sort, dir } = parseAdminListSortSearch(search, ADMIN_BOOKING_REQUESTS_SORT_FIELDS);
     const view = parseAdminBookingRequestsView(search.view);
-    return { q, publicationStatus, status, statuses, page, pageSize, sort, dir, view };
+    const staleDirect = search.staleDirect === true || search.staleDirect === 'true' ? true : undefined;
+    return { q, publicationStatus, status, statuses, page, pageSize, sort, dir, view, staleDirect };
 }
 
 export function adminBookingRequestsPageVariables(search: AdminBookingRequestsSearch) {
@@ -142,6 +145,7 @@ export function adminBookingRequestsPageVariables(search: AdminBookingRequestsSe
             searchText: search.q,
             publicationStatuses: search.publicationStatus ? [search.publicationStatus] : undefined,
             statuses: search.statuses ?? (search.status ? [search.status] : undefined),
+            staleDirect: search.staleDirect === true ? true : undefined,
             ...adminListSortToCriterion(search),
         },
     };
@@ -170,11 +174,12 @@ function adminBookingRequestsSearchForUrl(search: AdminBookingRequestsSearch) {
         ...adminListPaginationForUrl(search),
         ...adminListSortSearchForUrl(search),
         ...adminBookingRequestsViewForUrl(search.view),
+        staleDirect: search.staleDirect === true ? true : undefined,
     };
 }
 
 function adminBookingRequestsHasActiveFilters(search: AdminBookingRequestsSearch): boolean {
-    return Boolean(search.q || search.publicationStatus || search.status || search.statuses);
+    return Boolean(search.q || search.publicationStatus || search.status || search.statuses || search.staleDirect);
 }
 
 export function AdminBookingRequestsPage({
@@ -267,6 +272,7 @@ export function AdminBookingRequestsPage({
             publicationStatus: undefined,
             status: undefined,
             statuses: undefined,
+            staleDirect: undefined,
             page: undefined,
         });
     }
@@ -418,6 +424,22 @@ export function AdminBookingRequestsPage({
                                 <SelectItem value="occasion:desc">{{ de: 'Anlass Z–A', en: 'Occasion Z–A' }[locale]}</SelectItem>
                             </SelectContent>
                         </Select>
+
+                        <Button
+                            type="button"
+                            size="sm"
+                            variant={search.staleDirect === true ? 'default' : 'outline'}
+                            className="shrink-0"
+                            onClick={() =>
+                                updateSearch({
+                                    ...search,
+                                    staleDirect: search.staleDirect === true ? undefined : true,
+                                    page: undefined,
+                                })
+                            }
+                        >
+                            {{ de: 'Stille Direktanfragen', en: 'Stale direct' }[locale]}
+                        </Button>
 
                         {hasActiveFilters ? (
                             <Button

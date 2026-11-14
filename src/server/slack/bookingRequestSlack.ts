@@ -1,13 +1,14 @@
 import { eq } from 'drizzle-orm';
 
 import { bookingRequests } from '../db/schema';
+import { LARGE_GROUP_PARTICIPANT_THRESHOLD } from '../domain/bookingRequest';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import { slackAdminBookingRequestOfferUrl, slackAdminBookingRequestUrl } from './slackAdminUrls';
 import type { SlackField } from './slackBlocks';
 import { slackMessageBlocksBuild } from './slackBlocks';
 import { slackShortId } from './slackFormat';
 
-export const LARGE_GROUP_PARTICIPANT_THRESHOLD = 12;
+export { LARGE_GROUP_PARTICIPANT_THRESHOLD };
 
 export type BookingRequestSlackRootPostArgs = {
     bookingRequestId: string;

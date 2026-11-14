@@ -10,6 +10,7 @@ function attentionInput(overrides: Partial<AttentionInput> = {}): AttentionInput
         isApprovedByAdmin: true,
         stripeStatus: 'COMPLETED',
         offers: [{ bookingRequestOfferId: 'offer-1', cookUnreadNotificationCount: 0 }],
+        directRequests: [],
         nextCall: null,
         ...overrides,
     };
@@ -57,9 +58,35 @@ describe('cookAttentionDerive', () => {
 
         // Assert
         expect(items).toEqual([
-            { kind: 'OFFER_CHAT_UNREAD', count: 4, bookingRequestOfferId: 'offer-1', callStartAt: null, customerDisplay: null },
-            { kind: 'CALL_UPCOMING', count: 1, bookingRequestOfferId: 'offer-2', callStartAt: startAt, customerDisplay: 'Ada' },
+            {
+                kind: 'OFFER_CHAT_UNREAD',
+                count: 4,
+                bookingRequestId: null,
+                bookingRequestOfferId: 'offer-1',
+                callStartAt: null,
+                customerDisplay: null,
+            },
+            {
+                kind: 'CALL_UPCOMING',
+                count: 1,
+                bookingRequestId: null,
+                bookingRequestOfferId: 'offer-2',
+                callStartAt: startAt,
+                customerDisplay: 'Ada',
+            },
         ]);
+    });
+
+    it('surfaces direct chef-page requests before unread chat', () => {
+        const items = cookAttentionDerive(
+            attentionInput({
+                directRequests: [{ bookingRequestId: 'br-1' }, { bookingRequestId: 'br-2' }],
+                offers: [{ bookingRequestOfferId: 'offer-1', cookUnreadNotificationCount: 1 }],
+            }),
+        );
+
+        expect(items.map((item) => item.kind)).toEqual(['DIRECT_BOOKING_REQUEST', 'OFFER_CHAT_UNREAD']);
+        expect(items[0]).toMatchObject({ count: 2, bookingRequestId: 'br-1' });
     });
 
     it('flags pending approval for unapproved cooks', () => {

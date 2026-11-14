@@ -42,6 +42,7 @@ const bookingRequest = {
     canceledAt: null,
     cancellationReason: null,
     publicationStatus: 'PUBLICATION_AUTO_APPROVED',
+    requestedCookId: null,
     setting: null,
     kitchenDetails: null,
     preferences: [],

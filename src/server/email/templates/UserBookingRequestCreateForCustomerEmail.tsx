@@ -22,6 +22,7 @@ interface UserBookingRequestCreateForCustomerEmailProps {
     adultCount: number;
     discountedCount: number;
     requestUrl: string;
+    requestedCookFirstName?: string | null;
 }
 
 export function UserBookingRequestCreateForCustomerEmail({
@@ -38,31 +39,53 @@ export function UserBookingRequestCreateForCustomerEmail({
     adultCount,
     discountedCount,
     requestUrl,
+    requestedCookFirstName,
 }: UserBookingRequestCreateForCustomerEmailProps) {
+    const cookName = requestedCookFirstName?.trim() || null;
     const subject = userBookingRequestCreateForCustomerEmailSubject(locale);
-    const preview = {
-        de: 'Deine Anfrage ist da. Köche in deiner Nähe bereiten Menüs vor',
-        en: 'Your request is in. Chefs nearby are preparing menus',
-    }[locale];
+    const preview = cookName
+        ? {
+              de: `${cookName} schaut sich deine Anfrage an`,
+              en: `${cookName} will look at your request`,
+          }[locale]
+        : {
+              de: 'Deine Anfrage ist da. Köche in deiner Nähe bereiten Menüs vor',
+              en: 'Your request is in. Chefs nearby are preparing menus',
+          }[locale];
     const intro = {
         de: 'Vielen Dank für deine Anfrage! Hiermit bestätigen wir den Eingang deiner Anfrage.',
         en: 'Thank you for your request! This confirms that we have received it.',
     }[locale];
     const nextHeading = { de: 'Wie geht es weiter?', en: 'What happens next?' }[locale];
-    const steps = {
-        de: [
-            'Unsere Köche in deiner Nähe erstellen Menüvorschläge.',
-            'Du wirst benachrichtigt, sobald neue Vorschläge da sind.',
-            'Anpassungen kannst du jederzeit anfragen.',
-            'Nach der Buchung kannst du mit dem Koch chatten.',
-        ],
-        en: [
-            'Chefs near you will prepare menu proposals.',
-            'You will be notified as soon as new proposals arrive.',
-            'You can request adjustments at any time.',
-            'After booking, you can chat with the chef.',
-        ],
-    }[locale];
+    const steps = cookName
+        ? {
+              de: [
+                  `${cookName} schaut sich deine Anfrage an und schickt dir ein Angebot.`,
+                  'Du entscheidest danach in Ruhe.',
+                  'Du kannst die Anfrage jederzeit auch für andere Köche in deiner Nähe öffnen.',
+                  'Nach der Buchung kannst du mit dem Koch chatten.',
+              ],
+              en: [
+                  `${cookName} will look at your request and send you an offer.`,
+                  'Then you decide, no rush.',
+                  'You can open it to other chefs nearby at any time.',
+                  'After booking, you can chat with the chef.',
+              ],
+          }[locale]
+        : {
+              de: [
+                  'Unsere Köche in deiner Nähe erstellen Menüvorschläge.',
+                  'Du wirst benachrichtigt, sobald neue Vorschläge da sind.',
+                  'Anpassungen kannst du jederzeit anfragen.',
+                  'Nach der Buchung kannst du mit dem Koch chatten.',
+              ],
+              en: [
+                  'Chefs near you will prepare menu proposals.',
+                  'You will be notified as soon as new proposals arrive.',
+                  'You can request adjustments at any time.',
+                  'After booking, you can chat with the chef.',
+              ],
+          }[locale];
     const statusNote = {
         de: 'Du kannst jederzeit den Status deiner Anfrage ansehen.',
         en: 'You can check the status of your request at any time.',

@@ -1,9 +1,10 @@
-import { eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 
 import { bookingRequestPriceClassLabel } from '../../shared/bookingRequestFormDefaults';
 import type { Locale } from '../../shared/locale';
-import { bookingRequestOffers, bookingRequestParticipants, bookingRequests, users } from '../db/schema';
+import { bookingRequestCooks, bookingRequestOffers, bookingRequestParticipants, bookingRequests, users } from '../db/schema';
 import type { BookingRequest, BookingRequestOffer } from '../db/schema';
+import { bookingRequestDirectNeedsExpansion } from '../domain/bookingRequest';
 import { notificationEmailAllowed } from '../domain/notificationSettings';
 import type { NotificationAudience, UserNotificationSettingsStored } from '../domain/notificationSettings';
 import type { OutboundEmailPurpose } from '../domain/outboundEmail';
@@ -61,6 +62,10 @@ import {
     UserBookingRequestCreateForCustomerEmail,
     userBookingRequestCreateForCustomerEmailSubject,
 } from '../email/templates/UserBookingRequestCreateForCustomerEmail';
+import {
+    UserBookingRequestDirectNeedsExpansionForCustomerEmail,
+    userBookingRequestDirectNeedsExpansionForCustomerEmailSubject,
+} from '../email/templates/UserBookingRequestDirectNeedsExpansionForCustomerEmail';
 import {
     UserBookingRequestOfferAcceptForCookEmail,
     userBookingRequestOfferAcceptForCookEmailSubject,
@@ -185,6 +190,9 @@ export async function userBookingRequestCreateEmailSend(
     const webPageUrl = environmentVariables.webPageUrl;
     const adultCount = participantRows.filter((row) => row.type === 'ADULT').length;
     const discountedCount = participantRows.filter((row) => row.type === 'DISCOUNTED').length;
+    const requestedCookFirstName = bookingRequest.requestedCookId
+        ? ((await usersByIdsFind(serverRuntime, [bookingRequest.requestedCookId])).get(bookingRequest.requestedCookId)?.firstName ?? null)
+        : null;
 
     await Promise.all([
         sendUserEmail(
@@ -212,6 +220,7 @@ export async function userBookingRequestCreateEmailSend(
                         adultCount,
                         discountedCount,
                         requestUrl: bookingRequestEmailCustomerRequestUrl(webPageUrl, bookingRequest.bookingRequestId),
+                        requestedCookFirstName,
                     }),
                     purpose: 'BOOKING_REQUEST_CREATED',
                     locale,
@@ -225,6 +234,83 @@ export async function userBookingRequestCreateEmailSend(
             dateTime: bookingRequest.dateTime,
         }),
     ]);
+}
+
+/** Email the customer when an exclusive chef-page request has no live path with that cook. */
+export async function userBookingRequestDirectNeedsExpansionEmailSend(
+    serverRuntime: ServerRuntime,
+    bookingRequestId: string,
+): Promise<void> {
+    const [bookingRequest] = await serverRuntime.db
+        .select()
+        .from(bookingRequests)
+        .where(eq(bookingRequests.bookingRequestId, bookingRequestId))
+        .limit(1);
+    if (!bookingRequest?.requestedCookId) {
+        return;
+    }
+
+    const [offers, [affinity], userMap, [requestedCookStatus]] = await Promise.all([
+        serverRuntime.db
+            .select({ cookAccepted: bookingRequestOffers.cookAccepted, userAccepted: bookingRequestOffers.userAccepted })
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestId, bookingRequestId)),
+        serverRuntime.db
+            .select({ declinedAt: bookingRequestCooks.declinedAt })
+            .from(bookingRequestCooks)
+            .where(
+                and(
+                    eq(bookingRequestCooks.bookingRequestId, bookingRequestId),
+                    eq(bookingRequestCooks.cookId, bookingRequest.requestedCookId),
+                ),
+            )
+            .limit(1),
+        usersByIdsFind(serverRuntime, [bookingRequest.userId, bookingRequest.requestedCookId]),
+        serverRuntime.db.select({ status: users.status }).from(users).where(eq(users.userId, bookingRequest.requestedCookId)).limit(1),
+    ]);
+    const customer = userMap.get(bookingRequest.userId);
+    const requestedCook = userMap.get(bookingRequest.requestedCookId);
+    if (!customer || !requestedCook) {
+        return;
+    }
+    if (
+        !bookingRequestDirectNeedsExpansion({
+            publicationStatus: bookingRequest.publicationStatus,
+            requestedCookDeclined: affinity?.declinedAt != null,
+            requestedCookBanned: requestedCookStatus?.status === 'BANNED',
+            offers,
+        })
+    ) {
+        return;
+    }
+
+    const locale = customer.locale;
+    const webPageUrl = environmentVariables.webPageUrl;
+    const requestUrl = bookingRequestEmailCustomerRequestUrl(webPageUrl, bookingRequest.bookingRequestId);
+    await sendUserEmail(
+        serverRuntime,
+        'userBookingRequestDirectNeedsExpansionEmailSend',
+        bookingRequestId,
+        customer,
+        'BOOKING_REQUEST_DIRECT_NEEDS_EXPANSION',
+        undefined,
+        () =>
+            serverRuntime.email.send({
+                to: customer.emailAddress,
+                subject: userBookingRequestDirectNeedsExpansionForCustomerEmailSubject(locale, requestedCook.firstName),
+                react: UserBookingRequestDirectNeedsExpansionForCustomerEmail({
+                    locale,
+                    webPageUrl,
+                    recipientFirstName: customer.firstName,
+                    requestedCookFirstName: requestedCook.firstName,
+                    requestUrl,
+                }),
+                purpose: 'BOOKING_REQUEST_DIRECT_NEEDS_EXPANSION',
+                locale,
+                relatedEntity: { type: 'BOOKING_REQUEST', id: bookingRequest.bookingRequestId },
+                userId: customer.userId,
+            }),
+    );
 }
 
 /**

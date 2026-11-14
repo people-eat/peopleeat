@@ -622,6 +622,15 @@ function AdminBookingRequestDetailFields({ bookingRequest }: { bookingRequest: A
                     </dd>
                 </div>
                 <Separator />
+                {bookingRequest.requestedCook ? (
+                    <>
+                        <DetailField
+                            label={{ de: 'Angefragter Koch', en: 'Requested cook' }[locale]}
+                            value={userDisplayName(bookingRequest.requestedCook.user)}
+                        />
+                        <Separator />
+                    </>
+                ) : null}
                 <DetailField label={{ de: 'Anlass', en: 'Occasion' }[locale]} value={bookingRequest.occasion} />
                 <Separator />
                 <DetailField

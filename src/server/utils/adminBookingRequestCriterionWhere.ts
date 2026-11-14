@@ -1,7 +1,7 @@
-import { and, eq, exists, gte, ilike, inArray, isNotNull, lte, or, sql } from 'drizzle-orm';
+import { and, eq, exists, gte, ilike, inArray, isNotNull, isNull, lte, not, or, sql } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
 
-import { bookingRequestCooks, bookingRequests, users } from '../db/schema';
+import { bookingRequestCooks, bookingRequestOffers, bookingRequests, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminBookingRequestCriterion } from '../graphql/generated';
 import { adminBookingRequestStatusWhere } from './adminBookingRequestStatusWhere';
@@ -22,6 +22,7 @@ export function adminBookingRequestCriterionWhere(
         | 'promoCodeId'
         | 'createdAtFrom'
         | 'createdAtTo'
+        | 'staleDirect'
     >,
     db: ServerRuntime['db'],
     now: Date = new Date(),
@@ -73,6 +74,31 @@ export function adminBookingRequestCriterionWhere(
 
     if (criterion.createdAtTo != null) {
         parts.push(lte(bookingRequests.createdAt, criterion.createdAtTo));
+    }
+
+    if (criterion.staleDirect === true) {
+        const staleBefore = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        parts.push(
+            and(
+                eq(bookingRequests.publicationStatus, 'PUBLICATION_DIRECT_TO_COOK'),
+                isNotNull(bookingRequests.requestedCookId),
+                isNull(bookingRequests.canceledAt),
+                lte(bookingRequests.createdAt, staleBefore),
+                not(
+                    exists(
+                        db
+                            .select({ bookingRequestOfferId: bookingRequestOffers.bookingRequestOfferId })
+                            .from(bookingRequestOffers)
+                            .where(
+                                and(
+                                    eq(bookingRequestOffers.bookingRequestId, bookingRequests.bookingRequestId),
+                                    eq(bookingRequestOffers.cookId, bookingRequests.requestedCookId),
+                                ),
+                            ),
+                    ),
+                ),
+            )!,
+        );
     }
 
     const pattern = likeContainsPattern(criterion.searchText);

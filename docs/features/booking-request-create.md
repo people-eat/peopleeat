@@ -29,7 +29,13 @@ Customers create booking requests; the platform publishes them to cooks (or hold
    have their number → customer chooses), and links to the request detail. When `BOOKING_REQUEST_KITCHEN_DETAILS` is on, a skippable kitchen
    card sits above the next-steps timeline (availability, fridge, plating, guest tableware, notes, optional 1–3 photos). Primary skip stays
    View request. The customer also receives a confirmation email. Ordinary groups are published to cooks in travel radius (email + live
-   notify). Large groups (≥12 participants) stay blocked for admin review until an admin approves and selects which cooks to notify.
+   notify). Large groups (≥12 participants) stay blocked for admin review until an admin approves and selects which cooks to notify. When
+   `BOOKING_REQUEST_COOK_DIRECT` is on, the public chef-page **Send request** CTA (offer-ready cooks only) opens the same form with
+   `?cookId=`. Create then stores `requestedCookId`, sets `PUBLICATION_DIRECT_TO_COOK`, and notifies only that cook (email + in-app; no pool
+   WhatsApp until a dedicated template exists). The customer can later call `bookingRequestOpenToOtherCooks` (always available while
+   exclusive; primary after the requested cook has no live path). Under 12 guests that flips to auto-approved radius notify; 12+ waits for
+   admin review. `requestedCookId` survives expand. Leftover `?cookId=` with the toggle off (or an ineligible cook) creates a normal
+   marketplace request.
 4. Customer manages owned requests at `/profile/booking-requests` (list cards show event date, cook avatar chips linking into each offer,
    and unread; exact time is on detail) and `/profile/booking-requests/$id` (detail: Support CTA + status, offers, facts, voucher). Detail
    shows per-guest restrictions when present, plus kitchen details then indoor/outdoor when stored, and a kitchen editor when those details
@@ -93,12 +99,12 @@ Owner generates a secret link so co-hosts and guests can follow offers and menus
 
 ### Data model (request side)
 
-| Table                                | Purpose                                                                                                                                                                                                             |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `BookingRequests`                    | Request header; `exactEventAddress`; nullable `setting` (`INDOOR` \| `OUTDOOR`); optional `kitchenDetails` JSONB; `publicationStatus`; optional `giftCardId` / `promoCodeId` / `invoiceAddress`; Slack `references` |
-| `BookingRequestKitchenDetailsPhotos` | Optional 1–3 kitchen photos → `FileUploads` (pool-cook / owner / admin download)                                                                                                                                    |
-| `BookingRequestParticipants`         | `ADULT` / `DISCOUNTED`, name, `restrictions[]`                                                                                                                                                                      |
-| `BookingRequestCooks`                | Composite PK `(cookId, bookingRequestId)`; notify / open / decline; nullable `menuEvaluation`; nullable `travelDistanceKm` (Routes stamp)                                                                           |
+| Table                                | Purpose                                                                                                                                                                                                                                         |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BookingRequests`                    | Request header; `exactEventAddress`; nullable `setting` (`INDOOR` \| `OUTDOOR`); optional `kitchenDetails` JSONB; `publicationStatus`; optional `requestedCookId`; optional `giftCardId` / `promoCodeId` / `invoiceAddress`; Slack `references` |
+| `BookingRequestKitchenDetailsPhotos` | Optional 1–3 kitchen photos → `FileUploads` (pool-cook / owner / admin download)                                                                                                                                                                |
+| `BookingRequestParticipants`         | `ADULT` / `DISCOUNTED`, name, `restrictions[]`                                                                                                                                                                                                  |
+| `BookingRequestCooks`                | Composite PK `(cookId, bookingRequestId)`; notify / open / decline; nullable `menuEvaluation`; nullable `travelDistanceKm` (Routes stamp)                                                                                                       |
 
 Domain: `src/server/domain/bookingRequest.ts` (enums, payloads, status derive). Create sets `expiresAt` via `bookingRequestExpiresAt`.
 `menuEvaluation` / `menuEvaluationLoading` are filled by the AI menu-evaluation job when `AI_MENU_EVALUATION` is on — see
@@ -109,7 +115,8 @@ Domain: `src/server/domain/bookingRequest.ts` (enums, payloads, status derive). 
 
 - Role-scoped `UserBookingRequest` / `CookBookingRequest` / `AdminBookingRequest`
 - Cook types expose resolved `message` only (`adjustedMessage` ?? `originalMessage`); customer / admin keep the raw pair
-- `publicationStatus` on `AdminBookingRequest` only (customer exposure is a Next step)
+- Raw `publicationStatus` on `AdminBookingRequest` only. Customers see `isExclusive` / `directRequestNeedsExpansion` / `requestedCook`.
+  Chef-page exclusive create: [booking-request-cook-direct.md](./booking-request-cook-direct.md).
 - Create: `UserMutation.bookingRequestCreate` (rejects if the caller is a cook). Optional `setting` on create. Kitchen after send:
   `bookingRequestKitchenDetailsUpdate` (owner; request not canceled and event not yet passed). Discounts: `bookingRequestDiscountUpdate`,
   plus admin `AdminMutation.bookingRequestDiscountUpdate` (same apply/clear rules). `bookingRequestChurnPromoCodeCreate`. Cancel / recall:

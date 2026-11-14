@@ -144,6 +144,10 @@ query AdminUserPage(
                             email
                             whatsApp
                         }
+                        cookDirectRequest {
+                            email
+                            whatsApp
+                        }
                         cookOffer {
                             email
                             whatsApp

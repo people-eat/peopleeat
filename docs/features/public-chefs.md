@@ -24,9 +24,11 @@ Shared profile layout (`ChefProfileView`, container-query driven):
 - **Hero** — top bar with back to all chefs (left) and **Share** (right; secondary button; native share sheet when available, else copy
   link; gated by `COOK_PUBLIC_PROFILE_SHARE`). Large photo, name, city, cuisine and philosophy pills (`CookProfileTags`, md size), summary,
   star rating when there is at least one published review (hidden otherwise; cook self-preview can still show “no reviews yet”), primary CTA
-  to the booking form with non-binding copy underneath. Successful share/copy tracks discovery `click` / `share` (same `chefs` area as
-  `book_cta`). Share is wired only on the public detail page — cook WYSIWYG preview omits it. Stacks until ~48rem (`@3xl`); photo grows
-  stepwise in the row (`@3xl` / `@4xl` / `@5xl`) so resize never crushes copy beside a full-width square.
+  to the booking form with non-binding copy underneath. When `BOOKING_REQUEST_COOK_DIRECT` is on and the cook is offer-ready
+  (`PublicCook.canReceiveDirectRequests`), the CTA names the chef and passes `?cookId=` so create stays exclusive; otherwise it stays the
+  generic marketplace form. Successful share/copy tracks discovery `click` / `share` (same `chefs` area as `book_cta`, which includes
+  `cookId`). Share is wired only on the public detail page — cook WYSIWYG preview omits Share but follows the same CTA rule. Stacks until
+  ~48rem (`@3xl`); photo grows stepwise in the row (`@3xl` / `@4xl` / `@5xl`) so resize never crushes copy beside a full-width square.
 - **Meals** — published dishes **with an image** as marketing meal tiles (`CustomerMealCard` `variant="marketing"`: square image on top,
   title, up to two lines of description); published meals without an image are omitted. Click opens the shared meal details dialog. Shows
   the first 5 meals; when there are more, a bilingual Show more / Show less control sits top-right on the section title row. Grid 2 → 3

@@ -1,10 +1,11 @@
 import type { Cook, User } from '../db/schema';
+import { cookCanReceiveDirectBookingRequests } from '../domain/cook';
 import type { GqlSFileUpload, GqlSPublicCook } from '../graphql/generated';
 import { toGqlPublicUser } from './toGqlPublicUser';
 
 export function toGqlPublicCook(
     cook: Cook,
-    user: Pick<User, 'firstName' | 'createdAt'>,
+    user: Pick<User, 'firstName' | 'createdAt' | 'status'>,
     profilePicture: GqlSFileUpload | null = null,
 ): GqlSPublicCook {
     const stageName = cook.stageName?.trim() || null;
@@ -34,5 +35,6 @@ export function toGqlPublicCook(
         meals: [],
         testimonials: [],
         rating: undefined as unknown as GqlSPublicCook['rating'],
+        canReceiveDirectRequests: cookCanReceiveDirectBookingRequests(cook, user.status),
     };
 }

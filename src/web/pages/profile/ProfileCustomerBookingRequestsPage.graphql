@@ -18,6 +18,16 @@ fragment ProfileCustomerBookingRequestsPageUser on User {
             bookingRequestParticipantId
             type
         }
+        requestedCook {
+            cookId
+            pathName
+            user {
+                display
+                profilePicture {
+                    url
+                }
+            }
+        }
         offers {
             bookingRequestOfferId
             userUnreadNotificationCount

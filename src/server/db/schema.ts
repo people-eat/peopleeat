@@ -1741,8 +1741,10 @@ export const bookingRequests = pgTable(
         expiresAt: timestamp({ withTimezone: true }),
         canceledAt: timestamp({ withTimezone: true }),
         cancellationReason: varchar(),
-        // Large-group gate (≥12) sets BLOCKED; admin approve UI is deferred.
+        // Large-group gate (≥12) sets BLOCKED; chef-page create sets DIRECT_TO_COOK.
         publicationStatus: varchar().$type<BookingRequestPublicationStatus>().notNull(),
+        // Chef-page (or later menu) target. Survives expansion to the radius pool.
+        requestedCookId: nanoId(),
         preferences: jsonb().$type<string[]>().notNull(),
         invoiceAddress: jsonb().$type<BookingRequestInvoiceAddress>(),
         // Slack ops thread root — `{ slackTs, slackChannelId }`.
@@ -1769,6 +1771,12 @@ export const bookingRequests = pgTable(
         })
             .onUpdate('cascade')
             .onDelete('set null'),
+        foreignKey({
+            columns: [table.requestedCookId],
+            foreignColumns: [cooks.cookId],
+        })
+            .onUpdate('cascade')
+            .onDelete('set null'),
         index('BookingRequests_userId_idx').on(table.userId),
         index('BookingRequests_dateTime_idx').on(table.dateTime),
         index('BookingRequests_publicationStatus_idx').on(table.publicationStatus),
@@ -1776,6 +1784,7 @@ export const bookingRequests = pgTable(
         index('BookingRequests_canceledAt_idx').on(table.canceledAt),
         index('BookingRequests_giftCardId_idx').on(table.giftCardId),
         index('BookingRequests_promoCodeId_idx').on(table.promoCodeId),
+        index('BookingRequests_requestedCookId_idx').on(table.requestedCookId),
         index('BookingRequests_createdAt_idx').on(table.createdAt),
     ],
 );

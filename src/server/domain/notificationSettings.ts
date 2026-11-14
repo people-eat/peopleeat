@@ -6,6 +6,7 @@ const notificationDomainKeys = [
     'customerChat',
     'customerReview',
     'cookNewRequest',
+    'cookDirectRequest',
     'cookOffer',
     'cookChat',
     'cookReview',
@@ -119,6 +120,9 @@ function emailDelivery(purpose: OutboundEmailPurpose, audience: NotificationAudi
             return { kind: 'optional', domain: audienceDomain(purpose, audience, 'customerBooking', 'cookOffer') };
         case 'BOOKING_REQUEST_COOK_NOTIFY':
             return { kind: 'optional', domain: 'cookNewRequest' };
+        case 'BOOKING_REQUEST_COOK_DIRECT_NOTIFY':
+            return { kind: 'optional', domain: 'cookDirectRequest' };
+        case 'BOOKING_REQUEST_DIRECT_NEEDS_EXPANSION':
         case 'BOOKING_REQUEST_CREATED':
         case 'BOOKING_REQUEST_OFFER_CREATED':
         case 'BOOKING_REQUEST_OFFER_MENU_UPDATED':

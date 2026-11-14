@@ -11,6 +11,7 @@ import type {
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
 import { slackNotifyOfferDecline } from '../slack/slackNotifyBooking';
+import { userBookingRequestDirectNeedsExpansionEmailSend } from '../utils/bookingRequestLifecycleEmails';
 import { bookingRequestOfferNegotiationAssert } from '../utils/bookingRequestOfferNegotiationAssert';
 import {
     bookingRequestOfferPendingCallSlotsClose,
@@ -105,6 +106,7 @@ export async function cookBookingRequestOfferDecline(
                 actor: 'cook',
             },
         });
+        await userBookingRequestDirectNeedsExpansionEmailSend(serverRuntime, row.bookingRequest.bookingRequestId);
 
         return { success: true, referenceId: bookingRequestOfferId };
     } catch (error) {

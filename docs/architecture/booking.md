@@ -13,18 +13,18 @@ loop needs a complete persistence spine: requests, cook affinity, offers, negoti
 Postgres / Drizzle tables with project conventions (UUID PKs, `*Cents` money integers, `varchar().$type<>` enums, JSONB payloads in
 `src/server/domain/bookingRequest.ts`):
 
-| Table                                            | Role                                                                                                                                                    |
-| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `BookingRequests`                                | Customer event ask — occasion, `dateTime`, exact venue, nullable `setting`, `kitchenDetails` JSONB, message, preferences, discounts, invoice, lifecycle |
-| `BookingRequestKitchenDetailsPhotos`             | Optional kitchen photos → `FileUploads` (owner / pool cook / admin)                                                                                     |
-| `BookingRequestParticipants`                     | Party line items (`ADULT` \| `DISCOUNTED`) + dietary restrictions                                                                                       |
-| `BookingRequestCooks`                            | Cook ↔ request affinity before / without an offer (notify, open, decline, optional AI evaluation)                                                       |
-| `BookingRequestOffers`                           | Cook proposal — dual accept flags, fee breakdown (`addonPriceCents` included), payment, optional configured-menu snapshot                               |
-| `BookingRequestOfferEvents`                      | Append-only negotiation timeline (“offer chat”) + domain events                                                                                         |
-| `OfferAddonTemplates`                            | Admin bilingual extras templates cooks can clone into their library                                                                                     |
-| `CookOfferAddons`                                | Cook library extras plus offer-scoped copies (`bookingRequestOfferId`); guest selection is `customerSelected` on the copies                             |
-| `CookCallSlotBookings`                           | Discovery-call request / confirm / decline / cancel tied to an offer                                                                                    |
-| `Menus.bookingRequestOfferId` (+ `copyOfMenuId`) | Optional offer-scoped **copies** of cook inventory menus                                                                                                |
+| Table                                            | Role                                                                                                                                                                                                                                                                                |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BookingRequests`                                | Customer event ask — occasion, `dateTime`, exact venue, nullable `setting`, `kitchenDetails` JSONB, message, preferences, discounts, invoice, lifecycle, nullable `requestedCookId` (chef-page target; survives expand), `publicationStatus` including `PUBLICATION_DIRECT_TO_COOK` |
+| `BookingRequestKitchenDetailsPhotos`             | Optional kitchen photos → `FileUploads` (owner / pool cook / admin)                                                                                                                                                                                                                 |
+| `BookingRequestParticipants`                     | Party line items (`ADULT` \| `DISCOUNTED`) + dietary restrictions                                                                                                                                                                                                                   |
+| `BookingRequestCooks`                            | Cook ↔ request affinity before / without an offer (notify, open, decline, optional AI evaluation)                                                                                                                                                                                   |
+| `BookingRequestOffers`                           | Cook proposal — dual accept flags, fee breakdown (`addonPriceCents` included), payment, optional configured-menu snapshot                                                                                                                                                           |
+| `BookingRequestOfferEvents`                      | Append-only negotiation timeline (“offer chat”) + domain events                                                                                                                                                                                                                     |
+| `OfferAddonTemplates`                            | Admin bilingual extras templates cooks can clone into their library                                                                                                                                                                                                                 |
+| `CookOfferAddons`                                | Cook library extras plus offer-scoped copies (`bookingRequestOfferId`); guest selection is `customerSelected` on the copies                                                                                                                                                         |
+| `CookCallSlotBookings`                           | Discovery-call request / confirm / decline / cancel tied to an offer                                                                                                                                                                                                                |
+| `Menus.bookingRequestOfferId` (+ `copyOfMenuId`) | Optional offer-scoped **copies** of cook inventory menus                                                                                                                                                                                                                            |
 
 **Deferred:**
 
@@ -163,8 +163,9 @@ participants / costs / configured-menu snapshots stay unprefixed.
    `AdminBookingRequest` nests `customer: AdminUser` and nullable dual-accepted `cook: AdminCook`; `AdminCook.user: AdminUser`
 3. Unread badges are role-scoped: customer offers expose only `userUnreadNotificationCount`; cook offers only `cookUnreadNotificationCount`;
    admin keeps both
-4. `publicationStatus` is on `AdminBookingRequest` only — customers do not see it yet (planned feature); cooks never see non-approved
-   requests, so `CookBookingRequest` omits it
+4. Raw `publicationStatus` is on `AdminBookingRequest` only. Customers see `isExclusive` / `directRequestNeedsExpansion` plus
+   `requestedCook`. Cooks see `requestedByCustomer` / `isExclusive`. Pool eligibility: auto-approved ⇒ travel radius; admin-approved or
+   `PUBLICATION_DIRECT_TO_COOK` ⇒ `notifiedAt`; the requested cook stays eligible after expand even outside radius.
 5. Cook-facing request types expose a single resolved `message` (`adjustedMessage` ?? `originalMessage`, trimmed) — not the raw pair.
    Customer / admin keep `originalMessage` + `adjustedMessage`. When `AI_BOOKING_REQUEST_MESSAGE` is on, create (and selective admin update)
    fill `adjustedMessage` via a background job — see [ai-booking-request-message.md](../features/ai-booking-request-message.md). Cook-facing

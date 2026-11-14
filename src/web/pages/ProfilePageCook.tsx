@@ -12,10 +12,19 @@ import type { CookOverviewAttentionItem, CookOverviewGettingStartedStep } from '
 import { profilePageCookOverview } from './profilePageCookOverview';
 
 function AttentionAction({ action }: { action: NonNullable<CookOverviewAttentionItem['action']> }) {
-    if (action.to === '/{-$locale}/profile/wallet') {
+    if (action.to === '/{-$locale}/profile/wallet' || action.to === '/{-$locale}/profile/booking-request-pool') {
         return (
             <Button asChild size="sm">
                 <Link to={action.to}>{action.label}</Link>
+            </Button>
+        );
+    }
+    if (action.to === '/{-$locale}/profile/booking-request-pool/$bookingRequestId') {
+        return (
+            <Button asChild size="sm">
+                <Link to={action.to} params={{ bookingRequestId: action.bookingRequestId }}>
+                    {action.label}
+                </Link>
             </Button>
         );
     }

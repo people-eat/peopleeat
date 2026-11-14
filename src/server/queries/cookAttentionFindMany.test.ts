@@ -87,8 +87,22 @@ describe('cookAttentionFindMany', () => {
 
         // Assert
         expect(items).toEqual([
-            { kind: 'OFFER_CHAT_UNREAD', count: 3, bookingRequestOfferId: chattyOfferId, callStartAt: null, customerDisplay: null },
-            { kind: 'CALL_UPCOMING', count: 1, bookingRequestOfferId: quietOfferId, callStartAt: nextCallAt, customerDisplay: 'Ada' },
+            {
+                kind: 'OFFER_CHAT_UNREAD',
+                count: 3,
+                bookingRequestId: null,
+                bookingRequestOfferId: chattyOfferId,
+                callStartAt: null,
+                customerDisplay: null,
+            },
+            {
+                kind: 'CALL_UPCOMING',
+                count: 1,
+                bookingRequestId: null,
+                bookingRequestOfferId: quietOfferId,
+                callStartAt: nextCallAt,
+                customerDisplay: 'Ada',
+            },
         ]);
     });
 

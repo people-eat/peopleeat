@@ -205,6 +205,7 @@ import { userBookingRequestOfferParticipantAmendmentCreate } from '../commands/u
 import { userBookingRequestOfferPaymentStatusUpdate } from '../commands/userBookingRequestOfferPaymentStatusUpdate';
 import { userBookingRequestOfferTestimonialUpsert } from '../commands/userBookingRequestOfferTestimonialUpsert';
 import { userBookingRequestOfferUnreadNotificationCountReset } from '../commands/userBookingRequestOfferUnreadNotificationCountReset';
+import { userBookingRequestOpenToOtherCooks } from '../commands/userBookingRequestOpenToOtherCooks';
 import { userBookingRequestRequestRecall } from '../commands/userBookingRequestRequestRecall';
 import { userBookingRequestUpdate } from '../commands/userBookingRequestUpdate';
 import { userCookCreate } from '../commands/userCookCreate';
@@ -816,6 +817,7 @@ import type {
     GqlSUserMutationBookingRequestOfferPaymentStatusUpdateArgs,
     GqlSUserMutationBookingRequestOfferTestimonialUpsertArgs,
     GqlSUserMutationBookingRequestOfferUnreadNotificationCountResetArgs,
+    GqlSUserMutationBookingRequestOpenToOtherCooksArgs,
     GqlSUserMutationBookingRequestRequestRecallArgs,
     GqlSUserMutationBookingRequestUpdateArgs,
     GqlSUserMutationChatDeleteArgs,
@@ -2691,6 +2693,13 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             bookingRequestCreate(parent: GqlSUserMutation, args: GqlSUserMutationBookingRequestCreateArgs, requestingSession: GqlSSession) {
                 return userBookingRequestCreate(parent, args, requestingSession, serverRuntime);
+            },
+            bookingRequestOpenToOtherCooks(
+                parent: GqlSUserMutation,
+                args: GqlSUserMutationBookingRequestOpenToOtherCooksArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return userBookingRequestOpenToOtherCooks(parent, args, requestingSession, serverRuntime);
             },
             bookingRequestDiscountUpdate(
                 parent: GqlSUserMutation,

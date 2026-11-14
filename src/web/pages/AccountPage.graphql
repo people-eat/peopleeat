@@ -28,6 +28,10 @@ fragment AccountPageUser on User {
             email
             whatsApp
         }
+        cookDirectRequest {
+            email
+            whatsApp
+        }
         cookOffer {
             email
             whatsApp

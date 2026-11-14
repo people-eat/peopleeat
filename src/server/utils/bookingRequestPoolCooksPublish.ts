@@ -5,7 +5,10 @@ import { bookingRequestCooks, cooks } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import { cookIsEligibleForBookingRequestPool } from './cookBookingRequestPoolEligibility';
 
-type BookingRequestPoolSnapshot = Pick<BookingRequest, 'bookingRequestId' | 'userId' | 'publicationStatus' | 'exactEventAddress'>;
+type BookingRequestPoolSnapshot = Pick<
+    BookingRequest,
+    'bookingRequestId' | 'userId' | 'publicationStatus' | 'exactEventAddress' | 'requestedCookId'
+>;
 
 /**
  * Cooks whose open pool can contain this request (same rule as the pool list

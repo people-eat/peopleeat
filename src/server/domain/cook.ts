@@ -44,3 +44,11 @@ export function cookWalletNeedsAttentionDerive(cook: { isApprovedByAdmin: boolea
 export function cookCanCreateOffersDerive(cook: { isApprovedByAdmin: boolean } & CookStripeColumns, userStatus: UserStatus): boolean {
     return userStatus === 'ACTIVE' && cook.isApprovedByAdmin && cookStripeStatusDerive(cook) === 'COMPLETED';
 }
+
+/** Chef-page exclusive requests: public, offer-ready, and a travel origin for distance. */
+export function cookCanReceiveDirectBookingRequests(
+    cook: { isApprovedByAdmin: boolean; isVisible: boolean; exactTravelOriginAddress: unknown } & CookStripeColumns,
+    userStatus: UserStatus,
+): boolean {
+    return cook.isVisible && cook.exactTravelOriginAddress != null && cookCanCreateOffersDerive(cook, userStatus);
+}

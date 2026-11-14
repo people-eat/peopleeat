@@ -9,6 +9,11 @@ type CookOverviewAttentionAction =
           to: '/{-$locale}/profile/booking-request-offers/$bookingRequestOfferId';
           bookingRequestOfferId: string;
           search?: { tab: 'chat' };
+      }
+    | { to: '/{-$locale}/profile/booking-request-pool' }
+    | {
+          to: '/{-$locale}/profile/booking-request-pool/$bookingRequestId';
+          bookingRequestId: string;
       };
 
 export type CookOverviewAttentionItem = {
@@ -58,6 +63,12 @@ function attentionAction(item: GqlCProfilePageCookStatusFragment['attention'][nu
             return null;
         case 'WALLET_RESET':
             return { to: '/{-$locale}/profile/wallet' };
+        case 'DIRECT_BOOKING_REQUEST':
+            if (item.bookingRequestId == null) return { to: '/{-$locale}/profile/booking-request-pool' };
+            return {
+                to: '/{-$locale}/profile/booking-request-pool/$bookingRequestId',
+                bookingRequestId: item.bookingRequestId,
+            };
         case 'OFFER_CHAT_UNREAD':
         case 'CALL_UPCOMING':
             if (item.bookingRequestOfferId == null) return null;

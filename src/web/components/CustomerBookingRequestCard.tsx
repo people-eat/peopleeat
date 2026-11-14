@@ -46,6 +46,13 @@ export type CustomerBookingRequestCardRequest = {
         country?: string | null;
     };
     participants: CustomerBookingRequestCardParticipant[];
+    requestedCook?: {
+        cookId: string;
+        user: {
+            display: string;
+            profilePicture: { url: string } | null;
+        };
+    } | null;
     offers: CustomerBookingRequestCardOffer[];
 };
 
@@ -120,6 +127,12 @@ function uniqueOfferChips(offers: readonly CustomerBookingRequestCardOffer[]): O
 }
 
 function offerTooltipLabel(chip: OfferChipModel, locale: Locale): string {
+    if (chip.bookingRequestOfferId.length === 0) {
+        return {
+            de: `Angefragt: ${chip.display}`,
+            en: `Requested: ${chip.display}`,
+        }[locale];
+    }
     const unread =
         chip.unreadCount > 0
             ? {
@@ -136,30 +149,48 @@ function offerTooltipLabel(chip: OfferChipModel, locale: Locale): string {
 function OfferChip({ chip, bookingRequestId, className }: { chip: OfferChipModel; bookingRequestId: string; className?: string }) {
     const locale = useLocale();
     const tooltipLabel = offerTooltipLabel(chip, locale);
+    const linkClassName = cn(
+        'relative shrink-0 rounded-full ring-2 ring-card hover:opacity-90 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
+        className,
+    );
 
     return (
         <Tooltip>
             <TooltipTrigger asChild>
-                <Link
-                    to="/{-$locale}/profile/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId"
-                    params={{ bookingRequestId, bookingRequestOfferId: chip.bookingRequestOfferId }}
-                    aria-label={tooltipLabel}
-                    className={cn(
-                        'relative shrink-0 rounded-full ring-2 ring-card hover:opacity-90 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
-                        className,
-                    )}
-                    onClick={(event) => event.stopPropagation()}
-                >
-                    <Avatar size="default">
-                        {chip.profilePictureUrl != null ? (
-                            <AvatarImage src={chip.profilePictureUrl} alt="" className="object-cover" />
+                {chip.bookingRequestOfferId.length === 0 ? (
+                    <Link
+                        to="/{-$locale}/profile/booking-requests/$bookingRequestId"
+                        params={{ bookingRequestId }}
+                        aria-label={tooltipLabel}
+                        className={linkClassName}
+                        onClick={(event) => event.stopPropagation()}
+                    >
+                        <Avatar size="default">
+                            {chip.profilePictureUrl != null ? (
+                                <AvatarImage src={chip.profilePictureUrl} alt="" className="object-cover" />
+                            ) : null}
+                            <AvatarFallback>{initialsFromDisplay(chip.display)}</AvatarFallback>
+                        </Avatar>
+                    </Link>
+                ) : (
+                    <Link
+                        to="/{-$locale}/profile/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId"
+                        params={{ bookingRequestId, bookingRequestOfferId: chip.bookingRequestOfferId }}
+                        aria-label={tooltipLabel}
+                        className={linkClassName}
+                        onClick={(event) => event.stopPropagation()}
+                    >
+                        <Avatar size="default">
+                            {chip.profilePictureUrl != null ? (
+                                <AvatarImage src={chip.profilePictureUrl} alt="" className="object-cover" />
+                            ) : null}
+                            <AvatarFallback>{initialsFromDisplay(chip.display)}</AvatarFallback>
+                        </Avatar>
+                        {chip.unreadCount > 0 ? (
+                            <span aria-hidden className="absolute -top-0.5 -right-0.5 size-2.5 rounded-full bg-accent ring-2 ring-card" />
                         ) : null}
-                        <AvatarFallback>{initialsFromDisplay(chip.display)}</AvatarFallback>
-                    </Avatar>
-                    {chip.unreadCount > 0 ? (
-                        <span aria-hidden className="absolute -top-0.5 -right-0.5 size-2.5 rounded-full bg-accent ring-2 ring-card" />
-                    ) : null}
-                </Link>
+                    </Link>
+                )}
             </TooltipTrigger>
             <TooltipContent>{tooltipLabel}</TooltipContent>
         </Tooltip>
@@ -263,7 +294,23 @@ export function CustomerBookingRequestCard({
     const primary = attention?.destination ?? cardPrimaryDestination(request, callHint, reviewHint);
     const reviewIsPrimaryAction = attention == null && primary.search?.tab === 'testimonial';
     const offerChips = uniqueOfferChips(request.offers);
-    const offerLabel = request.offers.length === 1 ? { de: 'Angebot', en: 'Offer' }[locale] : { de: 'Angebote', en: 'Offers' }[locale];
+    const requestedCookChip =
+        request.requestedCook && !offerChips.some((chip) => chip.cookId === request.requestedCook?.cookId)
+            ? {
+                  cookId: request.requestedCook.cookId,
+                  bookingRequestOfferId: '',
+                  display: request.requestedCook.user.display,
+                  profilePictureUrl: request.requestedCook.user.profilePicture?.url ?? null,
+                  unreadCount: 0,
+              }
+            : null;
+    const chips = requestedCookChip ? [requestedCookChip, ...offerChips] : offerChips;
+    const offerLabel =
+        request.offers.length === 0 && requestedCookChip
+            ? { de: 'Angefragt', en: 'Requested' }[locale]
+            : request.offers.length === 1
+              ? { de: 'Angebot', en: 'Offer' }[locale]
+              : { de: 'Angebote', en: 'Offers' }[locale];
     const ctaLabel =
         attention?.actionLabel ??
         (reviewIsPrimaryAction
@@ -301,10 +348,10 @@ export function CustomerBookingRequestCard({
                         <span className="truncate">{location}</span>
                     </p>
                 </Link>
-                {offerChips.length > 0 ? (
+                {chips.length > 0 ? (
                     <div className="flex h-10 items-center justify-between gap-3">
                         <span className="text-sm font-medium whitespace-nowrap text-foreground">{offerLabel}</span>
-                        <OfferChipStack bookingRequestId={request.bookingRequestId} chips={offerChips} />
+                        <OfferChipStack bookingRequestId={request.bookingRequestId} chips={chips} />
                     </div>
                 ) : null}
             </div>

@@ -17,6 +17,10 @@ const adminFeatureToggleLabels: Record<FeatureToggleKey, Record<Locale, string>>
     BOOKING_REQUEST_RESTRICTIONS: { de: 'Buchungsanfrage: Einschränkungen', en: 'Booking request: restrictions' },
     BOOKING_REQUEST_SETTING: { de: 'Buchungsanfrage: Innen / Außen', en: 'Booking request: indoor / outdoor' },
     BOOKING_REQUEST_KITCHEN_DETAILS: { de: 'Buchungsanfrage: Küchendetails', en: 'Booking request: kitchen details' },
+    BOOKING_REQUEST_COOK_DIRECT: {
+        de: 'Buchungsanfrage: Direkt an Koch',
+        en: 'Booking request: cook direct',
+    },
     BOOKING_REQUEST_OFFER_CHAT_REACTIONS: {
         de: 'Angebots-Chat: Emoji-Reaktionen',
         en: 'Offer chat: emoji reactions',
@@ -108,6 +112,10 @@ const adminFeatureToggleDescriptions: Record<FeatureToggleKey, Record<Locale, st
     BOOKING_REQUEST_KITCHEN_DETAILS: {
         de: 'Sammelt Küchendetails nach dem Senden der Anfrage (Bestätigungsseite und Anfrage). Bei Aus werden neue Werte nicht gespeichert.',
         en: 'Collects kitchen details after the request is sent (submitted page and request). When off, new values are not stored.',
+    },
+    BOOKING_REQUEST_COOK_DIRECT: {
+        de: 'Auf der öffentlichen Kochseite führt „Anfrage senden“ zu einer Anfrage nur an diesen Koch. Bei Aus bleibt der normale Marktplatz-Pfad.',
+        en: 'On the public chef page, Send request creates a request only for that cook. When off, the marketplace form stays unchanged.',
     },
     BOOKING_REQUEST_OFFER_CHAT_REACTIONS: {
         de: 'Aktiviert Emoji-Reaktionen auf Nachrichten im Angebots-Chat (Kunde, Koch und Admin).',

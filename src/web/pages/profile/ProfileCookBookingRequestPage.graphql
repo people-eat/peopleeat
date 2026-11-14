@@ -48,6 +48,8 @@ fragment ProfileCookBookingRequestPageUser on User {
                     estimatedTravelDistanceKm
                     estimatedTravelExpensesCents
                     estimatedCookPayoutCents
+                    requestedByCustomer
+                    isExclusive
                     cookPoolDetails {
                         declinedAt
                         declinationReason

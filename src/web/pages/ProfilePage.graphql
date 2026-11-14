@@ -14,6 +14,7 @@ fragment ProfilePageCookStatus on Cook {
     attention {
         kind
         count
+        bookingRequestId
         bookingRequestOfferId
         callStartAt
         customerDisplay
@@ -53,6 +54,16 @@ fragment ProfilePageUser on User {
         participants {
             bookingRequestParticipantId
             type
+        }
+        requestedCook {
+            cookId
+            pathName
+            user {
+                display
+                profilePicture {
+                    url
+                }
+            }
         }
         offers {
             bookingRequestOfferId

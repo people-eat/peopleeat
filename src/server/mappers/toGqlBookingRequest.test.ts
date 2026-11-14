@@ -35,6 +35,7 @@ const bookingRequest = {
     canceledAt: null,
     cancellationReason: null,
     publicationStatus: 'PUBLICATION_AUTO_APPROVED',
+    requestedCookId: null,
     setting: null,
     kitchenDetails: null,
     preferences: ['vegetarian'],
@@ -94,11 +95,14 @@ const publicCook = {
     pathName: 'anna-mueller',
     user: { display: 'Anna', createdAt: new Date('2026-01-01T00:00:00.000Z'), profilePicture: null },
     hasPublicProfile: true,
+    stageName: null,
     biography: 'Bio',
     biographySummary: 'Summary',
+    logo: null,
     cuisineStyle: null,
     cookingPhilosophy: null,
     city: 'Berlin',
+    cityPage: null,
     minimumPriceAmount: null,
     maximumPriceAmount: null,
     minimumParticipants: null,
@@ -109,6 +113,7 @@ const publicCook = {
     meals: [],
     testimonials: [],
     rating: { averageRating: null, reviewCount: 0 },
+    canReceiveDirectRequests: false,
 };
 
 describe('toGqlCookBookingRequestOffer', () => {

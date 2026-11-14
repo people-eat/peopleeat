@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 import { SectionCookAbout } from '../sections/SectionCookAbout';
 import { SectionCookHero } from '../sections/SectionCookHero';
-import type { SectionCookHeroCook } from '../sections/SectionCookHero';
+import type { SectionCookHeroBookCta, SectionCookHeroCook } from '../sections/SectionCookHero';
 import { SectionCookMeals } from '../sections/SectionCookMeals';
 import type { SectionCookMeal } from '../sections/SectionCookMeals';
 import { SectionCookTestimonials } from '../sections/SectionCookTestimonials';
@@ -23,11 +23,13 @@ export function ChefProfileView({
     showChefsIndexLink = true,
     onBookCtaClick,
     shareButton,
+    bookCta,
 }: {
     cook: ChefProfileViewModel;
     showChefsIndexLink?: boolean;
     onBookCtaClick?: () => void;
     shareButton?: ReactNode;
+    bookCta?: SectionCookHeroBookCta;
 }) {
     return (
         // Own `@container` so sections reflow with this pane (full page or cook
@@ -38,6 +40,7 @@ export function ChefProfileView({
                 showChefsIndexLink={showChefsIndexLink}
                 onBookCtaClick={onBookCtaClick}
                 shareButton={shareButton}
+                bookCta={bookCta}
             />
             <SectionCookMeals meals={cook.meals} />
             <SectionCookAbout biography={cook.biography} logoUrl={cook.logoUrl} />

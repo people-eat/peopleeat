@@ -10,8 +10,8 @@ payouts as action queues.
 
 ### Overview — `/admin/booking-requests`
 
-Publication distribution (total, blocked for review, auto-approved, admin-approved), all-time average guests per request, a
-received-requests bar chart, then offer economics (average offers per request, average menu price, average paid customer total / GMV,
+Publication distribution (total, blocked for review, auto-approved, admin-approved, chef-page direct), all-time average guests per request,
+a received-requests bar chart, then offer economics (average offers per request, average menu price, average paid customer total / GMV,
 average paid platform fee, plus all-time and range-scoped total revenue / platform profit), top 5 occasions, top 5 creation months, and top
 5 cooks by offers and by dual-accept conversions. Date range in URL drives daily chart buckets (zero-filled) and paid revenue/profit totals
 in that window (by `paymentDateTime`, falling back to offer `createdAt`). Rankings, averages, and cook leaderboards stay all-time
@@ -21,8 +21,9 @@ preselected (Total clears the filter). Cook rows deep-link to the admin user det
 ### List — `/admin/booking-requests/list`
 
 Search by occasion, message, venue text, or customer email/name (first, last, or full name in either order). Tabs filter publication status
-(admin review / auto-approved / admin-approved; omit = all). Search, status, sort, view toggle, and count share one toolbar row on a wide
-pane; on a narrow pane the search takes a full row and the controls wrap underneath. A **Status** select filters derived lifecycle
+(admin review / auto-approved / admin-approved / chef-page direct; omit = all). **Stale direct** keeps exclusive chef-page requests older
+than 24 hours with no offer from the requested cook. Search, status, sort, view toggle, and count share one toolbar row on a wide pane; on a
+narrow pane the search takes a full row and the controls wrap underneath. A **Status** select filters derived lifecycle
 (`WAITING_FOR_OFFERS` … `CANCELED`; omit = all) via `AdminBookingRequestCriterion.statuses`. **Open for review** keeps waiting-for-offers
 and offers-in-review. The admin home booking-review queue uses that pair together with the admin-review publication tab, and its links open
 this list with both filters set. Sort select is always available (grid and list); list column headers remain sortable too. **Clear filters**

@@ -30,11 +30,16 @@ export type SessionEventWebPageInteractionPayload = {
         | GiftCardFunnelInteraction
         | ChefSignUpFunnelInteraction
         | BookingRequestCheckoutFunnelInteraction
-        | { type: 'click'; key: string }
+        | { type: 'click'; key: string; cookId?: string }
         | { type: 'change'; key: string; value: string };
 };
 
 type SessionEventBookingRequestCreatedPayload = {
+    bookingRequestId: string;
+    requestedCookId?: string;
+};
+
+type SessionEventBookingRequestOpenedToOtherCooksPayload = {
     bookingRequestId: string;
 };
 
@@ -123,6 +128,7 @@ const sessionEventKeyDataMap = {
     WEB_PAGE_INTERACTION: {} as SessionEventWebPageInteractionPayload,
 
     BOOKING_REQUEST_CREATED: {} as SessionEventBookingRequestCreatedPayload,
+    BOOKING_REQUEST_OPENED_TO_OTHER_COOKS: {} as SessionEventBookingRequestOpenedToOtherCooksPayload,
     BOOKING_REQUEST_CANCELED: {} as SessionEventBookingRequestCanceledPayload,
     BOOKING_REQUEST_OFFER_ACCEPTED: {} as SessionEventBookingRequestOfferActorPayload,
     BOOKING_REQUEST_OFFER_DECLINED: {} as SessionEventBookingRequestOfferActorPayload,

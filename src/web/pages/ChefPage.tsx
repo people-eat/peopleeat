@@ -20,6 +20,18 @@ export function ChefPage({ data }: { data: GqlCChefPageQuery }) {
     const shareEnabled = featureToggleIsActive(data.currentSession.activeFeatureToggleKeys, 'COOK_PUBLIC_PROFILE_SHARE');
     const displayName = cook.user.display;
     const cityLabel = chefPageCityLabel(locale, cook.city, cook.cityPage);
+    const directEnabled =
+        featureToggleIsActive(data.currentSession.activeFeatureToggleKeys, 'BOOKING_REQUEST_COOK_DIRECT') && cook.canReceiveDirectRequests;
+    const bookCta = directEnabled
+        ? {
+              cookId: cook.cookId,
+              label: { de: `Anfrage an ${displayName} senden`, en: `Send ${displayName} a request` }[locale],
+              underline: {
+                  de: 'Kostenlos und unverbindlich. Du erhältst ein Angebot mit Menü und Preis.',
+                  en: 'Free, with no commitment. They send an offer with menu and price.',
+              }[locale],
+          }
+        : undefined;
     const view: ChefProfileViewModel = {
         displayName,
         profilePictureUrl: cook.user.profilePicture?.url ?? null,
@@ -57,7 +69,7 @@ export function ChefPage({ data }: { data: GqlCChefPageQuery }) {
             input: {
                 webPageKey: 'CHEFS',
                 area: chefsDiscoveryArea,
-                interaction: { type: 'click', key: chefsDiscoveryBookCtaKey },
+                interaction: { type: 'click', key: chefsDiscoveryBookCtaKey, cookId: cook.cookId },
             },
         });
     }
@@ -74,11 +86,12 @@ export function ChefPage({ data }: { data: GqlCChefPageQuery }) {
 
     return (
         <>
-            <Header user={data.currentSession.user} />
+            <Header user={data.currentSession.user} bookingRequestFormSearch={directEnabled ? { cookId: cook.cookId } : undefined} />
             <main id="main-content">
                 <ChefProfileView
                     cook={view}
                     onBookCtaClick={onBookCtaClick}
+                    bookCta={bookCta}
                     shareButton={
                         shareEnabled ? (
                             <ShareButton

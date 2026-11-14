@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm';
 
 import { bookingRequestCheckoutFunnelArea, isBookingRequestCheckoutFunnelClientStep } from '../../shared/bookingRequestCheckoutFunnel';
 import { bookingRequestFormFunnelArea, isBookingRequestFormFunnelStep } from '../../shared/bookingRequestFormFunnel';
+import type { BookingRequestFormLocationSettingChoice } from '../../shared/bookingRequestFormFunnel';
 import { chefSignUpFunnelArea, isChefSignUpFunnelClientStep } from '../../shared/chefSignUpFunnel';
 import { cookBookingRequestOfferFunnelArea, isCookBookingRequestOfferFunnelClientStep } from '../../shared/cookBookingRequestOfferFunnel';
 import { giftCardFunnelArea, isGiftCardFunnelClientStep } from '../../shared/giftCardFunnel';
@@ -12,6 +13,23 @@ import type { SessionEventWebPageInteractionPayload } from '../domain/sessionEve
 import type { GqlSMutationResult, GqlSMutationSessionWebPageInteractionCreateArgs, GqlSSession } from '../graphql/generated';
 import { sessionEventCreate } from '../utils/sessionEventCreate';
 
+function optionalCookId(record: Record<string, unknown>): { cookId: string } | Record<string, never> {
+    if (typeof record.cookId !== 'string') return {};
+    const cookId = record.cookId.trim();
+    if (!isNanoId(cookId)) return {};
+    return { cookId };
+}
+
+function optionalLocationSetting(
+    record: Record<string, unknown>,
+): { setting: BookingRequestFormLocationSettingChoice } | Record<string, never> {
+    const setting = record.setting;
+    if (setting === 'INDOOR' || setting === 'OUTDOOR' || setting === 'LATER' || setting === 'skipped') {
+        return { setting };
+    }
+    return {};
+}
+
 function parseInteraction(raw: unknown): SessionEventWebPageInteractionPayload['interaction'] | null {
     if (!raw || typeof raw !== 'object') return null;
     const record = raw as Record<string, unknown>;
@@ -19,7 +37,12 @@ function parseInteraction(raw: unknown): SessionEventWebPageInteractionPayload['
     if (type === 'step_entered' || type === 'step_completed') {
         if (typeof record.step !== 'string') return null;
         if (isBookingRequestFormFunnelStep(record.step)) {
-            return { type, step: record.step };
+            return {
+                type,
+                step: record.step,
+                ...optionalCookId(record),
+                ...(type === 'step_completed' ? optionalLocationSetting(record) : {}),
+            };
         }
         if (isCookBookingRequestOfferFunnelClientStep(record.step)) {
             return { type, step: record.step };
@@ -36,7 +59,7 @@ function parseInteraction(raw: unknown): SessionEventWebPageInteractionPayload['
         return null;
     }
     if (type === 'click' && typeof record.key === 'string' && record.key.length > 0 && record.key.length <= 128) {
-        return { type: 'click', key: record.key };
+        return { type: 'click', key: record.key, ...optionalCookId(record) };
     }
     if (
         type === 'change' &&

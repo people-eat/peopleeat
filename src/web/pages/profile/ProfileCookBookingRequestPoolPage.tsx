@@ -88,13 +88,38 @@ export function ProfileCookBookingRequestPoolPage({
                     }
                 </p>
             ) : (
-                <ul className="grid grid-cols-1 gap-4 @md:grid-cols-2 @2xl:grid-cols-3 @5xl:grid-cols-4 @7xl:grid-cols-5 @8xl:grid-cols-6">
-                    {requests.map((request) => (
-                        <li key={request.bookingRequestId} className="min-w-0">
-                            <CookBookingRequestCard request={request} variant={view === 'declined' ? 'declined' : 'open'} />
-                        </li>
-                    ))}
-                </ul>
+                (() => {
+                    const requested = requests.filter((request) => request.requestedByCustomer);
+                    const others = requests.filter((request) => !request.requestedByCustomer);
+                    const sections =
+                        view === 'open' && requested.length > 0
+                            ? [
+                                  { key: 'requested', title: { de: 'Hat dich angefragt', en: 'Requested you' }[locale], items: requested },
+                                  ...(others.length > 0
+                                      ? [{ key: 'nearby', title: { de: 'In deiner Nähe', en: 'Nearby' }[locale], items: others }]
+                                      : []),
+                              ]
+                            : [{ key: 'all', title: null, items: requests }];
+                    return (
+                        <div className="grid gap-8">
+                            {sections.map((section) => (
+                                <div key={section.key} className="grid gap-4">
+                                    {section.title ? <h2 className="text-sm font-medium text-foreground">{section.title}</h2> : null}
+                                    <ul className="grid grid-cols-1 gap-4 @md:grid-cols-2 @2xl:grid-cols-3 @5xl:grid-cols-4 @7xl:grid-cols-5 @8xl:grid-cols-6">
+                                        {section.items.map((request) => (
+                                            <li key={request.bookingRequestId} className="min-w-0">
+                                                <CookBookingRequestCard
+                                                    request={request}
+                                                    variant={view === 'declined' ? 'declined' : 'open'}
+                                                />
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ))}
+                        </div>
+                    );
+                })()
             )}
         </main>
     );

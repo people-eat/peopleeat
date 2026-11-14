@@ -125,7 +125,7 @@ export async function adminBookingRequestCreate(
         }
         await bookingRequestPoolCooksPublish(
             serverRuntime,
-            [{ bookingRequestId, userId, publicationStatus, exactEventAddress }],
+            [{ bookingRequestId, userId, publicationStatus, exactEventAddress, requestedCookId: null }],
             cookIdsToNotify,
         );
 

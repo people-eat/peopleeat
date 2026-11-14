@@ -18,6 +18,7 @@ export async function publicCooksByIdFindMany(db: Database, cookIds: string[]): 
             cook: cooks,
             firstName: users.firstName,
             userCreatedAt: users.createdAt,
+            userStatus: users.status,
             profilePicture: fileUploadMetadataColumns,
         })
         .from(cooks)
@@ -27,7 +28,10 @@ export async function publicCooksByIdFindMany(db: Database, cookIds: string[]): 
 
     for (const row of rows) {
         const profilePicture = row.profilePicture ? toGqlFileUpload(row.profilePicture) : null;
-        result.set(row.cook.cookId, toGqlPublicCook(row.cook, { firstName: row.firstName, createdAt: row.userCreatedAt }, profilePicture));
+        result.set(
+            row.cook.cookId,
+            toGqlPublicCook(row.cook, { firstName: row.firstName, createdAt: row.userCreatedAt, status: row.userStatus }, profilePicture),
+        );
     }
     return result;
 }

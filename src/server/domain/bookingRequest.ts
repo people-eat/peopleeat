@@ -32,8 +32,33 @@ const bookingRequestPublicationStatuses = [
     'PUBLICATION_BLOCKED_BY_ADMIN_REVIEW',
     'PUBLICATION_AUTO_APPROVED',
     'PUBLICATION_APPROVED_BY_ADMIN',
+    'PUBLICATION_DIRECT_TO_COOK',
 ] as const;
 export type BookingRequestPublicationStatus = (typeof bookingRequestPublicationStatuses)[number];
+
+/** Guest count that triggers the large-group admin review path on marketplace (non-direct) create. */
+export const LARGE_GROUP_PARTICIPANT_THRESHOLD = 12;
+
+export function bookingRequestIsExclusive(publicationStatus: BookingRequestPublicationStatus): boolean {
+    return publicationStatus === 'PUBLICATION_DIRECT_TO_COOK';
+}
+
+/** True when an exclusive request has no live path with the requested cook. */
+export function bookingRequestDirectNeedsExpansion(input: {
+    publicationStatus: BookingRequestPublicationStatus;
+    requestedCookDeclined: boolean;
+    requestedCookBanned: boolean;
+    offers: readonly { cookAccepted: boolean | null; userAccepted: boolean | null }[];
+}): boolean {
+    if (!bookingRequestIsExclusive(input.publicationStatus)) {
+        return false;
+    }
+    const hasLiveOffer = input.offers.some((offer) => offer.cookAccepted !== false && offer.userAccepted !== false);
+    if (hasLiveOffer) {
+        return false;
+    }
+    return input.requestedCookDeclined || input.requestedCookBanned || input.offers.length > 0;
+}
 
 const bookingRequestParticipantTypes = ['ADULT', 'DISCOUNTED'] as const;
 export type BookingRequestParticipantType = (typeof bookingRequestParticipantTypes)[number];

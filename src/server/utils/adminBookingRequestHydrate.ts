@@ -80,7 +80,8 @@ export async function adminBookingRequestHydrate(
         customerRows.map((row) => [row.userId, toGqlAdminUser(row, typesByUserId.get(row.userId) ?? ['customer'])]),
     );
 
-    const cookIds = [...new Set(offers.map((offer) => offer.cookId))];
+    const requestedCookIds = [...new Set(rows.map((row) => row.requestedCookId).filter((id): id is string => id != null))];
+    const cookIds = [...new Set([...offers.map((offer) => offer.cookId), ...requestedCookIds])];
     const cookRows =
         cookIds.length === 0
             ? []
@@ -207,6 +208,7 @@ export async function adminBookingRequestHydrate(
                     ? (promoMinById.get(bookingRequest.promoCodeId) ?? null)
                     : null,
                 kitchenDetailsPhotos: kitchenDetailsPhotosByRequestId.get(bookingRequest.bookingRequestId) ?? [],
+                requestedCook: bookingRequest.requestedCookId ? (cooksById.get(bookingRequest.requestedCookId) ?? null) : null,
             }),
         );
     }

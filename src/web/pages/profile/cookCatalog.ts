@@ -44,8 +44,8 @@ export const COOK_NAV_ROUTES: readonly CookNavRoute[] = [
         to: '/{-$locale}/profile/booking-request-pool',
         title: { de: 'Anfragen-Pool', en: 'Booking request pool' },
         description: {
-            de: 'Hier findest du Buchungsanfragen von Kunden innerhalb deines Reiseradius.',
-            en: 'Here you can find booking requests within your travel radius.',
+            de: 'Anfragen in deinem Reiseradius, plus Gäste, die dich direkt über dein Kochprofil angefragt haben.',
+            en: 'Requests in your travel radius, plus guests who requested you from your chef profile.',
         },
         icon: RadarIcon,
     },

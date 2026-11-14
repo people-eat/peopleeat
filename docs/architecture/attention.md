@@ -38,13 +38,13 @@ Rules:
 
 ### Shipped
 
-| Field                  | Values                                                                                                      | Query                         | Rule                             |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------- | ----------------------------- | -------------------------------- |
-| `Cook.attentionCounts` | `bookingRequestPoolCount`, `bookingRequestOfferUnreadCount`, `walletNeedsAttention`                         | `cookAttentionCountsFindOne`  | `cookWalletNeedsAttentionDerive` |
-| `User.attentionCounts` | `supportRequestUnreadCount`                                                                                 | `userAttentionCountsFindOne`  | SQL sum                          |
-| `User.attention`       | `[UserAttentionItem]` by `UserAttentionKind`, highest priority first                                        | `userAttentionFindMany`       | `userAttentionDerive`            |
-| `Cook.attention`       | `[CookAttentionItem]` by `CookAttentionKind`, highest priority first                                        | `cookAttentionFindMany`       | `cookAttentionDerive`            |
-| `Cook.onboardingSteps` | `[CookOnboardingStep]` in display order (`DEFAULT_OFFER_MESSAGE` while `Cooks.defaultOfferMessage` is null) | `cookOnboardingStepsFindMany` | `cookOnboardingStepsDerive`      |
+| Field                  | Values                                                                                                                                                                | Query                         | Rule                             |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | -------------------------------- |
+| `Cook.attentionCounts` | `bookingRequestPoolCount`, `bookingRequestOfferUnreadCount`, `walletNeedsAttention`                                                                                   | `cookAttentionCountsFindOne`  | `cookWalletNeedsAttentionDerive` |
+| `User.attentionCounts` | `supportRequestUnreadCount`                                                                                                                                           | `userAttentionCountsFindOne`  | SQL sum                          |
+| `User.attention`       | `[UserAttentionItem]` by `UserAttentionKind`, highest priority first                                                                                                  | `userAttentionFindMany`       | `userAttentionDerive`            |
+| `Cook.attention`       | `[CookAttentionItem]` by `CookAttentionKind`, highest priority first (`DIRECT_BOOKING_REQUEST` after wallet, before unread chat; `bookingRequestId` is the pool item) | `cookAttentionFindMany`       | `cookAttentionDerive`            |
+| `Cook.onboardingSteps` | `[CookOnboardingStep]` in display order (`DEFAULT_OFFER_MESSAGE` while `Cooks.defaultOfferMessage` is null)                                                           | `cookOnboardingStepsFindMany` | `cookOnboardingStepsDerive`      |
 
 Overview items carry ids and timestamps, never copy: `count` (requests or unread messages, otherwise 1), `bookingRequestId` /
 `bookingRequestOfferId`, `occasion`, call `startAt` / `endAt`, `customerDisplay`. Ordering and tie-breaks (soonest request first; first
