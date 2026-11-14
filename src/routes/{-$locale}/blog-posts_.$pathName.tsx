@@ -14,6 +14,7 @@ export const Route = createFileRoute('/{-$locale}/blog-posts_/$pathName')({
     loader: async (ctx) => {
         const data = await routeLoaderGraphqlClient(PublicBlogPostPageDocument, {
             pathName: ctx.params.pathName,
+            includeLastVisitedCookProfiles: true,
         })();
         const post = data.publicBlogPost.findOneByPathName;
         if (!post) {

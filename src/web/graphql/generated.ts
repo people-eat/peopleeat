@@ -4428,6 +4428,7 @@ export type GqlCFeatureToggleKey =
     | 'COOK_WALLET_STRIPE_BALANCE'
     | 'LANDING_BOOKING_HOW_IT_WORKS'
     | 'LANDING_TESTIMONIAL_CARDS'
+    | 'LAST_VISITED_COOK_PROFILES'
     | 'PUBLICATION_MEALS'
     | 'PUBLICATION_MENUS'
     | 'SIGN_IN_GOOGLE'
@@ -5119,6 +5120,7 @@ export interface GqlCSession {
     giftCard?: Maybe<GqlCGiftCard>;
     giftCardPurchaseError?: Maybe<GqlCGiftCardPurchaseError>;
     impersonation?: Maybe<GqlCSessionImpersonation>;
+    lastVisitedCookProfiles: Array<GqlCPublicCook>;
     locationSuggestions: Array<GqlCLocationSuggestion>;
     sessionId: Scalars['ID']['output'];
     user?: Maybe<GqlCUser>;
@@ -5126,6 +5128,10 @@ export interface GqlCSession {
 
 export type GqlCSessionDiscountArgs = {
     redeemCode: Scalars['String']['input'];
+};
+
+export type GqlCSessionLastVisitedCookProfilesArgs = {
+    excludeCookId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 export type GqlCSessionLocationSuggestionsArgs = {
@@ -8570,10 +8576,23 @@ export type GqlCAccountAuthTotpDisableMutation = { user: { authTotpDisable: { su
 
 export type GqlCPublicBlogPostPageQueryVariables = Exact<{
     pathName: string;
+    includeLastVisitedCookProfiles: boolean;
 }>;
 
 export type GqlCPublicBlogPostPageQuery = {
-    currentSession: { user: { admin: { adminId: string } | null; cook: { cookId: string } | null } | null };
+    currentSession: {
+        activeFeatureToggleKeys: Array<Schema.GqlCFeatureToggleKey>;
+        lastVisitedCookProfiles?: Array<{
+            cookId: string;
+            pathName: string;
+            cuisineStyle: string | null;
+            cookingPhilosophy: string | null;
+            city: string | null;
+            rating: { averageRating: number | null; reviewCount: number };
+            user: { display: string; profilePicture: { url: string } | null };
+        }>;
+        user: { admin: { adminId: string } | null; cook: { cookId: string } | null } | null;
+    };
     publicBlogPost: {
         findOneByPathName: {
             blogPostId: string;
@@ -9053,11 +9072,22 @@ export type GqlCBookingRequestSubmittedKitchenDetailsUpdateMutation = {
 
 export type GqlCChefPageQueryVariables = Exact<{
     pathName: string;
+    includeLastVisitedCookProfiles: boolean;
+    excludeLastVisitedCookId?: string | null | undefined;
 }>;
 
 export type GqlCChefPageQuery = {
     currentSession: {
         activeFeatureToggleKeys: Array<Schema.GqlCFeatureToggleKey>;
+        lastVisitedCookProfiles?: Array<{
+            cookId: string;
+            pathName: string;
+            cuisineStyle: string | null;
+            cookingPhilosophy: string | null;
+            city: string | null;
+            rating: { averageRating: number | null; reviewCount: number };
+            user: { display: string; profilePicture: { url: string } | null };
+        }>;
         user: { admin: { adminId: string } | null; cook: { cookId: string } | null } | null;
     };
     publicCook: {
@@ -42304,6 +42334,11 @@ export const PublicBlogPostPageDocument = {
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'pathName' } },
                     type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
                 },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'includeLastVisitedCookProfiles' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } } },
+                },
             ],
             selectionSet: {
                 kind: 'SelectionSet',
@@ -42314,6 +42349,31 @@ export const PublicBlogPostPageDocument = {
                         selectionSet: {
                             kind: 'SelectionSet',
                             selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'activeFeatureToggleKeys' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'lastVisitedCookProfiles' },
+                                    directives: [
+                                        {
+                                            kind: 'Directive',
+                                            name: { kind: 'Name', value: 'include' },
+                                            arguments: [
+                                                {
+                                                    kind: 'Argument',
+                                                    name: { kind: 'Name', value: 'if' },
+                                                    value: {
+                                                        kind: 'Variable',
+                                                        name: { kind: 'Name', value: 'includeLastVisitedCookProfiles' },
+                                                    },
+                                                },
+                                            ],
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'PublicCookCardFields' } }],
+                                    },
+                                },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'user' },
@@ -42474,6 +42534,50 @@ export const PublicBlogPostPageDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'answerDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'answerEn' } },
                                         ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'PublicCookCardFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'PublicCook' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'rating' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'averageRating' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'reviewCount' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'profilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
                                     },
                                 },
                             ],
@@ -44174,6 +44278,16 @@ export const ChefPageDocument = {
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'pathName' } },
                     type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
                 },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'includeLastVisitedCookProfiles' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'excludeLastVisitedCookId' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } },
+                },
             ],
             selectionSet: {
                 kind: 'SelectionSet',
@@ -44185,6 +44299,37 @@ export const ChefPageDocument = {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'activeFeatureToggleKeys' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'lastVisitedCookProfiles' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'excludeCookId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'excludeLastVisitedCookId' } },
+                                        },
+                                    ],
+                                    directives: [
+                                        {
+                                            kind: 'Directive',
+                                            name: { kind: 'Name', value: 'include' },
+                                            arguments: [
+                                                {
+                                                    kind: 'Argument',
+                                                    name: { kind: 'Name', value: 'if' },
+                                                    value: {
+                                                        kind: 'Variable',
+                                                        name: { kind: 'Name', value: 'includeLastVisitedCookProfiles' },
+                                                    },
+                                                },
+                                            ],
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'PublicCookCardFields' } }],
+                                    },
+                                },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'user' },
@@ -44347,6 +44492,50 @@ export const ChefPageDocument = {
                                             },
                                             { kind: 'Field', name: { kind: 'Name', value: 'canReceiveDirectRequests' } },
                                         ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'PublicCookCardFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'PublicCook' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'rating' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'averageRating' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'reviewCount' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'profilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
                                     },
                                 },
                             ],

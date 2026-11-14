@@ -253,6 +253,13 @@
             "when": 1794689105558,
             "tag": "0035_futuristic_iron_man",
             "breakpoints": true
+        },
+        {
+            "idx": 36,
+            "version": "7",
+            "when": 1794695143046,
+            "tag": "0036_fair_penance",
+            "breakpoints": true
         }
     ]
 }

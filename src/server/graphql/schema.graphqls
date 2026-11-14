@@ -3139,6 +3139,10 @@ type Session {
     # Set while browsing as another user via admin Sign in as. Drives the
     # Return to admin control. See docs/features/admin-users.md.
     impersonation: SessionImpersonation
+    # Last unique public chef profiles this session visited (MRU, max 4).
+    # Empty when `LAST_VISITED_COOK_PROFILES` is off. Optional exclude drops the
+    # cook currently shown on a chef page. See docs/features/last-visited-cook-profiles.md.
+    lastVisitedCookProfiles(excludeCookId: ID): [PublicCook!]!
 }
 
 type MutationResult {
@@ -6246,6 +6250,8 @@ enum FeatureToggleKey {
     VENUE_PAGE_VENUES_EXPLORE
     # Google social log-on on AuthIdentityGate. Missing row is off.
     SIGN_IN_GOOGLE
+    # Last-visited chef cards on public chef + blog post pages. Missing row is off.
+    LAST_VISITED_COOK_PROFILES
 }
 
 type AdminFeatureToggle {

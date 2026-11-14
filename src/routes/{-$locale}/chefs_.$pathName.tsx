@@ -16,6 +16,8 @@ export const Route = createFileRoute('/{-$locale}/chefs_/$pathName')({
     loader: async (ctx) => {
         const data = await routeLoaderGraphqlClient(ChefPageDocument, {
             pathName: ctx.params.pathName,
+            includeLastVisitedCookProfiles: true,
+            excludeLastVisitedCookId: null,
         })();
         const cook = data.publicCook.findOneByPathName;
         if (!cook) {

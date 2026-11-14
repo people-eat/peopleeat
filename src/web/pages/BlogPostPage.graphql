@@ -1,5 +1,9 @@
-query PublicBlogPostPage($pathName: String!) {
+query PublicBlogPostPage($pathName: String!, $includeLastVisitedCookProfiles: Boolean!) {
     currentSession {
+        activeFeatureToggleKeys
+        lastVisitedCookProfiles @include(if: $includeLastVisitedCookProfiles) {
+            ...PublicCookCardFields
+        }
         user {
             ...PublicHeaderUser
         }

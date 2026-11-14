@@ -32,6 +32,8 @@ export const featureToggleKeys = [
     'LANDING_TESTIMONIAL_CARDS',
     'VENUE_PAGE_VENUES_EXPLORE',
     'SIGN_IN_GOOGLE',
+    // Last 4 chef profiles visited this session on chef + blog pages.
+    'LAST_VISITED_COOK_PROFILES',
 ] as const;
 
 export type FeatureToggleKey = (typeof featureToggleKeys)[number];

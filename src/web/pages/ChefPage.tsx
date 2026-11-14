@@ -10,6 +10,7 @@ import { ShareButton } from '../components/ShareButton';
 import type { GqlCChefPageQuery } from '../graphql/generated';
 import { ChefsDiscoveryTrackDocument } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
+import { SectionLastVisitedCooks } from '../sections/SectionLastVisitedCooks';
 import { chefPageCityLabel } from '../seo/chefPageSeo';
 import { publicChefUrl } from '../utils/webShare';
 
@@ -18,6 +19,8 @@ export function ChefPage({ data }: { data: GqlCChefPageQuery }) {
     const cook = data.publicCook.findOneByPathName!;
     const [, trackDiscovery] = useMutation(ChefsDiscoveryTrackDocument);
     const shareEnabled = featureToggleIsActive(data.currentSession.activeFeatureToggleKeys, 'COOK_PUBLIC_PROFILE_SHARE');
+    const lastVisitedEnabled = featureToggleIsActive(data.currentSession.activeFeatureToggleKeys, 'LAST_VISITED_COOK_PROFILES');
+    const lastVisitedCooks = (data.currentSession.lastVisitedCookProfiles ?? []).filter((entry) => entry.cookId !== cook.cookId);
     const displayName = cook.user.display;
     const cityLabel = chefPageCityLabel(locale, cook.city, cook.cityPage);
     const directEnabled =
@@ -135,6 +138,7 @@ export function ChefPage({ data }: { data: GqlCChefPageQuery }) {
                         ) : undefined
                     }
                 />
+                {lastVisitedEnabled ? <SectionLastVisitedCooks cooks={lastVisitedCooks} locale={locale} /> : null}
             </main>
             <Footer />
         </>

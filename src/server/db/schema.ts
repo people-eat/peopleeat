@@ -216,6 +216,12 @@ export const sessionEvents = pgTable(
         index('SessionEvents_webPageVisit_chefs_cookId_createdAt_idx')
             .using('btree', sql`(${table.payload}->'params'->>'cookId')`, table.createdAt)
             .where(sql`${table.type} = 'WEB_PAGE_VISITED' AND ${table.payload}->>'webPageKey' = 'CHEFS'`),
+        // Last-visited cook profiles on Session: per-session newest chef detail visits.
+        index('SessionEvents_webPageVisit_chefs_sessionId_createdAt_idx')
+            .on(table.sessionId, table.createdAt)
+            .where(
+                sql`${table.type} = 'WEB_PAGE_VISITED' AND ${table.payload}->>'webPageKey' = 'CHEFS' AND (${table.payload}->'params'->>'cookId') IS NOT NULL`,
+            ),
     ],
 );
 

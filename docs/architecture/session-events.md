@@ -99,6 +99,10 @@ Admin descriptions mark these with “(Legacy)” / “(legacy)”.
   `(payload->'params'->>'cookId', createdAt)` where `type = 'WEB_PAGE_VISITED'` and `webPageKey = 'CHEFS'` (human sessions only in the
   query). Chef visits capture the URL segment, then `sessionWebPageVisitCreate` resolves slug or legacy id to the stable `cookId` so a
   rename does not split analytics. See [cook-analytics.md](../features/cook-analytics.md).
+- Last-visited cook profiles (`Session.lastVisitedCookProfiles`) use a third partial index
+  `SessionEvents_webPageVisit_chefs_sessionId_createdAt_idx` on `(sessionId, createdAt)` where `type = 'WEB_PAGE_VISITED'`,
+  `webPageKey = 'CHEFS'`, and `params.cookId` is present, so a session-scoped MRU scan does not walk unrelated pageviews. See
+  [last-visited-cook-profiles.md](../features/last-visited-cook-profiles.md).
 - Booking-form funnel queries exclude bots, sessions whose user is admin or cook, and **admin impersonation sessions**
   (`Sessions.impersonationReturnSessionId IS NOT NULL`). Cook offer funnel cohorts are notified cooks (excluding admins); create-UI
   mid-steps still come from human cook sessions. Cook public-profile visit counts also drop impersonation sessions.
@@ -131,5 +135,5 @@ Admin descriptions mark these with “(Legacy)” / “(legacy)”.
 - Commands: `sessionWebPageVisitCreate`, `sessionWebPageInteractionCreate`, auth / user-create / legal / booking lifecycle emitters
 - Queries: `adminSessionEventFindMany`, `adminSessionEventCounts`, `adminAnalyticsBookingRequestFormFlow`, `adminAnalyticsGiftCardFlow`,
   `adminAnalyticsChefSignUpFlow`, `adminAnalyticsBookingRequestCheckoutFlow`, `adminAnalyticsCookBookingRequestOfferFlow`,
-  `adminSessionEventWebPageVisitCreationsFindMany`, `cookAnalyticsFind`
+  `adminSessionEventWebPageVisitCreationsFindMany`, `cookAnalyticsFind`, `sessionLastVisitedCookProfilesFindMany`
 - Feature UI: [admin-analytics.md](../features/admin-analytics.md), [cook-analytics.md](../features/cook-analytics.md)

@@ -102,6 +102,7 @@ describe('createSetSessionCookie', () => {
             chat: null as unknown as GqlSChat,
             locationSuggestions: [],
             activeFeatureToggleKeys: [],
+            lastVisitedCookProfiles: [],
         };
         const result = sessionUtils.createSetSessionCookie(sessionCookieConfig, session);
 
@@ -119,6 +120,7 @@ describe('createSetSessionCookie', () => {
             chat: null as unknown as GqlSChat,
             locationSuggestions: [],
             activeFeatureToggleKeys: [],
+            lastVisitedCookProfiles: [],
         };
         const result = sessionUtils.createSetSessionCookie({ ...sessionCookieConfig, secure: true }, session);
 
@@ -134,6 +136,7 @@ describe('createSetSessionCookie', () => {
             chat: null as unknown as GqlSChat,
             locationSuggestions: [],
             activeFeatureToggleKeys: [],
+            lastVisitedCookProfiles: [],
         };
         const result = sessionUtils.createSetSessionCookie({ ...sessionCookieConfig, domainScope: '.example.com' }, session);
 
@@ -148,6 +151,7 @@ describe('createSetSessionCookie', () => {
             chat: null as unknown as GqlSChat,
             locationSuggestions: [],
             activeFeatureToggleKeys: [],
+            lastVisitedCookProfiles: [],
         };
         const result = sessionUtils.createSetSessionCookie(sessionCookieConfig, session);
         const after = Date.now();

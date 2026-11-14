@@ -36,6 +36,7 @@ Keys today:
 - Landing booking how-it-works section (muted loops + 60s film on `/` and `/en/`)
 - Landing testimonial cards (shared review card on `/` and `/en/` instead of the scrolling quote marquee)
 - Venue page venues-explore CTA (“Weitere Locations” on `/venues/$pathName`)
+- Last visited cook profiles (Recently viewed strip on public chef + blog post pages)
 
 Calls, scheduling, WhatsApp recipient language, and WhatsApp webhook signature validation stay always on and are not toggles.
 
@@ -168,6 +169,9 @@ Wired today:
   is off (anonymous uses the global row; after Google identity resolve, a per-user override can still deny). Missing row stays off. Confirm
   the Google consent screen (test users or verified People scopes) before enabling in an environment with real users. See
   [sign-in.md](./sign-in.md)
+- **Last visited cook profiles** (`LAST_VISITED_COOK_PROFILES`) — shows the Recently viewed chef card strip on public chef and blog post
+  pages; `Session.lastVisitedCookProfiles` returns [] when off. Missing row stays off. See
+  [last-visited-cook-profiles.md](./last-visited-cook-profiles.md)
 
 ## Decisions
 

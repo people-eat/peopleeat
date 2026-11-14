@@ -1,0 +1,1 @@
+CREATE INDEX "SessionEvents_webPageVisit_chefs_sessionId_createdAt_idx" ON "SessionEvents" USING btree ("sessionId","createdAt") WHERE "SessionEvents"."type" = 'WEB_PAGE_VISITED' AND "SessionEvents"."payload"->>'webPageKey' = 'CHEFS' AND ("SessionEvents"."payload"->'params'->>'cookId') IS NOT NULL;

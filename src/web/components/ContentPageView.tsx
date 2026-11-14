@@ -11,6 +11,7 @@ import type { SectionFeaturedCook } from '../sections/SectionFeaturedCooks';
 import { SectionHero } from '../sections/SectionHero';
 import { SectionHowItWorks } from '../sections/SectionHowItWorks';
 import { SectionKnownFrom } from '../sections/SectionKnownFrom';
+import { SectionLastVisitedCooks } from '../sections/SectionLastVisitedCooks';
 import type { SectionOccasionFormatsModel } from '../sections/SectionOccasionFormats';
 import { SectionOccasionFormats } from '../sections/SectionOccasionFormats';
 import { SectionPageTestimonials } from '../sections/SectionPageTestimonials';
@@ -21,6 +22,7 @@ import { ContentSectionsRenderer } from './ContentSectionsRenderer';
 import { Footer } from './Footer';
 import { Header } from './Header';
 import type { PublicHeaderUser } from './Header';
+import type { PublicCookCardCook } from './PublicCookCard';
 
 type ContentPageHeroVariant = 'fullBleed' | 'article';
 
@@ -73,6 +75,8 @@ export type ContentPageViewModel = {
     venuesExplore?: boolean;
     /** Press logos after the cities list (city detail + landing + venues). */
     knownFrom?: boolean;
+    /** Session last-visited chef cards (blog posts). Hidden when empty / omitted. */
+    lastVisitedCooks?: ReadonlyArray<PublicCookCardCook>;
     /** Back link above the hero. Omitted on admin preview and pages that already have their own. */
     indexLink?: ContentPageIndexLink;
 };
@@ -182,6 +186,11 @@ export function ContentPageView({
                 {page.knownFrom ? (
                     <div data-content-preview-anchor="known-from">
                         <SectionKnownFrom />
+                    </div>
+                ) : null}
+                {page.lastVisitedCooks ? (
+                    <div data-content-preview-anchor="last-visited-cooks">
+                        <SectionLastVisitedCooks cooks={page.lastVisitedCooks} locale={locale} />
                     </div>
                 ) : null}
             </main>

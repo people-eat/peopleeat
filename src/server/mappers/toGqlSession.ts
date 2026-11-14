@@ -16,6 +16,7 @@ export function toGqlSession(session: Session): GqlSSession {
         cookieSetting: null,
         activeFeatureToggleKeys: [],
         locationSuggestions: [],
+        lastVisitedCookProfiles: [],
         impersonation: session.impersonationReturnSessionId ? { active: true } : null,
     };
 }

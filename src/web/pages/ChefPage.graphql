@@ -1,6 +1,9 @@
-query ChefPage($pathName: String!) {
+query ChefPage($pathName: String!, $includeLastVisitedCookProfiles: Boolean!, $excludeLastVisitedCookId: ID) {
     currentSession {
         activeFeatureToggleKeys
+        lastVisitedCookProfiles(excludeCookId: $excludeLastVisitedCookId) @include(if: $includeLastVisitedCookProfiles) {
+            ...PublicCookCardFields
+        }
         user {
             ...PublicHeaderUser
         }

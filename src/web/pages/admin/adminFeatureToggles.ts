@@ -63,6 +63,10 @@ const adminFeatureToggleLabels: Record<FeatureToggleKey, Record<Locale, string>>
         en: 'Venue page: more venues',
     },
     SIGN_IN_GOOGLE: { de: 'Anmeldung: Google', en: 'Sign-in: Google' },
+    LAST_VISITED_COOK_PROFILES: {
+        de: 'Zuletzt angesehene Köche',
+        en: 'Last visited chefs',
+    },
 };
 
 const adminFeatureToggleDescriptions: Record<FeatureToggleKey, Record<Locale, string>> = {
@@ -177,6 +181,10 @@ const adminFeatureToggleDescriptions: Record<FeatureToggleKey, Record<Locale, st
     SIGN_IN_GOOGLE: {
         de: 'Zeigt „Mit Google anmelden“ an den Anmeldemasken. Vor dem Einschalten in Produktion den Google-Consent-Screen prüfen (Testnutzer oder verifizierte People-Scopes).',
         en: 'Shows Continue with Google on sign-in gates. Before enabling in production, confirm the Google consent screen (test users or verified People scopes).',
+    },
+    LAST_VISITED_COOK_PROFILES: {
+        de: 'Zeigt die zuletzt angesehenen Kochprofile (max. 4) unten auf öffentlichen Koch- und Blog-Seiten.',
+        en: 'Shows the last viewed chef profiles (max 4) at the bottom of public chef and blog post pages.',
     },
 };
 

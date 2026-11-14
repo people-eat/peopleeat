@@ -4425,6 +4425,7 @@ export type GqlSFeatureToggleKey =
     | 'COOK_WALLET_STRIPE_BALANCE'
     | 'LANDING_BOOKING_HOW_IT_WORKS'
     | 'LANDING_TESTIMONIAL_CARDS'
+    | 'LAST_VISITED_COOK_PROFILES'
     | 'PUBLICATION_MEALS'
     | 'PUBLICATION_MENUS'
     | 'SIGN_IN_GOOGLE'
@@ -5116,6 +5117,7 @@ export interface GqlSSession {
     giftCard?: Maybe<GqlSGiftCard>;
     giftCardPurchaseError?: Maybe<GqlSGiftCardPurchaseError>;
     impersonation?: Maybe<GqlSSessionImpersonation>;
+    lastVisitedCookProfiles: Array<GqlSPublicCook>;
     locationSuggestions: Array<GqlSLocationSuggestion>;
     sessionId: Scalars['ID']['output'];
     user?: Maybe<GqlSUser>;
@@ -5123,6 +5125,10 @@ export interface GqlSSession {
 
 export type GqlSSessionDiscountArgs = {
     redeemCode: Scalars['String']['input'];
+};
+
+export type GqlSSessionLastVisitedCookProfilesArgs = {
+    excludeCookId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 export type GqlSSessionLocationSuggestionsArgs = {
@@ -11820,6 +11826,12 @@ export type GqlSSessionResolvers<
     giftCard?: Resolver<Maybe<GqlSResolversTypes['GiftCard']>, ParentType, ContextType>;
     giftCardPurchaseError?: Resolver<Maybe<GqlSResolversTypes['GiftCardPurchaseError']>, ParentType, ContextType>;
     impersonation?: Resolver<Maybe<GqlSResolversTypes['SessionImpersonation']>, ParentType, ContextType>;
+    lastVisitedCookProfiles?: Resolver<
+        Array<GqlSResolversTypes['PublicCook']>,
+        ParentType,
+        ContextType,
+        Partial<GqlSSessionLastVisitedCookProfilesArgs>
+    >;
     locationSuggestions?: Resolver<
         Array<GqlSResolversTypes['LocationSuggestion']>,
         ParentType,
@@ -13536,6 +13548,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'COOK_WALLET_STRIPE_BALANCE'
     | 'LANDING_BOOKING_HOW_IT_WORKS'
     | 'LANDING_TESTIMONIAL_CARDS'
+    | 'LAST_VISITED_COOK_PROFILES'
     | 'PUBLICATION_MEALS'
     | 'PUBLICATION_MENUS'
     | 'SIGN_IN_GOOGLE'
@@ -13564,6 +13577,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'COOK_WALLET_STRIPE_BALANCE'
     | 'LANDING_BOOKING_HOW_IT_WORKS'
     | 'LANDING_TESTIMONIAL_CARDS'
+    | 'LAST_VISITED_COOK_PROFILES'
     | 'PUBLICATION_MEALS'
     | 'PUBLICATION_MENUS'
     | 'SIGN_IN_GOOGLE'
@@ -13593,6 +13607,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     'COOK_WALLET_STRIPE_BALANCE',
     'LANDING_BOOKING_HOW_IT_WORKS',
     'LANDING_TESTIMONIAL_CARDS',
+    'LAST_VISITED_COOK_PROFILES',
     'PUBLICATION_MEALS',
     'PUBLICATION_MENUS',
     'SIGN_IN_GOOGLE',

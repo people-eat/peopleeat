@@ -1,3 +1,4 @@
+import { featureToggleIsActive } from '../../shared/featureToggle';
 import type { Locale } from '../../shared/locale';
 import { ContentPageView } from '../components/ContentPageView';
 import { contentSectionsFromGql } from '../components/contentSectionsMap';
@@ -11,6 +12,11 @@ export function blogIndexLinkLabel(locale: Locale): string {
 export function BlogPostPage({ data }: { data: GqlCPublicBlogPostPageQuery }) {
     const locale = useLocale();
     const post = data.publicBlogPost.findOneByPathName!;
+    const lastVisitedEnabled = featureToggleIsActive(data.currentSession.activeFeatureToggleKeys, 'LAST_VISITED_COOK_PROFILES');
+    const lastVisitedCooks =
+        lastVisitedEnabled && (data.currentSession.lastVisitedCookProfiles?.length ?? 0) > 0
+            ? data.currentSession.lastVisitedCookProfiles
+            : undefined;
 
     return (
         <ContentPageView
@@ -25,6 +31,7 @@ export function BlogPostPage({ data }: { data: GqlCPublicBlogPostPageQuery }) {
                 heroVariant: 'article',
                 indexLink: { to: '/{-$locale}/blog-posts', label: blogIndexLinkLabel(locale) },
                 sections: contentSectionsFromGql(post.sections),
+                lastVisitedCooks,
             }}
         />
     );

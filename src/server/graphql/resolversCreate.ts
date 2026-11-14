@@ -431,6 +431,7 @@ import { sessionFeatureToggleFindActive } from '../queries/sessionFeatureToggleF
 import { sessionFindOne } from '../queries/sessionFindOne';
 import { sessionGiftCardFindOne } from '../queries/sessionGiftCardFindOne';
 import { sessionGiftCardPurchaseErrorFindOne } from '../queries/sessionGiftCardPurchaseErrorFindOne';
+import { sessionLastVisitedCookProfilesFindMany } from '../queries/sessionLastVisitedCookProfilesFindMany';
 import { sessionLocationSuggestionsFindMany } from '../queries/sessionLocationSuggestionsFindMany';
 import { sessionUserFindOne } from '../queries/sessionUserFindOne';
 import { supportRequestMessagesFindMany } from '../queries/supportRequestMessagesFindMany';
@@ -461,6 +462,7 @@ import { cookBiographySummaryGenerating } from '../utils/cookBiographySummaryGen
 import { cookCallSlotsFindMany } from '../utils/cookCallSlotsFindMany';
 import { cookMealRelationshipsFind } from '../utils/cookMealRelationshipsFind';
 import { cookPathNameAvailability } from '../utils/cookPathName';
+import { featureToggleIsEnabled } from '../utils/featureToggleIsEnabled';
 import type {
     GqlSAdmin,
     GqlSAdminAiGeneration,
@@ -779,6 +781,7 @@ import type {
     GqlSResolvers,
     GqlSSession,
     GqlSSessionDiscountArgs,
+    GqlSSessionLastVisitedCookProfilesArgs,
     GqlSSessionLocationSuggestionsArgs,
     GqlSSubscriptionChatTurnUpdatesArgs,
     GqlSUser,
@@ -991,6 +994,23 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             discount(_session: GqlSSession, args: GqlSSessionDiscountArgs, requestingSession: GqlSSession) {
                 return sessionDiscount(args, requestingSession, serverRuntime);
+            },
+            async lastVisitedCookProfiles(
+                session: GqlSSession,
+                args: GqlSSessionLastVisitedCookProfilesArgs,
+                requestingSession: GqlSSession,
+            ) {
+                const userId = session.userId ?? requestingSession.userId;
+                if (!(await featureToggleIsEnabled('LAST_VISITED_COOK_PROFILES', serverRuntime, userId))) {
+                    return [];
+                }
+                return sessionLastVisitedCookProfilesFindMany(
+                    {
+                        sessionId: session.sessionId,
+                        excludeCookId: args.excludeCookId,
+                    },
+                    serverRuntime,
+                );
             },
         },
         Chat: {
