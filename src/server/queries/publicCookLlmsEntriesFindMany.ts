@@ -31,7 +31,7 @@ export async function publicCookLlmsEntriesFindMany(db: Database): Promise<Publi
     const entries: PublicCookLlmsEntry[] = [];
     for (const row of rows) {
         const stageName = row.stageName?.trim() ?? '';
-        const firstName = row.firstName?.trim() ?? '';
+        const firstName = row.firstName.trim();
         const displayName = stageName || firstName;
         if (!displayName) continue;
         const city = row.exactTravelOriginAddress?.city.trim() || row.legacyCityName?.trim() || null;
