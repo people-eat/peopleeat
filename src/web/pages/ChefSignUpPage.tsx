@@ -6,6 +6,8 @@ import { useMutation, useQuery } from 'urql';
 
 import { chefSignUpFunnelArea } from '../../shared/chefSignUpFunnel';
 import type { ChefSignUpFunnelClientStep } from '../../shared/chefSignUpFunnel';
+import { expansionMarketFromParam } from '../../shared/expansionMarkets';
+import type { ExpansionMarketSlug } from '../../shared/expansionMarkets';
 import { AuthIdentityGate } from '../components/auth/AuthIdentityGate';
 import { AuthIdentityGateLogOnFooter } from '../components/auth/AuthIdentityGateLogOnFooter';
 import { Button } from '../components/base/button';
@@ -52,8 +54,9 @@ function chefSignUpFormReady(value: ChefSignUpFormValues): boolean {
     );
 }
 
-export function ChefSignUpPage({ loaderData }: { loaderData: GqlCChefSignUpPageQuery }) {
+export function ChefSignUpPage({ loaderData, marketSlug }: { loaderData: GqlCChefSignUpPageQuery; marketSlug?: ExpansionMarketSlug }) {
     const locale = useLocale();
+    const market = expansionMarketFromParam(marketSlug);
     const [success, setSuccess] = useState(Boolean(loaderData.currentSession.user?.cook));
     const [session, setSession] = useState(loaderData.currentSession);
     const [, cookCreate] = useMutation(ChefSignUpCookCreateDocument);
@@ -154,7 +157,7 @@ export function ChefSignUpPage({ loaderData }: { loaderData: GqlCChefSignUpPageQ
     const debouncedLocationSearch = useDebouncedValue(locationSearchText, 300);
     const [{ data: suggestionsData, fetching: suggestionsFetching }] = useQuery({
         query: CookCreateLocationSuggestionsDocument,
-        variables: { searchText: debouncedLocationSearch, onlyFullAddresses: true },
+        variables: { searchText: debouncedLocationSearch, onlyFullAddresses: true, regionCode: market?.countryCode },
         pause: debouncedLocationSearch.trim().length < 3 || selectedLocation?.displayText === locationSearchText,
     });
     const suggestions = suggestionsData?.currentSession.locationSuggestions ?? [];
@@ -166,6 +169,16 @@ export function ChefSignUpPage({ loaderData }: { loaderData: GqlCChefSignUpPageQ
             <div className="mx-auto grid w-full max-w-lg flex-1 content-start gap-10 p-8">
                 <div className="grid gap-3">
                     <h1 className="font-serif text-3xl tracking-tight">{chefSignUpPageTitle[locale]}</h1>
+                    {market ? (
+                        <StatusAlert tone="info" title={market.foundingChefTitle[locale]}>
+                            {
+                                {
+                                    de: `Du meldest dich als Gründungskoch ${market.inCountryDe} an. Profil und Menü jetzt. Gastanfragen ab Anfang 2027.`,
+                                    en: `You are joining as a founding chef ${market.inCountryEn}. Profile and menu now. Guest requests from early 2027.`,
+                                }[locale]
+                            }
+                        </StatusAlert>
+                    ) : null}
                     <p className="leading-relaxed text-muted-foreground">
                         {alreadyCook
                             ? {

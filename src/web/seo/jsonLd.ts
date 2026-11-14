@@ -11,6 +11,7 @@
 //   - `jsonLdBreadcrumbList` — trail matching the header logo and the page's index link.
 //   - `jsonLdPerson` — public chef profile (`Person` only; no `aggregateRating`).
 //   - `jsonLdCityService` — city landing as a service in that place.
+//   - `jsonLdCountryService` — expansion market as a service with country + city Places.
 //   - `jsonLdBlogPosting` — article page.
 //
 // `dateModified` on the site identity blocks is the last-commit ISO timestamp
@@ -148,6 +149,37 @@ export function jsonLdPerson(input: {
     if (image) person.image = image;
     if (cityName) person.homeLocation = { '@type': 'City', name: cityName };
     return script(person);
+}
+
+export function jsonLdCountryService(input: {
+    webPageUrl: string;
+    locale: Locale;
+    path: string;
+    name: string;
+    description: string;
+    countryName: string;
+    cities: ReadonlyArray<{ name: string; latitude: number; longitude: number }>;
+}): JsonLdScript {
+    return script({
+        '@context': 'https://schema.org',
+        '@type': 'Service',
+        name: input.name,
+        description: input.description,
+        url: canonicalUrlBuild(input.webPageUrl, input.locale, input.path),
+        provider: { '@id': organizationId(input.webPageUrl) },
+        areaServed: [
+            { '@type': 'Country', name: input.countryName },
+            ...input.cities.map((city) => ({
+                '@type': 'Place',
+                name: city.name,
+                geo: {
+                    '@type': 'GeoCoordinates',
+                    latitude: city.latitude,
+                    longitude: city.longitude,
+                },
+            })),
+        ],
+    });
 }
 
 export function jsonLdCityService(input: {

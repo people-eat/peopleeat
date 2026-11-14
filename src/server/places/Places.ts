@@ -24,6 +24,7 @@ export interface Places {
         searchText: string;
         sessionToken: string;
         onlyFullAddresses?: boolean;
+        regionCode?: string;
     }) => Promise<PlacesLocationSuggestion[]>;
     geoCoordinatesForCity: (options: {
         city: string;

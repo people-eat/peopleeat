@@ -1,58 +1,114 @@
+import type { ExpansionMarket } from '../../shared/expansionMarkets';
 import { AppImage } from '../components/AppImage';
 import { useLocale } from '../hooks/useLocale';
 
-export function SectionBenefitsForChefs() {
+export function SectionBenefitsForChefs({ market }: { market?: ExpansionMarket }) {
     const locale = useLocale();
 
-    const benefits = {
-        de: [
-            {
-                name: 'Bleibe flexibel',
-                description: 'Entscheide selbst den Ort und Radius, in dem du deinen Service anbieten möchtest.',
-            },
-            {
-                name: 'Freiraum für deine Kreativität',
-                description: 'Verwirkliche eigene Menükreationen und behalte sie jederzeit an einem Ort.',
-            },
-            { name: 'Schnelle Zahlungsabwicklung', description: 'Erhalte deine Bezahlung einfach und unkompliziert.' },
-            { name: '24 / 7 für dich da', description: 'Wir helfen dir rund um die Uhr bei jeglichen Fragen weiter.' },
-            {
-                name: 'Kunden stellen ihre Anfragen direkt bei dir',
-                description: 'Kunden gelangen direkt über die Profilseite zu deinen Menüvorschlägen.',
-            },
-            {
-                name: 'Kommuniziere unkompliziert mit deinen Kunden',
-                description:
-                    'Sobald du die Buchungsanfrage akzeptierst, kannst du direkt mit dem Kunden via Chat alle Einzelheiten final abstimmen.',
-            },
-        ],
-        en: [
-            {
-                name: 'Stay flexible',
-                description: 'Choose the location and radius where you want to offer your service.',
-            },
-            {
-                name: 'Freedom for your creativity',
-                description: 'Bring your own menu creations to life and keep them all in one place.',
-            },
-            {
-                name: 'Fast payment processing',
-                description: 'Receive your payment easily and hassle-free.',
-            },
-            {
-                name: 'Here for you 24/7',
-                description: 'We support you around the clock with any questions.',
-            },
-            {
-                name: 'Customers send requests directly to you',
-                description: 'Customers can reach your menu proposals straight from your profile page.',
-            },
-            {
-                name: 'Communicate easily with your customers',
-                description: 'Once you accept the booking request, you can finalize all details directly with the customer via chat.',
-            },
-        ],
-    }[locale];
+    const benefits = market
+        ? {
+              de: [
+                  {
+                      name: 'Früh dabei',
+                      description: `Registriere dich jetzt ${market.inCountryDe}, damit dein Profil am ersten Tag steht.`,
+                  },
+                  {
+                      name: 'Bereit zum Marktstart',
+                      description: 'Profil und erstes Menü jetzt. Gastanfragen folgen Anfang 2027.',
+                  },
+                  {
+                      name: 'Erstes lokales Netzwerk',
+                      description: 'Du gehörst zu den ersten Köchen vor Ort, bevor Gastgeber dazu kommen.',
+                  },
+                  {
+                      name: 'Sichtbar auf den ersten Stadtseiten',
+                      description: 'Zum Start heben wir Gründungsköche auf den ersten Stadtseiten hervor.',
+                  },
+                  {
+                      name: 'Direkte Betreuung',
+                      description: 'Wir begleiten dich persönlich durch das Onboarding.',
+                  },
+                  {
+                      name: 'Bleibe flexibel',
+                      description: 'Entscheide selbst den Ort und Radius, in dem du deinen Service anbieten möchtest.',
+                  },
+              ],
+              en: [
+                  {
+                      name: 'Join early',
+                      description: `Register now ${market.inCountryEn} so your profile is ready on day one.`,
+                  },
+                  {
+                      name: 'Ready at launch',
+                      description: 'Profile and first menu now. Guest requests follow in early 2027.',
+                  },
+                  {
+                      name: 'First local network',
+                      description: 'You are among the first chefs on the ground before hosts arrive.',
+                  },
+                  {
+                      name: 'Featured on the first city pages',
+                      description: 'At launch we highlight founding chefs on the first city pages.',
+                  },
+                  {
+                      name: 'Direct support',
+                      description: 'We support you personally through onboarding.',
+                  },
+                  {
+                      name: 'Stay flexible',
+                      description: 'Choose the location and radius where you want to offer your service.',
+                  },
+              ],
+          }[locale]
+        : {
+              de: [
+                  {
+                      name: 'Bleibe flexibel',
+                      description: 'Entscheide selbst den Ort und Radius, in dem du deinen Service anbieten möchtest.',
+                  },
+                  {
+                      name: 'Freiraum für deine Kreativität',
+                      description: 'Verwirkliche eigene Menükreationen und behalte sie jederzeit an einem Ort.',
+                  },
+                  { name: 'Schnelle Zahlungsabwicklung', description: 'Erhalte deine Bezahlung einfach und unkompliziert.' },
+                  { name: '24 / 7 für dich da', description: 'Wir helfen dir rund um die Uhr bei jeglichen Fragen weiter.' },
+                  {
+                      name: 'Kunden stellen ihre Anfragen direkt bei dir',
+                      description: 'Kunden gelangen direkt über die Profilseite zu deinen Menüvorschlägen.',
+                  },
+                  {
+                      name: 'Kommuniziere unkompliziert mit deinen Kunden',
+                      description:
+                          'Sobald du die Buchungsanfrage akzeptierst, kannst du direkt mit dem Kunden via Chat alle Einzelheiten final abstimmen.',
+                  },
+              ],
+              en: [
+                  {
+                      name: 'Stay flexible',
+                      description: 'Choose the location and radius where you want to offer your service.',
+                  },
+                  {
+                      name: 'Freedom for your creativity',
+                      description: 'Bring your own menu creations to life and keep them all in one place.',
+                  },
+                  {
+                      name: 'Fast payment processing',
+                      description: 'Receive your payment easily and hassle-free.',
+                  },
+                  {
+                      name: 'Here for you 24/7',
+                      description: 'We support you around the clock with any questions.',
+                  },
+                  {
+                      name: 'Customers send requests directly to you',
+                      description: 'Customers can reach your menu proposals straight from your profile page.',
+                  },
+                  {
+                      name: 'Communicate easily with your customers',
+                      description: 'Once you accept the booking request, you can finalize all details directly with the customer via chat.',
+                  },
+              ],
+          }[locale];
 
     return (
         <section className="mx-auto grid max-w-2xl grid-cols-1 items-center gap-x-8 gap-y-16 px-4 @sm:px-6 @lg:max-w-7xl @lg:grid-cols-2 @lg:px-8">

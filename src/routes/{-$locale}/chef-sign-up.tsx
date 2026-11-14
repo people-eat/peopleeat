@@ -1,6 +1,8 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
 
 import { contentLocaleText } from '../../shared/contentSection';
+import { expansionMarketFromParam } from '../../shared/expansionMarkets';
+import type { ExpansionMarketSlug } from '../../shared/expansionMarkets';
 import { ChefSignUpPageDocument } from '../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../web/graphql/routeLoaderGraphqlClient';
 import { ChefSignUpPage } from '../../web/pages/ChefSignUpPage';
@@ -9,6 +11,10 @@ import { webPageUrlGet } from '../../web/seo/webPageUrlGet';
 import { localeFromParam } from '../../web/utils/locale';
 
 export const Route = createFileRoute('/{-$locale}/chef-sign-up')({
+    validateSearch: (search: Record<string, unknown>): { market?: ExpansionMarketSlug } => {
+        const market = expansionMarketFromParam(typeof search.market === 'string' ? search.market : undefined);
+        return market ? { market: market.slug } : {};
+    },
     loader: async ({ params }) => {
         const data = await routeLoaderGraphqlClient(ChefSignUpPageDocument)();
         if (data.currentSession.user?.cook) {
@@ -35,6 +41,6 @@ export const Route = createFileRoute('/{-$locale}/chef-sign-up')({
         });
     },
     component() {
-        return <ChefSignUpPage loaderData={Route.useLoaderData()} />;
+        return <ChefSignUpPage loaderData={Route.useLoaderData()} marketSlug={Route.useSearch().market} />;
     },
 });

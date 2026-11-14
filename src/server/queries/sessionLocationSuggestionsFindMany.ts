@@ -1,3 +1,4 @@
+import { placesRegionCodeNormalize } from '../../shared/expansionMarkets';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSLocationSuggestion, GqlSSession, GqlSSessionLocationSuggestionsArgs } from '../graphql/generated';
 import { toGqlLocationSuggestion } from '../mappers/toGqlLocationSuggestion';
@@ -12,6 +13,7 @@ export async function sessionLocationSuggestionsFindMany(
             searchText: args.searchText,
             sessionToken: requestingSession.sessionId,
             onlyFullAddresses: args.onlyFullAddresses,
+            regionCode: placesRegionCodeNormalize(args.regionCode),
         });
         return suggestions.map(toGqlLocationSuggestion);
     } catch (error) {

@@ -1,32 +1,49 @@
 import { Link } from '@tanstack/react-router';
 
+import type { ExpansionMarket } from '../../shared/expansionMarkets';
 import { Button } from '../components/base/button';
 import { useLocale } from '../hooks/useLocale';
 
-export function SectionReadyToBecomeAChef({ isCook }: { isCook: boolean }) {
+export function SectionReadyToBecomeAChef({ isCook, market }: { isCook: boolean; market?: ExpansionMarket }) {
     const locale = useLocale();
+    const signUpSearch = market ? { market: market.slug } : undefined;
 
     return (
         <section className="mx-auto w-full max-w-7xl px-4 @lg:px-6">
             <h2 className="font-serif text-3xl font-light tracking-tight @md:text-5xl">
-                {
-                    {
-                        de: (
-                            <>
-                                Bist du bereit zu starten?
-                                <br />
-                                Werde Teil des am schnellsten wachsenden Kochnetzwerks.
-                            </>
-                        ),
-                        en: (
-                            <>
-                                Are you ready to get started?
-                                <br />
-                                Become part of the fastest-growing chef network.
-                            </>
-                        ),
-                    }[locale]
-                }
+                {market
+                    ? {
+                          de: (
+                              <>
+                                  Bist du bereit, Gründungskoch zu werden?
+                                  <br />
+                                  Profil jetzt. Gäste Anfang 2027.
+                              </>
+                          ),
+                          en: (
+                              <>
+                                  Ready to become a founding chef?
+                                  <br />
+                                  Profile now. Guests in early 2027.
+                              </>
+                          ),
+                      }[locale]
+                    : {
+                          de: (
+                              <>
+                                  Bist du bereit zu starten?
+                                  <br />
+                                  Werde Teil des am schnellsten wachsenden Kochnetzwerks.
+                              </>
+                          ),
+                          en: (
+                              <>
+                                  Are you ready to get started?
+                                  <br />
+                                  Become part of the fastest-growing chef network.
+                              </>
+                          ),
+                      }[locale]}
             </h2>
             <div className="mt-8 flex items-center gap-x-6">
                 {isCook ? (
@@ -35,7 +52,9 @@ export function SectionReadyToBecomeAChef({ isCook }: { isCook: boolean }) {
                     </Button>
                 ) : (
                     <Button asChild size="lg">
-                        <Link to="/{-$locale}/chef-sign-up">{{ de: 'Jetzt registrieren', en: 'Sign up now' }[locale]}</Link>
+                        <Link to="/{-$locale}/chef-sign-up" search={signUpSearch}>
+                            {{ de: 'Jetzt registrieren', en: 'Sign up now' }[locale]}
+                        </Link>
                     </Button>
                 )}
             </div>

@@ -13,8 +13,8 @@ peopleeat is a private-chef booking marketplace that connects hosts with cooks w
 
 **What is live today**
 
-- Public marketing and content: home, about us, chef recruitment, cities, venues, occasions, blog, public chef directory, legal pages,
-  gift-card purchase.
+- Public marketing and content: home, about us, chef recruitment (including Netherlands and Switzerland founding-chef pages), cities,
+  venues, occasions, blog, public chef directory, legal pages, gift-card purchase.
 - Identity and profiles: passwordless log-on, account settings, cook vs customer profile shells, meals, menus, chef profile, call
   availability, wallet.
 - **Booking path**: request form and publication rules, cook pool, offer create and dual accept, offer chat with concierge, Stripe checkout
@@ -28,6 +28,8 @@ peopleeat is a private-chef booking marketplace that connects hosts with cooks w
 - AI-assisted booking intake at `/booking-request/chat` remains deferred.
 - QR cook arrival identity check at the host’s door — see [cook-arrival-identity-verification.md](./cook-arrival-identity-verification.md).
 - Readonly booking-request share link for family and friends — see [booking-request-share.md](./booking-request-share.md).
+- Host booking in the Netherlands and Switzerland (chef pages are live; guests book from early 2027) — see
+  [market-expansion.md](./market-expansion.md).
 
 ## Decisions
 

@@ -32,6 +32,7 @@ import type {
 } from '../../shared';
 import {
     bookingRequestFormFunnelArea,
+    bookingRequestMarketClosedFromMessage,
     bookingRequestParticipantsFromCounts,
     bookingRequestPriceClassInfo,
     bookingRequestPriceClassTypes,
@@ -40,6 +41,7 @@ import {
     dateDistanceInDaysToToday,
     defaultBookingRequestOccasions,
     defaultBookingRequestPreferences,
+    expansionMarketFromCountry,
     featureToggleIsActive,
     formatCurrency,
     formatDate,
@@ -60,6 +62,7 @@ import { StatusAlert } from '../components/base/status-alert';
 import { Textarea } from '../components/base/textarea';
 import { TimePicker } from '../components/base/time-picker';
 import { BookingRequestFormBackNext, BookingRequestFormStepLayout } from '../components/BookingRequestFormStepLayout';
+import { BookingRequestMarketClosedNotice } from '../components/BookingRequestMarketClosedNotice';
 import { BookingRequestParticipantsRestrictionsEditor } from '../components/BookingRequestParticipantsRestrictionsEditor';
 import { BookingRequestSettingPicker } from '../components/BookingRequestSettingPicker';
 import { SelectableChip } from '../components/SelectableChip';
@@ -494,7 +497,15 @@ export function BookingRequestFormPage({
             const created = result.data?.user.bookingRequestCreate;
             if (result.error || !created?.success || !created.referenceId) {
                 createStarted.current = false;
-                toast.error({ de: 'Anfrage konnte nicht erstellt werden.', en: 'Could not create the booking request.' }[locale]);
+                const closedMarket = bookingRequestMarketClosedFromMessage(result.error?.message);
+                toast.error(
+                    closedMarket
+                        ? {
+                              de: `peopleeat kommt ${closedMarket.comingToPhraseDe} Anfang 2027. Für diese Adresse können wir noch keine Anfrage annehmen.`,
+                              en: `peopleeat is coming ${closedMarket.comingToPhraseEn} in early 2027. We cannot accept a request for this address yet.`,
+                          }[locale]
+                        : { de: 'Anfrage konnte nicht erstellt werden.', en: 'Could not create the booking request.' }[locale],
+                );
                 return;
             }
             toast.success({ de: 'Buchungsanfrage erstellt.', en: 'Booking request created.' }[locale]);
@@ -509,6 +520,16 @@ export function BookingRequestFormPage({
     }
 
     function trySubmit() {
+        const selectedClosedMarket = values.exactEventAddress ? expansionMarketFromCountry(values.exactEventAddress.country) : null;
+        if (selectedClosedMarket) {
+            toast.error(
+                {
+                    de: `peopleeat kommt ${selectedClosedMarket.comingToPhraseDe} Anfang 2027. Für diese Adresse können wir noch keine Anfrage annehmen.`,
+                    en: `peopleeat is coming ${selectedClosedMarket.comingToPhraseEn} in early 2027. We cannot accept a request for this address yet.`,
+                }[locale],
+            );
+            return;
+        }
         if (values.redeemCode.trim().length > 0 && confirmedDiscount?.redeemCode !== values.redeemCode.trim()) {
             toast.error(
                 {
@@ -647,10 +668,11 @@ export function BookingRequestFormPage({
         { title: { de: 'Saubere Küche', en: 'Clean Kitchen' }[locale], icon: <DropletIcon className="size-8" strokeWidth={1.5} /> },
     ];
 
+    const closedMarket = values.exactEventAddress ? expansionMarketFromCountry(values.exactEventAddress.country) : null;
     const nextDisabled =
         busy ||
         (step === 'occasion' && !values.occasion.trim()) ||
-        (step === 'location' && !values.exactEventAddress) ||
+        (step === 'location' && (!values.exactEventAddress || Boolean(closedMarket))) ||
         (step === 'dateTime' && !values.dateTime) ||
         (step === 'priceClass' && !values.priceClassType) ||
         (step === 'message' && !values.originalMessage.trim()) ||
@@ -911,17 +933,21 @@ export function BookingRequestFormPage({
                                                     </div>
                                                 ) : null}
                                                 {values.exactEventAddress ? (
-                                                    <StatusAlert tone="success">
-                                                        {
+                                                    closedMarket ? (
+                                                        <BookingRequestMarketClosedNotice market={closedMarket} />
+                                                    ) : (
+                                                        <StatusAlert tone="success">
                                                             {
-                                                                de: 'Ausgewählte Adresse: ',
-                                                                en: 'Selected address: ',
-                                                            }[locale]
-                                                        }
-                                                        <span className="font-semibold text-foreground">
-                                                            {values.exactEventAddress.displayText}
-                                                        </span>
-                                                    </StatusAlert>
+                                                                {
+                                                                    de: 'Ausgewählte Adresse: ',
+                                                                    en: 'Selected address: ',
+                                                                }[locale]
+                                                            }
+                                                            <span className="font-semibold text-foreground">
+                                                                {values.exactEventAddress.displayText}
+                                                            </span>
+                                                        </StatusAlert>
+                                                    )
                                                 ) : null}
                                                 {settingEnabled && values.exactEventAddress ? (
                                                     <form.Field name="settingChoice">

@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { jsonLdBlogPosting, jsonLdBreadcrumbList, jsonLdCityService, jsonLdFaqPage, jsonLdPerson, jsonLdScripts } from './jsonLd';
+import {
+    jsonLdBlogPosting,
+    jsonLdBreadcrumbList,
+    jsonLdCityService,
+    jsonLdCountryService,
+    jsonLdFaqPage,
+    jsonLdPerson,
+    jsonLdScripts,
+} from './jsonLd';
 
 describe('jsonLdScripts', () => {
     it('emits WebSite and Organization blocks', () => {
@@ -118,6 +126,25 @@ describe('jsonLdCityService', () => {
 
         // Assert
         expect(service.areaServed.geo.latitude).toBe(52.52);
+    });
+});
+
+describe('jsonLdCountryService', () => {
+    it('lists the country and named cities as areaServed', () => {
+        const service = JSON.parse(
+            jsonLdCountryService({
+                webPageUrl: 'https://example.com',
+                locale: 'en',
+                path: '/coming-to/netherlands',
+                name: 'peopleeat is coming to the Netherlands',
+                description: 'Chefs can join now.',
+                countryName: 'the Netherlands',
+                cities: [{ name: 'Amsterdam', latitude: 52.3676, longitude: 4.9041 }],
+            }).children,
+        ) as { areaServed: Array<{ '@type': string; name: string }> };
+
+        expect(service.areaServed[0]).toEqual({ '@type': 'Country', name: 'the Netherlands' });
+        expect(service.areaServed[1]?.name).toBe('Amsterdam');
     });
 });
 

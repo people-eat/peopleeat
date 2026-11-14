@@ -83,7 +83,9 @@ description** from `Query.publicWebPage.findOne(webPageKey)` in the route loader
 Visible H1 / in-page marketing copy stays on module consts in `src/web/pages/` — only `<title>` + meta description switch to the DB (with
 defaults from `src/shared/webPage.ts` when no row exists). Keys live in `WebPageKey`; admin edits under `/admin/web-pages`. Keep
 `noindex: true` where it was already set. Parameterized content pages (city / venue / occasion / blog post by path) keep entity-owned SEO,
-not `publicWebPage`.
+not `publicWebPage`. Expansion marketing URLs (`/coming-to/netherlands`, `/how-to-become-a-chef/netherlands`, and the Switzerland pair) own
+title and description in `expansionMarkets` and still emit `seoMeta()` plus FAQ / country `Service` JSON-LD. Visit keys `COMING_TO` and
+`FOUNDING_CHEF` exist for analytics; they are not the public title source.
 
 Wire by extending the page's loader GraphQL document (or adding a colocated `.graphql` + `routeLoaderGraphqlClient` when none exists), then:
 

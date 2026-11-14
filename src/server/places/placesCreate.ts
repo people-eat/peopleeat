@@ -96,7 +96,7 @@ export function placeToLocationSuggestion(place: Place): PlacesLocationSuggestio
 }
 
 export function placesCreate(options: { apiKey: string }): Places {
-    async function locationSuggestionsFetch(searchText: string): Promise<PlacesLocationSuggestion[]> {
+    async function locationSuggestionsFetch(searchText: string, regionCode: string): Promise<PlacesLocationSuggestion[]> {
         const apiKey = options.apiKey;
         const response = await fetch('https://places.googleapis.com/v1/places:searchText', {
             method: 'POST',
@@ -108,7 +108,7 @@ export function placesCreate(options: { apiKey: string }): Places {
             body: JSON.stringify({
                 textQuery: searchText,
                 languageCode: 'de',
-                regionCode: 'DE',
+                regionCode,
             }),
         });
         if (!response.ok) {
@@ -121,12 +121,12 @@ export function placesCreate(options: { apiKey: string }): Places {
     }
 
     return {
-        async locationSuggestions({ searchText, onlyFullAddresses }) {
+        async locationSuggestions({ searchText, onlyFullAddresses, regionCode }) {
             const trimmed = searchText.trim();
             if (trimmed.length === 0) {
                 return [];
             }
-            const suggestions = await locationSuggestionsFetch(trimmed);
+            const suggestions = await locationSuggestionsFetch(trimmed, regionCode ?? 'DE');
             if (onlyFullAddresses) {
                 return suggestions.filter((suggestion) => suggestion.structuredAddress !== undefined);
             }
@@ -140,7 +140,7 @@ export function placesCreate(options: { apiKey: string }): Places {
             if (country) {
                 searchText = `${searchText}, ${country}`;
             }
-            const [first] = await locationSuggestionsFetch(searchText);
+            const [first] = await locationSuggestionsFetch(searchText, 'DE');
             if (!first) {
                 throw new Error('places.geoCoordinatesForCity: no results');
             }

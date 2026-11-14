@@ -22,8 +22,10 @@ import { useMutation, useQuery } from 'urql';
 
 import type { BookingRequestFormPriceClassType } from '../../shared';
 import {
+    bookingRequestMarketClosedFromMessage,
     bookingRequestPriceClassInfo,
     bookingRequestPriceClassTypes,
+    expansionMarketFromCountry,
     featureToggleIsActive,
     formatCountryName,
     formatCurrency,
@@ -44,6 +46,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/base/select';
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '../components/base/sheet';
 import { Textarea } from '../components/base/textarea';
+import { BookingRequestMarketClosedNotice } from '../components/BookingRequestMarketClosedNotice';
 import { BookingRequestSettingPicker } from '../components/BookingRequestSettingPicker';
 import { Footer } from '../components/Footer';
 import { Header } from '../components/Header';
@@ -684,11 +687,22 @@ export function BookingRequestPlanPage({
         form.setFieldValue('dateTime', next);
     }
 
+    const closedMarket = values.exactEventAddress ? expansionMarketFromCountry(values.exactEventAddress.country) : null;
+
     function canContinueToContact(): boolean {
-        return values.exactEventAddress != null && values.adultCount >= 1;
+        return values.exactEventAddress != null && values.adultCount >= 1 && closedMarket == null;
     }
 
     function goToContact() {
+        if (closedMarket) {
+            toast.error(
+                {
+                    de: `peopleeat kommt ${closedMarket.comingToPhraseDe} Anfang 2027. Für diese Adresse können wir noch keine Anfrage annehmen.`,
+                    en: `peopleeat is coming ${closedMarket.comingToPhraseEn} in early 2027. We cannot accept a request for this address yet.`,
+                }[locale],
+            );
+            return;
+        }
         if (!canContinueToContact()) {
             toast.error(
                 {
@@ -704,6 +718,15 @@ export function BookingRequestPlanPage({
 
     async function submitBooking() {
         if (createStarted.current) return;
+        if (closedMarket) {
+            toast.error(
+                {
+                    de: `peopleeat kommt ${closedMarket.comingToPhraseDe} Anfang 2027. Für diese Adresse können wir noch keine Anfrage annehmen.`,
+                    en: `peopleeat is coming ${closedMarket.comingToPhraseEn} in early 2027. We cannot accept a request for this address yet.`,
+                }[locale],
+            );
+            return;
+        }
         if (values.originalMessage.trim().length === 0) {
             toast.error({ de: 'Nachricht ist erforderlich.', en: 'Message is required.' }[locale]);
             return;
@@ -725,7 +748,15 @@ export function BookingRequestPlanPage({
             const created = result.data?.user.bookingRequestCreate;
             if (result.error || !created?.success || !created.referenceId) {
                 createStarted.current = false;
-                toast.error({ de: 'Anfrage konnte nicht erstellt werden.', en: 'Could not create the booking request.' }[locale]);
+                const closedFromError = bookingRequestMarketClosedFromMessage(result.error?.message);
+                toast.error(
+                    closedFromError
+                        ? {
+                              de: `peopleeat kommt ${closedFromError.comingToPhraseDe} Anfang 2027. Für diese Adresse können wir noch keine Anfrage annehmen.`,
+                              en: `peopleeat is coming ${closedFromError.comingToPhraseEn} in early 2027. We cannot accept a request for this address yet.`,
+                          }[locale]
+                        : { de: 'Anfrage konnte nicht erstellt werden.', en: 'Could not create the booking request.' }[locale],
+                );
                 return;
             }
             toast.success({ de: 'Buchungsanfrage erstellt.', en: 'Booking request created.' }[locale]);
@@ -881,6 +912,7 @@ export function BookingRequestPlanPage({
                         </ComboboxList>
                     </ComboboxContent>
                 </Combobox>
+                {closedMarket ? <BookingRequestMarketClosedNotice market={closedMarket} /> : null}
             </div>
         );
     }

@@ -15,6 +15,10 @@ Visitors open `/how-to-become-a-chef` (or `/en/how-to-become-a-chef`) and see si
 
 Header and footer match other public pages. FAQ answers feed FAQ structured data on the route.
 
+A band below the second CTA points to chef-first pages for the Netherlands and Switzerland (hosts there book from early 2027). Country
+founding-chef URLs live under `/how-to-become-a-chef/netherlands` and `/how-to-become-a-chef/switzerland`. See
+[market-expansion.md](./market-expansion.md).
+
 ## Decisions
 
 ### Alternatives considered
@@ -37,9 +41,9 @@ Bilingual copy and layout; CTAs to chef sign-up and profile based on whether the
 
 ## Implementation
 
-| Piece       | Location                                                                                                                                                                       |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Page        | `src/web/pages/HowToBecomeAChefPage.tsx` (+ `.graphql`)                                                                                                                        |
-| Route / SEO | `src/routes/{-$locale}/how-to-become-a-chef.tsx` — `seoMeta` + FAQ JSON-LD                                                                                                     |
-| Sections    | `SectionHowToBecomeAChefMain`, `SectionChefOnboardingProcess`, `SectionBenefitsForChefs`, `SectionReadyToBecomeAChef`, `SectionChefTestimonials`, `SectionQuestionsAndAnswers` |
-| Assets      | `public/how-to-become-a-chef/main-section/chef.webp`, `public/how-to-become-a-chef/benefits-for-chefs-section/{1,2,3}.webp`                                                    |
+| Piece       | Location                                                                                                                                                                                                  |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Page        | `src/web/pages/HowToBecomeAChefPage.tsx` (+ `.graphql`)                                                                                                                                                   |
+| Route / SEO | `src/routes/{-$locale}/how-to-become-a-chef.tsx` — `seoMeta` + FAQ JSON-LD                                                                                                                                |
+| Sections    | `SectionHowToBecomeAChefMain`, `SectionChefOnboardingProcess`, `SectionBenefitsForChefs`, `SectionReadyToBecomeAChef`, `SectionExpansionMarkets`, `SectionChefTestimonials`, `SectionQuestionsAndAnswers` |
+| Assets      | `public/how-to-become-a-chef/main-section/chef.webp`, `public/how-to-become-a-chef/benefits-for-chefs-section/{1,2,3}.webp`                                                                               |

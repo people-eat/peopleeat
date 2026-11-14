@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm';
 
+import { bookingRequestMarketClosedAssert } from '../../shared/expansionMarkets';
 import { idCreate } from '../../shared/idCreate';
 import { textNormalizeProseTitled, textNormalizeSingleLine, textNormalizeTitled } from '../../shared/textNormalize';
 import type { BookingRequestCreate, BookingRequestParticipantCreate } from '../db/schema';
@@ -69,6 +70,7 @@ export async function userBookingRequestCreate(
     if (exactEventAddress.displayText.length === 0 || exactEventAddress.city.length === 0) {
         throw new Error('userBookingRequestCreate: exactEventAddress is incomplete');
     }
+    bookingRequestMarketClosedAssert(exactEventAddress.country, 'userBookingRequestCreate');
 
     try {
         const [user] = await serverRuntime.db.select().from(users).where(eq(users.userId, userId)).limit(1);

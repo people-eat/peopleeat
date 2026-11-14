@@ -157,4 +157,32 @@ describe('userBookingRequestCreate', () => {
         expect(row?.publicationStatus).toBe('PUBLICATION_AUTO_APPROVED');
         expect(row?.requestedCookId).toBeNull();
     });
+
+    it('rejects a Netherlands event address before guest launch', async () => {
+        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({
+            phoneNumber: phoneNumberCreate(),
+            birthDate: '1990-05-01',
+            preferredCommunication: 'WHATS_APP',
+        });
+
+        await expect(
+            userBookingRequestCreate(
+                userMutationParent(user.userId),
+                {
+                    input: {
+                        ...sampleCreateInput,
+                        exactEventAddress: {
+                            ...sampleAddress,
+                            displayText: 'Dam 1, 1012 JS Amsterdam',
+                            city: 'Amsterdam',
+                            postCode: '1012 JS',
+                            country: 'NL',
+                        },
+                    },
+                },
+                requestingSession,
+                serverRuntime,
+            ),
+        ).rejects.toThrow(/bookingRequestMarketClosed:netherlands/);
+    });
 });

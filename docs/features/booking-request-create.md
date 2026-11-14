@@ -17,7 +17,9 @@ Customers create booking requests; the platform publishes them to cooks (or hold
    `:30` / `:45`) dropdowns. Optional `?minDateTime=` / `?maxDateTime=` ISO query params (inclusive) limit the selectable calendar days and
    hour/minute options and clamp a seeded `dateTime` into range; past days stay blocked regardless. Draft answers survive refresh and auth
    redirects via the URL (restriction selections stay in form state only; bounds are preserved across draft sync). Cooks are redirected to
-   `/profile` (header **Send request** CTA is already hidden for them); `UserMutation.bookingRequestCreate` also rejects cook callers.
+   `/profile` (header **Send request** CTA is already hidden for them); `UserMutation.bookingRequestCreate` also rejects cook callers. An
+   event address in the Netherlands or Switzerland is rejected (guest launch early 2027); the form shows a coming-to notice instead. See
+   [market-expansion.md](./market-expansion.md).
 2. Anonymous users complete identity before submit: email OTP (+ profile for new accounts), or passkey for existing users who already
    registered one (skips OTP). Helper copy explains passkeys are not for first-time users. Returning users whose stored terms/privacy
    acceptance is stale see an inline **Updated legal terms** panel in the same auth step (change summaries, full-text links in a new tab,

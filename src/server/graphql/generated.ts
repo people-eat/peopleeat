@@ -5082,6 +5082,7 @@ export type GqlSSessionDiscountArgs = {
 
 export type GqlSSessionLocationSuggestionsArgs = {
     onlyFullAddresses?: Scalars['Boolean']['input'];
+    regionCode?: InputMaybe<Scalars['String']['input']>;
     searchText: Scalars['String']['input'];
 };
 
@@ -5830,6 +5831,8 @@ export type GqlSWebPageKey =
     | 'CHEFS'
     | 'CHEF_SIGN_UP'
     | 'CITIES'
+    | 'COMING_TO'
+    | 'FOUNDING_CHEF'
     | 'GIFT_CARD'
     | 'HOW_TO_BECOME_A_CHEF'
     | 'IMPRINT'
@@ -13561,6 +13564,8 @@ export const GqlSWebPageKeySchema: z.ZodType<
     | 'CHEFS'
     | 'CHEF_SIGN_UP'
     | 'CITIES'
+    | 'COMING_TO'
+    | 'FOUNDING_CHEF'
     | 'GIFT_CARD'
     | 'HOW_TO_BECOME_A_CHEF'
     | 'IMPRINT'
@@ -13580,6 +13585,8 @@ export const GqlSWebPageKeySchema: z.ZodType<
     | 'CHEFS'
     | 'CHEF_SIGN_UP'
     | 'CITIES'
+    | 'COMING_TO'
+    | 'FOUNDING_CHEF'
     | 'GIFT_CARD'
     | 'HOW_TO_BECOME_A_CHEF'
     | 'IMPRINT'
@@ -13600,6 +13607,8 @@ export const GqlSWebPageKeySchema: z.ZodType<
     'CHEFS',
     'CHEF_SIGN_UP',
     'CITIES',
+    'COMING_TO',
+    'FOUNDING_CHEF',
     'GIFT_CARD',
     'HOW_TO_BECOME_A_CHEF',
     'IMPRINT',

@@ -17,6 +17,9 @@ describe('webPageKeyFromPath', () => {
         expect(webPageKeyFromPath('/venues/loft')).toEqual({ webPageKey: 'VENUES' });
         expect(webPageKeyFromPath('/partners')).toEqual({ webPageKey: 'VENUES' });
         expect(webPageKeyFromPath('/gift-card/abc123/checkout')).toEqual({ webPageKey: 'GIFT_CARD' });
+        expect(webPageKeyFromPath('/coming-to/netherlands')).toEqual({ webPageKey: 'COMING_TO' });
+        expect(webPageKeyFromPath('/how-to-become-a-chef/switzerland')).toEqual({ webPageKey: 'FOUNDING_CHEF' });
+        expect(webPageKeyFromPath('/coming-to/germany')).toBeNull();
     });
 
     it('skips admin and profile paths', () => {

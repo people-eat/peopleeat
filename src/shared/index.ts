@@ -178,6 +178,18 @@ export { webPageDefaults, webPageKeys } from './webPage';
 export type { WebPageKey, WebPageSeoDefaults } from './webPage';
 export { webPageKeyFromPath } from './webPageKeyFromPath';
 export type { WebPageVisitMatch } from './webPageKeyFromPath';
+export {
+    BOOKING_REQUEST_MARKET_CLOSED_ERROR,
+    bookingRequestMarketClosedAssert,
+    bookingRequestMarketClosedFromMessage,
+    expansionMarketCityList,
+    expansionMarketFaqEntries,
+    expansionMarketFromCountry,
+    expansionMarketFromParam,
+    expansionMarketList,
+    placesRegionCodeNormalize,
+} from './expansionMarkets';
+export type { ExpansionMarket, ExpansionMarketSlug } from './expansionMarkets';
 export { bookingRequestFormFunnelArea, bookingRequestFormFunnelSteps, isBookingRequestFormFunnelStep } from './bookingRequestFormFunnel';
 export type {
     BookingRequestFormFunnelInteraction,

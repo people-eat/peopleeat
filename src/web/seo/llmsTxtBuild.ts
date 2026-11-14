@@ -14,6 +14,11 @@ export const LLMS_PAGE_BLURBS: Record<string, string> = {
     '/about-us': 'Who peopleeat is and how the platform works.',
     '/gift-card': 'Buy a peopleeat gift card.',
     '/how-to-become-a-chef': 'How cooks join peopleeat and receive booking requests.',
+    '/coming-to/netherlands': 'peopleeat is coming to the Netherlands in early 2027. Chefs can join now. Hosts cannot book yet.',
+    '/coming-to/switzerland': 'peopleeat is coming to Switzerland in early 2027. Chefs can join now. Hosts cannot book yet.',
+    '/how-to-become-a-chef/netherlands':
+        'Join as a founding chef in the Netherlands. Profile and menus now, guest requests from early 2027.',
+    '/how-to-become-a-chef/switzerland': 'Join as a founding chef in Switzerland. Profile and menus now, guest requests from early 2027.',
     '/booking-request': 'Start a booking request for a private chef.',
     '/chef-sign-up': 'Create a cook account and set up a public profile.',
     '/imprint': 'Legal imprint for PeopleEat UG in Frankfurt am Main.',
@@ -88,7 +93,7 @@ export function llmsTxtBuild(input: {
 
     const blocks = [
         `# ${SITE_NAME}`,
-        `> ${SITE_NAME} is a private-chef booking platform in Germany. Customers send a booking request for a cook to come to their home. Cooks reply with an offer and a menu. The site is in German and English.`,
+        `> ${SITE_NAME} is a private-chef booking platform in Germany, expanding to the Netherlands and Switzerland. Customers send a booking request for a cook to come to their home. Cooks reply with an offer and a menu. Hosts in the Netherlands and Switzerland can book from early 2027. Chefs there can join now. The site is in German and English.`,
         section('Pages', pageLines),
         section('Cities', cityLines),
         section('Occasions', occasionLines),

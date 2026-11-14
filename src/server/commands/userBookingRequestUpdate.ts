@@ -5,6 +5,7 @@ import {
     bookingRequestOfferPriceCalculate,
 } from '../../shared/bookingRequestOfferPrice';
 import { bookingRequestPaidParticipants } from '../../shared/bookingRequestOfferPriceGuidance';
+import { bookingRequestMarketClosedAssert } from '../../shared/expansionMarkets';
 import { idCreate } from '../../shared/idCreate';
 import { textNormalizeSingleLine, textNormalizeTitled } from '../../shared/textNormalize';
 import { bookingRequestOfferEvents, bookingRequestOffers, bookingRequestParticipants, bookingRequests, cooks } from '../db/schema';
@@ -258,6 +259,7 @@ export async function userBookingRequestUpdate(
 
         if (exactEventAddressArg != null) {
             const nextAddress = exactEventAddressNormalize(exactEventAddressArg);
+            bookingRequestMarketClosedAssert(nextAddress.country, 'userBookingRequestUpdate');
             if (!exactEventAddressEqual(bookingRequest.exactEventAddress, nextAddress)) {
                 resetCookAcceptance = true;
                 requestPatch.exactEventAddress = nextAddress;

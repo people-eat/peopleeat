@@ -1,6 +1,6 @@
-query CookCreateLocationSuggestions($searchText: String!, $onlyFullAddresses: Boolean! = true) {
+query CookCreateLocationSuggestions($searchText: String!, $onlyFullAddresses: Boolean! = true, $regionCode: String) {
     currentSession {
-        locationSuggestions(searchText: $searchText, onlyFullAddresses: $onlyFullAddresses) {
+        locationSuggestions(searchText: $searchText, onlyFullAddresses: $onlyFullAddresses, regionCode: $regionCode) {
             displayText
             latitude
             longitude

@@ -35,6 +35,7 @@ describe('sessionLocationSuggestionsFindMany', () => {
             searchText: 'Berlin',
             sessionToken: requestingSession.sessionId,
             onlyFullAddresses: true,
+            regionCode: 'DE',
         });
         expect(result).toEqual([
             {
@@ -70,5 +71,23 @@ describe('sessionLocationSuggestionsFindMany', () => {
 
         // Assert
         expect(result).toEqual([]);
+    });
+
+    it('forwards a valid regionCode', async () => {
+        const { requestingSession, serverRuntime } = await commandSetup();
+        vi.mocked(serverRuntime.places.locationSuggestions).mockResolvedValue([]);
+
+        await sessionLocationSuggestionsFindMany(
+            { searchText: 'Amsterdam', onlyFullAddresses: true, regionCode: 'nl' },
+            requestingSession,
+            serverRuntime,
+        );
+
+        expect(serverRuntime.places.locationSuggestions).toHaveBeenCalledWith({
+            searchText: 'Amsterdam',
+            sessionToken: requestingSession.sessionId,
+            onlyFullAddresses: true,
+            regionCode: 'NL',
+        });
     });
 });

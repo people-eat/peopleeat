@@ -77,6 +77,7 @@ docs/
 │   ├── about-us.md               # Public about-us story / team / join CTA
 │   ├── landing.md                # Public home / landing marketing sections
 │   ├── how-to-become-a-chef.md   # Public chef recruitment page
+│   ├── market-expansion.md       # NL/CH chef-first coming-to and founding-chef pages
 │   ├── gift-card-purchase.md     # Gift-card purchase (Stripe + reCAPTCHA)
 │   ├── admin-gift-cards.md       # Admin gift-card overview + list + detail
 │   ├── admin-file-store.md       # Admin Garage/S3 object browse (`/admin/file-store`)

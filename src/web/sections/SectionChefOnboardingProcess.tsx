@@ -1,6 +1,7 @@
+import type { ExpansionMarket } from '../../shared/expansionMarkets';
 import { useLocale } from '../hooks/useLocale';
 
-export function SectionChefOnboardingProcess() {
+export function SectionChefOnboardingProcess({ market }: { market?: ExpansionMarket }) {
     const locale = useLocale();
 
     const timeline = [
@@ -30,10 +31,15 @@ export function SectionChefOnboardingProcess() {
         },
         {
             name: { de: 'Startklar', en: 'Ready' }[locale],
-            description: {
-                de: 'Erhalte Buchungsanfragen; gleichzeitig unterstützen wir dich jederzeit bei jeglichen Anliegen und Kundenanfragen.',
-                en: 'Receive booking requests, and we will support you at any time with any concerns and customer inquiries.',
-            }[locale],
+            description: market
+                ? {
+                      de: `Profil und erstes Menü jetzt fertigstellen. Gastanfragen ${market.inCountryDe} starten Anfang 2027.`,
+                      en: `Finish your profile and first menu now. Guest requests ${market.inCountryEn} start in early 2027.`,
+                  }[locale]
+                : {
+                      de: 'Erhalte Buchungsanfragen; gleichzeitig unterstützen wir dich jederzeit bei jeglichen Anliegen und Kundenanfragen.',
+                      en: 'Receive booking requests, and we will support you at any time with any concerns and customer inquiries.',
+                  }[locale],
             date: { de: 'Startklar', en: 'Ready' }[locale],
         },
     ];

@@ -5085,6 +5085,7 @@ export type GqlCSessionDiscountArgs = {
 
 export type GqlCSessionLocationSuggestionsArgs = {
     onlyFullAddresses?: Scalars['Boolean']['input'];
+    regionCode?: InputMaybe<Scalars['String']['input']>;
     searchText: Scalars['String']['input'];
 };
 
@@ -5833,6 +5834,8 @@ export type GqlCWebPageKey =
     | 'CHEFS'
     | 'CHEF_SIGN_UP'
     | 'CITIES'
+    | 'COMING_TO'
+    | 'FOUNDING_CHEF'
     | 'GIFT_CARD'
     | 'HOW_TO_BECOME_A_CHEF'
     | 'IMPRINT'
@@ -7815,6 +7818,7 @@ export type GqlCPublicBlogPostFieldsFragment = {
 export type GqlCCookCreateLocationSuggestionsQueryVariables = Exact<{
     searchText: string;
     onlyFullAddresses?: boolean;
+    regionCode?: string | null | undefined;
 }>;
 
 export type GqlCCookCreateLocationSuggestionsQuery = {
@@ -9269,6 +9273,12 @@ export type GqlCPublicCityPageQuery = {
         } | null;
         findMany: Array<{ pathName: string; nameDe: string; nameEn: string }>;
     };
+};
+
+export type GqlCExpansionCountryPageQueryVariables = Exact<{ [key: string]: never }>;
+
+export type GqlCExpansionCountryPageQuery = {
+    currentSession: { user: { admin: { adminId: string } | null; cook: { cookId: string } | null } | null };
 };
 
 export type GqlCGiftCardCheckoutPageQueryVariables = Exact<{ [key: string]: never }>;
@@ -38745,6 +38755,11 @@ export const CookCreateLocationSuggestionsDocument = {
                     type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } } },
                     defaultValue: { kind: 'BooleanValue', value: true },
                 },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'regionCode' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                },
             ],
             selectionSet: {
                 kind: 'SelectionSet',
@@ -38768,6 +38783,11 @@ export const CookCreateLocationSuggestionsDocument = {
                                             kind: 'Argument',
                                             name: { kind: 'Name', value: 'onlyFullAddresses' },
                                             value: { kind: 'Variable', name: { kind: 'Name', value: 'onlyFullAddresses' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'regionCode' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'regionCode' } },
                                         },
                                     ],
                                     selectionSet: {
@@ -44730,6 +44750,58 @@ export const PublicCityPageDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCPublicCityPageQuery, GqlCPublicCityPageQueryVariables>;
+export const ExpansionCountryPageDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'ExpansionCountryPage' },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'user' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'PublicHeaderUser' } }],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'PublicHeaderUser' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'User' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'adminId' } }] },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'cook' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'cookId' } }] },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCExpansionCountryPageQuery, GqlCExpansionCountryPageQueryVariables>;
 export const GiftCardCheckoutPageDocument = {
     kind: 'Document',
     definitions: [

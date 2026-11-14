@@ -3097,8 +3097,9 @@ type Session {
     # Google Places text search for address autocomplete. Empty `searchText`
     # returns []. Requires `GOOGLE_PLACES_API_KEY` on the server. When
     # `onlyFullAddresses` is true, only hits with a structured street address
-    # are returned. Places failures are logged and yield [].
-    locationSuggestions(searchText: String!, onlyFullAddresses: Boolean! = true): [LocationSuggestion!]!
+    # are returned. Places failures are logged and yield []. Optional
+    # `regionCode` is ISO 3166-1 alpha-2 (default DE) and biases suggestions.
+    locationSuggestions(searchText: String!, onlyFullAddresses: Boolean! = true, regionCode: String): [LocationSuggestion!]!
     # Lookup a global promo or paid gift card by redeem code. Null when unknown,
     # expired, empty balance, or booking-request-scoped.
     discount(redeemCode: String!): SessionDiscount
@@ -6107,6 +6108,8 @@ enum WebPageKey {
     ABOUT_US
     GIFT_CARD
     HOW_TO_BECOME_A_CHEF
+    COMING_TO
+    FOUNDING_CHEF
     BOOKING_REQUEST
     BOOKING_REQUEST_FORM
     BOOKING_REQUEST_CHAT

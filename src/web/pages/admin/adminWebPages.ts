@@ -12,6 +12,8 @@ const adminWebPageLabels: Record<WebPageKey, Record<Locale, string>> = {
     ABOUT_US: { de: 'Über uns', en: 'About us' },
     GIFT_CARD: { de: 'Geschenkkarte', en: 'Gift card' },
     HOW_TO_BECOME_A_CHEF: { de: 'Koch werden', en: 'How to become a chef' },
+    COMING_TO: { de: 'Kommt in ein neues Land', en: 'Coming to a new country' },
+    FOUNDING_CHEF: { de: 'Gründungskoch', en: 'Founding chef' },
     BOOKING_REQUEST: { de: 'Buchungsanfrage', en: 'Booking request' },
     BOOKING_REQUEST_FORM: { de: 'Buchungsanfrage: Formular', en: 'Booking request: form' },
     BOOKING_REQUEST_CHAT: { de: 'Buchungsanfrage: Chat', en: 'Booking request: chat' },

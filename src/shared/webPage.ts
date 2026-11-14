@@ -12,6 +12,8 @@ export const webPageKeys = [
     'ABOUT_US',
     'GIFT_CARD',
     'HOW_TO_BECOME_A_CHEF',
+    'COMING_TO',
+    'FOUNDING_CHEF',
     'BOOKING_REQUEST',
     'BOOKING_REQUEST_FORM',
     'BOOKING_REQUEST_CHAT',
@@ -88,6 +90,18 @@ export const webPageDefaults: Record<WebPageKey, WebPageSeoDefaults> = {
         titleEn: 'How to become a chef',
         descriptionDe: 'So wirst du Privatkoch auf peopleeat.',
         descriptionEn: 'How to become a private chef on peopleeat.',
+    },
+    COMING_TO: {
+        titleDe: 'peopleeat kommt in ein neues Land',
+        titleEn: 'peopleeat is coming to a new country',
+        descriptionDe: 'Köche können sich jetzt anmelden. Gastgeber buchen Anfang 2027.',
+        descriptionEn: 'Chefs can join now. Hosts book from early 2027.',
+    },
+    FOUNDING_CHEF: {
+        titleDe: 'Gründungskoch werden',
+        titleEn: 'Become a founding chef',
+        descriptionDe: 'Melde dich früh als Privatkoch in einem neuen Markt an.',
+        descriptionEn: 'Join early as a private chef in a new market.',
     },
     BOOKING_REQUEST: {
         titleDe: 'Buchungsanfrage',

@@ -4,6 +4,7 @@ import type { GqlCHowToBecomeAChefPageQuery } from '../graphql/generated';
 import { SectionBenefitsForChefs } from '../sections/SectionBenefitsForChefs';
 import { SectionChefOnboardingProcess } from '../sections/SectionChefOnboardingProcess';
 import { SectionChefTestimonials } from '../sections/SectionChefTestimonials';
+import { SectionExpansionMarkets } from '../sections/SectionExpansionMarkets';
 import { SectionHowToBecomeAChefMain } from '../sections/SectionHowToBecomeAChefMain';
 import { SectionQuestionsAndAnswers } from '../sections/SectionQuestionsAndAnswers';
 import { SectionReadyToBecomeAChef } from '../sections/SectionReadyToBecomeAChef';
@@ -19,6 +20,7 @@ export function HowToBecomeAChefPage({ data }: { data: GqlCHowToBecomeAChefPageQ
                 <SectionChefOnboardingProcess />
                 <SectionBenefitsForChefs />
                 <SectionReadyToBecomeAChef isCook={isCook} />
+                <SectionExpansionMarkets />
                 <SectionChefTestimonials />
                 <SectionQuestionsAndAnswers />
             </main>

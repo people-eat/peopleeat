@@ -33,6 +33,8 @@ export function webPageKeyFromPath(pathWithoutLocale: string): WebPageVisitMatch
     if (path === '/gift-cards' || path === '/gift-card') return { webPageKey: 'GIFT_CARD' };
     if (/^\/gift-card\/[^/]+\/checkout$/.test(path)) return { webPageKey: 'GIFT_CARD' };
     if (path === '/how-to-become-a-chef') return { webPageKey: 'HOW_TO_BECOME_A_CHEF' };
+    if (/^\/how-to-become-a-chef\/(netherlands|switzerland)$/.test(path)) return { webPageKey: 'FOUNDING_CHEF' };
+    if (/^\/coming-to\/(netherlands|switzerland)$/.test(path)) return { webPageKey: 'COMING_TO' };
     if (path === '/booking-request') return { webPageKey: 'BOOKING_REQUEST' };
     if (path === '/booking-request/form') return { webPageKey: 'BOOKING_REQUEST_FORM' };
     if (path === '/booking-request/chat') return { webPageKey: 'BOOKING_REQUEST_CHAT' };

@@ -109,6 +109,16 @@ export function Footer({
                                 </Link>
                             </li>
                         ))}
+                        <li>
+                            <Link to="/{-$locale}/coming-to/$country" params={{ country: 'netherlands' }} className={linkClassName}>
+                                {{ de: 'peopleeat in den Niederlanden', en: 'peopleeat in the Netherlands' }[locale]}
+                            </Link>
+                        </li>
+                        <li>
+                            <Link to="/{-$locale}/coming-to/$country" params={{ country: 'switzerland' }} className={linkClassName}>
+                                {{ de: 'peopleeat in der Schweiz', en: 'peopleeat in Switzerland' }[locale]}
+                            </Link>
+                        </li>
                     </ul>
                 </nav>
 
