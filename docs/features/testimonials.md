@@ -75,7 +75,8 @@ existing follow-up answers unless the cook fills them again; dropping from 5 to 
   the sticky sidebar. Attachment downloads need a published `imageUrls` hit (public) or any testimonial hit for admins — see
   [file-storage.md](../architecture/file-storage.md).
 - Home: static marketing quotes. Scrolling marquee unless `LANDING_TESTIMONIAL_CARDS` is on, which renders the same quotes as the shared
-  card — [landing.md](./landing.md).
+  card in the same title-above / responsive grid as `SectionPageTestimonials` (no section Send request CTA; dialog keeps `showBookingCta`) —
+  [landing.md](./landing.md).
 - How to become a chef: static chef quotes (not the shared card, not database-driven).
 
 ## Ideas

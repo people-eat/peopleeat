@@ -158,9 +158,9 @@ Wired today:
   mint. See [ai-menu-create.md](./ai-menu-create.md)
 - **Landing booking how-it-works** (`LANDING_BOOKING_HOW_IT_WORKS`) — shows `SectionBookingHowItWorks` on the home page when on; missing row
   stays off. Public home reads `Session.activeFeatureToggleKeys` (global + signed-in override). See [landing.md](./landing.md)
-- **Landing testimonial cards** (`LANDING_TESTIMONIAL_CARDS`) — home testimonials use the shared public review card when on; missing row
-  stays off and the scrolling marketing marquee stays. Quotes stay the fixed marketing copy. Public home reads
-  `Session.activeFeatureToggleKeys` (global + signed-in override). See [landing.md](./landing.md)
+- **Landing testimonial cards** (`LANDING_TESTIMONIAL_CARDS`) — home testimonials use the shared public review card in the content-page
+  title-above / responsive grid when on; missing row stays off and the scrolling marketing marquee stays. Quotes stay the fixed marketing
+  copy. Public home reads `Session.activeFeatureToggleKeys` (global + signed-in override). See [landing.md](./landing.md)
 - **Venue page venues explore** (`VENUE_PAGE_VENUES_EXPLORE`) — shows `SectionVenuesExplore` on public venue detail pages when on; missing
   row stays off. Public venue page reads `Session.activeFeatureToggleKeys` (global + signed-in override). Admin venue preview keeps the
   section for ops. See [partners.md](./partners.md)

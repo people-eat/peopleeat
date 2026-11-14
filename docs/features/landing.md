@@ -17,8 +17,9 @@ Visitors see sections in order (generous vertical spacing between blocks):
    on venue pages)
 6. **Shared experiences** — full-bleed quote over lifestyle photography
 7. **Customer testimonials** — static marketing quotes (not database-driven). Dual-column vertical marquee unless
-   `LANDING_TESTIMONIAL_CARDS` is on, which renders the same quotes as the shared public review card (detail dialog included; the marquee
-   stays off so each quote is one clickable card). Missing DB row = off — see [admin-feature-toggles.md](./admin-feature-toggles.md) and
+   `LANDING_TESTIMONIAL_CARDS` is on, which renders the same quotes as the shared public review card in the same title-above / responsive
+   card grid as content pages (detail dialog with booking CTA included; no section-level Send request CTA; the marquee stays off so each
+   quote is one clickable card). Missing DB row = off — see [admin-feature-toggles.md](./admin-feature-toggles.md) and
    [testimonials.md](./testimonials.md)
 8. **Known from** — press and partner logo band
 9. **FAQ** — shared accordion plus FAQ structured data on the route
@@ -53,8 +54,9 @@ obligation** CTA (with a short prompt) appears under the player only after the f
 
 Bilingual copy, media, and section order from the established marketing home, plus a dedicated booking-flow section with muted UI loops and
 an on-click narrated film, gated by `LANDING_BOOKING_HOW_IT_WORKS`. The testimonial marquee keeps intentional motion unless
-`LANDING_TESTIMONIAL_CARDS` swaps those quotes for the shared review card. Typography, colors, and buttons follow project conventions.
-Marquee pauses under `prefers-reduced-motion`.
+`LANDING_TESTIMONIAL_CARDS` swaps those quotes for the shared review card in the content-page title-above / responsive grid (static quotes
+stay in `SectionCustomerTestimonials`; no section Send request CTA). Typography, colors, and buttons follow project conventions. Marquee
+pauses under `prefers-reduced-motion`.
 
 ## Next steps
 
