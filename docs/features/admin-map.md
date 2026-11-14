@@ -5,7 +5,9 @@ Operators inspect cooks, booking-request venues, cities, and partner venues on a
 ## Behavior
 
 1. Admins open `/admin/map` (Insights nav **Karte** / **Map**).
-2. Floating controls toggle layers and set the booking-request date range (default last 90 days, max 366 via `DateTimeRange`).
+2. Floating controls toggle layers and set the booking-request date range (default last 90 days, max 366 via `DateTimeRange`). A location
+   search (Places autocomplete) flies the map to a city, street, or address, drops a pin, and lists offer-capable cooks covering that point
+   (same travel-radius overlay as a selected booking or city).
 3. **Layers**
    - **Cooks** — travel-origin pins, colored by map status (`LISTABLE` / `PENDING` / `HIDDEN`). Clustered. Hover or select draws that cook’s
      travel-radius circle when `maximumTravelDistance` is set (unlimited = no circle). Missing-origin cooks are counted off-map, not
@@ -14,10 +16,10 @@ Operators inspect cooks, booking-request venues, cities, and partner venues on a
      field.
    - **Cities** — center pins (published vs draft styling). Not clustered.
    - **Venues** — pins when `locationAddress` is set. Partner name as subtitle. Missing-location count off-map.
-4. **Selection** — click a pin to open a side panel with summary + deep-link to the admin detail. Selecting a booking or city loads
-   offer-capable cooks covering that point (`Admin.cooksInTravelRadius`) and overlays up to 25 travel-radius circles.
-5. URL search mirrors filters: `from`, `to`, optional `layers` (comma list), optional `focus` (`cook|booking|city|venue:<id>`). Legacy
-   `partner` / `partners` still parse as venue.
+4. **Selection** — click a pin to open a side panel with summary + deep-link to the admin detail. Selecting a booking, city, or searched
+   place loads offer-capable cooks covering that point (`Admin.cooksInTravelRadius`) and overlays up to 25 travel-radius circles.
+5. URL search mirrors filters: `from`, `to`, optional `layers` (comma list), optional `focus` (`cook|booking|city|venue:<id>` or
+   `place:<lat>,<lng>` with `placeLabel`). Legacy `partner` / `partners` still parse as venue.
 
 ## Decisions
 
@@ -49,6 +51,6 @@ hover/selection/coverage (cap 25). Booking load always date-bounded.
   `adminMapCityPointsFindMany`, `adminMapPartnerVenuePointsFindMany`, `adminMapPartnerVenuesMissingLocationCount`; status helper
   `adminMapCookStatusDerive`
 - Selection coverage reuses `adminCooksInTravelRadiusPreviewFindMany` via `Admin.cooksInTravelRadius`
-- UI: `AdminMapPage`, `AdminMapCanvas`, `AdminMapSelectionPanel`, `adminMapSearch.ts`, `adminMapGeo.ts`; route `map.tsx`; dependency
-  `maplibre-gl`
+- UI: `AdminMapPage`, `AdminMapCanvas`, `AdminMapLocationSearch`, `AdminMapSelectionPanel`, `adminMapSearch.ts`, `adminMapGeo.ts`; route
+  `map.tsx`; dependency `maplibre-gl`; location search uses `Session.locationSuggestions` (`onlyFullAddresses: false`)
 - Docs: this file; Insights note in [admin-shell.md](./admin-shell.md)

@@ -51,6 +51,17 @@ query AdminMapPage($range: DateTimeRange!, $includeBookings: Boolean!) {
     }
 }
 
+# Places autocomplete for the ops-map location search (cities, streets, addresses).
+query AdminMapLocationSuggestions($searchText: String!, $onlyFullAddresses: Boolean! = false) {
+    currentSession {
+        locationSuggestions(searchText: $searchText, onlyFullAddresses: $onlyFullAddresses) {
+            displayText
+            latitude
+            longitude
+        }
+    }
+}
+
 # Covering cooks for a selected booking/city (or arbitrary point).
 query AdminMapCoverage($latitude: Latitude!, $longitude: Longitude!) {
     currentSession {

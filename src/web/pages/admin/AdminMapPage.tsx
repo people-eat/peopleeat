@@ -14,6 +14,7 @@ import { DATE_FNS_LOCALE } from '../../utils/dateFnsLocale';
 import { adminStubRouteBySlug } from './adminCatalog';
 import type { AdminMapCoverageCook } from './AdminMapCanvas';
 import { AdminMapCanvas } from './AdminMapCanvas';
+import { AdminMapLocationSearch } from './AdminMapLocationSearch';
 import type { AdminMapFocus, AdminMapLayer, AdminMapSearch } from './adminMapSearch';
 import { ADMIN_MAP_LAYERS, adminMapSearchForUrl, adminMapSearchResolve } from './adminMapSearch';
 import { AdminMapSelectionPanel } from './AdminMapSelectionPanel';
@@ -101,6 +102,14 @@ export function AdminMapPage({ data, search }: AdminMapPageProps) {
 
                 <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex flex-wrap items-start justify-between gap-2 p-3">
                     <div className="pointer-events-auto flex min-w-0 max-w-full flex-col items-stretch gap-2 sm:max-w-[20rem]">
+                        <Card className="gap-0 py-0 shadow-md">
+                            <CardContent className="p-2">
+                                <AdminMapLocationSearch
+                                    selected={resolved.focus?.kind === 'place' ? resolved.focus : null}
+                                    onSelect={(place) => patchSearch({ focus: place })}
+                                />
+                            </CardContent>
+                        </Card>
                         <Card className="gap-0 py-0 shadow-md">
                             <CardContent className="flex flex-wrap items-center gap-3 px-3 py-2">
                                 {ADMIN_MAP_LAYERS.map((layer) => {

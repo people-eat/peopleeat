@@ -43,11 +43,13 @@ export function AdminMapSelectionPanel({
     const venue = focus.kind === 'venue' ? partnerVenues.find((row) => row.partnerVenueId === focus.id) : undefined;
 
     const coveragePoint =
-        focus.kind === 'booking' && booking
-            ? { latitude: booking.latitude, longitude: booking.longitude }
-            : focus.kind === 'city' && city
-              ? { latitude: city.latitude, longitude: city.longitude }
-              : null;
+        focus.kind === 'place'
+            ? { latitude: focus.latitude, longitude: focus.longitude }
+            : focus.kind === 'booking' && booking
+              ? { latitude: booking.latitude, longitude: booking.longitude }
+              : focus.kind === 'city' && city
+                ? { latitude: city.latitude, longitude: city.longitude }
+                : null;
 
     const [{ data: coverageData, fetching: coverageFetching }] = useQuery({
         query: AdminMapCoverageDocument,
@@ -57,9 +59,10 @@ export function AdminMapSelectionPanel({
 
     const coverageRows = coverageData?.currentSession.user?.admin?.cooksInTravelRadius ?? [];
     const coverageKey = coverageRows.map((row) => `${row.cook.cookId}:${row.cook.maximumTravelDistance ?? ''}`).join('|');
+    const focusKey = focus.kind === 'place' ? `place:${focus.latitude},${focus.longitude}` : `${focus.kind}:${focus.id}`;
 
     useEffect(() => {
-        if (focus.kind !== 'booking' && focus.kind !== 'city') {
+        if (focus.kind !== 'booking' && focus.kind !== 'city' && focus.kind !== 'place') {
             onCoverageCooksChange([]);
             return;
         }
@@ -76,30 +79,33 @@ export function AdminMapSelectionPanel({
             if (next.length >= 25) break;
         }
         onCoverageCooksChange(next);
-    }, [focus.kind, focus.id, coverageKey, coverageRows, onCoverageCooksChange]);
+    }, [focus.kind, focusKey, coverageKey, coverageRows, onCoverageCooksChange]);
 
     useEffect(() => {
         return () => onCoverageCooksChange([]);
     }, [onCoverageCooksChange]);
 
     const title =
-        focus.kind === 'cook'
-            ? (cook?.displayName ?? focus.id)
-            : focus.kind === 'booking'
-              ? (booking?.occasion ?? focus.id)
-              : focus.kind === 'city'
-                ? city
-                    ? locale === 'de'
-                        ? city.nameDe
-                        : city.nameEn
-                    : focus.id
-                : (venue?.name ?? focus.id);
+        focus.kind === 'place'
+            ? focus.label
+            : focus.kind === 'cook'
+              ? (cook?.displayName ?? focus.id)
+              : focus.kind === 'booking'
+                ? (booking?.occasion ?? focus.id)
+                : focus.kind === 'city'
+                  ? city
+                      ? locale === 'de'
+                          ? city.nameDe
+                          : city.nameEn
+                      : focus.id
+                  : (venue?.name ?? focus.id);
 
     const kindLabel = {
         cook: { de: 'Koch', en: 'Cook' },
         booking: { de: 'Buchungsanfrage', en: 'Booking request' },
         city: { de: 'Stadt', en: 'City' },
         venue: { de: 'Location', en: 'Venue' },
+        place: { de: 'Ort', en: 'Place' },
     }[focus.kind][locale];
 
     return (
@@ -195,7 +201,13 @@ export function AdminMapSelectionPanel({
                     </>
                 ) : null}
 
-                {focus.kind === 'booking' || focus.kind === 'city' ? (
+                {focus.kind === 'place' ? (
+                    <p className="text-muted-foreground">
+                        {focus.latitude.toFixed(5)}, {focus.longitude.toFixed(5)}
+                    </p>
+                ) : null}
+
+                {focus.kind === 'booking' || focus.kind === 'city' || focus.kind === 'place' ? (
                     <div className="space-y-2 border-t pt-3">
                         <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                             {{ de: 'Köche im Radius', en: 'Cooks in radius' }[locale]}
@@ -231,7 +243,7 @@ export function AdminMapSelectionPanel({
                     </div>
                 ) : null}
 
-                {!cook && !booking && !city && !venue ? (
+                {focus.kind !== 'place' && !cook && !booking && !city && !venue ? (
                     <p className="text-muted-foreground">
                         {{ de: 'Punkt nicht in den geladenen Ebenen.', en: 'Point not in the loaded layers.' }[locale]}
                     </p>

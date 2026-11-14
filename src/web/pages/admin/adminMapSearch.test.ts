@@ -28,6 +28,33 @@ describe('adminMapSearch', () => {
         });
     });
 
+    it('parses a searched place from the URL search', () => {
+        const search = parseAdminMapSearch({
+            from: '2026-01-01',
+            to: '2026-01-31',
+            focus: 'place:52.52,13.405',
+            placeLabel: '  Berlin, Germany  ',
+        });
+        const resolved = adminMapSearchResolve(search);
+        expect(resolved.focus).toEqual({
+            kind: 'place',
+            latitude: 52.52,
+            longitude: 13.405,
+            label: 'Berlin, Germany',
+        });
+        expect(adminMapSearchForUrl(resolved)).toEqual({
+            from: '2026-01-01',
+            to: '2026-01-31',
+            focus: 'place:52.520000,13.405000',
+            placeLabel: 'Berlin, Germany',
+        });
+    });
+
+    it('rejects out-of-range place coordinates', () => {
+        const resolved = adminMapSearchResolve({ focus: 'place:99,13.4', placeLabel: 'Nope' });
+        expect(resolved.focus).toBeNull();
+    });
+
     it('omits bookings from GraphQL variables when the bookings layer is off', () => {
         const variables = adminMapPageVariables({
             from: '2026-01-01',

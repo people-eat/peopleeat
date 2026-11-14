@@ -14239,6 +14239,15 @@ export type GqlCAdminMapPageQuery = {
     };
 };
 
+export type GqlCAdminMapLocationSuggestionsQueryVariables = Exact<{
+    searchText: string;
+    onlyFullAddresses?: boolean;
+}>;
+
+export type GqlCAdminMapLocationSuggestionsQuery = {
+    currentSession: { locationSuggestions: Array<{ displayText: string; latitude: number; longitude: number }> };
+};
+
 export type GqlCAdminMapCoverageQueryVariables = Exact<{
     latitude: number;
     longitude: number;
@@ -60902,6 +60911,67 @@ export const AdminMapPageDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminMapPageQuery, GqlCAdminMapPageQueryVariables>;
+export const AdminMapLocationSuggestionsDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'AdminMapLocationSuggestions' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'searchText' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'onlyFullAddresses' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } } },
+                    defaultValue: { kind: 'BooleanValue', value: false },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'locationSuggestions' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'searchText' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'searchText' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'onlyFullAddresses' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'onlyFullAddresses' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminMapLocationSuggestionsQuery, GqlCAdminMapLocationSuggestionsQueryVariables>;
 export const AdminMapCoverageDocument = {
     kind: 'Document',
     definitions: [

@@ -109,6 +109,25 @@ function venueFeatures(partnerVenues: readonly GqlCAdminMapPartnerVenuePoint[]):
     };
 }
 
+function placeFeatures(place: AdminMapFocus | null): AdminMapFeatureCollection {
+    if (place?.kind !== 'place') return adminMapEmptyFeatureCollection();
+    return {
+        type: 'FeatureCollection',
+        features: [
+            {
+                type: 'Feature',
+                properties: {
+                    layer: 'place',
+                    label: place.label,
+                    latitude: place.latitude,
+                    longitude: place.longitude,
+                },
+                geometry: { type: 'Point', coordinates: [place.longitude, place.latitude] },
+            },
+        ],
+    };
+}
+
 function radiusFeatures(args: {
     cooks: readonly GqlCAdminMapCookPoint[];
     focus: AdminMapFocus | null;
@@ -129,8 +148,9 @@ function radiusFeatures(args: {
         });
     }
 
-    if (args.focus?.kind === 'cook') {
-        const cook = args.cooks.find((row) => row.cookId === args.focus!.id);
+    const focused = args.focus;
+    if (focused?.kind === 'cook') {
+        const cook = args.cooks.find((row) => row.cookId === focused.id);
         if (cook) addCircle(cook.cookId, cook.longitude, cook.latitude, cook.maximumTravelDistance ?? null);
     }
 
@@ -239,6 +259,40 @@ function ensureSimplePointLayers(map: MapLibreMap, sourceId: string, color: Expr
     }
 }
 
+function ensurePlaceLayers(map: MapLibreMap) {
+    if (!map.getSource('place')) {
+        map.addSource('place', {
+            type: 'geojson',
+            data: adminMapEmptyFeatureCollection(),
+        });
+    }
+    if (!map.getLayer('place-halo')) {
+        map.addLayer({
+            id: 'place-halo',
+            type: 'circle',
+            source: 'place',
+            paint: {
+                'circle-color': '#e11d48',
+                'circle-radius': 14,
+                'circle-opacity': 0.18,
+            },
+        });
+    }
+    if (!map.getLayer('place-points')) {
+        map.addLayer({
+            id: 'place-points',
+            type: 'circle',
+            source: 'place',
+            paint: {
+                'circle-color': '#e11d48',
+                'circle-radius': 8,
+                'circle-stroke-width': 2,
+                'circle-stroke-color': '#ffffff',
+            },
+        });
+    }
+}
+
 function ensureRadiusLayers(map: MapLibreMap) {
     if (!map.getSource('radius')) {
         map.addSource('radius', {
@@ -291,6 +345,7 @@ export function AdminMapCanvas({
     const containerRef = useRef<HTMLDivElement | null>(null);
     const mapRef = useRef<MapLibreMap | null>(null);
     const hoverCookIdRef = useRef<string | null>(null);
+    const lastFlownKeyRef = useRef<string | null>(null);
     const propsRef = useRef({ cooks, bookingRequests, cities, partnerVenues, layers, focus, coverageCooks, onFocusChange });
     propsRef.current = { cooks, bookingRequests, cities, partnerVenues, layers, focus, coverageCooks, onFocusChange };
 
@@ -331,6 +386,7 @@ export function AdminMapCanvas({
                     hoverCookId: hoverCookIdRef.current,
                 }),
             );
+            setSourceData(map, 'place', placeFeatures(current.focus));
             setLayerVisibility(map, ['cooks-clusters', 'cooks-cluster-count', 'cooks-points'], current.layers.has('cooks'));
             setLayerVisibility(map, ['bookings-clusters', 'bookings-cluster-count', 'bookings-points'], current.layers.has('bookings'));
             setLayerVisibility(map, ['cities-points'], current.layers.has('cities'));
@@ -357,12 +413,20 @@ export function AdminMapCanvas({
             ensureSimplePointLayers(map, 'cities', ['case', ['get', 'published'], '#7c3aed', '#a78bfa'] as ExpressionSpecification);
             ensureSimplePointLayers(map, 'venues', ['case', ['get', 'published'], '#0d9488', '#5eead4'] as ExpressionSpecification);
             ensureRadiusLayers(map);
+            ensurePlaceLayers(map);
             syncData();
         });
 
         function focusFromFeature(properties: MapFeatureProperties): AdminMapFocus | null {
             if (!properties || typeof properties.layer !== 'string' || typeof properties.entityId !== 'string') return null;
             const layer = properties.layer;
+            if (layer === 'place') {
+                const latitude = Number(properties.latitude);
+                const longitude = Number(properties.longitude);
+                const label = typeof properties.label === 'string' ? properties.label : '';
+                if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+                return { kind: 'place', latitude, longitude, label };
+            }
             if (layer === 'cook') return { kind: 'cook', id: properties.entityId };
             if (layer === 'booking') return { kind: 'booking', id: properties.entityId };
             if (layer === 'city') return { kind: 'city', id: properties.entityId };
@@ -391,7 +455,9 @@ export function AdminMapCanvas({
             }
 
             const pointHits = map.queryRenderedFeatures(event.point, {
-                layers: ['cooks-points', 'bookings-points', 'cities-points', 'venues-points'].filter((id) => map.getLayer(id)),
+                layers: ['place-points', 'cooks-points', 'bookings-points', 'cities-points', 'venues-points'].filter((id) =>
+                    map.getLayer(id),
+                ),
             });
             const next = focusFromFeature((pointHits[0]?.properties as MapFeatureProperties) ?? null);
             propsRef.current.onFocusChange(next);
@@ -409,7 +475,14 @@ export function AdminMapCanvas({
             syncRadiusOnly();
         });
 
-        for (const layerId of ['bookings-points', 'cities-points', 'venues-points', 'cooks-clusters', 'bookings-clusters']) {
+        for (const layerId of [
+            'place-points',
+            'bookings-points',
+            'cities-points',
+            'venues-points',
+            'cooks-clusters',
+            'bookings-clusters',
+        ]) {
             map.on('mouseenter', layerId, () => {
                 map.getCanvas().style.cursor = 'pointer';
             });
@@ -442,6 +515,7 @@ export function AdminMapCanvas({
                 hoverCookId: hoverCookIdRef.current,
             }),
         );
+        setSourceData(map, 'place', placeFeatures(focus));
         setLayerVisibility(map, ['cooks-clusters', 'cooks-cluster-count', 'cooks-points'], layers.has('cooks'));
         setLayerVisibility(map, ['bookings-clusters', 'bookings-cluster-count', 'bookings-points'], layers.has('bookings'));
         setLayerVisibility(map, ['cities-points'], layers.has('cities'));
@@ -450,10 +524,16 @@ export function AdminMapCanvas({
 
     useEffect(() => {
         const map = mapRef.current;
-        if (!map || !focus) return;
+        if (!focus) {
+            lastFlownKeyRef.current = null;
+            return;
+        }
+        if (!map) return;
 
         let coordinates: [number, number] | null = null;
-        if (focus.kind === 'cook') {
+        if (focus.kind === 'place') {
+            coordinates = [focus.longitude, focus.latitude];
+        } else if (focus.kind === 'cook') {
             const cook = cooks.find((row) => row.cookId === focus.id);
             if (cook) coordinates = [cook.longitude, cook.latitude];
         } else if (focus.kind === 'booking') {
@@ -467,9 +547,12 @@ export function AdminMapCanvas({
             if (venue) coordinates = [venue.longitude, venue.latitude];
         }
 
-        if (coordinates) {
-            map.easeTo({ center: coordinates, zoom: Math.max(map.getZoom(), 9) });
-        }
+        if (!coordinates) return;
+        const flownKey = `${focus.kind}:${coordinates[0]},${coordinates[1]}`;
+        if (lastFlownKeyRef.current === flownKey) return;
+        lastFlownKeyRef.current = flownKey;
+        const zoomFloor = focus.kind === 'place' ? 11 : 9;
+        map.easeTo({ center: coordinates, zoom: Math.max(map.getZoom(), zoomFloor) });
     }, [focus, cooks, bookingRequests, cities, partnerVenues]);
 
     return <div ref={containerRef} className="absolute inset-0 size-full" />;
