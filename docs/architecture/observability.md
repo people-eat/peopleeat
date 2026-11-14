@@ -185,7 +185,9 @@ If a GraphQL span has **no** `pg.query:*` children in production, check the thre
 
 Recurring job `observability-ops-alert` samples GraphQL / job / ingress RED windows, recent Postgres error-log volume, and top
 `pg_stat_statements` means, posting to `slackChannelOpsAlerts` when thresholds are crossed (silent when healthy or Slack is `console`).
-Ingress alerts when ≥5 samples in the window and error rate ≥ 5%.
+Ingress alerts when ≥5 samples in the window and error rate ≥ 5%. Slow-SQL lines skip Metabase-shaped queries (`__mb_`, `#>> array[…]`,
+`"Table - Column"` FK aliases) so analytics cards on the shared DB do not spam the channel; admin `/admin/database-slow-statements` still
+shows the full ranking.
 
 ### Runbook: enable `pg_stat_statements`
 
@@ -340,6 +342,7 @@ Then open `/admin/database-slow-statements`, use GraphQL `databaseSlowStatements
 - `src/server/commands/clientObservabilityReport.ts` — browser RUM ingest mutation
 - `src/web/observability/` — Web Vitals bootstrap + report helpers
 - `src/server/queries/adminDatabaseSlowStatementsFindMany.ts` — `pg_stat_statements` admin read
+- `src/server/queries/databaseSlowStatementIsMetabase.ts` — Metabase SQL heuristic for Slack slow-SQL filter
 - `src/server/jobs/handlers/observabilityOpsAlert.ts` — Slack threshold alerts
 - `ops/grafana/dashboards/` — Grafana dashboard JSON + `generate.mjs`
 - `vite.config.ts` / `Dockerfile` — external + runtime `pg` (SQL child spans)

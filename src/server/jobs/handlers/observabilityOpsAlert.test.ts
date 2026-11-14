@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { graphqlOperationWindowRecord, httpIngressWindowRecord, redWindowSnapshotGet } from '../../observability/redMetrics';
+import { databaseSlowStatementIsMetabase } from '../../queries/databaseSlowStatementIsMetabase';
 import { observabilityOpsAlertSlackMessageBuild } from '../../slack/observabilityOpsAlertSlackMessage';
 import { commandSetup } from '../../test/commandTestUtils';
 import { observabilityOpsAlertRun } from './observabilityOpsAlert';
@@ -52,5 +53,25 @@ describe('observabilityOpsAlertRun', () => {
 
         await observabilityOpsAlertRun(serverRuntime);
         expect(postMessage).not.toHaveBeenCalled();
+    });
+});
+
+describe('observabilityOpsAlert Metabase filter', () => {
+    it('treats the Slack-reported Metabase SessionEvents queries as Metabase', () => {
+        expect(
+            databaseSlowStatementIsMetabase(
+                'SELECT "__mb_source"."Sessions - SessionId__referrer" AS "Sessions - SessionId__referrer", "__mb_source"."Sessions - Ses',
+            ),
+        ).toBe(true);
+        expect(
+            databaseSlowStatementIsMetabase(
+                'SELECT COUNT(*) AS "count" FROM "public"."SessionEvents" LEFT JOIN (SELECT ("public"."Sessions"."geoInformation"#>> array[$1',
+            ),
+        ).toBe(true);
+        expect(
+            databaseSlowStatementIsMetabase(
+                'SELECT ("Sessions - SessionId"."geoInformation"#>> array[$1 /, ... /]::text[])::text AS "Sessions - SessionId__geoInfo',
+            ),
+        ).toBe(true);
     });
 });

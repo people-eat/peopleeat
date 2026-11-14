@@ -105,7 +105,7 @@ The route only acks; it does not run slash commands or other interactive workflo
 - `resend-usage-slack-alert` — every day ≈00:00 and 19:00 Europe/Berlin, posts only when Resend monthly (or free-tier daily) quota is at
   risk (DST-safe via UTC `0 17,18,22,23 * * *` + Berlin hour gate); see [admin-outbound-emails.md](./admin-outbound-emails.md)
 - `observability-ops-alert` — hourly (`15 * * * *`), posts only when in-process RED windows, recent error logs, or slow SQL cross
-  thresholds; see [observability.md](../architecture/observability.md)
+  thresholds (Metabase-shaped SQL filtered out of slow-SQL lines); see [observability.md](../architecture/observability.md)
 
 ### Out of scope
 

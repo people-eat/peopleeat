@@ -3,6 +3,7 @@ import { and, eq, gte, sql } from 'drizzle-orm';
 import { logs } from '../../db/schema';
 import type { ServerRuntime } from '../../domain/ServerRuntime';
 import { redWindowSnapshotGet } from '../../observability/redMetrics';
+import { databaseSlowStatementIsMetabase } from '../../queries/databaseSlowStatementIsMetabase';
 import { databaseSlowStatementsFindMany, databaseSlowStatementsUnavailable } from '../../queries/databaseSlowStatementsFindMany';
 import { observabilityOpsAlertSlackMessageBuild } from '../../slack/observabilityOpsAlertSlackMessage';
 import type { RecurringJobDefinition } from '../types';
@@ -37,8 +38,10 @@ export async function observabilityOpsAlertRun(serverRuntime: ServerRuntime): Pr
 
     let slowStatements: Array<{ meanExecTimeMs: number; calls: number; query: string }> = [];
     try {
+        // Metabase cards share the app DB and dominate cumulative means; skip them for Slack until we split analytics load.
         slowStatements = (await databaseSlowStatementsFindMany(serverRuntime.db, 20))
             .filter((row) => row.meanExecTimeMs >= SLOW_MEAN_MS_THRESHOLD && row.calls >= SLOW_MIN_CALLS)
+            .filter((row) => !databaseSlowStatementIsMetabase(row.query))
             .slice(0, 5);
     } catch (error) {
         if (!databaseSlowStatementsUnavailable(error)) {
