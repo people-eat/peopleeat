@@ -53,6 +53,7 @@ export type CustomerBookingRequestCardRequest = {
             profilePicture: { url: string } | null;
         };
     } | null;
+    requestedMenu?: { menuId: string; title: string } | null;
     offers: CustomerBookingRequestCardOffer[];
 };
 
@@ -329,6 +330,9 @@ export function CustomerBookingRequestCard({
                         </BookingStatusPill>
                     </div>
                     <h2 className="line-clamp-1 pr-8 font-semibold leading-snug">{request.occasion}</h2>
+                    {request.requestedMenu ? (
+                        <p className="line-clamp-1 text-sm text-muted-foreground">{request.requestedMenu.title}</p>
+                    ) : null}
                     <p className="flex min-w-0 items-center gap-2 text-sm text-foreground">
                         <CalendarIcon className="size-4 shrink-0 text-muted-foreground/70" aria-hidden />
                         <span className="truncate">

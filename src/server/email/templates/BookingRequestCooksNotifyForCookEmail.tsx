@@ -14,6 +14,7 @@ interface BookingRequestCooksNotifyForCookEmailProps {
     city: string;
     poolUrl: string;
     direct?: boolean;
+    requestedMenuTitle?: string | null;
 }
 
 export function BookingRequestCooksNotifyForCookEmail({
@@ -27,6 +28,7 @@ export function BookingRequestCooksNotifyForCookEmail({
     city,
     poolUrl,
     direct = false,
+    requestedMenuTitle = null,
 }: BookingRequestCooksNotifyForCookEmailProps) {
     const when = formatBookingEventDate({
         instant: dateTime,
@@ -45,11 +47,17 @@ export function BookingRequestCooksNotifyForCookEmail({
               de: `Neue Anfrage in ${city} („${occasion}“): jetzt Menü vorschlagen`,
               en: `New request in ${city} (“${occasion}”): propose a menu now`,
           }[locale];
+    const menuTitle = requestedMenuTitle?.trim() || null;
     const intro = direct
-        ? {
-              de: `Ein Gast hat dich über dein Kochprofil angefragt („${occasion}“ am ${when} in ${city}).`,
-              en: `A guest requested you from your chef profile (“${occasion}” on ${when} in ${city}).`,
-          }[locale]
+        ? menuTitle
+            ? {
+                  de: `Ein Gast hat dich über dein Kochprofil für „${menuTitle}“ angefragt („${occasion}“ am ${when} in ${city}).`,
+                  en: `A guest requested you from your chef profile for “${menuTitle}” (“${occasion}” on ${when} in ${city}).`,
+              }[locale]
+            : {
+                  de: `Ein Gast hat dich über dein Kochprofil angefragt („${occasion}“ am ${when} in ${city}).`,
+                  en: `A guest requested you from your chef profile (“${occasion}” on ${when} in ${city}).`,
+              }[locale]
         : {
               de: `Gute Neuigkeiten: Eine neue Buchungsanfrage in ${city} ist verfügbar („${occasion}“ am ${when}).`,
               en: `Good news: a new booking request in ${city} is available (“${occasion}” on ${when}).`,

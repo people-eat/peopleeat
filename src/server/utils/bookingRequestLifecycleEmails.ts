@@ -193,6 +193,19 @@ export async function userBookingRequestCreateEmailSend(
     const requestedCookFirstName = bookingRequest.requestedCookId
         ? ((await usersByIdsFind(serverRuntime, [bookingRequest.requestedCookId])).get(bookingRequest.requestedCookId)?.firstName ?? null)
         : null;
+    const [requestedMenuAffinity] = bookingRequest.requestedCookId
+        ? await serverRuntime.db
+              .select({ requestedMenu: bookingRequestCooks.requestedMenu })
+              .from(bookingRequestCooks)
+              .where(
+                  and(
+                      eq(bookingRequestCooks.bookingRequestId, args.bookingRequestId),
+                      eq(bookingRequestCooks.cookId, bookingRequest.requestedCookId),
+                  ),
+              )
+              .limit(1)
+        : [undefined];
+    const requestedMenuTitle = requestedMenuAffinity?.requestedMenu?.title ?? null;
 
     await Promise.all([
         sendUserEmail(
@@ -221,6 +234,7 @@ export async function userBookingRequestCreateEmailSend(
                         discountedCount,
                         requestUrl: bookingRequestEmailCustomerRequestUrl(webPageUrl, bookingRequest.bookingRequestId),
                         requestedCookFirstName,
+                        requestedMenuTitle,
                     }),
                     purpose: 'BOOKING_REQUEST_CREATED',
                     locale,

@@ -111,6 +111,7 @@ const publicCook = {
     callDurationMinutes: 30,
     callSlots: [],
     meals: [],
+    menus: [],
     testimonials: [],
     rating: { averageRating: null, reviewCount: 0 },
     canReceiveDirectRequests: false,

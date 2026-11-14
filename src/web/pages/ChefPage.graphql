@@ -39,6 +39,22 @@ query ChefPage($pathName: String!) {
                 description
                 imageUrl
             }
+            menus {
+                menuId
+                title
+                description
+                courseMealOptionImages
+                courses {
+                    courseId
+                    title
+                    mealOptions {
+                        mealId
+                        title
+                        description
+                        imageUrl
+                    }
+                }
+            }
             testimonials {
                 ...CustomerTestimonialCardFields
             }

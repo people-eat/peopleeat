@@ -106,7 +106,7 @@ Owner generates a secret link so co-hosts and guests can follow offers and menus
 | `BookingRequests`                    | Request header; `exactEventAddress`; nullable `setting` (`INDOOR` \| `OUTDOOR`); optional `kitchenDetails` JSONB; `publicationStatus`; optional `requestedCookId`; optional `giftCardId` / `promoCodeId` / `invoiceAddress`; Slack `references` |
 | `BookingRequestKitchenDetailsPhotos` | Optional 1–3 kitchen photos → `FileUploads` (pool-cook / owner / admin download)                                                                                                                                                                |
 | `BookingRequestParticipants`         | `ADULT` / `DISCOUNTED`, name, `restrictions[]`                                                                                                                                                                                                  |
-| `BookingRequestCooks`                | Composite PK `(cookId, bookingRequestId)`; notify / open / decline; nullable `menuEvaluation`; nullable `travelDistanceKm` (Routes stamp)                                                                                                       |
+| `BookingRequestCooks`                | Composite PK `(cookId, bookingRequestId)`; notify / open / decline; nullable `menuEvaluation`; nullable `travelDistanceKm` (Routes stamp); optional chef-page `requestedMenuId` + frozen `requestedMenu` snapshot (insert-only)                 |
 
 Domain: `src/server/domain/bookingRequest.ts` (enums, payloads, status derive). Create sets `expiresAt` via `bookingRequestExpiresAt`.
 `menuEvaluation` / `menuEvaluationLoading` are filled by the AI menu-evaluation job when `AI_MENU_EVALUATION` is on — see
@@ -117,8 +117,9 @@ Domain: `src/server/domain/bookingRequest.ts` (enums, payloads, status derive). 
 
 - Role-scoped `UserBookingRequest` / `CookBookingRequest` / `AdminBookingRequest`
 - Cook types expose resolved `message` only (`adjustedMessage` ?? `originalMessage`); customer / admin keep the raw pair
-- Raw `publicationStatus` on `AdminBookingRequest` only. Customers see `isExclusive` / `directRequestNeedsExpansion` / `requestedCook`.
-  Chef-page exclusive create: [booking-request-cook-direct.md](./booking-request-cook-direct.md).
+- Raw `publicationStatus` on `AdminBookingRequest` only. Customers see `isExclusive` / `directRequestNeedsExpansion` / `requestedCook` /
+  `requestedMenu`. Cooks see `requestedMenu` only on their own affinity row. Chef-page exclusive create (including published menus):
+  [booking-request-cook-direct.md](./booking-request-cook-direct.md).
 - Create: `UserMutation.bookingRequestCreate` (rejects if the caller is a cook). Optional `setting` on create. Kitchen after send:
   `bookingRequestKitchenDetailsUpdate` (owner; request not canceled and event not yet passed). Discounts: `bookingRequestDiscountUpdate`,
   plus admin `AdminMutation.bookingRequestDiscountUpdate` (same apply/clear rules). `bookingRequestChurnPromoCodeCreate`. Cancel / recall:

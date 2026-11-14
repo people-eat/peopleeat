@@ -23,6 +23,7 @@ interface UserBookingRequestCreateForCustomerEmailProps {
     discountedCount: number;
     requestUrl: string;
     requestedCookFirstName?: string | null;
+    requestedMenuTitle?: string | null;
 }
 
 export function UserBookingRequestCreateForCustomerEmail({
@@ -40,8 +41,10 @@ export function UserBookingRequestCreateForCustomerEmail({
     discountedCount,
     requestUrl,
     requestedCookFirstName,
+    requestedMenuTitle,
 }: UserBookingRequestCreateForCustomerEmailProps) {
     const cookName = requestedCookFirstName?.trim() || null;
+    const menuTitle = requestedMenuTitle?.trim() || null;
     const subject = userBookingRequestCreateForCustomerEmailSubject(locale);
     const preview = cookName
         ? {
@@ -60,13 +63,17 @@ export function UserBookingRequestCreateForCustomerEmail({
     const steps = cookName
         ? {
               de: [
-                  `${cookName} schaut sich deine Anfrage an und schickt dir ein Angebot.`,
+                  menuTitle
+                      ? `${cookName} schaut sich deine Anfrage für „${menuTitle}“ an und schickt dir ein Angebot.`
+                      : `${cookName} schaut sich deine Anfrage an und schickt dir ein Angebot.`,
                   'Du entscheidest danach in Ruhe.',
                   'Du kannst die Anfrage jederzeit auch für andere Köche in deiner Nähe öffnen.',
                   'Nach der Buchung kannst du mit dem Koch chatten.',
               ],
               en: [
-                  `${cookName} will look at your request and send you an offer.`,
+                  menuTitle
+                      ? `${cookName} will look at your request for “${menuTitle}” and send you an offer.`
+                      : `${cookName} will look at your request and send you an offer.`,
                   'Then you decide, no rush.',
                   'You can open it to other chefs nearby at any time.',
                   'After booking, you can chat with the chef.',

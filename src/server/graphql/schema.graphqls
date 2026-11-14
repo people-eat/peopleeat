@@ -1621,6 +1621,14 @@ type BookingRequestOfferConfiguredMenu {
     courses: [BookingRequestOfferConfiguredMenuCourse!]!
 }
 
+# Frozen guest-chosen library menu on a chef-page request (affinity snapshot).
+type BookingRequestRequestedMenu {
+    menuId: ID!
+    title: String!
+    description: String!
+    courses: [BookingRequestOfferConfiguredMenuCourse!]!
+}
+
 type BookingRequestOfferPayment {
     clientSecret: String!
     publishableKey: String!
@@ -1893,6 +1901,8 @@ type PublicCook {
     callSlots(from: DateTime!, to: DateTime!): [CookCallSlot!]!
     # Published, non-deleted inventory meals only.
     meals: [PublicCookMeal!]!
+    # Published, complete inventory menus with at least one meal image. Hidden when none.
+    menus: [PublicCookMenu!]!
     # Published customer reviews tied to a completed offer with this cook.
     testimonials: [CustomerTestimonial!]!
     # Aggregate rating built from `testimonials`. `reviewCount: 0` when none.
@@ -2397,6 +2407,8 @@ type UserBookingRequest {
     # publicationStatus is admin-only (AdminBookingRequest). Exposing it to customers is a planned feature.
     # Chef this request was sent to from a public chef page. Null on marketplace creates.
     requestedCook: PublicCook
+    # Frozen guest-chosen menu from that chef. Null when the request was not for a published menu.
+    requestedMenu: BookingRequestRequestedMenu
     # True while publication is DIRECT_TO_COOK (only this cook sees it).
     isExclusive: Boolean!
     # Exclusive and the requested cook has no live path (decline / ban). Prominence for expand.
@@ -2564,6 +2576,8 @@ type CookBookingRequest {
     requestedByCustomer: Boolean!
     # True while publication is still DIRECT_TO_COOK (only this cook sees it).
     isExclusive: Boolean!
+    # Frozen guest-chosen menu on this cook's affinity row. Null for radius cooks.
+    requestedMenu: BookingRequestRequestedMenu
 }
 
 type AdminBookingRequestCookInTravelRadius {
@@ -2603,6 +2617,8 @@ type AdminBookingRequest {
     publicationStatus: BookingRequestPublicationStatus!
     # Chef-page target. Survives expansion. Null on marketplace creates.
     requestedCook: AdminCook
+    # Frozen guest-chosen menu from that chef. Null when none.
+    requestedMenu: BookingRequestRequestedMenu
     preferences: [String!]!
     invoiceAddress: InvoiceAddress
     expiresAt: DateTime
@@ -3154,6 +3170,8 @@ input UserBookingRequestCreate {
     redeemCode: String
     # Public chef-page target. Ignored when the entry toggle is off or the cook cannot receive direct requests.
     requestedCookId: ID
+    # Published library menu on that cook. Ignored unless `requestedCookId` is honored and the menu is catalog-eligible.
+    requestedMenuId: ID
 }
 
 type UserMutation {

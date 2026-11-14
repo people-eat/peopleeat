@@ -20,6 +20,10 @@ query BookingRequestSubmittedPage($bookingRequestId: ID!) {
                         }
                     }
                 }
+                requestedMenu {
+                    menuId
+                    title
+                }
                 kitchenDetails {
                     availability
                     fridgeSpace

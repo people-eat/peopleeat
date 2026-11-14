@@ -79,6 +79,10 @@ fragment AdminBookingRequestPageRequest on AdminBookingRequest {
             timeZone
         }
     }
+    requestedMenu {
+        menuId
+        title
+    }
     promoCode {
         promoCodeId
         redeemCode

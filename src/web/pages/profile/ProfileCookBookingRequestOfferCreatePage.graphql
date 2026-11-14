@@ -72,6 +72,10 @@ fragment ProfileCookBookingRequestOfferCreatePageUser on User {
                     }
                     estimatedTravelDistanceKm
                     estimatedTravelExpensesCents
+                    requestedMenu {
+                        menuId
+                        title
+                    }
                     cookPoolDetails {
                         declinedAt
                         firstOpenedAt

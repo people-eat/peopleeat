@@ -50,6 +50,10 @@ fragment ProfileCookBookingRequestPageUser on User {
                     estimatedCookPayoutCents
                     requestedByCustomer
                     isExclusive
+                    requestedMenu {
+                        menuId
+                        title
+                    }
                     cookPoolDetails {
                         declinedAt
                         declinationReason

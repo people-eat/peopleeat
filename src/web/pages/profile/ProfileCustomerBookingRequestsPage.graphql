@@ -28,6 +28,10 @@ fragment ProfileCustomerBookingRequestsPageUser on User {
                 }
             }
         }
+        requestedMenu {
+            menuId
+            title
+        }
         offers {
             bookingRequestOfferId
             userUnreadNotificationCount

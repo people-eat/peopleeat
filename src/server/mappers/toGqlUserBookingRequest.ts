@@ -1,6 +1,12 @@
 import type { BookingRequest, BookingRequestOffer, BookingRequestParticipant, GiftCard, PromoCode } from '../db/schema';
 import { bookingRequestDirectNeedsExpansion, bookingRequestIsExclusive, bookingRequestStatusDerive } from '../domain/bookingRequest';
-import type { GqlSFileUpload, GqlSPublicCook, GqlSUserBookingRequest, GqlSUserBookingRequestOffer } from '../graphql/generated';
+import type {
+    GqlSBookingRequestRequestedMenu,
+    GqlSFileUpload,
+    GqlSPublicCook,
+    GqlSUserBookingRequest,
+    GqlSUserBookingRequestOffer,
+} from '../graphql/generated';
 import { toGqlBookingRequestKitchenDetails } from './toGqlBookingRequestKitchenDetails';
 import { toGqlBookingRequestParticipant } from './toGqlBookingRequestParticipant';
 import { toGqlCookTravelOriginAddress } from './toGqlCook';
@@ -18,6 +24,7 @@ export type ToGqlUserBookingRequestInput = {
     requestedCook?: GqlSPublicCook | null;
     requestedCookDeclined?: boolean;
     requestedCookBanned?: boolean;
+    requestedMenu?: GqlSBookingRequestRequestedMenu | null;
 };
 
 export function toGqlUserBookingRequest(input: ToGqlUserBookingRequestInput): GqlSUserBookingRequest {
@@ -33,6 +40,7 @@ export function toGqlUserBookingRequest(input: ToGqlUserBookingRequestInput): Gq
         requestedCook = null,
         requestedCookDeclined = false,
         requestedCookBanned = false,
+        requestedMenu = null,
     } = input;
 
     return {
@@ -55,6 +63,7 @@ export function toGqlUserBookingRequest(input: ToGqlUserBookingRequestInput): Gq
         originalMessage: bookingRequest.originalMessage,
         adjustedMessage: bookingRequest.adjustedMessage ?? null,
         requestedCook,
+        requestedMenu,
         isExclusive: bookingRequestIsExclusive(bookingRequest.publicationStatus),
         directRequestNeedsExpansion: bookingRequestDirectNeedsExpansion({
             publicationStatus: bookingRequest.publicationStatus,

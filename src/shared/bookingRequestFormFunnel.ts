@@ -23,7 +23,7 @@ export const bookingRequestFormFunnelArea = 'booking_request_form' as const;
 export type BookingRequestFormLocationSettingChoice = 'INDOOR' | 'OUTDOOR' | 'LATER' | 'skipped';
 
 export type BookingRequestFormFunnelInteraction =
-    | { type: 'step_entered'; step: BookingRequestFormFunnelStep; cookId?: string }
+    | { type: 'step_entered'; step: BookingRequestFormFunnelStep; cookId?: string; menuId?: string }
     | {
           type: 'step_completed';
           step: BookingRequestFormFunnelStep;
@@ -31,6 +31,8 @@ export type BookingRequestFormFunnelInteraction =
           setting?: BookingRequestFormLocationSettingChoice;
           /** Chef-page target when the guest entered via `?cookId=`. */
           cookId?: string;
+          /** Published menu when the guest entered via `?menuId=`. */
+          menuId?: string;
       };
 
 export function isBookingRequestFormFunnelStep(value: string): value is BookingRequestFormFunnelStep {

@@ -684,6 +684,7 @@ export interface GqlCAdminBookingRequest {
     publicationStatus: GqlCBookingRequestPublicationStatus;
     queuedJobs: Array<GqlCAdminQueuedJob>;
     requestedCook?: Maybe<GqlCAdminCook>;
+    requestedMenu?: Maybe<GqlCBookingRequestRequestedMenu>;
     setting?: Maybe<GqlCBookingRequestSetting>;
     status: GqlCBookingRequestStatus;
     suggestedOfferAmountCents: Scalars['Int']['output'];
@@ -2879,6 +2880,14 @@ export type GqlCBookingRequestPriceClassType = 'HIGH' | 'LOW' | 'MEDIUM';
 export type GqlCBookingRequestPublicationStatus =
     'PUBLICATION_APPROVED_BY_ADMIN' | 'PUBLICATION_AUTO_APPROVED' | 'PUBLICATION_BLOCKED_BY_ADMIN_REVIEW' | 'PUBLICATION_DIRECT_TO_COOK';
 
+export interface GqlCBookingRequestRequestedMenu {
+    __typename?: 'BookingRequestRequestedMenu';
+    courses: Array<GqlCBookingRequestOfferConfiguredMenuCourse>;
+    description: Scalars['String']['output'];
+    menuId: Scalars['ID']['output'];
+    title: Scalars['String']['output'];
+}
+
 export type GqlCBookingRequestSetting = 'INDOOR' | 'OUTDOOR';
 
 export type GqlCBookingRequestStatus =
@@ -3515,6 +3524,7 @@ export interface GqlCCookBookingRequest {
     preferences: Array<Scalars['String']['output']>;
     priceClassType?: Maybe<GqlCBookingRequestPriceClassType>;
     requestedByCustomer: Scalars['Boolean']['output'];
+    requestedMenu?: Maybe<GqlCBookingRequestRequestedMenu>;
     setting?: Maybe<GqlCBookingRequestSetting>;
     status: GqlCBookingRequestStatus;
     suggestedOfferAmountCents: Scalars['Int']['output'];
@@ -4811,6 +4821,7 @@ export interface GqlCPublicCook {
     maximumParticipants?: Maybe<Scalars['Int']['output']>;
     maximumPriceAmount?: Maybe<Scalars['Int']['output']>;
     meals: Array<GqlCPublicCookMeal>;
+    menus: Array<GqlCPublicCookMenu>;
     minimumParticipants?: Maybe<Scalars['Int']['output']>;
     minimumPriceAmount?: Maybe<Scalars['Int']['output']>;
     pathName: Scalars['String']['output'];
@@ -5267,6 +5278,7 @@ export interface GqlCUserBookingRequest {
     priceImpact: Array<GqlCUserBookingRequestOfferPriceImpact>;
     promoCode?: Maybe<GqlCUserBookingRequestPromoCode>;
     requestedCook?: Maybe<GqlCPublicCook>;
+    requestedMenu?: Maybe<GqlCBookingRequestRequestedMenu>;
     setting?: Maybe<GqlCBookingRequestSetting>;
     status: GqlCBookingRequestStatus;
     supportRequest?: Maybe<GqlCUserSupportRequest>;
@@ -5293,6 +5305,7 @@ export type GqlCUserBookingRequestCreate = {
     priceClassType: GqlCBookingRequestPriceClassType;
     redeemCode?: InputMaybe<Scalars['String']['input']>;
     requestedCookId?: InputMaybe<Scalars['ID']['input']>;
+    requestedMenuId?: InputMaybe<Scalars['ID']['input']>;
     setting?: InputMaybe<GqlCBookingRequestSetting>;
 };
 
@@ -8634,6 +8647,7 @@ export type GqlCBookingRequestFormCookQuery = {
             pathName: string;
             canReceiveDirectRequests: boolean;
             user: { display: string; profilePicture: { url: string } | null };
+            menus: Array<{ menuId: string; title: string }>;
         } | null;
     };
 };
@@ -8979,6 +8993,7 @@ export type GqlCBookingRequestSubmittedPageQuery = {
                     pathName: string;
                     user: { display: string; profilePicture: { url: string } | null };
                 } | null;
+                requestedMenu: { menuId: string; title: string } | null;
                 kitchenDetails: {
                     availability: Schema.GqlCBookingRequestKitchenDetailsAvailability | null;
                     fridgeSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
@@ -9030,6 +9045,17 @@ export type GqlCChefPageQuery = {
             cityPage: { pathName: string; nameDe: string; nameEn: string } | null;
             user: { display: string; profilePicture: { url: string } | null };
             meals: Array<{ mealId: string; title: string; description: string; imageUrl: string | null }>;
+            menus: Array<{
+                menuId: string;
+                title: string;
+                description: string;
+                courseMealOptionImages: Array<string>;
+                courses: Array<{
+                    courseId: string;
+                    title: string;
+                    mealOptions: Array<{ mealId: string; title: string; description: string; imageUrl: string | null }>;
+                }>;
+            }>;
             testimonials: Array<{
                 customerTestimonialId: string;
                 authorName: string;
@@ -9809,6 +9835,7 @@ export type GqlCProfilePageUserFragment = {
         exactEventAddress: { displayText: string; city: string; country: string };
         participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
         requestedCook: { cookId: string; pathName: string; user: { display: string; profilePicture: { url: string } | null } } | null;
+        requestedMenu: { menuId: string; title: string } | null;
         offers: Array<{
             bookingRequestOfferId: string;
             status: Schema.GqlCBookingRequestOfferStatus;
@@ -9880,6 +9907,7 @@ export type GqlCProfilePageQuery = {
                     pathName: string;
                     user: { display: string; profilePicture: { url: string } | null };
                 } | null;
+                requestedMenu: { menuId: string; title: string } | null;
                 offers: Array<{
                     bookingRequestOfferId: string;
                     status: Schema.GqlCBookingRequestOfferStatus;
@@ -9947,6 +9975,7 @@ export type GqlCProfilePageUpdatesSubscription = {
             exactEventAddress: { displayText: string; city: string; country: string };
             participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
             requestedCook: { cookId: string; pathName: string; user: { display: string; profilePicture: { url: string } | null } } | null;
+            requestedMenu: { menuId: string; title: string } | null;
             offers: Array<{
                 bookingRequestOfferId: string;
                 status: Schema.GqlCBookingRequestOfferStatus;
@@ -12279,6 +12308,7 @@ export type GqlCAdminBookingRequestPageRequestFragment = {
         cookId: string;
         user: { userId: string; firstName: string; lastName: string; emailAddress: string | null; timeZone: string };
     } | null;
+    requestedMenu: { menuId: string; title: string } | null;
     promoCode: { promoCodeId: string; redeemCode: string; amountCents: number } | null;
     giftCard: { giftCardId: string; redeemCode: string; balanceCents: number } | null;
     cooksInTravelRadius: Array<{
@@ -12419,6 +12449,7 @@ export type GqlCAdminBookingRequestPageQuery = {
                         cookId: string;
                         user: { userId: string; firstName: string; lastName: string; emailAddress: string | null; timeZone: string };
                     } | null;
+                    requestedMenu: { menuId: string; title: string } | null;
                     promoCode: { promoCodeId: string; redeemCode: string; amountCents: number } | null;
                     giftCard: { giftCardId: string; redeemCode: string; balanceCents: number } | null;
                     cooksInTravelRadius: Array<{
@@ -12562,6 +12593,7 @@ export type GqlCAdminBookingRequestPageUpdatesSubscription = {
                 cookId: string;
                 user: { userId: string; firstName: string; lastName: string; emailAddress: string | null; timeZone: string };
             } | null;
+            requestedMenu: { menuId: string; title: string } | null;
             promoCode: { promoCodeId: string; redeemCode: string; amountCents: number } | null;
             giftCard: { giftCardId: string; redeemCode: string; balanceCents: number } | null;
             cooksInTravelRadius: Array<{
@@ -12744,6 +12776,7 @@ export type GqlCAdminBookingRequestsPageQuery = {
                     customer: { userId: string; firstName: string; lastName: string; emailAddress: string | null };
                     cook: { cookId: string; user: { userId: string; firstName: string; lastName: string } } | null;
                     requestedCook: { cookId: string; user: { userId: string; firstName: string; lastName: string } } | null;
+                    requestedMenu: { menuId: string; title: string } | null;
                 }>;
             } | null;
         } | null;
@@ -18530,6 +18563,7 @@ export type GqlCProfileCookBookingRequestOfferCreatePageUserFragment = {
                           name: string;
                           restrictions: Array<string>;
                       }>;
+                      requestedMenu: { menuId: string; title: string } | null;
                       cookPoolDetails: {
                           declinedAt: string | null;
                           firstOpenedAt: string | null;
@@ -18619,6 +18653,7 @@ export type GqlCProfileCookBookingRequestOfferCreatePageQuery = {
                                   name: string;
                                   restrictions: Array<string>;
                               }>;
+                              requestedMenu: { menuId: string; title: string } | null;
                               cookPoolDetails: {
                                   declinedAt: string | null;
                                   firstOpenedAt: string | null;
@@ -18709,6 +18744,7 @@ export type GqlCProfileCookBookingRequestOfferCreatePageUpdatesSubscription = {
                               name: string;
                               restrictions: Array<string>;
                           }>;
+                          requestedMenu: { menuId: string; title: string } | null;
                           cookPoolDetails: {
                               declinedAt: string | null;
                               firstOpenedAt: string | null;
@@ -20058,6 +20094,7 @@ export type GqlCProfileCookBookingRequestPageUserFragment = {
                           name: string;
                           restrictions: Array<string>;
                       }>;
+                      requestedMenu: { menuId: string; title: string } | null;
                       cookPoolDetails: {
                           declinedAt: string | null;
                           declinationReason: string | null;
@@ -20120,6 +20157,7 @@ export type GqlCProfileCookBookingRequestPageQuery = {
                                   name: string;
                                   restrictions: Array<string>;
                               }>;
+                              requestedMenu: { menuId: string; title: string } | null;
                               cookPoolDetails: {
                                   declinedAt: string | null;
                                   declinationReason: string | null;
@@ -20183,6 +20221,7 @@ export type GqlCProfileCookBookingRequestPageUpdatesSubscription = {
                               name: string;
                               restrictions: Array<string>;
                           }>;
+                          requestedMenu: { menuId: string; title: string } | null;
                           cookPoolDetails: {
                               declinedAt: string | null;
                               declinationReason: string | null;
@@ -20235,6 +20274,7 @@ export type GqlCProfileCookBookingRequestPoolCardFragment = {
         notifiedAt: string | null;
         firstOpenedAt: string | null;
     } | null;
+    requestedMenu: { menuId: string; title: string } | null;
 };
 
 export type GqlCProfileCookBookingRequestPoolPageUserFragment = {
@@ -20257,6 +20297,7 @@ export type GqlCProfileCookBookingRequestPoolPageUserFragment = {
                 notifiedAt: string | null;
                 firstOpenedAt: string | null;
             } | null;
+            requestedMenu: { menuId: string; title: string } | null;
         }>;
         declinedBookingRequests: Array<{
             bookingRequestId: string;
@@ -20274,6 +20315,7 @@ export type GqlCProfileCookBookingRequestPoolPageUserFragment = {
                 notifiedAt: string | null;
                 firstOpenedAt: string | null;
             } | null;
+            requestedMenu: { menuId: string; title: string } | null;
         }>;
     } | null;
 };
@@ -20302,6 +20344,7 @@ export type GqlCProfileCookBookingRequestPoolPageQuery = {
                         notifiedAt: string | null;
                         firstOpenedAt: string | null;
                     } | null;
+                    requestedMenu: { menuId: string; title: string } | null;
                 }>;
                 declinedBookingRequests: Array<{
                     bookingRequestId: string;
@@ -20319,6 +20362,7 @@ export type GqlCProfileCookBookingRequestPoolPageQuery = {
                         notifiedAt: string | null;
                         firstOpenedAt: string | null;
                     } | null;
+                    requestedMenu: { menuId: string; title: string } | null;
                 }>;
             } | null;
         } | null;
@@ -20348,6 +20392,7 @@ export type GqlCProfileCookBookingRequestPoolPageUpdatesSubscription = {
                     notifiedAt: string | null;
                     firstOpenedAt: string | null;
                 } | null;
+                requestedMenu: { menuId: string; title: string } | null;
             }>;
             declinedBookingRequests: Array<{
                 bookingRequestId: string;
@@ -20365,6 +20410,7 @@ export type GqlCProfileCookBookingRequestPoolPageUpdatesSubscription = {
                     notifiedAt: string | null;
                     firstOpenedAt: string | null;
                 } | null;
+                requestedMenu: { menuId: string; title: string } | null;
             }>;
         } | null;
     };
@@ -21477,6 +21523,18 @@ export type GqlCProfileCookPublicPageCookFragment = {
     rating: { averageRating: number | null; reviewCount: number };
     exactTravelOriginAddress: { city: string } | null;
     meals: Array<{ mealId: string; title: string; description: string; imageUrl: string | null; publishedAt: string | null }>;
+    menus: Array<{
+        menuId: string;
+        title: string;
+        description: string;
+        publishedAt: string | null;
+        courseMealOptionImages: Array<string>;
+        courses: Array<{
+            courseId: string;
+            title: string;
+            mealOptions: Array<{ mealId: string; title: string; description: string; imageUrl: string | null }>;
+        }>;
+    }>;
 };
 
 export type GqlCProfileCookPublicPageUserFragment = {
@@ -21503,6 +21561,18 @@ export type GqlCProfileCookPublicPageUserFragment = {
         rating: { averageRating: number | null; reviewCount: number };
         exactTravelOriginAddress: { city: string } | null;
         meals: Array<{ mealId: string; title: string; description: string; imageUrl: string | null; publishedAt: string | null }>;
+        menus: Array<{
+            menuId: string;
+            title: string;
+            description: string;
+            publishedAt: string | null;
+            courseMealOptionImages: Array<string>;
+            courses: Array<{
+                courseId: string;
+                title: string;
+                mealOptions: Array<{ mealId: string; title: string; description: string; imageUrl: string | null }>;
+            }>;
+        }>;
     } | null;
 };
 
@@ -21535,6 +21605,18 @@ export type GqlCProfileCookPublicPageQuery = {
                 rating: { averageRating: number | null; reviewCount: number };
                 exactTravelOriginAddress: { city: string } | null;
                 meals: Array<{ mealId: string; title: string; description: string; imageUrl: string | null; publishedAt: string | null }>;
+                menus: Array<{
+                    menuId: string;
+                    title: string;
+                    description: string;
+                    publishedAt: string | null;
+                    courseMealOptionImages: Array<string>;
+                    courses: Array<{
+                        courseId: string;
+                        title: string;
+                        mealOptions: Array<{ mealId: string; title: string; description: string; imageUrl: string | null }>;
+                    }>;
+                }>;
             } | null;
         } | null;
     };
@@ -21567,6 +21649,18 @@ export type GqlCProfileCookPublicPageUpdatesSubscription = {
             rating: { averageRating: number | null; reviewCount: number };
             exactTravelOriginAddress: { city: string } | null;
             meals: Array<{ mealId: string; title: string; description: string; imageUrl: string | null; publishedAt: string | null }>;
+            menus: Array<{
+                menuId: string;
+                title: string;
+                description: string;
+                publishedAt: string | null;
+                courseMealOptionImages: Array<string>;
+                courses: Array<{
+                    courseId: string;
+                    title: string;
+                    mealOptions: Array<{ mealId: string; title: string; description: string; imageUrl: string | null }>;
+                }>;
+            }>;
         } | null;
     };
 };
@@ -22926,6 +23020,7 @@ export type GqlCProfileCustomerBookingRequestPageUserFragment = {
             hasPublicProfile: boolean;
             user: { display: string; profilePicture: { url: string } | null };
         } | null;
+        requestedMenu: { menuId: string; title: string } | null;
         participants: Array<{
             bookingRequestParticipantId: string;
             type: Schema.GqlCBookingRequestParticipantType;
@@ -23037,6 +23132,7 @@ export type GqlCProfileCustomerBookingRequestPageQuery = {
                     hasPublicProfile: boolean;
                     user: { display: string; profilePicture: { url: string } | null };
                 } | null;
+                requestedMenu: { menuId: string; title: string } | null;
                 participants: Array<{
                     bookingRequestParticipantId: string;
                     type: Schema.GqlCBookingRequestParticipantType;
@@ -23153,6 +23249,7 @@ export type GqlCProfileCustomerBookingRequestPageUpdatesSubscription = {
                 hasPublicProfile: boolean;
                 user: { display: string; profilePicture: { url: string } | null };
             } | null;
+            requestedMenu: { menuId: string; title: string } | null;
             participants: Array<{
                 bookingRequestParticipantId: string;
                 type: Schema.GqlCBookingRequestParticipantType;
@@ -23303,6 +23400,7 @@ export type GqlCProfileCustomerBookingRequestsPageUserFragment = {
         exactEventAddress: { displayText: string; city: string; country: string };
         participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
         requestedCook: { cookId: string; pathName: string; user: { display: string; profilePicture: { url: string } | null } } | null;
+        requestedMenu: { menuId: string; title: string } | null;
         offers: Array<{
             bookingRequestOfferId: string;
             userUnreadNotificationCount: number;
@@ -23337,6 +23435,7 @@ export type GqlCProfileCustomerBookingRequestsPageQuery = {
                     pathName: string;
                     user: { display: string; profilePicture: { url: string } | null };
                 } | null;
+                requestedMenu: { menuId: string; title: string } | null;
                 offers: Array<{
                     bookingRequestOfferId: string;
                     userUnreadNotificationCount: number;
@@ -23368,6 +23467,7 @@ export type GqlCProfileCustomerBookingRequestsPageUpdatesSubscription = {
             exactEventAddress: { displayText: string; city: string; country: string };
             participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
             requestedCook: { cookId: string; pathName: string; user: { display: string; profilePicture: { url: string } | null } } | null;
+            requestedMenu: { menuId: string; title: string } | null;
             offers: Array<{
                 bookingRequestOfferId: string;
                 userUnreadNotificationCount: number;
@@ -28018,6 +28118,17 @@ export const ProfilePageUserFragmentDoc = {
                                 },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'requestedMenu' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'offers' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
@@ -29559,6 +29670,17 @@ export const AdminBookingRequestPageRequestFragmentDoc = {
                                         ],
                                     },
                                 },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'requestedMenu' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
                             ],
                         },
                     },
@@ -32632,6 +32754,17 @@ export const ProfileCookBookingRequestOfferCreatePageUserFragmentDoc = {
                                                                     },
                                                                     {
                                                                         kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'requestedMenu' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
                                                                         name: { kind: 'Name', value: 'cookPoolDetails' },
                                                                         selectionSet: {
                                                                             kind: 'SelectionSet',
@@ -34099,6 +34232,17 @@ export const ProfileCookBookingRequestPageUserFragmentDoc = {
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'isExclusive' } },
                                                                     {
                                                                         kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'requestedMenu' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
                                                                         name: { kind: 'Name', value: 'cookPoolDetails' },
                                                                         selectionSet: {
                                                                             kind: 'SelectionSet',
@@ -34274,6 +34418,17 @@ export const ProfileCookBookingRequestPoolCardFragmentDoc = {
                     },
                     { kind: 'Field', name: { kind: 'Name', value: 'requestedByCustomer' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isExclusive' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'requestedMenu' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                            ],
+                        },
+                    },
                 ],
             },
         },
@@ -34407,6 +34562,17 @@ export const ProfileCookBookingRequestPoolPageUserFragmentDoc = {
                     },
                     { kind: 'Field', name: { kind: 'Name', value: 'requestedByCustomer' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isExclusive' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'requestedMenu' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                            ],
+                        },
+                    },
                 ],
             },
         },
@@ -35402,6 +35568,44 @@ export const ProfileCookPublicPageCookFragmentDoc = {
                             ],
                         },
                     },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'menus' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'courseMealOptionImages' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'courses' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'courseId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'mealOptions' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'mealId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
                 ],
             },
         },
@@ -35493,6 +35697,44 @@ export const ProfileCookPublicPageUserFragmentDoc = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'menus' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'courseMealOptionImages' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'courses' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'courseId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'mealOptions' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'mealId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     },
@@ -36648,6 +36890,17 @@ export const ProfileCustomerBookingRequestPageUserFragmentDoc = {
                                         ],
                                     },
                                 },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'requestedMenu' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                        ],
+                                    },
+                                },
                                 { kind: 'Field', name: { kind: 'Name', value: 'preferences' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'canceledAt' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'cancellationReason' } },
@@ -36921,6 +37174,17 @@ export const ProfileCustomerBookingRequestsPageUserFragmentDoc = {
                                                     ],
                                                 },
                                             },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'requestedMenu' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
                                         ],
                                     },
                                 },
@@ -42188,6 +42452,17 @@ export const BookingRequestFormCookDocument = {
                                                     ],
                                                 },
                                             },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'menus' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                    ],
+                                                },
+                                            },
                                         ],
                                     },
                                 },
@@ -43468,6 +43743,17 @@ export const BookingRequestSubmittedPageDocument = {
                                                         },
                                                         {
                                                             kind: 'Field',
+                                                            name: { kind: 'Name', value: 'requestedMenu' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
                                                             name: { kind: 'Name', value: 'kitchenDetails' },
                                                             selectionSet: {
                                                                 kind: 'SelectionSet',
@@ -43697,6 +43983,49 @@ export const ChefPageDocument = {
                                                         { kind: 'Field', name: { kind: 'Name', value: 'title' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'menus' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'courseMealOptionImages' } },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'courses' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'courseId' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'mealOptions' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'mealId' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'description' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'imageUrl' },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
                                                     ],
                                                 },
                                             },
@@ -46843,6 +47172,17 @@ export const ProfilePageDocument = {
                                 },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'requestedMenu' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'offers' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
@@ -47118,6 +47458,17 @@ export const ProfilePageUpdatesDocument = {
                                                     ],
                                                 },
                                             },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'requestedMenu' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
                                         ],
                                     },
                                 },
@@ -54749,6 +55100,17 @@ export const AdminBookingRequestPageDocument = {
                     },
                     {
                         kind: 'Field',
+                        name: { kind: 'Name', value: 'requestedMenu' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
                         name: { kind: 'Name', value: 'promoCode' },
                         selectionSet: {
                             kind: 'SelectionSet',
@@ -55175,6 +55537,17 @@ export const AdminBookingRequestPageUpdatesDocument = {
                                         ],
                                     },
                                 },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'requestedMenu' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
                             ],
                         },
                     },
@@ -56176,6 +56549,17 @@ export const AdminBookingRequestsPageDocument = {
                                                                                         ],
                                                                                     },
                                                                                 },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'requestedMenu' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
                                                                             ],
                                                                         },
                                                                     },
@@ -76587,6 +76971,17 @@ export const ProfileCookBookingRequestOfferCreatePageDocument = {
                                                                     },
                                                                     {
                                                                         kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'requestedMenu' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
                                                                         name: { kind: 'Name', value: 'cookPoolDetails' },
                                                                         selectionSet: {
                                                                             kind: 'SelectionSet',
@@ -77051,6 +77446,17 @@ export const ProfileCookBookingRequestOfferCreatePageUpdatesDocument = {
                                                                     {
                                                                         kind: 'Field',
                                                                         name: { kind: 'Name', value: 'estimatedTravelExpensesCents' },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'requestedMenu' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                                            ],
+                                                                        },
                                                                     },
                                                                     {
                                                                         kind: 'Field',
@@ -81110,6 +81516,17 @@ export const ProfileCookBookingRequestPageDocument = {
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'isExclusive' } },
                                                                     {
                                                                         kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'requestedMenu' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
                                                                         name: { kind: 'Name', value: 'cookPoolDetails' },
                                                                         selectionSet: {
                                                                             kind: 'SelectionSet',
@@ -81442,6 +81859,17 @@ export const ProfileCookBookingRequestPageUpdatesDocument = {
                                                                     },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'requestedByCustomer' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'isExclusive' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'requestedMenu' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                                            ],
+                                                                        },
+                                                                    },
                                                                     {
                                                                         kind: 'Field',
                                                                         name: { kind: 'Name', value: 'cookPoolDetails' },
@@ -81780,6 +82208,17 @@ export const ProfileCookBookingRequestPoolPageDocument = {
                     },
                     { kind: 'Field', name: { kind: 'Name', value: 'requestedByCustomer' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isExclusive' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'requestedMenu' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                            ],
+                        },
+                    },
                 ],
             },
         },
@@ -81933,6 +82372,17 @@ export const ProfileCookBookingRequestPoolPageUpdatesDocument = {
                     },
                     { kind: 'Field', name: { kind: 'Name', value: 'requestedByCustomer' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'isExclusive' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'requestedMenu' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                            ],
+                        },
+                    },
                 ],
             },
         },
@@ -85267,6 +85717,44 @@ export const ProfileCookPublicPageDocument = {
                             ],
                         },
                     },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'menus' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'courseMealOptionImages' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'courses' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'courseId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'mealOptions' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'mealId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
                 ],
             },
         },
@@ -85376,6 +85864,44 @@ export const ProfileCookPublicPageUpdatesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'menus' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'courseMealOptionImages' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'courses' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'courseId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'mealOptions' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'mealId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     },
@@ -89712,6 +90238,17 @@ export const ProfileCustomerBookingRequestPageDocument = {
                                         ],
                                     },
                                 },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'requestedMenu' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                        ],
+                                    },
+                                },
                                 { kind: 'Field', name: { kind: 'Name', value: 'preferences' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'canceledAt' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'cancellationReason' } },
@@ -90051,6 +90588,17 @@ export const ProfileCustomerBookingRequestPageUpdatesDocument = {
                                                     ],
                                                 },
                                             },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'requestedMenu' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
                                         ],
                                     },
                                 },
@@ -90912,6 +91460,17 @@ export const ProfileCustomerBookingRequestsPageDocument = {
                                 },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'requestedMenu' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'offers' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
@@ -91064,6 +91623,17 @@ export const ProfileCustomerBookingRequestsPageUpdatesDocument = {
                                                     ],
                                                 },
                                             },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'requestedMenu' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
                                         ],
                                     },
                                 },

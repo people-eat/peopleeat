@@ -48,6 +48,21 @@ export function ChefPage({ data }: { data: GqlCChefPageQuery }) {
             description: meal.description,
             imageUrl: meal.imageUrl,
         })),
+        menus: cook.menus.map((menu) => ({
+            menuId: menu.menuId,
+            title: menu.title,
+            description: menu.description,
+            courseMealOptionImages: menu.courseMealOptionImages,
+            courses: menu.courses.map((course) => ({
+                title: course.title,
+                mealOptions: course.mealOptions.map((meal) => ({
+                    mealId: meal.mealId,
+                    title: meal.title,
+                    description: meal.description,
+                    imageUrl: meal.imageUrl,
+                })),
+            })),
+        })),
         testimonials: cook.testimonials.map((testimonial) => ({
             customerTestimonialId: testimonial.customerTestimonialId,
             authorName: testimonial.authorName,
@@ -74,6 +89,16 @@ export function ChefPage({ data }: { data: GqlCChefPageQuery }) {
         });
     }
 
+    function onBookMenuCtaClick(menuId: string) {
+        void trackDiscovery({
+            input: {
+                webPageKey: 'CHEFS',
+                area: chefsDiscoveryArea,
+                interaction: { type: 'click', key: chefsDiscoveryBookCtaKey, cookId: cook.cookId, menuId },
+            },
+        });
+    }
+
     function onShared() {
         void trackDiscovery({
             input: {
@@ -91,6 +116,7 @@ export function ChefPage({ data }: { data: GqlCChefPageQuery }) {
                 <ChefProfileView
                     cook={view}
                     onBookCtaClick={onBookCtaClick}
+                    onBookMenuCtaClick={onBookMenuCtaClick}
                     bookCta={bookCta}
                     shareButton={
                         shareEnabled ? (

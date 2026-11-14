@@ -1,6 +1,7 @@
 import { inArray } from 'drizzle-orm';
 
 import { users } from '../db/schema';
+import type { BookingRequestCookRequestedMenu } from '../domain/bookingRequest';
 import { notificationEmailAllowed } from '../domain/notificationSettings';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import {
@@ -31,17 +32,20 @@ export async function bookingRequestCooksNotify(
     serverRuntime: ServerRuntime,
     cookIds: string[],
     context: BookingRequestCooksNotifyContext,
-    options?: { direct?: boolean },
+    options?: { direct?: boolean; requestedMenu?: BookingRequestCookRequestedMenu | null },
 ): Promise<void> {
     if (cookIds.length === 0) {
         return;
     }
+
+    const requestedMenu = options?.direct === true && cookIds.length === 1 ? (options.requestedMenu ?? null) : null;
 
     await Promise.all(
         cookIds.map((cookId) =>
             bookingRequestCookNotifiedUpsert(serverRuntime, {
                 cookId,
                 bookingRequestId: context.bookingRequestId,
+                requestedMenu,
             }),
         ),
     );
@@ -89,6 +93,7 @@ export async function bookingRequestCooksNotify(
                             city,
                             poolUrl,
                             direct: options?.direct === true,
+                            requestedMenuTitle: requestedMenu?.title ?? null,
                         }),
                         purpose: emailPurpose,
                         locale,

@@ -413,6 +413,7 @@ import { publicCookFindMany } from '../queries/publicCookFindMany';
 import { publicCookFindOne } from '../queries/publicCookFindOne';
 import { publicCookFindOneByPathName } from '../queries/publicCookFindOneByPathName';
 import { publicCookMealFindMany } from '../queries/publicCookMealFindMany';
+import { publicCookMenuFindMany } from '../queries/publicCookMenuFindMany';
 import { publicLegalFind } from '../queries/publicLegalFind';
 import { publicOccasionFindMany } from '../queries/publicOccasionFindMany';
 import { publicOccasionFindOneByPathName } from '../queries/publicOccasionFindOneByPathName';
@@ -3033,6 +3034,9 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             meals(parent: GqlSPublicCook) {
                 return publicCookMealFindMany(parent, serverRuntime);
+            },
+            menus(parent: GqlSPublicCook) {
+                return publicCookMenuFindMany(parent, serverRuntime);
             },
             async callSlots(parent: GqlSPublicCook, args: GqlSPublicCookCallSlotsArgs) {
                 return cookCallSlotsFindMany(serverRuntime.db, {

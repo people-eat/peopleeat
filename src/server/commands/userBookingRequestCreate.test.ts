@@ -1,7 +1,20 @@
 import { eq } from 'drizzle-orm';
 import { describe, expect, it } from 'vitest';
 
-import { bookingRequestCooks, bookingRequestParticipants, bookingRequests, cooks, featureToggles, sessionEvents } from '../db/schema';
+import { idCreate } from '../../shared/idCreate';
+import {
+    bookingRequestCooks,
+    bookingRequestParticipants,
+    bookingRequests,
+    cooks,
+    featureToggles,
+    fileUploads,
+    meals,
+    menuCourseMealOptions,
+    menuCourses,
+    menus,
+    sessionEvents,
+} from '../db/schema';
 import { commandSetup, testDb, userMutationParent } from '../test/commandTestUtils';
 import { phoneNumberCreate } from '../test/phoneNumberCreate';
 import { userBookingRequestCreate } from './userBookingRequestCreate';
@@ -17,6 +30,50 @@ const sampleAddress = {
     state: 'BY',
     country: 'DE',
 };
+
+async function insertCatalogMenu(cookId: string, options?: { published?: boolean; title?: string }) {
+    const menuId = idCreate();
+    const mealId = idCreate();
+    const courseId = idCreate();
+    const imageFileUploadId = idCreate();
+    await testDb.insert(fileUploads).values({
+        fileUploadId: imageFileUploadId,
+        userId: cookId,
+        filename: 'meal.jpg',
+        mediaType: 'image/jpeg',
+        size: 3,
+        bytes: Buffer.from([1, 2, 3]),
+    });
+    await testDb.insert(meals).values({
+        mealId,
+        cookId,
+        title: 'Vorspeise',
+        description: 'Salat',
+        imageFileUploadId,
+    });
+    await testDb.insert(menus).values({
+        menuId,
+        cookId,
+        title: options?.title ?? 'Sommer-Menü',
+        description: 'Drei Gänge',
+        publishedAt: options?.published === false ? null : new Date(),
+    });
+    await testDb.insert(menuCourses).values({
+        courseId,
+        menuId,
+        cookId,
+        index: 0,
+        title: 'Starter',
+    });
+    await testDb.insert(menuCourseMealOptions).values({
+        mealOptionId: idCreate(),
+        courseId,
+        cookId,
+        mealId,
+        index: 0,
+    });
+    return menuId;
+}
 
 const sampleCreateInput = {
     occasion: 'Birthday',
@@ -122,6 +179,91 @@ describe('userBookingRequestCreate', () => {
         const events = await testDb.select().from(sessionEvents).where(eq(sessionEvents.sessionId, customer.requestingSession.sessionId));
         const created = events.find((event) => event.type === 'BOOKING_REQUEST_CREATED');
         expect(created?.payload).toMatchObject({ requestedCookId: chef.user.userId });
+    });
+
+    it('freezes a catalog menu on the requested cook affinity row', async () => {
+        const customer = await commandSetup.withUser({
+            phoneNumber: phoneNumberCreate(),
+            birthDate: '1990-05-01',
+        });
+        const chef = await commandSetup.withUser({ firstName: 'Menu', lastName: 'Chef' });
+        await testDb.insert(cooks).values({
+            cookId: chef.user.userId,
+            isVisible: true,
+            isApprovedByAdmin: true,
+            stripeAccountId: 'acct_menu',
+            stripeAccountActive: true,
+            exactTravelOriginAddress: sampleAddress,
+        });
+        await testDb
+            .insert(featureToggles)
+            .values({ featureToggleKey: 'BOOKING_REQUEST_COOK_DIRECT', enabled: true })
+            .onConflictDoUpdate({
+                target: featureToggles.featureToggleKey,
+                set: { enabled: true },
+            });
+        const menuId = await insertCatalogMenu(chef.user.userId, { title: 'Tasting' });
+
+        const result = await userBookingRequestCreate(
+            userMutationParent(customer.user.userId),
+            { input: { ...sampleCreateInput, requestedCookId: chef.user.userId, requestedMenuId: menuId } },
+            customer.requestingSession,
+            customer.serverRuntime,
+        );
+
+        const [affinity] = await testDb
+            .select()
+            .from(bookingRequestCooks)
+            .where(eq(bookingRequestCooks.bookingRequestId, result.referenceId!));
+        expect(affinity?.cookId).toBe(chef.user.userId);
+        expect(affinity?.requestedMenuId).toBe(menuId);
+        expect(affinity?.requestedMenu?.title).toBe('Tasting');
+
+        const events = await testDb.select().from(sessionEvents).where(eq(sessionEvents.sessionId, customer.requestingSession.sessionId));
+        const created = events.find((event) => event.type === 'BOOKING_REQUEST_CREATED');
+        expect(created?.payload).toMatchObject({ requestedCookId: chef.user.userId, requestedMenuId: menuId });
+    });
+
+    it('keeps the exclusive cook and drops a leftover menu that is not catalog-eligible', async () => {
+        const customer = await commandSetup.withUser({
+            phoneNumber: phoneNumberCreate(),
+            birthDate: '1990-05-01',
+        });
+        const chef = await commandSetup.withUser({ firstName: 'Draft', lastName: 'Chef' });
+        await testDb.insert(cooks).values({
+            cookId: chef.user.userId,
+            isVisible: true,
+            isApprovedByAdmin: true,
+            stripeAccountId: 'acct_draft_menu',
+            stripeAccountActive: true,
+            exactTravelOriginAddress: sampleAddress,
+        });
+        await testDb
+            .insert(featureToggles)
+            .values({ featureToggleKey: 'BOOKING_REQUEST_COOK_DIRECT', enabled: true })
+            .onConflictDoUpdate({
+                target: featureToggles.featureToggleKey,
+                set: { enabled: true },
+            });
+        const menuId = await insertCatalogMenu(chef.user.userId, { published: false });
+
+        const result = await userBookingRequestCreate(
+            userMutationParent(customer.user.userId),
+            { input: { ...sampleCreateInput, requestedCookId: chef.user.userId, requestedMenuId: menuId } },
+            customer.requestingSession,
+            customer.serverRuntime,
+        );
+
+        const [row] = await testDb.select().from(bookingRequests).where(eq(bookingRequests.bookingRequestId, result.referenceId!));
+        expect(row?.publicationStatus).toBe('PUBLICATION_DIRECT_TO_COOK');
+        expect(row?.requestedCookId).toBe(chef.user.userId);
+
+        const [affinity] = await testDb
+            .select()
+            .from(bookingRequestCooks)
+            .where(eq(bookingRequestCooks.bookingRequestId, result.referenceId!));
+        expect(affinity?.requestedMenuId).toBeNull();
+        expect(affinity?.requestedMenu).toBeNull();
     });
 
     it('ignores requestedCookId when the entry toggle is off', async () => {

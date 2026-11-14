@@ -32,6 +32,7 @@ import type { AiGenerationKind } from '../domain/aiGeneration';
 import type { AuthOauthProvider } from '../domain/authOauth';
 import type {
     BookingRequestCookMenuEvaluation,
+    BookingRequestCookRequestedMenu,
     BookingRequestExactEventAddress,
     BookingRequestInvoiceAddress,
     BookingRequestKitchenDetails,
@@ -1855,6 +1856,10 @@ export const bookingRequestCooks = pgTable(
         // AI menu ranking + inventory recommendation — see ai-menu-evaluation.md.
         menuEvaluation: jsonb().$type<BookingRequestCookMenuEvaluation>(),
         menuEvaluationLoading: boolean().notNull().default(false),
+        // Guest-chosen published library menu (chef-page). Insert-only; not copied
+        // onto radius notifies. See docs/features/booking-request-cook-direct.md.
+        requestedMenuId: nanoId(),
+        requestedMenu: jsonb().$type<BookingRequestCookRequestedMenu>(),
         declinationReason: varchar(),
         declinedAt: timestamp({ withTimezone: true }),
         notifiedAt: timestamp({ withTimezone: true }),
@@ -1876,8 +1881,15 @@ export const bookingRequestCooks = pgTable(
         })
             .onUpdate('cascade')
             .onDelete('cascade'),
+        foreignKey({
+            columns: [table.requestedMenuId],
+            foreignColumns: [menus.menuId],
+        })
+            .onUpdate('cascade')
+            .onDelete('set null'),
         index('BookingRequestCooks_bookingRequestId_idx').on(table.bookingRequestId),
         index('BookingRequestCooks_notifiedAt_idx').on(table.notifiedAt),
+        index('BookingRequestCooks_requestedMenuId_idx').on(table.requestedMenuId),
     ],
 );
 

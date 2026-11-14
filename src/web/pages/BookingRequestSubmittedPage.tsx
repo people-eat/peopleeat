@@ -111,6 +111,7 @@ export function BookingRequestSubmittedPage({
     const locale = useLocale();
     const bookingRequest = data.currentSession.user?.bookingRequest;
     const requestedCookName = bookingRequest?.requestedCook?.user.display ?? null;
+    const requestedMenuTitle = bookingRequest?.requestedMenu?.title?.trim() || null;
     const steps = nextSteps(locale, bookingRequest?.isExclusive ? requestedCookName : null);
     const kitchenEnabled = featureToggleIsActive(data.currentSession.activeFeatureToggleKeys, 'BOOKING_REQUEST_KITCHEN_DETAILS');
     const [, updateKitchenDetails] = useMutation(BookingRequestSubmittedKitchenDetailsUpdateDocument);
@@ -285,10 +286,15 @@ export function BookingRequestSubmittedPage({
                         }
                     >
                         {bookingRequest.isExclusive && requestedCookName
-                            ? {
-                                  de: `${requestedCookName} hat deine Anfrage erhalten. Du kannst sie jederzeit auch für andere Köche öffnen.`,
-                                  en: `${requestedCookName} received your request. You can open it to other chefs any time.`,
-                              }[locale]
+                            ? requestedMenuTitle
+                                ? {
+                                      de: `${requestedCookName} hat deine Anfrage für „${requestedMenuTitle}“ erhalten. Du kannst sie jederzeit auch für andere Köche öffnen.`,
+                                      en: `${requestedCookName} received your request for “${requestedMenuTitle}”. You can open it to other chefs any time.`,
+                                  }[locale]
+                                : {
+                                      de: `${requestedCookName} hat deine Anfrage erhalten. Du kannst sie jederzeit auch für andere Köche öffnen.`,
+                                      en: `${requestedCookName} received your request. You can open it to other chefs any time.`,
+                                  }[locale]
                             : {
                                   de: 'Geeignete Köche in deiner Region haben deine Anfrage erhalten. Wir informieren dich, sobald Menüvorschläge vorliegen.',
                                   en: 'Suitable chefs in your area received your request. You will be notified once you get an offer.',

@@ -5,6 +5,7 @@ import type { BookingRequest, BookingRequestOffer, BookingRequestParticipant } f
 import { bookingRequestIsExclusive, bookingRequestStatusDerive } from '../domain/bookingRequest';
 import type {
     GqlSBookingRequestCookPoolDetails,
+    GqlSBookingRequestRequestedMenu,
     GqlSCookBookingRequest,
     GqlSCookBookingRequestOffer,
     GqlSFileUpload,
@@ -37,6 +38,7 @@ export type ToGqlCookBookingRequestInput = {
     cookPoolDetails?: GqlSBookingRequestCookPoolDetails | null;
     kitchenDetailsPhotos?: GqlSFileUpload[];
     cookId: string;
+    requestedMenu?: GqlSBookingRequestRequestedMenu | null;
 };
 
 export function toGqlCookBookingRequest(input: ToGqlCookBookingRequestInput): GqlSCookBookingRequest {
@@ -55,6 +57,7 @@ export function toGqlCookBookingRequest(input: ToGqlCookBookingRequestInput): Gq
         cookPoolDetails = null,
         kitchenDetailsPhotos = [],
         cookId,
+        requestedMenu = null,
     } = input;
 
     const travelExpensesCents = estimatedTravelExpensesCents ?? 0;
@@ -111,5 +114,6 @@ export function toGqlCookBookingRequest(input: ToGqlCookBookingRequestInput): Gq
         cookPoolDetails,
         requestedByCustomer: bookingRequest.requestedCookId === cookId,
         isExclusive: bookingRequestIsExclusive(bookingRequest.publicationStatus),
+        requestedMenu,
     };
 }

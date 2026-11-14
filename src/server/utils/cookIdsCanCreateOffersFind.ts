@@ -2,6 +2,7 @@ import { eq, sql } from 'drizzle-orm';
 
 import type { GeoCoordinates } from '../../shared/geoDistance';
 import { bookingRequestCooks, cooks, users } from '../db/schema';
+import type { BookingRequestCookRequestedMenu } from '../domain/bookingRequest';
 import { cookCanCreateOffersDerive } from '../domain/cook';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import { cookIsInTravelRadius } from './cookIsInTravelRadius';
@@ -32,12 +33,18 @@ export async function cookIdsCanCreateOffersFind(
         .map(({ cook }) => cook.cookId);
 }
 
-/** Upsert notify stamp on the cook↔request affinity row. */
+/** Upsert notify stamp on the cook↔request affinity row. `requestedMenu` is insert-only. */
 export async function bookingRequestCookNotifiedUpsert(
     serverRuntime: ServerRuntime,
-    input: { cookId: string; bookingRequestId: string; notifiedAt?: Date },
+    input: {
+        cookId: string;
+        bookingRequestId: string;
+        notifiedAt?: Date;
+        requestedMenu?: BookingRequestCookRequestedMenu | null;
+    },
 ): Promise<void> {
     const notifiedAt = input.notifiedAt ?? new Date();
+    const requestedMenu = input.requestedMenu ?? null;
     await serverRuntime.db
         .insert(bookingRequestCooks)
         .values({
@@ -45,6 +52,8 @@ export async function bookingRequestCookNotifiedUpsert(
             bookingRequestId: input.bookingRequestId,
             menuEvaluationLoading: false,
             notifiedAt,
+            requestedMenuId: requestedMenu?.menuId ?? null,
+            requestedMenu,
         })
         .onConflictDoUpdate({
             target: [bookingRequestCooks.cookId, bookingRequestCooks.bookingRequestId],

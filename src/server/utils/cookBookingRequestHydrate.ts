@@ -6,6 +6,7 @@ import { bookingRequestParticipants, promoCodes } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSCookBookingRequest } from '../graphql/generated';
 import { toGqlBookingRequestCookMenuEvaluation } from '../mappers/toGqlBookingRequestCookMenuEvaluation';
+import { toGqlBookingRequestRequestedMenu } from '../mappers/toGqlBookingRequestRequestedMenu';
 import { toGqlCookBookingRequest } from '../mappers/toGqlCookBookingRequest';
 import { bookingRequestKitchenDetailsPhotosByRequestIdFind } from './bookingRequestKitchenDetailsPhotosHydrate';
 import { publicUsersByIdFindMany } from './publicUserHydrate';
@@ -104,6 +105,7 @@ export async function cookBookingRequestHydrate(
                     : null,
                 kitchenDetailsPhotos: kitchenDetailsPhotosByRequestId.get(bookingRequest.bookingRequestId) ?? [],
                 cookId: cook.cookId,
+                requestedMenu: details?.requestedMenu ? toGqlBookingRequestRequestedMenu(details.requestedMenu) : null,
             }),
         ];
     });

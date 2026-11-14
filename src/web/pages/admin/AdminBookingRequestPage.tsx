@@ -631,6 +631,15 @@ function AdminBookingRequestDetailFields({ bookingRequest }: { bookingRequest: A
                         <Separator />
                     </>
                 ) : null}
+                {bookingRequest.requestedMenu ? (
+                    <>
+                        <DetailField
+                            label={{ de: 'Angefragtes Menü', en: 'Requested menu' }[locale]}
+                            value={bookingRequest.requestedMenu.title}
+                        />
+                        <Separator />
+                    </>
+                ) : null}
                 <DetailField label={{ de: 'Anlass', en: 'Occasion' }[locale]} value={bookingRequest.occasion} />
                 <Separator />
                 <DetailField

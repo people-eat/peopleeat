@@ -27,8 +27,13 @@ Shared profile layout (`ChefProfileView`, container-query driven):
   to the booking form with non-binding copy underneath. When `BOOKING_REQUEST_COOK_DIRECT` is on and the cook is offer-ready
   (`PublicCook.canReceiveDirectRequests`), the CTA names the chef and passes `?cookId=` so create stays exclusive; otherwise it stays the
   generic marketplace form. Successful share/copy tracks discovery `click` / `share` (same `chefs` area as `book_cta`, which includes
-  `cookId`). Share is wired only on the public detail page — cook WYSIWYG preview omits Share but follows the same CTA rule. Stacks until
-  ~48rem (`@3xl`); photo grows stepwise in the row (`@3xl` / `@4xl` / `@5xl`) so resize never crushes copy beside a full-width square.
+  `cookId`, and `menuId` when the CTA is a published menu). Share is wired only on the public detail page — cook WYSIWYG preview omits Share
+  but follows the same CTA rule. Stacks until ~48rem (`@3xl`); photo grows stepwise in the row (`@3xl` / `@4xl` / `@5xl`) so resize never
+  crushes copy beside a full-width square.
+- **Menus** — published, complete inventory menus with at least one meal-option image (`PublicCook.menus`) after the hero. Cards use the
+  same collage as cook menu cards; click opens `PublicCookMenuDialog` (courses and dishes). When the chef-page request toggle is on and the
+  cook is offer-ready, the dialog has **Request this menu** → `/booking-request/form?cookId=&menuId=`. Hidden when none qualify. Shows the
+  first 5 menus; Show more / Show less when there are more. Grid 2 → 3 (`@md`) → 4 (`@2xl`) → 5 (`@5xl`).
 - **Meals** — published dishes **with an image** as marketing meal tiles (`CustomerMealCard` `variant="marketing"`: square image on top,
   title, up to two lines of description); published meals without an image are omitted. Click opens the shared meal details dialog. Shows
   the first 5 meals; when there are more, a bilingual Show more / Show less control sits top-right on the section title row. Grid 2 → 3
@@ -50,8 +55,8 @@ it as invalid object type for `<parent_node>`. Visible star ratings on the hero 
 Section padding matches other public bands (`px-4` → `@lg:px-6`).
 
 Missing or non-public cooks return not found. Detail does not require a catalog-eligible meal (direct links still work). Cooks preview the
-same layout under profile public preview (preview meal list also omits published meals without images and surfaces a warning count); live
-URL sharing is gated on visibility.
+same layout under profile public preview (preview meal and menu lists also omit unpublished / incomplete / no-picture items and surface
+warning counts); live URL sharing is gated on visibility.
 
 Canonical public URL is `/chefs/<pathName>` (and `/en/chefs/<pathName>`). The platform auto-assigns a slug from first name + last name
 (German transliteration so Müller → mueller; collisions get `-2`, `-3`, …). Renaming archives the old slug. Requests to a previous slug or
@@ -74,17 +79,18 @@ the city center — [cities.md](./cities.md). Venue pages use curated cooks only
 
 ### Alternatives considered
 
-| Approach                              | Notes                                       |
-| ------------------------------------- | ------------------------------------------- |
-| Nested public cook namespace on query | Matches other public content namespaces     |
-| Flat find-many on root query          | Works; rejected for consistency             |
-| Slug URLs from day one                | Better SEO; deferred until pathName shipped |
-| Public menus on detail                | Deferred; meals first                       |
+| Approach                              | Notes                                         |
+| ------------------------------------- | --------------------------------------------- |
+| Nested public cook namespace on query | Matches other public content namespaces       |
+| Flat find-many on root query          | Works; rejected for consistency               |
+| Slug URLs from day one                | Better SEO; deferred until pathName shipped   |
+| Public menus on detail                | Shipped: published + complete + ≥1 meal image |
 
 ### Chosen
 
 Public cook list by cook id internally; public detail by `pathName` with 301 from previous slugs and cook id. Lean public cook type with
-nested published meals that have images. Search text and optional geo radius filter (used on city pages, not on the global list).
+nested published meals that have images and nested published complete menus that have a meal image. Search text and optional geo radius
+filter (used on city pages, not on the global list). Menu CTAs still go through the booking-request wizard (not instant book).
 
 ## Next steps
 
@@ -93,15 +99,16 @@ None for public slug URLs. Cook self-serve slug editing stays behind `COOK_PUBLI
 ## Implementation
 
 - SDL: `PublicCook`, meals field, public cook query namespace, search and geo criterion types
-- Queries: public find many/one, meal list; shared visibility and “at least one published meal with image” gate for list and sitemap
-  (`publicCookMealCatalogWhere`); list/sitemap order in `publicVisibleCookIdsFindMany` (picture → published review → cuisine/philosophy →
-  first name)
+- Queries: public find many/one, meal list, menu list (`publicCookMenuFindMany` + `publicCookMenuCatalogWhere` then completeness / image
+  filter); shared visibility and “at least one published meal with image” gate for list and sitemap (`publicCookMealCatalogWhere`);
+  list/sitemap order in `publicVisibleCookIdsFindMany` (picture → published review → cuisine/philosophy → first name)
 - City: `toGqlPublicCook` uses `exactTravelOriginAddress.city`, then `legacyCityName`; chef `?q=` search matches both
 - Geo: haversine travel radius via shared pure helper
 - UI: `ChefsPage` (`SectionChefForAnyOccasion` + `?q=` + debounce + `PublicCookCard` grid), `ChefPage`, shared `ChefProfileView`
-  (`@container`) / `SectionCookHero` / meals / about / testimonials, `PublicCookCard` / `SectionFeaturedCooks` for list and content-page
-  featured cooks, `CookProfileTags` on detail hero; About uses `PublicCook.logo` or `CookAboutBenefitsFallback`; detail multi-column layouts
-  use `@2xl` / `@3xl` / `@5xl` (not early `@sm` / `@md`) so browser resize and profile public preview stay readable
+  (`@container`) / `SectionCookHero` / `SectionCookMenus` / `PublicCookMenuDialog` / meals / about / testimonials, `PublicCookCard` /
+  `SectionFeaturedCooks` for list and content-page featured cooks, `CookProfileTags` on detail hero; About uses `PublicCook.logo` or
+  `CookAboutBenefitsFallback`; detail multi-column layouts use `@2xl` / `@3xl` / `@5xl` (not early `@sm` / `@md`) so browser resize and
+  profile public preview stay readable
 - Share: `ShareButton` + `webShareOrCopy` / `publicChefUrl(pathName)` (`src/web/utils/webShare.ts`); gated by `COOK_PUBLIC_PROFILE_SHARE`;
   hero Share only from `ChefPage` (discovery `chefsDiscoveryShareKey`, secondary variant); cook Preview toolbar Share / Copy / Open when
   live

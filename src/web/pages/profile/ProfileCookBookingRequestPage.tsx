@@ -268,12 +268,15 @@ export function ProfileCookBookingRequestPage({
                                   }[locale]
                         }
                     >
-                        {
-                            {
-                                de: 'Die Anfrage kam über dein öffentliches Kochprofil.',
-                                en: 'This request came from your public chef profile.',
-                            }[locale]
-                        }
+                        {request.requestedMenu
+                            ? {
+                                  de: `Die Anfrage kam über dein öffentliches Kochprofil, für das Menü „${request.requestedMenu.title}“.`,
+                                  en: `This request came from your public chef profile, for the menu “${request.requestedMenu.title}”.`,
+                              }[locale]
+                            : {
+                                  de: 'Die Anfrage kam über dein öffentliches Kochprofil.',
+                                  en: 'This request came from your public chef profile.',
+                              }[locale]}
                     </StatusAlert>
                 ) : null}
 

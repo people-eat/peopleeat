@@ -15,6 +15,7 @@ import { applyDiscountToBookingRequest } from '../utils/applyDiscountToBookingRe
 import { bookingRequestAdjustedMessageGenerateScheduleIfEnabled } from '../utils/bookingRequestAdjustedMessageGenerateSchedule';
 import { bookingRequestCooksNotify } from '../utils/bookingRequestCooksNotify';
 import { bookingRequestDirectCookResolve } from '../utils/bookingRequestDirectCookResolve';
+import { bookingRequestDirectMenuResolve } from '../utils/bookingRequestDirectMenuResolve';
 import { bookingRequestExpireNotifySchedule } from '../utils/bookingRequestExpireNotifySchedule';
 import { bookingRequestExpiresAt } from '../utils/bookingRequestExpiresAt';
 import { userBookingRequestCreateEmailSend } from '../utils/bookingRequestLifecycleEmails';
@@ -91,6 +92,12 @@ export async function userBookingRequestCreate(
             requestedCookId: input.requestedCookId,
             customerUserId: userId,
         });
+        const requestedMenu = requestedCook
+            ? await bookingRequestDirectMenuResolve(serverRuntime, {
+                  cookId: requestedCook.cookId,
+                  requestedMenuId: input.requestedMenuId,
+              })
+            : null;
         const publicationStatus = requestedCook
             ? 'PUBLICATION_DIRECT_TO_COOK'
             : participants.length >= LARGE_GROUP_PARTICIPANT_THRESHOLD
@@ -146,7 +153,7 @@ export async function userBookingRequestCreate(
                     city: exactEventAddress.city,
                     country: exactEventAddress.country,
                 },
-                { direct: true },
+                { direct: true, requestedMenu },
             );
             await bookingRequestPoolCooksPublish(
                 serverRuntime,
@@ -205,7 +212,11 @@ export async function userBookingRequestCreate(
         await sessionEventCreate(serverRuntime, {
             sessionId: requestingSession.sessionId,
             type: 'BOOKING_REQUEST_CREATED',
-            payload: { bookingRequestId, ...(requestedCook ? { requestedCookId: requestedCook.cookId } : {}) },
+            payload: {
+                bookingRequestId,
+                ...(requestedCook ? { requestedCookId: requestedCook.cookId } : {}),
+                ...(requestedMenu ? { requestedMenuId: requestedMenu.menuId } : {}),
+            },
         });
 
         await Promise.all([serverRuntime.publish.userUpdates({ userId }), serverRuntime.publish.adminUpdates()]);

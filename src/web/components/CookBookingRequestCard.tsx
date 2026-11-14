@@ -26,6 +26,7 @@ export type CookBookingRequestCardRequest = {
     } | null;
     requestedByCustomer?: boolean;
     isExclusive?: boolean;
+    requestedMenu?: { menuId: string; title: string } | null;
 };
 
 export function CookBookingRequestCard({ request, variant }: { request: CookBookingRequestCardRequest; variant: 'open' | 'declined' }) {
@@ -51,6 +52,7 @@ export function CookBookingRequestCard({ request, variant }: { request: CookBook
                     </BookingStatusPill>
                 </div>
                 <h2 className="line-clamp-1 font-semibold leading-snug">{request.occasion}</h2>
+                {request.requestedMenu ? <p className="line-clamp-1 text-sm text-muted-foreground">{request.requestedMenu.title}</p> : null}
                 <p className="flex min-w-0 items-center gap-2 text-sm text-foreground">
                     <CalendarIcon className="size-4 shrink-0 text-muted-foreground/70" aria-hidden />
                     <span className="truncate">

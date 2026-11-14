@@ -2,7 +2,8 @@ import { eq } from 'drizzle-orm';
 import { describe, expect, it } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
-import { bookingRequestCooks, cooks } from '../db/schema';
+import { bookingRequestCooks, cooks, menus } from '../db/schema';
+import type { BookingRequestCookRequestedMenu } from '../domain/bookingRequest';
 import { commandSetup, testDb } from '../test/commandTestUtils';
 import { bookingRequestCookNotifiedUpsert, cookIdsCanCreateOffersFind } from '../utils/cookIdsCanCreateOffersFind';
 import { cookIsInTravelRadius } from '../utils/cookIsInTravelRadius';
@@ -110,5 +111,64 @@ describe('cookIdsCanCreateOffersFind', () => {
 
         const [row] = await testDb.select().from(bookingRequestCooks).where(eq(bookingRequestCooks.bookingRequestId, bookingRequestId));
         expect(row?.notifiedAt).toBeTruthy();
+    });
+
+    it('keeps requestedMenu insert-only on notify conflict', async () => {
+        const setup = await commandSetup.withUser({ firstName: 'Menu', lastName: 'Notify' });
+        await testDb.insert(cooks).values({
+            cookId: setup.user.userId,
+            isVisible: true,
+            isApprovedByAdmin: true,
+            exactTravelOriginAddress: berlin,
+            maximumTravelDistance: 50,
+            ...stripeReady,
+        });
+
+        const bookingRequestId = idCreate();
+        const { bookingRequests } = await import('../db/schema');
+        await testDb.insert(bookingRequests).values({
+            bookingRequestId,
+            userId: setup.user.userId,
+            occasion: 'Test',
+            dateTime: new Date(Date.now() + 86_400_000),
+            exactEventAddress: berlin,
+            originalMessage: 'hi',
+            publicationStatus: 'PUBLICATION_DIRECT_TO_COOK',
+            preferences: [],
+        });
+
+        const firstMenuId = idCreate();
+        const secondMenuId = idCreate();
+        await testDb.insert(menus).values([
+            { menuId: firstMenuId, cookId: setup.user.userId, title: 'First', description: '' },
+            { menuId: secondMenuId, cookId: setup.user.userId, title: 'Second', description: '' },
+        ]);
+        const firstMenu: BookingRequestCookRequestedMenu = {
+            menuId: firstMenuId,
+            title: 'First',
+            description: '',
+            courses: [],
+        };
+        const secondMenu: BookingRequestCookRequestedMenu = {
+            menuId: secondMenuId,
+            title: 'Second',
+            description: '',
+            courses: [],
+        };
+
+        await bookingRequestCookNotifiedUpsert(setup.serverRuntime, {
+            cookId: setup.user.userId,
+            bookingRequestId,
+            requestedMenu: firstMenu,
+        });
+        await bookingRequestCookNotifiedUpsert(setup.serverRuntime, {
+            cookId: setup.user.userId,
+            bookingRequestId,
+            requestedMenu: secondMenu,
+        });
+
+        const [row] = await testDb.select().from(bookingRequestCooks).where(eq(bookingRequestCooks.bookingRequestId, bookingRequestId));
+        expect(row?.requestedMenuId).toBe(firstMenuId);
+        expect(row?.requestedMenu?.title).toBe('First');
     });
 });

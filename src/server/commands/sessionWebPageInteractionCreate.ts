@@ -20,6 +20,13 @@ function optionalCookId(record: Record<string, unknown>): { cookId: string } | R
     return { cookId };
 }
 
+function optionalMenuId(record: Record<string, unknown>): { menuId: string } | Record<string, never> {
+    if (typeof record.menuId !== 'string') return {};
+    const menuId = record.menuId.trim();
+    if (!isNanoId(menuId)) return {};
+    return { menuId };
+}
+
 function optionalLocationSetting(
     record: Record<string, unknown>,
 ): { setting: BookingRequestFormLocationSettingChoice } | Record<string, never> {
@@ -41,6 +48,7 @@ function parseInteraction(raw: unknown): SessionEventWebPageInteractionPayload['
                 type,
                 step: record.step,
                 ...optionalCookId(record),
+                ...optionalMenuId(record),
                 ...(type === 'step_completed' ? optionalLocationSetting(record) : {}),
             };
         }
@@ -59,7 +67,7 @@ function parseInteraction(raw: unknown): SessionEventWebPageInteractionPayload['
         return null;
     }
     if (type === 'click' && typeof record.key === 'string' && record.key.length > 0 && record.key.length <= 128) {
-        return { type: 'click', key: record.key, ...optionalCookId(record) };
+        return { type: 'click', key: record.key, ...optionalCookId(record), ...optionalMenuId(record) };
     }
     if (
         type === 'change' &&

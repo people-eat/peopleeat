@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
+import { cookMenuIsPublicCatalogEligible } from '../../../shared';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -115,6 +116,15 @@ export function ProfileCookPublicPage({ data, search }: { data: GqlCProfileCookP
     const publishedMeals = cook.meals.filter((meal) => meal.publishedAt != null);
     const publicCatalogMeals = publishedMeals.filter((meal) => meal.imageUrl != null && meal.imageUrl.length > 0);
     const publishedWithoutImageCount = publishedMeals.length - publicCatalogMeals.length;
+    const publishedMenus = cook.menus.filter((menu) => menu.publishedAt != null);
+    const publicCatalogMenus = publishedMenus.filter((menu) =>
+        cookMenuIsPublicCatalogEligible({
+            courses: menu.courses.map((course) => ({ title: course.title, mealOptionCount: course.mealOptions.length })),
+            courseMealOptionImages: menu.courseMealOptionImages,
+        }),
+    );
+    const publishedMenusNotCatalogCount = publishedMenus.length - publicCatalogMenus.length;
+    const manageWarningCount = publishedWithoutImageCount + publishedMenusNotCatalogCount;
     const view: ChefProfileViewModel = {
         displayName: user.firstName,
         profilePictureUrl: user.profilePicture?.url ?? null,
@@ -130,6 +140,21 @@ export function ProfileCookPublicPage({ data, search }: { data: GqlCProfileCookP
             title: meal.title,
             description: meal.description,
             imageUrl: meal.imageUrl,
+        })),
+        menus: publicCatalogMenus.map((menu) => ({
+            menuId: menu.menuId,
+            title: menu.title,
+            description: menu.description,
+            courseMealOptionImages: menu.courseMealOptionImages,
+            courses: menu.courses.map((course) => ({
+                title: course.title,
+                mealOptions: course.mealOptions.map((meal) => ({
+                    mealId: meal.mealId,
+                    title: meal.title,
+                    description: meal.description,
+                    imageUrl: meal.imageUrl,
+                })),
+            })),
         })),
     };
     const confirmCopy =
@@ -196,9 +221,9 @@ export function ProfileCookPublicPage({ data, search }: { data: GqlCProfileCookP
                         <Link to="/{-$locale}/profile/public" search={{ tab: 'manage' }} replace>
                             <Settings2Icon aria-hidden />
                             {{ de: 'Verwalten', en: 'Manage' }[locale]}
-                            {publishedWithoutImageCount > 0 ? (
+                            {manageWarningCount > 0 ? (
                                 <Badge variant="outline" className="ml-1 bg-muted px-1.5 py-0 text-[10px] font-medium">
-                                    {publishedWithoutImageCount}
+                                    {manageWarningCount}
                                 </Badge>
                             ) : null}
                         </Link>
@@ -389,6 +414,35 @@ export function ProfileCookPublicPage({ data, search }: { data: GqlCProfileCookP
                                     {
                                         de: 'Gerichte ohne Bild erscheinen nicht auf deiner öffentlichen Kochseite.',
                                         en: 'Meals without a picture do not appear on your public cook page.',
+                                    }[locale]
+                                }
+                            </StatusAlert>
+                        ) : null}
+                        {publishedMenusNotCatalogCount > 0 ? (
+                            <StatusAlert
+                                tone="warning"
+                                title={
+                                    {
+                                        de:
+                                            publishedMenusNotCatalogCount === 1
+                                                ? '1 veröffentlichtes Menü ohne Bild oder unvollständig'
+                                                : `${publishedMenusNotCatalogCount} veröffentlichte Menüs ohne Bild oder unvollständig`,
+                                        en:
+                                            publishedMenusNotCatalogCount === 1
+                                                ? '1 published menu is incomplete or has no picture'
+                                                : `${publishedMenusNotCatalogCount} published menus are incomplete or have no picture`,
+                                    }[locale]
+                                }
+                                action={
+                                    <Button asChild size="sm" variant="outline">
+                                        <Link to="/{-$locale}/profile/menus">{{ de: 'Zu den Menüs', en: 'Go to menus' }[locale]}</Link>
+                                    </Button>
+                                }
+                            >
+                                {
+                                    {
+                                        de: 'Unvollständige Menüs und Menüs ohne Gerichtsbild erscheinen nicht auf deiner öffentlichen Kochseite.',
+                                        en: 'Incomplete menus and menus without a dish picture do not appear on your public cook page.',
                                     }[locale]
                                 }
                             </StatusAlert>

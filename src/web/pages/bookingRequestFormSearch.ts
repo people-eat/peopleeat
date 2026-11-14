@@ -49,6 +49,8 @@ export type BookingRequestFormSearch = {
     step?: BookingRequestFormStep;
     /** Public chef-page target. Survives draft sync and the auth redirect. */
     cookId?: string;
+    /** Published menu on that chef. Dropped when `cookId` is absent. */
+    menuId?: string;
 };
 
 export type BookingRequestFormDateTimeBounds = {
@@ -185,6 +187,8 @@ export function parseBookingRequestFormSearch(search: Record<string, unknown>): 
     const setting = bookingRequestSettingChoiceParse(search.setting);
     const step = isFormStep(search.step) ? search.step : undefined;
     const cookId = typeof search.cookId === 'string' && search.cookId.trim().length > 0 ? search.cookId.trim() : undefined;
+    const menuIdRaw = typeof search.menuId === 'string' && search.menuId.trim().length > 0 ? search.menuId.trim() : undefined;
+    const menuId = cookId != null ? menuIdRaw : undefined;
 
     const bounds = bookingRequestFormDateTimeBoundsFromSearch({ minDateTime, maxDateTime });
 
@@ -211,6 +215,7 @@ export function parseBookingRequestFormSearch(search: Record<string, unknown>): 
         setting,
         step,
         cookId,
+        menuId,
     };
 }
 
@@ -281,8 +286,10 @@ export function bookingRequestFormSearchFromValues(input: {
     minDateTime?: string;
     maxDateTime?: string;
     cookId?: string;
+    menuId?: string;
 }): BookingRequestFormSearch {
     const { values, step, minDateTime, maxDateTime, cookId } = input;
+    const menuId = cookId?.trim() && input.menuId?.trim() ? input.menuId.trim() : undefined;
     const address = values.exactEventAddress;
     return {
         occasion: values.occasion.trim() || undefined,
@@ -307,6 +314,7 @@ export function bookingRequestFormSearchFromValues(input: {
         setting: values.settingChoice ?? undefined,
         step: step === 'occasion' ? undefined : step,
         cookId: cookId?.trim() || undefined,
+        menuId,
     };
 }
 
@@ -338,6 +346,7 @@ export function bookingRequestFormSearchEqual(a: BookingRequestFormSearch, b: Bo
         a.country === b.country &&
         a.setting === b.setting &&
         a.step === b.step &&
-        a.cookId === b.cookId
+        a.cookId === b.cookId &&
+        a.menuId === b.menuId
     );
 }

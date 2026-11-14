@@ -46,6 +46,7 @@ export type AdminBookingRequestListCardRequest = {
     participants: { type: string }[];
     customer: { userId: string; firstName: string; lastName: string; emailAddress: string | null };
     requestedCook?: { cookId: string; user: { userId: string; firstName: string; lastName: string } } | null;
+    requestedMenu?: { menuId: string; title: string } | null;
     offers: AdminBookingRequestListCardOffer[];
 };
 
@@ -349,6 +350,7 @@ export function AdminBookingRequestListCard({ request }: { request: AdminBooking
                         ) : null}
                     </div>
                 </div>
+                {request.requestedMenu ? <p className="line-clamp-1 text-sm text-muted-foreground">{request.requestedMenu.title}</p> : null}
 
                 <div className="flex min-w-0 flex-col gap-2">
                     <p className="flex min-w-0 items-center gap-2 text-sm text-foreground">

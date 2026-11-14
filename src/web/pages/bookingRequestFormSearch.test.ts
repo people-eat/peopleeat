@@ -48,6 +48,7 @@ describe('parseBookingRequestFormSearch', () => {
             setting: undefined,
             step: 'message',
             cookId: undefined,
+            menuId: undefined,
         });
     });
 
@@ -160,6 +161,21 @@ describe('parseBookingRequestFormSearch', () => {
         const next = bookingRequestFormSearchFromValues({ values, step: 'occasion', cookId: search.cookId });
         expect(next.cookId).toBe('cook_abc');
         expect(bookingRequestFormSearchEqual(search, { ...search, cookId: 'other' })).toBe(false);
+    });
+
+    it('keeps menuId only when cookId is present', () => {
+        const withCook = parseBookingRequestFormSearch({ cookId: 'cook_abc', menuId: 'menu_abc', occasion: 'Birthday' });
+        expect(withCook.menuId).toBe('menu_abc');
+        const values = bookingRequestFormValuesFromSearch(withCook);
+        const next = bookingRequestFormSearchFromValues({
+            values,
+            step: 'occasion',
+            cookId: withCook.cookId,
+            menuId: withCook.menuId,
+        });
+        expect(next.menuId).toBe('menu_abc');
+        expect(parseBookingRequestFormSearch({ menuId: 'menu_abc' }).menuId).toBeUndefined();
+        expect(bookingRequestFormSearchEqual(withCook, { ...withCook, menuId: 'other' })).toBe(false);
     });
 
     it('preserves datetime bounds when rebuilding search from values', () => {

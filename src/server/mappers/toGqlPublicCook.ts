@@ -33,6 +33,7 @@ export function toGqlPublicCook(
         // Field resolvers populate slots / meals / testimonials / rating.
         callSlots: [],
         meals: [],
+        menus: [],
         testimonials: [],
         rating: undefined as unknown as GqlSPublicCook['rating'],
         canReceiveDirectRequests: cookCanReceiveDirectBookingRequests(cook, user.status),

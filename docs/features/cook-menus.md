@@ -69,10 +69,11 @@ Cooks can also find those copies under `/profile/menus?scope=offers`, edit them 
 customizations back onto the library source (`copyOfMenuId`).
 
 **Publish status on inventory menus** does not gate offer pickers (all non-deleted menus listed). When `PUBLICATION_MENUS` is off, cook
-list/detail hide draft/published badges and publish/unpublish actions (admin still sees them). Draft/publish still drives public cook-page
-catalog when that surface is productized. **Completeness** does: menus where any course lacks meal options show an Incomplete badge in offer
-create / edit-menus pickers and cannot be selected until finished via **Edit**. Pickers (`CookMenuSelectPanel`) use two container-query
-grids of base `Card`s (1 → 2 from `@xl` → 3 from `@2xl` → 4 from `@3xl`) with the same meal-image collage as `CookMenuCard`
+list/detail hide draft/published badges and publish/unpublish actions (admin still sees them). The public chef-page catalog
+(`PublicCook.menus`) is independent of that toggle: published, complete inventory menus with at least one meal-option image
+(`cookMenuIsPublicCatalogEligible`). **Completeness** also gates offer pickers: menus where any course lacks meal options show an Incomplete
+badge in offer create / edit-menus pickers and cannot be selected until finished via **Edit**. Pickers (`CookMenuSelectPanel`) use two
+container-query grids of base `Card`s (1 → 2 from `@xl` → 3 from `@2xl` → 4 from `@3xl`) with the same meal-image collage as `CookMenuCard`
 (`courseMealOptionImages`, or book icon when empty), secondary **Edit** / **Fertigstellen** (Finish) plus outline Select / Selected on
 complete cards (full-width below `@md`, end-aligned from `@md`): selectable menus first, incomplete menus in a dedicated section below.
 
@@ -128,7 +129,8 @@ item’s full height while a `DragOverlay` follows the pointer on the vertical a
   `adminCookMenuCopy` (inventory only)
 - Queries: `cookMenuFindMany`, `cookOfferMenuFindMany`, find-one with course hydrate (derives `courseMealOptionImages` from hydrated meals);
   `Cook.menusCounts(criteria: [CookMenuCriterion!]!)` (soft-deleted never counted; optional `searchText`); admin find/counts (inventory
-  only) and findOne (inventory + offer-scoped for deep-links; hydrates courses; exposes `bookingRequestOfferId` / `copyOfMenuId`)
+  only) and findOne (inventory + offer-scoped for deep-links; hydrates courses; exposes `bookingRequestOfferId` / `copyOfMenuId`); public
+  chef-page catalog `publicCookMenuFindMany` (published inventory, then `cookMenuIsPublicCatalogEligible`)
 - Guard: `guardCookMutation` + legal acceptance
 - UI: `CookMenuCard` / exported `CookMenuCardMedia` (collage from `courseMealOptionImages`; card shell measures height and sizes the collage
   as a square via ResizeObserver — avoids CSS `aspect-square` + `self-stretch` flex blow-up; admin click → `MenuDetailsDialog`),

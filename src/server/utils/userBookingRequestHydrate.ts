@@ -18,6 +18,7 @@ import {
 } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSUserBookingRequest } from '../graphql/generated';
+import { toGqlBookingRequestRequestedMenu } from '../mappers/toGqlBookingRequestRequestedMenu';
 import { toGqlPublicCookOfferAddon } from '../mappers/toGqlCookOfferAddon';
 import { toGqlUserBookingRequest } from '../mappers/toGqlUserBookingRequest';
 import { toGqlUserBookingRequestOffer } from '../mappers/toGqlUserBookingRequestOffer';
@@ -88,6 +89,7 @@ export async function userBookingRequestHydrate(
                       bookingRequestId: bookingRequestCooks.bookingRequestId,
                       cookId: bookingRequestCooks.cookId,
                       declinedAt: bookingRequestCooks.declinedAt,
+                      requestedMenu: bookingRequestCooks.requestedMenu,
                   })
                   .from(bookingRequestCooks)
                   .where(inArray(bookingRequestCooks.bookingRequestId, bookingRequestIds)),
@@ -202,6 +204,13 @@ export async function userBookingRequestHydrate(
                 requestedCookBanned: bookingRequest.requestedCookId
                     ? requestedCookStatusById.get(bookingRequest.requestedCookId) === 'BANNED'
                     : false,
+                requestedMenu: (() => {
+                    if (!bookingRequest.requestedCookId) return null;
+                    const affinity = requestedCookAffinity.find(
+                        (row) => row.bookingRequestId === bookingRequest.bookingRequestId && row.cookId === bookingRequest.requestedCookId,
+                    );
+                    return affinity?.requestedMenu ? toGqlBookingRequestRequestedMenu(affinity.requestedMenu) : null;
+                })(),
             }),
         );
     }

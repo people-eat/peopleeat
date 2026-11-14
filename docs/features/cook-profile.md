@@ -42,14 +42,15 @@ Signed-in cooks manage these areas under `/profile/*`:
    travel origin is missing.
 4. **Public profile** (`/profile/public`) has two tabs: **Preview** (default) and **Manage** (`?tab=manage`). Preview is a full-height
    customer WYSIWYG: static `PublicCookCard` (same column width as the public listing grid) plus detail preview of the saved profile and
-   published meals that have images — even when customers would not see the page yet — with Share / Copy link / Open when live. **Share**
-   (gated by `COOK_PUBLIC_PROFILE_SHARE`) opens the browser native share sheet when available (`navigator.share`), otherwise copies the
-   absolute `/chefs/$pathName` URL (same toast as Copy link). Manage controls public visibility (`isVisible` with a confirm dialog before
-   save) and the landscape About additional picture (`CookLogoEditor`; 16:9 `logo` crop; `CookUpdate.logoFileUploadId` immediate save;
-   without a picture the public About column shows the peopleeat benefits fallback — [public-chefs.md](./public-chefs.md)). Published meals
-   without an image are omitted from the preview and called out on Manage with a warning banner (count badge on the Manage tab). Both
-   previews use `Cook.rating` for the star row; the testimonials section stays omitted (no cook-scoped public testimonial list on this page
-   yet). Share / Copy / Open are gated on visible + admin-approved.
+   published meals that have images and published complete menus that have a meal picture — even when customers would not see the page yet —
+   with Share / Copy link / Open when live. **Share** (gated by `COOK_PUBLIC_PROFILE_SHARE`) opens the browser native share sheet when
+   available (`navigator.share`), otherwise copies the absolute `/chefs/$pathName` URL (same toast as Copy link). Manage controls public
+   visibility (`isVisible` with a confirm dialog before save) and the landscape About additional picture (`CookLogoEditor`; 16:9 `logo`
+   crop; `CookUpdate.logoFileUploadId` immediate save; without a picture the public About column shows the peopleeat benefits fallback —
+   [public-chefs.md](./public-chefs.md)). Published meals without an image, and published menus that are incomplete or have no dish picture,
+   are omitted from the preview and called out on Manage with warning banners (combined count badge on the Manage tab). Both previews use
+   `Cook.rating` for the star row; the testimonials section stays omitted (no cook-scoped public testimonial list on this page yet). Share /
+   Copy / Open are gated on visible + admin-approved.
 
 5. **Wallet** (`/profile/wallet`) is the Stripe Connect onboarding surface. CTAs require admin approval. Coarse status uses info / warning /
    success alerts — see [status-messaging.md](../styles/status-messaging.md). Connect flags (`stripeAccountActive` /

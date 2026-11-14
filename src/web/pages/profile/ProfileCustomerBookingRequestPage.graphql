@@ -49,6 +49,10 @@ fragment ProfileCustomerBookingRequestPageUser on User {
                 }
             }
         }
+        requestedMenu {
+            menuId
+            title
+        }
         preferences
         canceledAt
         cancellationReason

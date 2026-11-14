@@ -26,7 +26,7 @@ are **never** accepted by `sessionEventCreate` (password sign-in, phone confirm,
 | ---------------------------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | `WEB_PAGE_VISITED`                                   | `SessionWebPageVisitTracker` → `sessionWebPageVisitCreate`           | `webPageKey`, optional `path` / entity ids                                                                                        |
 | `WEB_PAGE_INTERACTION`                               | Booking form / cook offer create → `sessionWebPageInteractionCreate` | `webPageKey`, `area`, optional `bookingRequestId`, structured `interaction`                                                       |
-| `BOOKING_REQUEST_CREATED`                            | `userBookingRequestCreate`                                           | `bookingRequestId`, optional `requestedCookId`                                                                                    |
+| `BOOKING_REQUEST_CREATED`                            | `userBookingRequestCreate`                                           | `bookingRequestId`, optional `requestedCookId`, optional `requestedMenuId`                                                        |
 | `BOOKING_REQUEST_OPENED_TO_OTHER_COOKS`              | `userBookingRequestOpenToOtherCooks`                                 | `bookingRequestId`                                                                                                                |
 | `BOOKING_REQUEST_CANCELED`                           | `userBookingRequestCancel`                                           | `bookingRequestId`                                                                                                                |
 | `BOOKING_REQUEST_OFFER_ACCEPTED`                     | `userBookingRequestOfferAccept` / `cookBookingRequestOfferAccept`    | `bookingRequestId`, `bookingRequestOfferId`, `actor`: `customer` \| `cook`                                                        |
@@ -59,7 +59,7 @@ are **never** accepted by `sessionEventCreate` (password sign-in, phone confirm,
 Booking-form funnel interactions use stable step ids from `src/shared/bookingRequestFormFunnel.ts` (`step_entered` / `step_completed`), not
 UI label strings. Indoor/outdoor is not a funnel step. When `BOOKING_REQUEST_SETTING` is on, `location` `step_completed` carries `setting`:
 `INDOOR` | `OUTDOOR` | `LATER` | `skipped` so form conversion can be compared with the toggle off. Chef-page funnel steps and `book_cta`
-clicks also carry optional `cookId`. Cook offer create-UI steps use `src/shared/cookBookingRequestOfferFunnel.ts`
+clicks also carry optional `cookId` and optional `menuId`. Cook offer create-UI steps use `src/shared/cookBookingRequestOfferFunnel.ts`
 (`area: cook_booking_request_offer`, client steps `offer_create` / `menus` / `price` / `message`) and require `bookingRequestId` on the
 payload for cook × request aggregation. Gift-card funnel: `src/shared/giftCardFunnel.ts` (`area: gift_card`, client steps `configure` /
 `auth` / `checkout`; terminals `created` / `paid` from lifecycle events). Chef sign-up funnel: `src/shared/chefSignUpFunnel.ts`

@@ -24,6 +24,10 @@ fragment ProfileCookBookingRequestPoolCard on CookBookingRequest {
     }
     requestedByCustomer
     isExclusive
+    requestedMenu {
+        menuId
+        title
+    }
 }
 
 fragment ProfileCookBookingRequestPoolPageUser on User {

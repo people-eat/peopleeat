@@ -5,6 +5,8 @@ import { SectionCookHero } from '../sections/SectionCookHero';
 import type { SectionCookHeroBookCta, SectionCookHeroCook } from '../sections/SectionCookHero';
 import { SectionCookMeals } from '../sections/SectionCookMeals';
 import type { SectionCookMeal } from '../sections/SectionCookMeals';
+import { SectionCookMenus } from '../sections/SectionCookMenus';
+import type { SectionCookMenu } from '../sections/SectionCookMenus';
 import { SectionCookTestimonials } from '../sections/SectionCookTestimonials';
 import type { SectionCookTestimonial } from '../sections/SectionCookTestimonials';
 import { SectionQuestionsAndAnswers } from '../sections/SectionQuestionsAndAnswers';
@@ -13,6 +15,7 @@ export type ChefProfileViewModel = SectionCookHeroCook & {
     biography: string;
     logoUrl?: string | null;
     meals: SectionCookMeal[];
+    menus?: SectionCookMenu[];
     // Omit entirely to hide the testimonials section (e.g. cook self-preview
     // does not load published customer reviews yet).
     testimonials?: SectionCookTestimonial[];
@@ -22,12 +25,14 @@ export function ChefProfileView({
     cook,
     showChefsIndexLink = true,
     onBookCtaClick,
+    onBookMenuCtaClick,
     shareButton,
     bookCta,
 }: {
     cook: ChefProfileViewModel;
     showChefsIndexLink?: boolean;
     onBookCtaClick?: () => void;
+    onBookMenuCtaClick?: (menuId: string) => void;
     shareButton?: ReactNode;
     bookCta?: SectionCookHeroBookCta;
 }) {
@@ -42,6 +47,7 @@ export function ChefProfileView({
                 shareButton={shareButton}
                 bookCta={bookCta}
             />
+            <SectionCookMenus menus={cook.menus ?? []} bookCookId={bookCta?.cookId} onBookMenuCtaClick={onBookMenuCtaClick} />
             <SectionCookMeals meals={cook.meals} />
             <SectionCookAbout biography={cook.biography} logoUrl={cook.logoUrl} />
             <SectionCookTestimonials testimonials={cook.testimonials} />

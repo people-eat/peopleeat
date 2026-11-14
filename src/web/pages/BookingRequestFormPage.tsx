@@ -278,6 +278,7 @@ function createInputFromValues(
     confirmedDiscount: ConfirmedDiscount | null,
     settingEnabled: boolean,
     requestedCookId?: string | null,
+    requestedMenuId?: string | null,
 ): GqlCUserBookingRequestCreate | null {
     if (!values.exactEventAddress || !values.priceClassType) return null;
     if (values.adultCount < 1) return null;
@@ -297,6 +298,14 @@ function createInputFromValues(
         redeemCode: confirmedDiscount?.redeemCode ?? null,
         setting: settingEnabled ? bookingRequestSettingFromChoice(values.settingChoice) : null,
         requestedCookId: requestedCookId ?? null,
+        requestedMenuId: requestedMenuId ?? null,
+    };
+}
+
+function bookingRequestFormFunnelTarget(search: BookingRequestFormSearch) {
+    return {
+        ...(search.cookId ? { cookId: search.cookId } : {}),
+        ...(search.menuId ? { menuId: search.menuId } : {}),
     };
 }
 
@@ -335,6 +344,9 @@ export function BookingRequestFormPage({
     const honorDirect = cookDirectToggleOn && requestedCook?.canReceiveDirectRequests === true;
     const waitingForDirectCook = search.cookId != null && cookDirectToggleOn && cookFetching;
     const leftoverCookId = search.cookId != null && !honorDirect && !waitingForDirectCook;
+    const requestedMenu =
+        honorDirect && search.menuId != null ? (requestedCook?.menus.find((menu) => menu.menuId === search.menuId) ?? null) : null;
+    const leftoverMenuId = honorDirect && search.menuId != null && requestedMenu == null && !waitingForDirectCook;
     const contentSteps = bookingRequestFormContentSteps(restrictionsEnabled);
     const [step, setStep] = useState<FormStep>(() => initialStepFromSearch(search, signedIn, contentSteps));
     const [busy, setBusy] = useState(false);
@@ -409,7 +421,7 @@ export function BookingRequestFormPage({
                 interaction: {
                     type,
                     step: funnelStep,
-                    ...(search.cookId ? { cookId: search.cookId } : {}),
+                    ...bookingRequestFormFunnelTarget(search),
                 },
             },
         });
@@ -478,6 +490,7 @@ export function BookingRequestFormPage({
             minDateTime: search.minDateTime,
             maxDateTime: search.maxDateTime,
             cookId: search.cookId,
+            menuId: search.menuId,
         });
         if (bookingRequestFormSearchEqual(nextSearch, search)) return;
         void navigate({ search: nextSearch, replace: true });
@@ -545,6 +558,7 @@ export function BookingRequestFormPage({
             confirmedDiscount,
             settingEnabled,
             honorDirect ? requestedCook?.cookId : null,
+            requestedMenu?.menuId ?? null,
         );
         if (!input) {
             toast.error(
@@ -624,7 +638,7 @@ export function BookingRequestFormPage({
                         type: 'step_completed',
                         step: 'location',
                         setting,
-                        ...(search.cookId ? { cookId: search.cookId } : {}),
+                        ...bookingRequestFormFunnelTarget(search),
                     },
                 },
             });
@@ -728,10 +742,25 @@ export function BookingRequestFormPage({
                                         }[locale]
                                     }
                                 >
+                                    {requestedMenu
+                                        ? {
+                                              de: `Nur dieser Koch sieht deine Anfrage zuerst, für das Menü „${requestedMenu.title}“. Du kannst sie später auch für andere öffnen.`,
+                                              en: `Only this chef sees your request first, for the menu “${requestedMenu.title}”. You can open it to others later.`,
+                                          }[locale]
+                                        : {
+                                              de: 'Nur dieser Koch sieht deine Anfrage zuerst. Du kannst sie später auch für andere öffnen.',
+                                              en: 'Only this chef sees your request first. You can open it to others later.',
+                                          }[locale]}
+                                </StatusAlert>
+                            </div>
+                        ) : null}
+                        {leftoverMenuId && requestedCook ? (
+                            <div className="px-4 pt-4">
+                                <StatusAlert tone="info">
                                     {
                                         {
-                                            de: 'Nur dieser Koch sieht deine Anfrage zuerst. Du kannst sie später auch für andere öffnen.',
-                                            en: 'Only this chef sees your request first. You can open it to others later.',
+                                            de: `Dieses Menü ist gerade nicht verfügbar. Die Anfrage geht trotzdem nur an ${requestedCook.user.display}.`,
+                                            en: `This menu is not available right now. The request still goes only to ${requestedCook.user.display}.`,
                                         }[locale]
                                     }
                                 </StatusAlert>

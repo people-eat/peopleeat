@@ -292,7 +292,19 @@ export function ProfileCustomerBookingRequestPage({
 
                 {request.requestedCook ? (
                     <section className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-4">
-                        {requestedCookIdentity(request.requestedCook, request.isExclusive, locale)}
+                        <div className="grid min-w-0 gap-1">
+                            {requestedCookIdentity(request.requestedCook, request.isExclusive, locale)}
+                            {request.requestedMenu ? (
+                                <p className="text-sm text-muted-foreground">
+                                    {
+                                        {
+                                            de: `Angefragtes Menü: ${request.requestedMenu.title}`,
+                                            en: `Requested menu: ${request.requestedMenu.title}`,
+                                        }[locale]
+                                    }
+                                </p>
+                            ) : null}
+                        </div>
                         {request.isExclusive ? (
                             <div className="flex min-w-0 flex-col items-stretch gap-2 sm:items-end">
                                 {request.directRequestNeedsExpansion ? (

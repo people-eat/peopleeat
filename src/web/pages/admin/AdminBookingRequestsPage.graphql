@@ -61,6 +61,10 @@ query AdminBookingRequestsPage($criterion: AdminBookingRequestCriterion!) {
                             lastName
                         }
                     }
+                    requestedMenu {
+                        menuId
+                        title
+                    }
                 }
                 bookingRequestsCounts(criteria: [$criterion])
             }

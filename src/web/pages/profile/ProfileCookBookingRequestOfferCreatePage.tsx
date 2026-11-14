@@ -139,6 +139,30 @@ function menuIdsFromOfferCreateSearch(search: ProfileCookBookingRequestOfferCrea
     return idsFromOfferCreateSearch(search.menus);
 }
 
+function initialOfferCreateSelectedMenuIds(input: {
+    search: ProfileCookBookingRequestOfferCreateSearch;
+    requestedMenuId?: string | null;
+    menus: ReadonlyArray<{
+        menuId: string;
+        courses: ReadonlyArray<{ title: string; mealOptions: ReadonlyArray<unknown> }>;
+    }>;
+}): string[] {
+    const fromSearch = menuIdsFromOfferCreateSearch(input.search);
+    if (fromSearch.length > 0) return fromSearch;
+    const requestedMenuId = input.requestedMenuId?.trim() || null;
+    if (requestedMenuId == null) return [];
+    const menu = input.menus.find((row) => row.menuId === requestedMenuId);
+    if (
+        menu == null ||
+        !cookMenuSelectPanelMenuIsComplete(
+            menu.courses.map((course) => ({ title: course.title, mealOptionCount: course.mealOptions.length })),
+        )
+    ) {
+        return [];
+    }
+    return [requestedMenuId];
+}
+
 function addonIdsFromOfferCreateSearch(search: ProfileCookBookingRequestOfferCreateSearch): string[] {
     return idsFromOfferCreateSearch(search.addons);
 }
@@ -249,8 +273,16 @@ export function ProfileCookBookingRequestOfferCreatePage({
 
     const seedSuggestedOfferMessage =
         seedLookup.__typename === 'CookBookingRequestAvailable' ? seedLookup.bookingRequest.suggestedOfferMessage : '';
+    const seedRequestedMenuId =
+        seedLookup.__typename === 'CookBookingRequestAvailable' ? seedLookup.bookingRequest.requestedMenu?.menuId : null;
     const [priceSeedFromSearch] = useState(() => search.price);
-    const [selectedMenuIds, setSelectedMenuIds] = useState(() => menuIdsFromOfferCreateSearch(search));
+    const [selectedMenuIds, setSelectedMenuIds] = useState(() =>
+        initialOfferCreateSelectedMenuIds({
+            search,
+            requestedMenuId: seedRequestedMenuId,
+            menus: seedCook?.menus ?? [],
+        }),
+    );
     const [selectedAddonIds, setSelectedAddonIds] = useState(() => addonIdsFromOfferCreateSearch(search));
     const [menuPriceCents, setMenuPriceCents] = useState(() => search.price ?? 0);
     const [priceValid, setPriceValid] = useState(false);
@@ -766,6 +798,21 @@ export function ProfileCookBookingRequestOfferCreatePage({
                     inert={step !== 'menus' ? true : undefined}
                 >
                     {menuSelectionError != null ? <StatusAlert tone="error">{menuSelectionError}</StatusAlert> : null}
+                    {request.requestedMenu ? (
+                        <StatusAlert tone="info">
+                            {inventoryMenus.some(
+                                (menu) => menu.menuId === request.requestedMenu?.menuId && cookMenuSelectPanelMenuIsComplete(menu.courses),
+                            )
+                                ? {
+                                      de: `Der Gast hat „${request.requestedMenu.title}“ angefragt. Es ist vorausgewählt. Du kannst Menüs hinzufügen oder tauschen.`,
+                                      en: `The guest asked for “${request.requestedMenu.title}”. It is preselected. You can add or swap menus.`,
+                                  }[locale]
+                                : {
+                                      de: `Der Gast hat „${request.requestedMenu.title}“ angefragt. Dieses Menü ist in deiner Bibliothek nicht mehr verfügbar. Wähle oder erstelle ein Ersatzmenü.`,
+                                      en: `The guest asked for “${request.requestedMenu.title}”. That library menu is no longer available. Pick or create a replacement.`,
+                                  }[locale]}
+                        </StatusAlert>
+                    ) : null}
                     <CookMenuSelectPanel
                         menus={inventoryMenus}
                         selectedMenuIds={selectedMenuIds}

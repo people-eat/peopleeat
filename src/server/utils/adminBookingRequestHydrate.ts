@@ -5,6 +5,7 @@ import { bookingRequestPaidParticipants } from '../../shared/bookingRequestOffer
 import type { Locale } from '../../shared/locale';
 import type { BookingRequest } from '../db/schema';
 import {
+    bookingRequestCooks,
     bookingRequestOffers,
     bookingRequestParticipants,
     cookCallSlotBookings,
@@ -21,6 +22,7 @@ import { toGqlAdminBookingRequest } from '../mappers/toGqlAdminBookingRequest';
 import { toGqlAdminBookingRequestOffer } from '../mappers/toGqlAdminBookingRequestOffer';
 import { toGqlAdminCook } from '../mappers/toGqlAdminCook';
 import { toGqlAdminUser } from '../mappers/toGqlAdminUser';
+import { toGqlBookingRequestRequestedMenu } from '../mappers/toGqlBookingRequestRequestedMenu';
 import { toGqlCookOfferAddon } from '../mappers/toGqlCookOfferAddon';
 import { adminUserTypesByUserIdFindMany } from './adminUserTypesByUserIdFindMany';
 import { bookingRequestKitchenDetailsPhotosByRequestIdFind } from './bookingRequestKitchenDetailsPhotosHydrate';
@@ -91,6 +93,17 @@ export async function adminBookingRequestHydrate(
                   .innerJoin(users, eq(users.userId, cooks.cookId))
                   .where(inArray(cooks.cookId, cookIds));
     const cooksById = new Map(cookRows.map((row) => [row.cook.cookId, toGqlAdminCook(row.cook, row.status)]));
+    const requestedCookAffinity =
+        requestedCookIds.length === 0
+            ? []
+            : await serverRuntime.db
+                  .select({
+                      bookingRequestId: bookingRequestCooks.bookingRequestId,
+                      cookId: bookingRequestCooks.cookId,
+                      requestedMenu: bookingRequestCooks.requestedMenu,
+                  })
+                  .from(bookingRequestCooks)
+                  .where(inArray(bookingRequestCooks.bookingRequestId, bookingRequestIds));
 
     const readinessByCookId = new Map<string, Awaited<ReturnType<typeof bookingRequestOfferCookPayoutReadinessResolve>>>();
     await Promise.all(
@@ -209,6 +222,13 @@ export async function adminBookingRequestHydrate(
                     : null,
                 kitchenDetailsPhotos: kitchenDetailsPhotosByRequestId.get(bookingRequest.bookingRequestId) ?? [],
                 requestedCook: bookingRequest.requestedCookId ? (cooksById.get(bookingRequest.requestedCookId) ?? null) : null,
+                requestedMenu: (() => {
+                    if (!bookingRequest.requestedCookId) return null;
+                    const affinity = requestedCookAffinity.find(
+                        (row) => row.bookingRequestId === bookingRequest.bookingRequestId && row.cookId === bookingRequest.requestedCookId,
+                    );
+                    return affinity?.requestedMenu ? toGqlBookingRequestRequestedMenu(affinity.requestedMenu) : null;
+                })(),
             }),
         );
     }

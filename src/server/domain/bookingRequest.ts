@@ -392,6 +392,18 @@ export type BookingRequestOfferConfiguredMenu = {
     courses: BookingRequestOfferConfiguredMenuCourse[];
 };
 
+/**
+ * Frozen guest-chosen library menu on `BookingRequestCooks` (chef-page menu
+ * request). Lives on the requested cook's affinity row so expand cannot leak it
+ * to other cooks. `menuId` is the library id at freeze time.
+ */
+export type BookingRequestCookRequestedMenu = {
+    menuId: string;
+    title: string;
+    description: string;
+    courses: BookingRequestOfferConfiguredMenuCourse[];
+};
+
 /** Draft meal option inside a booking-request AI-generated menu recommendation. */
 export type BookingRequestCookMenuEvaluationGeneratedMealOption = {
     type: 'EXISTING_MEAL' | 'NEW_MEAL';

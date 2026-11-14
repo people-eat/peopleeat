@@ -5,6 +5,7 @@ import type {
     GqlSAdminBookingRequestOffer,
     GqlSAdminCook,
     GqlSAdminUser,
+    GqlSBookingRequestRequestedMenu,
     GqlSFileUpload,
 } from '../graphql/generated';
 import { bookingRequestOfferPriceGuidanceFromRequest } from './bookingRequestOfferPriceGuidanceFromRequest';
@@ -26,6 +27,7 @@ export type ToGqlAdminBookingRequestInput = {
     promoMinimumTotalAmountCustomerCents?: number | null;
     kitchenDetailsPhotos?: GqlSFileUpload[];
     requestedCook?: GqlSAdminCook | null;
+    requestedMenu?: GqlSBookingRequestRequestedMenu | null;
 };
 
 export function toGqlAdminBookingRequest(input: ToGqlAdminBookingRequestInput): GqlSAdminBookingRequest {
@@ -42,6 +44,7 @@ export function toGqlAdminBookingRequest(input: ToGqlAdminBookingRequestInput): 
         promoMinimumTotalAmountCustomerCents = null,
         kitchenDetailsPhotos = [],
         requestedCook = null,
+        requestedMenu = null,
     } = input;
 
     const guidance = bookingRequestOfferPriceGuidanceFromRequest({
@@ -76,6 +79,7 @@ export function toGqlAdminBookingRequest(input: ToGqlAdminBookingRequestInput): 
         adjustedMessage: bookingRequest.adjustedMessage ?? null,
         publicationStatus: bookingRequest.publicationStatus,
         requestedCook,
+        requestedMenu,
         preferences: bookingRequest.preferences,
         invoiceAddress: bookingRequest.invoiceAddress ? toGqlInvoiceAddress(bookingRequest.invoiceAddress) : null,
         expiresAt: bookingRequest.expiresAt ?? null,

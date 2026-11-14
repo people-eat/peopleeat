@@ -16,7 +16,9 @@ create / negotiate and for customer booking / accept / pay paths; a ban auto-dec
    price × paid participants, travel, cook platform fee — same breakdown as offer create). Footer stacks payout above equal-width decline /
    make-offer on narrow panes; from `@md` payout sits left of the button pair. Opening a request marks it viewed (which stamps Google Routes
    travel distance onto `BookingRequestCooks` so estimated travel expenses match offer create); they may decline with a reason, or start
-   **Make offer** when Stripe Connect and travel origin are ready. After decline, if more open requests remain they return to the open pool
+   **Make offer** when Stripe Connect and travel origin are ready. When the guest asked for a published menu, pool cards and detail name it
+   and offer create preselects that library menu when it still exists and is complete (banner; cook can add or swap; gone/incomplete menus
+   stay as snapshot copy so the cook can pick a replacement). After decline, if more open requests remain they return to the open pool
    (Tinder-style review); if that was the last open request, decline lands on the declined tab, never an empty open pool. After offer
    create, a non-dismissible success alert confirms the guest was notified and offers **Go to offer**; when more open pool items remain it
    also offers **Review more requests** (opens the open pool). Stale notify-email deep links use `Cook.bookingRequestLookup`: pool-eligible

@@ -32,6 +32,23 @@ fragment ProfileCookPublicPageCook on Cook {
         imageUrl
         publishedAt
     }
+    menus {
+        menuId
+        title
+        description
+        publishedAt
+        courseMealOptionImages
+        courses {
+            courseId
+            title
+            mealOptions {
+                mealId
+                title
+                description
+                imageUrl
+            }
+        }
+    }
 }
 
 fragment ProfileCookPublicPageUser on User {

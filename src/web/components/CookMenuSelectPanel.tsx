@@ -1,6 +1,7 @@
 import { ChevronDownIcon, PencilIcon, PlusIcon, RefreshCwIcon, SparklesIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import { cookMenuCoursesAreComplete } from '../../shared/cookMenuCompleteness';
 import { useFeatureToggleActive } from '../hooks/useFeatureToggleActive';
 import { useLocale } from '../hooks/useLocale';
 import { cn } from '../utils/cn';
@@ -41,7 +42,7 @@ export type CookMenuSelectPanelGeneratedMenu = {
 
 /** Offer pickers require every course to have a title and ≥ 1 meal option. */
 export function cookMenuSelectPanelMenuIsComplete(courses: readonly CookMenuSelectPanelMenuCourse[]): boolean {
-    return courses.length >= 1 && courses.every((course) => course.title.trim().length > 0 && course.mealOptionCount >= 1);
+    return cookMenuCoursesAreComplete(courses);
 }
 
 const menuGridClassName = 'grid grid-cols-1 gap-3 @2xl:grid-cols-2 @5xl:grid-cols-3 @8xl:grid-cols-4';
