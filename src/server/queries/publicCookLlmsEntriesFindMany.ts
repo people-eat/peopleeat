@@ -1,8 +1,8 @@
-import { inArray } from 'drizzle-orm';
+import { asc, eq } from 'drizzle-orm';
 
 import type { Database } from '../db';
-import { users } from '../db/schema';
-import { publicVisibleCookIdsFindMany } from '../utils/publicVisibleCookIdsFindMany';
+import { cooks, users } from '../db/schema';
+import { publicCookListedWhere } from '../utils/publicCookFindManyCriterionWhere';
 
 export interface PublicCookLlmsEntry {
     pathName: string;
@@ -10,28 +10,32 @@ export interface PublicCookLlmsEntry {
     city: string | null;
 }
 
-/** Listed public cooks in sitemap order, with the name and city `/llms.txt` prints. */
+/**
+ * Listed public cooks for `/llms.txt`.
+ * One lean select (no review-rank EXISTS) so Lighthouse's 2s fetch budget stays reachable on a cold origin.
+ */
 export async function publicCookLlmsEntriesFindMany(db: Database): Promise<PublicCookLlmsEntry[]> {
-    const listed = await publicVisibleCookIdsFindMany(db);
-    if (listed.length === 0) return [];
-    const nameRows = await db
-        .select({ userId: users.userId, firstName: users.firstName })
-        .from(users)
-        .where(
-            inArray(
-                users.userId,
-                listed.map((row) => row.cookId),
-            ),
-        );
-    const firstNameById = new Map(nameRows.map((row) => [row.userId, row.firstName]));
+    const rows = await db
+        .select({
+            pathName: cooks.pathName,
+            stageName: cooks.stageName,
+            firstName: users.firstName,
+            exactTravelOriginAddress: cooks.exactTravelOriginAddress,
+            legacyCityName: cooks.legacyCityName,
+        })
+        .from(cooks)
+        .innerJoin(users, eq(users.userId, cooks.cookId))
+        .where(publicCookListedWhere(db))
+        .orderBy(asc(users.firstName), asc(cooks.pathName));
+
     const entries: PublicCookLlmsEntry[] = [];
-    for (const row of listed) {
-        const stageName = row.cook.stageName?.trim() ?? '';
-        const firstName = firstNameById.get(row.cookId)?.trim() ?? '';
+    for (const row of rows) {
+        const stageName = row.stageName?.trim() ?? '';
+        const firstName = row.firstName?.trim() ?? '';
         const displayName = stageName || firstName;
         if (!displayName) continue;
-        const city = row.cook.exactTravelOriginAddress?.city.trim() || row.cook.legacyCityName?.trim() || null;
-        entries.push({ pathName: row.cook.pathName, displayName, city: city || null });
+        const city = row.exactTravelOriginAddress?.city.trim() || row.legacyCityName?.trim() || null;
+        entries.push({ pathName: row.pathName, displayName, city: city || null });
     }
     return entries;
 }

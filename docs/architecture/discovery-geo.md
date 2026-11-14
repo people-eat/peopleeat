@@ -79,6 +79,12 @@ blockquote summary, H2 sections of bulleted resource links). English-only is fin
 a path has no sentence). Cities, occasions, articles, and public chefs are one bullet each, the same rows as the content sitemaps, with
 English copy and `/en` URLs. Resource bullets: `[title](url): one-sentence description.`
 
+Lighthouse's Agentic Browsing audit fetches `/llms.txt` with a **hard 2s timeout**. A valid file that regenerates slowly from the database
+fails as "Timed out fetching resource" even when the markdown is correct. The route therefore keeps a 1h process-memory cache of the built
+body (aligned with `Cache-Control: public, max-age=3600, stale-while-revalidate=86400`) and loads chef bullets via a lean
+`publicCookLlmsEntriesFindMany` query (listed cooks only; no public-list ranking EXISTS). Static `public/llms.txt` stays rejected: absolute
+URLs still need `WEB_PAGE_URL`.
+
 ## Structured data & FAQ
 
 - Prefer schema.org types that match the page (`WebSite`, `Organization`, `FAQPage`, `Person`, `Service`, `BlogPosting`, `BreadcrumbList`).
