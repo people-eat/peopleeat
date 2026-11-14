@@ -4,7 +4,7 @@ const partners = [
     {
         name: 'Frankfurt Business School of Finance',
         imagePath: '/shared/known-from-section/frankfurt-school.png',
-        url: 'https://entrepreneurship-centre.fs.de/portfolio/peopleeat',
+        url: 'https://entrepreneurship-centre.fs.de/project/peopleeat',
     },
     {
         name: 'Deutsche Startups',
