@@ -30,10 +30,23 @@ export const adminCitiesPageDescription = {
     en: 'Manage city landing pages for SEO.',
 } as const;
 
-export function AdminCitiesPage({ data }: { data: GqlCAdminCitiesPageQuery }) {
+export type AdminCitiesSearch = {
+    q?: string;
+};
+
+export function parseAdminCitiesSearch(search: Record<string, unknown>): AdminCitiesSearch {
+    const q = typeof search.q === 'string' && search.q.trim().length > 0 ? search.q.trim() : undefined;
+    return { q };
+}
+
+function adminCitiesSearchForUrl(search: AdminCitiesSearch): AdminCitiesSearch {
+    return { q: search.q };
+}
+
+export function AdminCitiesPage({ data, search }: { data: GqlCAdminCitiesPageQuery; search: AdminCitiesSearch }) {
     const locale = useLocale();
     const timeZone = useTimeZone();
-    const navigate = useNavigate();
+    const navigate = useNavigate({ from: '/{-$locale}/admin/cities' });
     const client = useClient();
     const seed = data.currentSession.user?.admin ?? null;
     const [admin, setAdmin] = useState(seed);
@@ -42,7 +55,7 @@ export function AdminCitiesPage({ data }: { data: GqlCAdminCitiesPageQuery }) {
     const [createOpen, setCreateOpen] = useState(false);
     const [nameDe, setNameDe] = useState('Neue Stadt');
     const [center, setCenter] = useState<CityCenterSelection | null>(null);
-    const [draftQ, setDraftQ] = useState('');
+    const [draftQ, setDraftQ] = useState(search.q ?? '');
     const debouncedQ = useDebouncedValue(draftQ, 300);
 
     useEffect(() => {
@@ -57,8 +70,21 @@ export function AdminCitiesPage({ data }: { data: GqlCAdminCitiesPageQuery }) {
         return unsubscribe;
     }, [client, seed]);
 
+    useEffect(() => {
+        setDraftQ(search.q ?? '');
+    }, [search.q]);
+
+    useEffect(() => {
+        const nextQ = debouncedQ.trim() || undefined;
+        if (nextQ === search.q) return;
+        void navigate({
+            search: adminCitiesSearchForUrl({ q: nextQ }),
+            replace: true,
+        });
+    }, [debouncedQ, navigate, search.q]);
+
     const cities = admin?.cities ?? [];
-    const q = debouncedQ.trim().toLowerCase();
+    const q = (search.q ?? '').toLowerCase();
     const filteredCities = q
         ? cities.filter(
               (city) =>

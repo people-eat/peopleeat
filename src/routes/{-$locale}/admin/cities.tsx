@@ -2,12 +2,18 @@ import { createFileRoute } from '@tanstack/react-router';
 
 import { AdminCitiesPageDocument } from '../../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../../web/graphql/routeLoaderGraphqlClient';
-import { AdminCitiesPage, adminCitiesPageDescription, adminCitiesPageTitle } from '../../../web/pages/admin/AdminCitiesPage';
+import {
+    AdminCitiesPage,
+    adminCitiesPageDescription,
+    adminCitiesPageTitle,
+    parseAdminCitiesSearch,
+} from '../../../web/pages/admin/AdminCitiesPage';
 import { seoMeta } from '../../../web/seo/seoMeta';
 import { webPageUrlGet } from '../../../web/seo/webPageUrlGet';
 import { localeFromParam } from '../../../web/utils/locale';
 
 export const Route = createFileRoute('/{-$locale}/admin/cities')({
+    validateSearch: (search: Record<string, unknown>) => parseAdminCitiesSearch(search),
     loader: routeLoaderGraphqlClient(AdminCitiesPageDocument),
     staleTime: 0,
     head: ({ params }) => {
@@ -22,6 +28,6 @@ export const Route = createFileRoute('/{-$locale}/admin/cities')({
         });
     },
     component() {
-        return <AdminCitiesPage data={Route.useLoaderData()} />;
+        return <AdminCitiesPage data={Route.useLoaderData()} search={Route.useSearch()} />;
     },
 });
