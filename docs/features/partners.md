@@ -41,8 +41,9 @@ address under Standort / Location in the venue editor.
 ### Admin
 
 Nav stays **Partners**. `/admin/partners` groups venues under their company (name, path, published). Search matches partner name, venue
-name, and path. **Neuer Partner** creates the company plus a first draft venue and opens the venue editor. Per partner: **Venue
-hinzufügen**. Partner rename is inline. Partner delete is allowed only when the company has no venues.
+name, and path. **Neuer Partner** creates the company plus a first draft venue and opens the venue editor (also offered in the empty state).
+Per partner: **Venue hinzufügen**. Partner rename uses a dialog (Save / Cancel). Partner delete uses an in-app confirm dialog and is allowed
+only when the company has no venues; the disabled delete control shows a tooltip explaining why.
 
 The venue editor is `/admin/partner-venues/$partnerVenueId`. Partner select at the top moves the venue to another company. Standort stays
 the venue address. Legacy `/admin/partners/$id` 301s to the venue editor (migrated venue ids match the old partner ids).

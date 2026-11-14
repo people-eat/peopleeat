@@ -7,9 +7,21 @@ import { pipe, subscribe } from 'wonka';
 
 import { formatDate } from '../../../shared';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '../../components/base/alert-dialog';
 import { Badge } from '../../components/base/badge';
 import { Button } from '../../components/base/button';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../../components/base/dialog';
 import { Input } from '../../components/base/input';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/base/tooltip';
 import type { GqlCAdminPartnersPageQuery } from '../../graphql/generated';
 import {
     AdminPartnerDeleteDocument,
@@ -69,6 +81,7 @@ export function AdminPartnersPage({ data }: { data: GqlCAdminPartnersPageQuery }
     const debouncedQ = useDebouncedValue(draftQ, 300);
     const [renamingPartnerId, setRenamingPartnerId] = useState<string | null>(null);
     const [renameDraft, setRenameDraft] = useState('');
+    const [partnerIdToDelete, setPartnerIdToDelete] = useState<string | null>(null);
 
     useEffect(() => {
         if (!seed) return;
@@ -91,6 +104,11 @@ export function AdminPartnersPage({ data }: { data: GqlCAdminPartnersPageQuery }
                   partner.venues.some((venue) => venue.name.toLowerCase().includes(q) || venue.pathName.toLowerCase().includes(q)),
           )
         : partners;
+    const partnerToDelete = partners.find((partner) => partner.partnerId === partnerIdToDelete) ?? null;
+    const deleteBlockedHint = {
+        de: 'Partner mit Locations können nicht gelöscht werden.',
+        en: 'Partners with venues cannot be deleted.',
+    }[locale];
 
     async function createPartnerWithVenue() {
         setBusy(true);
@@ -129,17 +147,19 @@ export function AdminPartnersPage({ data }: { data: GqlCAdminPartnersPageQuery }
         }
     }
 
-    async function savePartnerName(partnerId: string, name: string) {
-        const trimmed = name.trim();
+    async function savePartnerName() {
+        if (!renamingPartnerId) return;
+        const trimmed = renameDraft.trim();
         if (!trimmed) {
             toast.error({ de: 'Name darf nicht leer sein.', en: 'Name must not be empty.' }[locale]);
             return;
         }
         setBusy(true);
         try {
-            const result = await upsertPartner({ input: { partnerId, name: trimmed } });
+            const result = await upsertPartner({ input: { partnerId: renamingPartnerId, name: trimmed } });
             if (result.error || !result.data?.admin.partnerUpsert.success) throw new Error('rename failed');
             setRenamingPartnerId(null);
+            toast.success({ de: 'Partner umbenannt.', en: 'Partner renamed.' }[locale]);
         } catch {
             toast.error({ de: 'Umbenennen fehlgeschlagen.', en: 'Could not rename.' }[locale]);
         } finally {
@@ -147,12 +167,14 @@ export function AdminPartnersPage({ data }: { data: GqlCAdminPartnersPageQuery }
         }
     }
 
-    async function removePartner(partnerId: string) {
-        if (!window.confirm({ de: 'Partner wirklich löschen?', en: 'Delete this partner?' }[locale])) return;
+    async function confirmDeletePartner() {
+        if (!partnerIdToDelete) return;
         setBusy(true);
         try {
-            const result = await deletePartner({ partnerId });
+            const result = await deletePartner({ partnerId: partnerIdToDelete });
             if (result.error || !result.data?.admin.partnerDelete.success) throw new Error('delete failed');
+            setPartnerIdToDelete(null);
+            toast.success({ de: 'Partner gelöscht.', en: 'Partner deleted.' }[locale]);
         } catch {
             toast.error(
                 {
@@ -190,98 +212,167 @@ export function AdminPartnersPage({ data }: { data: GqlCAdminPartnersPageQuery }
                     className="max-w-sm"
                 />
                 {partners.length === 0 ? (
-                    <p className="text-muted-foreground">{{ de: 'Noch keine Partner.', en: 'No partners yet.' }[locale]}</p>
+                    <div className="grid gap-4 justify-items-start">
+                        <p className="text-muted-foreground">{{ de: 'Noch keine Partner.', en: 'No partners yet.' }[locale]}</p>
+                        <Button type="button" disabled={busy} onClick={() => void createPartnerWithVenue()}>
+                            <PlusIcon className="size-4" />
+                            {{ de: 'Neuer Partner', en: 'New partner' }[locale]}
+                        </Button>
+                    </div>
                 ) : filteredPartners.length === 0 ? (
                     <p className="text-muted-foreground">{{ de: 'Keine Treffer.', en: 'No matches.' }[locale]}</p>
                 ) : (
                     <ul className="grid gap-6">
-                        {filteredPartners.map((partner) => (
-                            <li key={partner.partnerId} className="grid gap-3">
-                                <div className="flex flex-wrap items-center gap-2">
-                                    {renamingPartnerId === partner.partnerId ? (
-                                        <Input
-                                            value={renameDraft}
-                                            onChange={(event) => setRenameDraft(event.target.value)}
-                                            onBlur={() => void savePartnerName(partner.partnerId, renameDraft)}
-                                            onKeyDown={(event) => {
-                                                if (event.key === 'Enter') {
-                                                    event.preventDefault();
-                                                    void savePartnerName(partner.partnerId, renameDraft);
-                                                }
-                                                if (event.key === 'Escape') setRenamingPartnerId(null);
-                                            }}
-                                            autoFocus
-                                            className="max-w-xs"
-                                            aria-label={{ de: 'Partnername', en: 'Partner name' }[locale]}
-                                        />
-                                    ) : (
+                        {filteredPartners.map((partner) => {
+                            const deleteBlocked = partner.venues.length > 0;
+                            const deleteButton = (
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    disabled={busy || deleteBlocked}
+                                    aria-label={{ de: 'Partner löschen', en: 'Delete partner' }[locale]}
+                                    onClick={() => setPartnerIdToDelete(partner.partnerId)}
+                                >
+                                    <Trash2Icon className="size-4" />
+                                </Button>
+                            );
+                            return (
+                                <li key={partner.partnerId} className="grid gap-3">
+                                    <div className="flex flex-wrap items-center gap-2">
                                         <h2 className="font-serif text-2xl text-foreground">{partner.name}</h2>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            disabled={busy}
+                                            aria-label={{ de: 'Partner umbenennen', en: 'Rename partner' }[locale]}
+                                            onClick={() => {
+                                                setRenamingPartnerId(partner.partnerId);
+                                                setRenameDraft(partner.name);
+                                            }}
+                                        >
+                                            <PencilIcon className="size-4" />
+                                        </Button>
+                                        {deleteBlocked ? (
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <span className="inline-flex">{deleteButton}</span>
+                                                </TooltipTrigger>
+                                                <TooltipContent>{deleteBlockedHint}</TooltipContent>
+                                            </Tooltip>
+                                        ) : (
+                                            deleteButton
+                                        )}
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            disabled={busy}
+                                            onClick={() => void addVenue(partner.partnerId)}
+                                        >
+                                            <PlusIcon className="size-4" />
+                                            {{ de: 'Venue hinzufügen', en: 'Add venue' }[locale]}
+                                        </Button>
+                                    </div>
+                                    {partner.venues.length === 0 ? (
+                                        <p className="text-muted-foreground">
+                                            {{ de: 'Noch keine Locations.', en: 'No venues yet.' }[locale]}
+                                        </p>
+                                    ) : (
+                                        <ul className="grid gap-2">
+                                            {partner.venues.map((venue) => (
+                                                <li key={venue.partnerVenueId}>
+                                                    <AdminOverviewListCardLink
+                                                        to="/{-$locale}/admin/partner-venues/$partnerVenueId"
+                                                        params={{ partnerVenueId: venue.partnerVenueId }}
+                                                        title={
+                                                            <>
+                                                                {venue.name}
+                                                                <Badge variant="outline">
+                                                                    {venue.publishedAt
+                                                                        ? { de: 'Veröffentlicht', en: 'Published' }[locale]
+                                                                        : { de: 'Entwurf', en: 'Draft' }[locale]}
+                                                                </Badge>
+                                                            </>
+                                                        }
+                                                        description={`/${venue.pathName}`}
+                                                        meta={formatDate(new Date(venue.updatedAt), { locale, timeZone })}
+                                                    />
+                                                </li>
+                                            ))}
+                                        </ul>
                                     )}
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="icon"
-                                        disabled={busy}
-                                        aria-label={{ de: 'Partner umbenennen', en: 'Rename partner' }[locale]}
-                                        onClick={() => {
-                                            setRenamingPartnerId(partner.partnerId);
-                                            setRenameDraft(partner.name);
-                                        }}
-                                    >
-                                        <PencilIcon className="size-4" />
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="icon"
-                                        disabled={busy || partner.venues.length > 0}
-                                        aria-label={{ de: 'Partner löschen', en: 'Delete partner' }[locale]}
-                                        onClick={() => void removePartner(partner.partnerId)}
-                                    >
-                                        <Trash2Icon className="size-4" />
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        disabled={busy}
-                                        onClick={() => void addVenue(partner.partnerId)}
-                                    >
-                                        <PlusIcon className="size-4" />
-                                        {{ de: 'Venue hinzufügen', en: 'Add venue' }[locale]}
-                                    </Button>
-                                </div>
-                                {partner.venues.length === 0 ? (
-                                    <p className="text-muted-foreground">{{ de: 'Noch keine Locations.', en: 'No venues yet.' }[locale]}</p>
-                                ) : (
-                                    <ul className="grid gap-2">
-                                        {partner.venues.map((venue) => (
-                                            <li key={venue.partnerVenueId}>
-                                                <AdminOverviewListCardLink
-                                                    to="/{-$locale}/admin/partner-venues/$partnerVenueId"
-                                                    params={{ partnerVenueId: venue.partnerVenueId }}
-                                                    title={
-                                                        <>
-                                                            {venue.name}
-                                                            <Badge variant="outline">
-                                                                {venue.publishedAt
-                                                                    ? { de: 'Veröffentlicht', en: 'Published' }[locale]
-                                                                    : { de: 'Entwurf', en: 'Draft' }[locale]}
-                                                            </Badge>
-                                                        </>
-                                                    }
-                                                    description={`/${venue.pathName}`}
-                                                    meta={formatDate(new Date(venue.updatedAt), { locale, timeZone })}
-                                                />
-                                            </li>
-                                        ))}
-                                    </ul>
-                                )}
-                            </li>
-                        ))}
+                                </li>
+                            );
+                        })}
                     </ul>
                 )}
             </main>
+
+            <Dialog
+                open={renamingPartnerId != null}
+                onOpenChange={(open) => {
+                    if (!open && !busy) setRenamingPartnerId(null);
+                }}
+            >
+                <DialogContent showCloseButton className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>{{ de: 'Partner umbenennen', en: 'Rename partner' }[locale]}</DialogTitle>
+                    </DialogHeader>
+                    <Input
+                        value={renameDraft}
+                        onChange={(event) => setRenameDraft(event.target.value)}
+                        aria-label={{ de: 'Partnername', en: 'Partner name' }[locale]}
+                        autoFocus
+                        disabled={busy}
+                        onKeyDown={(event) => {
+                            if (event.key === 'Enter') {
+                                event.preventDefault();
+                                void savePartnerName();
+                            }
+                        }}
+                    />
+                    <DialogFooter>
+                        <Button type="button" variant="outline" disabled={busy} onClick={() => setRenamingPartnerId(null)}>
+                            {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                        </Button>
+                        <Button type="button" disabled={busy || !renameDraft.trim()} onClick={() => void savePartnerName()}>
+                            {{ de: 'Speichern', en: 'Save' }[locale]}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <AlertDialog
+                open={partnerIdToDelete != null}
+                onOpenChange={(open) => {
+                    if (!open && !busy) setPartnerIdToDelete(null);
+                }}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>{{ de: 'Partner löschen?', en: 'Delete this partner?' }[locale]}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {partnerToDelete
+                                ? {
+                                      de: `„${partnerToDelete.name}“ wird dauerhaft gelöscht.`,
+                                      en: `“${partnerToDelete.name}” will be permanently deleted.`,
+                                  }[locale]
+                                : {
+                                      de: 'Dieser Partner wird dauerhaft gelöscht.',
+                                      en: 'This partner will be permanently deleted.',
+                                  }[locale]}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={busy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogAction variant="destructive" disabled={busy} onClick={() => void confirmDeletePartner()}>
+                            {{ de: 'Löschen', en: 'Delete' }[locale]}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AdminPathPageChrome>
     );
 }
