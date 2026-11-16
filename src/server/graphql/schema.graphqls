@@ -3205,7 +3205,8 @@ input UserBookingRequestCreate {
     originalMessage: String!
     preferences: [String!]!
     participants: [UserBookingRequestParticipantCreate!]!
-    priceClassType: BookingRequestPriceClassType!
+    # Optional soft budget band. Null/omit when the plan uses expected menu-price range instead of price-class cards.
+    priceClassType: BookingRequestPriceClassType
     # Optional indoor/outdoor. Null/omit when unknown. Stripped when BOOKING_REQUEST_SETTING is off.
     setting: BookingRequestSetting
     # Optional promo / gift-card code applied on create (invalid code fails create).
@@ -6258,6 +6259,8 @@ enum FeatureToggleKey {
     BOOKING_REQUEST_RESTRICTIONS
     BOOKING_REQUEST_SETTING
     BOOKING_REQUEST_KITCHEN_DETAILS
+    # Plan funnel: expected menu-price range instead of price-class cards. Missing row is off.
+    BOOKING_REQUEST_EXPECTED_MENU_PRICE_RANGE
     # Chef-page CTA attaches cookId to the booking form. Missing row is off.
     BOOKING_REQUEST_COOK_DIRECT
     BOOKING_REQUEST_OFFER_CHAT_REACTIONS

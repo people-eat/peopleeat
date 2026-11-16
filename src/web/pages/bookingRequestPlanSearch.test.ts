@@ -232,4 +232,26 @@ describe('bookingRequestPlanCreateInputFromValues', () => {
 
         expect(input?.participants.map((participant) => participant.name)).toEqual(['Adult 1', 'Child 1']);
     });
+
+    it('omits price class when includePriceClassType is false', () => {
+        const input = bookingRequestPlanCreateInputFromValues(
+            {
+                adultCount: 2,
+                discountedCount: 0,
+                locationSearchText: exactEventAddress.displayText,
+                exactEventAddress,
+                dateTime: new Date('2027-06-12T17:00:00.000Z'),
+                cuisine: 'mediterranean',
+                priceClassType: 'HIGH',
+                originalMessage: 'No nuts',
+                redeemCode: '',
+                occasion: '',
+                settingChoice: null,
+            },
+            'en',
+            { includePriceClassType: false },
+        );
+
+        expect(input?.priceClassType).toBeNull();
+    });
 });

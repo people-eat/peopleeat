@@ -285,11 +285,14 @@
             "editDetails": "Modifier les informations",
             "continue": "Continuer vers la demande",
             "nonBinding": "Sans engagement. Pas encore de paiement.",
-            "talkToUs": "Des questions ? Écris-nous"
+            "talkToUs": "Des questions ? Écris-nous",
+            "estimatedTotal": "Total estimé",
+            "estimatedTotalHint": "Prix indicatif pour {count, plural, one {# invité} other {# invités}} · Offre finale par ton chef"
         },
         "editor": {
             "title": "Ta soirée en détail.",
             "description": "Invités, heure de début, orientation menu et gamme de prix",
+            "descriptionWithoutPriceClass": "Invités, heure de début et orientation menu",
             "adults": "Adultes",
             "children": "Enfants",
             "childrenHint": "4–12 ans · portions enfants moins chères",

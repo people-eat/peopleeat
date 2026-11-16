@@ -4417,6 +4417,7 @@ export type GqlCFeatureToggleKey =
     | 'ASSISTANT_COOK'
     | 'ASSISTANT_CUSTOMER'
     | 'BOOKING_REQUEST_COOK_DIRECT'
+    | 'BOOKING_REQUEST_EXPECTED_MENU_PRICE_RANGE'
     | 'BOOKING_REQUEST_KITCHEN_DETAILS'
     | 'BOOKING_REQUEST_OFFER_ADDONS'
     | 'BOOKING_REQUEST_OFFER_AMENDMENT'
@@ -5357,7 +5358,7 @@ export type GqlCUserBookingRequestCreate = {
     originalMessage: Scalars['String']['input'];
     participants: Array<GqlCUserBookingRequestParticipantCreate>;
     preferences: Array<Scalars['String']['input']>;
-    priceClassType: GqlCBookingRequestPriceClassType;
+    priceClassType?: InputMaybe<GqlCBookingRequestPriceClassType>;
     redeemCode?: InputMaybe<Scalars['String']['input']>;
     requestedCookId?: InputMaybe<Scalars['ID']['input']>;
     requestedMenuId?: InputMaybe<Scalars['ID']['input']>;
@@ -9042,6 +9043,15 @@ export type GqlCBookingRequestPlanLocationSuggestionsQuery = {
             } | null;
         }>;
     };
+};
+
+export type GqlCBookingRequestPlanExpectedMenuPriceRangeQueryVariables = Exact<{
+    participantsAdult: number;
+    participantsDiscounted: number;
+}>;
+
+export type GqlCBookingRequestPlanExpectedMenuPriceRangeQuery = {
+    bookingRequestExpectedMenuPriceRange: { minAmountCents: number; maxAmountCents: number };
 };
 
 export type GqlCBookingRequestSubmittedPageQueryVariables = Exact<{
@@ -44084,6 +44094,56 @@ export const BookingRequestPlanLocationSuggestionsDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCBookingRequestPlanLocationSuggestionsQuery, GqlCBookingRequestPlanLocationSuggestionsQueryVariables>;
+export const BookingRequestPlanExpectedMenuPriceRangeDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'BookingRequestPlanExpectedMenuPriceRange' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'participantsAdult' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'participantsDiscounted' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'bookingRequestExpectedMenuPriceRange' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'participantsAdult' },
+                                value: { kind: 'Variable', name: { kind: 'Name', value: 'participantsAdult' } },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'participantsDiscounted' },
+                                value: { kind: 'Variable', name: { kind: 'Name', value: 'participantsDiscounted' } },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'minAmountCents' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'maxAmountCents' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCBookingRequestPlanExpectedMenuPriceRangeQuery, GqlCBookingRequestPlanExpectedMenuPriceRangeQueryVariables>;
 export const BookingRequestSubmittedPageDocument = {
     kind: 'Document',
     definitions: [

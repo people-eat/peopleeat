@@ -41,3 +41,10 @@ query BookingRequestPlanLocationSuggestions($searchText: String!, $onlyFullAddre
         }
     }
 }
+
+query BookingRequestPlanExpectedMenuPriceRange($participantsAdult: Int!, $participantsDiscounted: Int!) {
+    bookingRequestExpectedMenuPriceRange(participantsAdult: $participantsAdult, participantsDiscounted: $participantsDiscounted) {
+        minAmountCents
+        maxAmountCents
+    }
+}

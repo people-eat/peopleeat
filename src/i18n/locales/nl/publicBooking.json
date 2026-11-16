@@ -285,11 +285,14 @@
             "editDetails": "Details aanpassen",
             "continue": "Verder naar de aanvraag",
             "nonBinding": "Vrijblijvend. Nog geen betaling.",
-            "talkToUs": "Nog vragen? Praat met ons"
+            "talkToUs": "Nog vragen? Praat met ons",
+            "estimatedTotal": "Geschat totaal",
+            "estimatedTotalHint": "Richtprijs voor {count, plural, one {# gast} other {# gasten}} · Definitief aanbod van jouw chef"
         },
         "editor": {
             "title": "Jouw avond in detail.",
             "description": "Gasten, starttijd, keuken en prijsklasse",
+            "descriptionWithoutPriceClass": "Gasten, starttijd en keuken",
             "adults": "Volwassenen",
             "children": "Kinderen",
             "childrenHint": "Leeftijd 4–12 · kinderporties kosten minder",

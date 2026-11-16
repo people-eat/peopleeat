@@ -23,6 +23,8 @@ Keys today:
 - Booking request restrictions
 - Booking request indoor / outdoor
 - Booking request kitchen details
+- Booking request plan expected menu price range (`BOOKING_REQUEST_EXPECTED_MENU_PRICE_RANGE`: plan funnel estimated total instead of
+  price-class cards; creates without `priceClassType`)
 - Chef-page exclusive booking request (`BOOKING_REQUEST_COOK_DIRECT`: public chef CTA and form `cookId` only; existing direct rows stay
   visible)
 - Offer chat emoji reactions
@@ -115,6 +117,9 @@ Wired today:
 - **Booking request kitchen details** (`BOOKING_REQUEST_KITCHEN_DETAILS`) — skippable kitchen card after send, request-detail editor, and
   attention when still empty on an open request. Create/update strip incoming `kitchenDetails` when off. Stored values and photos stay
   readable. Independent of indoor/outdoor
+- **Booking request plan expected menu price range** (`BOOKING_REQUEST_EXPECTED_MENU_PRICE_RANGE`) — on `/booking-request/plan`, hides
+  price-class cards and shows the public expected menu-price range as an estimated total above the sidebar CTA; create stores
+  `priceClassType` null. Missing row stays off. See [booking-request-plan.md](./booking-request-plan.md)
 - **Offer chat emoji reactions** (`BOOKING_REQUEST_OFFER_CHAT_REACTIONS`) — smile control on peer `*_MESSAGE_SIMPLE` bubbles in customer /
   cook **and admin** offer chat; admin shells mount the session toggle provider and gate this key with `gateInAdminShell` (unlike
   publication / restrictions, which stay visible for ops when the end-user rollout is off). Mutation

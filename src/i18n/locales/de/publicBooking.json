@@ -285,11 +285,14 @@
             "editDetails": "Angaben bearbeiten",
             "continue": "Weiter zur Anfrage",
             "nonBinding": "Unverbindlich. Noch keine Zahlung.",
-            "talkToUs": "Noch Fragen? Talk to us"
+            "talkToUs": "Noch Fragen? Talk to us",
+            "estimatedTotal": "Geschätzte Summe",
+            "estimatedTotalHint": "Richtpreis für {count, plural, one {# Gast} other {# Gäste}} · Finales Angebot von eurem Koch"
         },
         "editor": {
             "title": "Euer Abend im Detail.",
             "description": "Gäste, Startzeit, Menürichtung und Preisklasse",
+            "descriptionWithoutPriceClass": "Gäste, Startzeit und Menürichtung",
             "adults": "Erwachsene",
             "children": "Kinder",
             "childrenHint": "4–12 Jahre · Kinderportionen günstiger",

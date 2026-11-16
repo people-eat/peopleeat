@@ -153,12 +153,14 @@ function bookingRequestPlanCreateMessage(values: BookingRequestPlanValues, local
 export function bookingRequestPlanCreateInputFromValues(
     values: BookingRequestPlanValues,
     locale: Locale,
+    options?: { includePriceClassType?: boolean },
 ): GqlCUserBookingRequestCreate | null {
     if (!values.exactEventAddress) return null;
     if (values.adultCount < 1) return null;
     const originalMessage = bookingRequestPlanCreateMessage(values, locale);
     if (!originalMessage) return null;
     const occasion = values.occasion.trim() || t(locale, 'publicBooking', 'plan.defaultOccasion');
+    const includePriceClassType = options?.includePriceClassType !== false;
     return {
         occasion,
         dateTime: values.dateTime.toISOString(),
@@ -170,7 +172,7 @@ export function bookingRequestPlanCreateInputFromValues(
             discountedCount: values.discountedCount,
             locale,
         }),
-        priceClassType: values.priceClassType,
+        priceClassType: includePriceClassType ? values.priceClassType : null,
         redeemCode: values.redeemCode.trim() || null,
         setting: bookingRequestSettingFromChoice(values.settingChoice),
     };

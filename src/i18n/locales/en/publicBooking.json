@@ -285,11 +285,14 @@
             "editDetails": "Edit details",
             "continue": "Continue to request",
             "nonBinding": "Non-binding. No payment yet.",
-            "talkToUs": "Still questions? Talk to us"
+            "talkToUs": "Still questions? Talk to us",
+            "estimatedTotal": "Estimated total",
+            "estimatedTotalHint": "Indicative price for {count, plural, one {# guest} other {# guests}} · Final offer by your chef"
         },
         "editor": {
             "title": "Your evening in detail.",
             "description": "Guests, start time, cuisine, and price class",
+            "descriptionWithoutPriceClass": "Guests, start time, and cuisine",
             "adults": "Adults",
             "children": "Children",
             "childrenHint": "Ages 4–12 · children portions cost less",

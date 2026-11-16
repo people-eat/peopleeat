@@ -112,7 +112,7 @@ export async function userBookingRequestCreate(
             exactEventAddress,
             originalMessage,
             preferences,
-            priceClassType: input.priceClassType,
+            priceClassType: input.priceClassType ?? null,
             publicationStatus,
             requestedCookId: requestedCook?.cookId ?? null,
             expiresAt: bookingRequestExpiresAt(input.dateTime),

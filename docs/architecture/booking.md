@@ -156,8 +156,9 @@ payout at that suggested per-person price (via `bookingRequestSuggestedCookPayou
 Public **expected menu-price range** (`Query.bookingRequestExpectedMenuPriceRange` → `minAmountCents` / `maxAmountCents`) is independent of
 price class: P25–P75 of historical offer `menuPriceCents` normalized per paid participant (`bookingRequestExpectedMenuPriceRangeCalculate`),
 scaled to the requested headcount. Always non-null — rich nearby headcount uses local percentiles; sparse samples shrink toward the global
-band; empty history falls back to the soft price-class union prior (`bookingRequestMenuPriceClassUnionRangePerPersonCents`). Intended for
-customer-facing “estimated menu price: min–max” copy (UI wiring separate).
+band; empty history falls back to the soft price-class union prior (`bookingRequestMenuPriceClassUnionRangePerPersonCents`). When
+`BOOKING_REQUEST_EXPECTED_MENU_PRICE_RANGE` is on, `/booking-request/plan` shows this band as an estimated total above the sidebar CTA and
+omits price-class selection (create stores `priceClassType` null).
 
 ### GraphQL shape (**implemented** — foundation)
 

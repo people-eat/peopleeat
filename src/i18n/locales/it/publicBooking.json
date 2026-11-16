@@ -285,11 +285,14 @@
             "editDetails": "Modifica i dettagli",
             "continue": "Continua alla richiesta",
             "nonBinding": "Senza impegno. Ancora nessun pagamento.",
-            "talkToUs": "Ancora domande? Parliamone"
+            "talkToUs": "Ancora domande? Parliamone",
+            "estimatedTotal": "Totale stimato",
+            "estimatedTotalHint": "Prezzo indicativo per {count, plural, one {# ospite} other {# ospiti}} · Offerta finale del vostro chef"
         },
         "editor": {
             "title": "La vostra sera nei dettagli.",
             "description": "Ospiti, orario di inizio, direzione menu e fascia di prezzo",
+            "descriptionWithoutPriceClass": "Ospiti, orario di inizio e direzione menu",
             "adults": "Adulti",
             "children": "Bambini",
             "childrenHint": "4–12 anni · porzioni bambini più convenienti",

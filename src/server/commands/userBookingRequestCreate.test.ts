@@ -122,6 +122,26 @@ describe('userBookingRequestCreate', () => {
         expect(events.some((event) => event.type === 'BOOKING_REQUEST_CREATED')).toBe(true);
     });
 
+    it('creates a request without a price class when omitted', async () => {
+        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({
+            phoneNumber: phoneNumberCreate(),
+            birthDate: '1990-05-01',
+            preferredCommunication: 'WHATS_APP',
+        });
+
+        const { priceClassType: _omitted, ...inputWithoutPriceClass } = sampleCreateInput;
+        const result = await userBookingRequestCreate(
+            userMutationParent(user.userId),
+            { input: inputWithoutPriceClass },
+            requestingSession,
+            serverRuntime,
+        );
+
+        expect(result.success).toBe(true);
+        const [row] = await testDb.select().from(bookingRequests).where(eq(bookingRequests.bookingRequestId, result.referenceId!));
+        expect(row?.priceClassType).toBeNull();
+    });
+
     it('rejects when the user is a cook', async () => {
         const { serverRuntime, requestingSession, user } = await commandSetup.withUser({
             phoneNumber: phoneNumberCreate(),

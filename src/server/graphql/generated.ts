@@ -4414,6 +4414,7 @@ export type GqlSFeatureToggleKey =
     | 'ASSISTANT_COOK'
     | 'ASSISTANT_CUSTOMER'
     | 'BOOKING_REQUEST_COOK_DIRECT'
+    | 'BOOKING_REQUEST_EXPECTED_MENU_PRICE_RANGE'
     | 'BOOKING_REQUEST_KITCHEN_DETAILS'
     | 'BOOKING_REQUEST_OFFER_ADDONS'
     | 'BOOKING_REQUEST_OFFER_AMENDMENT'
@@ -5354,7 +5355,7 @@ export type GqlSUserBookingRequestCreate = {
     originalMessage: Scalars['String']['input'];
     participants: Array<GqlSUserBookingRequestParticipantCreate>;
     preferences: Array<Scalars['String']['input']>;
-    priceClassType: GqlSBookingRequestPriceClassType;
+    priceClassType?: InputMaybe<GqlSBookingRequestPriceClassType>;
     redeemCode?: InputMaybe<Scalars['String']['input']>;
     requestedCookId?: InputMaybe<Scalars['ID']['input']>;
     requestedMenuId?: InputMaybe<Scalars['ID']['input']>;
@@ -13565,6 +13566,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'ASSISTANT_COOK'
     | 'ASSISTANT_CUSTOMER'
     | 'BOOKING_REQUEST_COOK_DIRECT'
+    | 'BOOKING_REQUEST_EXPECTED_MENU_PRICE_RANGE'
     | 'BOOKING_REQUEST_KITCHEN_DETAILS'
     | 'BOOKING_REQUEST_OFFER_ADDONS'
     | 'BOOKING_REQUEST_OFFER_AMENDMENT'
@@ -13595,6 +13597,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'ASSISTANT_COOK'
     | 'ASSISTANT_CUSTOMER'
     | 'BOOKING_REQUEST_COOK_DIRECT'
+    | 'BOOKING_REQUEST_EXPECTED_MENU_PRICE_RANGE'
     | 'BOOKING_REQUEST_KITCHEN_DETAILS'
     | 'BOOKING_REQUEST_OFFER_ADDONS'
     | 'BOOKING_REQUEST_OFFER_AMENDMENT'
@@ -13626,6 +13629,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     'ASSISTANT_COOK',
     'ASSISTANT_CUSTOMER',
     'BOOKING_REQUEST_COOK_DIRECT',
+    'BOOKING_REQUEST_EXPECTED_MENU_PRICE_RANGE',
     'BOOKING_REQUEST_KITCHEN_DETAILS',
     'BOOKING_REQUEST_OFFER_ADDONS',
     'BOOKING_REQUEST_OFFER_AMENDMENT',
@@ -14800,7 +14804,7 @@ export function GqlSUserBookingRequestCreateSchema(): z.ZodObject<Properties<Gql
         originalMessage: z.string(),
         participants: z.array(z.lazy(() => GqlSUserBookingRequestParticipantCreateSchema())),
         preferences: z.array(z.string()),
-        priceClassType: GqlSBookingRequestPriceClassTypeSchema,
+        priceClassType: GqlSBookingRequestPriceClassTypeSchema.nullish(),
         redeemCode: z.string().nullish(),
         requestedCookId: z.string().nullish(),
         requestedMenuId: z.string().nullish(),

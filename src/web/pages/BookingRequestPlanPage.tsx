@@ -46,6 +46,7 @@ import { DatePicker } from '../components/base/date-picker';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../components/base/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/base/select';
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '../components/base/sheet';
+import { Skeleton } from '../components/base/skeleton';
 import { Textarea } from '../components/base/textarea';
 import { BookingRequestMarketClosedNotice } from '../components/BookingRequestMarketClosedNotice';
 import { BookingRequestSettingPicker } from '../components/BookingRequestSettingPicker';
@@ -57,7 +58,11 @@ import type {
     GqlCLocationSuggestion,
     GqlCUserBookingRequestExactEventAddressInput,
 } from '../graphql/generated';
-import { BookingRequestPlanCreateDocument, BookingRequestPlanLocationSuggestionsDocument } from '../graphql/generated';
+import {
+    BookingRequestPlanCreateDocument,
+    BookingRequestPlanExpectedMenuPriceRangeDocument,
+    BookingRequestPlanLocationSuggestionsDocument,
+} from '../graphql/generated';
 import { useIsMobile } from '../hooks/use-mobile';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useLocale } from '../hooks/useLocale';
@@ -204,7 +209,7 @@ function ParticipantCountField({
     onChange,
 }: {
     label: string;
-    subtitle: string;
+    subtitle?: string;
     value: number;
     min: number;
     disabled: boolean;
@@ -214,7 +219,7 @@ function ParticipantCountField({
         <div className="flex items-center justify-between gap-4">
             <div className="grid gap-0.5">
                 <span className="text-sm font-medium">{label}</span>
-                <span className="text-sm text-muted-foreground">{subtitle}</span>
+                {subtitle ? <span className="text-sm text-muted-foreground">{subtitle}</span> : null}
             </div>
             <div className="flex items-center gap-2">
                 <Button
@@ -357,6 +362,10 @@ export function BookingRequestPlanPage({
     // second "Send booking request" press.
     const [startedSignedIn] = useState(() => sessionAuthPhase(loaderData.currentSession) === 'signedIn');
     const settingEnabled = featureToggleIsActive(session.activeFeatureToggleKeys, 'BOOKING_REQUEST_SETTING');
+    const expectedMenuPriceRangeEnabled = featureToggleIsActive(
+        session.activeFeatureToggleKeys,
+        'BOOKING_REQUEST_EXPECTED_MENU_PRICE_RANGE',
+    );
     const [step, setStep] = useState<BookingRequestPlanStep>(() => (search.step === 'contact' ? 'contact' : 'details'));
     const [detailsEditorOpen, setDetailsEditorOpen] = useState(false);
     const isMobile = useIsMobile();
@@ -384,7 +393,30 @@ export function BookingRequestPlanPage({
     const datePickerEndMonth = bounds.maxDateTime;
     const priceInfo = bookingRequestPriceClassInfo(values.priceClassType, locale);
     const softPrice = formatCurrency(priceInfo.minimumAmountPerPersonCents, { locale });
+    const guestCount = values.adultCount + values.discountedCount;
     const exactEventCountryName = values.exactEventAddress ? formatCountryName(values.exactEventAddress.country, { locale }) : '';
+
+    const debouncedAdultCount = useDebouncedValue(values.adultCount, 250);
+    const debouncedDiscountedCount = useDebouncedValue(values.discountedCount, 250);
+    const [{ data: expectedPriceRangeData }] = useQuery({
+        query: BookingRequestPlanExpectedMenuPriceRangeDocument,
+        variables: {
+            participantsAdult: Math.max(1, debouncedAdultCount),
+            participantsDiscounted: Math.max(0, debouncedDiscountedCount),
+        },
+        pause: !expectedMenuPriceRangeEnabled,
+    });
+    const expectedPriceRange = expectedPriceRangeData?.bookingRequestExpectedMenuPriceRange ?? null;
+    const expectedPriceRangeLabel =
+        expectedPriceRange == null
+            ? null
+            : `${formatCurrency(expectedPriceRange.minAmountCents, { locale, maximumFractionDigits: 0 })}–${formatCurrency(expectedPriceRange.maxAmountCents, { locale, maximumFractionDigits: 0 })}`;
+    // Keep the last resolved band while guest-count debounce / refetch runs so the slot never collapses.
+    const lastExpectedPriceRangeLabelRef = useRef<string | null>(null);
+    if (expectedPriceRangeLabel) {
+        lastExpectedPriceRangeLabelRef.current = expectedPriceRangeLabel;
+    }
+    const displayExpectedPriceRangeLabel = expectedPriceRangeLabel ?? lastExpectedPriceRangeLabelRef.current;
 
     const greetingName = search.firstName?.trim() || session.user?.firstName?.trim() || '';
     const heroSrc = venue?.firstSectionImageUrl || venue?.heroImageUrl || HERO_FALLBACK_SRC;
@@ -483,7 +515,9 @@ export function BookingRequestPlanPage({
             toast.error(tBooking('plan.contact.messageRequired'));
             return;
         }
-        const input = bookingRequestPlanCreateInputFromValues(values, locale);
+        const input = bookingRequestPlanCreateInputFromValues(values, locale, {
+            includePriceClassType: !expectedMenuPriceRangeEnabled,
+        });
         if (!input) {
             toast.error(tBooking('requiredFields'));
             return;
@@ -546,10 +580,12 @@ export function BookingRequestPlanPage({
                     <dt className="text-muted-foreground">{tBooking('plan.summary.cuisine')}</dt>
                     <dd className="text-right">{bookingRequestPlanCuisineLabel(values.cuisine, locale)}</dd>
                 </div>
-                <div className="flex justify-between gap-3">
-                    <dt className="text-muted-foreground">{tBooking('priceClass')}</dt>
-                    <dd className="text-right">{priceInfo.title}</dd>
-                </div>
+                {!expectedMenuPriceRangeEnabled ? (
+                    <div className="flex justify-between gap-3">
+                        <dt className="text-muted-foreground">{tBooking('priceClass')}</dt>
+                        <dd className="text-right">{priceInfo.title}</dd>
+                    </div>
+                ) : null}
                 <div className="grid gap-1">
                     <div className="flex justify-between gap-3">
                         <dt className="text-muted-foreground">{tBooking('plan.summary.menuStart')}</dt>
@@ -561,7 +597,7 @@ export function BookingRequestPlanPage({
                 </div>
             </dl>
 
-            <div className="mt-3">
+            <div className="mt-6 grid gap-6">
                 <Button
                     type="button"
                     variant="ghost"
@@ -572,15 +608,36 @@ export function BookingRequestPlanPage({
                     {tBooking('plan.summary.editDetails')}
                     <PencilIcon className="size-3.5" />
                 </Button>
-            </div>
 
-            <div className="mt-8 grid gap-2">
-                <Button type="button" size="lg" className="w-full" onClick={goToContact} disabled={!canContinueToContact()}>
-                    {tBooking('plan.summary.continue')}
-                    <ArrowRightIcon className="size-4" />
-                </Button>
-                <p className="text-center text-xs text-muted-foreground">{tBooking('plan.summary.nonBinding')}</p>
-                <Button type="button" variant="secondary" size="sm" className="mt-3" asChild>
+                {expectedMenuPriceRangeEnabled ? (
+                    <div className="grid gap-1" aria-busy={displayExpectedPriceRangeLabel == null}>
+                        <div className="flex items-center justify-between gap-3">
+                            <p className="text-sm font-semibold text-foreground">{tBooking('plan.summary.estimatedTotal')}</p>
+                            <div className="flex h-7 min-w-28 shrink-0 items-center justify-end">
+                                {displayExpectedPriceRangeLabel ? (
+                                    <p className="text-right text-lg leading-7 font-semibold text-foreground tabular-nums">
+                                        {displayExpectedPriceRangeLabel}
+                                    </p>
+                                ) : (
+                                    <Skeleton className="h-5 w-28 motion-reduce:animate-none" aria-hidden />
+                                )}
+                            </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            {tBooking('plan.summary.estimatedTotalHint', { count: guestCount })}
+                        </p>
+                    </div>
+                ) : null}
+
+                <div className="grid gap-2">
+                    <Button type="button" size="lg" className="w-full" onClick={goToContact} disabled={!canContinueToContact()}>
+                        {tBooking('plan.summary.continue')}
+                        <ArrowRightIcon className="size-4" />
+                    </Button>
+                    <p className="text-center text-xs text-muted-foreground">{tBooking('plan.summary.nonBinding')}</p>
+                </div>
+
+                <Button type="button" variant="secondary" size="sm" asChild>
                     <a href={SITE_WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
                         {tBooking('plan.summary.talkToUs')}
                     </a>
@@ -657,7 +714,7 @@ export function BookingRequestPlanPage({
         <div className="grid gap-6">
             <ParticipantCountField
                 label={tBooking('plan.editor.adults')}
-                subtitle={tBooking('fromAmountPerPerson', { amount: softPrice })}
+                subtitle={expectedMenuPriceRangeEnabled ? undefined : tBooking('fromAmountPerPerson', { amount: softPrice })}
                 value={values.adultCount}
                 min={1}
                 disabled={busy}
@@ -724,28 +781,30 @@ export function BookingRequestPlanPage({
                     </SelectContent>
                 </Select>
             </div>
-            <div className="grid gap-2">
-                <span className="text-sm font-medium">{tBooking('priceClass')}</span>
-                <Select
-                    value={values.priceClassType}
-                    onValueChange={(value) => form.setFieldValue('priceClassType', value as BookingRequestFormPriceClassType)}
-                >
-                    <SelectTrigger className="w-full">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {bookingRequestPriceClassTypes.map((priceClass) => {
-                            const info = bookingRequestPriceClassInfo(priceClass, locale);
-                            const minimum = formatCurrency(info.minimumAmountPerPersonCents, { locale });
-                            return (
-                                <SelectItem key={priceClass} value={priceClass}>
-                                    {info.title} · {tBooking('fromAmount', { amount: minimum })}
-                                </SelectItem>
-                            );
-                        })}
-                    </SelectContent>
-                </Select>
-            </div>
+            {!expectedMenuPriceRangeEnabled ? (
+                <div className="grid gap-2">
+                    <span className="text-sm font-medium">{tBooking('priceClass')}</span>
+                    <Select
+                        value={values.priceClassType}
+                        onValueChange={(value) => form.setFieldValue('priceClassType', value as BookingRequestFormPriceClassType)}
+                    >
+                        <SelectTrigger className="w-full">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {bookingRequestPriceClassTypes.map((priceClass) => {
+                                const info = bookingRequestPriceClassInfo(priceClass, locale);
+                                const minimum = formatCurrency(info.minimumAmountPerPersonCents, { locale });
+                                return (
+                                    <SelectItem key={priceClass} value={priceClass}>
+                                        {info.title} · {tBooking('fromAmount', { amount: minimum })}
+                                    </SelectItem>
+                                );
+                            })}
+                        </SelectContent>
+                    </Select>
+                </div>
+            ) : null}
             {!venueAddress && detailsEditorOpen ? renderLocationPicker() : null}
             {venueAddress && values.exactEventAddress ? (
                 <div className="grid gap-1.5 border-t border-border pt-6 text-sm">
@@ -773,7 +832,9 @@ export function BookingRequestPlanPage({
             <SheetContent side="bottom" className="max-h-[90dvh] overflow-y-auto rounded-t-2xl">
                 <SheetHeader>
                     <SheetTitle>{tBooking('plan.editor.title')}</SheetTitle>
-                    <SheetDescription>{tBooking('plan.editor.description')}</SheetDescription>
+                    <SheetDescription>
+                        {tBooking(expectedMenuPriceRangeEnabled ? 'plan.editor.descriptionWithoutPriceClass' : 'plan.editor.description')}
+                    </SheetDescription>
                 </SheetHeader>
                 <div className="px-4 pb-2">{detailsEditorFields}</div>
                 <SheetFooter>
@@ -788,7 +849,9 @@ export function BookingRequestPlanPage({
             <DialogContent className="max-h-[85vh] max-w-md overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>{tBooking('plan.editor.title')}</DialogTitle>
-                    <DialogDescription>{tBooking('plan.editor.description')}</DialogDescription>
+                    <DialogDescription>
+                        {tBooking(expectedMenuPriceRangeEnabled ? 'plan.editor.descriptionWithoutPriceClass' : 'plan.editor.description')}
+                    </DialogDescription>
                 </DialogHeader>
                 {detailsEditorFields}
                 <DialogFooter>
@@ -997,73 +1060,75 @@ export function BookingRequestPlanPage({
                                 {!venueAddress ? renderLocationPicker() : null}
                                 {renderSettingPicker()}
 
-                                <div className="grid gap-4">
-                                    <div className="grid gap-2">
-                                        <h2 className="font-serif text-3xl font-light @md:text-4xl">{tBooking('plan.price.title')}</h2>
-                                        <p className="text-sm text-muted-foreground">{tBooking('plan.price.subtitle')}</p>
-                                    </div>
-                                    <div className="@container w-full min-w-0">
-                                        <div className="grid gap-4 @3xl:grid-cols-3">
-                                            {bookingRequestPriceClassTypes.map((priceClass) => {
-                                                const info = bookingRequestPriceClassInfo(priceClass, locale);
-                                                const selected = values.priceClassType === priceClass;
-                                                return (
-                                                    <Card
-                                                        key={priceClass}
-                                                        className={
-                                                            selected
-                                                                ? 'h-full justify-between border-primary shadow-md'
-                                                                : 'h-full justify-between border-border'
-                                                        }
-                                                    >
-                                                        <CardHeader>
-                                                            <div className="flex items-center justify-between gap-2">
-                                                                <CardTitle className="text-xl">{info.title}</CardTitle>
-                                                                {info.isPopular ? (
-                                                                    <Badge className="border-green-300 bg-green-100 text-foreground">
-                                                                        {tBooking('popular')}
-                                                                    </Badge>
-                                                                ) : null}
-                                                            </div>
-                                                            <p className="text-sm text-muted-foreground">{info.description}</p>
-                                                        </CardHeader>
-                                                        <CardContent className="grid flex-1 content-start gap-2">
-                                                            <p className="text-sm text-muted-foreground">
-                                                                {tBooking('form.steps.priceClass.frequentlyBooked')}
-                                                            </p>
-                                                            <div className="flex flex-wrap items-start gap-2">
-                                                                {info.commonOccasions.map((occasion) => (
-                                                                    <Badge key={occasion} variant="outline">
-                                                                        {occasion}
-                                                                    </Badge>
-                                                                ))}
-                                                            </div>
-                                                        </CardContent>
-                                                        <CardFooter className="mt-auto flex flex-col items-stretch gap-4">
-                                                            <p className="text-center">
-                                                                <span className="text-2xl font-semibold">
-                                                                    {tBooking('startingAt')}{' '}
-                                                                    {formatCurrency(info.minimumAmountPerPersonCents, { locale })}
-                                                                </span>{' '}
-                                                                <span className="text-sm text-muted-foreground">
-                                                                    {tBooking('perPerson')}
-                                                                </span>
-                                                            </p>
-                                                            <Button
-                                                                type="button"
-                                                                variant={selected ? 'default' : 'outline'}
-                                                                disabled={busy}
-                                                                onClick={() => form.setFieldValue('priceClassType', priceClass)}
-                                                            >
-                                                                {selected ? tBooking('selected') : tBooking('select')}
-                                                            </Button>
-                                                        </CardFooter>
-                                                    </Card>
-                                                );
-                                            })}
+                                {!expectedMenuPriceRangeEnabled ? (
+                                    <div className="grid gap-4">
+                                        <div className="grid gap-2">
+                                            <h2 className="font-serif text-3xl font-light @md:text-4xl">{tBooking('plan.price.title')}</h2>
+                                            <p className="text-sm text-muted-foreground">{tBooking('plan.price.subtitle')}</p>
+                                        </div>
+                                        <div className="@container w-full min-w-0">
+                                            <div className="grid gap-4 @3xl:grid-cols-3">
+                                                {bookingRequestPriceClassTypes.map((priceClass) => {
+                                                    const info = bookingRequestPriceClassInfo(priceClass, locale);
+                                                    const selected = values.priceClassType === priceClass;
+                                                    return (
+                                                        <Card
+                                                            key={priceClass}
+                                                            className={
+                                                                selected
+                                                                    ? 'h-full justify-between border-primary shadow-md'
+                                                                    : 'h-full justify-between border-border'
+                                                            }
+                                                        >
+                                                            <CardHeader>
+                                                                <div className="flex items-center justify-between gap-2">
+                                                                    <CardTitle className="text-xl">{info.title}</CardTitle>
+                                                                    {info.isPopular ? (
+                                                                        <Badge className="border-green-300 bg-green-100 text-foreground">
+                                                                            {tBooking('popular')}
+                                                                        </Badge>
+                                                                    ) : null}
+                                                                </div>
+                                                                <p className="text-sm text-muted-foreground">{info.description}</p>
+                                                            </CardHeader>
+                                                            <CardContent className="grid flex-1 content-start gap-2">
+                                                                <p className="text-sm text-muted-foreground">
+                                                                    {tBooking('form.steps.priceClass.frequentlyBooked')}
+                                                                </p>
+                                                                <div className="flex flex-wrap items-start gap-2">
+                                                                    {info.commonOccasions.map((occasion) => (
+                                                                        <Badge key={occasion} variant="outline">
+                                                                            {occasion}
+                                                                        </Badge>
+                                                                    ))}
+                                                                </div>
+                                                            </CardContent>
+                                                            <CardFooter className="mt-auto flex flex-col items-stretch gap-4">
+                                                                <p className="text-center">
+                                                                    <span className="text-2xl font-semibold">
+                                                                        {tBooking('startingAt')}{' '}
+                                                                        {formatCurrency(info.minimumAmountPerPersonCents, { locale })}
+                                                                    </span>{' '}
+                                                                    <span className="text-sm text-muted-foreground">
+                                                                        {tBooking('perPerson')}
+                                                                    </span>
+                                                                </p>
+                                                                <Button
+                                                                    type="button"
+                                                                    variant={selected ? 'default' : 'outline'}
+                                                                    disabled={busy}
+                                                                    onClick={() => form.setFieldValue('priceClassType', priceClass)}
+                                                                >
+                                                                    {selected ? tBooking('selected') : tBooking('select')}
+                                                                </Button>
+                                                            </CardFooter>
+                                                        </Card>
+                                                    );
+                                                })}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                ) : null}
 
                                 <div className="grid gap-4">
                                     <div className="grid gap-2">
@@ -1299,11 +1364,19 @@ export function BookingRequestPlanPage({
                             aria-label={tBooking('plan.summary.editDetails')}
                         >
                             <span className="grid min-w-0 gap-0.5">
-                                <span className="truncate text-sm font-medium">
-                                    {tBooking('plan.bar.guests', { count: values.adultCount + values.discountedCount })}
-                                </span>
+                                <span className="truncate text-sm font-medium">{tBooking('plan.bar.guests', { count: guestCount })}</span>
                                 <span className="inline-flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
-                                    <span className="truncate">{priceInfo.title}</span>
+                                    {expectedMenuPriceRangeEnabled ? (
+                                        <span className="inline-flex h-4 min-w-20 items-center">
+                                            {displayExpectedPriceRangeLabel ? (
+                                                <span className="truncate leading-4">{displayExpectedPriceRangeLabel}</span>
+                                            ) : (
+                                                <Skeleton className="h-3 w-20 motion-reduce:animate-none" aria-hidden />
+                                            )}
+                                        </span>
+                                    ) : (
+                                        <span className="truncate">{priceInfo.title}</span>
+                                    )}
                                     <span className="inline-flex shrink-0 items-center gap-1 underline-offset-2 hover:underline">
                                         {tBooking('plan.bar.edit')}
                                         <PencilIcon className="size-3 shrink-0" aria-hidden />

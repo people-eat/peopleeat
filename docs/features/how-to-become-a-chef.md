@@ -10,8 +10,9 @@ Visitors open `/how-to-become-a-chef` (or `/en/how-to-become-a-chef`) and see st
 2. **Onboarding process** — four-step timeline from registration to ready
 3. **Benefits** — six benefits beside a photo grid
 4. **Ready to start** — second CTA band with the same cook vs non-cook branching
-5. **Cook invite promo** — when `COOK_INVITE` is on: short pitch to invite chef friends and earn rewards (no fee numbers). Cooks go to
-   `/profile/invite`; others to chef sign-up. Same toggle as the cook-shell invite entry — see [cook-invite.md](./cook-invite.md)
+5. **Cook invite promo** — when `COOK_INVITE` is on: accent-framed reward band (eyebrow, share + reward cues, framed illustration; no fee
+   numbers). Cooks go to `/profile/invite`; guests get an outline “start as chef” CTA plus unlock hint so it does not twin the Ready primary
+   signup. Same toggle as the cook-shell invite entry — see [cook-invite.md](./cook-invite.md)
 6. **Expansion markets** — Netherlands and Switzerland founding-chef band
 7. **Testimonials** — two static chef quotes
 8. **FAQ** — host-oriented booking FAQs (shared accordion with the landing page)
