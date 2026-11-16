@@ -39,37 +39,47 @@ function InviteeProgress({ invitee }: { invitee: GqlCProfileCookInviteCookFragme
     };
 
     return (
-        <li className="grid gap-3 rounded-xl border border-border bg-background p-4">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <p className="font-medium text-foreground">{invitee.display}</p>
-                {invitee.rewardUnlocked ? (
-                    <p className="text-xs font-medium text-muted-foreground">{t(locale, 'profileCook', 'invite.rewardUnlocked')}</p>
-                ) : null}
-            </div>
-            <ol className="grid gap-2 sm:grid-cols-4">
-                {milestones.map((step, index) => {
-                    const complete = done[step];
-                    return (
-                        <li key={step} className="grid gap-1">
-                            <div className="flex items-center gap-2">
+        <Card className="gap-0 py-0">
+            <CardContent className="grid gap-4 p-4 sm:p-6">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <p className="font-medium text-foreground">{invitee.display}</p>
+                    {invitee.rewardUnlocked ? (
+                        <p className="text-xs font-medium text-muted-foreground">{t(locale, 'profileCook', 'invite.rewardUnlocked')}</p>
+                    ) : null}
+                </div>
+                <ol className="grid grid-cols-4 gap-0">
+                    {milestones.map((step, index) => {
+                        const complete = done[step];
+                        const previousComplete = index > 0 && done[milestones[index - 1]];
+                        return (
+                            <li key={step} className="relative grid justify-items-center gap-2 px-0.5 text-center">
+                                {index > 0 ? (
+                                    <span
+                                        aria-hidden
+                                        className={cn(
+                                            'absolute top-3 right-1/2 left-0 h-0.5 -translate-y-1/2',
+                                            previousComplete ? 'bg-green-400' : 'bg-border',
+                                        )}
+                                    />
+                                ) : null}
                                 <span
                                     className={cn(
-                                        'flex size-6 items-center justify-center rounded-full text-xs font-medium',
-                                        complete ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground',
+                                        'relative z-10 flex size-6 items-center justify-center rounded-full text-xs font-medium',
+                                        complete ? 'bg-green-200 text-green-600' : 'bg-muted text-muted-foreground',
                                     )}
                                     aria-hidden
                                 >
                                     {complete ? <CheckIcon className="size-3.5" /> : index + 1}
                                 </span>
-                                <span className={cn('text-sm', complete ? 'text-foreground' : 'text-muted-foreground')}>
+                                <span className={cn('text-xs sm:text-sm', complete ? 'text-foreground' : 'text-muted-foreground')}>
                                     {t(locale, 'profileCook', `invite.milestones.${step}`)}
                                 </span>
-                            </div>
-                        </li>
-                    );
-                })}
-            </ol>
-        </li>
+                            </li>
+                        );
+                    })}
+                </ol>
+            </CardContent>
+        </Card>
     );
 }
 
@@ -154,7 +164,7 @@ export function ProfileCookInvitePage({ data }: { data: GqlCProfileCookInvitePag
                     <h1 className="font-serif text-2xl/tight text-foreground">{profileCookInvitePageTitle(locale)}</h1>
                     <p className="text-muted-foreground">{profileCookInvitePageDescription(locale)}</p>
                 </div>
-                <div className="justify-self-center overflow-hidden rounded-2xl bg-black sm:justify-self-end">
+                <div className="justify-self-center overflow-hidden rounded-2xl bg-background sm:justify-self-end">
                     <AppImage
                         priority
                         src={COOK_INVITE_ILLUSTRATION.src}
@@ -184,7 +194,14 @@ export function ProfileCookInvitePage({ data }: { data: GqlCProfileCookInvitePag
                         </p>
                     </div>
                     <p className="break-all rounded-lg bg-muted px-3 py-2 font-mono text-sm text-foreground">{inviteUrl}</p>
-                    <div className="flex flex-wrap gap-2">
+                    {cook.inviteOpenFeeCreditRemainingBookings > 0 ? (
+                        <p className="text-sm text-muted-foreground">
+                            {t(locale, 'profileCook', 'invite.remainingBookings', {
+                                count: cook.inviteOpenFeeCreditRemainingBookings,
+                            })}
+                        </p>
+                    ) : null}
+                    <div className="flex flex-wrap justify-end gap-2">
                         <Button type="button" variant="outline" size="sm" onClick={() => void onCopy()}>
                             <CopyIcon aria-hidden />
                             {copyDone ? t(locale, 'profileCook', 'invite.copied') : t(locale, 'profileCook', 'invite.copyLink')}
@@ -194,13 +211,6 @@ export function ProfileCookInvitePage({ data }: { data: GqlCProfileCookInvitePag
                             {t(locale, 'profileCook', 'invite.share')}
                         </Button>
                     </div>
-                    {cook.inviteOpenFeeCreditRemainingBookings > 0 ? (
-                        <p className="text-sm text-muted-foreground">
-                            {t(locale, 'profileCook', 'invite.remainingBookings', {
-                                count: cook.inviteOpenFeeCreditRemainingBookings,
-                            })}
-                        </p>
-                    ) : null}
                 </CardContent>
             </Card>
 
@@ -215,7 +225,9 @@ export function ProfileCookInvitePage({ data }: { data: GqlCProfileCookInvitePag
                 ) : (
                     <ul className="grid gap-3">
                         {cook.invitees.map((invitee) => (
-                            <InviteeProgress key={invitee.cookId} invitee={invitee} />
+                            <li key={invitee.cookId}>
+                                <InviteeProgress invitee={invitee} />
+                            </li>
                         ))}
                     </ul>
                 )}
