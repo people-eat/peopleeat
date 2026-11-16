@@ -85,7 +85,8 @@ Marketplace booking request and offer statuses use a dedicated soft pill palette
 - `src/shared/bookingRequestOfferStatus.ts` — `bookingRequestOfferStatusHue`, `bookingRequestOfferStatusLabel(status, locale, audience)`
 
 Hue → classes lives only in `BookingStatusPill` (`hue` prop is required). Non-lifecycle pills that reuse the palette (cook pool "New
-request" / "Hidden", admin "Notified") pass a hue literal — never raw colour classes.
+request" / yellow "Requested you" with `UserExclamationPointIcon` / "Hidden", admin "Notified") pass a hue literal — never raw colour
+classes.
 
 | Hue      | Classes                         | Typical statuses                                         |
 | -------- | ------------------------------- | -------------------------------------------------------- |

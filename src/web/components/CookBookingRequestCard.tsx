@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { CalendarIcon, MapPinIcon, UsersIcon } from 'lucide-react';
+import { CalendarIcon, MapPinIcon, UserExclamationPointIcon, UsersIcon } from 'lucide-react';
 
 import { formatBookingEventDateFromCountry, formatCurrency, formatDate, formatParticipants } from '../../shared';
 import { useLocale } from '../hooks/useLocale';
@@ -35,6 +35,7 @@ export function CookBookingRequestCard({ request, variant }: { request: CookBook
     const { t } = useT('profileCook');
     const timeZone = useTimeZone();
     const isDeclined = variant === 'declined';
+    const isDirect = Boolean(request.requestedByCustomer);
     const location =
         request.exactEventAddress.city.trim().length > 0 ? request.exactEventAddress.city : request.exactEventAddress.displayText;
 
@@ -42,17 +43,19 @@ export function CookBookingRequestCard({ request, variant }: { request: CookBook
         <>
             <div className="flex flex-col gap-3">
                 <div className="flex flex-wrap items-center justify-end gap-2">
-                    {request.requestedByCustomer ? (
-                        <BookingStatusPill hue="purple" className="w-fit">
+                    {isDirect ? (
+                        <BookingStatusPill hue="yellow" className="w-fit gap-1.5">
+                            <UserExclamationPointIcon className="size-3.5 shrink-0" aria-hidden />
                             {request.isExclusive ? t('pool.requestedYou') : t('pool.requestedYouAlsoOpen')}
                         </BookingStatusPill>
                     ) : null}
-                    <BookingStatusPill hue={isDeclined ? 'red' : 'green'} className="w-fit">
-                        {isDeclined ? t('pool.declined') : t('pool.newRequest')}
-                    </BookingStatusPill>
+                    {!isDirect || isDeclined ? (
+                        <BookingStatusPill hue={isDeclined ? 'red' : 'green'} className="w-fit">
+                            {isDeclined ? t('pool.declined') : t('pool.newRequest')}
+                        </BookingStatusPill>
+                    ) : null}
                 </div>
                 <h2 className="line-clamp-1 font-semibold leading-snug">{request.occasion}</h2>
-                {request.requestedMenu ? <p className="line-clamp-1 text-sm text-muted-foreground">{request.requestedMenu.title}</p> : null}
                 <p className="flex min-w-0 items-center gap-2 text-sm text-foreground">
                     <CalendarIcon className="size-4 shrink-0 text-muted-foreground/70" aria-hidden />
                     <span className="truncate">
@@ -71,11 +74,6 @@ export function CookBookingRequestCard({ request, variant }: { request: CookBook
                     <MapPinIcon className="size-4 shrink-0 text-muted-foreground/70" aria-hidden />
                     <span className="truncate">{location}</span>
                 </p>
-                {request.requestedByCustomer && request.estimatedTravelDistanceKm != null ? (
-                    <p className="text-sm text-muted-foreground">
-                        {t('pool.aboutKm', { km: request.estimatedTravelDistanceKm.toFixed(0) })}
-                    </p>
-                ) : null}
                 {isDeclined && request.cookPoolDetails?.declinedAt ? (
                     <p className="truncate text-sm font-medium">
                         {t('pool.declinedAt')} {formatDate(request.cookPoolDetails.declinedAt, { locale, timeZone, dateStyle: 'medium' })}
