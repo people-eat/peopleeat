@@ -119,7 +119,10 @@ Stub catalog shared until real pages land.
 
 ## Implementation
 
-- Gate: `/admin` loader — unsigned → sign-in; non-admin → `/profile`.
+- Gate: `/admin` loader — unsigned → sign-in; non-admin → `/profile`. Loader + `head()` also
+  `await i18nResourcesLoad(…, ['common', 'public', 'admin'])`; `AdminLayout` nests `I18nProvider` with those namespaces so landing → admin
+  client nav does not throw `i18n catalog not loaded` (locale layout `shouldReload` on `cause === 'stay'` is the other half of the same
+  fix).
 - `SidebarInset` as `<div>`; viewport-locked; chat pages pass overflow-hidden content class.
 - Assistant: nested provider; `useAdminNavSidebar()` for left nav toggle; chat persists across admin route changes —
   [chat.md](../architecture/chat.md).

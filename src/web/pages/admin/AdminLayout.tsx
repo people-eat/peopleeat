@@ -6,6 +6,7 @@ import { ASSISTANT_SIDEBAR_WIDTH_DEFAULT_REM } from '../../chat/assistantSidebar
 import { isAssistantFullscreenPath } from '../../chat/isAssistantFullscreenPath';
 import { AdminSidebar } from '../../components/AdminSidebar';
 import { SidebarInset, SidebarProvider, useSidebar } from '../../components/base/sidebar';
+import { I18nProvider } from '../../components/I18nProvider';
 import type { GqlCAdminPageQuery } from '../../graphql/generated';
 import { FeatureToggleAdminShellProvider, FeatureToggleKeysProvider } from '../../hooks/useFeatureToggleActive';
 import { useLocale } from '../../hooks/useLocale';
@@ -49,24 +50,27 @@ export function useAdminNavSidebar(): AdminNavSidebar {
 // `docs/features/admin-shell.md`.
 
 export function AdminLayout({ loaderData }: { loaderData: GqlCAdminPageQuery }) {
+    const locale = useLocale();
     const supportUnreadCount = loaderData.currentSession.user?.admin?.unreadSupportRequestsCounts[0] ?? 0;
     const offerChatReviewCount = loaderData.currentSession.user?.admin?.pendingOfferChatReviewsCounts[0] ?? 0;
     const whatsAppUnreadCount = loaderData.currentSession.user?.admin?.whatsAppConversationsAdminUnreadCount ?? 0;
     const activeFeatureToggleKeys = loaderData.currentSession.activeFeatureToggleKeys;
 
     return (
-        <FeatureToggleAdminShellProvider value={true}>
-            <FeatureToggleKeysProvider value={activeFeatureToggleKeys}>
-                <SidebarProvider style={{ '--sidebar-width': '19rem' } as CSSProperties}>
-                    <AdminSidebar
-                        supportUnreadCount={supportUnreadCount}
-                        offerChatReviewCount={offerChatReviewCount}
-                        whatsAppUnreadCount={whatsAppUnreadCount}
-                    />
-                    <AdminAssistantPane />
-                </SidebarProvider>
-            </FeatureToggleKeysProvider>
-        </FeatureToggleAdminShellProvider>
+        <I18nProvider locale={locale} namespaces={['common', 'public', 'admin']}>
+            <FeatureToggleAdminShellProvider value={true}>
+                <FeatureToggleKeysProvider value={activeFeatureToggleKeys}>
+                    <SidebarProvider style={{ '--sidebar-width': '19rem' } as CSSProperties}>
+                        <AdminSidebar
+                            supportUnreadCount={supportUnreadCount}
+                            offerChatReviewCount={offerChatReviewCount}
+                            whatsAppUnreadCount={whatsAppUnreadCount}
+                        />
+                        <AdminAssistantPane />
+                    </SidebarProvider>
+                </FeatureToggleKeysProvider>
+            </FeatureToggleAdminShellProvider>
+        </I18nProvider>
     );
 }
 

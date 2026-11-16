@@ -50,7 +50,8 @@ function InviteeProgress({ invitee }: { invitee: GqlCProfileCookInviteCookFragme
                 <ol className="grid grid-cols-4 gap-0">
                     {milestones.map((step, index) => {
                         const complete = done[step];
-                        const previousComplete = index > 0 && done[milestones[index - 1]];
+                        const previousMilestone = milestones[index - 1];
+                        const previousComplete = previousMilestone != null && done[previousMilestone];
                         return (
                             <li key={step} className="relative grid justify-items-center gap-2 px-0.5 text-center">
                                 {index > 0 ? (

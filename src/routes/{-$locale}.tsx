@@ -44,6 +44,10 @@ export const Route = createFileRoute('/{-$locale}')({
             }
         }
     },
+    // Child navigations keep this match (`cause: 'stay'`) so default stale
+    // reload never runs — e.g. `/` → `/admin` would keep `common`+`public` only.
+    // Re-run on stay; `i18nResourcesLoad` is cached, so the cost is tiny.
+    shouldReload: ({ cause }) => cause === 'stay',
     loader: async ({ params, location }) => {
         const locale = localeFromParam(params);
         const namespaces = namespacesForPath(pathWithoutLocale(location.pathname));
