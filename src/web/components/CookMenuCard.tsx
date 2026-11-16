@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router';
 import { BookOpenIcon } from 'lucide-react';
 import { useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
+import { inlineCopy } from '../../shared';
 
 import { useFeatureToggleActive } from '../hooks/useFeatureToggleActive';
 import { useLocale } from '../hooks/useLocale';
@@ -112,16 +113,17 @@ export function CookMenuCard({
     const [mediaSizePx, setMediaSizePx] = useState<number | null>(null);
     const isDeleted = menu.deletedAt != null;
     const priorPublishLabel = menu.publishedAt
-        ? { de: 'War veröffentlicht', en: 'Was published' }[locale]
-        : { de: 'War Entwurf', en: 'Was a draft' }[locale];
+        ? inlineCopy({ de: 'War veröffentlicht', en: 'Was published' }, locale)
+        : inlineCopy({ de: 'War Entwurf', en: 'Was a draft' }, locale);
     const courseLabel =
         menu.courseCount === 1
-            ? { de: '1 Gang', en: '1 course' }[locale]
-            : { de: `${menu.courseCount} Gänge`, en: `${menu.courseCount} courses` }[locale];
+            ? inlineCopy({ de: '1 Gang', en: '1 course' }, locale)
+            : inlineCopy({ de: `${menu.courseCount} Gänge`, en: `${menu.courseCount} courses` }, locale);
     const renderDraftPublishedBadge = showStatusBadge && publicationEnabled && !isDeleted;
     const renderDeletedBadge = showStatusBadge && isDeleted;
     const images = menu.courseMealOptionImages ?? [];
-    const description = menu.description.trim().length > 0 ? menu.description : { de: 'Keine Beschreibung', en: 'No description' }[locale];
+    const description =
+        menu.description.trim().length > 0 ? menu.description : inlineCopy({ de: 'Keine Beschreibung', en: 'No description' }, locale);
     const compact = density === 'compact';
     const mediaMinPx = compact ? 56 : 96;
 
@@ -165,13 +167,19 @@ export function CookMenuCard({
                 </h2>
                 <p className={cn('text-sm text-muted-foreground', compact ? 'line-clamp-1' : 'line-clamp-2 min-h-10')}>{description}</p>
                 <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1 pt-1">
-                    {renderDeletedBadge ? <Badge variant="destructive">{{ de: 'Gelöscht', en: 'Deleted' }[locale]}</Badge> : null}
+                    {renderDeletedBadge ? (
+                        <Badge variant="destructive">{inlineCopy({ de: 'Gelöscht', en: 'Deleted' }, locale)}</Badge>
+                    ) : null}
                     {renderDraftPublishedBadge ? (
                         <Badge variant="outline">
-                            {menu.publishedAt ? { de: 'Veröffentlicht', en: 'Published' }[locale] : { de: 'Entwurf', en: 'Draft' }[locale]}
+                            {menu.publishedAt
+                                ? inlineCopy({ de: 'Veröffentlicht', en: 'Published' }, locale)
+                                : inlineCopy({ de: 'Entwurf', en: 'Draft' }, locale)}
                         </Badge>
                     ) : null}
-                    {menu.generatedAt != null ? <Badge variant="outline">{{ de: 'Generiert', en: 'Generated' }[locale]}</Badge> : null}
+                    {menu.generatedAt != null ? (
+                        <Badge variant="outline">{inlineCopy({ de: 'Generiert', en: 'Generated' }, locale)}</Badge>
+                    ) : null}
                     <span className="text-sm text-muted-foreground">{courseLabel}</span>
                     {isDeleted || meta != null ? (
                         <span className="text-sm text-muted-foreground">

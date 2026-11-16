@@ -1,11 +1,14 @@
+import { t } from '../../../i18n/t';
 import { AssistantChatWorkspace } from '../../components/AssistantChatWorkspace';
+import type { Locale } from '../../utils/locale';
 import { useAdminNavSidebar } from './AdminLayout';
 
-export const adminAssistantPageTitle = { de: 'Assistent', en: 'Assistant' } as const;
-export const adminAssistantPageDescription = {
-    de: 'Vollbild-Assistent für Admin-Aufgaben.',
-    en: 'Full-screen assistant for admin work.',
-} as const;
+export function adminAssistantPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.assistant.title');
+}
+export function adminAssistantPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.assistant.description');
+}
 
 export function AdminAssistantPage({ chatId }: { chatId?: string }) {
     const { toggleSidebar } = useAdminNavSidebar();

@@ -1,7 +1,7 @@
 import { SearchIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from './base/input-group';
 import { Kbd } from './base/kbd';
 
@@ -21,13 +21,10 @@ export function AdminSidebarNavFilter({
     onChange: (value: string) => void;
     onOpenCommand: () => void;
 }) {
-    const locale = useLocale();
+    const { t } = useT('admin');
     const [modifier, setModifier] = useState('⌘');
-    const filterLabel = { de: 'Navigation filtern', en: 'Filter navigation' }[locale];
-    const commandShortcutLabel = {
-        de: `Befehlspalette öffnen (${modifier}+K)`,
-        en: `Open command palette (${modifier}+K)`,
-    }[locale];
+    const filterLabel = t('sidebar.filter');
+    const commandShortcutLabel = t('sidebar.commandShortcut', { modifier });
 
     useEffect(() => {
         setModifier(shortcutModifierLabel());
@@ -41,7 +38,7 @@ export function AdminSidebarNavFilter({
             <InputGroupInput
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
-                placeholder={{ de: 'Filtern…', en: 'Filter…' }[locale]}
+                placeholder={t('sidebar.filterPlaceholder')}
                 aria-label={filterLabel}
             />
             <InputGroupAddon align="inline-end">

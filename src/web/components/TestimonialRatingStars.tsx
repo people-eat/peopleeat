@@ -1,4 +1,5 @@
 import { StarIcon } from 'lucide-react';
+import { inlineCopy } from '../../shared';
 
 import { useLocale } from '../hooks/useLocale';
 import { cn } from '../utils/cn';
@@ -8,7 +9,11 @@ export function TestimonialRatingStars({ rating, className }: { rating: number |
     const locale = useLocale();
 
     if (rating == null) {
-        return <span className={cn('text-sm text-muted-foreground', className)}>{{ de: 'Keine Bewertung', en: 'No rating' }[locale]}</span>;
+        return (
+            <span className={cn('text-sm text-muted-foreground', className)}>
+                {inlineCopy({ de: 'Keine Bewertung', en: 'No rating' }, locale)}
+            </span>
+        );
     }
 
     return (

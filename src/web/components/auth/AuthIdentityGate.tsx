@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { t as translate } from '../../../i18n/t';
 import {
     AuthEmailOtpDeleteDocument,
     AuthOauthTicketDeleteDocument,
@@ -13,6 +14,7 @@ import {
 } from '../../graphql/generated';
 import type { GqlCAuthSessionFieldsFragment } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
+import { useT } from '../../hooks/useT';
 import { fallbackTimeZone } from '../../hooks/useTimeZone';
 import {
     AlertDialog,
@@ -38,11 +40,6 @@ export type AuthSession = GqlCAuthSessionFieldsFragment;
 export type AuthSessionRefresh = () => Promise<AuthSession | null>;
 
 export const AUTH_USER_PROFILE_FORM_ID = 'auth-user-profile';
-
-const googleAuthErrorCopy = {
-    de: 'Google-Anmeldung fehlgeschlagen. Bitte in Safari oder Chrome erneut versuchen, nicht in der In-App-Ansicht von Instagram oder Facebook.',
-    en: 'Google sign-in failed. Please try again in Safari or Chrome, not in an Instagram or Facebook in-app browser.',
-} as const;
 
 function profileInitialValuesFromOauthTicket(
     ticket: AuthSession['authOauthTicket'],
@@ -111,6 +108,7 @@ export function AuthIdentityGate({
     submitLabel?: string;
 }) {
     const locale = useLocale();
+    const { t } = useT('public');
     const client = useClient();
     const [session, setSession] = useState(initialSession);
     const [busy, setBusyState] = useState(false);
@@ -152,7 +150,7 @@ export function AuthIdentityGate({
         const url = new URL(window.location.href);
         if (url.searchParams.get('authError') !== 'google') return;
         googleAuthErrorToasted.current = true;
-        toast.error(googleAuthErrorCopy[locale]);
+        toast.error(t('auth.googleFailed'));
         url.searchParams.delete('authError');
         const next = `${url.pathname}${url.search}${url.hash}`;
         window.history.replaceState(window.history.state, '', next);
@@ -223,7 +221,7 @@ export function AuthIdentityGate({
                 },
             });
             if (result.error || !result.data?.userCreate.success) {
-                toast.error({ de: 'Registrierung fehlgeschlagen.', en: 'Could not complete registration.' }[locale]);
+                toast.error(t('auth.registerFailed'));
             }
             await sessionRefresh();
         } finally {
@@ -240,22 +238,12 @@ export function AuthIdentityGate({
             if (oauthTicket) {
                 const result = await deleteOauthTicket({ authOauthTicketId: oauthTicket.authOauthTicketId });
                 if (result.error || !result.data?.authOauthTicketDelete.success) {
-                    toast.error(
-                        {
-                            de: 'Bestätigte Anmeldung konnte nicht verworfen werden.',
-                            en: 'Could not discard the verified sign-in.',
-                        }[locale],
-                    );
+                    toast.error(t('auth.discardOauthFailed'));
                 }
             } else if (otp) {
                 const result = await deleteOtp({ authEmailOtpId: otp.authEmailOtpId });
                 if (result.error || !result.data?.authEmailOtpDelete.success) {
-                    toast.error(
-                        {
-                            de: 'Bestätigte E-Mail konnte nicht verworfen werden.',
-                            en: 'Could not discard the verified email.',
-                        }[locale],
-                    );
+                    toast.error(t('auth.discardEmailFailed'));
                 }
             }
             await sessionRefresh();
@@ -294,46 +282,30 @@ export function AuthIdentityGate({
             <div className="grid gap-8">
                 <div className="grid gap-3">
                     <div className="grid gap-1">
-                        <p className="text-sm text-muted-foreground">{{ de: 'Bestätigte E-Mail', en: 'Verified email' }[locale]}</p>
+                        <p className="text-sm text-muted-foreground">{t('auth.verifiedEmail')}</p>
                         <p className="font-medium break-all">{verifiedEmail}</p>
                     </div>
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
                             <Button type="button" variant="outline" size="sm" className="w-fit" disabled={busy}>
-                                {
-                                    (oauthRegister
-                                        ? { de: 'Andere Anmeldung verwenden', en: 'Use a different sign-in method' }
-                                        : { de: 'Andere E-Mail verwenden', en: 'Use a different email' })[locale]
-                                }
+                                {oauthRegister ? t('auth.useDifferentSignIn') : t('auth.useDifferentEmail')}
                             </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>
-                                    {
-                                        (oauthRegister
-                                            ? { de: 'Bestätigte Anmeldung verwerfen?', en: 'Discard verified sign-in?' }
-                                            : { de: 'Bestätigte E-Mail verwerfen?', en: 'Discard verified email?' })[locale]
-                                    }
+                                    {oauthRegister ? t('auth.discardSignInTitle') : t('auth.discardEmailTitle')}
                                 </AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    {
-                                        (oauthRegister
-                                            ? {
-                                                  de: `${verifiedEmail} ist bereits bestätigt. Wenn du sie verwirfst, musst du dich erneut anmelden.`,
-                                                  en: `${verifiedEmail} is already verified. Discarding it means you will need to sign in again.`,
-                                              }
-                                            : {
-                                                  de: `${verifiedEmail} ist bereits bestätigt. Wenn du sie verwirfst, musst du den Code an eine neue Adresse erneut anfordern.`,
-                                                  en: `${verifiedEmail} is already verified. Discarding it means you'll need to request a new code for a different address.`,
-                                              })[locale]
-                                    }
+                                    {oauthRegister
+                                        ? t('auth.discardSignInBody', { email: verifiedEmail })
+                                        : t('auth.discardEmailBody', { email: verifiedEmail })}
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                                <AlertDialogCancel disabled={busy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                                <AlertDialogCancel disabled={busy}>{translate(locale, 'common', 'cancel')}</AlertDialogCancel>
                                 <AlertDialogAction variant="destructive" disabled={busy} onClick={() => void onDiscardVerifiedEmail()}>
-                                    {{ de: 'Verwerfen', en: 'Discard' }[locale]}
+                                    {t('auth.discard')}
                                 </AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
@@ -341,9 +313,7 @@ export function AuthIdentityGate({
                 </div>
 
                 <div className="grid gap-4">
-                    {registerHeading === null ? null : (
-                        <p className="font-medium">{registerHeading ?? { de: 'Profil anlegen', en: 'Create your profile' }[locale]}</p>
-                    )}
+                    {registerHeading === null ? null : <p className="font-medium">{registerHeading ?? t('auth.createProfile')}</p>}
                     <UserProfileForm
                         formId={AUTH_USER_PROFILE_FORM_ID}
                         hideSubmitButton={externalSubmit}
@@ -355,12 +325,7 @@ export function AuthIdentityGate({
                             ...profileInitialValuesFromOauthTicket(oauthTicket, requireProfileDetails),
                             ...profileInitialValues,
                         }}
-                        submitLabel={
-                            submitLabel ??
-                            (includeCook
-                                ? { de: 'Koch-Konto erstellen', en: 'Create chef account' }[locale]
-                                : { de: 'Konto erstellen', en: 'Create account' }[locale])
-                        }
+                        submitLabel={submitLabel ?? (includeCook ? t('auth.createCookAccount') : t('auth.createAccount'))}
                         onSubmit={onRegister}
                     />
                 </div>

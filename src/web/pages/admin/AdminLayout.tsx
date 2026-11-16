@@ -9,8 +9,8 @@ import { SidebarInset, SidebarProvider, useSidebar } from '../../components/base
 import type { GqlCAdminPageQuery } from '../../graphql/generated';
 import { FeatureToggleAdminShellProvider, FeatureToggleKeysProvider } from '../../hooks/useFeatureToggleActive';
 import { useLocale } from '../../hooks/useLocale';
-import { DEFAULT_LOCALE } from '../../utils/locale';
 import type { Locale } from '../../utils/locale';
+import { DEFAULT_LOCALE } from '../../utils/locale';
 
 function pathWithoutLocale(pathname: string, locale: Locale): string {
     if (locale !== DEFAULT_LOCALE && pathname.startsWith(`/${locale}/`)) {

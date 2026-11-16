@@ -1,35 +1,30 @@
 import { Link } from '@tanstack/react-router';
 import { ChefHatIcon, GiftIcon, InfoIcon } from 'lucide-react';
-import type { Locale } from '../../shared/locale';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 
 export const HEADER_NAV_ITEMS = [
     {
         to: '/{-$locale}/how-to-become-a-chef' as const,
-        label: { de: 'Privatkoch werden', en: 'How to become a chef' },
+        labelKey: 'nav.becomeChef' as const,
         icon: ChefHatIcon,
     },
     {
         to: '/{-$locale}/gift-card' as const,
-        label: { de: 'Geschenkkarte', en: 'Gift card' },
+        labelKey: 'nav.giftCard' as const,
         icon: GiftIcon,
     },
     {
         to: '/{-$locale}/about-us' as const,
-        label: { de: 'Über uns', en: 'About us' },
+        labelKey: 'nav.aboutUs' as const,
         icon: InfoIcon,
     },
 ] as const;
 
-export function HeaderNav({ locale: localeProp }: { locale?: Locale }) {
-    const routeLocale = useLocale();
-    const locale = localeProp ?? routeLocale;
+export function HeaderNav(_props: { locale?: string } = {}) {
+    const { t } = useT('public');
 
     return (
-        <nav
-            aria-label={{ de: 'Hauptnavigation', en: 'Main navigation' }[locale]}
-            className="absolute left-1/2 hidden -translate-x-1/2 @6xl:block"
-        >
+        <nav aria-label={t('nav.main')} className="absolute left-1/2 hidden -translate-x-1/2 @6xl:block">
             <ul className="flex items-center justify-evenly gap-8 rounded-lg bg-background/30 p-2 text-center backdrop-blur-lg">
                 {HEADER_NAV_ITEMS.map((item) => (
                     <li key={item.to} className="rounded-lg text-gray-800 transition-colors hover:bg-secondary/50">
@@ -37,7 +32,7 @@ export function HeaderNav({ locale: localeProp }: { locale?: Locale }) {
                             to={item.to}
                             className="block rounded-lg px-4 py-2 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
                         >
-                            {item.label[locale]}
+                            {t(item.labelKey)}
                         </Link>
                     </li>
                 ))}

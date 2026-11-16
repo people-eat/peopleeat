@@ -1,6 +1,7 @@
 import { ClockIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
+import { t } from '../../i18n/t';
 import type { BookingRequestSettingChoice } from '../../shared';
 import { bookingRequestSettingLabel } from '../../shared';
 import { cn } from '../utils/cn';
@@ -14,11 +15,11 @@ export type { BookingRequestSettingChoice };
 const SETTING_IMAGES = {
     OUTDOOR: {
         src: '/booking-request/setting-outdoor.png',
-        alt: { de: 'Gedeckter Tisch im Freien', en: 'Set table outdoors' },
+        altKey: 'bookingRequestSetting.altOutdoor',
     },
     INDOOR: {
         src: '/booking-request/setting-indoor.png',
-        alt: { de: 'Gedeckter Tisch drinnen', en: 'Set table indoors' },
+        altKey: 'bookingRequestSetting.altIndoor',
     },
 } as const;
 
@@ -76,22 +77,15 @@ export function BookingRequestSettingPicker({
     disabled?: boolean;
     onChange: (next: BookingRequestSettingChoice) => void;
 }) {
-    const selectLabel = { de: 'Auswählen', en: 'Select' }[locale];
-    const selectedLabel = { de: 'Ausgewählt', en: 'Selected' }[locale];
-    const laterLabel = { de: 'Später entscheiden', en: 'Decide later' }[locale];
+    const selectLabel = t(locale, 'common', 'bookingRequestSetting.select');
+    const selectedLabel = t(locale, 'common', 'bookingRequestSetting.selected');
+    const laterLabel = t(locale, 'common', 'bookingRequestSetting.decideLater');
 
     return (
         <div className="mt-3 grid gap-3">
             <div className="grid gap-1">
-                <p className="text-sm font-medium">{{ de: 'Wo sitzt ihr?', en: 'Where will you dine?' }[locale]}</p>
-                <p className="text-sm text-muted-foreground">
-                    {
-                        {
-                            de: 'Wo das Essen stattfindet, nicht wo der Koch kocht. Optional.',
-                            en: 'Where you sit for the meal, not where the chef cooks. Optional.',
-                        }[locale]
-                    }
-                </p>
+                <p className="text-sm font-medium">{t(locale, 'common', 'bookingRequestSetting.whereDine')}</p>
+                <p className="text-sm text-muted-foreground">{t(locale, 'common', 'bookingRequestSetting.whereDineHint')}</p>
             </div>
             <div className="@container w-full min-w-0">
                 <div className="grid grid-cols-2 gap-3 @2xl:grid-cols-3">
@@ -106,7 +100,7 @@ export function BookingRequestSettingPicker({
                         <div className="aspect-4/3">
                             <AppImage
                                 src={SETTING_IMAGES.OUTDOOR.src}
-                                alt={SETTING_IMAGES.OUTDOOR.alt[locale]}
+                                alt={t(locale, 'common', SETTING_IMAGES.OUTDOOR.altKey)}
                                 className="size-full object-contain"
                             />
                         </div>
@@ -135,7 +129,7 @@ export function BookingRequestSettingPicker({
                         <div className="aspect-4/3">
                             <AppImage
                                 src={SETTING_IMAGES.INDOOR.src}
-                                alt={SETTING_IMAGES.INDOOR.alt[locale]}
+                                alt={t(locale, 'common', SETTING_IMAGES.INDOOR.altKey)}
                                 className="size-full object-contain"
                             />
                         </div>

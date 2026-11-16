@@ -10,12 +10,14 @@ import { ShareButton } from '../components/ShareButton';
 import type { GqlCChefPageQuery } from '../graphql/generated';
 import { ChefsDiscoveryTrackDocument } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { SectionLastVisitedCooks } from '../sections/SectionLastVisitedCooks';
 import { chefPageCityLabel } from '../seo/chefPageSeo';
 import { publicChefUrl } from '../utils/webShare';
 
 export function ChefPage({ data }: { data: GqlCChefPageQuery }) {
     const locale = useLocale();
+    const { t } = useT('public');
     const cook = data.publicCook.findOneByPathName!;
     const [, trackDiscovery] = useMutation(ChefsDiscoveryTrackDocument);
     const shareEnabled = featureToggleIsActive(data.currentSession.activeFeatureToggleKeys, 'COOK_PUBLIC_PROFILE_SHARE');
@@ -28,11 +30,8 @@ export function ChefPage({ data }: { data: GqlCChefPageQuery }) {
     const bookCta = directEnabled
         ? {
               cookId: cook.cookId,
-              label: { de: `Anfrage an ${displayName} senden`, en: `Send ${displayName} a request` }[locale],
-              underline: {
-                  de: 'Kostenlos und unverbindlich. Du erhältst ein Angebot mit Menü und Preis.',
-                  en: 'Free, with no commitment. They send an offer with menu and price.',
-              }[locale],
+              label: t('chef.sendRequest', { name: displayName }),
+              underline: t('chef.requestUnderline'),
           }
         : undefined;
     const view: ChefProfileViewModel = {
@@ -125,12 +124,7 @@ export function ChefPage({ data }: { data: GqlCChefPageQuery }) {
                         shareEnabled ? (
                             <ShareButton
                                 title={displayName}
-                                text={
-                                    {
-                                        de: `Schau dir ${displayName} auf peopleeat an`,
-                                        en: `Check out ${displayName} on peopleeat`,
-                                    }[locale]
-                                }
+                                text={t('chef.shareText', { name: displayName })}
                                 url={publicChefUrl(cook.pathName, locale)}
                                 variant="secondary"
                                 onShared={onShared}

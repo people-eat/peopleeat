@@ -4,6 +4,8 @@ import { useEffect } from 'react';
 import { toast } from 'sonner';
 import { useMutation, useQuery } from 'urql';
 
+import { t } from '../../../i18n/t';
+import type { Locale } from '../../../shared/locale';
 import { Button } from '../../components/base/button';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '../../components/base/combobox';
 import { Input } from '../../components/base/input';
@@ -21,10 +23,9 @@ import { useUserUpdatesSeed } from '../../hooks/useUserUpdatesSeed';
 import { cookNavRouteBySlug } from './cookCatalog';
 
 const route = cookNavRouteBySlug('travel');
-export const profileCookTravelEditPageTitle = {
-    de: 'Reise bearbeiten',
-    en: 'Edit travel',
-} as const;
+export function profileCookTravelEditPageTitle(locale: Locale): string {
+    return t(locale, 'profileCook', 'travelEdit.title');
+}
 export const profileCookTravelEditPageDescription = route.description;
 
 const TRAVEL_DISTANCE_OPTIONS = ['50', '100', '150', '200'] as const;
@@ -95,31 +96,16 @@ export function ProfileCookTravelEditPage({ data }: { data: GqlCProfileCookTrave
             if (!cook) return;
             const amount = euroTextToCents(value.travelExpensesText);
             if ('error' in amount) {
-                toast.error(
-                    {
-                        de: 'Bitte gib gültige Reisekosten ein (mind. 0,25 €).',
-                        en: 'Please enter valid travel expenses (at least €0.25).',
-                    }[locale],
-                );
+                toast.error(t(locale, 'profileCook', 'travelEdit.invalidExpenses'));
                 return;
             }
             if (amount.cents < 25) {
-                toast.error(
-                    {
-                        de: 'Reisekosten müssen mindestens 0,25 € betragen.',
-                        en: 'Travel expenses must be at least €0.25.',
-                    }[locale],
-                );
+                toast.error(t(locale, 'profileCook', 'travelEdit.minExpenses'));
                 return;
             }
             const distance = Number(value.maximumTravelDistanceText);
             if (!Number.isInteger(distance) || distance < 5 || distance > 250) {
-                toast.error(
-                    {
-                        de: 'Die maximale Reisestrecke muss zwischen 5 und 250 km liegen.',
-                        en: 'Maximum travel distance must be between 5 and 250 km.',
-                    }[locale],
-                );
+                toast.error(t(locale, 'profileCook', 'travelEdit.distanceRange'));
                 return;
             }
 
@@ -131,10 +117,10 @@ export function ProfileCookTravelEditPage({ data }: { data: GqlCProfileCookTrave
                 },
             });
             if (result.error || !result.data?.user.cook.update.success) {
-                toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+                toast.error(t(locale, 'common', 'saveFailed'));
                 return;
             }
-            toast.success({ de: 'Gespeichert.', en: 'Saved.' }[locale]);
+            toast.success(t(locale, 'profileCook', 'actions.saved'));
             await navigate({ to: '/{-$locale}/profile/travel' });
         },
     });
@@ -170,22 +156,22 @@ export function ProfileCookTravelEditPage({ data }: { data: GqlCProfileCookTrave
                 isDirty ? (
                     <>
                         <Button type="button" variant="outline" disabled={isSubmitting} asChild>
-                            <Link to="/{-$locale}/profile/travel">{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</Link>
+                            <Link to="/{-$locale}/profile/travel">{t(locale, 'common', 'cancel')}</Link>
                         </Button>
                         <Button type="submit" form="travel-form" disabled={isSubmitting}>
-                            {isSubmitting ? { de: 'Speichern…', en: 'Saving…' }[locale] : { de: 'Speichern', en: 'Save' }[locale]}
+                            {isSubmitting ? t(locale, 'profileCook', 'actions.saving') : t(locale, 'common', 'save')}
                         </Button>
                     </>
                 ) : (
                     <Button type="button" disabled={isSubmitting} asChild>
-                        <Link to="/{-$locale}/profile/travel">{{ de: 'Zur Reiseansicht', en: 'Back to travel' }[locale]}</Link>
+                        <Link to="/{-$locale}/profile/travel">{t(locale, 'profileCook', 'travelEdit.backToTravel')}</Link>
                     </Button>
                 )
             }
         >
             <div className="grid gap-2">
-                <h1 className="font-serif text-3xl/tight text-foreground">{profileCookTravelEditPageTitle[locale]}</h1>
-                <p className="text-muted-foreground">{profileCookTravelEditPageDescription[locale]}</p>
+                <h1 className="font-serif text-3xl/tight text-foreground">{profileCookTravelEditPageTitle(locale)}</h1>
+                <p className="text-muted-foreground">{profileCookTravelEditPageDescription(locale)}</p>
             </div>
 
             <form
@@ -199,17 +185,8 @@ export function ProfileCookTravelEditPage({ data }: { data: GqlCProfileCookTrave
             >
                 <section className="grid min-w-0 gap-4">
                     <div className="grid min-w-0 gap-2">
-                        <span className="text-sm font-medium">
-                            {{ de: 'Startadresse für die Reisestrecke', en: 'Travel origin address' }[locale]}
-                        </span>
-                        <p className="text-sm text-muted-foreground">
-                            {
-                                {
-                                    de: 'Wird nicht für Kunden angezeigt. Sie sehen nur die Stadt.',
-                                    en: 'Not shown to customers. They only see the city.',
-                                }[locale]
-                            }
-                        </p>
+                        <span className="text-sm font-medium">{t(locale, 'profileCook', 'travelEdit.origin')}</span>
+                        <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'travelEdit.originHint')}</p>
                         <Combobox
                             filter={null}
                             items={suggestions.map((suggestion) => suggestion.displayText)}
@@ -233,14 +210,14 @@ export function ProfileCookTravelEditPage({ data }: { data: GqlCProfileCookTrave
                         >
                             <ComboboxInput
                                 className="w-full min-w-0"
-                                placeholder={{ de: 'Adresse suchen…', en: 'Search address…' }[locale]}
+                                placeholder={t(locale, 'profileCook', 'actions.searchAddress')}
                                 showClear={false}
                             />
                             <ComboboxContent>
                                 <ComboboxEmpty>
                                     {suggestionsFetching
-                                        ? { de: 'Suche…', en: 'Searching…' }[locale]
-                                        : { de: 'Keine Treffer.', en: 'No matches.' }[locale]}
+                                        ? t(locale, 'profileCook', 'actions.searching')
+                                        : t(locale, 'profileCook', 'actions.noMatches')}
                                 </ComboboxEmpty>
                                 <ComboboxList>
                                     {(item: string) => (
@@ -253,12 +230,9 @@ export function ProfileCookTravelEditPage({ data }: { data: GqlCProfileCookTrave
                         </Combobox>
                         {selectedLocation?.structuredAddress ? (
                             <p className="text-sm text-muted-foreground">
-                                {
-                                    {
-                                        de: `Kunden sehen ${selectedLocation.structuredAddress.city}.`,
-                                        en: `Customers will see ${selectedLocation.structuredAddress.city}.`,
-                                    }[locale]
-                                }
+                                {t(locale, 'profileCook', 'travelEdit.customersSee', {
+                                    city: selectedLocation.structuredAddress.city,
+                                })}
                             </p>
                         ) : null}
                     </div>
@@ -266,9 +240,7 @@ export function ProfileCookTravelEditPage({ data }: { data: GqlCProfileCookTrave
                         <form.Field name="maximumTravelDistanceText">
                             {(field) => (
                                 <div className="grid min-w-0 gap-2">
-                                    <span className="text-sm font-medium">
-                                        {{ de: 'Maximale Reisestrecke', en: 'Maximum travel distance' }[locale]}
-                                    </span>
+                                    <span className="text-sm font-medium">{t(locale, 'profileCook', 'travelEdit.maxDistance')}</span>
                                     <Select value={field.state.value} onValueChange={(next) => field.handleChange(next)}>
                                         <SelectTrigger className="w-full min-w-0">
                                             <SelectValue />
@@ -288,7 +260,7 @@ export function ProfileCookTravelEditPage({ data }: { data: GqlCProfileCookTrave
                             {(field) => (
                                 <div className="grid min-w-0 gap-2">
                                     <label htmlFor="travel-expenses" className="text-sm font-medium">
-                                        {{ de: 'Reisekosten je km', en: 'Travel expenses per km' }[locale]}
+                                        {t(locale, 'profileCook', 'travelEdit.expensesPerKm')}
                                     </label>
                                     <div className="relative min-w-0">
                                         <Input

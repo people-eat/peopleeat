@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
-import { formatDate } from '../../../shared';
+import { t } from '../../../i18n/t';
+import { formatDate, inlineCopy } from '../../../shared';
 import { featureToggleKeys } from '../../../shared/featureToggle';
 import type { FeatureToggleKey } from '../../../shared/featureToggle';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/base/select';
@@ -51,15 +52,10 @@ export function AdminUserFeatureTogglesSection({
             if (mode === 'default') {
                 const result = await deleteOverride({ userId: user.userId, featureToggleKey });
                 if (result.error || !result.data?.admin.featureToggleUserOverrideDelete.success) {
-                    toast.error(
-                        {
-                            de: 'Ausnahme konnte nicht entfernt werden.',
-                            en: 'Could not clear the override.',
-                        }[locale],
-                    );
+                    toast.error(t(locale, 'admin', 'copy.couldNotClearTheOverride'));
                     return;
                 }
-                toast.success({ de: 'Ausnahme entfernt.', en: 'Override cleared.' }[locale]);
+                toast.success(t(locale, 'admin', 'copy.overrideCleared'));
             } else {
                 const result = await upsertOverride({
                     userId: user.userId,
@@ -67,18 +63,13 @@ export function AdminUserFeatureTogglesSection({
                     enabled: mode === 'user-on',
                 });
                 if (result.error || !result.data?.admin.featureToggleUserOverrideUpsert.success) {
-                    toast.error(
-                        {
-                            de: 'Ausnahme konnte nicht gespeichert werden.',
-                            en: 'Could not save the override.',
-                        }[locale],
-                    );
+                    toast.error(t(locale, 'admin', 'copy.couldNotSaveTheOverride'));
                     return;
                 }
                 toast.success(
                     mode === 'user-on'
-                        ? { de: 'Feature für diesen Nutzer aktiviert.', en: 'Feature enabled for this user.' }[locale]
-                        : { de: 'Feature für diesen Nutzer deaktiviert.', en: 'Feature disabled for this user.' }[locale],
+                        ? t(locale, 'admin', 'copy.featureEnabledForThisUser')
+                        : t(locale, 'admin', 'copy.featureDisabledForThisUser'),
                 );
             }
             await router.invalidate();
@@ -91,12 +82,7 @@ export function AdminUserFeatureTogglesSection({
         <section className="grid gap-3">
             <div className="grid gap-1">
                 <p className="text-sm text-muted-foreground">
-                    {
-                        {
-                            de: 'Pro Nutzer festlegen. Ohne Ausnahme gilt der globale Standard.',
-                            en: 'Override per user. Without an override, the global default applies.',
-                        }[locale]
-                    }
+                    {t(locale, 'admin', 'copy.overridePerUserWithoutAnOverrideTheGlobalDefaultApplies')}
                 </p>
             </div>
             <ul className="grid gap-2">
@@ -116,23 +102,20 @@ export function AdminUserFeatureTogglesSection({
                                 <div className="flex flex-wrap items-center gap-2">
                                     <p className="font-medium">{adminFeatureToggleLabel(featureToggleKey, locale)}</p>
                                     <StatusBadge tone={effectiveEnabled ? 'success' : 'info'}>
-                                        {effectiveEnabled
-                                            ? { de: 'Aktiv', en: 'Active' }[locale]
-                                            : { de: 'Inaktiv', en: 'Inactive' }[locale]}
+                                        {effectiveEnabled ? t(locale, 'admin', 'copy.active') : t(locale, 'admin', 'copy.inactive')}
                                     </StatusBadge>
-                                    {override != null ? (
-                                        <StatusBadge tone="info">{{ de: 'Ausnahme', en: 'Override' }[locale]}</StatusBadge>
-                                    ) : null}
+                                    {override != null ? <StatusBadge tone="info">{t(locale, 'admin', 'copy.override')}</StatusBadge> : null}
                                 </div>
                                 <p className="text-xs text-muted-foreground">
                                     <span className="font-mono">{featureToggleKey}</span>
                                     {' · '}
-                                    {
+                                    {inlineCopy(
                                         {
                                             de: `Global: ${globalEnabled ? 'an' : 'aus'}`,
                                             en: `Global: ${globalEnabled ? 'on' : 'off'}`,
-                                        }[locale]
-                                    }
+                                        },
+                                        locale,
+                                    )}
                                     {override?.updatedAt ? ` · ${formatDate(new Date(override.updatedAt), { locale, timeZone })}` : null}
                                 </p>
                             </div>

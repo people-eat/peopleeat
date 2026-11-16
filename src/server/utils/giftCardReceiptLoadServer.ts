@@ -4,6 +4,7 @@ import { and, eq } from 'drizzle-orm';
 import type { GiftCardReceiptPageProps } from '../../web/pages/GiftCardReceiptPage';
 import { db } from '../db';
 import { giftCards } from '../db/schema';
+import { serverI18nBootstrap } from '../i18nBootstrap';
 import { verifyServerToken } from './serverToken';
 
 // Server-only loader body for `/server/gift-cards/:id/receipt`. Kept in its own
@@ -11,6 +12,7 @@ import { verifyServerToken } from './serverToken';
 // without pulling `pg` / `node:crypto` into the client route tree.
 
 export async function giftCardReceiptLoadServer(input: { giftCardId: string; token: string }): Promise<GiftCardReceiptPageProps> {
+    serverI18nBootstrap();
     if (!verifyServerToken(input.token, input.giftCardId)) {
         throw notFound();
     }

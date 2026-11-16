@@ -1,3 +1,4 @@
+import { t } from '../../i18n/t';
 import type { CityCountryCode } from '../../shared/cityCountryCode';
 import { cityCountryHubLinkLabel } from '../../shared/cityCountryCode';
 import { contentLocaleText } from '../../shared/contentSection';
@@ -10,7 +11,7 @@ import { useLocale } from '../hooks/useLocale';
 import { CITY_CHEF_CTA_FALLBACK_IMAGE, CITY_HERO_FALLBACK_IMAGE } from './cityPageAssets';
 
 export function cityIndexLinkLabel(locale: Locale): string {
-    return { de: 'Alle Städte', en: 'All cities' }[locale];
+    return t(locale, 'public', 'cities.indexLink');
 }
 
 function cityIndexLink(countryCode: CityCountryCode, locale: Locale): ContentPageIndexLink {

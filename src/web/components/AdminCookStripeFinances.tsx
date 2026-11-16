@@ -1,3 +1,4 @@
+import { t } from '../../i18n/t';
 import { formatCurrency, formatDate } from '../../shared';
 import {
     cookStripeAccountDetailsCategories,
@@ -44,15 +45,10 @@ export function AdminCookStripeFinances({
         <section className="grid gap-6" aria-labelledby="admin-cook-finances-heading">
             <div className="grid gap-2">
                 <h2 id="admin-cook-finances-heading" className="font-serif text-2xl/tight text-foreground">
-                    {{ de: 'Finanzen', en: 'Finances' }[locale]}
+                    {t(locale, 'admin', 'copy.finances')}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                    {
-                        {
-                            de: 'Live-Daten von Stripe. Unabhängig vom Koch-Feature-Toggle für das Wallet-Guthaben.',
-                            en: 'Live data from Stripe. Independent of the cook feature toggle for wallet balance.',
-                        }[locale]
-                    }
+                    {t(locale, 'admin', 'copy.liveDataFromStripeIndependentOfTheCookFeatureToggleForWallet')}
                 </p>
             </div>
 
@@ -79,26 +75,12 @@ export function AdminCookStripeFinances({
                         {detailsChecklist.details.pendingVerification.length > 0 &&
                         detailsChecklist.details.currentlyDue.length === 0 &&
                         detailsChecklist.details.pastDue.length === 0 ? (
-                            <p>
-                                {
-                                    {
-                                        de: 'Der Koch muss gerade nichts weiter tun. Status aktualisiert sich, sobald Stripe fertig ist.',
-                                        en: 'Nothing more for the cook to do right now. Status updates once Stripe finishes.',
-                                    }[locale]
-                                }
-                            </p>
+                            <p>{t(locale, 'admin', 'copy.nothingMoreForTheCookToDoRightNowStatusUpdatesOnceStripeFini')}</p>
                         ) : null}
                         {detailsChecklist.details.detailsSubmitted &&
                         (!detailsChecklist.details.chargesEnabled || !detailsChecklist.details.payoutsEnabled) &&
                         stripeStatus !== 'COMPLETED' ? (
-                            <p>
-                                {
-                                    {
-                                        de: 'Zahlungen oder Auszahlungen sind bei Stripe noch nicht freigeschaltet.',
-                                        en: 'Charges or payouts are not enabled on Stripe yet.',
-                                    }[locale]
-                                }
-                            </p>
+                            <p>{t(locale, 'admin', 'copy.chargesOrPayoutsAreNotEnabledOnStripeYet')}</p>
                         ) : null}
                     </div>
                 </StatusAlert>
@@ -107,52 +89,38 @@ export function AdminCookStripeFinances({
             {stripeWallet != null ? (
                 <div className="grid gap-6">
                     <div className="grid gap-3">
-                        <h3 className="text-sm font-medium text-foreground">{{ de: 'Guthaben', en: 'Balance' }[locale]}</h3>
+                        <h3 className="text-sm font-medium text-foreground">{t(locale, 'admin', 'copy.balance2')}</h3>
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div className="grid gap-1">
-                                <p className="text-sm text-muted-foreground">{{ de: 'Verfügbar', en: 'Available' }[locale]}</p>
+                                <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.available')}</p>
                                 <p className="text-3xl/tight font-semibold tabular-nums text-foreground">
                                     {formatCurrency(stripeWallet.availableCents, { locale })}
                                 </p>
                             </div>
                             <div className="grid gap-1">
-                                <p className="text-sm text-muted-foreground">{{ de: 'Ausstehend', en: 'Pending' }[locale]}</p>
+                                <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.pending')}</p>
                                 <p className="text-3xl/tight font-semibold tabular-nums text-foreground">
                                     {formatCurrency(stripeWallet.pendingCents, { locale })}
                                 </p>
                             </div>
                         </div>
                         <p className="text-sm text-muted-foreground">
-                            {
-                                {
-                                    de: 'Verfügbar bedeutet bereit für die Bankauszahlung. Ausstehend wird nach der Stripe-Frist freigegeben.',
-                                    en: 'Available means ready for bank payout. Pending clears after the Stripe hold period.',
-                                }[locale]
-                            }
+                            {t(locale, 'admin', 'copy.availableMeansReadyForBankPayoutPendingClearsAfterTheStripeH')}
                         </p>
                     </div>
 
                     <div className="grid gap-3">
-                        <h3 className="text-sm font-medium text-foreground">
-                            {{ de: 'Letzte Bewegungen', en: 'Recent activity' }[locale]}
-                        </h3>
+                        <h3 className="text-sm font-medium text-foreground">{t(locale, 'admin', 'copy.recentActivity')}</h3>
                         {stripeWallet.transactions.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">
-                                {
-                                    {
-                                        de: 'Noch keine Bewegungen.',
-                                        en: 'No activity yet.',
-                                    }[locale]
-                                }
-                            </p>
+                            <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noActivityYet')}</p>
                         ) : (
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>{{ de: 'Datum', en: 'Date' }[locale]}</TableHead>
-                                        <TableHead>{{ de: 'Art', en: 'Type' }[locale]}</TableHead>
-                                        <TableHead>{{ de: 'Status', en: 'Status' }[locale]}</TableHead>
-                                        <TableHead className="text-right">{{ de: 'Betrag', en: 'Amount' }[locale]}</TableHead>
+                                        <TableHead>{t(locale, 'admin', 'copy.date')}</TableHead>
+                                        <TableHead>{t(locale, 'admin', 'copy.type2')}</TableHead>
+                                        <TableHead>{t(locale, 'admin', 'copy.status')}</TableHead>
+                                        <TableHead className="text-right">{t(locale, 'admin', 'copy.amount3')}</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -184,14 +152,7 @@ export function AdminCookStripeFinances({
                     </div>
                 </div>
             ) : stripeStatus !== 'EMPTY' ? (
-                <p className="text-sm text-muted-foreground">
-                    {
-                        {
-                            de: 'Guthaben konnte nicht geladen werden (kein Konto oder Stripe-Fehler).',
-                            en: 'Balance could not be loaded (no account or Stripe error).',
-                        }[locale]
-                    }
-                </p>
+                <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.balanceCouldNotBeLoadedNoAccountOrStripeError')}</p>
             ) : null}
         </section>
     );

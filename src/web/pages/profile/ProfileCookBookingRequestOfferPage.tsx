@@ -5,6 +5,7 @@ import { useEffect, useId, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
+import { t } from '../../../i18n/t';
 import {
     bookingRequestOfferChatCanSend,
     bookingRequestPaidParticipants,
@@ -128,16 +129,15 @@ function resolveOfferTab(
 
 type OfferTabDef = {
     id: ProfileCookBookingRequestOfferTab;
-    label: Record<Locale, string>;
     Icon: LucideIcon;
 };
 
 const OFFER_TAB_DEFS: readonly OfferTabDef[] = [
-    { id: 'offer', label: { de: 'Angebot', en: 'Offer' }, Icon: FileTextIcon },
-    { id: 'chat', label: { de: 'Chat', en: 'Chat' }, Icon: MessageSquareIcon },
-    { id: 'request', label: { de: 'Anfrage', en: 'Request' }, Icon: ClipboardListIcon },
-    { id: 'call', label: { de: 'Anruf', en: 'Call' }, Icon: VideoIcon },
-    { id: 'testimonial', label: { de: 'Bewertung', en: 'Review' }, Icon: StarIcon },
+    { id: 'offer', Icon: FileTextIcon },
+    { id: 'chat', Icon: MessageSquareIcon },
+    { id: 'request', Icon: ClipboardListIcon },
+    { id: 'call', Icon: VideoIcon },
+    { id: 'testimonial', Icon: StarIcon },
 ];
 
 type CookOffer = NonNullable<NonNullable<NonNullable<GqlCProfileCookBookingRequestOfferPageUserFragment['cook']>['bookingRequestOffer']>>;
@@ -237,9 +237,9 @@ export function ProfileCookBookingRequestOfferPage({
             if (!result.data?.user.cook.bookingRequestOfferAccept.success) {
                 throw new Error('accept failed');
             }
-            toast.success({ de: 'Änderungen bestätigt.', en: 'Changes confirmed.' }[locale]);
+            toast.success(t(locale, 'profileCook', 'offer.changesConfirmed'));
         } catch {
-            toast.error({ de: 'Bestätigung fehlgeschlagen.', en: 'Could not confirm.' }[locale]);
+            toast.error(t(locale, 'profileCook', 'offer.confirmFailed'));
         } finally {
             setBusy(false);
         }
@@ -255,9 +255,9 @@ export function ProfileCookBookingRequestOfferPage({
                 throw new Error('decline failed');
             }
             setDeclineOpen(false);
-            toast.success({ de: 'Angebot zurückgezogen.', en: 'Offer withdrawn.' }[locale]);
+            toast.success(t(locale, 'profileCook', 'offer.withdrawn'));
         } catch {
-            toast.error({ de: 'Zurückziehen fehlgeschlagen.', en: 'Could not withdraw the offer.' }[locale]);
+            toast.error(t(locale, 'profileCook', 'offer.withdrawFailed'));
         } finally {
             setBusy(false);
         }
@@ -267,44 +267,21 @@ export function ProfileCookBookingRequestOfferPage({
         const venue = offer?.participantAmendment?.exactEventAddress?.displayText.trim() ?? '';
         const result = await acceptParticipantAmendment({ bookingRequestOfferId });
         if (result.error || !result.data?.user.cook?.bookingRequestOfferParticipantAmendmentAccept.success) {
-            toast.error(
-                {
-                    de: 'Die Teilnehmeränderung konnte nicht angenommen werden.',
-                    en: 'Could not accept the participant change.',
-                }[locale],
-            );
+            toast.error(t(locale, 'profileCook', 'offer.participantAcceptFailed'));
             return;
         }
         toast.success(
-            venue
-                ? {
-                      de: `Die Adresse hat sich geändert: ${venue}. Bitte aktualisiere sie in deinem Kalender.`,
-                      en: `The address has changed: ${venue}. Please update it in your calendar.`,
-                  }[locale]
-                : {
-                      de: 'Teilnehmeränderung angenommen.',
-                      en: 'Participant change accepted.',
-                  }[locale],
+            venue ? t(locale, 'profileCook', 'offer.addressChanged', { venue }) : t(locale, 'profileCook', 'offer.participantAccepted'),
         );
     }
 
     async function onDeclineParticipantAmendment() {
         const result = await declineParticipantAmendment({ bookingRequestOfferId });
         if (result.error || !result.data?.user.cook?.bookingRequestOfferParticipantAmendmentDecline.success) {
-            toast.error(
-                {
-                    de: 'Die Teilnehmeränderung konnte nicht abgelehnt werden.',
-                    en: 'Could not decline the participant change.',
-                }[locale],
-            );
+            toast.error(t(locale, 'profileCook', 'offer.participantDeclineFailed'));
             return;
         }
-        toast.success(
-            {
-                de: 'Teilnehmeränderung abgelehnt.',
-                en: 'Participant change declined.',
-            }[locale],
-        );
+        toast.success(t(locale, 'profileCook', 'offer.participantDeclined'));
     }
 
     return (
@@ -331,7 +308,7 @@ export function ProfileCookBookingRequestOfferPage({
                                     disabled={testimonialBusy}
                                     onClick={() => setTestimonialEditing(false)}
                                 >
-                                    {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                    {t(locale, 'common', 'cancel')}
                                 </Button>
                                 <Button
                                     type="submit"
@@ -339,12 +316,12 @@ export function ProfileCookBookingRequestOfferPage({
                                     className="flex-1 md:flex-initial"
                                     disabled={testimonialBusy}
                                 >
-                                    {{ de: 'Speichern', en: 'Save' }[locale]}
+                                    {t(locale, 'common', 'save')}
                                 </Button>
                             </>
                         ) : showTestimonialComposeFooter ? (
                             <Button type="submit" form={BOOKING_REQUEST_OFFER_TESTIMONIAL_FORM_ID} disabled={testimonialBusy}>
-                                {{ de: 'Bewertung absenden', en: 'Share your review' }[locale]}
+                                {t(locale, 'profileCook', 'offer.shareReview')}
                             </Button>
                         ) : pendingParticipantAmendment != null ? (
                             <>
@@ -355,21 +332,18 @@ export function ProfileCookBookingRequestOfferPage({
                                         disabled={actionsBusy}
                                         onClick={() => void onDeclineParticipantAmendment()}
                                     >
-                                        {{ de: 'Ablehnen', en: 'Decline' }[locale]}
+                                        {t(locale, 'profileCook', 'actions.decline')}
                                     </Button>
                                 ) : null}
                                 <Button type="button" disabled={actionsBusy} onClick={() => void onAcceptParticipantAmendment()}>
-                                    {
-                                        {
-                                            de: pendingParticipantAmendment.claimedAt != null ? 'Erneut versuchen' : 'Änderung annehmen',
-                                            en: pendingParticipantAmendment.claimedAt != null ? 'Retry' : 'Accept change',
-                                        }[locale]
-                                    }
+                                    {pendingParticipantAmendment.claimedAt != null
+                                        ? t(locale, 'profileCook', 'actions.retry')
+                                        : t(locale, 'profileCook', 'actions.acceptChange')}
                                 </Button>
                             </>
                         ) : canReAccept ? (
                             <Button type="button" disabled={busy} onClick={() => void onAccept()}>
-                                {{ de: 'Änderungen bestätigen', en: 'Confirm changes' }[locale]}
+                                {t(locale, 'profileCook', 'offer.confirmChanges')}
                             </Button>
                         ) : undefined
                     }
@@ -387,7 +361,7 @@ export function ProfileCookBookingRequestOfferPage({
                                             variant="outline"
                                             size="icon"
                                             disabled={busy}
-                                            aria-label={{ de: 'Weitere Aktionen', en: 'More actions' }[locale]}
+                                            aria-label={t(locale, 'profileCook', 'actions.moreActions')}
                                         >
                                             <MoreHorizontalIcon className="size-4" />
                                         </Button>
@@ -401,7 +375,7 @@ export function ProfileCookBookingRequestOfferPage({
                                                 setDeclineOpen(true);
                                             }}
                                         >
-                                            {{ de: 'Zurückziehen', en: 'Withdraw' }[locale]}
+                                            {t(locale, 'profileCook', 'offer.withdraw')}
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
@@ -418,42 +392,22 @@ export function ProfileCookBookingRequestOfferPage({
                             />
                         ) : null}
                         {canReAccept && pendingParticipantAmendment == null ? (
-                            <StatusAlert tone="warning" title={{ de: 'Änderungen bestätigen', en: 'Confirm changes' }[locale]}>
+                            <StatusAlert tone="warning" title={t(locale, 'profileCook', 'offer.confirmChanges')}>
                                 {offer.priceAutoAdjustReason === 'PARTICIPANTS'
-                                    ? {
-                                          de: 'Dein Gast hat die Teilnehmerzahl geändert und der Preis wurde automatisch angepasst. Bestätige die Änderungen, damit die Buchung weitergehen kann. Du kannst den Preis vorher noch anpassen.',
-                                          en: 'Your guest changed the guest count and the price was adjusted automatically. Confirm the changes so the booking can continue. You can still tweak the price first.',
-                                      }[locale]
+                                    ? t(locale, 'profileCook', 'offer.confirmParticipants')
                                     : offer.priceAutoAdjustReason === 'PARTICIPANTS_AND_TRAVEL'
-                                      ? {
-                                            de: 'Dein Gast hat Teilnehmerzahl und Adresse geändert und der Preis wurde automatisch angepasst. Bestätige die Änderungen, damit die Buchung weitergehen kann. Du kannst den Preis vorher noch anpassen.',
-                                            en: 'Your guest changed the guest count and address and the price was adjusted automatically. Confirm the changes so the booking can continue. You can still tweak the price first.',
-                                        }[locale]
+                                      ? t(locale, 'profileCook', 'offer.confirmParticipantsAndAddress')
                                       : offer.priceAutoAdjustReason === 'TRAVEL'
-                                        ? {
-                                              de: 'Dein Gast hat die Adresse geändert und die Fahrtkosten wurden automatisch angepasst. Bestätige die Änderungen, damit die Buchung weitergehen kann. Du kannst den Preis vorher noch anpassen.',
-                                              en: 'Your guest changed the address and travel costs were adjusted automatically. Confirm the changes so the booking can continue. You can still tweak the price first.',
-                                          }[locale]
+                                        ? t(locale, 'profileCook', 'offer.confirmAddress')
                                         : offer.priceAutoAdjustReason != null
-                                          ? {
-                                                de: 'Dein Gast hat etwas geändert und der Preis wurde automatisch angepasst. Bestätige die Änderungen, damit die Buchung weitergehen kann. Du kannst den Preis vorher noch anpassen.',
-                                                en: 'Your guest changed something and the price was adjusted automatically. Confirm the changes so the booking can continue. You can still tweak the price first.',
-                                            }[locale]
-                                          : {
-                                                de: 'Dein Gast hat eine Änderung gewünscht. Bestätige sie, damit die Buchung weitergehen kann.',
-                                                en: 'Your guest requested a change. Confirm it so the booking can continue.',
-                                            }[locale]}
+                                          ? t(locale, 'profileCook', 'offer.confirmGenericPrice')
+                                          : t(locale, 'profileCook', 'offer.confirmGeneric')}
                             </StatusAlert>
                         ) : null}
                         {pendingIncomingCall ? (
                             <BookingRequestOfferAttentionBanner
-                                message={
-                                    {
-                                        de: 'Terminanfrage vom Kunden: bitte bestätigen oder ablehnen',
-                                        en: 'Call request from the customer: please confirm or decline',
-                                    }[locale]
-                                }
-                                actionLabel={{ de: 'Zum Anruf', en: 'View call' }[locale]}
+                                message={t(locale, 'profileCook', 'offer.callRequest')}
+                                actionLabel={t(locale, 'profileCook', 'offer.viewCall')}
                                 actionLink={
                                     tab !== 'call'
                                         ? {
@@ -469,12 +423,8 @@ export function ProfileCookBookingRequestOfferPage({
 
                     <Tabs value={tab} className="flex min-h-0 flex-1 flex-col gap-0">
                         <div className="px-4">
-                            <TabsList
-                                variant="line"
-                                className="shrink-0"
-                                aria-label={{ de: 'Angebotsbereiche', en: 'Offer sections' }[locale]}
-                            >
-                                {visibleTabDefs.map(({ id, label, Icon }) => (
+                            <TabsList variant="line" className="shrink-0" aria-label={t(locale, 'profileCook', 'offer.sections')}>
+                                {visibleTabDefs.map(({ id, Icon }) => (
                                     <TabsTrigger key={id} value={id} asChild>
                                         <Link
                                             to="/{-$locale}/profile/booking-request-offers/$bookingRequestOfferId"
@@ -490,13 +440,13 @@ export function ProfileCookBookingRequestOfferPage({
                                             replace
                                         >
                                             <Icon aria-hidden />
-                                            {label[locale]}
+                                            {t(locale, 'profileCook', `offer.tabs.${id}`)}
                                             {id === 'testimonial' && testimonialTabMissing ? (
                                                 <NotificationBadge
                                                     count={1}
                                                     placement="inline"
                                                     className="ml-1"
-                                                    label={{ de: 'Bewertung ausstehend', en: 'Review outstanding' }[locale]}
+                                                    label={t(locale, 'profileCook', 'offer.reviewOutstanding')}
                                                 />
                                             ) : null}
                                         </Link>
@@ -511,7 +461,7 @@ export function ProfileCookBookingRequestOfferPage({
                                     {offer.activeCallRoom?.status === 'ACTIVE' ? (
                                         <StatusAlert
                                             tone="info"
-                                            title={{ de: 'Anruf läuft', en: 'Call in progress' }[locale]}
+                                            title={t(locale, 'profileCook', 'offer.callInProgress')}
                                             action={
                                                 <Button type="button" size="sm" asChild>
                                                     <Link
@@ -520,23 +470,18 @@ export function ProfileCookBookingRequestOfferPage({
                                                         search={{ tab: 'call' }}
                                                         replace
                                                     >
-                                                        {{ de: 'Zum Anruf', en: 'Go to call' }[locale]}
+                                                        {t(locale, 'profileCook', 'offer.goToCall')}
                                                     </Link>
                                                 </Button>
                                             }
                                         >
-                                            {
-                                                {
-                                                    de: 'Ein Videoanruf für dieses Angebot ist aktiv.',
-                                                    en: 'A video call for this offer is active.',
-                                                }[locale]
-                                            }
+                                            {t(locale, 'profileCook', 'offer.videoCallActive')}
                                         </StatusAlert>
                                     ) : null}
                                     {!pendingIncomingCall && confirmedUpcomingCall ? (
                                         <StatusAlert
                                             tone="info"
-                                            title={{ de: 'Gesprächstermin bestätigt', en: 'Discovery call confirmed' }[locale]}
+                                            title={t(locale, 'profileCook', 'offer.callConfirmed')}
                                             action={
                                                 <Button type="button" size="sm" asChild>
                                                     <Link
@@ -545,17 +490,12 @@ export function ProfileCookBookingRequestOfferPage({
                                                         search={{ tab: 'call' }}
                                                         replace
                                                     >
-                                                        {{ de: 'Zum Anruf', en: 'View call' }[locale]}
+                                                        {t(locale, 'profileCook', 'offer.viewCall')}
                                                     </Link>
                                                 </Button>
                                             }
                                         >
-                                            {
-                                                {
-                                                    de: 'Dein bestätigter Termin erscheint unter Anruf.',
-                                                    en: 'Your confirmed appointment is on the Call tab.',
-                                                }[locale]
-                                            }
+                                            {t(locale, 'profileCook', 'offer.callOnTab')}
                                         </StatusAlert>
                                     ) : null}
                                 </div>
@@ -576,9 +516,7 @@ export function ProfileCookBookingRequestOfferPage({
                                 onSend={async (message, fileUploadIds) => {
                                     const result = await sendChatMessage({ bookingRequestOfferId, message, fileUploadIds });
                                     if (result.error || !result.data?.user.cook.bookingRequestOfferChatMessageCreate.success) {
-                                        toast.error(
-                                            { de: 'Nachricht konnte nicht gesendet werden.', en: 'Could not send the message.' }[locale],
-                                        );
+                                        toast.error(t(locale, 'profileCook', 'offer.messageSendFailed'));
                                         return false;
                                     }
                                     return true;
@@ -588,12 +526,7 @@ export function ProfileCookBookingRequestOfferPage({
                                         bookingRequestOfferEventId: chatMessageId,
                                     });
                                     if (result.error || !result.data?.user.cook.bookingRequestOfferChatMessageDelete.success) {
-                                        toast.error(
-                                            {
-                                                de: 'Nachricht konnte nicht gelöscht werden.',
-                                                en: 'Could not delete the message.',
-                                            }[locale],
-                                        );
+                                        toast.error(t(locale, 'profileCook', 'offer.messageDeleteFailed'));
                                         return false;
                                     }
                                     return true;
@@ -604,12 +537,7 @@ export function ProfileCookBookingRequestOfferPage({
                                         emoji,
                                     });
                                     if (result.error || !result.data?.user.cook.bookingRequestOfferChatMessageReactionUpsert.success) {
-                                        toast.error(
-                                            {
-                                                de: 'Reaktion konnte nicht gespeichert werden.',
-                                                en: 'Could not save the reaction.',
-                                            }[locale],
-                                        );
+                                        toast.error(t(locale, 'profileCook', 'offer.reactionFailed'));
                                         return false;
                                     }
                                     return true;
@@ -632,20 +560,10 @@ export function ProfileCookBookingRequestOfferPage({
                                 onPreparationsComplete={async () => {
                                     const result = await completePreparations({ bookingRequestOfferId });
                                     if (result.error || !result.data?.user.cook?.bookingRequestOfferPreparationsComplete.success) {
-                                        toast.error(
-                                            {
-                                                de: 'Einkauf konnte nicht markiert werden.',
-                                                en: 'Could not mark shopping as done.',
-                                            }[locale],
-                                        );
+                                        toast.error(t(locale, 'profileCook', 'offer.shoppingFailed'));
                                         return;
                                     }
-                                    toast.success(
-                                        {
-                                            de: 'Einkauf als erledigt markiert.',
-                                            en: 'Shopping marked as done.',
-                                        }[locale],
-                                    );
+                                    toast.success(t(locale, 'profileCook', 'offer.shoppingDone'));
                                 }}
                             />
                         </TabsContent>
@@ -734,20 +652,18 @@ export function ProfileCookBookingRequestOfferPage({
                     <AlertDialog open={declineOpen} onOpenChange={setDeclineOpen}>
                         <AlertDialogContent>
                             <AlertDialogHeader>
-                                <AlertDialogTitle>{{ de: 'Angebot zurückziehen?', en: 'Withdraw this offer?' }[locale]}</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    {{ de: 'Bitte nenne kurz einen Grund.', en: 'Please briefly share a reason.' }[locale]}
-                                </AlertDialogDescription>
+                                <AlertDialogTitle>{t(locale, 'profileCook', 'offer.withdrawTitle')}</AlertDialogTitle>
+                                <AlertDialogDescription>{t(locale, 'profileCook', 'offer.withdrawBody')}</AlertDialogDescription>
                             </AlertDialogHeader>
                             <Textarea
                                 id={declineReasonId}
                                 value={declineReason}
                                 onChange={(event) => setDeclineReason(event.target.value)}
-                                placeholder={{ de: 'Grund…', en: 'Reason…' }[locale]}
+                                placeholder={t(locale, 'profileCook', 'offer.reasonPlaceholder')}
                                 rows={3}
                             />
                             <AlertDialogFooter>
-                                <AlertDialogCancel disabled={busy}>{{ de: 'Abbrechen', en: 'Back' }[locale]}</AlertDialogCancel>
+                                <AlertDialogCancel disabled={busy}>{t(locale, 'profileCook', 'offer.withdrawBack')}</AlertDialogCancel>
                                 <AlertDialogAction
                                     disabled={busy || declineReason.trim().length === 0}
                                     onClick={(event) => {
@@ -755,7 +671,7 @@ export function ProfileCookBookingRequestOfferPage({
                                         void onDecline();
                                     }}
                                 >
-                                    {{ de: 'Zurückziehen', en: 'Withdraw' }[locale]}
+                                    {t(locale, 'profileCook', 'offer.withdraw')}
                                 </AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
@@ -791,8 +707,8 @@ function OfferTabPanel({
     const pricePerPersonCents = paid > 0 ? Math.round(offer.menuPriceCents / paid) : 0;
     const hasSuggestedMenus = offer.suggestedMenus.length > 0;
     const menusEditLabel = hasSuggestedMenus
-        ? { de: 'Menüvorschlag ändern', en: 'Suggest another menu' }[locale]
-        : { de: 'Menü vorschlagen', en: 'Suggest a menu' }[locale];
+        ? t(locale, 'profileCook', 'offer.suggestAnotherMenu')
+        : t(locale, 'profileCook', 'offer.suggestMenu');
     const canReAccept = offer.status === 'COOK_NEEDS_TO_ACCEPT';
     const timeZone = useTimeZone();
     const receiptsEnabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS');
@@ -843,8 +759,8 @@ function OfferTabPanel({
             <section className="grid gap-4">
                 <h2 className="font-semibold text-foreground">
                     {offer.configuredMenu
-                        ? { de: 'Gewähltes Menü', en: 'Configured menu' }[locale]
-                        : { de: 'Vorgeschlagene Menüs', en: 'Suggested menus' }[locale]}
+                        ? t(locale, 'profileCook', 'offer.configuredMenu')
+                        : t(locale, 'profileCook', 'offer.suggestedMenus')}
                 </h2>
                 {offer.configuredMenu ? (
                     <OfferMenuConfigured menu={offer.configuredMenu} />
@@ -868,9 +784,7 @@ function OfferTabPanel({
                         ))}
                     </ul>
                 ) : (
-                    <p className="text-sm text-muted-foreground">
-                        {{ de: 'Noch kein Menü vorgeschlagen.', en: 'No menu suggested yet.' }[locale]}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'offer.noMenuYet')}</p>
                 )}
                 {canNegotiate ? (
                     <Button type="button" variant="outline" className="justify-self-end" asChild disabled={busy}>
@@ -886,7 +800,7 @@ function OfferTabPanel({
 
             {offer.addons.length > 0 ? (
                 <section className="grid gap-4">
-                    <h2 className="font-semibold text-foreground">{{ de: 'Zusatzleistungen', en: 'Offer extras' }[locale]}</h2>
+                    <h2 className="font-semibold text-foreground">{t(locale, 'profileCook', 'offerCreate.extras')}</h2>
                     <ul className="grid gap-3">
                         {offer.addons.map((addon) => (
                             <li key={addon.cookOfferAddonId} className="grid gap-1 rounded-xl border p-4">
@@ -897,10 +811,10 @@ function OfferTabPanel({
                                 <p className="text-sm text-muted-foreground">
                                     {offerAddonPriceLabel(addon.priceCents, addon.pricingUnit, locale)}
                                     {addon.inclusion === 'REQUIRED'
-                                        ? ` (${{ de: 'enthalten', en: 'included' }[locale]})`
+                                        ? ` (${t(locale, 'profileCook', 'offer.included')})`
                                         : addon.customerSelected
-                                          ? ` (${{ de: 'ausgewählt', en: 'selected' }[locale]})`
-                                          : ` (${{ de: 'nicht ausgewählt', en: 'not selected' }[locale]})`}
+                                          ? ` (${t(locale, 'profileCook', 'offer.selected')})`
+                                          : ` (${t(locale, 'profileCook', 'offer.notSelected')})`}
                                 </p>
                             </li>
                         ))}
@@ -911,27 +825,17 @@ function OfferTabPanel({
             <section className="grid gap-4">
                 {canReAccept && offer.priceAutoAdjustReason != null ? (
                     <StatusAlert tone="info">
-                        {
-                            (offer.priceAutoAdjustReason === 'PARTICIPANTS'
-                                ? {
-                                      de: 'Der Menüpreis wurde automatisch an die neue Teilnehmerzahl angepasst. Du kannst ihn noch ändern, bevor du oben bestätigst.',
-                                      en: 'The menu price was adjusted automatically to the new guest count. You can still edit it before confirming above.',
-                                  }
+                        {t(
+                            locale,
+                            'profileCook',
+                            offer.priceAutoAdjustReason === 'PARTICIPANTS'
+                                ? 'offer.priceAdjustedGuests'
                                 : offer.priceAutoAdjustReason === 'PARTICIPANTS_AND_TRAVEL'
-                                  ? {
-                                        de: 'Menüpreis und Fahrtkosten wurden automatisch angepasst. Du kannst sie noch ändern, bevor du oben bestätigst.',
-                                        en: 'Menu price and travel costs were adjusted automatically. You can still edit them before confirming above.',
-                                    }
+                                  ? 'offer.priceAdjustedGuestsAndTravel'
                                   : offer.priceAutoAdjustReason === 'TRAVEL'
-                                    ? {
-                                          de: 'Die Fahrtkosten wurden automatisch angepasst (nach Adressänderung). Du kannst sie noch ändern, bevor du oben bestätigst.',
-                                          en: 'Travel costs were adjusted automatically after the address change. You can still edit them before confirming above.',
-                                      }
-                                    : {
-                                          de: 'Der Preis wurde automatisch angepasst. Du kannst ihn noch ändern, bevor du oben bestätigst.',
-                                          en: 'The price was adjusted automatically. You can still edit it before confirming above.',
-                                      })[locale]
-                        }
+                                    ? 'offer.travelAdjusted'
+                                    : 'offer.priceAdjusted',
+                        )}
                     </StatusAlert>
                 ) : null}
                 <BookingRequestOfferCostOverviewPanel
@@ -944,68 +848,34 @@ function OfferTabPanel({
                     menuPriceCents={offer.menuPriceCents}
                 />
                 {offer.status === 'COMPLETED' && offer.menuPriceCents + offer.travelExpensesCents > 0 ? (
-                    <StatusAlert tone="info" title={{ de: 'Rechnung stellen', en: 'Issue your invoice' }[locale]}>
+                    <StatusAlert tone="info" title={t(locale, 'profileCook', 'offer.invoiceTitle')}>
                         <p>
-                            {
-                                {
-                                    de: 'Bitte stelle deine Rechnung über den Betrag ',
-                                    en: 'Please issue your invoice for the amount ',
-                                }[locale]
-                            }
+                            {t(locale, 'profileCook', 'offer.invoiceBefore')}
                             <span className="font-semibold">
                                 {formatCurrency(offer.menuPriceCents + offer.travelExpensesCents, { locale })}
                             </span>
-                            {
-                                {
-                                    de: ' aus. Dies entspricht deiner Leistung vor Abzug unserer Gebühr. Unsere peopleeat-Gebühr in Höhe von ',
-                                    en: '. This corresponds to your service before deduction of our fee. Our peopleeat fee of ',
-                                }[locale]
-                            }
+                            {t(locale, 'profileCook', 'offer.invoiceMiddle')}
                             <span className="font-semibold">
                                 {formatCurrency(offer.menuPriceCents + offer.travelExpensesCents - offer.payoutCentsCook, {
                                     locale,
                                 })}
                             </span>
-                            {
-                                {
-                                    de: ' wurde bereits bei der Auszahlung automatisch abgezogen.',
-                                    en: ' was already automatically deducted at payout.',
-                                }[locale]
-                            }
+                            {t(locale, 'profileCook', 'offer.invoiceAfter')}
                         </p>
-                        {receiptsEnabled ? (
-                            <p>
-                                {
-                                    {
-                                        de: 'Wenn die Buchung bezahlt ist, schicken wir dir die Abrechnung per Email. Du kannst sie auch hier herunterladen.',
-                                        en: 'Once the booking is paid, we email you the statement. You can also download it here.',
-                                    }[locale]
-                                }
-                            </p>
-                        ) : null}
+                        {receiptsEnabled ? <p>{t(locale, 'profileCook', 'offer.statementHint')}</p> : null}
                     </StatusAlert>
                 ) : null}
                 {showPayoutStatement ? (
                     <BookingRequestOfferPaymentDocumentPanel
                         locale={locale}
-                        title={{ de: 'Abrechnung', en: 'Payout statement' }[locale]}
-                        description={
-                            {
-                                de: 'Auszahlungsbetrag und einbehaltene Gebühr. Keine Rechnung. Die Rechnung an den Gast stellst du selbst.',
-                                en: 'Payout amount and the fee we withheld. Not an invoice. You still invoice the guest yourself.',
-                            }[locale]
-                        }
+                        title={t(locale, 'profileCook', 'offer.statement')}
+                        description={t(locale, 'profileCook', 'offer.statementBody')}
                         file={offer.cookStatementFileUpload}
                         busy={statementBusy}
                         onRegenerate={() => {
                             void regenerateStatement({ bookingRequestOfferId }).then((result) => {
                                 if (result.error || !result.data?.user.cook.bookingRequestOfferCookStatementRegenerate.success) {
-                                    toast.error(
-                                        {
-                                            de: 'Die Abrechnung konnte nicht erstellt werden.',
-                                            en: 'The payout statement could not be created.',
-                                        }[locale],
-                                    );
+                                    toast.error(t(locale, 'profileCook', 'offer.statementFailed'));
                                 }
                             });
                         }}
@@ -1017,7 +887,7 @@ function OfferTabPanel({
                             to="/{-$locale}/profile/booking-request-offers/$bookingRequestOfferId/edit-price"
                             params={{ bookingRequestOfferId }}
                         >
-                            {{ de: 'Preis anpassen', en: 'Adjust price' }[locale]}
+                            {t(locale, 'profileCook', 'offer.adjustPrice')}
                         </Link>
                     </Button>
                 ) : null}
@@ -1066,14 +936,7 @@ function RequestTabPanel({
             participants={request.participants}
             preferences={request.preferences}
             eventLocation={eventLocation}
-            eventLocationHint={
-                revealExactAddress
-                    ? undefined
-                    : {
-                          de: 'Die genaue Adresse wird nach gemeinsamer Zusage freigegeben. Für die Reisekosten nutzen wir sie bereits.',
-                          en: 'The exact address is shared after both sides accept. We already use it for travel expense calculations.',
-                      }[locale]
-            }
+            eventLocationHint={revealExactAddress ? undefined : t(locale, 'profileCook', 'offer.exactAddressHint')}
             estimatedTravelDistanceKm={offer.travelDistanceKm}
             estimatedTravelExpensesCents={offer.travelExpensesCents}
             setting={request.setting}

@@ -2,6 +2,8 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import type { SortingState, Updater } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
 
+import { t } from '../../../i18n/t';
+import { inlineCopy } from '../../../shared';
 import { AdminListPaginationBar } from '../../components/AdminListPaginationBar';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
@@ -14,6 +16,7 @@ import type {
 } from '../../graphql/generated';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useLocale } from '../../hooks/useLocale';
+import type { Locale } from '../../utils/locale';
 import {
     adminListPageCount,
     adminListPageSize,
@@ -38,11 +41,12 @@ import {
 import type { AdminOutboundEmailsSortField } from './adminOutboundEmailsColumns';
 import { AdminOutboundEmailsDataTable } from './AdminOutboundEmailsDataTable';
 
-export const adminOutboundEmailsPageTitle = { de: 'E-Mail-Liste', en: 'Email list' } as const;
-export const adminOutboundEmailsPageDescription = {
-    de: 'Ausgehende Transaktions-E-Mails durchsuchen und einsehen.',
-    en: 'Browse and inspect outbound transactional emails.',
-} as const;
+export function adminOutboundEmailsPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.outboundEmails.title');
+}
+export function adminOutboundEmailsPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.outboundEmails.description');
+}
 
 const ADMIN_OUTBOUND_EMAILS_ALL_PURPOSES: GqlCAdminOutboundEmailPurpose[] = [
     'GIFT_CARD_PURCHASED',
@@ -183,7 +187,7 @@ export function AdminOutboundEmailsPage({ data, search }: { data: GqlCAdminOutbo
     }
 
     const lifecycleTabs: { value: GqlCAdminOutboundEmailLifecycleStatus | undefined; label: string }[] = [
-        { value: undefined, label: { de: 'Alle', en: 'All' }[locale] },
+        { value: undefined, label: t(locale, 'admin', 'copy.all') },
         ...ADMIN_OUTBOUND_EMAIL_LIFECYCLE_STATUSES.map((status) => ({
             value: status,
             label: adminOutboundEmailLifecycleStatusLabel(status, locale),
@@ -191,7 +195,7 @@ export function AdminOutboundEmailsPage({ data, search }: { data: GqlCAdminOutbo
     ];
 
     const purposeTabs: { value: GqlCAdminOutboundEmailPurpose | undefined; label: string }[] = [
-        { value: undefined, label: { de: 'Alle Zwecke', en: 'All purposes' }[locale] },
+        { value: undefined, label: t(locale, 'admin', 'copy.allPurposes') },
         ...ADMIN_OUTBOUND_EMAILS_ALL_PURPOSES.map((purpose) => ({
             value: purpose,
             label: adminOutboundEmailPurposeLabel(purpose, locale),
@@ -231,7 +235,7 @@ export function AdminOutboundEmailsPage({ data, search }: { data: GqlCAdminOutbo
                 }
             >
                 <Tabs value={search.lifecycleStatus ?? 'all'}>
-                    <TabsList variant="line" aria-label={{ de: 'Zustellstatus', en: 'Delivery status' }[locale]}>
+                    <TabsList variant="line" aria-label={t(locale, 'admin', 'copy.deliveryStatus')}>
                         {lifecycleTabs.map((tab) => (
                             <TabsTrigger key={tab.value ?? 'all'} value={tab.value ?? 'all'} asChild>
                                 <Link
@@ -251,7 +255,7 @@ export function AdminOutboundEmailsPage({ data, search }: { data: GqlCAdminOutbo
                 </Tabs>
 
                 <Tabs value={search.purpose ?? 'all'}>
-                    <TabsList variant="line" aria-label={{ de: 'E-Mail-Zweck', en: 'Email purpose' }[locale]}>
+                    <TabsList variant="line" aria-label={t(locale, 'admin', 'copy.emailPurpose')}>
                         {purposeTabs.map((tab) => (
                             <TabsTrigger key={tab.value ?? 'all'} value={tab.value ?? 'all'} asChild>
                                 <Link
@@ -275,16 +279,17 @@ export function AdminOutboundEmailsPage({ data, search }: { data: GqlCAdminOutbo
                         type="search"
                         value={draftQ}
                         onChange={(event) => setDraftQ(event.target.value)}
-                        placeholder={{ de: 'Empfänger oder Betreff suchen…', en: 'Search recipient or subject…' }[locale]}
-                        aria-label={{ de: 'E-Mails suchen', en: 'Search emails' }[locale]}
+                        placeholder={t(locale, 'admin', 'copy.searchRecipientOrSubject')}
+                        aria-label={t(locale, 'admin', 'copy.searchEmails')}
                     />
                     <p className="text-sm text-muted-foreground tabular-nums">
-                        {
+                        {inlineCopy(
                             {
                                 de: `${total} ${total === 1 ? 'E-Mail' : 'E-Mails'}`,
                                 en: `${total} ${total === 1 ? 'email' : 'emails'}`,
-                            }[locale]
-                        }
+                            },
+                            locale,
+                        )}
                     </p>
                 </div>
 

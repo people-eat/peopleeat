@@ -4,9 +4,11 @@ import { and, eq } from 'drizzle-orm';
 import type { GiftCardVoucherPageProps } from '../../web/pages/GiftCardVoucherPage';
 import { db } from '../db';
 import { giftCards } from '../db/schema';
+import { serverI18nBootstrap } from '../i18nBootstrap';
 import { verifyServerToken } from './serverToken';
 
 export async function giftCardVoucherLoadServer(input: { giftCardId: string; token: string }): Promise<GiftCardVoucherPageProps> {
+    serverI18nBootstrap();
     if (!verifyServerToken(input.token, input.giftCardId)) {
         throw notFound();
     }

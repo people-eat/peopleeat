@@ -4,11 +4,13 @@ import { useId, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
+import { t } from '../../../i18n/t';
 import {
     bookingRequestOfferPriceCalculate,
     bookingRequestOfferPriceGuidance,
     bookingRequestPaidParticipants,
     centsToEuros,
+    inlineCopy,
     userDisplayName,
 } from '../../../shared';
 import { AdminBookingRequestOfferAmendmentConfirmDialog } from '../../components/AdminBookingRequestOfferAmendmentConfirmDialog';
@@ -35,7 +37,7 @@ import type { Locale } from '../../utils/locale';
 import { defaultAdminOfferFeePercentFormValues, parseAdminOfferPriceInputs } from './adminBookingRequestOfferFeeForm';
 import type { AdminOfferPriceInputFormValues } from './adminBookingRequestOfferFeeForm';
 import { AdminBookingRequestOfferFeePreview } from './AdminBookingRequestOfferFeePreview';
-import { adminStubRouteBySlug } from './adminCatalog';
+import { adminStubRouteBySlug, adminStubRouteTitle } from './adminCatalog';
 
 const AMENDMENT_PAYMENT_STATUSES = new Set(['EMPTY', 'SETUP', 'PAYED']);
 
@@ -45,27 +47,28 @@ function adminDualAcceptPriceEditBlockMessage(
 ): string | null {
     if (!(offer.userAccepted === true && offer.cookAccepted === true)) return null;
     if (offer.preparationsCompletedAt != null) {
-        return {
-            de: 'Vorbereitung ist gesperrt. Hebe die Sperre auf dem Angebots-Tab auf, dann erneut speichern.',
-            en: 'Preparations are locked. Clear the lock on the Offer tab, then save again.',
-        }[locale];
+        return t(locale, 'admin', 'copy.preparationsAreLockedClearTheLockOnTheOfferTabThenSaveAgain');
     }
     if (!AMENDMENT_PAYMENT_STATUSES.has(offer.paymentStatus)) {
-        return {
-            de: `Zahlungsstatus ${offer.paymentStatus} erlaubt keine Preisänderung (nur EMPTY, SETUP oder PAYED).`,
-            en: `Payment status ${offer.paymentStatus} does not allow price changes (only EMPTY, SETUP, or PAYED).`,
-        }[locale];
+        return inlineCopy(
+            {
+                de: `Zahlungsstatus ${offer.paymentStatus} erlaubt keine Preisänderung (nur EMPTY, SETUP oder PAYED).`,
+                en: `Payment status ${offer.paymentStatus} does not allow price changes (only EMPTY, SETUP, or PAYED).`,
+            },
+            locale,
+        );
     }
     return null;
 }
 
 const listRoute = adminStubRouteBySlug('booking-requests');
 
-export const adminBookingRequestOfferPriceEditPageTitle = { de: 'Preis bearbeiten', en: 'Edit price' } as const;
-export const adminBookingRequestOfferPriceEditPageDescription = {
-    de: 'Menüpreis, Reisekosten und Plattformgebühren (%) anpassen. Beträge werden live neu berechnet.',
-    en: 'Edit menu price, travel expenses, and platform fee percentages. Amounts recalculate live.',
-} as const;
+export function adminBookingRequestOfferPriceEditPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.bookingRequestOfferPriceEdit.title');
+}
+export function adminBookingRequestOfferPriceEditPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.bookingRequestOfferPriceEdit.description');
+}
 
 export function adminBookingRequestOfferPriceEditPageVariables(bookingRequestId: string, bookingRequestOfferId: string) {
     return { bookingRequestId, bookingRequestOfferId };
@@ -202,19 +205,13 @@ export function AdminBookingRequestOfferPriceEditPage({
             });
 
             toast.success(
-                bypassCookApproval
-                    ? { de: 'Preis angewendet.', en: 'Price applied.' }[locale]
-                    : { de: 'Preisänderung dem Koch vorgeschlagen.', en: 'Price change proposed to the chef.' }[locale],
+                bypassCookApproval ? t(locale, 'admin', 'copy.priceApplied') : t(locale, 'admin', 'copy.priceChangeProposedToTheChef'),
             );
             setConfirmOpen(false);
             await navigateBackToCosts();
         } catch (error) {
             const message = error instanceof Error ? error.message : null;
-            toast.error(
-                message && !message.includes('amendment failed')
-                    ? message
-                    : { de: 'Aktualisierung fehlgeschlagen.', en: 'Update failed.' }[locale],
-            );
+            toast.error(message && !message.includes('amendment failed') ? message : t(locale, 'admin', 'copy.updateFailed'));
         } finally {
             setConfirmBusy(false);
         }
@@ -224,13 +221,13 @@ export function AdminBookingRequestOfferPriceEditPage({
         defaultValues: formFromOffer(seedOffer),
         onSubmit: async ({ value }) => {
             if (!priceValid) {
-                toast.error({ de: 'Bitte einen gültigen Menüpreis eingeben.', en: 'Please enter a valid menu price.' }[locale]);
+                toast.error(t(locale, 'admin', 'copy.pleaseEnterAValidMenuPrice'));
                 return;
             }
 
-            const fees = parseAdminOfferPriceInputs({ ...value, menuPriceCents });
+            const fees = parseAdminOfferPriceInputs({ ...value, menuPriceCents }, locale);
             if ('error' in fees) {
-                toast.error(fees.error[locale]);
+                toast.error(fees.error);
                 return;
             }
 
@@ -283,10 +280,10 @@ export function AdminBookingRequestOfferPriceEditPage({
                 if (!result.data?.admin.bookingRequestOfferUpdate.success) {
                     throw new Error('update failed');
                 }
-                toast.success({ de: 'Preis aktualisiert.', en: 'Price updated.' }[locale]);
+                toast.success(t(locale, 'admin', 'copy.priceUpdated'));
                 await navigateBackToCosts();
             } catch {
-                toast.error({ de: 'Aktualisierung fehlgeschlagen.', en: 'Update failed.' }[locale]);
+                toast.error(t(locale, 'admin', 'copy.updateFailed'));
             }
         },
     });
@@ -324,13 +321,13 @@ export function AdminBookingRequestOfferPriceEditPage({
     return (
         <AdminPageChrome
             crumbs={[
-                { label: listRoute.title[locale], to: '/{-$locale}/admin/booking-requests' },
+                { label: adminStubRouteTitle(listRoute.slug, locale), to: '/{-$locale}/admin/booking-requests' },
                 {
-                    label: seedRequest.occasion.trim() || { de: 'Anfrage', en: 'Request' }[locale],
+                    label: seedRequest.occasion.trim() || t(locale, 'admin', 'copy.request'),
                     to: '/{-$locale}/admin/booking-requests/$bookingRequestId',
                     params: { bookingRequestId },
                 },
-                { label: adminBookingRequestOfferPriceEditPageTitle[locale] },
+                { label: adminBookingRequestOfferPriceEditPageTitle(locale) },
             ]}
         >
             <AdminPinnedFooterLayout
@@ -343,7 +340,7 @@ export function AdminBookingRequestOfferPriceEditPage({
                                 params={{ bookingRequestId, bookingRequestOfferId }}
                                 search={{ tab: 'costs' }}
                             >
-                                {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                {t(locale, 'admin', 'copy.cancel')}
                             </Link>
                         </Button>
                         <Button
@@ -351,20 +348,20 @@ export function AdminBookingRequestOfferPriceEditPage({
                             form="admin-booking-request-offer-price-edit-form"
                             disabled={isSubmitting || confirmBusy || !priceValid}
                         >
-                            {isSubmitting ? { de: 'Speichern…', en: 'Saving…' }[locale] : { de: 'Speichern', en: 'Save' }[locale]}
+                            {isSubmitting ? t(locale, 'admin', 'copy.saving2') : t(locale, 'admin', 'copy.save')}
                         </Button>
                     </>
                 }
             >
                 <div className="grid gap-2">
-                    <h1 className="font-serif text-3xl/tight text-foreground">{adminBookingRequestOfferPriceEditPageTitle[locale]}</h1>
+                    <h1 className="font-serif text-3xl/tight text-foreground">{adminBookingRequestOfferPriceEditPageTitle(locale)}</h1>
                     <p className="text-sm text-muted-foreground">
-                        {userDisplayName(seedOffer.cook.user)} · {adminBookingRequestOfferPriceEditPageDescription[locale]}
+                        {userDisplayName(seedOffer.cook.user)} · {adminBookingRequestOfferPriceEditPageDescription(locale)}
                     </p>
                 </div>
 
                 {dualAcceptBlockMessage ? (
-                    <StatusAlert tone="warning" title={{ de: 'Preisänderung blockiert', en: 'Price edit blocked' }[locale]}>
+                    <StatusAlert tone="warning" title={t(locale, 'admin', 'copy.priceEditBlocked')}>
                         {dualAcceptBlockMessage}
                     </StatusAlert>
                 ) : null}
@@ -372,12 +369,7 @@ export function AdminBookingRequestOfferPriceEditPage({
                     <BookingRequestOfferParticipantAmendmentAdminPendingAlert
                         locale={locale}
                         amendment={seedOffer.participantAmendment}
-                        footnote={
-                            {
-                                de: 'Speichern ersetzt diesen Vorschlag oder wendet ihn im Bestätigungsdialog sofort an.',
-                                en: 'Saving replaces this proposal, or applies it immediately from the confirm dialog.',
-                            }[locale]
-                        }
+                        footnote={t(locale, 'admin', 'copy.savingReplacesThisProposalOrAppliesItImmediatelyFromTheConfi')}
                     />
                 ) : null}
 
@@ -394,7 +386,7 @@ export function AdminBookingRequestOfferPriceEditPage({
                         {(field) => (
                             <div className="grid gap-1.5">
                                 <label htmlFor={`${formId}-travel`} className="text-sm font-medium">
-                                    {{ de: 'Reisekosten (€)', en: 'Travel expenses (€)' }[locale]}
+                                    {t(locale, 'admin', 'copy.travelExpenses')}
                                 </label>
                                 <Input
                                     id={`${formId}-travel`}
@@ -414,7 +406,7 @@ export function AdminBookingRequestOfferPriceEditPage({
                         {(field) => (
                             <div className="grid gap-1.5">
                                 <label htmlFor={`${formId}-distance`} className="text-sm font-medium">
-                                    {{ de: 'Reiseentfernung', en: 'Travel distance' }[locale]}
+                                    {t(locale, 'admin', 'copy.travelDistance')}
                                 </label>
                                 <div className="flex items-center gap-2">
                                     <Input
@@ -436,7 +428,7 @@ export function AdminBookingRequestOfferPriceEditPage({
                             {(field) => (
                                 <div className="grid gap-1.5">
                                     <label htmlFor={`${formId}-fee-cook`} className="text-sm font-medium">
-                                        {{ de: 'Plattformgebühr Koch (%)', en: 'Platform fee cook (%)' }[locale]}
+                                        {t(locale, 'admin', 'copy.platformFeeCook')}
                                     </label>
                                     <Input
                                         id={`${formId}-fee-cook`}
@@ -455,7 +447,7 @@ export function AdminBookingRequestOfferPriceEditPage({
                             {(field) => (
                                 <div className="grid gap-1.5">
                                     <label htmlFor={`${formId}-fee-customer`} className="text-sm font-medium">
-                                        {{ de: 'Plattformgebühr Kunde (%)', en: 'Platform fee customer (%)' }[locale]}
+                                        {t(locale, 'admin', 'copy.platformFeeCustomer')}
                                     </label>
                                     <Input
                                         id={`${formId}-fee-customer`}
@@ -518,19 +510,19 @@ export function AdminBookingRequestOfferPriceEditPage({
                     <form.Field name="paymentDateTime">
                         {(field) => (
                             <div className="grid gap-1.5">
-                                <span className="text-sm font-medium">{{ de: 'Bezahlt am', en: 'Paid at' }[locale]}</span>
+                                <span className="text-sm font-medium">{t(locale, 'admin', 'copy.paidAt')}</span>
                                 <DateTimePicker
                                     value={field.state.value}
                                     onValueChange={(date) => field.handleChange(date)}
-                                    placeholder={{ de: 'Datum & Uhrzeit', en: 'Date & time' }[locale]}
-                                    timeAriaLabel={{ de: 'Uhrzeit', en: 'Time' }[locale]}
+                                    placeholder={t(locale, 'admin', 'copy.dateTime')}
+                                    timeAriaLabel={t(locale, 'admin', 'copy.time')}
                                     locale={DATE_FNS_LOCALE[locale]}
                                     className="w-full"
                                 />
                                 {field.state.value ? (
                                     <div className="flex justify-end">
                                         <Button type="button" size="sm" variant="outline" onClick={() => field.handleChange(undefined)}>
-                                            {{ de: 'Zurücksetzen', en: 'Reset' }[locale]}
+                                            {t(locale, 'admin', 'copy.reset')}
                                         </Button>
                                     </div>
                                 ) : null}
@@ -540,19 +532,19 @@ export function AdminBookingRequestOfferPriceEditPage({
                     <form.Field name="plannedPayoutDateTime">
                         {(field) => (
                             <div className="grid gap-1.5">
-                                <span className="text-sm font-medium">{{ de: 'Geplante Auszahlung', en: 'Planned payout' }[locale]}</span>
+                                <span className="text-sm font-medium">{t(locale, 'admin', 'copy.plannedPayout')}</span>
                                 <DateTimePicker
                                     value={field.state.value}
                                     onValueChange={(date) => field.handleChange(date)}
-                                    placeholder={{ de: 'Datum & Uhrzeit', en: 'Date & time' }[locale]}
-                                    timeAriaLabel={{ de: 'Uhrzeit', en: 'Time' }[locale]}
+                                    placeholder={t(locale, 'admin', 'copy.dateTime')}
+                                    timeAriaLabel={t(locale, 'admin', 'copy.time')}
                                     locale={DATE_FNS_LOCALE[locale]}
                                     className="w-full"
                                 />
                                 {field.state.value ? (
                                     <div className="flex justify-end">
                                         <Button type="button" size="sm" variant="outline" onClick={() => field.handleChange(undefined)}>
-                                            {{ de: 'Zurücksetzen', en: 'Reset' }[locale]}
+                                            {t(locale, 'admin', 'copy.reset')}
                                         </Button>
                                     </div>
                                 ) : null}
@@ -562,19 +554,19 @@ export function AdminBookingRequestOfferPriceEditPage({
                     <form.Field name="payoutDateTime">
                         {(field) => (
                             <div className="grid gap-1.5">
-                                <span className="text-sm font-medium">{{ de: 'Ausgezahlt am', en: 'Paid out at' }[locale]}</span>
+                                <span className="text-sm font-medium">{t(locale, 'admin', 'copy.paidOutAt')}</span>
                                 <DateTimePicker
                                     value={field.state.value}
                                     onValueChange={(date) => field.handleChange(date)}
-                                    placeholder={{ de: 'Datum & Uhrzeit', en: 'Date & time' }[locale]}
-                                    timeAriaLabel={{ de: 'Uhrzeit', en: 'Time' }[locale]}
+                                    placeholder={t(locale, 'admin', 'copy.dateTime')}
+                                    timeAriaLabel={t(locale, 'admin', 'copy.time')}
                                     locale={DATE_FNS_LOCALE[locale]}
                                     className="w-full"
                                 />
                                 {field.state.value ? (
                                     <div className="flex justify-end">
                                         <Button type="button" size="sm" variant="outline" onClick={() => field.handleChange(undefined)}>
-                                            {{ de: 'Zurücksetzen', en: 'Reset' }[locale]}
+                                            {t(locale, 'admin', 'copy.reset')}
                                         </Button>
                                     </div>
                                 ) : null}

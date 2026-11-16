@@ -1,3 +1,4 @@
+import { t } from '../../i18n/t';
 import { formatBookingEventDateFromCountry } from '../../shared';
 import type { UserAttentionKind } from '../../shared/attentionCopy';
 import { userAttentionCopy, userAttentionKindTone } from '../../shared/attentionCopy';
@@ -172,13 +173,10 @@ export function profilePageCustomerOverview(
             ? [
                   {
                       key: 'first-request',
-                      title: { de: 'Erste Buchungsanfrage starten', en: 'Start your first booking request' }[locale],
-                      body: {
-                          de: 'Erzähl uns von Anlass, Termin und Gästen. Wir finden den passenden Koch.',
-                          en: 'Tell us the occasion, date, and guests. We’ll find the right chef.',
-                      }[locale],
+                      title: t(locale, 'profileCustomer', 'overview.firstRequestTitle'),
+                      body: t(locale, 'profileCustomer', 'overview.startRequestBody'),
                       href: '/{-$locale}/booking-request/form',
-                      actionLabel: { de: 'Anfrage starten', en: 'Start request' }[locale],
+                      actionLabel: t(locale, 'profileCustomer', 'overview.firstRequestAction'),
                   },
               ]
             : [];

@@ -13,6 +13,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
+import { t } from '../../../i18n/t';
 import { bookingRequestOfferChatCanSend, formatBookingEventWhenFromCountry, timeZoneFromCountry, userDisplayName } from '../../../shared';
 import { bookingRequestOfferStatusHue, bookingRequestOfferStatusLabel } from '../../../shared/bookingRequestOfferStatus';
 import {
@@ -129,15 +130,14 @@ function resolveOfferTab(
 
 type OfferTabDef = {
     id: ProfileCustomerBookingRequestOfferTab;
-    label: Record<Locale, string>;
     Icon: LucideIcon;
 };
 
 const OFFER_TAB_DEFS: readonly OfferTabDef[] = [
-    { id: 'offer', label: { de: 'Angebot', en: 'Offer' }, Icon: FileTextIcon },
-    { id: 'chat', label: { de: 'Chat', en: 'Chat' }, Icon: MessageSquareIcon },
-    { id: 'call', label: { de: 'Anruf', en: 'Call' }, Icon: VideoIcon },
-    { id: 'testimonial', label: { de: 'Bewertung', en: 'Review' }, Icon: StarIcon },
+    { id: 'offer', Icon: FileTextIcon },
+    { id: 'chat', Icon: MessageSquareIcon },
+    { id: 'call', Icon: VideoIcon },
+    { id: 'testimonial', Icon: StarIcon },
 ];
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -161,12 +161,7 @@ function OfferCostSummary({ offer, locale }: { offer: CustomerOffer; locale: Loc
                     lineItems={offer.costBreakdown.lineItems}
                     totalBeforeDiscount={offer.costBreakdown.totalBeforeDiscount}
                     total={offer.costBreakdown.total}
-                    footer={
-                        {
-                            de: 'Die An- und Abreise sind im Gesamtpreis inkludiert',
-                            en: 'Travel to and from the venue is included in the total price',
-                        }[locale]
-                    }
+                    footer={t(locale, 'profileCustomer', 'offer.travelIncluded')}
                 />
             </CardContent>
         </Card>
@@ -302,12 +297,7 @@ export function ProfileCustomerBookingRequestOfferPage({
             return;
         }
         if (paymentUnavailable) {
-            toast.error(
-                {
-                    de: 'Zahlung vorbereitet, aber Checkout ist nicht verfügbar (fehlender Stripe Publishable Key).',
-                    en: 'Payment prepared, but checkout is unavailable (missing Stripe publishable key).',
-                }[locale],
-            );
+            toast.error(t(locale, 'profileCustomer', 'offer.checkoutKeyMissing'));
             setOpenCheckoutAfterAccept(false);
             return;
         }
@@ -365,9 +355,9 @@ export function ProfileCustomerBookingRequestOfferPage({
             }
             setAcceptOpen(false);
             setOpenCheckoutAfterAccept(true);
-            toast.success({ de: 'Angebot angenommen.', en: 'Offer accepted.' }[locale]);
+            toast.success(t(locale, 'profileCustomer', 'offer.accepted'));
         } catch {
-            toast.error({ de: 'Annahme fehlgeschlagen.', en: 'Could not accept the offer.' }[locale]);
+            toast.error(t(locale, 'profileCustomer', 'offer.acceptFailed'));
         } finally {
             setAcceptBusy(false);
         }
@@ -397,7 +387,7 @@ export function ProfileCustomerBookingRequestOfferPage({
                                     disabled={testimonialBusy}
                                     onClick={() => setTestimonialEditing(false)}
                                 >
-                                    {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                    {t(locale, 'common', 'cancel')}
                                 </Button>
                                 <Button
                                     type="submit"
@@ -405,16 +395,16 @@ export function ProfileCustomerBookingRequestOfferPage({
                                     className="flex-1 md:flex-initial"
                                     disabled={testimonialBusy}
                                 >
-                                    {{ de: 'Speichern', en: 'Save' }[locale]}
+                                    {t(locale, 'common', 'save')}
                                 </Button>
                             </>
                         ) : showTestimonialComposeFooter ? (
                             <Button type="submit" form={BOOKING_REQUEST_OFFER_TESTIMONIAL_FORM_ID} disabled={testimonialBusy}>
-                                {{ de: 'Bewertung absenden', en: 'Share your review' }[locale]}
+                                {t(locale, 'profileCustomer', 'offer.shareReview')}
                             </Button>
                         ) : showOfferAcceptFooter ? (
                             <Button type="button" disabled={acceptBusy} onClick={() => setAcceptOpen(true)}>
-                                {{ de: 'Annehmen', en: 'Accept' }[locale]}
+                                {t(locale, 'profileCustomer', 'offer.accept')}
                             </Button>
                         ) : undefined
                     }
@@ -431,49 +421,34 @@ export function ProfileCustomerBookingRequestOfferPage({
                                             type="button"
                                             variant="outline"
                                             size="icon"
-                                            aria-label={{ de: 'Weitere Aktionen', en: 'More actions' }[locale]}
+                                            aria-label={t(locale, 'profileCustomer', 'actions.moreActions')}
                                         >
                                             <MoreHorizontalIcon className="size-4" />
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
                                         <DropdownMenuItem variant="destructive" onSelect={() => setDeclineOpen(true)}>
-                                            {{ de: 'Ablehnen', en: 'Decline' }[locale]}
+                                            {t(locale, 'profileCustomer', 'offer.decline')}
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             ) : null}
                         </div>
                         {offer.status === 'COOK_NEEDS_TO_ACCEPT' ? (
-                            <StatusAlert
-                                tone="info"
-                                title={{ de: 'Koch muss deine Änderungen bestätigen', en: 'Chef must confirm your changes' }[locale]}
-                            >
-                                {
-                                    {
-                                        de: 'Als Nächstes bestätigt der Koch deine Änderungen an der Anfrage. Danach kannst du das Angebot wieder annehmen.',
-                                        en: 'Next, the chef confirms your changes to the request. After that you can accept the offer again.',
-                                    }[locale]
-                                }
+                            <StatusAlert tone="info" title={t(locale, 'profileCustomer', 'offer.chefMustConfirm')}>
+                                {t(locale, 'profileCustomer', 'offer.chefMustConfirmBody')}
                             </StatusAlert>
                         ) : null}
                         {needsDepositPayment ? (
                             <BookingRequestOfferAttentionBanner
                                 message={
-                                    {
-                                        de: isSetupIntent
-                                            ? pullIsPast
-                                                ? 'Zahlungsdaten ausstehend: bitte hinterlegen (Abbuchung danach sofort)'
-                                                : 'Zahlungsdaten ausstehend: bitte hinterlegen'
-                                            : 'Zahlung ausstehend: bitte Checkout abschließen',
-                                        en: isSetupIntent
-                                            ? pullIsPast
-                                                ? 'Payment details pending: please save your card (charged right after)'
-                                                : 'Payment details pending: please save your card'
-                                            : 'Payment pending: please complete checkout',
-                                    }[locale]
+                                    isSetupIntent
+                                        ? pullIsPast
+                                            ? t(locale, 'profileCustomer', 'offer.paymentDetailsPendingChargeSoon')
+                                            : t(locale, 'profileCustomer', 'offer.paymentDetailsPending')
+                                        : t(locale, 'profileCustomer', 'offer.paymentPendingCheckout')
                                 }
-                                actionLabel={{ de: 'Zum Checkout', en: 'Go to checkout' }[locale]}
+                                actionLabel={t(locale, 'profileCustomer', 'offer.goToCheckout')}
                                 actionLink={
                                     canPay
                                         ? {
@@ -486,13 +461,8 @@ export function ProfileCustomerBookingRequestOfferPage({
                         ) : null}
                         {pendingIncomingCall && showSchedule ? (
                             <BookingRequestOfferAttentionBanner
-                                message={
-                                    {
-                                        de: 'Terminvorschlag vom Koch: bitte bestätigen oder ablehnen',
-                                        en: 'Call suggestion from the chef: please confirm or decline',
-                                    }[locale]
-                                }
-                                actionLabel={{ de: 'Zum Anruf', en: 'View call' }[locale]}
+                                message={t(locale, 'profileCustomer', 'offer.callSuggestion')}
+                                actionLabel={t(locale, 'profileCustomer', 'offer.viewCall')}
                                 actionLink={
                                     tab !== 'call'
                                         ? {
@@ -508,12 +478,8 @@ export function ProfileCustomerBookingRequestOfferPage({
 
                     <Tabs value={tab} className="flex min-h-0 flex-1 flex-col gap-0">
                         <div className="px-4">
-                            <TabsList
-                                variant="line"
-                                className="shrink-0"
-                                aria-label={{ de: 'Angebotsbereiche', en: 'Offer sections' }[locale]}
-                            >
-                                {visibleTabDefs.map(({ id, label, Icon }) => (
+                            <TabsList variant="line" className="shrink-0" aria-label={t(locale, 'profileCustomer', 'offer.sections')}>
+                                {visibleTabDefs.map(({ id, Icon }) => (
                                     <TabsTrigger key={id} value={id} asChild>
                                         <Link
                                             to="/{-$locale}/profile/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId"
@@ -529,13 +495,13 @@ export function ProfileCustomerBookingRequestOfferPage({
                                             replace
                                         >
                                             <Icon aria-hidden />
-                                            {label[locale]}
+                                            {t(locale, 'profileCustomer', `offer.tabs.${id}`)}
                                             {id === 'testimonial' && testimonialTabMissing ? (
                                                 <NotificationBadge
                                                     count={1}
                                                     placement="inline"
                                                     className="ml-1"
-                                                    label={{ de: 'Bewertung ausstehend', en: 'Review outstanding' }[locale]}
+                                                    label={t(locale, 'profileCustomer', 'offer.reviewOutstanding')}
                                                 />
                                             ) : null}
                                         </Link>
@@ -551,7 +517,7 @@ export function ProfileCustomerBookingRequestOfferPage({
                                     {offer.activeCallRoom?.status === 'ACTIVE' ? (
                                         <StatusAlert
                                             tone="info"
-                                            title={{ de: 'Anruf läuft', en: 'Call in progress' }[locale]}
+                                            title={t(locale, 'profileCustomer', 'offer.callInProgress')}
                                             action={
                                                 <Button type="button" size="sm" asChild>
                                                     <Link
@@ -560,23 +526,18 @@ export function ProfileCustomerBookingRequestOfferPage({
                                                         search={{ tab: 'call' }}
                                                         replace
                                                     >
-                                                        {{ de: 'Zum Anruf', en: 'Go to call' }[locale]}
+                                                        {t(locale, 'profileCustomer', 'offer.goToCall')}
                                                     </Link>
                                                 </Button>
                                             }
                                         >
-                                            {
-                                                {
-                                                    de: 'Ein Videoanruf für dieses Angebot ist aktiv.',
-                                                    en: 'A video call for this offer is active.',
-                                                }[locale]
-                                            }
+                                            {t(locale, 'profileCustomer', 'offer.videoCallActive')}
                                         </StatusAlert>
                                     ) : null}
                                     {!pendingIncomingCall && confirmedUpcomingCall && showSchedule ? (
                                         <StatusAlert
                                             tone="info"
-                                            title={{ de: 'Gesprächstermin bestätigt', en: 'Discovery call confirmed' }[locale]}
+                                            title={t(locale, 'profileCustomer', 'offer.callConfirmed')}
                                             action={
                                                 <Button type="button" size="sm" asChild>
                                                     <Link
@@ -585,17 +546,12 @@ export function ProfileCustomerBookingRequestOfferPage({
                                                         search={{ tab: 'call' }}
                                                         replace
                                                     >
-                                                        {{ de: 'Zum Anruf', en: 'View call' }[locale]}
+                                                        {t(locale, 'profileCustomer', 'offer.viewCall')}
                                                     </Link>
                                                 </Button>
                                             }
                                         >
-                                            {
-                                                {
-                                                    de: 'Dein bestätigter Termin erscheint unter Anruf.',
-                                                    en: 'Your confirmed appointment is on the Call tab.',
-                                                }[locale]
-                                            }
+                                            {t(locale, 'profileCustomer', 'offer.callOnTab')}
                                         </StatusAlert>
                                     ) : null}
                                 </div>
@@ -614,12 +570,7 @@ export function ProfileCustomerBookingRequestOfferPage({
                                 onSend={async (message, fileUploadIds) => {
                                     const result = await sendOfferChatMessage({ bookingRequestOfferId, message, fileUploadIds });
                                     if (result.error || !result.data?.user.bookingRequestOfferChatMessageCreate.success) {
-                                        toast.error(
-                                            {
-                                                de: 'Nachricht konnte nicht gesendet werden.',
-                                                en: 'Could not send the message.',
-                                            }[locale],
-                                        );
+                                        toast.error(t(locale, 'profileCustomer', 'offer.messageSendFailed'));
                                         return false;
                                     }
                                     return true;
@@ -629,12 +580,7 @@ export function ProfileCustomerBookingRequestOfferPage({
                                         bookingRequestOfferEventId: chatMessageId,
                                     });
                                     if (result.error || !result.data?.user.bookingRequestOfferChatMessageDelete.success) {
-                                        toast.error(
-                                            {
-                                                de: 'Nachricht konnte nicht gelöscht werden.',
-                                                en: 'Could not delete the message.',
-                                            }[locale],
-                                        );
+                                        toast.error(t(locale, 'profileCustomer', 'offer.messageDeleteFailed'));
                                         return false;
                                     }
                                     return true;
@@ -645,12 +591,7 @@ export function ProfileCustomerBookingRequestOfferPage({
                                         emoji,
                                     });
                                     if (result.error || !result.data?.user.bookingRequestOfferChatMessageReactionUpsert.success) {
-                                        toast.error(
-                                            {
-                                                de: 'Reaktion konnte nicht gespeichert werden.',
-                                                en: 'Could not save the reaction.',
-                                            }[locale],
-                                        );
+                                        toast.error(t(locale, 'profileCustomer', 'offer.reactionFailed'));
                                         return false;
                                     }
                                     return true;
@@ -679,20 +620,10 @@ export function ProfileCustomerBookingRequestOfferPage({
                                 onCancelAmendment={async () => {
                                     const result = await cancelAmendment({ bookingRequestOfferId });
                                     if (result.error || !result.data?.user.bookingRequestOfferParticipantAmendmentCancel.success) {
-                                        toast.error(
-                                            {
-                                                de: 'Vorschlag konnte nicht zurückgezogen werden.',
-                                                en: 'Could not withdraw the proposal.',
-                                            }[locale],
-                                        );
+                                        toast.error(t(locale, 'profileCustomer', 'offer.proposalWithdrawFailed'));
                                         return;
                                     }
-                                    toast.success(
-                                        {
-                                            de: 'Vorschlag zurückgezogen.',
-                                            en: 'Proposal withdrawn.',
-                                        }[locale],
-                                    );
+                                    toast.success(t(locale, 'profileCustomer', 'offer.proposalWithdrawn'));
                                 }}
                             />
                         </TabsContent>
@@ -769,18 +700,11 @@ export function ProfileCustomerBookingRequestOfferPage({
                     <AlertDialog open={acceptOpen} onOpenChange={(open) => !acceptBusy && setAcceptOpen(open)}>
                         <AlertDialogContent>
                             <AlertDialogHeader>
-                                <AlertDialogTitle>{{ de: 'Angebot akzeptieren', en: 'Accept offer' }[locale]}</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    {
-                                        {
-                                            de: 'Indem du das Angebot akzeptierst, werden das ausgewählte Menü sowie die Auswahl der Gerichte gespeichert und du wirst zur Zahlung weitergeleitet.',
-                                            en: 'By accepting the offer, your selected menu and dish choices will be saved and you will be redirected to payment.',
-                                        }[locale]
-                                    }
-                                </AlertDialogDescription>
+                                <AlertDialogTitle>{t(locale, 'profileCustomer', 'offer.acceptTitle')}</AlertDialogTitle>
+                                <AlertDialogDescription>{t(locale, 'profileCustomer', 'offer.acceptBody')}</AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                                <AlertDialogCancel disabled={acceptBusy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                                <AlertDialogCancel disabled={acceptBusy}>{t(locale, 'common', 'cancel')}</AlertDialogCancel>
                                 <AlertDialogAction
                                     disabled={acceptBusy}
                                     onClick={(event) => {
@@ -788,11 +712,9 @@ export function ProfileCustomerBookingRequestOfferPage({
                                         void onAcceptConfirm();
                                     }}
                                 >
-                                    {
-                                        { de: acceptBusy ? 'Wird angenommen…' : 'Fortfahren', en: acceptBusy ? 'Accepting…' : 'Continue' }[
-                                            locale
-                                        ]
-                                    }
+                                    {acceptBusy
+                                        ? t(locale, 'profileCustomer', 'offer.accepting')
+                                        : t(locale, 'profileCustomer', 'offer.continue')}
                                 </AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
@@ -907,24 +829,14 @@ function OfferTabPanel({
                 <div className={cn(hasMenu && '@5xl:col-span-2')}>
                     <BookingRequestOfferPaymentDocumentPanel
                         locale={locale}
-                        title={{ de: 'Zahlungsbeleg', en: 'Payment receipt' }[locale]}
-                        description={
-                            {
-                                de: 'Beleg über den gezahlten Betrag. Keine Rechnung. Die Bewirtung rechnet der Koch direkt mit dir ab.',
-                                en: 'Receipt for the amount you paid. Not an invoice. The cook invoices you directly for the catering.',
-                            }[locale]
-                        }
+                        title={t(locale, 'profileCustomer', 'offer.receipt')}
+                        description={t(locale, 'profileCustomer', 'offer.receiptHint')}
                         file={offer.customerReceiptFileUpload}
                         busy={receiptBusy}
                         onRegenerate={() => {
                             void regenerateReceipt({ bookingRequestOfferId }).then((result) => {
                                 if (result.error || !result.data?.user.bookingRequestOfferCustomerReceiptRegenerate.success) {
-                                    toast.error(
-                                        {
-                                            de: 'Der Zahlungsbeleg konnte nicht erstellt werden.',
-                                            en: 'The payment receipt could not be created.',
-                                        }[locale],
-                                    );
+                                    toast.error(t(locale, 'profileCustomer', 'offer.receiptFailed'));
                                 }
                             });
                         }}
@@ -933,14 +845,14 @@ function OfferTabPanel({
             ) : null}
             {offer.configuredMenu ? (
                 <section className="grid min-w-0 gap-3">
-                    <h2 className="font-serif text-2xl/tight text-foreground">{{ de: 'Menü', en: 'Menu' }[locale]}</h2>
+                    <h2 className="font-serif text-2xl/tight text-foreground">{t(locale, 'profileCustomer', 'offer.menu')}</h2>
                     <OfferMenuConfigured menu={offer.configuredMenu} />
                 </section>
             ) : canConfigure || offer.suggestedMenus.length > 0 ? (
                 <section className="grid min-w-0 gap-4">
-                    <h2 className="font-serif text-2xl/tight text-foreground">{{ de: 'Menü', en: 'Menu' }[locale]}</h2>
+                    <h2 className="font-serif text-2xl/tight text-foreground">{t(locale, 'profileCustomer', 'offer.menu')}</h2>
                     {offer.suggestedMenus.length > 1 ? (
-                        <ul className="grid grid-cols-1 gap-3" aria-label={{ de: 'Menüvorschläge', en: 'Suggested menus' }[locale]}>
+                        <ul className="grid grid-cols-1 gap-3" aria-label={t(locale, 'profileCustomer', 'offer.suggestedMenus')}>
                             {offer.suggestedMenus.map((menu) => (
                                 <OfferSuggestedMenuCard
                                     key={menu.menuId}
@@ -989,14 +901,7 @@ function OfferTabPanel({
 
             <div className="grid min-w-0 gap-8">
                 <section className="grid gap-4">
-                    <p className="text-sm text-muted-foreground">
-                        {
-                            {
-                                de: 'Dieses Angebot wurde dir geschickt von:',
-                                en: 'This offer was sent to you by:',
-                            }[locale]
-                        }
-                    </p>
+                    <p className="text-sm text-muted-foreground">{t(locale, 'profileCustomer', 'offer.sentBy')}</p>
                     <div className={cn('flex flex-col gap-4', cook.user.profilePicture != null && 'sm:flex-row sm:gap-6')}>
                         {cook.user.profilePicture != null ? (
                             <Avatar className="size-24 shrink-0 text-xl">
@@ -1014,12 +919,7 @@ function OfferTabPanel({
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="inline-flex text-muted-foreground hover:text-foreground"
-                                        aria-label={
-                                            {
-                                                de: 'Öffentliche Kochseite öffnen',
-                                                en: 'Open public cook page',
-                                            }[locale]
-                                        }
+                                        aria-label={t(locale, 'profileCustomer', 'checkout.openCookPage')}
                                     >
                                         <SquareArrowOutUpRightIcon aria-hidden className="size-4" />
                                     </Link>
@@ -1043,18 +943,13 @@ function OfferTabPanel({
                     <BookingRequestOfferAddonSelectionList
                         bookingRequestOfferId={bookingRequestOfferId}
                         addons={offer.addons}
-                        heading={{ de: 'Zusatzleistungen', en: 'Extras' }[locale]}
-                        description={
-                            {
-                                de: 'Wähle aus, was dazukommen soll. Der Preis aktualisiert sich danach.',
-                                en: 'Choose what to add. The price updates afterwards.',
-                            }[locale]
-                        }
+                        heading={t(locale, 'common', 'costBreakdown.extras')}
+                        description={t(locale, 'profileCustomer', 'checkout.extrasHint')}
                     />
                 ) : null}
 
                 <section className="grid gap-4">
-                    <h2 className="font-serif text-2xl/tight text-foreground">{{ de: 'Preisübersicht', en: 'Price overview' }[locale]}</h2>
+                    <h2 className="font-serif text-2xl/tight text-foreground">{t(locale, 'profileCustomer', 'offer.priceOverview')}</h2>
                     <OfferCostSummary offer={offer} locale={locale} />
                     <BookingRequestOfferParticipantAmendmentCustomerPanel
                         locale={locale}
@@ -1085,48 +980,31 @@ function OfferTabPanel({
                 {canPay ? (
                     <StatusAlert
                         tone="warning"
-                        title={{ de: 'Zahlung ausstehend', en: 'Payment pending' }[locale]}
+                        title={t(locale, 'profileCustomer', 'offer.paymentPending')}
                         action={
                             <Button type="button" size="sm" asChild>
                                 <Link
                                     to="/{-$locale}/profile/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/checkout"
                                     params={{ bookingRequestId, bookingRequestOfferId }}
                                 >
-                                    {
-                                        {
-                                            de: isSetupIntent ? 'Zahlungsdaten hinterlegen' : 'Jetzt bezahlen',
-                                            en: isSetupIntent ? 'Add payment details' : 'Pay now',
-                                        }[locale]
-                                    }
+                                    {isSetupIntent
+                                        ? t(locale, 'profileCustomer', 'offer.providePayment')
+                                        : t(locale, 'profileCustomer', 'offer.payNow')}
                                 </Link>
                             </Button>
                         }
                     >
-                        {
-                            {
-                                de: isSetupIntent
-                                    ? pullIsPast
-                                        ? 'Bitte hinterlege deine Kartendaten. Wir belasten die Karte direkt danach.'
-                                        : 'Bitte hinterlege deine Kartendaten, damit wir die Buchung vormerken können.'
-                                    : 'Bitte schließe die Zahlung ab, um die Buchung zu bestätigen.',
-                                en: isSetupIntent
-                                    ? pullIsPast
-                                        ? 'Please save your card details. We charge the card right after that.'
-                                        : 'Please save your card details so we can reserve the booking.'
-                                    : 'Please complete payment to confirm the booking.',
-                            }[locale]
-                        }
+                        {isSetupIntent
+                            ? pullIsPast
+                                ? t(locale, 'profileCustomer', 'offer.setupChargeSoonBody')
+                                : t(locale, 'profileCustomer', 'offer.setupReserveBody')
+                            : t(locale, 'profileCustomer', 'offer.completePaymentBody')}
                     </StatusAlert>
                 ) : null}
 
                 {paymentUnavailable ? (
-                    <StatusAlert tone="error" title={{ de: 'Checkout nicht verfügbar', en: 'Checkout unavailable' }[locale]}>
-                        {
-                            {
-                                de: 'Die Zahlung wurde vorbereitet, aber der Stripe Publishable Key fehlt in der Server-Konfiguration.',
-                                en: 'Payment was prepared, but the Stripe publishable key is missing from the server configuration.',
-                            }[locale]
-                        }
+                    <StatusAlert tone="error" title={t(locale, 'profileCustomer', 'checkout.unavailable')}>
+                        {t(locale, 'profileCustomer', 'checkout.unavailableBody')}
                     </StatusAlert>
                 ) : null}
             </div>

@@ -3,54 +3,26 @@ import { Link } from '@tanstack/react-router';
 import { AppImage } from '../components/AppImage';
 import { Button } from '../components/base/button';
 import { Reveal } from '../components/Reveal';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 
 function ComparisonPanel() {
-    const locale = useLocale();
+    const { t } = useT('public');
 
     const peopleEatOption = {
-        title: { de: 'Mit peopleeat bei dir Zuhause', en: 'With peopleeat at your home' }[locale],
-        bulletPoints: {
-            de: [
-                'Ein Menü nach deinen Wünschen und Vorlieben',
-                'Trinke deine Lieblingsgetränke',
-                'Gemütlich, ein besonderer Abend, an deinem Wunschdatum',
-            ],
-            en: [
-                'A menu tailored to your wishes and preferences',
-                'Enjoy your favorite drinks',
-                'A cozy, special evening on your chosen date',
-            ],
-        }[locale],
+        title: t('home.comparison.peopleeatTitle'),
+        bulletPoints: [t('home.comparison.peopleeat1'), t('home.comparison.peopleeat2'), t('home.comparison.peopleeat3')],
     };
 
     const restaurantOption = {
-        title: { de: 'Im Restaurant', en: 'In the restaurant' }[locale],
-        bulletPoints: {
-            de: ['Gerichte nach Menükarte', '200% Aufschlag bei den Getränken', 'Öffentlich zu festgelegten Öffnungszeiten'],
-            en: ['Menu-ordered dishes', '200% surcharge on drinks', 'Open to the public during set opening hours'],
-        }[locale],
+        title: t('home.comparison.restaurantTitle'),
+        bulletPoints: [t('home.comparison.restaurant1'), t('home.comparison.restaurant2'), t('home.comparison.restaurant3')],
     };
 
     return (
         <div className="flex flex-col gap-8 px-4 py-8 @md:p-8">
             <div>
-                <h2 className="mb-2 font-serif text-2xl font-light @md:text-3xl">
-                    {
-                        {
-                            de: 'Tausche einen Restaurantbesuch gegen einen Abend mit einem Privatkoch',
-                            en: 'Swap a restaurant visit for an evening with a private chef',
-                        }[locale]
-                    }
-                </h2>
-                <p className="text-muted-foreground">
-                    {
-                        {
-                            de: 'Zum Beispiel: Ein Abend mit 5 Freunden, einem Drei-Gänge-Menü und deinem besonderen Anlass',
-                            en: 'For example: An evening with 5 friends, a three-course meal, and your special occasion',
-                        }[locale]
-                    }
-                </p>
+                <h2 className="mb-2 font-serif text-2xl font-light @md:text-3xl">{t('home.comparison.headline')}</h2>
+                <p className="text-muted-foreground">{t('home.comparison.example')}</p>
             </div>
             <div className="flex">
                 <div className="relative z-10 min-w-0 flex-[1.05] rounded-xl border border-border bg-background px-4 py-6 shadow-md @md:flex-1 @md:p-6">
@@ -78,9 +50,7 @@ function ComparisonPanel() {
             </div>
             <div className="flex justify-center">
                 <Button asChild size="lg">
-                    <Link to="/{-$locale}/booking-request/form">
-                        {{ de: 'Unverbindlich anfragen', en: 'Request without obligation' }[locale]}
-                    </Link>
+                    <Link to="/{-$locale}/booking-request/form">{t('home.comparison.cta')}</Link>
                 </Button>
             </div>
         </div>
@@ -88,28 +58,15 @@ function ComparisonPanel() {
 }
 
 function SceneCaption() {
-    const locale = useLocale();
+    const { t } = useT('public');
 
     return (
         <div className="flex items-center gap-2 text-white">
             <span className="text-sm">
-                {
-                    {
-                        de: (
-                            <>
-                                Daniels Geburtstagsfeier <br /> mit Privatkoch Max
-                            </>
-                        ),
-                        en: (
-                            <>
-                                Daniel&apos;s birthday party <br /> with private chef Max
-                            </>
-                        ),
-                    }[locale]
-                }
+                {t('home.comparison.captionLine1')} <br /> {t('home.comparison.captionLine2')}
             </span>
             <AppImage
-                alt={{ de: 'Bild von Privatkoch Max', en: 'Photo of private chef Max' }[locale]}
+                alt={t('home.comparison.chefAlt')}
                 className="size-16 rounded-full object-cover object-center shadow-lg shadow-white"
                 height={64}
                 src="/home/comparison-section/private-chef-max.webp"
@@ -120,11 +77,8 @@ function SceneCaption() {
 }
 
 export function SectionComparison() {
-    const locale = useLocale();
-    const sceneAlt = {
-        de: 'Freunde sitzen beim Abendessen, genießen ein Glas Wein und lachen gemeinsam.',
-        en: 'Friends sit at dinner, enjoy a glass of wine, and laugh together.',
-    }[locale];
+    const { t } = useT('public');
+    const sceneAlt = t('home.comparison.sceneAlt');
 
     return (
         <section>

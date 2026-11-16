@@ -1,5 +1,6 @@
 import type { OnChangeFn, SortingState } from '@tanstack/react-table';
 
+import { t } from '../../../i18n/t';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { adminAiGenerationsColumns } from './adminAiGenerationsColumns';
@@ -41,7 +42,7 @@ export function AdminAiGenerationsDataTable({
                 to: '/{-$locale}/admin/ai-generations/$aiGenerationId',
                 params: { aiGenerationId: row.aiGenerationId },
             })}
-            emptyMessage={{ de: 'Keine AI-Generierungen gefunden.', en: 'No AI generations found.' }[locale]}
+            emptyMessage={t(locale, 'admin', 'copy.noAiGenerationsFound')}
         />
     );
 }

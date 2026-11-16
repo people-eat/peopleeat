@@ -7,6 +7,7 @@ import { useMutation } from 'urql';
 import { formatCurrency, formatDate } from '../../shared';
 import { ProfileGiftCardPdfsRegenerateDocument } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { useTimeZone } from '../hooks/useTimeZone';
 import { cn } from '../utils/cn';
 import { Button } from './base/button';
@@ -28,6 +29,7 @@ export type CustomerGiftCardCardGiftCard = {
 
 export function CustomerGiftCardCard({ giftCard, className }: { giftCard: CustomerGiftCardCardGiftCard; className?: string }) {
     const locale = useLocale();
+    const { t } = useT('common');
     const timeZone = useTimeZone();
     const [copied, setCopied] = useState(false);
     const [regenerating, setRegenerating] = useState(false);
@@ -41,10 +43,11 @@ export function CustomerGiftCardCard({ giftCard, className }: { giftCard: Custom
     const message = giftCard.message.trim();
     const missingPdf = paid && (!giftCard.voucherFileUpload || !giftCard.invoiceFileUpload);
     const statusLabel =
-        {
-            PAYED: { de: 'Bezahlt', en: 'Paid' },
-            PREPARED: { de: 'Offen', en: 'Open' },
-        }[giftCard.paymentStatus as 'PAYED' | 'PREPARED']?.[locale] ?? giftCard.paymentStatus;
+        giftCard.paymentStatus === 'PAYED'
+            ? t('giftCardCard.statusPayed')
+            : giftCard.paymentStatus === 'PREPARED'
+              ? t('giftCardCard.statusPrepared')
+              : giftCard.paymentStatus;
     const statusTone = paid ? 'success' : prepared ? 'warning' : 'info';
 
     useEffect(() => {
@@ -57,12 +60,12 @@ export function CustomerGiftCardCard({ giftCard, className }: { giftCard: Custom
         if (giftCard.redeemCode == null) return;
         try {
             await navigator.clipboard.writeText(giftCard.redeemCode);
-            toast.success({ de: 'Einlöscode kopiert', en: 'Redeem code copied' }[locale]);
+            toast.success(t('giftCardCard.codeCopied'));
             setCopied(true);
             if (copiedResetRef.current) clearTimeout(copiedResetRef.current);
             copiedResetRef.current = setTimeout(() => setCopied(false), 1500);
         } catch {
-            toast.error({ de: 'Kopieren fehlgeschlagen', en: 'Could not copy' }[locale]);
+            toast.error(t('giftCardCard.copyFailed'));
         }
     }
 
@@ -71,10 +74,10 @@ export function CustomerGiftCardCard({ giftCard, className }: { giftCard: Custom
         try {
             const result = await regeneratePdfs({ giftCardId: giftCard.giftCardId });
             if (result.error || !result.data?.user.giftCardPdfsRegenerate.success) {
-                toast.error({ de: 'PDFs konnten nicht erzeugt werden.', en: 'Could not generate PDFs.' }[locale]);
+                toast.error(t('giftCardCard.pdfFailed'));
                 return;
             }
-            toast.success({ de: 'PDFs aktualisiert.', en: 'PDFs updated.' }[locale]);
+            toast.success(t('giftCardCard.pdfUpdated'));
         } finally {
             setRegenerating(false);
         }
@@ -104,7 +107,7 @@ export function CustomerGiftCardCard({ giftCard, className }: { giftCard: Custom
             </div>
 
             <div className="grid gap-1 border-t border-border pt-4 text-center">
-                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{{ de: 'Für', en: 'For' }[locale]}</p>
+                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t('giftCardCard.for')}</p>
                 <p className="font-serif text-xl tracking-tight">{giftCard.recipientName}</p>
                 {message.length > 0 ? (
                     <p className="mx-auto line-clamp-3 max-w-sm whitespace-pre-wrap text-sm text-muted-foreground">{message}</p>
@@ -114,40 +117,29 @@ export function CustomerGiftCardCard({ giftCard, className }: { giftCard: Custom
             {paid && giftCard.redeemCode ? (
                 <div className="grid gap-2 rounded-lg border border-dashed border-border bg-muted/40 px-4 py-3">
                     <div className="flex items-center justify-between gap-2">
-                        <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                            {{ de: 'Einlöscode', en: 'Redeem code' }[locale]}
-                        </p>
+                        <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t('giftCardCard.redeemCode')}</p>
                         <Button
                             type="button"
                             variant="ghost"
                             size="xs"
                             onClick={() => void copyRedeemCode()}
-                            aria-label={{ de: 'Einlöscode kopieren', en: 'Copy redeem code' }[locale]}
+                            aria-label={t('giftCardCard.copyCodeAria')}
                         >
                             {copied ? <CheckIcon aria-hidden /> : <CopyIcon aria-hidden />}
-                            {{ de: 'Kopieren', en: 'Copy' }[locale]}
+                            {t('giftCardCard.copy')}
                         </Button>
                     </div>
                     <p className="font-mono text-lg tracking-wider">{giftCard.redeemCode}</p>
-                    <p className="text-xs text-muted-foreground">
-                        {{ de: `Gültig bis ${expiresLabel}`, en: `Valid until ${expiresLabel}` }[locale]}
-                    </p>
+                    <p className="text-xs text-muted-foreground">{t('giftCardCard.validUntil', { date: expiresLabel })}</p>
                 </div>
             ) : null}
 
             {prepared ? (
                 <div className="mt-auto grid gap-3">
-                    <p className="text-sm text-muted-foreground">
-                        {
-                            {
-                                de: 'Die Zahlung ist noch offen. Schließe den Kauf ab, um den Einlöscode und die PDFs zu erhalten.',
-                                en: 'Payment is still open. Finish checkout to get the redeem code and PDFs.',
-                            }[locale]
-                        }
-                    </p>
+                    <p className="text-sm text-muted-foreground">{t('giftCardCard.paymentPending')}</p>
                     <Button asChild className="w-full sm:w-fit">
                         <Link to="/{-$locale}/gift-card/$giftCardId/checkout" params={{ giftCardId: giftCard.giftCardId }}>
-                            {{ de: 'Zahlung fortsetzen', en: 'Continue checkout' }[locale]}
+                            {t('giftCardCard.continueCheckout')}
                         </Link>
                     </Button>
                 </div>
@@ -159,7 +151,7 @@ export function CustomerGiftCardCard({ giftCard, className }: { giftCard: Custom
                         <Button asChild variant="outline" size="sm">
                             <a href={giftCard.voucherFileUpload.url} target="_blank" rel="noreferrer">
                                 <GiftIcon aria-hidden />
-                                {{ de: 'Gutschein-PDF', en: 'Gift card PDF' }[locale]}
+                                {t('giftCardCard.giftPdf')}
                             </a>
                         </Button>
                     ) : null}
@@ -167,18 +159,17 @@ export function CustomerGiftCardCard({ giftCard, className }: { giftCard: Custom
                         <Button asChild variant="outline" size="sm">
                             <a href={giftCard.invoiceFileUpload.url} target="_blank" rel="noreferrer">
                                 <FileTextIcon aria-hidden />
-                                {{ de: 'Kaufbeleg', en: 'Receipt' }[locale]}
+                                {t('giftCardCard.receipt')}
                             </a>
                         </Button>
                     ) : null}
                     <Button type="button" variant="outline" size="sm" disabled={regenerating} onClick={() => void onRegeneratePdfs()}>
                         <RefreshCwIcon aria-hidden className={regenerating ? 'animate-spin' : undefined} />
-                        {
-                            {
-                                de: regenerating ? 'Wird erzeugt…' : missingPdf ? 'PDFs erzeugen' : 'PDFs neu erzeugen',
-                                en: regenerating ? 'Generating…' : missingPdf ? 'Generate PDFs' : 'Regenerate PDFs',
-                            }[locale]
-                        }
+                        {regenerating
+                            ? t('giftCardCard.pdfGenerating')
+                            : missingPdf
+                              ? t('giftCardCard.pdfGenerate')
+                              : t('giftCardCard.pdfRegenerate')}
                     </Button>
                 </div>
             ) : null}

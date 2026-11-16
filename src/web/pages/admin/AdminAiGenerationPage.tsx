@@ -1,19 +1,22 @@
 import { Link } from '@tanstack/react-router';
 
-import { formatDateTime, userDisplayName } from '../../../shared';
+import { t } from '../../../i18n/t';
+import { formatDateTime, inlineCopy, userDisplayName } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { Badge } from '../../components/base/badge';
 import { Separator } from '../../components/base/separator';
 import type { GqlCAdminAiGenerationPageQuery } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
+import type { Locale } from '../../utils/locale';
 import { adminAiGenerationKindLabel } from './adminAiGenerationsColumns';
 
-export const adminAiGenerationPageTitle = { de: 'AI-Generierung', en: 'AI generation' } as const;
-export const adminAiGenerationPageDescription = {
-    de: 'Details eines One-Shot-AI-Aufrufs.',
-    en: 'Details for a one-shot AI call.',
-} as const;
+export function adminAiGenerationPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.aiGeneration.title');
+}
+export function adminAiGenerationPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.aiGeneration.description');
+}
 
 type AdminAiGenerationDetail = NonNullable<
     NonNullable<NonNullable<GqlCAdminAiGenerationPageQuery['currentSession']['user']>['admin']>['aiGeneration']
@@ -22,13 +25,13 @@ type AdminAiGenerationDetail = NonNullable<
 export function AdminAiGenerationPage({ data }: { data: GqlCAdminAiGenerationPageQuery }) {
     const locale = useLocale();
     const generation = data.currentSession.user?.admin?.aiGeneration ?? null;
-    const crumbLabel = generation ? adminAiGenerationKindLabel(generation.kind, locale) : adminAiGenerationPageTitle[locale];
+    const crumbLabel = generation ? adminAiGenerationKindLabel(generation.kind, locale) : adminAiGenerationPageTitle(locale);
 
     return (
         <AdminPageChrome
             crumbs={[
                 {
-                    label: { de: 'AI-Generierungen', en: 'AI Generations' }[locale],
+                    label: t(locale, 'admin', 'copy.aiGenerations'),
                     to: '/{-$locale}/admin/ai-generations',
                 },
                 { label: crumbLabel },
@@ -36,16 +39,14 @@ export function AdminAiGenerationPage({ data }: { data: GqlCAdminAiGenerationPag
         >
             <main id="main-content" className="grid w-full content-start gap-8">
                 <div className="grid gap-2">
-                    <h1 className="font-serif text-4xl/tight text-foreground">{adminAiGenerationPageTitle[locale]}</h1>
-                    <p className="text-muted-foreground">{{ de: 'AI-Aufruf-Details', en: 'AI call details' }[locale]}</p>
+                    <h1 className="font-serif text-4xl/tight text-foreground">{adminAiGenerationPageTitle(locale)}</h1>
+                    <p className="text-muted-foreground">{t(locale, 'admin', 'copy.aiCallDetails')}</p>
                 </div>
 
                 {generation ? (
                     <AdminAiGenerationDetailFields generation={generation} />
                 ) : (
-                    <p className="text-sm text-muted-foreground">
-                        {{ de: 'AI-Generierung nicht gefunden.', en: 'AI generation not found.' }[locale]}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.aiGenerationNotFound')}</p>
                 )}
             </main>
         </AdminPageChrome>
@@ -55,41 +56,38 @@ export function AdminAiGenerationPage({ data }: { data: GqlCAdminAiGenerationPag
 function AdminAiGenerationDetailFields({ generation }: { generation: AdminAiGenerationDetail }) {
     const locale = useLocale();
     const timeZone = useTimeZone();
-    const empty = { de: '—', en: '—' }[locale];
+    const empty = t(locale, 'admin', 'copy.empty');
 
     return (
         <dl className="grid gap-4">
-            <DetailField label={{ de: 'ID', en: 'ID' }[locale]} value={generation.aiGenerationId} mono />
+            <DetailField label={t(locale, 'admin', 'copy.id')} value={generation.aiGenerationId} mono />
             <Separator />
             <div className="grid gap-1">
-                <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{{ de: 'Art', en: 'Kind' }[locale]}</dt>
+                <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t(locale, 'admin', 'copy.kind')}</dt>
                 <dd>
                     <Badge variant="secondary">{adminAiGenerationKindLabel(generation.kind, locale)}</Badge>
                 </dd>
             </div>
             <Separator />
-            <DetailField label={{ de: 'Zeit', en: 'Time' }[locale]} value={formatCreatedAt(generation.createdAt, locale, timeZone)} />
+            <DetailField label={t(locale, 'admin', 'copy.time2')} value={formatCreatedAt(generation.createdAt, locale, timeZone)} />
             <Separator />
-            <DetailField label={{ de: 'Modell', en: 'Model' }[locale]} value={generation.modelId ?? empty} mono />
+            <DetailField label={t(locale, 'admin', 'copy.model')} value={generation.modelId ?? empty} mono />
             <Separator />
             <div className="grid gap-1">
-                <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                    {{ de: 'Tokens', en: 'Tokens' }[locale]}
-                </dt>
+                <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t(locale, 'admin', 'copy.tokens')}</dt>
                 <dd className="text-sm text-foreground tabular-nums">
-                    {
+                    {inlineCopy(
                         {
                             de: `Eingabe ${formatToken(generation.inputTokens, empty)} · Ausgabe ${formatToken(generation.outputTokens, empty)} · Gesamt ${formatToken(generation.totalTokens, empty)} · Reasoning ${formatToken(generation.reasoningTokens, empty)} · Cache ${formatToken(generation.cachedInputTokens, empty)}`,
                             en: `Input ${formatToken(generation.inputTokens, empty)} · Output ${formatToken(generation.outputTokens, empty)} · Total ${formatToken(generation.totalTokens, empty)} · Reasoning ${formatToken(generation.reasoningTokens, empty)} · Cache ${formatToken(generation.cachedInputTokens, empty)}`,
-                        }[locale]
-                    }
+                        },
+                        locale,
+                    )}
                 </dd>
             </div>
             <Separator />
             <div className="grid gap-1">
-                <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                    {{ de: 'Nutzer', en: 'User' }[locale]}
-                </dt>
+                <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t(locale, 'admin', 'copy.user')}</dt>
                 <dd className="text-sm text-foreground">
                     {generation.user ? (
                         <div className="grid gap-0.5">
@@ -109,9 +107,7 @@ function AdminAiGenerationDetailFields({ generation }: { generation: AdminAiGene
             </div>
             <Separator />
             <div className="grid gap-1">
-                <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                    {{ de: 'Sitzung', en: 'Session' }[locale]}
-                </dt>
+                <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t(locale, 'admin', 'copy.session')}</dt>
                 <dd className="text-sm text-foreground">
                     {generation.sessionId ? (
                         <Link
@@ -127,11 +123,11 @@ function AdminAiGenerationDetailFields({ generation }: { generation: AdminAiGene
                 </dd>
             </div>
             <Separator />
-            <PromptBlock label={{ de: 'System', en: 'System' }[locale]} value={generation.system} />
+            <PromptBlock label={t(locale, 'admin', 'copy.system')} value={generation.system} />
             <Separator />
-            <PromptBlock label={{ de: 'Prompt', en: 'Prompt' }[locale]} value={generation.prompt} />
+            <PromptBlock label={t(locale, 'admin', 'copy.prompt')} value={generation.prompt} />
             <Separator />
-            <PromptBlock label={{ de: 'Output', en: 'Output' }[locale]} value={generation.output} />
+            <PromptBlock label={t(locale, 'admin', 'copy.output')} value={generation.output} />
         </dl>
     );
 }

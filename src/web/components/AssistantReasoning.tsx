@@ -1,6 +1,6 @@
 import { ChevronRightIcon } from 'lucide-react';
 import { useEffect, useId, useState } from 'react';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 import { AssistantMarkdown } from './AssistantMarkdown';
 
@@ -13,7 +13,7 @@ import { AssistantMarkdown } from './AssistantMarkdown';
 // chevron to expand.
 
 export function AssistantReasoning({ text, live = false, className }: { text: string; live?: boolean; className?: string }) {
-    const locale = useLocale();
+    const { t } = useT('common');
     // Settled turns start collapsed; live turns stay forced open.
     const [open, setOpen] = useState(live);
     // Transitions only for user clicks — programmatic `live` sync stays instant.
@@ -27,7 +27,7 @@ export function AssistantReasoning({ text, live = false, className }: { text: st
 
     if (!text) return null;
 
-    const label = live ? { de: 'Denke nach…', en: 'Thinking…' }[locale] : { de: 'Nachgedacht', en: 'Thought' }[locale];
+    const label = live ? t('assistant.thinking') : t('assistant.thought');
 
     return (
         <div className={cn('min-w-0 text-sm text-muted-foreground', className)}>

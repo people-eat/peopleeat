@@ -2,7 +2,8 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import { CakeIcon, ListIcon, UserPlusIcon, UsersIcon } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
 
-import { formatDate, formatIsoDate, userDisplayName } from '../../../shared';
+import { t } from '../../../i18n/t';
+import { formatDate, formatIsoDate, inlineCopy, userDisplayName } from '../../../shared';
 import type { Locale } from '../../../shared/locale';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { Badge } from '../../components/base/badge';
@@ -25,11 +26,12 @@ import { AdminOverviewStatCard } from './AdminOverviewStatCard';
 import { adminUsersSectionTo } from './adminUsers';
 import { adminUserTypeLabel } from './adminUsersColumns';
 
-export const adminUsersOverviewPageTitle = { de: 'Benutzer', en: 'Users' } as const;
-export const adminUsersOverviewPageDescription = {
-    de: 'Verteilung, Einblicke und Registrierungen der Konten.',
-    en: 'Account distribution, insights, and registrations.',
-} as const;
+export function adminUsersOverviewPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'nav.users.title');
+}
+export function adminUsersOverviewPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.usersOverview.description');
+}
 
 const ADMIN_USERS_UPCOMING_BIRTHDAYS_TAKE = 12;
 
@@ -62,30 +64,33 @@ function adminUsersListSearch(type: GqlCAdminUserType | undefined) {
 }
 
 function preferredCommunicationLabel(value: GqlCUserPreferredCommunication | null | undefined, locale: Locale): string {
-    if (value == null) return { de: 'Nicht angegeben', en: 'Not set' }[locale];
-    return {
-        SMS: { de: 'Nachricht', en: 'Message' },
-        WHATS_APP: { de: 'WhatsApp', en: 'WhatsApp' },
-        CALL: { de: 'Anruf', en: 'Call' },
-        E_MAIL: { de: 'E-Mail', en: 'Email' },
-    }[value][locale];
+    if (value == null) return t(locale, 'admin', 'copy.notSet');
+    return t(
+        locale,
+        'admin',
+        {
+            SMS: 'copy.message',
+            WHATS_APP: 'copy.whatsapp',
+            CALL: 'copy.call2',
+            E_MAIL: 'copy.email',
+        }[value],
+    );
 }
 
 function localeLabel(value: Locale, uiLocale: Locale): string {
-    return {
-        de: { de: 'Deutsch', en: 'German' },
-        en: { de: 'Englisch', en: 'English' },
-    }[value][uiLocale];
+    if (value === 'de') return t(uiLocale, 'admin', 'copy.german');
+    if (value === 'en') return t(uiLocale, 'admin', 'copy.english');
+    return value;
 }
 
 function countShareLabel(count: number, total: number, locale: Locale): string {
     if (total <= 0) return String(count);
     const percent = Math.round((count / total) * 100);
-    return { de: `${count} · ${percent} %`, en: `${count} · ${percent}%` }[locale];
+    return inlineCopy({ de: `${count} · ${percent} %`, en: `${count} · ${percent}%` }, locale);
 }
 
 function formatAgeYears(age: number | null | undefined, locale: Locale): string {
-    if (age == null) return { de: 'k. A.', en: 'n/a' }[locale];
+    if (age == null) return t(locale, 'admin', 'copy.nA');
     return age.toLocaleString(locale === 'de' ? 'de-DE' : 'en-US', {
         maximumFractionDigits: 1,
         minimumFractionDigits: 0,
@@ -97,7 +102,7 @@ function turningAgeLabel(birthDate: string, nextBirthday: string, locale: Locale
     const nextYear = Number(nextBirthday.slice(0, 4));
     if (!Number.isFinite(birthYear) || !Number.isFinite(nextYear)) return '';
     const age = nextYear - birthYear;
-    return { de: `wird ${age}`, en: `turns ${age}` }[locale];
+    return inlineCopy({ de: `wird ${age}`, en: `turns ${age}` }, locale);
 }
 
 export function AdminUsersOverviewPage({ data, search }: { data: GqlCAdminUsersOverviewPageQuery; search: AdminOverviewRangeSearch }) {
@@ -124,7 +129,7 @@ export function AdminUsersOverviewPage({ data, search }: { data: GqlCAdminUsersO
     }[] = [
         {
             key: 'total',
-            label: { de: 'Gesamt', en: 'Total' }[locale],
+            label: t(locale, 'admin', 'copy.total'),
             value: total,
             type: undefined,
         },
@@ -169,36 +174,31 @@ export function AdminUsersOverviewPage({ data, search }: { data: GqlCAdminUsersO
                 <div className="grid gap-2">
                     <h1 className="flex items-center gap-3 font-serif text-4xl/tight text-foreground">
                         <UsersIcon className="size-8 text-muted-foreground" aria-hidden />
-                        {adminUsersOverviewPageTitle[locale]}
+                        {adminUsersOverviewPageTitle(locale)}
                     </h1>
-                    <p className="text-muted-foreground">{adminUsersOverviewPageDescription[locale]}</p>
+                    <p className="text-muted-foreground">{adminUsersOverviewPageDescription(locale)}</p>
                 </div>
 
                 <section className="grid gap-3">
-                    <h2 className="text-lg font-medium">{{ de: 'Bereiche', en: 'Sections' }[locale]}</h2>
+                    <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.sections')}</h2>
                     <ul className="grid gap-2 sm:grid-cols-2">
                         <li>
                             <AdminOverviewNavCard to={adminUsersSectionTo('list')} search={adminUsersListSearch(undefined)} icon={ListIcon}>
-                                {{ de: 'Liste', en: 'List' }[locale]}
+                                {t(locale, 'admin', 'copy.list')}
                             </AdminOverviewNavCard>
                         </li>
                         <li>
                             <AdminOverviewNavCard to={adminUsersSectionTo('create')} icon={UserPlusIcon}>
-                                {{ de: 'Anlegen', en: 'Create' }[locale]}
+                                {t(locale, 'admin', 'copy.create')}
                             </AdminOverviewNavCard>
                         </li>
                     </ul>
                 </section>
 
                 <section className="grid gap-3">
-                    <h2 className="text-lg font-medium">{{ de: 'Verteilung', en: 'Distribution' }[locale]}</h2>
+                    <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.distribution')}</h2>
                     <p className="text-sm text-muted-foreground">
-                        {
-                            {
-                                de: 'Typen können sich überschneiden (z. B. Admin ohne Koch-Zeile zählt als Admin und Kunde).',
-                                en: 'Labels can overlap (e.g. an admin without a cook row counts as both admin and customer).',
-                            }[locale]
-                        }
+                        {t(locale, 'admin', 'copy.labelsCanOverlapEGAnAdminWithoutACookRowCountsAsBothAdminAnd')}
                     </p>
                     <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                         {distribution.map((entry) => (
@@ -215,46 +215,34 @@ export function AdminUsersOverviewPage({ data, search }: { data: GqlCAdminUsersO
 
                 <section className="grid gap-3">
                     <div className="flex flex-wrap items-end justify-between gap-3">
-                        <h2 className="text-lg font-medium">{{ de: 'Registrierungen', en: 'Registrations' }[locale]}</h2>
+                        <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.registrations')}</h2>
                         <DateRangePicker
                             value={pickerValue}
                             onValueChange={onRangeChange}
                             locale={DATE_FNS_LOCALE[locale]}
-                            placeholder={{ de: 'Zeitraum wählen', en: 'Pick a date range' }[locale]}
+                            placeholder={t(locale, 'admin', 'copy.pickADateRange')}
                             className="w-auto"
-                            aria-label={{ de: 'Zeitraum für Registrierungen', en: 'Date range for registrations' }[locale]}
+                            aria-label={t(locale, 'admin', 'copy.dateRangeForRegistrations')}
                         />
                     </div>
                     <AdminOverviewBarChart
                         data={buckets.map((bucket) => ({ bucketStart: bucket.bucketStart, count: bucket.count }))}
                         locale={locale}
                         timeZone={timeZone}
-                        ariaLabel={
-                            {
-                                de: 'Balkendiagramm der Benutzer-Registrierungen im gewählten Zeitraum',
-                                en: 'Bar chart of user registrations in the selected range',
-                            }[locale]
-                        }
+                        ariaLabel={t(locale, 'admin', 'copy.barChartOfUserRegistrationsInTheSelectedRange')}
                     />
                 </section>
 
                 <section className="grid gap-3">
-                    <h2 className="text-lg font-medium">{{ de: 'Einblicke', en: 'Insights' }[locale]}</h2>
+                    <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.insights')}</h2>
                     <p className="text-sm text-muted-foreground">
-                        {
-                            {
-                                de: 'Über alle nicht anonymisierten Konten (unabhängig vom Diagrammzeitraum).',
-                                en: 'Across all non-anonymized accounts (independent of the chart range).',
-                            }[locale]
-                        }
+                        {t(locale, 'admin', 'copy.acrossAllNonAnonymizedAccountsIndependentOfTheChartRange')}
                     </p>
                     <div className="grid gap-3 sm:grid-cols-3 sm:items-start">
                         <div className="grid gap-3">
-                            <h3 className="text-base font-medium">
-                                {{ de: 'Bevorzugte Kommunikation', en: 'Preferred communication' }[locale]}
-                            </h3>
+                            <h3 className="text-base font-medium">{t(locale, 'admin', 'copy.preferredCommunication')}</h3>
                             {preferredCommunication.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">{{ de: 'Keine Daten.', en: 'No data.' }[locale]}</p>
+                                <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noData')}</p>
                             ) : (
                                 <ul className="grid gap-2">
                                     {preferredCommunication.map((stat) => (
@@ -278,9 +266,9 @@ export function AdminUsersOverviewPage({ data, search }: { data: GqlCAdminUsersO
                         </div>
 
                         <div className="grid gap-3">
-                            <h3 className="text-base font-medium">{{ de: 'Sprache', en: 'Locale' }[locale]}</h3>
+                            <h3 className="text-base font-medium">{t(locale, 'admin', 'copy.locale')}</h3>
                             {locales.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">{{ de: 'Keine Daten.', en: 'No data.' }[locale]}</p>
+                                <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noData')}</p>
                             ) : (
                                 <ul className="grid gap-2">
                                     {locales.map((stat) => (
@@ -302,9 +290,9 @@ export function AdminUsersOverviewPage({ data, search }: { data: GqlCAdminUsersO
                         </div>
 
                         <div className="grid gap-3">
-                            <h3 className="text-base font-medium">{{ de: 'Zeitzone', en: 'Time zone' }[locale]}</h3>
+                            <h3 className="text-base font-medium">{t(locale, 'admin', 'copy.timeZone')}</h3>
                             {timeZones.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">{{ de: 'Keine Daten.', en: 'No data.' }[locale]}</p>
+                                <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noData')}</p>
                             ) : (
                                 <ul className="grid gap-2">
                                     {timeZones.map((stat) => (
@@ -326,31 +314,26 @@ export function AdminUsersOverviewPage({ data, search }: { data: GqlCAdminUsersO
                         </div>
                     </div>
                     <div className="grid gap-3">
-                        <h3 className="text-base font-medium">{{ de: 'Anmeldemethoden', en: 'Sign-in methods' }[locale]}</h3>
+                        <h3 className="text-base font-medium">{t(locale, 'admin', 'copy.signInMethods')}</h3>
                         <p className="text-sm text-muted-foreground">
-                            {
-                                {
-                                    de: 'Überlappend: ein Konto kann Google und einen Passkey haben.',
-                                    en: 'Overlapping: one account can have Google and a passkey.',
-                                }[locale]
-                            }
+                            {t(locale, 'admin', 'copy.overlappingOneAccountCanHaveGoogleAndAPasskey')}
                         </p>
                         <ul className="grid gap-2 sm:grid-cols-3">
                             {(
                                 [
                                     {
                                         key: 'google',
-                                        label: { de: 'Google verbunden', en: 'Google linked' }[locale],
+                                        label: t(locale, 'admin', 'copy.googleLinked'),
                                         count: insights?.googleLinkedAccountCount ?? 0,
                                     },
                                     {
                                         key: 'passkey',
-                                        label: { de: 'Passkey hinterlegt', en: 'Passkey present' }[locale],
+                                        label: t(locale, 'admin', 'copy.passkeyPresent'),
                                         count: insights?.passkeyAccountCount ?? 0,
                                     },
                                     {
                                         key: 'totp',
-                                        label: { de: 'Authenticator-App', en: 'Authenticator app' }[locale],
+                                        label: t(locale, 'admin', 'copy.authenticatorApp'),
                                         count: insights?.totpAccountCount ?? 0,
                                     },
                                 ] as const
@@ -375,32 +358,27 @@ export function AdminUsersOverviewPage({ data, search }: { data: GqlCAdminUsersO
                 <section className="grid gap-3">
                     <h2 className="flex items-center gap-2 text-lg font-medium">
                         <CakeIcon className="size-5 text-muted-foreground" aria-hidden />
-                        {{ de: 'Alter und Geburtstage', en: 'Age and birthdays' }[locale]}
+                        {t(locale, 'admin', 'copy.ageAndBirthdays')}
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                        {
-                            {
-                                de: 'Altersstatistik nach Segment und nächste Geburtstage (nur Konten mit Geburtsdatum, anonymisierte ausgeschlossen). Köche: mit Koch-Zeile. Tatsächliche Kunden: ohne Koch-Zeile und mit mindestens einem beidseitig akzeptierten Angebot. Potenzielle Kunden: ohne Koch-Zeile und ohne beidseitige Akzeptanz.',
-                                en: 'Age stats by segment and next birthdays (accounts with a birth date only, anonymized excluded). Cooks: cook row present. Actual customers: no cook row and at least one dual-accepted offer. Potential customers: no cook row and no dual acceptance.',
-                            }[locale]
-                        }
+                        {t(locale, 'admin', 'copy.ageStatsBySegmentAndNextBirthdaysAccountsWithABirthDateOnlyA')}
                     </p>
                     <div className="grid gap-4 sm:grid-cols-3 sm:items-start">
                         {(
                             [
                                 {
                                     key: 'cooks',
-                                    label: { de: 'Köche', en: 'Cooks' }[locale],
+                                    label: t(locale, 'admin', 'copy.cooks'),
                                     age: insights?.ageBySegment.cooks,
                                 },
                                 {
                                     key: 'potentialCustomers',
-                                    label: { de: 'Potenzielle Kunden', en: 'Potential customers' }[locale],
+                                    label: t(locale, 'admin', 'copy.potentialCustomers'),
                                     age: insights?.ageBySegment.potentialCustomers,
                                 },
                                 {
                                     key: 'actualCustomers',
-                                    label: { de: 'Tatsächliche Kunden', en: 'Actual customers' }[locale],
+                                    label: t(locale, 'admin', 'copy.actualCustomers'),
                                     age: insights?.ageBySegment.actualCustomers,
                                 },
                             ] as const
@@ -409,28 +387,26 @@ export function AdminUsersOverviewPage({ data, search }: { data: GqlCAdminUsersO
                                 <h3 className="text-base font-medium">{segment.label}</h3>
                                 <dl className="grid gap-2">
                                     <AdminOverviewStatCard
-                                        label={{ de: 'Medianalter', en: 'Median age' }[locale]}
+                                        label={t(locale, 'admin', 'copy.medianAge')}
                                         value={segment.age?.medianAge ?? 0}
                                         displayValue={formatAgeYears(segment.age?.medianAge, locale)}
                                     />
                                     <AdminOverviewStatCard
-                                        label={{ de: 'Durchschnittsalter', en: 'Average age' }[locale]}
+                                        label={t(locale, 'admin', 'copy.averageAge')}
                                         value={segment.age?.averageAge ?? 0}
                                         displayValue={formatAgeYears(segment.age?.averageAge, locale)}
                                     />
                                     <AdminOverviewStatCard
-                                        label={{ de: 'Mit Geburtsdatum', en: 'With birth date' }[locale]}
+                                        label={t(locale, 'admin', 'copy.withBirthDate')}
                                         value={segment.age?.birthDateSampleSize ?? 0}
                                     />
                                 </dl>
                             </div>
                         ))}
                     </div>
-                    <h3 className="text-base font-medium">{{ de: 'Kommende Geburtstage', en: 'Upcoming birthdays' }[locale]}</h3>
+                    <h3 className="text-base font-medium">{t(locale, 'admin', 'copy.upcomingBirthdays')}</h3>
                     {upcomingBirthdays.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">
-                            {{ de: 'Keine kommenden Geburtstage.', en: 'No upcoming birthdays.' }[locale]}
-                        </p>
+                        <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noUpcomingBirthdays')}</p>
                     ) : (
                         <ul className="grid gap-2">
                             {upcomingBirthdays.map((entry) => (

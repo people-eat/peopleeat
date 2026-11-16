@@ -1,9 +1,6 @@
 import type { ComponentProps } from 'react';
 
-import { assistantSidebarLabels } from '../chat/assistantSidebarCopy';
 import { AssistantSidebarShell } from './AssistantSidebarShell';
-
-export const profileAssistantTitle = assistantSidebarLabels.defaultTitle;
 
 type ProfileAssistantSurface = 'cook' | 'customer';
 type ProfileAssistantSidebarProps = Omit<ComponentProps<typeof AssistantSidebarShell>, 'surface'> & {

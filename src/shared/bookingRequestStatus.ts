@@ -1,3 +1,5 @@
+import { i18nAudienceNamespace } from '../i18n/audienceNamespace';
+import { t } from '../i18n/t';
 import type { BookingLifecycleHue } from './bookingLifecycleHue';
 import type { Locale } from './locale';
 
@@ -44,34 +46,5 @@ export function bookingRequestStatusHue(status: BookingRequestStatus): BookingLi
 }
 
 export function bookingRequestStatusLabel(status: BookingRequestStatus, locale: Locale, audience: BookingRequestStatusAudience): string {
-    switch (status) {
-        case 'WAITING_FOR_OFFERS':
-            return { de: 'Warten auf Angebote', en: 'Waiting for offers' }[locale];
-        case 'OFFERS_WAITING_FOR_REVIEW':
-            return (
-                {
-                    admin: { de: 'Angebote erhalten', en: 'Offers available' },
-                    customer: { de: 'Du hast Angebote bekommen', en: 'Offers available' },
-                } as const
-            )[audience][locale];
-        case 'DEPOSIT_PAYMENT_PENDING':
-            return { de: 'Zahlungsmittel hinterlegen', en: 'Provide payment data' }[locale];
-        case 'PAYMENT_PULL_PENDING':
-            return (
-                {
-                    admin: { de: 'Zahlungseinzug ausstehend', en: 'Payment outstanding' },
-                    customer: { de: 'Bestätigt', en: 'Confirmed' },
-                } as const
-            )[audience][locale];
-        case 'EVENT_PENDING':
-            return { de: 'Veranstaltung ausstehend', en: 'Upcoming event' }[locale];
-        case 'COMPLETED':
-            return { de: 'Stattgefunden', en: 'Completed' }[locale];
-        case 'EXPIRED':
-            return { de: 'Abgelaufen', en: 'Expired' }[locale];
-        case 'CANCELED':
-            return { de: 'Storniert', en: 'Cancelled' }[locale];
-        default:
-            return status;
-    }
+    return t(locale, i18nAudienceNamespace(audience), `bookingRequest.status.${status}`);
 }

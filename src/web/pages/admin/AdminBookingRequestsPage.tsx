@@ -3,7 +3,8 @@ import type { SortingState, Updater } from '@tanstack/react-table';
 import { LayoutGridIcon, ListIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { userDisplayName } from '../../../shared';
+import { t } from '../../../i18n/t';
+import { inlineCopy, userDisplayName } from '../../../shared';
 import { bookingRequestPublicationReviewQueueStatuses, bookingRequestStatusLabel } from '../../../shared/bookingRequestStatus';
 import { AdminBookingRequestListCard } from '../../components/AdminBookingRequestListCard';
 import { AdminListPaginationBar } from '../../components/AdminListPaginationBar';
@@ -20,6 +21,7 @@ import type {
 } from '../../graphql/generated';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useLocale } from '../../hooks/useLocale';
+import type { Locale } from '../../utils/locale';
 import { ADMIN_BOOKING_REQUESTS_SORT_FIELDS, adminBookingRequestPublicationStatusLabel } from './adminBookingRequestsColumns';
 import type { AdminBookingRequestsSortField } from './adminBookingRequestsColumns';
 import { AdminBookingRequestsDataTable } from './AdminBookingRequestsDataTable';
@@ -40,11 +42,12 @@ import {
     parseAdminListSortSearch,
 } from './adminListSortSearch';
 
-export const adminBookingRequestsPageTitle = { de: 'Liste der Buchungsanfragen', en: 'Booking request list' } as const;
-export const adminBookingRequestsPageDescription = {
-    de: 'Buchungsanfragen durchsuchen und einsehen.',
-    en: 'Browse and inspect booking requests.',
-} as const;
+export function adminBookingRequestsPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.bookingRequests.title');
+}
+export function adminBookingRequestsPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.bookingRequests.description');
+}
 
 const ADMIN_BOOKING_REQUEST_PUBLICATION_STATUSES: GqlCBookingRequestPublicationStatus[] = [
     'PUBLICATION_BLOCKED_BY_ADMIN_REVIEW',
@@ -228,7 +231,7 @@ export function AdminBookingRequestsPage({
     }
 
     const publicationTabs: { value: GqlCBookingRequestPublicationStatus | undefined; label: string }[] = [
-        { value: undefined, label: { de: 'Alle', en: 'All' }[locale] },
+        { value: undefined, label: t(locale, 'admin', 'copy.all') },
         ...ADMIN_BOOKING_REQUEST_PUBLICATION_STATUSES.map((status) => ({
             value: status,
             label: adminBookingRequestPublicationStatusLabel(status, locale),
@@ -319,7 +322,7 @@ export function AdminBookingRequestsPage({
                 }
             >
                 <Tabs value={search.publicationStatus ?? 'all'}>
-                    <TabsList variant="line" aria-label={{ de: 'Veröffentlichungsstatus', en: 'Publication status' }[locale]}>
+                    <TabsList variant="line" aria-label={t(locale, 'admin', 'copy.publicationStatus')}>
                         {publicationTabs.map((tab) => (
                             <TabsTrigger key={tab.value ?? 'all'} value={tab.value ?? 'all'} asChild>
                                 <Link
@@ -343,18 +346,13 @@ export function AdminBookingRequestsPage({
                         type="search"
                         value={draftQ}
                         onChange={(event) => setDraftQ(event.target.value)}
-                        placeholder={
-                            {
-                                de: 'Anlass, Kunde, E-Mail oder Ort suchen…',
-                                en: 'Search occasion, customer, email, or location…',
-                            }[locale]
-                        }
-                        aria-label={{ de: 'Buchungsanfragen suchen', en: 'Search booking requests' }[locale]}
+                        placeholder={t(locale, 'admin', 'copy.searchOccasionCustomerEmailOrLocation')}
+                        aria-label={t(locale, 'admin', 'copy.searchBookingRequests')}
                         className="w-full min-w-0 basis-full @5xl:max-w-sm @5xl:flex-1 @5xl:basis-56"
                     />
                     <div className="flex w-full min-w-0 flex-wrap items-center gap-3 @5xl:w-auto @5xl:flex-1">
                         <label className="flex shrink-0 items-center gap-2 text-sm">
-                            <span className="text-muted-foreground">{{ de: 'Status', en: 'Status' }[locale]}</span>
+                            <span className="text-muted-foreground">{t(locale, 'admin', 'copy.status')}</span>
                             <Select
                                 value={
                                     isOpenForReviewStatuses(search.statuses)
@@ -381,18 +379,12 @@ export function AdminBookingRequestsPage({
                                     });
                                 }}
                             >
-                                <SelectTrigger
-                                    size="sm"
-                                    className="w-auto shrink-0"
-                                    aria-label={{ de: 'Status filtern', en: 'Filter by status' }[locale]}
-                                >
+                                <SelectTrigger size="sm" className="w-auto shrink-0" aria-label={t(locale, 'admin', 'copy.filterByStatus')}>
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="__all__">{{ de: 'Alle Status', en: 'All statuses' }[locale]}</SelectItem>
-                                    <SelectItem value={OPEN_FOR_REVIEW_STATUS_VALUE}>
-                                        {{ de: 'Offen zur Prüfung', en: 'Open for review' }[locale]}
-                                    </SelectItem>
+                                    <SelectItem value="__all__">{t(locale, 'admin', 'copy.allStatuses')}</SelectItem>
+                                    <SelectItem value={OPEN_FOR_REVIEW_STATUS_VALUE}>{t(locale, 'admin', 'copy.openForReview')}</SelectItem>
                                     {search.statuses && search.statuses.length > 1 && !isOpenForReviewStatuses(search.statuses) ? (
                                         <SelectItem value="__statuses__">
                                             {search.statuses.map((status) => bookingRequestStatusLabel(status, locale, 'admin')).join(', ')}
@@ -408,20 +400,16 @@ export function AdminBookingRequestsPage({
                         </label>
 
                         <Select value={gridSortValue(search)} onValueChange={onSortChange}>
-                            <SelectTrigger size="sm" className="w-auto shrink-0" aria-label={{ de: 'Sortierung', en: 'Sort' }[locale]}>
+                            <SelectTrigger size="sm" className="w-auto shrink-0" aria-label={t(locale, 'admin', 'copy.sort')}>
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="createdAt:desc">{{ de: 'Neueste zuerst', en: 'Newest first' }[locale]}</SelectItem>
-                                <SelectItem value="createdAt:asc">{{ de: 'Älteste zuerst', en: 'Oldest first' }[locale]}</SelectItem>
-                                <SelectItem value="dateTime:desc">
-                                    {{ de: 'Termin absteigend', en: 'Event date descending' }[locale]}
-                                </SelectItem>
-                                <SelectItem value="dateTime:asc">
-                                    {{ de: 'Termin aufsteigend', en: 'Event date ascending' }[locale]}
-                                </SelectItem>
-                                <SelectItem value="occasion:asc">{{ de: 'Anlass A–Z', en: 'Occasion A–Z' }[locale]}</SelectItem>
-                                <SelectItem value="occasion:desc">{{ de: 'Anlass Z–A', en: 'Occasion Z–A' }[locale]}</SelectItem>
+                                <SelectItem value="createdAt:desc">{t(locale, 'admin', 'copy.newestFirst')}</SelectItem>
+                                <SelectItem value="createdAt:asc">{t(locale, 'admin', 'copy.oldestFirst')}</SelectItem>
+                                <SelectItem value="dateTime:desc">{t(locale, 'admin', 'copy.eventDateDescending')}</SelectItem>
+                                <SelectItem value="dateTime:asc">{t(locale, 'admin', 'copy.eventDateAscending')}</SelectItem>
+                                <SelectItem value="occasion:asc">{t(locale, 'admin', 'copy.occasionAZ')}</SelectItem>
+                                <SelectItem value="occasion:desc">{t(locale, 'admin', 'copy.occasionZA')}</SelectItem>
                             </SelectContent>
                         </Select>
 
@@ -438,7 +426,7 @@ export function AdminBookingRequestsPage({
                                 })
                             }
                         >
-                            {{ de: 'Stille Direktanfragen', en: 'Stale direct' }[locale]}
+                            {t(locale, 'admin', 'copy.staleDirect')}
                         </Button>
 
                         {hasActiveFilters ? (
@@ -448,7 +436,7 @@ export function AdminBookingRequestsPage({
                                 className="h-auto shrink-0 p-0 text-sm text-muted-foreground"
                                 onClick={clearFilters}
                             >
-                                {{ de: 'Filter zurücksetzen', en: 'Clear filters' }[locale]}
+                                {t(locale, 'admin', 'copy.clearFilters')}
                             </Button>
                         ) : null}
 
@@ -457,7 +445,7 @@ export function AdminBookingRequestsPage({
                                 type="button"
                                 size="icon-sm"
                                 variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                                aria-label={{ de: 'Kartenansicht', en: 'Card view' }[locale]}
+                                aria-label={t(locale, 'admin', 'copy.cardView')}
                                 aria-pressed={viewMode === 'grid'}
                                 onClick={() => setViewMode('grid')}
                             >
@@ -467,7 +455,7 @@ export function AdminBookingRequestsPage({
                                 type="button"
                                 size="icon-sm"
                                 variant={viewMode === 'list' ? 'default' : 'ghost'}
-                                aria-label={{ de: 'Listenansicht', en: 'List view' }[locale]}
+                                aria-label={t(locale, 'admin', 'copy.listView')}
                                 aria-pressed={viewMode === 'list'}
                                 onClick={() => setViewMode('list')}
                             >
@@ -476,12 +464,13 @@ export function AdminBookingRequestsPage({
                         </div>
 
                         <p className="text-sm text-muted-foreground tabular-nums xl:ml-auto">
-                            {
+                            {inlineCopy(
                                 {
                                     de: `${total} ${total === 1 ? 'Anfrage' : 'Anfragen'}`,
                                     en: `${total} ${total === 1 ? 'request' : 'requests'}`,
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                         </p>
                     </div>
                 </div>
@@ -490,7 +479,7 @@ export function AdminBookingRequestsPage({
                     <AdminBookingRequestsDataTable data={tableRows} sorting={sorting} onSortingChange={onSortingChange} />
                 ) : bookingRequests.length === 0 ? (
                     <p className="rounded-xl border border-dashed border-border px-4 py-12 text-center text-sm text-muted-foreground">
-                        {{ de: 'Keine Buchungsanfragen gefunden.', en: 'No booking requests found.' }[locale]}
+                        {t(locale, 'admin', 'copy.noBookingRequestsFound')}
                     </p>
                 ) : (
                     <ul className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">

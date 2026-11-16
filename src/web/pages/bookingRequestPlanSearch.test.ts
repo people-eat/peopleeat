@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
+import { i18nResourcesLoad } from '../../i18n/catalogCache';
 import {
     bookingRequestPlanCreateInputFromValues,
     bookingRequestPlanResolveVenue,
@@ -10,6 +11,11 @@ import {
     bookingRequestPlanValuesFromSearch,
     parseBookingRequestPlanSearch,
 } from './bookingRequestPlanSearch';
+
+beforeAll(async () => {
+    await i18nResourcesLoad('de', ['common', 'publicBooking']);
+    await i18nResourcesLoad('en', ['common', 'publicBooking']);
+});
 
 describe('parseBookingRequestPlanSearch', () => {
     it('parses venueId, firstName, cuisine, and guest aliases', () => {

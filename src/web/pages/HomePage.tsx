@@ -2,7 +2,7 @@ import { featureToggleIsActive } from '../../shared/featureToggle';
 import { Footer } from '../components/Footer';
 import { Header } from '../components/Header';
 import type { GqlCHomePageQuery } from '../graphql/generated';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { SectionBookingHowItWorks } from '../sections/SectionBookingHowItWorks';
 import { SectionCities } from '../sections/SectionCities';
 import { SectionComparison } from '../sections/SectionComparison';
@@ -16,7 +16,7 @@ import { SectionSharedExperiences } from '../sections/SectionSharedExperiences';
 import { SectionSupport } from '../sections/SectionSupport';
 
 export function HomePage({ loaderData }: { loaderData: GqlCHomePageQuery }) {
-    const locale = useLocale();
+    const { t } = useT('public');
     const bookingHowItWorksEnabled = featureToggleIsActive(
         loaderData.currentSession.activeFeatureToggleKeys,
         'LANDING_BOOKING_HOW_IT_WORKS',
@@ -32,24 +32,16 @@ export function HomePage({ loaderData }: { loaderData: GqlCHomePageQuery }) {
                     media={{
                         type: 'video',
                         src: '/assets/dinner.mp4',
-                        alt: {
-                            de: 'Eine Familie feiert einen besonderen Anlass zu Hause mit einem Privatkoch.',
-                            en: 'A family celebrates a special occasion at home with a private chef.',
-                        }[locale],
+                        alt: t('home.hero.mediaAlt'),
                     }}
                     headline={
                         <>
-                            {{ de: 'Finde einen Privatkoch', en: 'Find a private chef' }[locale]} &
+                            {t('home.hero.headline1')} &
                             <br />
-                            {{ de: 'erlebe Außergewöhnliches', en: 'Experience something extraordinary' }[locale]}
+                            {t('home.hero.headline2')}
                         </>
                     }
-                    subheadline={
-                        {
-                            de: 'Für jeden Anlass. Mit deinen Liebsten. Bei dir zuhause.',
-                            en: 'For every occasion. With your loved ones. At your home.',
-                        }[locale]
-                    }
+                    subheadline={t('home.hero.subheadline')}
                 />
 
                 <SectionExperienceSelection />

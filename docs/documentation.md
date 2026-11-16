@@ -31,7 +31,7 @@ docs/
 │   ├── environment.md            # Validated EnvironmentVariables (no direct process.env)
 │   ├── file-storage.md           # Postgres FileUploads + shared Garage object store (OBJECT_STORAGE_S3_*)
 │   ├── image-delivery.md         # Client WebP presets, AppImage, public WebP; follow-ups (variants / CDN)
-│   ├── i18n.md                   # DE / EN locale strategy
+│   ├── i18n.md                   # Locale routing + JSON catalogs (de/en/fr/it)
 │   ├── jobs.md                   # pg-boss background jobs
 │   ├── logging.md                # PostgreSQL-backed logger
 │   ├── observability.md          # OpenTelemetry, Langfuse, Grafana APM, slow SQL

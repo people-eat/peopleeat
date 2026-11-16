@@ -1,7 +1,7 @@
 import type { KeyboardEvent, ReactNode, TransitionEvent } from 'react';
 import { useCallback, useId, useLayoutEffect, useRef, useState } from 'react';
 
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 
 function lineHeightPx(el: HTMLElement): number {
@@ -29,7 +29,7 @@ export function ExpandableText({
     visibleLines?: number;
     className?: string;
 }) {
-    const locale = useLocale();
+    const { t } = useT('common');
     const panelId = useId();
     const contentRef = useRef<HTMLDivElement>(null);
     const [expanded, setExpanded] = useState(false);
@@ -60,7 +60,7 @@ export function ExpandableText({
     }, [children, measure]);
 
     const interactive = canExpand || expanded;
-    const label = expanded ? { de: 'Weniger anzeigen', en: 'Show less' }[locale] : { de: 'Mehr anzeigen', en: 'Show more' }[locale];
+    const label = expanded ? t('expandableText.less') : t('expandableText.more');
 
     function onToggle() {
         if (!canExpand && !expanded) return;

@@ -1,3 +1,4 @@
+import { t } from '../../i18n/t';
 import { DEFAULT_TIME_ZONE, formatCurrency, formatDate } from '../../shared';
 import type { Locale } from '../../shared/locale';
 
@@ -30,7 +31,7 @@ export function GiftCardVoucherPage({ giftCard }: GiftCardVoucherPageProps) {
                 <header className="grid gap-3 text-center">
                     <p className="font-serif text-4xl tracking-tight">peopleeat</p>
                     <h1 className="text-lg font-medium tracking-wide text-neutral-500 uppercase">
-                        {{ de: 'Geschenkkarte', en: 'Gift card' }[locale]}
+                        {t(locale, 'public', 'giftCard.title')}
                     </h1>
                 </header>
 
@@ -40,7 +41,9 @@ export function GiftCardVoucherPage({ giftCard }: GiftCardVoucherPageProps) {
                 </section>
 
                 <section className="grid gap-2 text-center">
-                    <p className="text-xs font-medium tracking-wide text-neutral-500 uppercase">{{ de: 'Für', en: 'For' }[locale]}</p>
+                    <p className="text-xs font-medium tracking-wide text-neutral-500 uppercase">
+                        {t(locale, 'public', 'giftCard.voucher.for')}
+                    </p>
                     <p className="font-serif text-2xl tracking-tight">{giftCard.recipientName}</p>
                     {giftCard.message.trim().length > 0 ? (
                         <p className="mx-auto max-w-md whitespace-pre-wrap text-sm text-neutral-600">{giftCard.message}</p>
@@ -49,20 +52,13 @@ export function GiftCardVoucherPage({ giftCard }: GiftCardVoucherPageProps) {
 
                 <section className="grid gap-2 border-t border-neutral-200 pt-8 text-center">
                     <p className="text-xs font-medium tracking-wide text-neutral-500 uppercase">
-                        {{ de: 'Einlöscode', en: 'Redeem code' }[locale]}
+                        {t(locale, 'public', 'giftCard.checkout.redeemCode')}
                     </p>
                     <p className="font-mono text-2xl tracking-wider">{giftCard.redeemCode}</p>
-                    <p className="text-sm text-neutral-500">{{ de: `Gültig bis ${expiry}`, en: `Valid until ${expiry}` }[locale]}</p>
+                    <p className="text-sm text-neutral-500">{t(locale, 'public', 'giftCard.checkout.validUntil', { date: expiry })}</p>
                 </section>
 
-                <footer className="text-center text-xs text-neutral-500">
-                    {
-                        {
-                            de: 'Einlösbar bei peopleeat für ein Dinner mit Privatkoch. Keine Barauszahlung.',
-                            en: 'Redeemable at peopleeat for a private chef dinner. Not redeemable for cash.',
-                        }[locale]
-                    }
-                </footer>
+                <footer className="text-center text-xs text-neutral-500">{t(locale, 'public', 'giftCard.voucher.footer')}</footer>
             </div>
         </main>
     );

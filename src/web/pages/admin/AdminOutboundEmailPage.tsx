@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router';
 
+import { t } from '../../../i18n/t';
 import { formatDateTime, userDisplayName } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { Badge } from '../../components/base/badge';
@@ -7,13 +8,15 @@ import { Separator } from '../../components/base/separator';
 import type { GqlCAdminOutboundEmailPageQuery } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
+import type { Locale } from '../../utils/locale';
 import { adminOutboundEmailMetaBadgeClassName, adminOutboundEmailPurposeLabel } from './adminOutboundEmailsColumns';
 
-export const adminOutboundEmailPageTitle = { de: 'E-Mail', en: 'Email' } as const;
-export const adminOutboundEmailPageDescription = {
-    de: 'Details einer ausgehenden Transaktions-E-Mail.',
-    en: 'Details for an outbound transactional email.',
-} as const;
+export function adminOutboundEmailPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.outboundEmail.title');
+}
+export function adminOutboundEmailPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.outboundEmail.description');
+}
 
 type AdminOutboundEmailDetail = NonNullable<
     NonNullable<NonNullable<GqlCAdminOutboundEmailPageQuery['currentSession']['user']>['admin']>['outboundEmail']
@@ -22,22 +25,22 @@ type AdminOutboundEmailDetail = NonNullable<
 export function AdminOutboundEmailPage({ data }: { data: GqlCAdminOutboundEmailPageQuery }) {
     const locale = useLocale();
     const email = data.currentSession.user?.admin?.outboundEmail ?? null;
-    const crumbLabel = email?.subject.trim() || adminOutboundEmailPageTitle[locale];
+    const crumbLabel = email?.subject.trim() || adminOutboundEmailPageTitle(locale);
 
     return (
         <AdminPageChrome
-            crumbs={[{ label: { de: 'E-Mails', en: 'Emails' }[locale], to: '/{-$locale}/admin/outbound-emails' }, { label: crumbLabel }]}
+            crumbs={[{ label: t(locale, 'admin', 'copy.emails'), to: '/{-$locale}/admin/outbound-emails' }, { label: crumbLabel }]}
         >
             <main id="main-content" className="grid w-full content-start gap-8">
                 <div className="grid gap-2">
-                    <h1 className="font-serif text-4xl/tight text-foreground">{adminOutboundEmailPageTitle[locale]}</h1>
-                    <p className="text-muted-foreground">{{ de: 'E-Mail-Details', en: 'Email details' }[locale]}</p>
+                    <h1 className="font-serif text-4xl/tight text-foreground">{adminOutboundEmailPageTitle(locale)}</h1>
+                    <p className="text-muted-foreground">{t(locale, 'admin', 'copy.emailDetails')}</p>
                 </div>
 
                 {email ? (
                     <AdminOutboundEmailDetailFields email={email} />
                 ) : (
-                    <p className="text-sm text-muted-foreground">{{ de: 'E-Mail nicht gefunden.', en: 'Email not found.' }[locale]}</p>
+                    <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.emailNotFound')}</p>
                 )}
             </main>
         </AdminPageChrome>
@@ -47,16 +50,14 @@ export function AdminOutboundEmailPage({ data }: { data: GqlCAdminOutboundEmailP
 function AdminOutboundEmailDetailFields({ email }: { email: AdminOutboundEmailDetail }) {
     const locale = useLocale();
     const timeZone = useTimeZone();
-    const empty = { de: '—', en: '—' }[locale];
+    const empty = t(locale, 'admin', 'copy.empty');
 
     return (
         <dl className="grid gap-4">
-            <DetailField label={{ de: 'E-Mail-ID', en: 'Email ID' }[locale]} value={email.outboundEmailId} mono />
+            <DetailField label={t(locale, 'admin', 'copy.emailId')} value={email.outboundEmailId} mono />
             <Separator />
             <div className="grid gap-1">
-                <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                    {{ de: 'Zweck', en: 'Purpose' }[locale]}
-                </dt>
+                <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t(locale, 'admin', 'copy.purpose')}</dt>
                 <dd>
                     <Badge variant="outline" className={adminOutboundEmailMetaBadgeClassName}>
                         {adminOutboundEmailPurposeLabel(email.purpose, locale)}
@@ -64,26 +65,20 @@ function AdminOutboundEmailDetailFields({ email }: { email: AdminOutboundEmailDe
                 </dd>
             </div>
             <Separator />
-            <DetailField label={{ de: 'An', en: 'To' }[locale]} value={email.toEmail} />
+            <DetailField label={t(locale, 'admin', 'copy.to')} value={email.toEmail} />
             <Separator />
-            <DetailField label={{ de: 'Von', en: 'From' }[locale]} value={email.fromEmail ?? empty} />
+            <DetailField label={t(locale, 'admin', 'copy.from')} value={email.fromEmail ?? empty} />
             <Separator />
-            <DetailField label={{ de: 'Betreff', en: 'Subject' }[locale]} value={email.subject} />
+            <DetailField label={t(locale, 'admin', 'copy.subject')} value={email.subject} />
             <Separator />
-            <DetailField label={{ de: 'Sprache', en: 'Locale' }[locale]} value={email.locale} />
+            <DetailField label={t(locale, 'admin', 'copy.locale')} value={email.locale} />
             <Separator />
-            <DetailField label={{ de: 'Anbieter', en: 'Provider' }[locale]} value={email.provider} />
+            <DetailField label={t(locale, 'admin', 'copy.provider')} value={email.provider} />
             <Separator />
-            <DetailField
-                label={{ de: 'Anbieter-Nachrichten-ID', en: 'Provider message ID' }[locale]}
-                value={email.providerMessageId ?? empty}
-                mono
-            />
+            <DetailField label={t(locale, 'admin', 'copy.providerMessageId')} value={email.providerMessageId ?? empty} mono />
             <Separator />
             <div className="grid gap-1">
-                <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                    {{ de: 'Nutzer', en: 'User' }[locale]}
-                </dt>
+                <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t(locale, 'admin', 'copy.user')}</dt>
                 <dd className="text-sm text-foreground">
                     {email.user ? (
                         <div className="grid gap-0.5">
@@ -111,9 +106,7 @@ function AdminOutboundEmailDetailFields({ email }: { email: AdminOutboundEmailDe
             </div>
             <Separator />
             <div className="grid gap-1">
-                <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                    {{ de: 'Bezug', en: 'Related' }[locale]}
-                </dt>
+                <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t(locale, 'admin', 'copy.related')}</dt>
                 <dd className="text-sm text-foreground">
                     {email.relatedEntityType === 'GIFT_CARD' && email.relatedEntityId ? (
                         <Link
@@ -121,7 +114,7 @@ function AdminOutboundEmailDetailFields({ email }: { email: AdminOutboundEmailDe
                             params={{ giftCardId: email.relatedEntityId }}
                             className="font-medium text-foreground hover:underline"
                         >
-                            {{ de: 'Gutschein', en: 'Gift card' }[locale]} · {email.relatedEntityId}
+                            {t(locale, 'admin', 'copy.giftCard2')} · {email.relatedEntityId}
                         </Link>
                     ) : email.relatedEntityId ? (
                         <span className="font-mono text-xs break-all text-muted-foreground">{email.relatedEntityId}</span>
@@ -131,11 +124,11 @@ function AdminOutboundEmailDetailFields({ email }: { email: AdminOutboundEmailDe
                 </dd>
             </div>
             <Separator />
-            <DetailField label={{ de: 'Fehlergrund', en: 'Failure reason' }[locale]} value={email.failureReason ?? empty} />
+            <DetailField label={t(locale, 'admin', 'copy.failureReason')} value={email.failureReason ?? empty} />
             <Separator />
             <div className="grid gap-1">
                 <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                    {{ de: 'Anhänge', en: 'Attachments' }[locale]}
+                    {t(locale, 'admin', 'copy.attachments')}
                 </dt>
                 <dd className="text-sm text-foreground">
                     {email.attachments.length === 0 ? (
@@ -160,47 +153,47 @@ function AdminOutboundEmailDetailFields({ email }: { email: AdminOutboundEmailDe
             </div>
             <Separator />
             <DetailField
-                label={{ de: 'Erstellt', en: 'Created' }[locale]}
+                label={t(locale, 'admin', 'copy.created')}
                 value={formatOutboundEmailTimestamp(email.createdAt, locale, timeZone)}
             />
             <Separator />
             <DetailField
-                label={{ de: 'Gesendet', en: 'Sent' }[locale]}
+                label={t(locale, 'admin', 'copy.sent')}
                 value={formatOutboundEmailTimestamp(email.sentAt, locale, timeZone, empty)}
             />
             <Separator />
             <DetailField
-                label={{ de: 'Fehlgeschlagen', en: 'Failed' }[locale]}
+                label={t(locale, 'admin', 'copy.failed')}
                 value={formatOutboundEmailTimestamp(email.failedAt, locale, timeZone, empty)}
             />
             <Separator />
             <DetailField
-                label={{ de: 'Zugestellt', en: 'Delivered' }[locale]}
+                label={t(locale, 'admin', 'copy.delivered')}
                 value={formatOutboundEmailTimestamp(email.deliveredAt, locale, timeZone, empty)}
             />
             <Separator />
             <DetailField
-                label={{ de: 'Zustellung verzögert', en: 'Delivery delayed' }[locale]}
+                label={t(locale, 'admin', 'copy.deliveryDelayed')}
                 value={formatOutboundEmailTimestamp(email.deliveryDelayedAt, locale, timeZone, empty)}
             />
             <Separator />
             <DetailField
-                label={{ de: 'Geöffnet', en: 'Opened' }[locale]}
+                label={t(locale, 'admin', 'copy.opened')}
                 value={formatOutboundEmailTimestamp(email.openedAt, locale, timeZone, empty)}
             />
             <Separator />
             <DetailField
-                label={{ de: 'Geklickt', en: 'Clicked' }[locale]}
+                label={t(locale, 'admin', 'copy.clicked')}
                 value={formatOutboundEmailTimestamp(email.clickedAt, locale, timeZone, empty)}
             />
             <Separator />
             <DetailField
-                label={{ de: 'Bounce', en: 'Bounced' }[locale]}
+                label={t(locale, 'admin', 'copy.bounced')}
                 value={formatOutboundEmailTimestamp(email.bouncedAt, locale, timeZone, empty)}
             />
             <Separator />
             <DetailField
-                label={{ de: 'Beschwerde', en: 'Complained' }[locale]}
+                label={t(locale, 'admin', 'copy.complained')}
                 value={formatOutboundEmailTimestamp(email.complainedAt, locale, timeZone, empty)}
             />
         </dl>

@@ -8,7 +8,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
-import { formatDate, userBirthDatePickerBounds, userDisplayName } from '../../../shared';
+import { t } from '../../../i18n/t';
+import { formatDate, inlineCopy, userBirthDatePickerBounds, userDisplayName } from '../../../shared';
 import { AccountNotificationSettings } from '../../components/AccountNotificationSettings';
 import {
     AlertDialog,
@@ -42,8 +43,8 @@ import {
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
-import { DEFAULT_LOCALE, localePath, LOCALES, setLocaleCookie } from '../../utils/locale';
 import type { Locale } from '../../utils/locale';
+import { DEFAULT_LOCALE, isLocale, localePath, setLocaleCookie } from '../../utils/locale';
 import { sessionSwitchUrl } from '../../utils/sessionSwitchUrl';
 import { adminUserTypeLabel } from './adminUsersColumns';
 import { AdminUserSignInSection } from './AdminUserSignInSection';
@@ -77,11 +78,7 @@ function formFromUser(user: AdminUserRow): GeneralFormValues {
 }
 
 function adminUserStatusLabel(status: GqlCUserStatus, locale: Locale): string {
-    return {
-        ACTIVE: { de: 'Aktiv', en: 'Active' },
-        BANNED: { de: 'Gesperrt', en: 'Banned' },
-        ANONYMIZED: { de: 'Anonymisiert', en: 'Anonymized' },
-    }[status][locale];
+    return t(locale, 'admin', `users.accountStatus.${status}`);
 }
 
 function adminUserStatusBadgeVariant(status: GqlCUserStatus): 'default' | 'destructive' {
@@ -96,13 +93,8 @@ function localeLabel(value: string): string {
 }
 
 function preferredCommunicationLabel(value: GqlCUserPreferredCommunication | null | undefined, locale: Locale): string {
-    if (value == null) return { de: 'Nicht angegeben', en: 'Not set' }[locale];
-    return {
-        SMS: { de: 'Nachricht', en: 'Message' },
-        WHATS_APP: { de: 'WhatsApp', en: 'WhatsApp' },
-        CALL: { de: 'Anruf', en: 'Call' },
-        E_MAIL: { de: 'E-Mail', en: 'Email' },
-    }[value][locale];
+    if (value == null) return t(locale, 'admin', 'copy.notSet');
+    return t(locale, 'admin', `users.accountStatus.${value}`);
 }
 
 function initialsFromName(name: string): string {
@@ -116,8 +108,8 @@ function CopyValueButton({ text }: { text: string }) {
     const locale = useLocale();
     const [copied, setCopied] = useState(false);
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const idleLabel = { de: 'Kopieren', en: 'Copy' }[locale];
-    const ariaLabel = copied ? { de: 'Kopiert', en: 'Copied' }[locale] : idleLabel;
+    const idleLabel = t(locale, 'admin', 'copy.copy');
+    const ariaLabel = copied ? t(locale, 'admin', 'copy.copied') : idleLabel;
 
     useEffect(() => {
         return () => {
@@ -128,9 +120,9 @@ function CopyValueButton({ text }: { text: string }) {
     const onCopy = useCallback(async () => {
         try {
             await navigator.clipboard.writeText(text);
-            toast.success({ de: 'In die Zwischenablage kopiert', en: 'Copied to clipboard' }[locale]);
+            toast.success(t(locale, 'admin', 'copy.copiedToClipboard'));
         } catch {
-            toast.error({ de: 'Kopieren in die Zwischenablage fehlgeschlagen', en: 'Could not copy to clipboard' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.couldNotCopyToClipboard'));
         }
         setCopied(true);
         if (timerRef.current) clearTimeout(timerRef.current);
@@ -235,7 +227,7 @@ export function AdminUserGeneralSection({
     const canToggleBan = user.status === 'ACTIVE' || user.status === 'BANNED';
     const birthDateBounds = userBirthDatePickerBounds();
     const displayName = userDisplayName(user);
-    const empty = { de: 'Nicht angegeben', en: 'Not set' }[locale];
+    const empty = t(locale, 'admin', 'copy.notSet');
 
     const form = useForm({
         defaultValues: formFromUser(user),
@@ -255,7 +247,7 @@ export function AdminUserGeneralSection({
                 },
             });
             if (profileResult.error || !profileResult.data?.admin.userUpdate.success) {
-                toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+                toast.error(t(locale, 'admin', 'copy.couldNotSave'));
                 return;
             }
 
@@ -264,18 +256,13 @@ export function AdminUserGeneralSection({
             if (nextEmail.length > 0 && nextEmail !== currentEmail) {
                 const emailResult = await updateEmail({ userId: user.userId, emailAddress: nextEmail });
                 if (emailResult.error || !emailResult.data?.admin.userEmailAddressUpdate.success) {
-                    toast.error(
-                        {
-                            de: 'Profil gespeichert, E-Mail konnte nicht geändert werden.',
-                            en: 'Profile saved, but the email could not be changed.',
-                        }[locale],
-                    );
+                    toast.error(t(locale, 'admin', 'copy.profileSavedButTheEmailCouldNotBeChanged'));
                     await router.invalidate();
                     return;
                 }
             }
 
-            toast.success({ de: 'Gespeichert.', en: 'Saved.' }[locale]);
+            toast.success(t(locale, 'admin', 'copy.saved'));
             setEditing(false);
             await router.invalidate();
         },
@@ -312,7 +299,7 @@ export function AdminUserGeneralSection({
             const result = await bindSession({ userId: user.userId });
             const toSessionId = result.data?.admin.sessionUserBind.referenceId;
             if (result.error || !result.data?.admin.sessionUserBind.success || !toSessionId) {
-                toast.error({ de: 'Anmeldung als Nutzer fehlgeschlagen.', en: 'Could not sign in as this user.' }[locale]);
+                toast.error(t(locale, 'admin', 'copy.couldNotSignInAsThisUser'));
                 setImpersonateBusy(false);
                 return;
             }
@@ -320,7 +307,7 @@ export function AdminUserGeneralSection({
             // location.assign races — browser can navigate with the old cookie).
             // Land on the target user's profile locale so LocaleMismatchGate
             // does not open from a leftover admin `/en/…` URL.
-            const targetLocale: Locale = LOCALES.includes(user.locale as Locale) ? (user.locale as Locale) : DEFAULT_LOCALE;
+            const targetLocale: Locale = isLocale(user.locale) ? user.locale : DEFAULT_LOCALE;
             setLocaleCookie(targetLocale);
             window.location.assign(sessionSwitchUrl(toSessionId, localePath(targetLocale, '/profile')));
         } catch {
@@ -333,10 +320,10 @@ export function AdminUserGeneralSection({
         try {
             const result = await anonymizeUser({ userId: user.userId });
             if (result.error || !result.data?.admin.userAnonymize.success) {
-                toast.error({ de: 'Anonymisierung fehlgeschlagen.', en: 'Could not anonymize the user.' }[locale]);
+                toast.error(t(locale, 'admin', 'copy.couldNotAnonymizeTheUser'));
                 return;
             }
-            toast.success({ de: 'Nutzer anonymisiert.', en: 'User anonymized.' }[locale]);
+            toast.success(t(locale, 'admin', 'copy.userAnonymized'));
             setEditing(false);
             await router.invalidate();
         } finally {
@@ -351,16 +338,12 @@ export function AdminUserGeneralSection({
             if (result.error || !result.data?.admin.userStatusUpdate.success) {
                 toast.error(
                     nextStatus === 'BANNED'
-                        ? { de: 'Sperren fehlgeschlagen.', en: 'Could not ban the user.' }[locale]
-                        : { de: 'Entsperren fehlgeschlagen.', en: 'Could not unban the user.' }[locale],
+                        ? t(locale, 'admin', 'copy.couldNotBanTheUser')
+                        : t(locale, 'admin', 'copy.couldNotUnbanTheUser'),
                 );
                 return;
             }
-            toast.success(
-                nextStatus === 'BANNED'
-                    ? { de: 'Nutzer gesperrt.', en: 'User banned.' }[locale]
-                    : { de: 'Nutzer entsperrt.', en: 'User unbanned.' }[locale],
-            );
+            toast.success(nextStatus === 'BANNED' ? t(locale, 'admin', 'copy.userBanned') : t(locale, 'admin', 'copy.userUnbanned'));
             await router.invalidate();
         } finally {
             setStatusBusy(false);
@@ -396,54 +379,50 @@ export function AdminUserGeneralSection({
                 <AlertDialogTrigger asChild>
                     <Button type="button" variant="ghost" disabled={impersonateBusy || editing}>
                         <LogInIcon aria-hidden />
-                        {{ de: 'Anmelden als', en: 'Sign in as' }[locale]}
+                        {t(locale, 'admin', 'copy.signInAs')}
                     </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>
-                            {
+                            {inlineCopy(
                                 {
                                     de: `Als ${displayName} anmelden?`,
                                     en: `Sign in as ${displayName}?`,
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                            {
-                                {
-                                    de: 'Du handelst danach als dieser Nutzer. Um zurückzukehren, melde dich erneut als Admin an.',
-                                    en: 'You will act as this user afterward. To return, sign in again as an admin.',
-                                }[locale]
-                            }
+                            {t(locale, 'admin', 'copy.youWillActAsThisUserAfterwardToReturnSignInAgainAsAnAdmin')}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel disabled={impersonateBusy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogCancel disabled={impersonateBusy}>{t(locale, 'admin', 'copy.cancel')}</AlertDialogCancel>
                         <AlertDialogAction disabled={impersonateBusy} onClick={() => void onImpersonate()}>
-                            {{ de: 'Anmelden als', en: 'Sign in as' }[locale]}
+                            {t(locale, 'admin', 'copy.signInAs')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
         ) : (
             <Button type="button" variant="ghost" disabled>
-                {{ de: 'Anmelden als', en: 'Sign in as' }[locale]}
+                {t(locale, 'admin', 'copy.signInAs')}
             </Button>
         );
 
         const primaryActions = editing ? (
             <>
                 <Button type="button" variant="outline" disabled={formBusy} onClick={onCancelEdit}>
-                    {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                    {t(locale, 'admin', 'copy.cancel')}
                 </Button>
                 <Button type="submit" form={GENERAL_FORM_ID} disabled={formBusy || !isDirty}>
-                    {isSubmitting ? { de: 'Speichern…', en: 'Saving…' }[locale] : { de: 'Speichern', en: 'Save' }[locale]}
+                    {isSubmitting ? t(locale, 'admin', 'copy.saving2') : t(locale, 'admin', 'copy.save')}
                 </Button>
             </>
         ) : (
             <Button type="button" disabled={alreadyAnonymized} onClick={onStartEdit}>
-                {{ de: 'Bearbeiten', en: 'Edit' }[locale]}
+                {t(locale, 'admin', 'copy.edit')}
             </Button>
         );
 
@@ -487,8 +466,7 @@ export function AdminUserGeneralSection({
                 <div className="grid min-w-0 gap-1 self-center">
                     <h2 className="font-serif text-2xl/tight text-foreground">{displayName}</h2>
                     <p className="text-sm text-muted-foreground">
-                        {{ de: 'Registriert', en: 'Registered' }[locale]}{' '}
-                        {formatDate(user.createdAt, { locale, timeZone, dateStyle: 'medium' })}
+                        {t(locale, 'admin', 'copy.registered')} {formatDate(user.createdAt, { locale, timeZone, dateStyle: 'medium' })}
                     </p>
                 </div>
             </div>
@@ -508,7 +486,7 @@ export function AdminUserGeneralSection({
                             {(field) => (
                                 <div className="grid gap-2">
                                     <label htmlFor="admin-user-first-name" className="text-sm font-medium">
-                                        {{ de: 'Vorname', en: 'First name' }[locale]}
+                                        {t(locale, 'admin', 'copy.firstName')}
                                     </label>
                                     <Input
                                         id="admin-user-first-name"
@@ -524,7 +502,7 @@ export function AdminUserGeneralSection({
                             {(field) => (
                                 <div className="grid gap-2">
                                     <label htmlFor="admin-user-last-name" className="text-sm font-medium">
-                                        {{ de: 'Nachname', en: 'Last name' }[locale]}
+                                        {t(locale, 'admin', 'copy.lastName')}
                                     </label>
                                     <Input
                                         id="admin-user-last-name"
@@ -543,7 +521,7 @@ export function AdminUserGeneralSection({
                             {(field) => (
                                 <div className="grid gap-2">
                                     <label htmlFor="admin-user-email" className="text-sm font-medium">
-                                        {{ de: 'E-Mail', en: 'Email' }[locale]}
+                                        {t(locale, 'admin', 'copy.email')}
                                     </label>
                                     <Input
                                         id="admin-user-email"
@@ -555,7 +533,7 @@ export function AdminUserGeneralSection({
                                     />
                                     {user.previousEmailAddresses.length > 0 ? (
                                         <p className="text-xs text-muted-foreground">
-                                            {{ de: 'Früher', en: 'Previous' }[locale]}: {user.previousEmailAddresses.join(', ')}
+                                            {t(locale, 'admin', 'copy.previous')}: {user.previousEmailAddresses.join(', ')}
                                         </p>
                                     ) : null}
                                 </div>
@@ -566,7 +544,7 @@ export function AdminUserGeneralSection({
                             {(field) => (
                                 <div className="grid gap-2">
                                     <label htmlFor="admin-user-phone" className="text-sm font-medium">
-                                        {{ de: 'Telefon', en: 'Phone' }[locale]}
+                                        {t(locale, 'admin', 'copy.phone')}
                                     </label>
                                     <Input
                                         id="admin-user-phone"
@@ -584,11 +562,11 @@ export function AdminUserGeneralSection({
                         <form.Field name="birthDate">
                             {(field) => (
                                 <div className="grid gap-2">
-                                    <span className="text-sm font-medium">{{ de: 'Geburtsdatum', en: 'Date of birth' }[locale]}</span>
+                                    <span className="text-sm font-medium">{t(locale, 'admin', 'copy.dateOfBirth')}</span>
                                     <DatePicker
                                         value={field.state.value}
                                         onValueChange={(next) => field.handleChange(next)}
-                                        placeholder={{ de: 'Geburtsdatum', en: 'Date of birth' }[locale]}
+                                        placeholder={t(locale, 'admin', 'copy.dateOfBirth')}
                                         className="w-full"
                                         disabled={formBusy ? true : { after: birthDateBounds.disabledAfter }}
                                         locale={locale === 'de' ? dateFnsDe : dateFnsEn}
@@ -596,7 +574,7 @@ export function AdminUserGeneralSection({
                                         defaultMonth={birthDateBounds.defaultMonth}
                                         startMonth={birthDateBounds.startMonth}
                                         endMonth={birthDateBounds.endMonth}
-                                        aria-label={{ de: 'Geburtsdatum', en: 'Date of birth' }[locale]}
+                                        aria-label={t(locale, 'admin', 'copy.dateOfBirth')}
                                     />
                                 </div>
                             )}
@@ -606,7 +584,7 @@ export function AdminUserGeneralSection({
                             {(field) => (
                                 <div className="grid gap-2">
                                     <label htmlFor="admin-user-locale" className="text-sm font-medium">
-                                        {{ de: 'Sprache', en: 'Language' }[locale]}
+                                        {t(locale, 'admin', 'copy.language')}
                                     </label>
                                     <Select
                                         value={field.state.value}
@@ -624,12 +602,13 @@ export function AdminUserGeneralSection({
                                         </SelectContent>
                                     </Select>
                                     <p className="text-xs text-muted-foreground">
-                                        {
+                                        {inlineCopy(
                                             {
                                                 de: 'Oberfläche, E-Mails und WhatsApp dieser Person.',
                                                 en: "This person's interface, emails, and WhatsApp.",
-                                            }[locale]
-                                        }
+                                            },
+                                            locale,
+                                        )}
                                     </p>
                                 </div>
                             )}
@@ -660,13 +639,13 @@ export function AdminUserGeneralSection({
             ) : (
                 <dl className="grid gap-x-8 gap-y-5 @2xl:grid-cols-2 @6xl:grid-cols-3">
                     <DetailField
-                        label={{ de: 'E-Mail', en: 'Email' }[locale]}
+                        label={t(locale, 'admin', 'copy.email')}
                         value={
                             <div className="grid gap-0.5">
                                 <span className="break-all">{user.emailAddress?.trim() || empty}</span>
                                 {user.previousEmailAddresses.length > 0 ? (
                                     <span className="text-xs text-muted-foreground">
-                                        {{ de: 'Früher', en: 'Previous' }[locale]}: {user.previousEmailAddresses.join(', ')}
+                                        {t(locale, 'admin', 'copy.previous')}: {user.previousEmailAddresses.join(', ')}
                                     </span>
                                 ) : null}
                             </div>
@@ -674,38 +653,35 @@ export function AdminUserGeneralSection({
                         copyText={user.emailAddress?.trim() || undefined}
                         actions={
                             user.emailAddress?.trim() ? (
-                                <DetailActionLink
-                                    href={`mailto:${user.emailAddress.trim()}`}
-                                    label={{ de: 'E-Mail schreiben', en: 'Write email' }[locale]}
-                                >
+                                <DetailActionLink href={`mailto:${user.emailAddress.trim()}`} label={t(locale, 'admin', 'copy.writeEmail')}>
                                     <MailIcon aria-hidden />
                                 </DetailActionLink>
                             ) : undefined
                         }
                     />
                     <DetailField
-                        label={{ de: 'Telefon', en: 'Phone' }[locale]}
+                        label={t(locale, 'admin', 'copy.phone')}
                         value={user.phoneNumber?.trim() || empty}
                         copyText={user.phoneNumber?.trim() || undefined}
                         actions={
                             user.phoneNumber?.trim() ? (
-                                <DetailActionLink href={`tel:${user.phoneNumber.trim()}`} label={{ de: 'Anrufen', en: 'Call' }[locale]}>
+                                <DetailActionLink href={`tel:${user.phoneNumber.trim()}`} label={t(locale, 'admin', 'copy.call')}>
                                     <PhoneIcon aria-hidden />
                                 </DetailActionLink>
                             ) : undefined
                         }
                     />
                     <DetailField
-                        label={{ de: 'Geburtsdatum', en: 'Date of birth' }[locale]}
+                        label={t(locale, 'admin', 'copy.dateOfBirth')}
                         value={user.birthDate ? formatDate(user.birthDate, { locale, dateStyle: 'long' }) : empty}
                     />
                     <DetailField
-                        label={{ de: 'Bevorzugte Erreichbarkeit', en: 'Preferred contact' }[locale]}
+                        label={t(locale, 'admin', 'copy.preferredContact')}
                         value={preferredCommunicationLabel(user.preferredCommunication, locale)}
                     />
-                    <DetailField label={{ de: 'Sprache', en: 'Language' }[locale]} value={localeLabel(user.locale)} />
-                    <DetailField label={{ de: 'Zeitzone', en: 'Time zone' }[locale]} value={user.timeZone} />
-                    <DetailField label={{ de: 'Nutzer-ID', en: 'User ID' }[locale]} value={user.userId} mono copyText={user.userId} />
+                    <DetailField label={t(locale, 'admin', 'copy.language')} value={localeLabel(user.locale)} />
+                    <DetailField label={t(locale, 'admin', 'copy.timeZone')} value={user.timeZone} />
+                    <DetailField label={t(locale, 'admin', 'copy.userId')} value={user.userId} mono copyText={user.userId} />
                 </dl>
             )}
 
@@ -713,17 +689,11 @@ export function AdminUserGeneralSection({
 
             <section className="grid max-w-3xl gap-4">
                 <div className="grid gap-1">
-                    <h3 className="text-sm font-medium text-foreground">{{ de: 'Benachrichtigungen', en: 'Notifications' }[locale]}</h3>
+                    <h3 className="text-sm font-medium text-foreground">{t(locale, 'admin', 'copy.notifications')}</h3>
                     <p className="text-sm text-muted-foreground">
                         {alreadyAnonymized
-                            ? {
-                                  de: 'Dieses Konto ist anonymisiert. Es gehen keine Nachrichten mehr raus.',
-                                  en: 'This account is anonymized. No messages are sent.',
-                              }[locale]
-                            : {
-                                  de: 'Wobei wir dieser Person schreiben. In der App bleibt alles sichtbar. Anmeldecodes, Zahlungen und Support gehen immer an die E-Mail.',
-                                  en: 'What we write to this person about. Everything still shows in the app. Sign-in codes, payments, and support always go to the email.',
-                              }[locale]}
+                            ? t(locale, 'admin', 'copy.thisAccountIsAnonymizedNoMessagesAreSent')
+                            : t(locale, 'admin', 'copy.whatWeWriteToThisPersonAboutEverythingStillShowsInTheAppSign')}
                     </p>
                 </div>
                 {alreadyAnonymized ? null : (
@@ -760,131 +730,90 @@ export function AdminUserGeneralSection({
                     <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border p-4">
                         <div className="grid min-w-0 flex-1 gap-0.5">
                             <p className="text-sm font-medium text-foreground">
-                                {isBanned
-                                    ? { de: 'Nutzer entsperren', en: 'Unban user' }[locale]
-                                    : { de: 'Nutzer sperren', en: 'Ban user' }[locale]}
+                                {isBanned ? t(locale, 'admin', 'copy.unbanUser') : t(locale, 'admin', 'copy.banUser')}
                             </p>
                             <p className="text-xs text-muted-foreground">
                                 {canToggleBan
                                     ? isBanned
-                                        ? {
-                                              de: 'Konto ist gesperrt. Öffentliche Koch-Sichtbarkeit und Marketplace-Aktionen sind eingeschränkt.',
-                                              en: 'Account is banned. Public cook visibility and marketplace actions are restricted.',
-                                          }[locale]
-                                        : {
-                                              de: 'Sperren blockiert Marketplace-Aktionen und öffentliche Koch-Profile. Der Nutzer kann sich weiterhin anmelden.',
-                                              en: 'Banning blocks marketplace actions and public cook profiles. The user can still sign in.',
-                                          }[locale]
+                                        ? t(locale, 'admin', 'copy.accountIsBannedPublicCookVisibilityAndMarketplaceActionsAreR')
+                                        : t(locale, 'admin', 'copy.banningBlocksMarketplaceActionsAndPublicCookProfilesTheUserC')
                                     : alreadyAnonymized
-                                      ? {
-                                            de: 'Dieses Konto ist anonymisiert und kann nicht gesperrt oder entsperrt werden.',
-                                            en: 'This account is anonymized and cannot be banned or unbanned.',
-                                        }[locale]
-                                      : {
-                                            de: 'Ban und Unban sind nur für aktive oder gesperrte Konten verfügbar.',
-                                            en: 'Ban and unban are only available for active or banned accounts.',
-                                        }[locale]}
+                                      ? t(locale, 'admin', 'copy.thisAccountIsAnonymizedAndCannotBeBannedOrUnbanned')
+                                      : t(locale, 'admin', 'copy.banAndUnbanAreOnlyAvailableForActiveOrBannedAccounts')}
                             </p>
                         </div>
                         {canToggleBan ? (
                             <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                     <Button type="button" variant={isBanned ? 'default' : 'outline'} size="sm" disabled={statusBusy}>
-                                        {isBanned ? { de: 'Entsperren', en: 'Unban' }[locale] : { de: 'Sperren', en: 'Ban' }[locale]}
+                                        {isBanned ? t(locale, 'admin', 'copy.unban') : t(locale, 'admin', 'copy.ban')}
                                     </Button>
                                 </AlertDialogTrigger>
                                 <AlertDialogContent>
                                     <AlertDialogHeader>
                                         <AlertDialogTitle>
-                                            {isBanned
-                                                ? { de: 'Nutzer wirklich entsperren?', en: 'Unban this user?' }[locale]
-                                                : { de: 'Nutzer wirklich sperren?', en: 'Ban this user?' }[locale]}
+                                            {isBanned ? t(locale, 'admin', 'copy.unbanThisUser') : t(locale, 'admin', 'copy.banThisUser')}
                                         </AlertDialogTitle>
                                         <AlertDialogDescription>
                                             {isBanned
-                                                ? {
-                                                      de: 'Das Konto wird wieder aktiv. Öffentliche Koch-Sichtbarkeit hängt weiter von Freigabe und Profil-Einstellungen ab. Abgelehnte Angebote werden nicht wiederhergestellt.',
-                                                      en: 'The account becomes active again. Public cook visibility still depends on approval and profile settings. Declined offers are not restored.',
-                                                  }[locale]
-                                                : {
-                                                      de: 'Der Nutzer kann sich weiterhin anmelden, sieht aber eine Einschränkung. Öffentliche Koch-Profile verschwinden, offene Angebote werden automatisch abgelehnt, und Marketplace-Aktionen sind gesperrt.',
-                                                      en: 'The user can still sign in, but will see a restriction banner. Public cook profiles disappear, open offers are auto-declined, and marketplace actions are blocked.',
-                                                  }[locale]}
+                                                ? t(locale, 'admin', 'copy.theAccountBecomesActiveAgainPublicCookVisibilityStillDepends')
+                                                : t(locale, 'admin', 'copy.theUserCanStillSignInButWillSeeARestrictionBannerPublicCookP')}
                                         </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
-                                        <AlertDialogCancel disabled={statusBusy}>
-                                            {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
-                                        </AlertDialogCancel>
+                                        <AlertDialogCancel disabled={statusBusy}>{t(locale, 'admin', 'copy.cancel')}</AlertDialogCancel>
                                         <AlertDialogAction
                                             variant={isBanned ? 'default' : 'destructive'}
                                             disabled={statusBusy}
                                             onClick={() => void onStatusUpdate(isBanned ? 'ACTIVE' : 'BANNED')}
                                         >
-                                            {isBanned ? { de: 'Entsperren', en: 'Unban' }[locale] : { de: 'Sperren', en: 'Ban' }[locale]}
+                                            {isBanned ? t(locale, 'admin', 'copy.unban') : t(locale, 'admin', 'copy.ban')}
                                         </AlertDialogAction>
                                     </AlertDialogFooter>
                                 </AlertDialogContent>
                             </AlertDialog>
                         ) : (
                             <Button type="button" variant="outline" size="sm" disabled>
-                                {isBanned ? { de: 'Entsperren', en: 'Unban' }[locale] : { de: 'Sperren', en: 'Ban' }[locale]}
+                                {isBanned ? t(locale, 'admin', 'copy.unban') : t(locale, 'admin', 'copy.ban')}
                             </Button>
                         )}
                     </div>
 
                     <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-destructive/30 p-4">
                         <div className="grid min-w-0 flex-1 gap-0.5">
-                            <p className="text-sm font-medium text-foreground">
-                                {{ de: 'Nutzer anonymisieren', en: 'Anonymize user' }[locale]}
-                            </p>
+                            <p className="text-sm font-medium text-foreground">{t(locale, 'admin', 'copy.anonymizeUser')}</p>
                             <p className="text-xs text-muted-foreground">
                                 {alreadyAnonymized
-                                    ? {
-                                          de: 'Dieses Konto ist bereits anonymisiert.',
-                                          en: 'This account is already anonymized.',
-                                      }[locale]
-                                    : {
-                                          de: 'Personenbezogene Daten entfernen, E-Mail nullen, Sitzungen beenden. Buchungsverläufe bleiben erhalten.',
-                                          en: 'Remove personal data, null the email, end sessions. Booking history is kept.',
-                                      }[locale]}
+                                    ? t(locale, 'admin', 'copy.thisAccountIsAlreadyAnonymized')
+                                    : t(locale, 'admin', 'copy.removePersonalDataNullTheEmailEndSessionsBookingHistoryIsKep')}
                             </p>
                         </div>
                         {alreadyAnonymized ? (
                             <Button type="button" variant="destructive" size="sm" disabled>
-                                {{ de: 'Anonymisiert', en: 'Anonymized' }[locale]}
+                                {t(locale, 'admin', 'copy.anonymized')}
                             </Button>
                         ) : (
                             <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                     <Button type="button" variant="destructive" size="sm" disabled={anonymizeBusy}>
-                                        {{ de: 'Anonymisieren', en: 'Anonymize' }[locale]}
+                                        {t(locale, 'admin', 'copy.anonymize')}
                                     </Button>
                                 </AlertDialogTrigger>
                                 <AlertDialogContent>
                                     <AlertDialogHeader>
-                                        <AlertDialogTitle>
-                                            {{ de: 'Nutzer wirklich anonymisieren?', en: 'Anonymize this user permanently?' }[locale]}
-                                        </AlertDialogTitle>
+                                        <AlertDialogTitle>{t(locale, 'admin', 'copy.anonymizeThisUserPermanently')}</AlertDialogTitle>
                                         <AlertDialogDescription>
-                                            {
-                                                {
-                                                    de: 'Diese Aktion kann nicht rückgängig gemacht werden. Persönliche Daten werden entfernt, alle Sitzungen beendet und der Nutzer kann sich nicht mehr anmelden. Relationale Historie (Buchungen, Angebote) bleibt für den Betrieb erhalten.',
-                                                    en: 'This cannot be undone. Personal data will be removed, all sessions ended, and the user will no longer be able to sign in. Relational history (bookings, offers) stays available for operations.',
-                                                }[locale]
-                                            }
+                                            {t(locale, 'admin', 'copy.thisCannotBeUndonePersonalDataWillBeRemovedAllSessionsEndedA')}
                                         </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
-                                        <AlertDialogCancel disabled={anonymizeBusy}>
-                                            {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
-                                        </AlertDialogCancel>
+                                        <AlertDialogCancel disabled={anonymizeBusy}>{t(locale, 'admin', 'copy.cancel')}</AlertDialogCancel>
                                         <AlertDialogAction
                                             variant="destructive"
                                             disabled={anonymizeBusy}
                                             onClick={() => void onAnonymize()}
                                         >
-                                            {{ de: 'Anonymisieren', en: 'Anonymize' }[locale]}
+                                            {t(locale, 'admin', 'copy.anonymize')}
                                         </AlertDialogAction>
                                     </AlertDialogFooter>
                                 </AlertDialogContent>

@@ -2,7 +2,9 @@ import { useNavigate } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 
+import { t } from '../../../i18n/t';
 import { isNanoId } from '../../../shared';
+import type { Locale } from '../../../shared/locale';
 import { SupportRequestCreateForm } from '../../components/SupportRequestCreateForm';
 import type { GqlCProfileCustomerSupportRequestsPageQuery } from '../../graphql/generated';
 import { ProfileCustomerSupportRequestsPageUpdatesDocument } from '../../graphql/generated';
@@ -12,14 +14,12 @@ import { customerNavRouteBySlug } from './customerCatalog';
 
 const supportRequestsListRoute = customerNavRouteBySlug('support-requests');
 
-export const profileCustomerSupportRequestCreatePageTitle = {
-    de: 'Neue Support-Anfrage',
-    en: 'New support request',
-} as const;
-export const profileCustomerSupportRequestCreatePageDescription = {
-    de: 'Stelle eine Frage zu Buchung, Zahlung oder deinem Event.',
-    en: 'Ask about booking, payment, or your event.',
-} as const;
+export function profileCustomerSupportRequestCreatePageTitle(locale: Locale): string {
+    return t(locale, 'profileCustomer', 'support.createTitle');
+}
+export function profileCustomerSupportRequestCreatePageDescription(locale: Locale): string {
+    return t(locale, 'profileCustomer', 'support.createDescription');
+}
 
 export type ProfileCustomerSupportRequestCreateSearch = {
     bookingRequestId?: string;
@@ -84,12 +84,7 @@ export function ProfileCustomerSupportRequestCreatePage({
                     void navigate({ to: supportRequestsListRoute.to });
                 }}
                 onCreated={(supportRequestId) => {
-                    toast.success(
-                        {
-                            de: 'Support-Anfrage gesendet. Wir melden uns im Chat.',
-                            en: 'Support request sent. We will reply in chat.',
-                        }[locale],
-                    );
+                    toast.success(t(locale, 'profileCustomer', 'support.sent'));
                     void navigate({
                         to: '/{-$locale}/profile/support-requests/$supportRequestId',
                         params: { supportRequestId },

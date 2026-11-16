@@ -1,0 +1,136 @@
+{
+    "title": "Profile",
+    "chrome": {
+        "overview": "Overview",
+        "edit": "Edit"
+    },
+    "overview": {
+        "hello": "Hello {name},",
+        "subtitle": "Here is what to do next.",
+        "attention": "Attention",
+        "gettingStarted": "Getting started",
+        "allSet": "You're all set"
+    },
+    "assistant": {
+        "title": "Assistant",
+        "description": "Full-screen assistant for your profile.",
+        "toggle": "Toggle {title}"
+    },
+    "ban": {
+        "title": "Your profile is restricted.",
+        "body": "You can sign in, but bookings and offers are blocked. Contact us if you have questions.",
+        "whatsapp": "WhatsApp support"
+    },
+    "actions": {
+        "saving": "Saving…",
+        "sending": "Sending…",
+        "sendCode": "Send code",
+        "verify": "Verify"
+    },
+    "account": {
+        "title": "Account",
+        "description": "Account settings, security, and signed-in devices.",
+        "errors": {
+            "invalidEmail": "Please enter a valid new email address.",
+            "emailTaken": "This email address is already in use.",
+            "invalidOrExpiredCode": "Invalid or expired code.",
+            "phoneTaken": "This number is already in use.",
+            "invalidPhone": "Enter a number with a country code, for example +49…",
+            "deleteFailed": "Could not delete the account."
+        },
+        "toasts": {
+            "phoneSaved": "Phone number saved.",
+            "whatsappOn": "WhatsApp is on for the messages below. You can turn individual ones off.",
+            "codeSent": "Code sent. Please check your inbox and spam folder.",
+            "emailUpdated": "Email address updated.",
+            "changeDiscarded": "Change discarded.",
+            "timeZoneSaved": "Time zone saved.",
+            "preferredCommunicationSaved": "Preferred communication saved.",
+            "passkeyCreateFailed": "Could not create a passkey.",
+            "passkeySaveFailed": "Could not save the passkey.",
+            "passkeySaved": "Passkey saved.",
+            "passkeyCancelled": "Passkey registration cancelled.",
+            "passkeyRemoveFailed": "Could not remove the passkey.",
+            "passkeyRemoved": "Passkey removed.",
+            "signedOut": "Signed out.",
+            "deviceSignedOut": "Device signed out.",
+            "accountDeleted": "Account deleted.",
+            "signOutFailed": "Sign-out failed.",
+            "deviceSignOutFailed": "Could not sign out that device."
+        },
+        "noPhone": "No number on file",
+        "notSet": "Not set",
+        "bornOn": "Born {date}",
+        "noBirthDate": "No date of birth on file",
+        "registeredOn": "Registered {date}",
+        "contact": {
+            "title": "How we reach you",
+            "description": "Your account email and phone. This choice is for our concierge, not for automatic messages.",
+            "email": "Email address",
+            "changeEmail": "Change email",
+            "codePending": "Code pending for {email}",
+            "enterEmailCode": "Enter the code from the email.",
+            "discardChange": "Discard change",
+            "phone": "Phone number",
+            "changeNumber": "Change number",
+            "addNumber": "Add a number",
+            "conciergeTitle": "How should the concierge reach you?"
+        },
+        "language": {
+            "title": "Language",
+            "description": "This language applies to the interface, to emails, and to WhatsApp."
+        },
+        "notifications": {
+            "title": "Notifications",
+            "description": "Choose what we write to you about. Everything still shows in the app. Sign-in codes, payments, and support always go to your email."
+        },
+        "delete": {
+            "title": "Delete account",
+            "description": "Personal profile data will be removed. You will not be able to sign in afterwards.",
+            "action": "Delete account",
+            "confirmTitle": "Delete your account permanently?",
+            "confirmBody": "This cannot be undone. Your personal data will be removed and all devices signed out. Booking history stays available for chefs and operations, but is no longer linked to your identity. We will send a code to your email address."
+        },
+        "security": {
+            "title": "Sign-in and security",
+            "passkeys": "Passkeys",
+            "passkeysHint": "Next time, sign in with Face ID or a fingerprint, without a code.",
+            "passkeyFallback": "Passkey",
+            "backedUp": " · backed up",
+            "remove": "Remove",
+            "removeTitle": "Remove this passkey?",
+            "removeBody": "You will no longer be able to sign in with this passkey. Other passkeys and sign-in methods stay unchanged.",
+            "addPasskey": "Add a passkey",
+            "totp": "Two-factor authentication",
+            "devices": "Signed-in devices",
+            "lastActive": "Last active {date}",
+            "thisDevice": "This device",
+            "signOutDeviceTitle": "Sign out {device}?",
+            "signOutDeviceBody": "{device} will be signed out. This device stays signed in.",
+            "signOut": "Sign out",
+            "signOutEverywhereTitle": "Sign out everywhere else?",
+            "signOutEverywhereBody": "All other devices and browsers will be signed out. This device stays signed in.",
+            "signOutEverywhere": "Sign out everywhere else",
+            "signOutThisTitle": "Sign out on this device?",
+            "signOutThisBody": "You will be signed out on this device and will need to sign in again to access your account."
+        },
+        "legal": {
+            "privacy": "Privacy policy",
+            "terms": "Terms and conditions",
+            "imprint": "Imprint"
+        },
+        "emailDialog": {
+            "title": "Change email address",
+            "description": "We will send a confirmation code to the new address.",
+            "placeholder": "new@email.com",
+            "enterCode": "Enter code",
+            "codeSentTo": "We sent a code to {email}.",
+            "codeAria": "Verification code"
+        },
+        "phoneDialog": {
+            "changeTitle": "Change phone number",
+            "addTitle": "Add a phone number",
+            "hint": "Include the country code, for example +49…"
+        }
+    }
+}

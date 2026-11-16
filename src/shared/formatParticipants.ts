@@ -1,3 +1,4 @@
+import { t } from '../i18n/t';
 import type { Locale } from './locale';
 
 type FormatParticipantsCounts = {
@@ -25,15 +26,9 @@ export function formatParticipants(input: FormatParticipantsInput, options: Form
     const { locale } = options;
     const { adultCount, discountedCount } = participantCounts(input);
 
-    const adultLabel =
-        adultCount === 1
-            ? { de: '1 Erwachsener', en: '1 adult' }[locale]
-            : { de: `${adultCount} Erwachsene`, en: `${adultCount} adults` }[locale];
+    const adultLabel = t(locale, 'common', 'participants.adults', { count: adultCount });
     if (discountedCount === 0) return adultLabel;
 
-    const discountedLabel =
-        discountedCount === 1
-            ? { de: '1 Kind', en: '1 child' }[locale]
-            : { de: `${discountedCount} Kinder`, en: `${discountedCount} children` }[locale];
+    const discountedLabel = t(locale, 'common', 'participants.children', { count: discountedCount });
     return `${adultLabel}, ${discountedLabel}`;
 }

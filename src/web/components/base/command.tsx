@@ -2,7 +2,7 @@ import { Command as CommandPrimitive } from 'cmdk';
 import { SearchIcon } from 'lucide-react';
 import type { ComponentProps } from 'react';
 
-import { useLocale } from '../../hooks/useLocale';
+import { useT } from '../../hooks/useT';
 import { cn } from '../../utils/cn';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './dialog';
 
@@ -29,9 +29,9 @@ function CommandDialog({
     className?: string;
     showCloseButton?: boolean;
 }) {
-    const locale = useLocale();
-    const resolvedTitle = title ?? { de: 'Befehlspalette', en: 'Command palette' }[locale];
-    const resolvedDescription = description ?? { de: 'Nach einem Befehl suchen…', en: 'Search for a command to run…' }[locale];
+    const { t } = useT('common');
+    const resolvedTitle = title ?? t('command.title');
+    const resolvedDescription = description ?? t('command.description');
 
     return (
         <Dialog {...props}>

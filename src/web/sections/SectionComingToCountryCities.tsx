@@ -1,8 +1,10 @@
 import { Link } from '@tanstack/react-router';
 
+import { inlineCopy } from '../../shared';
 import type { ExpansionMarket } from '../../shared/expansionMarkets';
 import { expansionMarketCityList } from '../../shared/expansionMarkets';
 import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 
 export function SectionComingToCountryCities({
     market,
@@ -12,24 +14,16 @@ export function SectionComingToCountryCities({
     audience?: 'coming-to' | 'founding-chef';
 }) {
     const locale = useLocale();
+    const { t } = useT('public');
     const cityList = expansionMarketCityList(market, locale);
     const foundingChef = audience === 'founding-chef';
+    const inCountry = locale === 'de' ? market.inCountryDe : market.inCountryEn;
 
     return (
         <section className="mx-auto w-full max-w-7xl px-4 @lg:px-6">
-            <h2 className="font-serif text-3xl font-light tracking-tight @md:text-5xl">
-                {{ de: `Städte ${market.inCountryDe}`, en: `Cities ${market.inCountryEn}` }[locale]}
-            </h2>
+            <h2 className="font-serif text-3xl font-light tracking-tight @md:text-5xl">{t('comingTo.citiesTitle', { inCountry })}</h2>
             <p className="mt-6 max-w-2xl text-lg/8 text-muted-foreground">
-                {foundingChef
-                    ? {
-                          de: `Wir suchen Gründungsköche in ${cityList}. Gastgeber können dort Anfang 2027 buchen.`,
-                          en: `We are looking for founding chefs in ${cityList}. Hosts can book there from early 2027.`,
-                      }[locale]
-                    : {
-                          de: `Zum Start suchen wir Köche in ${cityList}. Nenne deinen Radius bei der Registrierung. Stadtseiten für Gastgeber folgen Anfang 2027.`,
-                          en: `At launch we are looking for chefs in ${cityList}. Set your travel radius when you register. City pages for hosts follow in early 2027.`,
-                      }[locale]}
+                {foundingChef ? t('comingTo.citiesFounding', { cities: cityList }) : t('comingTo.citiesComingTo', { cities: cityList })}
             </p>
             <ul className="mt-10 divide-y divide-border border-y border-border @md:mt-14">
                 {market.cities.map((city) => (
@@ -47,7 +41,7 @@ export function SectionComingToCountryCities({
                         params={{ country: market.slug }}
                         className="text-sm font-medium text-foreground underline-offset-4 hover:underline"
                     >
-                        {market.comingToTitle[locale]}
+                        {inlineCopy(market.comingToTitle, locale)}
                     </Link>
                 </p>
             ) : null}

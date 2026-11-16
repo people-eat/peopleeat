@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+import { t } from '../../../i18n/t';
 import { formatMinuteOfDay, parseMinuteOfDay } from '../../../shared/cookCallAvailability';
 import { Button } from '../../components/base/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../../components/base/dialog';
@@ -49,20 +50,17 @@ export function ProfileCookCallsRuleDialog({
         Number(dayOfWeek) >= 0 &&
         Number(dayOfWeek) <= 6;
 
-    const dayLabels =
-        locale === 'de'
-            ? ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag']
-            : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const dayLabels = DAY_VALUES.map((day) => t(locale, 'profileCook', `calls.days.${day}`));
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>{{ de: 'Zeitfenster', en: 'Time window' }[locale]}</DialogTitle>
+                    <DialogTitle>{t(locale, 'profileCook', 'calls.window')}</DialogTitle>
                 </DialogHeader>
                 <div className="grid gap-4">
                     <div className="grid gap-2">
-                        <span className="text-sm font-medium">{{ de: 'Wochentag', en: 'Day of week' }[locale]}</span>
+                        <span className="text-sm font-medium">{t(locale, 'profileCook', 'calls.dayOfWeek')}</span>
                         <Select value={dayOfWeek} onValueChange={setDayOfWeek}>
                             <SelectTrigger className="w-full">
                                 <SelectValue />
@@ -78,11 +76,11 @@ export function ProfileCookCallsRuleDialog({
                     </div>
                     <div className="grid gap-2 sm:grid-cols-2">
                         <div className="grid gap-2">
-                            <span className="text-sm font-medium">{{ de: 'Von', en: 'From' }[locale]}</span>
+                            <span className="text-sm font-medium">{t(locale, 'profileCook', 'actions.from')}</span>
                             <Input type="time" step={900} value={startTime} onChange={(event) => setStartTime(event.target.value)} />
                         </div>
                         <div className="grid gap-2">
-                            <span className="text-sm font-medium">{{ de: 'Bis', en: 'To' }[locale]}</span>
+                            <span className="text-sm font-medium">{t(locale, 'profileCook', 'actions.to')}</span>
                             <Input type="time" step={900} value={endTime} onChange={(event) => setEndTime(event.target.value)} />
                         </div>
                     </div>
@@ -100,7 +98,7 @@ export function ProfileCookCallsRuleDialog({
                             });
                         }}
                     >
-                        {saving ? { de: 'Speichern…', en: 'Saving…' }[locale] : { de: 'Speichern', en: 'Save' }[locale]}
+                        {saving ? t(locale, 'profileCook', 'actions.saving') : t(locale, 'common', 'save')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

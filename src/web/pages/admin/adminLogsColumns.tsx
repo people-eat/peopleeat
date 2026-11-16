@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { createColumnHelper } from '@tanstack/react-table';
 
+import { t } from '../../../i18n/t';
 import { formatDateTime, userDisplayName } from '../../../shared';
 import type { Locale } from '../../../shared/locale';
 import { Badge } from '../../components/base/badge';
@@ -27,12 +28,7 @@ export type AdminLogsSortField = (typeof ADMIN_LOGS_SORT_FIELDS)[number];
 const columnHelper = createColumnHelper<AdminLogsDataTableFeatures, AdminLogsTableRow>();
 
 export function adminLogLevelLabel(level: GqlCAdminLogLevel, locale: Locale) {
-    return {
-        error: { de: 'Fehler', en: 'Error' },
-        warn: { de: 'Warnung', en: 'Warn' },
-        info: { de: 'Info', en: 'Info' },
-        debug: { de: 'Debug', en: 'Debug' },
-    }[level][locale];
+    return t(locale, 'admin', `logs.levels.${level}`);
 }
 
 export function adminLogLevelBadgeClassName(level: GqlCAdminLogLevel) {
@@ -53,14 +49,12 @@ function formatLogCreatedAt(value: string, locale: Locale, timeZone: string) {
 }
 
 export function adminLogsColumns(locale: Locale, timeZone: string) {
-    const empty = { de: '—', en: '—' }[locale];
-    const anonymous = { de: 'Anonym', en: 'Anonymous' }[locale];
+    const empty = t(locale, 'admin', 'copy.empty');
+    const anonymous = t(locale, 'admin', 'copy.anonymous');
 
     return columnHelper.columns([
         columnHelper.accessor('createdAt', {
-            header: ({ column }) => (
-                <AdminDataTableSortHeader column={column}>{{ de: 'Zeit', en: 'Time' }[locale]}</AdminDataTableSortHeader>
-            ),
+            header: ({ column }) => <AdminDataTableSortHeader column={column}>{t(locale, 'admin', 'copy.time2')}</AdminDataTableSortHeader>,
             cell: ({ row }) => (
                 <span className="whitespace-nowrap text-muted-foreground tabular-nums">
                     {formatLogCreatedAt(row.original.createdAt, locale, timeZone)}
@@ -68,7 +62,7 @@ export function adminLogsColumns(locale: Locale, timeZone: string) {
             ),
         }),
         columnHelper.accessor('level', {
-            header: () => ({ de: 'Level', en: 'Level' })[locale],
+            header: () => t(locale, 'admin', 'copy.level'),
             cell: ({ row }) => (
                 <Badge variant="outline" className={adminLogLevelBadgeClassName(row.original.level)}>
                     {adminLogLevelLabel(row.original.level, locale)}
@@ -78,13 +72,13 @@ export function adminLogsColumns(locale: Locale, timeZone: string) {
         }),
         columnHelper.accessor('message', {
             header: ({ column }) => (
-                <AdminDataTableSortHeader column={column}>{{ de: 'Nachricht', en: 'Message' }[locale]}</AdminDataTableSortHeader>
+                <AdminDataTableSortHeader column={column}>{t(locale, 'admin', 'copy.message')}</AdminDataTableSortHeader>
             ),
             cell: ({ row }) => <span className="line-clamp-3 font-medium text-foreground">{row.original.message}</span>,
         }),
         columnHelper.accessor((row) => (row.session?.user ? userDisplayName(row.session.user) : ''), {
             id: 'user',
-            header: () => ({ de: 'Nutzer', en: 'User' })[locale],
+            header: () => t(locale, 'admin', 'copy.user'),
             cell: ({ row }) => {
                 const user = row.original.session?.user;
                 if (user) {

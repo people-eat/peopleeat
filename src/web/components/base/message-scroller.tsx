@@ -8,7 +8,7 @@ import {
 } from '@shadcn/react/message-scroller';
 import { ArrowDownIcon } from 'lucide-react';
 import type { ComponentProps } from 'react';
-import { useLocale } from '../../hooks/useLocale';
+import { useT } from '../../hooks/useT';
 import { cn } from '../../utils/cn';
 import { Button } from './button';
 
@@ -91,11 +91,8 @@ function MessageScrollerButton({
     size = 'icon-sm',
     ...props
 }: ComponentProps<typeof MessageScrollerPrimitive.Button> & Pick<ComponentProps<typeof Button>, 'variant' | 'size'>) {
-    const locale = useLocale();
-    const scrollLabel =
-        direction === 'end'
-            ? { de: 'Zum Ende scrollen', en: 'Scroll to end' }[locale]
-            : { de: 'Zum Anfang scrollen', en: 'Scroll to start' }[locale];
+    const { t } = useT('common');
+    const scrollLabel = direction === 'end' ? t('messageScroller.toEnd') : t('messageScroller.toStart');
 
     return (
         <MessageScrollerPrimitive.Button

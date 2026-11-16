@@ -1,3 +1,4 @@
+import { t } from '../../i18n/t';
 import { featureToggleIsActive } from '../../shared/featureToggle';
 import type { Locale } from '../../shared/locale';
 import { ContentPageView } from '../components/ContentPageView';
@@ -6,7 +7,7 @@ import type { GqlCPublicBlogPostPageQuery } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
 
 export function blogIndexLinkLabel(locale: Locale): string {
-    return { de: 'Alle Beiträge', en: 'All articles' }[locale];
+    return t(locale, 'public', 'blog.indexLink');
 }
 
 export function BlogPostPage({ data }: { data: GqlCPublicBlogPostPageQuery }) {

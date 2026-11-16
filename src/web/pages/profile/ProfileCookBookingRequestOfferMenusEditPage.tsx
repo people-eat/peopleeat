@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
+import { t } from '../../../i18n/t';
 import { Button } from '../../components/base/button';
 import { CookMenuSelectPanel, cookMenuSelectPanelMenuIsComplete } from '../../components/CookMenuSelectPanel';
 import { ProfilePinnedFooterLayout } from '../../components/ProfilePinnedFooterLayout';
@@ -186,14 +187,14 @@ export function ProfileCookBookingRequestOfferMenusEditPage({
             if (!result.data?.user.cook.bookingRequestOfferSuggestedMenusUpdate.success) {
                 throw new Error('menus update failed');
             }
-            toast.success({ de: 'Menüs aktualisiert.', en: 'Menus updated.' }[locale]);
+            toast.success(t(locale, 'profileCook', 'offerMenusEdit.updated'));
             await navigate({
                 to: '/{-$locale}/profile/booking-request-offers/$bookingRequestOfferId',
                 params: { bookingRequestOfferId },
                 search: { tab: 'offer' },
             });
         } catch {
-            toast.error({ de: 'Menüupdate fehlgeschlagen.', en: 'Could not update menus.' }[locale]);
+            toast.error(t(locale, 'profileCook', 'offerMenusEdit.updateFailed'));
         } finally {
             setSaving(false);
         }
@@ -224,10 +225,10 @@ export function ProfileCookBookingRequestOfferMenusEditPage({
             const menuId = result.data?.user.cook.menuUpsert.referenceId;
             if (!menuId || result.error) throw new Error('create failed');
             const menusForReturn = selectedMenuIds.includes(menuId) ? selectedMenuIds : [...selectedMenuIds, menuId];
-            toast.success({ de: 'Menü angelegt.', en: 'Menu created.' }[locale]);
+            toast.success(t(locale, 'profileCook', 'offerMenusEdit.menuCreated'));
             await navigateToMenuEdit(menuId, menusForReturn);
         } catch {
-            toast.error({ de: 'Anlegen fehlgeschlagen.', en: 'Could not create.' }[locale]);
+            toast.error(t(locale, 'profileCook', 'actions.createFailed'));
             setCreatingMenu(false);
         }
     }
@@ -253,11 +254,11 @@ export function ProfileCookBookingRequestOfferMenusEditPage({
                                 params={{ bookingRequestOfferId }}
                                 search={{ tab: 'offer' }}
                             >
-                                {{ de: 'Verwerfen', en: 'Discard' }[locale]}
+                                {t(locale, 'profileCook', 'actions.discard')}
                             </Link>
                         </Button>
                         <Button type="button" disabled={busy} onClick={() => void onSave()}>
-                            {{ de: saving ? 'Wird gespeichert…' : 'Speichern', en: saving ? 'Saving…' : 'Save' }[locale]}
+                            {saving ? t(locale, 'profileCook', 'actions.savingProgress') : t(locale, 'common', 'save')}
                         </Button>
                     </>
                 ) : (
@@ -267,15 +268,15 @@ export function ProfileCookBookingRequestOfferMenusEditPage({
                             params={{ bookingRequestOfferId }}
                             search={{ tab: 'offer' }}
                         >
-                            {{ de: 'Zum Angebot', en: 'Back to offer' }[locale]}
+                            {t(locale, 'profileCook', 'offerMenusEdit.backToOffer')}
                         </Link>
                     </Button>
                 )
             }
         >
             <div className="grid gap-1">
-                <h1 className="font-serif text-2xl text-foreground">{profileCookBookingRequestOfferMenusEditPageTitle[locale]}</h1>
-                <p className="text-sm text-muted-foreground">{profileCookBookingRequestOfferMenusEditPageDescription[locale]}</p>
+                <h1 className="font-serif text-2xl text-foreground">{profileCookBookingRequestOfferMenusEditPageTitle(locale)}</h1>
+                <p className="text-sm text-muted-foreground">{profileCookBookingRequestOfferMenusEditPageDescription(locale)}</p>
             </div>
 
             <CookMenuSelectPanel
@@ -291,7 +292,7 @@ export function ProfileCookBookingRequestOfferMenusEditPage({
                 onCreateMenu={() => void onCreateMenu()}
                 onMenuApplied={(menuId) => {
                     setSelectedMenuIds((current) => (current.includes(menuId) ? current : [...current, menuId]));
-                    toast.success({ de: 'Menü angelegt und ausgewählt.', en: 'Menu created and selected.' }[locale]);
+                    toast.success(t(locale, 'profileCook', 'offerMenusEdit.menuCreatedSelected'));
                 }}
                 onEditMenu={(menuId) => void onEditMenu(menuId)}
                 createMenuDisabled={busy}

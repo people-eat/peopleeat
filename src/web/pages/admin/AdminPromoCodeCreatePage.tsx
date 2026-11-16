@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { SubmitEventHandler } from 'react';
 import { useMutation } from 'urql';
 
+import { t } from '../../../i18n/t';
 import { eurosToCents, formatCurrency } from '../../../shared';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { Button } from '../../components/base/button';
@@ -11,12 +12,14 @@ import { Input } from '../../components/base/input';
 import { AdminPromoCodeCreateDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { DATE_FNS_LOCALE } from '../../utils/dateFnsLocale';
+import type { Locale } from '../../utils/locale';
 
-export const adminPromoCodeCreatePageTitle = { de: 'Promo-Code anlegen', en: 'Create promo code' } as const;
-export const adminPromoCodeCreatePageDescription = {
-    de: 'Neuen Rabattcode mit Wert, Mindestpreis und Ablauf anlegen.',
-    en: 'Create a new discount code with amount, minimum price, and expiration.',
-} as const;
+export function adminPromoCodeCreatePageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.promoCodeCreate.title');
+}
+export function adminPromoCodeCreatePageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.promoCodeCreate.description');
+}
 
 const AMOUNT_PRESETS_EUROS = ['5', '10', '15', '20', '25', '30', '35', '40'] as const;
 const MIN_PRICE_PRESETS_CENTS = [20_000, 25_000, 30_000, 35_000, 40_000, 45_000] as const;
@@ -93,33 +96,27 @@ export function AdminPromoCodeCreatePage() {
 
     const errorMessage =
         error === 'code'
-            ? { de: 'Promo-Codes brauchen einen Einlöscode.', en: 'Promo codes need a redeem code.' }[locale]
+            ? t(locale, 'admin', 'copy.promoCodesNeedARedeemCode')
             : error === 'amount'
-              ? { de: 'Promo-Codes brauchen einen positiven Wert.', en: 'Promo codes need a positive amount.' }[locale]
+              ? t(locale, 'admin', 'copy.promoCodesNeedAPositiveAmount')
               : error === 'expires'
-                ? {
-                      de: 'Ablaufdatum und -uhrzeit müssen in der Zukunft liegen.',
-                      en: 'Expiration date and time must be in the future.',
-                  }[locale]
+                ? t(locale, 'admin', 'copy.expirationDateAndTimeMustBeInTheFuture')
                 : error === 'generic'
-                  ? {
-                        de: 'Anlegen fehlgeschlagen. Prüfe den Einlöscode (ggf. bereits vergeben).',
-                        en: 'Could not create. Check the redeem code (it may already exist).',
-                    }[locale]
+                  ? t(locale, 'admin', 'copy.couldNotCreateCheckTheRedeemCodeItMayAlreadyExist')
                   : null;
 
     return (
         <AdminPathPageChrome>
             <main id="main-content" className="grid w-full content-start gap-8">
                 <div className="grid gap-2">
-                    <h1 className="font-serif text-4xl/tight text-foreground">{adminPromoCodeCreatePageTitle[locale]}</h1>
-                    <p className="text-muted-foreground">{adminPromoCodeCreatePageDescription[locale]}</p>
+                    <h1 className="font-serif text-4xl/tight text-foreground">{adminPromoCodeCreatePageTitle(locale)}</h1>
+                    <p className="text-muted-foreground">{adminPromoCodeCreatePageDescription(locale)}</p>
                 </div>
 
                 <form className="grid max-w-xl gap-6" onSubmit={onSubmit}>
                     <div className="grid gap-2">
                         <label htmlFor="admin-promo-redeem-code" className="text-sm font-medium">
-                            {{ de: 'Einlöscode', en: 'Redeem code' }[locale]}
+                            {t(locale, 'admin', 'copy.redeemCode')}
                         </label>
                         <Input
                             id="admin-promo-redeem-code"
@@ -133,7 +130,7 @@ export function AdminPromoCodeCreatePage() {
 
                     <div className="grid gap-2">
                         <label htmlFor="admin-promo-amount" className="text-sm font-medium">
-                            {{ de: 'Wert (€)', en: 'Amount (€)' }[locale]}
+                            {t(locale, 'admin', 'copy.amount2')}
                         </label>
                         <Input
                             id="admin-promo-amount"
@@ -163,14 +160,9 @@ export function AdminPromoCodeCreatePage() {
                     </div>
 
                     <fieldset className="grid gap-2">
-                        <legend className="text-sm font-medium">{{ de: 'Mindestpreis', en: 'Minimum price' }[locale]}</legend>
+                        <legend className="text-sm font-medium">{t(locale, 'admin', 'copy.minimumPrice')}</legend>
                         <p className="text-sm text-muted-foreground">
-                            {
-                                {
-                                    de: 'Gesamtpreis für Kunden vor Abzügen.',
-                                    en: 'Total price for the customer before deductions.',
-                                }[locale]
-                            }
+                            {t(locale, 'admin', 'copy.totalPriceForTheCustomerBeforeDeductions')}
                         </p>
                         <div className="flex flex-wrap gap-2">
                             <Button
@@ -179,7 +171,7 @@ export function AdminPromoCodeCreatePage() {
                                 variant={minimumTotalAmountCustomerCents === 'NONE' ? 'default' : 'outline'}
                                 onClick={() => setMinimumTotalAmountCustomerCents('NONE')}
                             >
-                                {{ de: 'Keiner', en: 'None' }[locale]}
+                                {t(locale, 'admin', 'copy.none')}
                             </Button>
                             {MIN_PRICE_PRESETS_CENTS.map((cents) => {
                                 const active = minimumTotalAmountCustomerCents === cents;
@@ -200,13 +192,13 @@ export function AdminPromoCodeCreatePage() {
 
                     <div className="grid gap-2">
                         <span id="admin-promo-expires-label" className="text-sm font-medium">
-                            {{ de: 'Ablaufdatum und -uhrzeit', en: 'Expiration date and time' }[locale]}
+                            {t(locale, 'admin', 'copy.expirationDateAndTime')}
                         </span>
                         <DateTimePicker
                             value={expiresAt}
                             onValueChange={(date) => setExpiresAt(date)}
-                            placeholder={{ de: 'Datum und Uhrzeit wählen', en: 'Pick date and time' }[locale]}
-                            timeAriaLabel={{ de: 'Uhrzeit', en: 'Time' }[locale]}
+                            placeholder={t(locale, 'admin', 'copy.pickDateAndTime')}
+                            timeAriaLabel={t(locale, 'admin', 'copy.time')}
                             locale={DATE_FNS_LOCALE[locale]}
                             aria-labelledby="admin-promo-expires-label"
                             aria-invalid={error === 'expires' || undefined}
@@ -221,7 +213,7 @@ export function AdminPromoCodeCreatePage() {
                     ) : null}
 
                     <Button type="submit" disabled={busy}>
-                        {{ de: 'Promo-Code anlegen', en: 'Create promo code' }[locale]}
+                        {t(locale, 'admin', 'copy.createPromoCode')}
                     </Button>
                 </form>
             </main>

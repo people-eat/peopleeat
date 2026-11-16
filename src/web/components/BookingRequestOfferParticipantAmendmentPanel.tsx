@@ -2,7 +2,7 @@ import { Link } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 
-import { formatCurrency, formatParticipants } from '../../shared';
+import { formatCurrency, formatParticipants, inlineCopy } from '../../shared';
 import { useFeatureToggleActive } from '../hooks/useFeatureToggleActive';
 import type { Locale } from '../utils/locale';
 import {
@@ -46,18 +46,24 @@ function amendmentSummary(amendment: AmendmentPreview, locale: Locale): string {
     }
     if (amendment.menuPriceCentsBefore !== amendment.menuPriceCentsAfter) {
         parts.push(
-            {
-                de: `Menü ${formatCurrency(amendment.menuPriceCentsBefore, { locale })} → ${formatCurrency(amendment.menuPriceCentsAfter, { locale })}`,
-                en: `Menu ${formatCurrency(amendment.menuPriceCentsBefore, { locale })} → ${formatCurrency(amendment.menuPriceCentsAfter, { locale })}`,
-            }[locale],
+            inlineCopy(
+                {
+                    de: `Menü ${formatCurrency(amendment.menuPriceCentsBefore, { locale })} → ${formatCurrency(amendment.menuPriceCentsAfter, { locale })}`,
+                    en: `Menu ${formatCurrency(amendment.menuPriceCentsBefore, { locale })} → ${formatCurrency(amendment.menuPriceCentsAfter, { locale })}`,
+                },
+                locale,
+            ),
         );
     }
     if (amendment.travelExpensesCentsBefore !== amendment.travelExpensesCentsAfter) {
         parts.push(
-            {
-                de: `Reise ${formatCurrency(amendment.travelExpensesCentsBefore, { locale })} → ${formatCurrency(amendment.travelExpensesCentsAfter, { locale })}`,
-                en: `Travel ${formatCurrency(amendment.travelExpensesCentsBefore, { locale })} → ${formatCurrency(amendment.travelExpensesCentsAfter, { locale })}`,
-            }[locale],
+            inlineCopy(
+                {
+                    de: `Reise ${formatCurrency(amendment.travelExpensesCentsBefore, { locale })} → ${formatCurrency(amendment.travelExpensesCentsAfter, { locale })}`,
+                    en: `Travel ${formatCurrency(amendment.travelExpensesCentsBefore, { locale })} → ${formatCurrency(amendment.travelExpensesCentsAfter, { locale })}`,
+                },
+                locale,
+            ),
         );
     }
     return parts.join(' · ');
@@ -70,35 +76,50 @@ function customerPendingAmendmentBody(
 ): string {
     const changedParticipants = amendment.participants != null;
     const changedVenue = amendment.exactEventAddress != null;
-    const confirmTail = {
-        de: 'Dein Koch wurde informiert und muss die Änderung noch bestätigen. Dadurch kann sich auch der Preis ändern.',
-        en: 'Your chef has been informed and still needs to confirm the change. The price may change as a result.',
-    }[locale];
+    const confirmTail = inlineCopy(
+        {
+            de: 'Dein Koch wurde informiert und muss die Änderung noch bestätigen. Dadurch kann sich auch der Preis ändern.',
+            en: 'Your chef has been informed and still needs to confirm the change. The price may change as a result.',
+        },
+        locale,
+    );
 
     if (changedParticipants && amendment.participants) {
         const before = currentParticipants.length;
         const after = amendment.participants.length;
-        const participantsClause = {
-            de: `die Teilnehmerzahl von ${before} auf ${after} Personen`,
-            en: `the guest count from ${before} to ${after} people`,
-        }[locale];
+        const participantsClause = inlineCopy(
+            {
+                de: `die Teilnehmerzahl von ${before} auf ${after} Personen`,
+                en: `the guest count from ${before} to ${after} people`,
+            },
+            locale,
+        );
         if (changedVenue) {
-            return {
-                de: `Du hast ${participantsClause} und den Veranstaltungsort geändert. ${confirmTail}`,
-                en: `You changed ${participantsClause} and the venue. ${confirmTail}`,
-            }[locale];
+            return inlineCopy(
+                {
+                    de: `Du hast ${participantsClause} und den Veranstaltungsort geändert. ${confirmTail}`,
+                    en: `You changed ${participantsClause} and the venue. ${confirmTail}`,
+                },
+                locale,
+            );
         }
-        return {
-            de: `Du hast ${participantsClause} geändert. ${confirmTail}`,
-            en: `You changed ${participantsClause}. ${confirmTail}`,
-        }[locale];
+        return inlineCopy(
+            {
+                de: `Du hast ${participantsClause} geändert. ${confirmTail}`,
+                en: `You changed ${participantsClause}. ${confirmTail}`,
+            },
+            locale,
+        );
     }
 
     if (changedVenue) {
-        return {
-            de: `Du hast den Veranstaltungsort geändert. ${confirmTail}`,
-            en: `You changed the venue. ${confirmTail}`,
-        }[locale];
+        return inlineCopy(
+            {
+                de: `Du hast den Veranstaltungsort geändert. ${confirmTail}`,
+                en: `You changed the venue. ${confirmTail}`,
+            },
+            locale,
+        );
     }
 
     return confirmTail;
@@ -124,12 +145,13 @@ export function BookingRequestOfferParticipantAmendmentCustomerPanel(props: {
         return (
             <StatusAlert
                 tone="info"
-                title={
+                title={inlineCopy(
                     {
                         de: claimed ? 'Änderung wird angewendet' : 'Änderungen angefragt',
                         en: claimed ? 'Change is being applied' : 'Changes requested',
-                    }[props.locale]
-                }
+                    },
+                    props.locale,
+                )}
                 action={
                     !claimed && props.onCancelAmendment ? (
                         <Button
@@ -139,16 +161,19 @@ export function BookingRequestOfferParticipantAmendmentCustomerPanel(props: {
                             disabled={props.cancelBusy}
                             onClick={() => void props.onCancelAmendment?.()}
                         >
-                            {{ de: 'Änderung zurückziehen', en: 'Withdraw change' }[props.locale]}
+                            {inlineCopy({ de: 'Änderung zurückziehen', en: 'Withdraw change' }, props.locale)}
                         </Button>
                     ) : undefined
                 }
             >
                 {claimed
-                    ? {
-                          de: `Dein Koch hat den Vorschlag (${amendmentSummary(props.amendment, props.locale)}) angenommen. Preis und Zahlung werden gerade aktualisiert. Neuer Gastgeberpreis: ${formatCurrency(props.amendment.totalCentsCustomerAfter, { locale: props.locale })}.`,
-                          en: `Your chef accepted the proposal (${amendmentSummary(props.amendment, props.locale)}). Price and payment are updating now. New host price: ${formatCurrency(props.amendment.totalCentsCustomerAfter, { locale: props.locale })}.`,
-                      }[props.locale]
+                    ? inlineCopy(
+                          {
+                              de: `Dein Koch hat den Vorschlag (${amendmentSummary(props.amendment, props.locale)}) angenommen. Preis und Zahlung werden gerade aktualisiert. Neuer Gastgeberpreis: ${formatCurrency(props.amendment.totalCentsCustomerAfter, { locale: props.locale })}.`,
+                              en: `Your chef accepted the proposal (${amendmentSummary(props.amendment, props.locale)}). Price and payment are updating now. New host price: ${formatCurrency(props.amendment.totalCentsCustomerAfter, { locale: props.locale })}.`,
+                          },
+                          props.locale,
+                      )
                     : customerPendingAmendmentBody(props.amendment, props.locale, props.currentParticipants ?? [])}
             </StatusAlert>
         );
@@ -156,13 +181,14 @@ export function BookingRequestOfferParticipantAmendmentCustomerPanel(props: {
 
     if (props.preparationsCompletedAt) {
         return (
-            <StatusAlert tone="info" title={{ de: 'Einkauf abgeschlossen', en: 'Shopping completed' }[props.locale]}>
-                {
+            <StatusAlert tone="info" title={inlineCopy({ de: 'Einkauf abgeschlossen', en: 'Shopping completed' }, props.locale)}>
+                {inlineCopy(
                     {
                         de: 'Dein Koch hat den Einkauf bzw. die Vorbereitung bereits erledigt. Teilnehmerzahl und Ort können nicht mehr geändert werden.',
                         en: 'Your chef has already completed grocery shopping or preparations. Participants and venue can no longer be changed.',
-                    }[props.locale]
-                }
+                    },
+                    props.locale,
+                )}
             </StatusAlert>
         );
     }
@@ -172,19 +198,20 @@ export function BookingRequestOfferParticipantAmendmentCustomerPanel(props: {
     return (
         <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground">
-                {
+                {inlineCopy(
                     {
                         de: 'Du möchtest Teilnehmerzahl oder Ort nach der Annahme ändern? Nutze die Bearbeitung der Anfrage.',
                         en: 'Need to change participants or venue after accepting? Use Edit on the booking request.',
-                    }[props.locale]
-                }
+                    },
+                    props.locale,
+                )}
             </p>
             <Button type="button" variant="outline" size="sm" asChild>
                 <Link
                     to="/{-$locale}/profile/booking-requests/$bookingRequestId/edit"
                     params={{ bookingRequestId: props.bookingRequestId }}
                 >
-                    {{ de: 'Buchung ändern', en: 'Change booking' }[props.locale]}
+                    {inlineCopy({ de: 'Buchung ändern', en: 'Change booking' }, props.locale)}
                 </Link>
             </Button>
         </div>
@@ -204,49 +231,60 @@ export function BookingRequestOfferParticipantAmendmentCookReview(props: {
     const claimed = props.amendment.claimedAt != null;
     const giftNote =
         props.amendment.giftCardDeltaCents < 0
-            ? {
-                  de: ` Geschenkkarte ${formatCurrency(Math.abs(props.amendment.giftCardDeltaCents), { locale: props.locale })} zurück.`,
-                  en: ` Gift card ${formatCurrency(Math.abs(props.amendment.giftCardDeltaCents), { locale: props.locale })} restored.`,
-              }[props.locale]
+            ? inlineCopy(
+                  {
+                      de: ` Geschenkkarte ${formatCurrency(Math.abs(props.amendment.giftCardDeltaCents), { locale: props.locale })} zurück.`,
+                      en: ` Gift card ${formatCurrency(Math.abs(props.amendment.giftCardDeltaCents), { locale: props.locale })} restored.`,
+                  },
+                  props.locale,
+              )
             : '';
     return (
         <StatusAlert
             tone="warning"
-            title={
+            title={inlineCopy(
                 {
                     de: claimed ? 'Änderung wird angewendet' : 'Buchungsänderung prüfen',
                     en: claimed ? 'Change is being applied' : 'Review booking change',
-                }[props.locale]
-            }
+                },
+                props.locale,
+            )}
             action={
                 showActions ? (
                     <div className="flex flex-wrap gap-2">
                         {!claimed ? (
                             <Button type="button" size="sm" variant="outline" disabled={props.busy} onClick={() => void props.onDecline()}>
-                                {{ de: 'Ablehnen', en: 'Decline' }[props.locale]}
+                                {inlineCopy({ de: 'Ablehnen', en: 'Decline' }, props.locale)}
                             </Button>
                         ) : null}
                         <Button type="button" size="sm" disabled={props.busy} onClick={() => void props.onAccept()}>
-                            {
+                            {inlineCopy(
                                 {
                                     de: claimed ? 'Erneut versuchen' : 'Änderung annehmen',
                                     en: claimed ? 'Retry' : 'Accept change',
-                                }[props.locale]
-                            }
+                                },
+                                props.locale,
+                            )}
                         </Button>
                     </div>
                 ) : undefined
             }
         >
             {claimed
-                ? {
-                      de: `${amendmentSummary(props.amendment, props.locale)}. Die Annahme läuft noch (Zahlung/Erstattung). Wenn sie hängen bleibt, versuche es erneut.`,
-                      en: `${amendmentSummary(props.amendment, props.locale)}. Acceptance is still running (charge/refund). If it stalls, try again.`,
-                  }[props.locale]
-                : {
-                      de: `${amendmentSummary(props.amendment, props.locale)}. Auszahlung ${formatCurrency(props.amendment.payoutCentsCookBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.payoutCentsCookAfter, { locale: props.locale })}. Die Buchung bleibt bestätigt; Zahlung oder Erstattung folgen automatisch nach deiner Entscheidung.${giftNote}`,
-                      en: `${amendmentSummary(props.amendment, props.locale)}. Payout ${formatCurrency(props.amendment.payoutCentsCookBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.payoutCentsCookAfter, { locale: props.locale })}. The booking stays confirmed; charge or refund runs automatically after you decide.${giftNote}`,
-                  }[props.locale]}
+                ? inlineCopy(
+                      {
+                          de: `${amendmentSummary(props.amendment, props.locale)}. Die Annahme läuft noch (Zahlung/Erstattung). Wenn sie hängen bleibt, versuche es erneut.`,
+                          en: `${amendmentSummary(props.amendment, props.locale)}. Acceptance is still running (charge/refund). If it stalls, try again.`,
+                      },
+                      props.locale,
+                  )
+                : inlineCopy(
+                      {
+                          de: `${amendmentSummary(props.amendment, props.locale)}. Auszahlung ${formatCurrency(props.amendment.payoutCentsCookBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.payoutCentsCookAfter, { locale: props.locale })}. Die Buchung bleibt bestätigt; Zahlung oder Erstattung folgen automatisch nach deiner Entscheidung.${giftNote}`,
+                          en: `${amendmentSummary(props.amendment, props.locale)}. Payout ${formatCurrency(props.amendment.payoutCentsCookBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.payoutCentsCookAfter, { locale: props.locale })}. The booking stays confirmed; charge or refund runs automatically after you decide.${giftNote}`,
+                      },
+                      props.locale,
+                  )}
         </StatusAlert>
     );
 }
@@ -289,14 +327,15 @@ export function BookingRequestOfferParticipantAmendmentCookPanel(props: {
             {showPrep && props.preparationsCompletedAt ? (
                 <StatusAlert
                     tone="success"
-                    title={{ de: 'Einkauf / Vorbereitung erledigt', en: 'Shopping / preparations done' }[props.locale]}
+                    title={inlineCopy({ de: 'Einkauf / Vorbereitung erledigt', en: 'Shopping / preparations done' }, props.locale)}
                 >
-                    {
+                    {inlineCopy(
                         {
                             de: 'Weitere Kundenänderungen an Teilnehmerzahl oder Ort sind gesperrt.',
                             en: 'Further customer changes to participants or venue are locked.',
-                        }[props.locale]
-                    }
+                        },
+                        props.locale,
+                    )}
                 </StatusAlert>
             ) : null}
 
@@ -309,26 +348,30 @@ export function BookingRequestOfferParticipantAmendmentCookPanel(props: {
                         disabled={props.busy}
                         onClick={() => setPreparationsConfirmOpen(true)}
                     >
-                        {{ de: 'Einkauf / Vorbereitung erledigt', en: 'Mark shopping / prep done' }[props.locale]}
+                        {inlineCopy({ de: 'Einkauf / Vorbereitung erledigt', en: 'Mark shopping / prep done' }, props.locale)}
                     </Button>
                     <AlertDialog open={preparationsConfirmOpen} onOpenChange={setPreparationsConfirmOpen}>
                         <AlertDialogContent>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>
-                                    {{ de: 'Einkauf wirklich als erledigt markieren?', en: 'Mark shopping as done?' }[props.locale]}
+                                    {inlineCopy(
+                                        { de: 'Einkauf wirklich als erledigt markieren?', en: 'Mark shopping as done?' },
+                                        props.locale,
+                                    )}
                                 </AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    {
+                                    {inlineCopy(
                                         {
                                             de: 'Danach kann der Gastgeber Teilnehmerzahl und Ort nicht mehr ändern.',
                                             en: 'Afterwards the host can no longer change participants or venue.',
-                                        }[props.locale]
-                                    }
+                                        },
+                                        props.locale,
+                                    )}
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel disabled={confirmBusy}>
-                                    {{ de: 'Abbrechen', en: 'Cancel' }[props.locale]}
+                                    {inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, props.locale)}
                                 </AlertDialogCancel>
                                 <AlertDialogAction
                                     disabled={confirmBusy}
@@ -341,7 +384,7 @@ export function BookingRequestOfferParticipantAmendmentCookPanel(props: {
                                         });
                                     }}
                                 >
-                                    {{ de: 'Ja, erledigt', en: 'Yes, done' }[props.locale]}
+                                    {inlineCopy({ de: 'Ja, erledigt', en: 'Yes, done' }, props.locale)}
                                 </AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
@@ -362,33 +405,43 @@ export function BookingRequestOfferParticipantAmendmentAdminPendingAlert(props: 
 }) {
     const summary = amendmentSummary(props.amendment, props.locale);
     const claimed = props.amendment.claimedAt != null;
-    const priceLine = {
-        de: `Gastgeberpreis ${formatCurrency(props.amendment.totalCentsCustomerBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.totalCentsCustomerAfter, { locale: props.locale })}. Koch-Auszahlung ${formatCurrency(props.amendment.payoutCentsCookBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.payoutCentsCookAfter, { locale: props.locale })}.`,
-        en: `Host price ${formatCurrency(props.amendment.totalCentsCustomerBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.totalCentsCustomerAfter, { locale: props.locale })}. Cook payout ${formatCurrency(props.amendment.payoutCentsCookBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.payoutCentsCookAfter, { locale: props.locale })}.`,
-    }[props.locale];
+    const priceLine = inlineCopy(
+        {
+            de: `Gastgeberpreis ${formatCurrency(props.amendment.totalCentsCustomerBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.totalCentsCustomerAfter, { locale: props.locale })}. Koch-Auszahlung ${formatCurrency(props.amendment.payoutCentsCookBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.payoutCentsCookAfter, { locale: props.locale })}.`,
+            en: `Host price ${formatCurrency(props.amendment.totalCentsCustomerBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.totalCentsCustomerAfter, { locale: props.locale })}. Cook payout ${formatCurrency(props.amendment.payoutCentsCookBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.payoutCentsCookAfter, { locale: props.locale })}.`,
+        },
+        props.locale,
+    );
 
     return (
         <StatusAlert
             tone="warning"
-            title={
+            title={inlineCopy(
                 {
                     de: claimed ? 'Buchungsänderung wird angewendet' : 'Offene Buchungsänderung',
                     en: claimed ? 'Booking change is being applied' : 'Pending booking change',
-                }[props.locale]
-            }
+                },
+                props.locale,
+            )}
             action={props.action}
         >
             <span className="grid gap-1">
                 <span>
                     {claimed
-                        ? {
-                              de: `Koch hat angenommen, Apply läuft noch${summary ? `: ${summary}` : ''}. Kunden-Zurückziehen ist gesperrt.`,
-                              en: `Chef accepted; apply still running${summary ? `: ${summary}` : ''}. Customer withdraw is blocked.`,
-                          }[props.locale]
-                        : {
-                              de: `Vorschlag wartet auf den Koch${summary ? `: ${summary}` : ''}.`,
-                              en: `Proposal waiting on the chef${summary ? `: ${summary}` : ''}.`,
-                          }[props.locale]}
+                        ? inlineCopy(
+                              {
+                                  de: `Koch hat angenommen, Apply läuft noch${summary ? `: ${summary}` : ''}. Kunden-Zurückziehen ist gesperrt.`,
+                                  en: `Chef accepted; apply still running${summary ? `: ${summary}` : ''}. Customer withdraw is blocked.`,
+                              },
+                              props.locale,
+                          )
+                        : inlineCopy(
+                              {
+                                  de: `Vorschlag wartet auf den Koch${summary ? `: ${summary}` : ''}.`,
+                                  en: `Proposal waiting on the chef${summary ? `: ${summary}` : ''}.`,
+                              },
+                              props.locale,
+                          )}
                 </span>
                 <span>{priceLine}</span>
                 {props.footnote ? <span>{props.footnote}</span> : null}
@@ -415,7 +468,7 @@ export function BookingRequestOfferParticipantAmendmentAdminPanel(props: {
             {props.preparationsCompletedAt ? (
                 <StatusAlert
                     tone="info"
-                    title={{ de: 'Vorbereitung gesperrt', en: 'Preparations locked' }[props.locale]}
+                    title={inlineCopy({ de: 'Vorbereitung gesperrt', en: 'Preparations locked' }, props.locale)}
                     action={
                         <Button
                             type="button"
@@ -424,16 +477,17 @@ export function BookingRequestOfferParticipantAmendmentAdminPanel(props: {
                             disabled={props.busy}
                             onClick={() => void props.onClearPreparations()}
                         >
-                            {{ de: 'Sperre aufheben', en: 'Clear lock' }[props.locale]}
+                            {inlineCopy({ de: 'Sperre aufheben', en: 'Clear lock' }, props.locale)}
                         </Button>
                     }
                 >
-                    {
+                    {inlineCopy(
                         {
                             de: 'Der Koch hat Einkauf / Vorbereitung als erledigt markiert.',
                             en: 'The chef marked shopping / preparations as done.',
-                        }[props.locale]
-                    }
+                        },
+                        props.locale,
+                    )}
                 </StatusAlert>
             ) : null}
         </div>

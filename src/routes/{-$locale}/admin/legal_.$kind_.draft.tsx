@@ -26,11 +26,11 @@ export const Route = createFileRoute('/{-$locale}/admin/legal_/$kind_/draft')({
             return {};
         }
         const kind = params.kind;
-        const title = adminLegalDraftPageTitle(kind);
-        const description = adminLegalDraftPageDescription(kind);
+        const title = adminLegalDraftPageTitle(kind, locale);
+        const description = adminLegalDraftPageDescription(kind, locale);
         return seoMeta({
-            title: title[locale],
-            description: description[locale],
+            title,
+            description,
             path: adminLegalDraftPath(kind),
             locale,
             webPageUrl: webPageUrlGet(),

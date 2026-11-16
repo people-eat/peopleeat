@@ -2,6 +2,7 @@ import { config } from 'dotenv';
 import { vi } from 'vitest';
 
 import { environmentVariablesTestSource } from '../env/environmentVariablesTestSource';
+import { serverI18nBootstrap } from '../i18nBootstrap';
 
 // Load `.env.test` when present, then fill any missing boot-required keys from
 // the shared test source (console email/Slack transports). CI already sets a
@@ -53,3 +54,5 @@ vi.spyOn(console, 'error').mockImplementation(() => {});
 vi.spyOn(console, 'warn').mockImplementation(() => {});
 vi.spyOn(console, 'info').mockImplementation(() => {});
 vi.spyOn(console, 'debug').mockImplementation(() => {});
+
+serverI18nBootstrap();

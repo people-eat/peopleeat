@@ -1,3 +1,4 @@
+import { tEmail } from '../../../i18n/tEmail';
 import type { Locale } from '../../../shared/locale';
 import { EmailLayout, EmailText } from '../components';
 import { emailStyles } from '../components/emailStyles';
@@ -15,24 +16,20 @@ export function EmailAddressUpdateOtpRequestForUserEmail({
     webPageUrl,
     recipientFirstName,
 }: EmailAddressUpdateOtpRequestForUserEmailProps) {
-    const preview = {
-        de: `Bestätige deine neue E-Mail-Adresse. Code: ${code}`,
-        en: `Confirm your new email address. Code: ${code}`,
-    }[locale];
-    const subject = emailAddressUpdateOtpRequestForUserEmailSubject(locale);
-    const body = {
-        de: 'Gib diesen Code auf der Kontoseite ein, um deine neue E-Mail-Adresse zu bestätigen. Er ist zehn Minuten gültig.',
-        en: 'Enter this code on the account page to confirm your new email address. It expires in ten minutes.',
-    }[locale];
-
     return (
-        <EmailLayout locale={locale} webPageUrl={webPageUrl} preview={preview} subject={subject} recipientFirstName={recipientFirstName}>
+        <EmailLayout
+            locale={locale}
+            webPageUrl={webPageUrl}
+            preview={tEmail(locale, 'auth.emailUpdate.preview', { code })}
+            subject={emailAddressUpdateOtpRequestForUserEmailSubject(locale)}
+            recipientFirstName={recipientFirstName}
+        >
             <EmailText style={emailStyles.code}>{code}</EmailText>
-            <EmailText>{body}</EmailText>
+            <EmailText>{tEmail(locale, 'auth.emailUpdate.body')}</EmailText>
         </EmailLayout>
     );
 }
 
 export function emailAddressUpdateOtpRequestForUserEmailSubject(locale: Locale): string {
-    return { de: 'Bestätige deine neue E-Mail-Adresse', en: 'Confirm your new email address' }[locale];
+    return tEmail(locale, 'auth.emailUpdate.subject');
 }

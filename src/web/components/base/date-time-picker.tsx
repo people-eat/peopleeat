@@ -2,7 +2,7 @@ import type { Locale } from 'date-fns';
 import { format } from 'date-fns';
 import { ChevronDownIcon } from 'lucide-react';
 import type { ComponentProps } from 'react';
-import { useLocale } from '../../hooks/useLocale';
+import { useT } from '../../hooks/useT';
 import { cn } from '../../utils/cn';
 import { Button } from './button';
 import { Calendar } from './calendar';
@@ -38,7 +38,7 @@ function DateTimePicker({
     'aria-required'?: boolean | 'true' | 'false';
     'aria-invalid'?: boolean | 'true' | 'false';
 }) {
-    const uiLocale = useLocale();
+    const { t } = useT('common');
     const timeValue = value ? format(value, 'HH:mm') : '';
 
     const setDay = (day: Date | undefined) => {
@@ -88,8 +88,8 @@ function DateTimePicker({
                         value={timeValue}
                         onValueChange={setTime}
                         aria-label={timeAriaLabel}
-                        hourAriaLabel={{ de: 'Stunde', en: 'Hour' }[uiLocale]}
-                        minuteAriaLabel={{ de: 'Minute', en: 'Minute' }[uiLocale]}
+                        hourAriaLabel={t('dateTime.hour')}
+                        minuteAriaLabel={t('dateTime.minute')}
                     />
                 </div>
             </PopoverContent>

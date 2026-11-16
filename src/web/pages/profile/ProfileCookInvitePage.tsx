@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { createRequest, useClient } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { t } from '../../../i18n/t';
 import { COOK_INVITE_LIVE_BOOKING_COUNT, COOK_INVITE_LIVE_PLATFORM_FEE_PERCENT_COOK } from '../../../shared';
 import { AppImage } from '../../components/AppImage';
 import { Button } from '../../components/base/button';
@@ -26,12 +27,7 @@ const COOK_INVITE_ILLUSTRATION = {
     height: 830,
 } as const;
 
-const milestones = [
-    { key: 'registered', de: 'Registriert', en: 'Registered' },
-    { key: 'approved', de: 'Freigegeben', en: 'Approved' },
-    { key: 'firstOfferCreated', de: 'Erstes Angebot', en: 'First offer' },
-    { key: 'firstEvent', de: 'Erstes Event', en: 'First event' },
-] as const;
+const milestones = ['registered', 'approved', 'firstOfferCreated', 'firstEvent'] as const;
 
 function InviteeProgress({ invitee }: { invitee: GqlCProfileCookInviteCookFragment['invitees'][number] }) {
     const locale = useLocale();
@@ -47,16 +43,14 @@ function InviteeProgress({ invitee }: { invitee: GqlCProfileCookInviteCookFragme
             <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <p className="font-medium text-foreground">{invitee.display}</p>
                 {invitee.rewardUnlocked ? (
-                    <p className="text-xs font-medium text-muted-foreground">
-                        {{ de: 'Belohnung freigeschaltet', en: 'Reward unlocked' }[locale]}
-                    </p>
+                    <p className="text-xs font-medium text-muted-foreground">{t(locale, 'profileCook', 'invite.rewardUnlocked')}</p>
                 ) : null}
             </div>
             <ol className="grid gap-2 sm:grid-cols-4">
                 {milestones.map((step, index) => {
-                    const complete = done[step.key];
+                    const complete = done[step];
                     return (
-                        <li key={step.key} className="grid gap-1">
+                        <li key={step} className="grid gap-1">
                             <div className="flex items-center gap-2">
                                 <span
                                     className={cn(
@@ -68,7 +62,7 @@ function InviteeProgress({ invitee }: { invitee: GqlCProfileCookInviteCookFragme
                                     {complete ? <CheckIcon className="size-3.5" /> : index + 1}
                                 </span>
                                 <span className={cn('text-sm', complete ? 'text-foreground' : 'text-muted-foreground')}>
-                                    {step[locale]}
+                                    {t(locale, 'profileCook', `invite.milestones.${step}`)}
                                 </span>
                             </div>
                         </li>
@@ -142,11 +136,8 @@ export function ProfileCookInvitePage({ data }: { data: GqlCProfileCookInvitePag
         }
         try {
             await navigator.share({
-                title: { de: 'peopleeat Koch werden', en: 'Become a peopleeat chef' }[locale],
-                text: {
-                    de: 'Ich lade dich ein, dich als Koch bei peopleeat zu registrieren.',
-                    en: 'I am inviting you to join peopleeat as a chef.',
-                }[locale],
+                title: t(locale, 'profileCook', 'invite.shareTitle'),
+                text: t(locale, 'profileCook', 'invite.shareText'),
                 url: inviteUrl,
             });
         } catch {
@@ -154,17 +145,14 @@ export function ProfileCookInvitePage({ data }: { data: GqlCProfileCookInvitePag
         }
     }
 
-    const illustrationAlt = {
-        de: 'Zwei Köche und eine Einladung mit Pluszeichen',
-        en: 'Two chefs and an invite with a plus sign',
-    }[locale];
+    const illustrationAlt = t(locale, 'profileCook', 'invite.illustrationAlt');
 
     return (
         <main id="main-content" className="mx-auto grid w-full max-w-3xl content-start gap-8">
             <div className="grid gap-6 sm:grid-cols-[minmax(0,1fr)_minmax(10rem,14rem)] sm:items-center sm:gap-8">
                 <div className="grid gap-2">
-                    <h1 className="font-serif text-2xl/tight text-foreground">{profileCookInvitePageTitle[locale]}</h1>
-                    <p className="text-muted-foreground">{profileCookInvitePageDescription[locale]}</p>
+                    <h1 className="font-serif text-2xl/tight text-foreground">{profileCookInvitePageTitle(locale)}</h1>
+                    <p className="text-muted-foreground">{profileCookInvitePageDescription(locale)}</p>
                 </div>
                 <div className="justify-self-center overflow-hidden rounded-2xl bg-black sm:justify-self-end">
                     <AppImage
@@ -179,48 +167,38 @@ export function ProfileCookInvitePage({ data }: { data: GqlCProfileCookInvitePag
             </div>
 
             {!cook.isApprovedByAdmin ? (
-                <StatusAlert tone="warning" title={{ de: 'Freigabe ausstehend', en: 'Approval pending' }[locale]}>
-                    {
-                        {
-                            de: 'Du kannst den Link schon vorbereiten. Einladungen zählen, sobald dein Profil freigegeben ist.',
-                            en: 'You can prepare the link now. Invites count once your profile is approved.',
-                        }[locale]
-                    }
+                <StatusAlert tone="warning" title={t(locale, 'profileCook', 'invite.approvalPending')}>
+                    {t(locale, 'profileCook', 'invite.approvalPendingBody')}
                 </StatusAlert>
             ) : null}
 
             <Card className="gap-0 py-0">
                 <CardContent className="grid gap-4 p-4 sm:p-6">
                     <div className="grid gap-1">
-                        <p className="font-medium text-foreground">{{ de: 'Dein Einladungslink', en: 'Your invite link' }[locale]}</p>
+                        <p className="font-medium text-foreground">{t(locale, 'profileCook', 'invite.yourLink')}</p>
                         <p className="text-sm text-muted-foreground">
-                            {
-                                {
-                                    de: `Wenn die eingeladene Person freigegeben wird und ihr erstes Event abschließt, erhältst du ${COOK_INVITE_LIVE_PLATFORM_FEE_PERCENT_COOK}% Plattformgebühr auf deine nächsten ${COOK_INVITE_LIVE_BOOKING_COUNT} Buchungen.`,
-                                    en: `When your invitee is approved and completes their first event, you get a ${COOK_INVITE_LIVE_PLATFORM_FEE_PERCENT_COOK}% platform fee on your next ${COOK_INVITE_LIVE_BOOKING_COUNT} bookings.`,
-                                }[locale]
-                            }
+                            {t(locale, 'profileCook', 'invite.rewardHint', {
+                                percent: COOK_INVITE_LIVE_PLATFORM_FEE_PERCENT_COOK,
+                                count: COOK_INVITE_LIVE_BOOKING_COUNT,
+                            })}
                         </p>
                     </div>
                     <p className="break-all rounded-lg bg-muted px-3 py-2 font-mono text-sm text-foreground">{inviteUrl}</p>
                     <div className="flex flex-wrap gap-2">
                         <Button type="button" variant="outline" size="sm" onClick={() => void onCopy()}>
                             <CopyIcon aria-hidden />
-                            {copyDone ? { de: 'Kopiert', en: 'Copied' }[locale] : { de: 'Link kopieren', en: 'Copy link' }[locale]}
+                            {copyDone ? t(locale, 'profileCook', 'invite.copied') : t(locale, 'profileCook', 'invite.copyLink')}
                         </Button>
                         <Button type="button" size="sm" onClick={() => void onShare()}>
                             <ShareIcon aria-hidden />
-                            {{ de: 'Teilen', en: 'Share' }[locale]}
+                            {t(locale, 'profileCook', 'invite.share')}
                         </Button>
                     </div>
                     {cook.inviteOpenFeeCreditRemainingBookings > 0 ? (
                         <p className="text-sm text-muted-foreground">
-                            {
-                                {
-                                    de: `${cook.inviteOpenFeeCreditRemainingBookings} vergünstigte Buchungen offen.`,
-                                    en: `${cook.inviteOpenFeeCreditRemainingBookings} discounted bookings remaining.`,
-                                }[locale]
-                            }
+                            {t(locale, 'profileCook', 'invite.remainingBookings', {
+                                count: cook.inviteOpenFeeCreditRemainingBookings,
+                            })}
                         </p>
                     ) : null}
                 </CardContent>
@@ -228,16 +206,11 @@ export function ProfileCookInvitePage({ data }: { data: GqlCProfileCookInvitePag
 
             <section className="grid gap-3" aria-labelledby="cook-invite-progress">
                 <h2 id="cook-invite-progress" className="text-sm font-medium text-foreground">
-                    {{ de: 'Eingeladene Köche', en: 'Invited chefs' }[locale]}
+                    {t(locale, 'profileCook', 'invite.invitedChefs')}
                 </h2>
                 {cook.invitees.length === 0 ? (
-                    <StatusAlert tone="info" title={{ de: 'Noch niemand eingeladen', en: 'No invites yet' }[locale]}>
-                        {
-                            {
-                                de: 'Teile deinen Link mit Köchen, die du kennst. Hier siehst du danach ihren Fortschritt.',
-                                en: 'Share your link with chefs you know. Their progress will show up here.',
-                            }[locale]
-                        }
+                    <StatusAlert tone="info" title={t(locale, 'profileCook', 'invite.noInvites')}>
+                        {t(locale, 'profileCook', 'invite.noInvitesBody')}
                     </StatusAlert>
                 ) : (
                     <ul className="grid gap-3">

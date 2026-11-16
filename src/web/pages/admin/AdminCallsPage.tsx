@@ -2,6 +2,8 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import type { SortingState, Updater } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
 
+import { t } from '../../../i18n/t';
+import { inlineCopy } from '../../../shared';
 import { AdminListPaginationBar } from '../../components/AdminListPaginationBar';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
@@ -12,6 +14,7 @@ import { Tabs, TabsList, TabsTrigger } from '../../components/base/tabs';
 import type { GqlCAdminCallListItemKind, GqlCAdminCallsPageQuery, GqlCCookCallSlotBookingActor } from '../../graphql/generated';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useLocale } from '../../hooks/useLocale';
+import type { Locale } from '../../utils/locale';
 import { adminCallKindLabel } from './AdminCallsAttentionBoard';
 import type { AdminCallsSortField, AdminCallsTableRow } from './adminCallsColumns';
 import { ADMIN_CALLS_SORT_FIELDS, adminCallInitiatorLabel } from './adminCallsColumns';
@@ -33,11 +36,12 @@ import {
     parseAdminListSortSearch,
 } from './adminListSortSearch';
 
-export const adminCallsPageTitle = { de: 'Anruf-Liste', en: 'Call list' } as const;
-export const adminCallsPageDescription = {
-    de: 'Gesamter Anruf-Verkehr inkl. Ablehnungen und Stornierungen.',
-    en: 'Full call traffic including declines and cancellations.',
-} as const;
+export function adminCallsPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.calls.title');
+}
+export function adminCallsPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.calls.description');
+}
 
 const ADMIN_CALLS_KIND_TABS: Array<GqlCAdminCallListItemKind | undefined> = [
     undefined,
@@ -185,7 +189,7 @@ export function AdminCallsPage({ data, search }: { data: GqlCAdminCallsPageQuery
 
     const kindTabs = ADMIN_CALLS_KIND_TABS.map((kind) => ({
         value: kind,
-        label: kind ? adminCallKindLabel(kind, locale) : { de: 'Alle', en: 'All' }[locale],
+        label: kind ? adminCallKindLabel(kind, locale) : t(locale, 'admin', 'copy.all'),
     }));
 
     return (
@@ -210,7 +214,7 @@ export function AdminCallsPage({ data, search }: { data: GqlCAdminCallsPageQuery
                 }
             >
                 <Tabs value={search.kind ?? 'all'}>
-                    <TabsList variant="line" aria-label={{ de: 'Anruf-Status', en: 'Call status' }[locale]}>
+                    <TabsList variant="line" aria-label={t(locale, 'admin', 'copy.callStatus')}>
                         {kindTabs.map((tab) => (
                             <TabsTrigger key={tab.value ?? 'all'} value={tab.value ?? 'all'} asChild>
                                 <Link
@@ -234,13 +238,13 @@ export function AdminCallsPage({ data, search }: { data: GqlCAdminCallsPageQuery
                         type="search"
                         value={draftQ}
                         onChange={(event) => setDraftQ(event.target.value)}
-                        placeholder={{ de: 'Anlass, Koch oder Kunde suchen…', en: 'Search occasion, cook, or customer…' }[locale]}
-                        aria-label={{ de: 'Anruf-Verkehr suchen', en: 'Search call traffic' }[locale]}
+                        placeholder={t(locale, 'admin', 'copy.searchOccasionCookOrCustomer')}
+                        aria-label={t(locale, 'admin', 'copy.searchCallTraffic')}
                         className="w-full min-w-0 basis-full @5xl:max-w-sm @5xl:flex-1 @5xl:basis-56"
                     />
                     <div className="flex w-full min-w-0 flex-wrap items-center gap-3 @5xl:w-auto @5xl:flex-1">
                         <label className="flex shrink-0 items-center gap-2 text-sm">
-                            <span className="text-muted-foreground">{{ de: 'Initiator', en: 'Initiator' }[locale]}</span>
+                            <span className="text-muted-foreground">{t(locale, 'admin', 'copy.initiator')}</span>
                             <Select
                                 value={search.initiator ?? '__all__'}
                                 onValueChange={(value) => {
@@ -254,12 +258,12 @@ export function AdminCallsPage({ data, search }: { data: GqlCAdminCallsPageQuery
                                 <SelectTrigger
                                     size="sm"
                                     className="w-auto shrink-0"
-                                    aria-label={{ de: 'Initiator filtern', en: 'Filter initiator' }[locale]}
+                                    aria-label={t(locale, 'admin', 'copy.filterInitiator')}
                                 >
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="__all__">{{ de: 'Alle', en: 'All' }[locale]}</SelectItem>
+                                    <SelectItem value="__all__">{t(locale, 'admin', 'copy.all')}</SelectItem>
                                     <SelectItem value="CUSTOMER">{adminCallInitiatorLabel('CUSTOMER', locale)}</SelectItem>
                                     <SelectItem value="COOK">{adminCallInitiatorLabel('COOK', locale)}</SelectItem>
                                 </SelectContent>
@@ -272,16 +276,17 @@ export function AdminCallsPage({ data, search }: { data: GqlCAdminCallsPageQuery
                                 className="h-auto shrink-0 p-0 text-sm text-muted-foreground"
                                 onClick={() => updateSearch({ ...search, cookId: undefined, page: undefined })}
                             >
-                                {{ de: 'Koch-Filter entfernen', en: 'Clear cook filter' }[locale]}
+                                {t(locale, 'admin', 'copy.clearCookFilter')}
                             </Button>
                         ) : null}
                         <p className="text-sm text-muted-foreground tabular-nums xl:ml-auto">
-                            {
+                            {inlineCopy(
                                 {
                                     de: `${total} ${total === 1 ? 'Eintrag' : 'Einträge'}`,
                                     en: `${total} ${total === 1 ? 'entry' : 'entries'}`,
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                         </p>
                     </div>
                 </div>

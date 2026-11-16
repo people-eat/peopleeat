@@ -19,8 +19,8 @@ export const Route = createFileRoute('/{-$locale}/admin/offer-chat-reviews_/$boo
     head: ({ params }) => {
         const locale = localeFromParam(params);
         return seoMeta({
-            title: adminOfferChatReviewPageTitle[locale],
-            description: adminOfferChatReviewPageDescription[locale],
+            title: adminOfferChatReviewPageTitle(locale),
+            description: adminOfferChatReviewPageDescription(locale),
             path: `/admin/offer-chat-reviews/${params.bookingRequestOfferId}`,
             locale,
             webPageUrl: webPageUrlGet(),

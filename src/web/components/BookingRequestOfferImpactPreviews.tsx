@@ -1,4 +1,4 @@
-import { formatCurrency } from '../../shared';
+import { formatCurrency, inlineCopy } from '../../shared';
 import type { GqlCUserBookingRequestOfferPriceImpact, GqlCUserBookingRequestOfferTravelImpact } from '../graphql/generated';
 import type { Locale } from '../utils/locale';
 import { StatusAlert } from './base/status-alert';
@@ -8,14 +8,14 @@ function signedKmLabel(deltaKm: number, locale: Locale): string {
     const abs = Math.abs(rounded).toFixed(1);
     if (rounded > 0) return `+${abs} km`;
     if (rounded < 0) return `-${abs} km`;
-    return { de: '±0 km', en: '±0 km' }[locale];
+    return inlineCopy({ de: '±0 km', en: '±0 km' }, locale);
 }
 
 function signedTravelExpenseLabel(deltaCents: number, locale: Locale): string {
     const abs = formatCurrency(Math.abs(deltaCents), { locale });
     if (deltaCents > 0) return `+${abs}`;
     if (deltaCents < 0) return `-${abs}`;
-    return { de: '±0 €', en: '±€0' }[locale];
+    return inlineCopy({ de: '±0 €', en: '±€0' }, locale);
 }
 
 function travelImpactMeaningful(impact: GqlCUserBookingRequestOfferTravelImpact): boolean {
@@ -41,14 +41,16 @@ export function BookingRequestOfferTravelImpactPreview({
     emphasizeOnSave?: boolean;
 }) {
     if (fetching) {
-        return <StatusAlert tone="info" title={{ de: 'Fahrtkosten werden berechnet…', en: 'Calculating travel costs…' }[locale]} />;
+        return (
+            <StatusAlert tone="info" title={inlineCopy({ de: 'Fahrtkosten werden berechnet…', en: 'Calculating travel costs…' }, locale)} />
+        );
     }
 
     const changed = impacts.filter(travelImpactMeaningful);
     if (changed.length === 0) {
         return (
-            <StatusAlert tone="info" title={{ de: 'Keine Änderung der Fahrtkosten', en: 'No change to travel costs' }[locale]}>
-                {
+            <StatusAlert tone="info" title={inlineCopy({ de: 'Keine Änderung der Fahrtkosten', en: 'No change to travel costs' }, locale)}>
+                {inlineCopy(
                     {
                         de:
                             impacts.length === 1
@@ -58,8 +60,9 @@ export function BookingRequestOfferTravelImpactPreview({
                             impacts.length === 1
                                 ? 'Travel distance stays the same for the existing offer.'
                                 : 'Travel distance stays the same for existing offers.',
-                    }[locale]
-                }
+                    },
+                    locale,
+                )}
             </StatusAlert>
         );
     }
@@ -67,7 +70,7 @@ export function BookingRequestOfferTravelImpactPreview({
     return (
         <StatusAlert
             tone="warning"
-            title={
+            title={inlineCopy(
                 {
                     de: emphasizeOnSave
                         ? 'Fahrtkosten-Wirkung beim Speichern'
@@ -75,8 +78,9 @@ export function BookingRequestOfferTravelImpactPreview({
                           ? 'Auswirkung auf Angebot'
                           : 'Auswirkung auf Angebote',
                     en: emphasizeOnSave ? 'Travel impact on save' : changed.length === 1 ? 'Impact on offer' : 'Impact on offers',
-                }[locale]
-            }
+                },
+                locale,
+            )}
         >
             <ul className="mt-2 grid gap-1.5 text-sm">
                 {changed.map((impact) => {
@@ -91,11 +95,12 @@ export function BookingRequestOfferTravelImpactPreview({
                             {': '}
                             {signedKmLabel(distanceDelta, locale)}
                             {' · '}
-                            {signedTravelExpenseLabel(expenseDelta, locale)} {{ de: 'Fahrtkosten', en: 'travel' }[locale]}
+                            {signedTravelExpenseLabel(expenseDelta, locale)} {inlineCopy({ de: 'Fahrtkosten', en: 'travel' }, locale)}
                             {hostDelta != null ? (
                                 <>
                                     {' · '}
-                                    {signedTravelExpenseLabel(hostDelta, locale)} {{ de: 'Gastgeberpreis', en: 'host price' }[locale]}
+                                    {signedTravelExpenseLabel(hostDelta, locale)}{' '}
+                                    {inlineCopy({ de: 'Gastgeberpreis', en: 'host price' }, locale)}
                                 </>
                             ) : null}
                         </li>
@@ -119,7 +124,7 @@ function signedTotalLabel(deltaCents: number, locale: Locale): string {
     const abs = formatCurrency(Math.abs(deltaCents), { locale });
     if (deltaCents > 0) return `+${abs}`;
     if (deltaCents < 0) return `-${abs}`;
-    return { de: '±0 €', en: '±€0' }[locale];
+    return inlineCopy({ de: '±0 €', en: '±€0' }, locale);
 }
 
 export function BookingRequestOfferPriceImpactPreview({
@@ -135,14 +140,16 @@ export function BookingRequestOfferPriceImpactPreview({
     showCookPayout?: boolean;
 }) {
     if (fetching) {
-        return <StatusAlert tone="info" title={{ de: 'Preiswirkung wird berechnet…', en: 'Calculating price impact…' }[locale]} />;
+        return (
+            <StatusAlert tone="info" title={inlineCopy({ de: 'Preiswirkung wird berechnet…', en: 'Calculating price impact…' }, locale)} />
+        );
     }
 
     const changed = impacts.filter(priceImpactMeaningful);
     if (changed.length === 0) {
         return (
-            <StatusAlert tone="info" title={{ de: 'Keine Preisänderung', en: 'No price change' }[locale]}>
-                {
+            <StatusAlert tone="info" title={inlineCopy({ de: 'Keine Preisänderung', en: 'No price change' }, locale)}>
+                {inlineCopy(
                     {
                         de:
                             impacts.length === 1
@@ -152,8 +159,9 @@ export function BookingRequestOfferPriceImpactPreview({
                             impacts.length === 1
                                 ? 'Menu price stays the same for the existing offer.'
                                 : 'Menu price stays the same for existing offers.',
-                    }[locale]
-                }
+                    },
+                    locale,
+                )}
             </StatusAlert>
         );
     }
@@ -161,7 +169,7 @@ export function BookingRequestOfferPriceImpactPreview({
     return (
         <StatusAlert
             tone="warning"
-            title={
+            title={inlineCopy(
                 {
                     de: showCookPayout
                         ? 'Preiswirkung beim Speichern'
@@ -169,8 +177,9 @@ export function BookingRequestOfferPriceImpactPreview({
                           ? 'Auswirkung auf Angebot'
                           : 'Auswirkung auf Angebote',
                     en: showCookPayout ? 'Price impact on save' : changed.length === 1 ? 'Impact on offer' : 'Impact on offers',
-                }[locale]
-            }
+                },
+                locale,
+            )}
         >
             <ul className="mt-2 grid gap-1.5 text-sm">
                 {changed.map((impact) => {
@@ -181,16 +190,17 @@ export function BookingRequestOfferPriceImpactPreview({
                             <span className="font-medium">{impact.cookDisplay}</span>
                             {': '}
                             {signedTotalLabel(customerDelta, locale)}{' '}
-                            {
+                            {inlineCopy(
                                 {
                                     de: showCookPayout ? 'Kunde' : 'Gesamtpreis',
                                     en: showCookPayout ? 'customer' : 'total',
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                             {showCookPayout ? (
                                 <>
                                     {' · '}
-                                    {signedTotalLabel(cookDelta, locale)} {{ de: 'Koch-Auszahlung', en: 'cook payout' }[locale]}
+                                    {signedTotalLabel(cookDelta, locale)} {inlineCopy({ de: 'Koch-Auszahlung', en: 'cook payout' }, locale)}
                                 </>
                             ) : null}
                         </li>

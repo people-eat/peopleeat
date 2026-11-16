@@ -5,6 +5,7 @@ import { cityCountryCitiesHeading, cityCountryCodeLabel, cityCountryHubPath } fr
 import { contentLocaleText } from '../../shared/contentSection';
 import { Button } from '../components/base/button';
 import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 
 export type SectionCitiesCity = {
@@ -52,12 +53,12 @@ export function SectionCities({
     className?: string;
 }) {
     const locale = useLocale();
+    const { t } = useT('public');
     const listed = countryCode
         ? cities.filter((city) => city.countryCode === countryCode)
         : cities.filter((city) => city.countryCode === 'DE');
     const seeAllCountry = countryCode ?? 'DE';
-    const seeAllLabel =
-        seeAllCountry === 'DE' ? { de: 'Alle ansehen', en: 'See all' }[locale] : cityCountryCodeLabel(seeAllCountry, locale);
+    const seeAllLabel = seeAllCountry === 'DE' ? t('cities.seeAll') : cityCountryCodeLabel(seeAllCountry, locale);
     const title = cityCountryCitiesHeading(seeAllCountry, locale);
 
     if (listed.length === 0 && !showExpansionHubs) {
@@ -91,7 +92,7 @@ export function SectionCities({
             ) : null}
             {showExpansionHubs ? (
                 <div className={cn('flex flex-col gap-4', listed.length > 0 && 'border-t border-border pt-8')}>
-                    <h3 className="font-serif text-xl font-light @md:text-2xl">{{ de: 'Weitere Länder', en: 'More countries' }[locale]}</h3>
+                    <h3 className="font-serif text-xl font-light @md:text-2xl">{t('cities.moreCountries')}</h3>
                     <ul className="flex flex-wrap gap-x-6 gap-y-3">
                         {EXPANSION_HUBS.map((hub) => (
                             <li key={hub.countryCode}>

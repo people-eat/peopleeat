@@ -1,3 +1,4 @@
+import { t } from '../i18n/t';
 import type { Locale } from './locale';
 import { textNormalizeTitled } from './textNormalize';
 
@@ -24,7 +25,7 @@ export function bookingRequestParticipantsFromCounts(input: {
         const previous = previousAdults[index];
         return {
             type: 'ADULT' as const,
-            name: previous?.name ?? { de: `Erwachsener ${index + 1}`, en: `Adult ${index + 1}` }[input.locale],
+            name: previous?.name ?? t(input.locale, 'common', 'bookingRequestParticipant.adultName', { index: index + 1 }),
             restrictions: previous?.restrictions ?? [],
         };
     });
@@ -33,7 +34,7 @@ export function bookingRequestParticipantsFromCounts(input: {
         const previous = previousDiscounted[index];
         return {
             type: 'DISCOUNTED' as const,
-            name: previous?.name ?? { de: `Kind ${index + 1}`, en: `Child ${index + 1}` }[input.locale],
+            name: previous?.name ?? t(input.locale, 'common', 'bookingRequestParticipant.childName', { index: index + 1 }),
             restrictions: previous?.restrictions ?? [],
         };
     });

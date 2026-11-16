@@ -21,8 +21,8 @@ export const Route = createFileRoute('/{-$locale}/admin/whats-app-chats')({
     head: ({ params }) => {
         const locale = localeFromParam(params);
         return seoMeta({
-            title: adminWhatsAppChatsPageTitle[locale],
-            description: adminWhatsAppChatsPageDescription[locale],
+            title: adminWhatsAppChatsPageTitle(locale),
+            description: adminWhatsAppChatsPageDescription(locale),
             path: '/admin/whats-app-chats',
             locale,
             webPageUrl: webPageUrlGet(),

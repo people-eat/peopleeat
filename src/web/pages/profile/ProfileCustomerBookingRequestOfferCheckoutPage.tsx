@@ -4,6 +4,7 @@ import { lazy, Suspense, useEffect, useEffectEvent, useRef, useState } from 'rea
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
+import { t } from '../../../i18n/t';
 import { toStripeCountryCode, userDisplayName } from '../../../shared';
 import { bookingRequestCheckoutFunnelArea } from '../../../shared/bookingRequestCheckoutFunnel';
 import { Avatar, AvatarFallback, AvatarImage } from '../../components/base/avatar';
@@ -90,12 +91,7 @@ function CheckoutCookSummary({ cook, locale }: { cook: CheckoutOffer['cook']; lo
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-flex text-muted-foreground hover:text-foreground"
-                                aria-label={
-                                    {
-                                        de: 'Öffentliche Kochseite öffnen',
-                                        en: 'Open public cook page',
-                                    }[locale]
-                                }
+                                aria-label={t(locale, 'profileCustomer', 'checkout.openCookPage')}
                             >
                                 <SquareArrowOutUpRightIcon aria-hidden className="size-4" />
                             </Link>
@@ -116,10 +112,7 @@ function CheckoutCookSummary({ cook, locale }: { cook: CheckoutOffer['cook']; lo
 
 function CheckoutMenuSummary({ menu, locale }: { menu: NonNullable<CheckoutOffer['configuredMenu']>; locale: Locale }) {
     const courseCount = menu.courses.length;
-    const courseLabel = {
-        de: courseCount === 1 ? '1 Gang' : `${courseCount} Gänge`,
-        en: courseCount === 1 ? '1 course' : `${courseCount} courses`,
-    }[locale];
+    const courseLabel = t(locale, 'profileCustomer', 'checkout.coursesCount', { count: courseCount });
     const images = menu.courses
         .flatMap((course) => course.meals.map((meal) => meal.mealImageUrl))
         .filter((url): url is string => url != null && url.length > 0);
@@ -248,12 +241,7 @@ export function ProfileCustomerBookingRequestOfferCheckoutPage({
         const eventAddress = liveRequest.exactEventAddress;
         const country = toStripeCountryCode(eventAddress.country);
         if (!country) {
-            toast.error(
-                {
-                    de: 'Veranstaltungsadresse hat kein gültiges Land für die Rechnung.',
-                    en: 'Event address has no valid country for billing.',
-                }[locale],
-            );
+            toast.error(t(locale, 'profileCustomer', 'checkout.invalidCountry'));
             return;
         }
         setInvoiceAddress((previous) => ({
@@ -293,24 +281,15 @@ export function ProfileCustomerBookingRequestOfferCheckoutPage({
                 },
             });
             toast.success(
-                {
-                    de:
-                        liveOffer.payment?.type === 'SETUP_INTENT'
-                            ? pullIsPast
-                                ? 'Zahlungsdaten gespeichert. Die Abbuchung folgt in Kürze.'
-                                : 'Zahlungsdaten gespeichert.'
-                            : 'Zahlung erfolgreich.',
-                    en:
-                        liveOffer.payment?.type === 'SETUP_INTENT'
-                            ? pullIsPast
-                                ? 'Payment details saved. The charge follows shortly.'
-                                : 'Payment details saved.'
-                            : 'Payment successful.',
-                }[locale],
+                liveOffer.payment?.type === 'SETUP_INTENT'
+                    ? pullIsPast
+                        ? t(locale, 'profileCustomer', 'checkout.toastSetupSavedChargeSoon')
+                        : t(locale, 'profileCustomer', 'checkout.toastSetupSaved')
+                    : t(locale, 'profileCustomer', 'checkout.toastChargeSuccess'),
             );
             void navigate({ ...offerHref, search: { tab: 'offer' } });
         } catch {
-            toast.error({ de: 'Zahlung konnte nicht abgeschlossen werden.', en: 'Could not complete payment.' }[locale]);
+            toast.error(t(locale, 'profileCustomer', 'checkout.completeFailed'));
         } finally {
             setPaymentBusy(false);
             setConfirmPayment(false);
@@ -320,31 +299,23 @@ export function ProfileCustomerBookingRequestOfferCheckoutPage({
     function onPaymentFailure(message?: string) {
         setPaymentBusy(false);
         setConfirmPayment(false);
-        toast.error(message ?? { de: 'Zahlung fehlgeschlagen.', en: 'Payment failed.' }[locale]);
+        toast.error(message ?? t(locale, 'profileCustomer', 'checkout.paymentFailed'));
     }
 
+    const paymentBusyState = paymentBusy || confirmPayment;
     const paymentConfirmLabel = isSetupIntent
-        ? {
-              de: paymentBusy || confirmPayment ? 'Wird gespeichert…' : 'Zahlungsdaten vormerken',
-              en: paymentBusy || confirmPayment ? 'Saving…' : 'Store payment details',
-          }[locale]
-        : {
-              de: paymentBusy || confirmPayment ? 'Wird bestätigt…' : 'Jetzt bezahlen',
-              en: paymentBusy || confirmPayment ? 'Confirming…' : 'Pay now',
-          }[locale];
+        ? paymentBusyState
+            ? t(locale, 'profileCustomer', 'checkout.saving')
+            : t(locale, 'profileCustomer', 'checkout.savePayment')
+        : paymentBusyState
+          ? t(locale, 'profileCustomer', 'checkout.confirming')
+          : t(locale, 'profileCustomer', 'checkout.payNow');
 
-    const description = {
-        de: isSetupIntent
-            ? pullIsPast
-                ? 'Hinterlege deine Kartendaten. Wir belasten die Karte direkt danach.'
-                : 'Hinterlege deine Kartendaten. Wir belasten dich erst kurz vor dem Event.'
-            : 'Schließe die Zahlung ab, um die Buchung zu bestätigen.',
-        en: isSetupIntent
-            ? pullIsPast
-                ? 'Save your card details. We charge the card right after that.'
-                : 'Save your card details. We charge you shortly before the event.'
-            : 'Complete payment to confirm the booking.',
-    }[locale];
+    const description = isSetupIntent
+        ? pullIsPast
+            ? t(locale, 'profileCustomer', 'checkout.setupChargeSoon')
+            : t(locale, 'profileCustomer', 'checkout.setupBeforeEvent')
+        : t(locale, 'profileCustomer', 'checkout.completeToConfirm');
 
     return (
         <main
@@ -356,30 +327,20 @@ export function ProfileCustomerBookingRequestOfferCheckoutPage({
                 <div className="grid w-full max-w-6xl content-start gap-8">
                     <div className="grid gap-1">
                         <h1 className="font-serif text-3xl/tight text-foreground">
-                            {profileCustomerBookingRequestOfferCheckoutPageTitle[locale]}
+                            {profileCustomerBookingRequestOfferCheckoutPageTitle(locale)}
                         </h1>
                         {canPay ? <p className="text-muted-foreground">{description}</p> : null}
                     </div>
 
                     {!needsDepositPayment ? (
-                        <StatusAlert tone="info" title={{ de: 'Keine Zahlung nötig', en: 'No payment needed' }[locale]}>
-                            {
-                                {
-                                    de: 'Für dieses Angebot ist gerade kein Checkout erforderlich.',
-                                    en: 'Checkout is not required for this offer right now.',
-                                }[locale]
-                            }
+                        <StatusAlert tone="info" title={t(locale, 'profileCustomer', 'checkout.noPaymentNeeded')}>
+                            {t(locale, 'profileCustomer', 'checkout.noPaymentNeededBody')}
                         </StatusAlert>
                     ) : null}
 
                     {paymentUnavailable ? (
-                        <StatusAlert tone="error" title={{ de: 'Checkout nicht verfügbar', en: 'Checkout unavailable' }[locale]}>
-                            {
-                                {
-                                    de: 'Die Zahlung wurde vorbereitet, aber der Stripe Publishable Key fehlt in der Server-Konfiguration.',
-                                    en: 'Payment was prepared, but the Stripe publishable key is missing from the server configuration.',
-                                }[locale]
-                            }
+                        <StatusAlert tone="error" title={t(locale, 'profileCustomer', 'checkout.unavailable')}>
+                            {t(locale, 'profileCustomer', 'checkout.unavailableBody')}
                         </StatusAlert>
                     ) : null}
 
@@ -395,13 +356,8 @@ export function ProfileCustomerBookingRequestOfferCheckoutPage({
                                         bookingRequestOfferId={bookingRequestOfferId}
                                         addons={liveOffer.addons}
                                         compact
-                                        heading={{ de: 'Zusatzleistungen', en: 'Extras' }[locale]}
-                                        description={
-                                            {
-                                                de: 'Wähle aus, was dazukommen soll. Der Preis aktualisiert sich danach.',
-                                                en: 'Choose what to add. The price updates afterwards.',
-                                            }[locale]
-                                        }
+                                        heading={t(locale, 'common', 'costBreakdown.extras')}
+                                        description={t(locale, 'profileCustomer', 'checkout.extrasHint')}
                                     />
                                 ) : null}
                                 <OfferCostSummary offer={liveOffer} locale={locale} />
@@ -429,15 +385,10 @@ export function ProfileCustomerBookingRequestOfferCheckoutPage({
                                             <div className="flex items-center justify-between gap-3">
                                                 <div className="min-w-0">
                                                     <p className="text-sm font-medium text-foreground">
-                                                        {{ de: 'Veranstaltungsadresse', en: 'Event address' }[locale]}
+                                                        {t(locale, 'profileCustomer', 'checkout.eventAddress')}
                                                     </p>
                                                     <p className="text-xs text-muted-foreground">
-                                                        {
-                                                            {
-                                                                de: 'In die Rechnungsadresse übernehmen',
-                                                                en: 'Copy into the billing address',
-                                                            }[locale]
-                                                        }
+                                                        {t(locale, 'profileCustomer', 'checkout.copyIntoBilling')}
                                                     </p>
                                                 </div>
                                                 <Button
@@ -447,15 +398,10 @@ export function ProfileCustomerBookingRequestOfferCheckoutPage({
                                                     className="shrink-0"
                                                     onClick={applyEventAddressAsInvoice}
                                                     disabled={paymentBusy}
-                                                    aria-label={
-                                                        {
-                                                            de: 'Veranstaltungsadresse als Rechnungsadresse übernehmen',
-                                                            en: 'Apply event address as billing address',
-                                                        }[locale]
-                                                    }
+                                                    aria-label={t(locale, 'profileCustomer', 'checkout.applyEventAsBilling')}
                                                 >
                                                     <ListRestartIcon aria-hidden />
-                                                    {{ de: 'Übernehmen', en: 'Apply' }[locale]}
+                                                    {t(locale, 'profileCustomer', 'checkout.apply')}
                                                 </Button>
                                             </div>
                                         }

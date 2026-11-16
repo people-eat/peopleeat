@@ -1,3 +1,4 @@
+import { tEmail } from '../../../i18n/tEmail';
 import type { Locale } from '../../../shared/locale';
 import {
     BookingRequestOfferChatMessageNotifyBody,
@@ -44,8 +45,5 @@ export function BookingRequestOfferChatMessageNotifyForCookEmail({
 }
 
 export function bookingRequestOfferChatMessageNotifyForCookEmailSubject(locale: Locale): string {
-    return {
-        de: 'Zu einem deiner Angebote gibt es eine neue Nachricht.',
-        en: 'There is a new message on one of your offers.',
-    }[locale];
+    return tEmail(locale, 'chat.notify.subject');
 }

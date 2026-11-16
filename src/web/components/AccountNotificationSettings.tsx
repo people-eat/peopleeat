@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { inlineCopy } from '../../shared';
+import type { Locale } from '../../shared';
 
 import type { GqlCUserNotificationSettings, GqlCUserNotificationSettingsInput } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
@@ -100,28 +102,23 @@ const cookRows: NotificationRow[] = [
     },
 ];
 
-function notificationCopy(
-    row: NotificationRow,
-    voice: AccountNotificationVoice,
-    part: 'title' | 'description',
-    locale: 'de' | 'en',
-): string {
+function notificationCopy(row: NotificationRow, voice: AccountNotificationVoice, part: 'title' | 'description', locale: Locale): string {
     if (voice === 'operator') {
         const override = part === 'title' ? row.operatorTitle : row.operatorDescription;
-        if (override) return override[locale];
+        if (override) return inlineCopy(override, locale);
     }
-    return row[part][locale];
+    return inlineCopy(row[part], locale);
 }
 
-function channelToast(title: string, channel: NotificationChannel, enabled: boolean, locale: 'de' | 'en'): string {
+function channelToast(title: string, channel: NotificationChannel, enabled: boolean, locale: Locale): string {
     if (channel === 'email') {
         return enabled
-            ? { de: `${title} per E-Mail an.`, en: `${title} by email turned on.` }[locale]
-            : { de: `${title} per E-Mail aus.`, en: `${title} by email turned off.` }[locale];
+            ? inlineCopy({ de: `${title} per E-Mail an.`, en: `${title} by email turned on.` }, locale)
+            : inlineCopy({ de: `${title} per E-Mail aus.`, en: `${title} by email turned off.` }, locale);
     }
     return enabled
-        ? { de: `${title} per WhatsApp an.`, en: `${title} by WhatsApp turned on.` }[locale]
-        : { de: `${title} per WhatsApp aus.`, en: `${title} by WhatsApp turned off.` }[locale];
+        ? inlineCopy({ de: `${title} per WhatsApp an.`, en: `${title} by WhatsApp turned on.` }, locale)
+        : inlineCopy({ de: `${title} per WhatsApp aus.`, en: `${title} by WhatsApp turned off.` }, locale);
 }
 
 export function notificationWhatsAppSwitchChecked(hasPhoneNumber: boolean, storedWhatsApp: boolean): boolean {
@@ -201,7 +198,7 @@ export function AccountNotificationSettings({
             }
         } catch {
             setSettings(previous);
-            toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+            toast.error(inlineCopy({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }, locale));
         }
     }
 
@@ -253,19 +250,20 @@ export function AccountNotificationSettings({
                     className="w-fit text-left text-sm text-foreground underline-offset-4 hover:underline disabled:pointer-events-none disabled:opacity-50"
                     onClick={onAddPhone}
                 >
-                    {
+                    {inlineCopy(
                         {
                             de: 'WhatsApp bleibt aus, solange keine Nummer hinterlegt ist.',
                             en: 'WhatsApp stays off until a number is on file.',
-                        }[locale]
-                    }
+                        },
+                        locale,
+                    )}
                 </button>
             )}
             <NotificationGroup
                 heading={
                     voice === 'operator'
-                        ? { de: 'Gebuchte Abende', en: 'Booked evenings' }[locale]
-                        : { de: 'Für deine Abende', en: 'Evenings you book' }[locale]
+                        ? inlineCopy({ de: 'Gebuchte Abende', en: 'Booked evenings' }, locale)
+                        : inlineCopy({ de: 'Für deine Abende', en: 'Evenings you book' }, locale)
                 }
                 rows={customerRows}
                 voice={voice}
@@ -278,8 +276,8 @@ export function AccountNotificationSettings({
                 <NotificationGroup
                     heading={
                         voice === 'operator'
-                            ? { de: 'Als Koch', en: 'As a cook' }[locale]
-                            : { de: 'Wenn du kochst', en: 'When you cook' }[locale]
+                            ? inlineCopy({ de: 'Als Koch', en: 'As a cook' }, locale)
+                            : inlineCopy({ de: 'Wenn du kochst', en: 'When you cook' }, locale)
                     }
                     rows={cookRows}
                     voice={voice}
@@ -298,27 +296,34 @@ export function AccountNotificationSettings({
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>
-                            {
+                            {inlineCopy(
                                 {
                                     de: 'Keine E-Mail und kein WhatsApp mehr?',
                                     en: 'No email or WhatsApp?',
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                         </AlertDialogTitle>
                         <AlertDialogDescription>
                             {voice === 'operator'
-                                ? {
-                                      de: 'Diese Person bekommt dann keine E-Mail und kein WhatsApp, wenn sich der Abend ändert oder abgesagt wird. In der App bleibt es sichtbar.',
-                                      en: 'This person will not get an email or a WhatsApp if the evening changes or is cancelled. It still shows in the app.',
-                                  }[locale]
-                                : {
-                                      de: 'Du bekommst dann keine E-Mail und kein WhatsApp, wenn sich der Abend ändert oder abgesagt wird. In der App siehst du es weiterhin.',
-                                      en: 'You will not get an email or a WhatsApp if this evening changes or is cancelled. You can still see it in the app.',
-                                  }[locale]}
+                                ? inlineCopy(
+                                      {
+                                          de: 'Diese Person bekommt dann keine E-Mail und kein WhatsApp, wenn sich der Abend ändert oder abgesagt wird. In der App bleibt es sichtbar.',
+                                          en: 'This person will not get an email or a WhatsApp if the evening changes or is cancelled. It still shows in the app.',
+                                      },
+                                      locale,
+                                  )
+                                : inlineCopy(
+                                      {
+                                          de: 'Du bekommst dann keine E-Mail und kein WhatsApp, wenn sich der Abend ändert oder abgesagt wird. In der App siehst du es weiterhin.',
+                                          en: 'You will not get an email or a WhatsApp if this evening changes or is cancelled. You can still see it in the app.',
+                                      },
+                                      locale,
+                                  )}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel disabled={disabled}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogCancel disabled={disabled}>{inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, locale)}</AlertDialogCancel>
                         <AlertDialogAction
                             disabled={disabled}
                             onClick={(event) => {
@@ -326,7 +331,7 @@ export function AccountNotificationSettings({
                                 void confirmPending();
                             }}
                         >
-                            {{ de: 'Ausschalten', en: 'Turn off' }[locale]}
+                            {inlineCopy({ de: 'Ausschalten', en: 'Turn off' }, locale)}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -366,7 +371,7 @@ function NotificationGroup({
                     <div className="flex flex-wrap gap-x-6 gap-y-2">
                         <ChannelSwitch
                             id={`${row.domain}-email`}
-                            label={{ de: 'E-Mail-Adresse', en: 'Email address' }[locale]}
+                            label={inlineCopy({ de: 'E-Mail-Adresse', en: 'Email address' }, locale)}
                             checked={settings[row.domain].email}
                             disabled={disabled}
                             onCheckedChange={(enabled) => onToggle(row, 'email', enabled)}

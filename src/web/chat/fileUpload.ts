@@ -8,6 +8,7 @@
 // through here. We do throw a typed `FileUploadError` on any non-2xx
 // response so callers can map it onto the per-tile error state.
 
+import { t } from '../../i18n/t';
 import type { Locale } from '../utils/locale';
 
 export interface UploadedFile {
@@ -17,51 +18,34 @@ export interface UploadedFile {
     size: number;
 }
 
-// Map English API / fetch error bodies onto bilingual UI copy so tiles and
+const KNOWN_UPLOAD_ERROR_KEYS: Record<string, string> = {
+    'Unauthorized: anonymous session has no user': 'fileUpload.unauthorizedAnonymous',
+    'Could not parse multipart form data': 'fileUpload.multipartParseFailed',
+    'No file in form data': 'fileUpload.noFile',
+    'File type is not allowed': 'fileUpload.typeNotAllowed',
+    'Failed to persist file upload': 'fileUpload.persistFailed',
+};
+
+// Map English API / fetch error bodies onto catalog UI copy so tiles and
 // forms never show raw server English to a DE visitor (or vice versa).
 export function uploadErrorMessage(error: unknown, locale: Locale): string {
     if (!(error instanceof Error)) {
-        return { de: 'Upload fehlgeschlagen', en: 'Upload failed' }[locale];
+        return t(locale, 'common', 'fileUpload.failed');
     }
     // `uploadFile` emits `Upload failed (NNN)` when the server body isn't a
     // structured `{ error }` — localize that technical fallback. Known English
     // API error bodies from `/api/file-uploads` are mapped here too.
     const match = /^Upload failed \((\d+)\)$/.exec(error.message);
     if (match) {
-        return { de: `Upload fehlgeschlagen (${match[1]})`, en: `Upload failed (${match[1]})` }[locale];
+        return t(locale, 'common', 'fileUpload.failedWithStatus', { status: match[1] });
     }
-    const known: Record<string, { de: string; en: string }> = {
-        'Unauthorized: anonymous session has no user': {
-            de: 'Nicht autorisiert: anonyme Sitzung ohne Benutzer',
-            en: 'Unauthorized: anonymous session has no user',
-        },
-        'Could not parse multipart form data': {
-            de: 'Formular-Daten konnten nicht gelesen werden',
-            en: 'Could not parse multipart form data',
-        },
-        'No file in form data': {
-            de: 'Keine Datei in den Formulardaten',
-            en: 'No file in form data',
-        },
-        'File type is not allowed': {
-            de: 'Dieser Dateityp ist nicht erlaubt. Erlaubt sind Bilder, PDF, Text, Word und Audio.',
-            en: 'This file type is not allowed. Images, PDF, text, Word, and audio are allowed.',
-        },
-        'Failed to persist file upload': {
-            de: 'Datei-Upload konnte nicht gespeichert werden',
-            en: 'Failed to persist file upload',
-        },
-    };
-    const mapped = known[error.message];
-    if (mapped) return mapped[locale];
+    const knownKey = KNOWN_UPLOAD_ERROR_KEYS[error.message];
+    if (knownKey) return t(locale, 'common', knownKey);
     const tooLarge = /^File too large: (\d+) bytes exceeds (\d+)-byte limit$/.exec(error.message);
     if (tooLarge) {
-        return {
-            de: `Datei zu groß: ${tooLarge[1]} Bytes überschreiten das Limit von ${tooLarge[2]} Bytes`,
-            en: `File too large: ${tooLarge[1]} bytes exceeds ${tooLarge[2]}-byte limit`,
-        }[locale];
+        return t(locale, 'common', 'fileUpload.tooLarge', { size: tooLarge[1], limit: tooLarge[2] });
     }
-    return { de: 'Upload fehlgeschlagen', en: 'Upload failed' }[locale];
+    return t(locale, 'common', 'fileUpload.failed');
 }
 
 // Internal — callers only see it via the thrown `Error` shape. We could

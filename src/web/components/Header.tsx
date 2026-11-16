@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import type { Locale } from '../../shared/locale';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { SITE_LOGO, SITE_LOGO_DISPLAY, SITE_LOGO_SRC_SET, SITE_NAME } from '../seo/seoConstants';
 import { cn } from '../utils/cn';
 import { AppImage } from './AppImage';
@@ -38,7 +38,6 @@ function headerIsOverMedia(): boolean {
 export function Header({
     user,
     overMedia = false,
-    locale: localeProp,
     bookingRequestCtaUrl,
     bookingRequestFormSearch,
 }: {
@@ -50,8 +49,7 @@ export function Header({
     /** Chef-page exclusive request: pass `cookId` so the form keeps the target. */
     bookingRequestFormSearch?: { cookId?: string };
 }) {
-    const routeLocale = useLocale();
-    const locale = localeProp ?? routeLocale;
+    const { t } = useT('public');
     const showBookingRequestCta = !user?.cook;
     const trimmedBookingRequestCtaUrl = bookingRequestCtaUrl?.trim() || null;
     // Prefer inverted on first paint when the page opens over hero media; scroll
@@ -96,17 +94,17 @@ export function Header({
                     className={cn('h-6 w-auto @6xl:h-7', invertLogo && 'brightness-0 invert')}
                 />
             </Link>
-            <HeaderNav locale={locale} />
+            <HeaderNav />
             <div className="flex shrink-0 items-center gap-2 @6xl:gap-4">
-                <HeaderNavMenu user={user} locale={locale} />
-                <PublicSessionNav user={user} locale={locale} />
+                <HeaderNavMenu user={user} />
+                <PublicSessionNav user={user} />
                 {showBookingRequestCta ? (
                     <HeroButton asChild className="px-4 text-sm @6xl:px-6 @6xl:text-md">
                         {trimmedBookingRequestCtaUrl ? (
-                            <a href={trimmedBookingRequestCtaUrl}>{{ de: 'Anfrage senden', en: 'Send request' }[locale]}</a>
+                            <a href={trimmedBookingRequestCtaUrl}>{t('nav.sendRequest')}</a>
                         ) : (
                             <Link to="/{-$locale}/booking-request/form" search={bookingRequestFormSearch ?? {}}>
-                                {{ de: 'Anfrage senden', en: 'Send request' }[locale]}
+                                {t('nav.sendRequest')}
                             </Link>
                         )}
                     </HeroButton>

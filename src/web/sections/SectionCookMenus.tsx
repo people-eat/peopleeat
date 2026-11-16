@@ -5,7 +5,7 @@ import { bookingRequestCardInteractionClassName } from '../components/bookingReq
 import { CookMenuCardMedia } from '../components/CookMenuCard';
 import { PublicCookMenuDialog } from '../components/PublicCookMenuDialog';
 import type { PublicCookMenuDialogCourse } from '../components/PublicCookMenuDialog';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 
 export type SectionCookMenu = {
@@ -27,7 +27,7 @@ export function SectionCookMenus({
     bookCookId?: string;
     onBookMenuCtaClick?: (menuId: string) => void;
 }) {
-    const locale = useLocale();
+    const { t } = useT('public');
     const [expanded, setExpanded] = useState(false);
     const [openMenuId, setOpenMenuId] = useState<string | null>(null);
     const canExpand = menus.length > COLLAPSED_MENU_COUNT;
@@ -41,7 +41,7 @@ export function SectionCookMenus({
     return (
         <section className="mx-auto w-full max-w-7xl px-4 @lg:px-6">
             <div className="flex items-baseline justify-between gap-4">
-                <h2 className="font-serif text-3xl font-light @3xl:text-4xl">{{ de: 'Menüs', en: 'Menus' }[locale]}</h2>
+                <h2 className="font-serif text-3xl font-light @3xl:text-4xl">{t('chef.menus')}</h2>
                 {canExpand ? (
                     <Button
                         type="button"
@@ -50,12 +50,7 @@ export function SectionCookMenus({
                         aria-expanded={expanded}
                         onClick={() => setExpanded((current) => !current)}
                     >
-                        {
-                            {
-                                de: expanded ? 'Weniger anzeigen' : 'Mehr anzeigen',
-                                en: expanded ? 'Show less' : 'Show more',
-                            }[locale]
-                        }
+                        {expanded ? t('chef.showLess') : t('chef.showMore')}
                     </Button>
                 ) : null}
             </div>
@@ -78,11 +73,7 @@ export function SectionCookMenus({
                                 {menu.description.trim().length > 0 ? (
                                     <p className="text-sm text-muted-foreground line-clamp-2">{menu.description}</p>
                                 ) : null}
-                                <p className="text-xs text-muted-foreground">
-                                    {menu.courses.length === 1
-                                        ? { de: '1 Gang', en: '1 course' }[locale]
-                                        : { de: `${menu.courses.length} Gänge`, en: `${menu.courses.length} courses` }[locale]}
-                                </p>
+                                <p className="text-xs text-muted-foreground">{t('chef.courseCount', { count: menu.courses.length })}</p>
                             </div>
                         </button>
                     </li>

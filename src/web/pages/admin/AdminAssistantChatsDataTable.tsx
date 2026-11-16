@@ -1,5 +1,6 @@
 import type { OnChangeFn, SortingState } from '@tanstack/react-table';
 
+import { t } from '../../../i18n/t';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { adminAssistantChatsColumns } from './adminAssistantChatsColumns';
@@ -29,7 +30,7 @@ export function AdminAssistantChatsDataTable({ data, sorting, onSortingChange }:
                 to: '/{-$locale}/admin/assistant-chats/$chatId',
                 params: { chatId: row.chatId },
             })}
-            emptyMessage={{ de: 'Keine Assistent-Chats gefunden.', en: 'No assistant chats found.' }[locale]}
+            emptyMessage={t(locale, 'admin', 'copy.noAssistantChatsFound')}
         />
     );
 }

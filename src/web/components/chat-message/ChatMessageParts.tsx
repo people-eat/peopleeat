@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import { useEffect, useMemo, useState } from 'react';
-import { formatDate } from '../../../shared';
+import { formatDate, inlineCopy } from '../../../shared';
 import type { ChatAssistantInputSlot, SlotDraft } from '../../chat/chatAssistantInputKinds';
 import { serializeSlotAnswer, slotsFromToolInput, toAnswerPayload } from '../../chat/chatAssistantInputKinds';
 import { toolDisplay } from '../../chat/toolDisplay';
@@ -97,7 +97,7 @@ export function ChatMessagePartsView({ message, chatTurnId, onApprovalRespond, o
     }, [isPending]);
 
     if (isPending) {
-        return <AssistantPendingStatus label={CHEF_PENDING[pendingIndex]![locale]} />;
+        return <AssistantPendingStatus label={inlineCopy(CHEF_PENDING[pendingIndex]!, locale)} />;
     }
 
     return (
@@ -142,14 +142,14 @@ function PartView({
                             className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground"
                             onClick={() => onApprovalRespond(chatTurnId, part.approval!.approvalId, true)}
                         >
-                            {{ de: 'Erlauben', en: 'Approve' }[locale]}
+                            {inlineCopy({ de: 'Erlauben', en: 'Approve' }, locale)}
                         </button>
                         <button
                             type="button"
                             className="rounded border px-3 py-1.5 text-sm"
                             onClick={() => onApprovalRespond(chatTurnId, part.approval!.approvalId, false)}
                         >
-                            {{ de: 'Ablehnen', en: 'Deny' }[locale]}
+                            {inlineCopy({ de: 'Ablehnen', en: 'Deny' }, locale)}
                         </button>
                     </div>
                 );
@@ -442,7 +442,7 @@ function PromptUserForInputForm({
                 disabled={!canSubmit}
                 className="justify-self-start rounded bg-primary px-3 py-1.5 text-primary-foreground disabled:opacity-50"
             >
-                {{ de: 'Absenden', en: 'Submit' }[locale]}
+                {inlineCopy({ de: 'Absenden', en: 'Submit' }, locale)}
             </button>
         </form>
     );

@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildLocaleHref, buildLocalePath, isWorkspaceNoDocumentScrollPath, localePath, pathWithoutLocale } from './locale';
+import {
+    buildLocaleHref,
+    buildLocalePath,
+    isWorkspaceNoDocumentScrollPath,
+    localeFromAcceptLanguage,
+    localePath,
+    pathWithoutLocale,
+} from './locale';
 
 describe('localePath', () => {
     it('leaves default-locale paths unprefixed', () => {
@@ -10,6 +17,8 @@ describe('localePath', () => {
     it('prefixes non-default locales', () => {
         expect(localePath('en', '/log-on')).toBe('/en/log-on');
         expect(localePath('en', '/')).toBe('/en');
+        expect(localePath('fr', '/log-on')).toBe('/fr/log-on');
+        expect(localePath('it', '/')).toBe('/it');
     });
 
     it('does not double-prefix an already-prefixed path', () => {
@@ -35,6 +44,19 @@ describe('pathWithoutLocale', () => {
 
     it('leaves default-locale paths unchanged', () => {
         expect(pathWithoutLocale('/admin/users', 'de')).toBe('/admin/users');
+    });
+
+    it('strips french and italian prefixes', () => {
+        expect(pathWithoutLocale('/fr/about')).toBe('/about');
+        expect(pathWithoutLocale('/it/log-on')).toBe('/log-on');
+    });
+});
+
+describe('localeFromAcceptLanguage', () => {
+    it('prefers french and italian when the visitor asks for them', () => {
+        expect(localeFromAcceptLanguage('fr,en;q=0.8')).toBe('fr');
+        expect(localeFromAcceptLanguage('fr-FR,fr;q=0.9')).toBe('fr');
+        expect(localeFromAcceptLanguage('it-IT,it;q=0.9,en;q=0.8')).toBe('it');
     });
 });
 

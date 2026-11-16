@@ -5,7 +5,8 @@ import { useEffect, useState } from 'react';
 import type { SubmitEventHandler } from 'react';
 import { useMutation } from 'urql';
 
-import { formatCurrency, formatDate } from '../../../shared';
+import { t } from '../../../i18n/t';
+import { formatCurrency, formatDate, inlineCopy } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { Badge } from '../../components/base/badge';
 import { Button } from '../../components/base/button';
@@ -19,11 +20,12 @@ import { useTimeZone } from '../../hooks/useTimeZone';
 import { DATE_FNS_LOCALE } from '../../utils/dateFnsLocale';
 import type { Locale } from '../../utils/locale';
 
-export const adminPromoCodePageTitle = { de: 'Promo-Code', en: 'Promo code' } as const;
-export const adminPromoCodePageDescription = {
-    de: 'Details und Ablauf eines Promo-Codes.',
-    en: 'Details and expiration for a promo code.',
-} as const;
+export function adminPromoCodePageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.promoCode.title');
+}
+export function adminPromoCodePageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.promoCode.description');
+}
 
 const PROMO_CODE_TABS = ['general', 'expiration', 'usage'] as const;
 
@@ -58,14 +60,14 @@ type AdminPromoCodeUsageBookingRequest = NonNullable<AdminPromoCodeDetail['booki
 
 type AdminPromoCodeTabDef = {
     id: AdminPromoCodeTab;
-    label: Record<Locale, string>;
+    labelKey: string;
     Icon: LucideIcon;
 };
 
 const ADMIN_PROMO_CODE_TABS: readonly AdminPromoCodeTabDef[] = [
-    { id: 'general', label: { de: 'Allgemeines', en: 'General' }, Icon: TicketPercentIcon },
-    { id: 'expiration', label: { de: 'Ablauf', en: 'Expiration' }, Icon: CalendarClockIcon },
-    { id: 'usage', label: { de: 'Nutzung', en: 'Usage' }, Icon: FileInputIcon },
+    { id: 'general', labelKey: 'promoCode.tabs.general', Icon: TicketPercentIcon },
+    { id: 'expiration', labelKey: 'promoCode.tabs.expiration', Icon: CalendarClockIcon },
+    { id: 'usage', labelKey: 'promoCode.tabs.usage', Icon: FileInputIcon },
 ];
 
 function resolveAdminPromoCodeTab(tab: AdminPromoCodeTab | undefined): AdminPromoCodeTab {
@@ -86,22 +88,19 @@ export function AdminPromoCodePage({
     const admin = data.currentSession.user?.admin;
     const promoCode = admin?.promoCode ?? null;
     const bookingRequests = promoCode?.bookingRequests ?? [];
-    const crumbLabel = promoCode?.redeemCode.trim() || adminPromoCodePageTitle[locale];
+    const crumbLabel = promoCode?.redeemCode.trim() || adminPromoCodePageTitle(locale);
     const tab = resolveAdminPromoCodeTab(search.tab);
 
     return (
         <AdminPageChrome
-            crumbs={[
-                { label: { de: 'Promo Codes', en: 'Promo Codes' }[locale], to: '/{-$locale}/admin/promo-codes' },
-                { label: crumbLabel },
-            ]}
+            crumbs={[{ label: t(locale, 'admin', 'copy.promoCodes'), to: '/{-$locale}/admin/promo-codes' }, { label: crumbLabel }]}
         >
             <main id="main-content" className="grid w-full content-start gap-6">
                 {promoCode ? (
                     <>
                         <Tabs value={tab}>
-                            <TabsList variant="line" aria-label={{ de: 'Promo-Code-Bereiche', en: 'Promo code sections' }[locale]}>
-                                {ADMIN_PROMO_CODE_TABS.map(({ id, label, Icon }) => (
+                            <TabsList variant="line" aria-label={t(locale, 'admin', 'copy.promoCodeSections')}>
+                                {ADMIN_PROMO_CODE_TABS.map(({ id, labelKey, Icon }) => (
                                     <TabsTrigger key={id} value={id} asChild>
                                         <Link
                                             to="/{-$locale}/admin/promo-codes/$promoCodeId"
@@ -110,7 +109,7 @@ export function AdminPromoCodePage({
                                             replace
                                         >
                                             <Icon aria-hidden />
-                                            {label[locale]}
+                                            {t(locale, 'admin', labelKey)}
                                         </Link>
                                     </TabsTrigger>
                                 ))}
@@ -120,9 +119,7 @@ export function AdminPromoCodePage({
                         <AdminPromoCodeTabPanel tab={tab} promoCode={promoCode} bookingRequests={bookingRequests} />
                     </>
                 ) : (
-                    <p className="text-sm text-muted-foreground">
-                        {{ de: 'Promo-Code nicht gefunden.', en: 'Promo code not found.' }[locale]}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.promoCodeNotFound')}</p>
                 )}
             </main>
         </AdminPageChrome>
@@ -155,55 +152,56 @@ function AdminPromoCodeDetailFields({ promoCode }: { promoCode: AdminPromoCodeDe
 
     return (
         <dl className="grid gap-4">
-            <DetailField label={{ de: 'Promo-Code-ID', en: 'Promo code ID' }[locale]} value={promoCode.promoCodeId} mono />
+            <DetailField label={t(locale, 'admin', 'copy.promoCodeId')} value={promoCode.promoCodeId} mono />
             <Separator />
-            <DetailField label={{ de: 'Einlöscode', en: 'Redeem code' }[locale]} value={promoCode.redeemCode} mono />
+            <DetailField label={t(locale, 'admin', 'copy.redeemCode')} value={promoCode.redeemCode} mono />
             <Separator />
             <DetailField
-                label={{ de: 'Wert', en: 'Amount' }[locale]}
+                label={t(locale, 'admin', 'copy.amount')}
                 value={formatCurrency(promoCode.amountCents, { locale, maximumFractionDigits: 0 })}
             />
             <Separator />
             <DetailField
-                label={{ de: 'Mindestpreis', en: 'Minimum price' }[locale]}
+                label={t(locale, 'admin', 'copy.minimumPrice')}
                 value={
                     promoCode.minimumTotalAmountCustomerCents == null
-                        ? { de: 'Keiner', en: 'None' }[locale]
+                        ? t(locale, 'admin', 'copy.none')
                         : formatCurrency(promoCode.minimumTotalAmountCustomerCents, { locale, maximumFractionDigits: 0 })
                 }
             />
             <Separator />
             <DetailField
-                label={{ de: 'Geltungsbereich', en: 'Scope' }[locale]}
+                label={t(locale, 'admin', 'copy.scope')}
                 value={
                     promoCode.scopedBookingRequestId
-                        ? {
-                              de: `An Buchungsanfrage gebunden (${promoCode.scopedBookingRequestId})`,
-                              en: `Scoped to booking request (${promoCode.scopedBookingRequestId})`,
-                          }[locale]
-                        : { de: 'Global', en: 'Global' }[locale]
+                        ? inlineCopy(
+                              {
+                                  de: `An Buchungsanfrage gebunden (${promoCode.scopedBookingRequestId})`,
+                                  en: `Scoped to booking request (${promoCode.scopedBookingRequestId})`,
+                              },
+                              locale,
+                          )
+                        : t(locale, 'admin', 'copy.global')
                 }
                 mono={Boolean(promoCode.scopedBookingRequestId)}
             />
             <Separator />
             <div className="grid gap-1">
-                <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                    {{ de: 'Status', en: 'Status' }[locale]}
-                </dt>
+                <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t(locale, 'admin', 'copy.status')}</dt>
                 <dd>
                     <Badge variant={expired ? 'secondary' : 'default'}>
-                        {expired ? { de: 'Abgelaufen', en: 'Expired' }[locale] : { de: 'Aktiv', en: 'Active' }[locale]}
+                        {expired ? t(locale, 'admin', 'copy.expired2') : t(locale, 'admin', 'copy.active')}
                     </Badge>
                 </dd>
             </div>
             <Separator />
             <DetailField
-                label={{ de: 'Erstellt', en: 'Created' }[locale]}
+                label={t(locale, 'admin', 'copy.created')}
                 value={formatDate(promoCode.createdAt, { locale, timeZone, dateStyle: 'long' })}
             />
             <Separator />
             <DetailField
-                label={{ de: 'Gültig bis', en: 'Expires' }[locale]}
+                label={t(locale, 'admin', 'copy.expires2')}
                 value={formatDate(promoCode.expiresAt, { locale, timeZone, dateStyle: 'long' })}
             />
         </dl>
@@ -259,21 +257,16 @@ function AdminPromoCodeExpirationForm({ promoCode }: { promoCode: AdminPromoCode
     return (
         <section className="grid max-w-xl gap-4">
             <div className="grid gap-1">
-                <h2 className="font-serif text-2xl/tight text-foreground">{{ de: 'Ablauf verwalten', en: 'Manage expiration' }[locale]}</h2>
+                <h2 className="font-serif text-2xl/tight text-foreground">{t(locale, 'admin', 'copy.manageExpiration')}</h2>
                 <p className="text-sm text-muted-foreground">
-                    {
-                        {
-                            de: 'Ablaufdatum ändern oder den Code sofort ungültig machen. Wert und Einlöscode bleiben unverändert.',
-                            en: 'Change the expiration or invalidate the code immediately. Amount and redeem code stay unchanged.',
-                        }[locale]
-                    }
+                    {t(locale, 'admin', 'copy.changeTheExpirationOrInvalidateTheCodeImmediatelyAmountAndRe')}
                 </p>
             </div>
 
             <form className="grid gap-4" onSubmit={onSubmit}>
                 <div className="grid gap-2">
                     <span id="admin-promo-detail-expires-label" className="text-sm font-medium">
-                        {{ de: 'Ablaufdatum und -uhrzeit', en: 'Expiration date and time' }[locale]}
+                        {t(locale, 'admin', 'copy.expirationDateAndTime')}
                     </span>
                     <DateTimePicker
                         value={expiresAt}
@@ -281,8 +274,8 @@ function AdminPromoCodeExpirationForm({ promoCode }: { promoCode: AdminPromoCode
                             setExpiresAt(date);
                             setSaved(false);
                         }}
-                        placeholder={{ de: 'Datum und Uhrzeit wählen', en: 'Pick date and time' }[locale]}
-                        timeAriaLabel={{ de: 'Uhrzeit', en: 'Time' }[locale]}
+                        placeholder={t(locale, 'admin', 'copy.pickDateAndTime')}
+                        timeAriaLabel={t(locale, 'admin', 'copy.time')}
                         locale={DATE_FNS_LOCALE[locale]}
                         aria-labelledby="admin-promo-detail-expires-label"
                         aria-invalid={error || undefined}
@@ -291,7 +284,7 @@ function AdminPromoCodeExpirationForm({ promoCode }: { promoCode: AdminPromoCode
 
                 <div className="flex flex-wrap gap-2">
                     <Button type="submit" disabled={busy}>
-                        {{ de: 'Ablauf speichern', en: 'Save expiration' }[locale]}
+                        {t(locale, 'admin', 'copy.saveExpiration')}
                     </Button>
                     <Button
                         type="button"
@@ -324,18 +317,18 @@ function AdminPromoCodeExpirationForm({ promoCode }: { promoCode: AdminPromoCode
                             }
                         }}
                     >
-                        {{ de: 'Jetzt ablaufen lassen', en: 'Expire now' }[locale]}
+                        {t(locale, 'admin', 'copy.expireNow')}
                     </Button>
                 </div>
 
                 {error ? (
                     <p className="text-sm text-destructive" role="alert">
-                        {{ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]}
+                        {t(locale, 'admin', 'copy.couldNotSave')}
                     </p>
                 ) : null}
                 {saved ? (
                     <p className="text-sm text-muted-foreground" role="status">
-                        {{ de: 'Ablauf aktualisiert.', en: 'Expiration updated.' }[locale]}
+                        {t(locale, 'admin', 'copy.expirationUpdated')}
                     </p>
                 ) : null}
             </form>
@@ -348,7 +341,7 @@ function AdminPromoCodeUsage({ bookingRequests }: { bookingRequests: AdminPromoC
     const timeZone = useTimeZone();
 
     if (bookingRequests.length === 0) {
-        return <p className="text-sm text-muted-foreground">{{ de: 'Noch keine Einlösungen.', en: 'No redemptions yet.' }[locale]}</p>;
+        return <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noRedemptionsYet')}</p>;
     }
 
     return (

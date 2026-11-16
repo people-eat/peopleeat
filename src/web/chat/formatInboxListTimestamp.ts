@@ -1,3 +1,4 @@
+import { t } from '../../i18n/t';
 import { dateDistanceInDays, formatDate, formatTime } from '../../shared';
 import { languageTagFromLocale } from '../../shared/locale';
 import type { Locale } from '../utils/locale';
@@ -16,7 +17,7 @@ export function formatInboxListTimestamp(value: string | Date, options: { locale
         return formatTime(date, { locale, timeZone, timeStyle: 'short' });
     }
     if (daysAgo === 1) {
-        return { de: 'Gestern', en: 'Yesterday' }[locale];
+        return t(locale, 'common', 'chatDate.yesterday');
     }
     if (daysAgo <= 6) {
         return new Intl.DateTimeFormat(languageTagFromLocale(locale), { timeZone, weekday: 'long' }).format(date);

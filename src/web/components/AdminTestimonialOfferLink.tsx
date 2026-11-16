@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router';
 import { ExternalLinkIcon } from 'lucide-react';
 import { useQuery } from 'urql';
 
+import { t } from '../../i18n/t';
 import { AdminTestimonialOfferLinkDocument } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
 
@@ -27,7 +28,7 @@ export function AdminTestimonialOfferLink({ bookingRequestOfferId }: { bookingRe
             className="inline-flex items-center gap-1 text-sm text-foreground hover:underline"
         >
             <ExternalLinkIcon className="size-3.5" aria-hidden />
-            {{ de: 'Angebot ansehen', en: 'View offer' }[locale]}
+            {t(locale, 'admin', 'copy.viewOffer2')}
         </Link>
     );
 }

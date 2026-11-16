@@ -2,12 +2,12 @@ import { useRouterState } from '@tanstack/react-router';
 import { PanelLeftIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
+import { t } from '../../i18n/t';
 import { useLocale } from '../hooks/useLocale';
 import type { AdminBreadcrumbCrumb } from '../pages/admin/adminBreadcrumb';
 import { adminBreadcrumbsForPath, adminPathWithoutLocale } from '../pages/admin/adminBreadcrumb';
 import { useAdminNavSidebar } from '../pages/admin/AdminLayout';
 import { cn } from '../utils/cn';
-import { adminAssistantTitle } from './AdminAssistantSidebar';
 import { AdminBreadcrumbTrail } from './AdminBreadcrumbTrail';
 import { AssistantTriggerButton } from './AssistantTriggerButton';
 import { Button } from './base/button';
@@ -24,11 +24,9 @@ export function AdminPageChrome({
 }) {
     const locale = useLocale();
     const navSidebar = useAdminNavSidebar();
-    const navToggleLabel = { de: 'Seitenleiste umschalten', en: 'Toggle Sidebar' }[locale];
-    const assistantToggleLabel = {
-        de: `${adminAssistantTitle.de} umschalten`,
-        en: `Toggle ${adminAssistantTitle.en}`,
-    }[locale];
+    const assistantTitle = t(locale, 'common', 'assistantSidebar.defaultTitle');
+    const navToggleLabel = t(locale, 'admin', 'copy.toggleSidebar');
+    const assistantToggleLabel = t(locale, 'admin', 'sidebar.toggleAssistant', { title: assistantTitle });
 
     return (
         <>
@@ -54,7 +52,7 @@ export function AdminPageChrome({
                 <div className="min-w-0 flex-1">
                     <AdminBreadcrumbTrail crumbs={crumbs} />
                 </div>
-                <AssistantTriggerButton label={assistantToggleLabel} title={adminAssistantTitle[locale]} />
+                <AssistantTriggerButton label={assistantToggleLabel} title={assistantTitle} />
             </header>
             <div
                 data-scroll-restoration-id="workspace-inset"
@@ -69,8 +67,6 @@ export function AdminPageChrome({
     );
 }
 
-// List / overview / stub pages — path-derived crumbs as props without repeating
-// path/locale wiring on every screen.
 export function AdminPathPageChrome({ children, contentClassName }: { children: ReactNode; contentClassName?: string }) {
     const locale = useLocale();
     const pathname = useRouterState({ select: (state) => state.location.pathname });

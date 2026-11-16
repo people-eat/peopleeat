@@ -5,8 +5,11 @@ import { toast } from 'sonner';
 import { useMutation } from 'urql';
 import { z } from 'zod';
 
+import { t as translate } from '../../../i18n/t';
+import type { Locale } from '../../../shared';
 import { AuthEmailOtpDeleteDocument, AuthEmailOtpRequestDocument, AuthEmailOtpVerifyDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
+import { useT } from '../../hooks/useT';
 import { Button } from '../base/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../base/dialog';
 import { Input } from '../base/input';
@@ -23,16 +26,13 @@ export type AuthEmailOtpSession = {
     } | null;
 };
 
-function emailAddressError(value: string, locale: 'de' | 'en'): string | undefined {
+function emailAddressError(value: string, locale: Locale): string | undefined {
     const normalized = value.trim().toLowerCase();
     if (normalized.length === 0) {
-        return { de: 'Bitte gib eine E-Mail-Adresse ein.', en: 'Please enter an email address.' }[locale];
+        return translate(locale, 'public', 'auth.emailRequired');
     }
     if (!z.email().safeParse(normalized).success) {
-        return {
-            de: 'Bitte gib eine gültige E-Mail-Adresse ein.',
-            en: 'Please enter a valid email address.',
-        }[locale];
+        return translate(locale, 'public', 'auth.emailInvalid');
     }
     return undefined;
 }
@@ -49,6 +49,7 @@ export function AuthEmailOtpFlow({
     sessionRefresh: AuthSessionRefresh;
 }) {
     const locale = useLocale();
+    const { t } = useT('public');
     const [otpCode, setOtpCode] = useState('');
     const verifyStarted = useRef(false);
     const [, requestOtp] = useMutation(AuthEmailOtpRequestDocument);
@@ -66,7 +67,7 @@ export function AuthEmailOtpFlow({
             try {
                 const result = await requestOtp({ email: submittedEmail, locale });
                 if (result.error || !result.data?.authEmailOtpRequest.success) {
-                    toast.error({ de: 'Code konnte nicht gesendet werden.', en: 'Could not send the code.' }[locale]);
+                    toast.error(t('auth.otpSendFailed'));
                 }
                 await sessionRefresh();
             } finally {
@@ -81,7 +82,7 @@ export function AuthEmailOtpFlow({
 
     const activeOtp = session.authEmailOtp;
     const otpOpen = activeOtp !== null && !activeOtp.verifiedAt;
-    const emailFieldLabel = { de: 'E-Mail-Adresse', en: 'Email address' }[locale];
+    const emailFieldLabel = t('auth.emailAddress');
 
     async function onVerifyOtp(code: string = otpCode) {
         if (!activeOtp || code.length !== 6 || busy || verifyStarted.current) return;
@@ -94,7 +95,7 @@ export function AuthEmailOtpFlow({
                 const phase = refreshed ? sessionAuthPhase(refreshed) : null;
                 const verifiedEarlier = phase === 'signedIn' || phase === 'legalPending' || phase === 'register' || phase === 'totpPending';
                 if (!verifiedEarlier) {
-                    toast.error({ de: 'Code ungültig oder abgelaufen.', en: 'Invalid or expired code.' }[locale]);
+                    toast.error(t('auth.otpInvalid'));
                     verifyStarted.current = false;
                 }
                 return;
@@ -187,7 +188,7 @@ export function AuthEmailOtpFlow({
                     }}
                 </form.Field>
                 <Button type="submit" disabled={emailFieldDisabled}>
-                    {{ de: 'Code per E-Mail senden', en: 'Continue with email' }[locale]}
+                    {t('auth.continueEmail')}
                 </Button>
             </form>
 
@@ -204,15 +205,8 @@ export function AuthEmailOtpFlow({
                 <DialogContent showCloseButton={false}>
                     <form className="grid gap-4" onSubmit={onVerifySubmit}>
                         <DialogHeader>
-                            <DialogTitle>{{ de: 'Code eingeben', en: 'Enter code' }[locale]}</DialogTitle>
-                            <DialogDescription>
-                                {
-                                    {
-                                        de: `Wir haben einen Code an ${activeOtp?.emailAddress ?? ''} gesendet.`,
-                                        en: `We sent a code to ${activeOtp?.emailAddress ?? ''}.`,
-                                    }[locale]
-                                }
-                            </DialogDescription>
+                            <DialogTitle>{t('auth.enterCode')}</DialogTitle>
+                            <DialogDescription>{t('auth.otpSent', { email: activeOtp?.emailAddress ?? '' })}</DialogDescription>
                         </DialogHeader>
 
                         <AuthEmailOtpSpamHint />
@@ -229,7 +223,7 @@ export function AuthEmailOtpFlow({
                                 inputMode="numeric"
                                 pattern="[0-9]*"
                                 disabled={busy}
-                                aria-label={{ de: 'Bestätigungscode', en: 'Verification code' }[locale]}
+                                aria-label={t('auth.verificationCode')}
                             >
                                 <InputOTPGroup>
                                     <InputOTPSlot index={0} />
@@ -244,10 +238,10 @@ export function AuthEmailOtpFlow({
 
                         <DialogFooter className="gap-2 sm:justify-between">
                             <Button type="button" variant="ghost" onClick={() => void onCloseOtp()} disabled={busy}>
-                                {{ de: 'Schließen', en: 'Close' }[locale]}
+                                {translate(locale, 'common', 'close')}
                             </Button>
                             <Button type="submit" disabled={busy || otpCode.length !== 6}>
-                                {{ de: 'Bestätigen', en: 'Verify' }[locale]}
+                                {t('auth.verify')}
                             </Button>
                         </DialogFooter>
                     </form>

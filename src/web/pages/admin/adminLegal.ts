@@ -1,3 +1,4 @@
+import { t } from '../../../i18n/t';
 import type { GqlCAdminLegalDocumentPageAdminFragment, GqlCLegalDocumentKind } from '../../graphql/generated';
 import type { Locale } from '../../utils/locale';
 
@@ -33,13 +34,7 @@ export function isAdminLegalKind(value: string): value is AdminLegalKind {
 }
 
 export function adminLegalKindLabel(kind: AdminLegalKind, locale: Locale): string {
-    return (
-        {
-            privacy: { de: 'Datenschutz', en: 'Privacy policy' },
-            terms: { de: 'AGB', en: 'Terms' },
-            imprint: { de: 'Impressum', en: 'Imprint' },
-        } as const
-    )[kind][locale];
+    return t(locale, 'admin', `legal.${kind}`);
 }
 
 export function adminLegalKindPath(kind: AdminLegalKind): `/admin/legal/${AdminLegalKind}` {

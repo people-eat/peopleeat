@@ -1,9 +1,12 @@
 import { Link } from '@tanstack/react-router';
 import { ChevronRightIcon } from 'lucide-react';
 
+import { t } from '../../i18n/t';
+import { contentLocaleText, inlineCopy } from '../../shared';
 import { useLocale } from '../hooks/useLocale';
 import { adminOverviewLinkCardChevronClassName, adminOverviewLinkCardClassName } from '../pages/admin/adminOverviewLinkCard';
 import { cn } from '../utils/cn';
+import type { Locale } from '../utils/locale';
 import { Badge } from './base/badge';
 
 export type AdminTestimonialPublicPagePlacement = {
@@ -15,17 +18,19 @@ export type AdminTestimonialPublicPagePlacement = {
     index?: number | null;
 };
 
-function kindLabel(kind: string, locale: 'de' | 'en'): string {
-    return ({
-        CITY: { de: 'Stadt', en: 'City' },
-        PARTNER_VENUE: { de: 'Location', en: 'Venue' },
-        OCCASION: { de: 'Anlass', en: 'Occasion' },
-        CHEF: { de: 'Kochprofil', en: 'Chef profile' },
-    }[kind] ?? { de: kind, en: kind })[locale];
+function kindLabel(kind: string, locale: Locale): string {
+    const keys: Record<string, string> = {
+        CITY: 'copy.city',
+        PARTNER_VENUE: 'copy.venue',
+        OCCASION: 'copy.occasion',
+        CHEF: 'copy.cookProfile',
+    };
+    const key = keys[kind];
+    return key ? t(locale, 'admin', key) : kind;
 }
 
-function placementLabel(placement: AdminTestimonialPublicPagePlacement, locale: 'de' | 'en'): string {
-    return locale === 'de' ? placement.labelDe : placement.labelEn || placement.labelDe;
+function placementLabel(placement: AdminTestimonialPublicPagePlacement, locale: Locale): string {
+    return contentLocaleText(placement.labelDe, placement.labelEn, locale);
 }
 
 function placementAdminRoute(placement: AdminTestimonialPublicPagePlacement): { to: string; params: Record<string, string> } | null {
@@ -56,7 +61,7 @@ export function AdminTestimonialPublicPagePlacementBadges({
 
     // `contents` lets chips sit on the same single-line row as sibling badges.
     return (
-        <ul className={cn('contents', className)} aria-label={{ de: 'Öffentliche Seiten', en: 'Public pages' }[locale]}>
+        <ul className={cn('contents', className)} aria-label={t(locale, 'admin', 'copy.publicPages')}>
             {placements.map((placement) => {
                 const fullLabel = `${kindLabel(placement.kind, locale)}: ${placementLabel(placement, locale)}`;
                 return (
@@ -79,7 +84,7 @@ function PlacementAdminCard({ placement }: { placement: AdminTestimonialPublicPa
     const meta = placement.pathName
         ? `/${placement.pathName}`
         : placement.index != null
-          ? { de: `Position ${placement.index + 1}`, en: `Position ${placement.index + 1}` }[locale]
+          ? inlineCopy({ de: `Position ${placement.index + 1}`, en: `Position ${placement.index + 1}` }, locale)
           : null;
 
     const body = (
@@ -118,11 +123,9 @@ export function AdminTestimonialPublicPagePlacementsSection({
 
     return (
         <div className="grid gap-2">
-            <h2 className="text-sm font-medium text-foreground">{{ de: 'Öffentliche Seiten', en: 'Public pages' }[locale]}</h2>
+            <h2 className="text-sm font-medium text-foreground">{t(locale, 'admin', 'copy.publicPages')}</h2>
             {placements.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                    {{ de: 'Noch auf keiner öffentlichen Seite verwendet.', en: 'Not used on any public page yet.' }[locale]}
-                </p>
+                <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.notUsedOnAnyPublicPageYet')}</p>
             ) : (
                 <ul className="grid gap-2">
                     {placements.map((placement) => (

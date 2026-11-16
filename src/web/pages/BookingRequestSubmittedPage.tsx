@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
+import { t } from '../../i18n/t';
 import { bookingRequestKitchenDetailsDraftEmpty, bookingRequestKitchenDetailsDraftIsEmpty, featureToggleIsActive } from '../../shared';
 import { AppImage } from '../components/AppImage';
 import { Button } from '../components/base/button';
@@ -19,80 +20,36 @@ import { BookingRequestOpenToOtherCooksButton } from '../components/BookingReque
 import type { GqlCBookingRequestSubmittedPageQuery } from '../graphql/generated';
 import { BookingRequestSubmittedKitchenDetailsUpdateDocument } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { SITE_LOGO, SITE_LOGO_DISPLAY, SITE_LOGO_SRC_SET, SITE_NAME } from '../seo/seoConstants';
 import { cn } from '../utils/cn';
 import type { Locale } from '../utils/locale';
 
-export const bookingRequestSubmittedPageTitle = {
-    de: 'Anfrage gesendet',
-    en: 'Request submitted',
-} as const;
+export function bookingRequestSubmittedPageTitle(locale: Locale): string {
+    return t(locale, 'publicBooking', 'submitted.seo.title');
+}
 
-export const bookingRequestSubmittedPageDescription = {
-    de: 'Deine Buchungsanfrage wurde gesendet. So geht es weiter.',
-    en: 'Your booking request was submitted. Here is what happens next.',
-} as const;
+export function bookingRequestSubmittedPageDescription(locale: Locale): string {
+    return t(locale, 'publicBooking', 'submitted.seo.description');
+}
 
-const SUBMITTED_STEP_IMAGES = [
-    {
-        src: '/booking-request/submitted/1.webp',
-        alt: {
-            de: 'Lachs-Crudo mit Kumquat und Kräuteröl, angerichtet für ein Event',
-            en: 'Salmon crudo with kumquat and herb oil, plated for an event',
-        },
-    },
-    {
-        src: '/booking-request/submitted/2.webp',
-        alt: {
-            de: 'Gefüllte Hähnchenbrust mit Kartoffelpüree und Ofengemüse',
-            en: 'Stuffed chicken breast with potato puree and roasted vegetables',
-        },
-    },
-    {
-        src: '/booking-request/submitted/3.webp',
-        alt: {
-            de: 'Blumenförmiges Dessert mit Minze, grüner Sauce und gelbem Coulis',
-            en: 'Flower-shaped dessert with mint, green sauce, and yellow coulis',
-        },
-    },
-] as const;
+const SUBMITTED_STEP_IMAGE_KEYS = ['1', '2', '3'] as const;
 
 function nextSteps(locale: Locale, cookName: string | null): { title: string; body: string }[] {
     return [
         {
-            title: {
-                de: 'Du erhältst einen individuellen Menüvorschlag',
-                en: 'You receive an individual menu proposal',
-            }[locale],
+            title: t(locale, 'publicBooking', 'submitted.steps.menu.title'),
             body: cookName
-                ? {
-                      de: `${cookName} schaut sich deine Anfrage an und schickt dir ein Angebot mit Menü und Preis.`,
-                      en: `${cookName} is reviewing your request and will send an offer with menu and price.`,
-                  }[locale]
-                : {
-                      de: 'Passende Köche in deiner Nähe erstellen individuelle Menüvorschläge für dein Event.',
-                      en: 'Suitable chefs in your area will create individual menu proposals for your event.',
-                  }[locale],
+                ? t(locale, 'publicBooking', 'submitted.steps.menu.bodyCook', { cookName })
+                : t(locale, 'publicBooking', 'submitted.steps.menu.body'),
         },
         {
-            title: {
-                de: 'Finalisiere die letzten Einzelheiten',
-                en: 'Finalize the last details',
-            }[locale],
-            body: {
-                de: 'Wir benachrichtigen dich per E-Mail und, wenn wir deine Nummer haben, per WhatsApp, sobald neue Vorschläge bereit sind. Menüs und Kochprofile vergleichst du direkt in deiner Anfrage.',
-                en: 'We will notify you by email and, when we have your number, by WhatsApp once new proposals are ready. You can compare menus and chef profiles directly in your request.',
-            }[locale],
+            title: t(locale, 'publicBooking', 'submitted.steps.details.title'),
+            body: t(locale, 'publicBooking', 'submitted.steps.details.body'),
         },
         {
-            title: {
-                de: 'Bestätige dein Menüerlebnis',
-                en: 'Confirm your menu experience',
-            }[locale],
-            body: {
-                de: 'Wenn du das passende Angebot gefunden hast, nimmst du es an und der Koch hält den Termin für dich frei.',
-                en: "Once you've found the right offer, you accept it and the chef reserves their calendar for your event.",
-            }[locale],
+            title: t(locale, 'publicBooking', 'submitted.steps.confirm.title'),
+            body: t(locale, 'publicBooking', 'submitted.steps.confirm.body'),
         },
     ];
 }
@@ -109,6 +66,8 @@ export function BookingRequestSubmittedPage({
     bookingRequestId: string;
 }) {
     const locale = useLocale();
+    const { t: tBooking } = useT('publicBooking');
+    const { t: tCommon } = useT('common');
     const bookingRequest = data.currentSession.user?.bookingRequest;
     const requestedCookName = bookingRequest?.requestedCook?.user.display ?? null;
     const requestedMenuTitle = bookingRequest?.requestedMenu?.title?.trim() || null;
@@ -153,7 +112,7 @@ export function BookingRequestSubmittedPage({
                         className="h-7 w-auto"
                     />
                 </Link>
-                <Button type="button" variant="ghost" size="icon" asChild aria-label={{ de: 'Schließen', en: 'Close' }[locale]}>
+                <Button type="button" variant="ghost" size="icon" asChild aria-label={tCommon('close')}>
                     <Link to="/{-$locale}">
                         <XIcon />
                     </Link>
@@ -185,19 +144,9 @@ export function BookingRequestSubmittedPage({
                                         throw new Error('kitchen details update failed');
                                     }
                                     setKitchenSaved(true);
-                                    toast.success(
-                                        {
-                                            de: 'Küchendetails gespeichert.',
-                                            en: 'Kitchen details saved.',
-                                        }[locale],
-                                    );
+                                    toast.success(tBooking('submitted.kitchen.saved'));
                                 } catch {
-                                    setKitchenError(
-                                        {
-                                            de: 'Küchendetails konnten nicht gespeichert werden.',
-                                            en: 'Could not save kitchen details.',
-                                        }[locale],
-                                    );
+                                    setKitchenError(tBooking('submitted.kitchen.saveFailed'));
                                 } finally {
                                     setKitchenBusy(false);
                                 }
@@ -206,13 +155,13 @@ export function BookingRequestSubmittedPage({
                     ) : null}
                     <section className="grid gap-8 lg:gap-10">
                         <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
-                            {{ de: 'Wie geht es weiter?', en: 'What happens next?' }[locale]}
+                            {tBooking('submitted.heading')}
                         </h1>
 
                         <div className="grid gap-0">
                             {steps.map((step, index) => {
-                                const image = SUBMITTED_STEP_IMAGES[index];
-                                if (!image) {
+                                const imageKey = SUBMITTED_STEP_IMAGE_KEYS[index];
+                                if (!imageKey) {
                                     return null;
                                 }
                                 const isLast = index === steps.length - 1;
@@ -237,8 +186,8 @@ export function BookingRequestSubmittedPage({
                                         </div>
 
                                         <AppImage
-                                            src={image.src}
-                                            alt={image.alt[locale]}
+                                            src={`/booking-request/submitted/${imageKey}.webp`}
+                                            alt={tBooking(`submitted.images.${imageKey}`)}
                                             width={960}
                                             height={960}
                                             className={cn(
@@ -251,11 +200,11 @@ export function BookingRequestSubmittedPage({
                             })}
 
                             <div className="grid grid-cols-3 gap-3 pt-2 lg:hidden">
-                                {SUBMITTED_STEP_IMAGES.map((image) => (
+                                {SUBMITTED_STEP_IMAGE_KEYS.map((imageKey) => (
                                     <AppImage
-                                        key={image.src}
-                                        src={image.src}
-                                        alt={image.alt[locale]}
+                                        key={imageKey}
+                                        src={`/booking-request/submitted/${imageKey}.webp`}
+                                        alt={tBooking(`submitted.images.${imageKey}`)}
                                         width={960}
                                         height={960}
                                         className="aspect-square w-full rounded-xl object-cover"
@@ -267,7 +216,7 @@ export function BookingRequestSubmittedPage({
 
                     <StatusAlert
                         tone="success"
-                        title={bookingRequestSubmittedPageTitle[locale]}
+                        title={tBooking('submitted.seo.title')}
                         action={
                             <div className="flex flex-wrap items-center justify-end gap-2">
                                 {bookingRequest.isExclusive && requestedCookName ? (
@@ -279,7 +228,7 @@ export function BookingRequestSubmittedPage({
                                 ) : null}
                                 <Button type="button" variant="outline" asChild>
                                     <Link to="/{-$locale}/profile/booking-requests/$bookingRequestId" params={{ bookingRequestId }}>
-                                        {{ de: 'Zur Anfrage', en: 'View request' }[locale]}
+                                        {tBooking('submitted.viewRequest')}
                                     </Link>
                                 </Button>
                             </div>
@@ -287,18 +236,12 @@ export function BookingRequestSubmittedPage({
                     >
                         {bookingRequest.isExclusive && requestedCookName
                             ? requestedMenuTitle
-                                ? {
-                                      de: `${requestedCookName} hat deine Anfrage für „${requestedMenuTitle}“ erhalten. Du kannst sie jederzeit auch für andere Köche öffnen.`,
-                                      en: `${requestedCookName} received your request for “${requestedMenuTitle}”. You can open it to other chefs any time.`,
-                                  }[locale]
-                                : {
-                                      de: `${requestedCookName} hat deine Anfrage erhalten. Du kannst sie jederzeit auch für andere Köche öffnen.`,
-                                      en: `${requestedCookName} received your request. You can open it to other chefs any time.`,
-                                  }[locale]
-                            : {
-                                  de: 'Geeignete Köche in deiner Region haben deine Anfrage erhalten. Wir informieren dich, sobald Menüvorschläge vorliegen.',
-                                  en: 'Suitable chefs in your area received your request. You will be notified once you get an offer.',
-                              }[locale]}
+                                ? tBooking('submitted.status.exclusiveWithMenu', {
+                                      cookName: requestedCookName,
+                                      menuTitle: requestedMenuTitle,
+                                  })
+                                : tBooking('submitted.status.exclusive', { cookName: requestedCookName })
+                            : tBooking('submitted.status.pool')}
                     </StatusAlert>
                 </div>
             </div>

@@ -3,6 +3,7 @@ import { MoreHorizontalIcon } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import { inlineCopy } from '../../shared';
 import type { ContentSection, Locale } from '../../shared';
 import { fileUploadPublicUrl, pathNameSlugify } from '../../shared/contentSection';
 import { uploadErrorMessage, uploadFile } from '../chat/fileUpload';
@@ -195,9 +196,9 @@ export function ContentPageEditor({
         onChange({ publishedAt: next.publishedAt });
         try {
             await onSave(next);
-            toast.success({ de: 'Gespeichert', en: 'Saved' }[uiLocale]);
+            toast.success(inlineCopy({ de: 'Gespeichert', en: 'Saved' }, uiLocale));
         } catch {
-            toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[uiLocale]);
+            toast.error(inlineCopy({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }, uiLocale));
             throw new Error('save failed');
         }
     }
@@ -205,9 +206,9 @@ export function ContentPageEditor({
     async function handleSave() {
         try {
             await onSave(values);
-            toast.success({ de: 'Gespeichert', en: 'Saved' }[uiLocale]);
+            toast.success(inlineCopy({ de: 'Gespeichert', en: 'Saved' }, uiLocale));
         } catch {
-            toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[uiLocale]);
+            toast.error(inlineCopy({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }, uiLocale));
         }
     }
 
@@ -243,19 +244,22 @@ export function ContentPageEditor({
         if (!onDelete) return;
         try {
             await onDelete();
-            toast.success({ de: 'Gelöscht', en: 'Deleted' }[uiLocale]);
+            toast.success(inlineCopy({ de: 'Gelöscht', en: 'Deleted' }, uiLocale));
             setConfirm(null);
             await navigate({ to: listTo });
         } catch {
-            toast.error({ de: 'Löschen fehlgeschlagen.', en: 'Could not delete.' }[uiLocale]);
+            toast.error(inlineCopy({ de: 'Löschen fehlgeschlagen.', en: 'Could not delete.' }, uiLocale));
         }
     }
 
-    const statusLabel = {
-        draft: { de: 'Entwurf', en: 'Draft' },
-        published: { de: 'Veröffentlicht', en: 'Published' },
-        scheduled: { de: 'Geplant', en: 'Scheduled' },
-    }[status][uiLocale];
+    const statusLabel = inlineCopy(
+        {
+            draft: { de: 'Entwurf', en: 'Draft' },
+            published: { de: 'Veröffentlicht', en: 'Published' },
+            scheduled: { de: 'Geplant', en: 'Scheduled' },
+        }[status],
+        uiLocale,
+    );
 
     const pageView = (
         <ContentPageView
@@ -292,15 +296,15 @@ export function ContentPageEditor({
     return (
         <div className="flex flex-col gap-6">
             <Tabs value={tab}>
-                <TabsList variant="line" aria-label={{ de: 'Editor-Ansicht', en: 'Editor view' }[uiLocale]}>
+                <TabsList variant="line" aria-label={inlineCopy({ de: 'Editor-Ansicht', en: 'Editor view' }, uiLocale)}>
                     <TabsTrigger value="edit" asChild>
                         <Link to={detail.to} params={detail.params} search={{ tab: undefined }} replace>
-                            {{ de: 'Bearbeiten', en: 'Edit' }[uiLocale]}
+                            {inlineCopy({ de: 'Bearbeiten', en: 'Edit' }, uiLocale)}
                         </Link>
                     </TabsTrigger>
                     <TabsTrigger value="preview" asChild>
                         <Link to={detail.to} params={detail.params} search={{ tab: 'preview' }} replace>
-                            {{ de: 'Vorschau', en: 'Preview' }[uiLocale]}
+                            {inlineCopy({ de: 'Vorschau', en: 'Preview' }, uiLocale)}
                         </Link>
                     </TabsTrigger>
                 </TabsList>
@@ -314,7 +318,7 @@ export function ContentPageEditor({
                         <div className="flex flex-col gap-3">
                             <div className="flex flex-wrap items-center gap-2">
                                 <span className="w-full text-sm text-muted-foreground sm:w-auto">
-                                    {{ de: 'Status', en: 'Status' }[uiLocale]}: {statusLabel}
+                                    {inlineCopy({ de: 'Status', en: 'Status' }, uiLocale)}: {statusLabel}
                                 </span>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
@@ -323,7 +327,7 @@ export function ContentPageEditor({
                                             variant="outline"
                                             size="icon"
                                             disabled={busy}
-                                            aria-label={{ de: 'Weitere Aktionen', en: 'More actions' }[uiLocale]}
+                                            aria-label={inlineCopy({ de: 'Weitere Aktionen', en: 'More actions' }, uiLocale)}
                                         >
                                             <MoreHorizontalIcon className="size-4" />
                                         </Button>
@@ -332,7 +336,7 @@ export function ContentPageEditor({
                                         {publicDetail ? (
                                             <DropdownMenuItem asChild>
                                                 <Link to={publicDetail.to} params={publicDetail.params} target="_blank">
-                                                    {{ de: 'Öffentliche Seite', en: 'Public page' }[uiLocale]}
+                                                    {inlineCopy({ de: 'Öffentliche Seite', en: 'Public page' }, uiLocale)}
                                                 </Link>
                                             </DropdownMenuItem>
                                         ) : null}
@@ -344,28 +348,28 @@ export function ContentPageEditor({
                                                     setScheduleOpen(true);
                                                 }}
                                             >
-                                                {{ de: 'Planen…', en: 'Schedule…' }[uiLocale]}
+                                                {inlineCopy({ de: 'Planen…', en: 'Schedule…' }, uiLocale)}
                                             </DropdownMenuItem>
                                         ) : null}
                                         {status !== 'draft' ? (
                                             <DropdownMenuItem disabled={busy} onSelect={() => setConfirm('unpublish')}>
-                                                {{ de: 'Zurückziehen', en: 'Unpublish' }[uiLocale]}
+                                                {inlineCopy({ de: 'Zurückziehen', en: 'Unpublish' }, uiLocale)}
                                             </DropdownMenuItem>
                                         ) : null}
                                         {onDelete ? (
                                             <DropdownMenuItem variant="destructive" disabled={busy} onSelect={() => setConfirm('delete')}>
-                                                {{ de: 'Löschen', en: 'Delete' }[uiLocale]}
+                                                {inlineCopy({ de: 'Löschen', en: 'Delete' }, uiLocale)}
                                             </DropdownMenuItem>
                                         ) : null}
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                                 {status !== 'published' ? (
                                     <Button type="button" variant="outline" disabled={busy} onClick={() => setConfirm('publish')}>
-                                        {{ de: 'Veröffentlichen', en: 'Publish' }[uiLocale]}
+                                        {inlineCopy({ de: 'Veröffentlichen', en: 'Publish' }, uiLocale)}
                                     </Button>
                                 ) : null}
                                 <Button type="button" disabled={busy} onClick={() => void handleSave()}>
-                                    {{ de: 'Speichern', en: 'Save' }[uiLocale]}
+                                    {inlineCopy({ de: 'Speichern', en: 'Save' }, uiLocale)}
                                 </Button>
                             </div>
                             <div className="flex flex-wrap gap-2">
@@ -390,17 +394,17 @@ export function ContentPageEditor({
 
                         <Card className="gap-4 py-4" data-content-editor-anchor="top">
                             <CardHeader className="px-4">
-                                <CardTitle>{{ de: 'SEO', en: 'SEO' }[uiLocale]}</CardTitle>
+                                <CardTitle>{inlineCopy({ de: 'SEO', en: 'SEO' }, uiLocale)}</CardTitle>
                             </CardHeader>
                             <CardContent className="flex flex-col gap-3 px-4">
-                                <Field label={{ de: 'Pfad (Slug)', en: 'Path (slug)' }[uiLocale]}>
+                                <Field label={inlineCopy({ de: 'Pfad (Slug)', en: 'Path (slug)' }, uiLocale)}>
                                     <Input
                                         value={values.pathName}
                                         onChange={(e) => patch({ pathName: pathNameSlugify(e.target.value) || e.target.value })}
                                         onBlur={() => patch({ pathName: pathNameSlugify(values.pathName) })}
                                     />
                                 </Field>
-                                <Field label={{ de: 'Titel', en: 'Title' }[uiLocale]}>
+                                <Field label={inlineCopy({ de: 'Titel', en: 'Title' }, uiLocale)}>
                                     <Input
                                         value={editLocale === 'en' ? values.titleEn : values.titleDe}
                                         onChange={(e) =>
@@ -408,7 +412,7 @@ export function ContentPageEditor({
                                         }
                                     />
                                 </Field>
-                                <Field label={{ de: 'Beschreibung', en: 'Description' }[uiLocale]}>
+                                <Field label={inlineCopy({ de: 'Beschreibung', en: 'Description' }, uiLocale)}>
                                     <Textarea
                                         rows={3}
                                         value={editLocale === 'en' ? values.descriptionEn : values.descriptionDe}
@@ -426,10 +430,10 @@ export function ContentPageEditor({
 
                         <Card className="gap-4 py-4" data-content-editor-anchor="hero">
                             <CardHeader className="px-4">
-                                <CardTitle>{{ de: 'Hero', en: 'Hero' }[uiLocale]}</CardTitle>
+                                <CardTitle>{inlineCopy({ de: 'Hero', en: 'Hero' }, uiLocale)}</CardTitle>
                             </CardHeader>
                             <CardContent className="flex flex-col gap-3 px-4">
-                                <Field label={{ de: 'Überschrift', en: 'Headline' }[uiLocale]}>
+                                <Field label={inlineCopy({ de: 'Überschrift', en: 'Headline' }, uiLocale)}>
                                     <Input
                                         value={editLocale === 'en' ? values.headlineEn : values.headlineDe}
                                         onChange={(e) =>
@@ -440,8 +444,8 @@ export function ContentPageEditor({
                                 <Field
                                     label={
                                         heroVariant === 'article'
-                                            ? { de: 'Einleitung', en: 'Lead' }[uiLocale]
-                                            : { de: 'Unterüberschrift', en: 'Subheadline' }[uiLocale]
+                                            ? inlineCopy({ de: 'Einleitung', en: 'Lead' }, uiLocale)
+                                            : inlineCopy({ de: 'Unterüberschrift', en: 'Subheadline' }, uiLocale)
                                     }
                                 >
                                     {heroVariant === 'article' ? (
@@ -507,20 +511,21 @@ export function ContentPageEditor({
             <AlertDialog open={confirm === 'publish'} onOpenChange={(open) => !open && setConfirm(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>{{ de: 'Jetzt veröffentlichen?', en: 'Publish now?' }[uiLocale]}</AlertDialogTitle>
+                        <AlertDialogTitle>{inlineCopy({ de: 'Jetzt veröffentlichen?', en: 'Publish now?' }, uiLocale)}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            {
+                            {inlineCopy(
                                 {
                                     de: 'Die Seite wird sofort öffentlich erreichbar (Listen und Detailseite) und in der Sitemap aufgenommen. Die Änderung wird sofort gespeichert.',
                                     en: 'The page becomes publicly reachable (lists and detail) and is included in the sitemap. This change is saved immediately.',
-                                }[uiLocale]
-                            }
+                                },
+                                uiLocale,
+                            )}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>{{ de: 'Abbrechen', en: 'Cancel' }[uiLocale]}</AlertDialogCancel>
+                        <AlertDialogCancel>{inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, uiLocale)}</AlertDialogCancel>
                         <AlertDialogAction disabled={busy} onClick={() => void confirmPublish()}>
-                            {{ de: 'Veröffentlichen', en: 'Publish' }[uiLocale]}
+                            {inlineCopy({ de: 'Veröffentlichen', en: 'Publish' }, uiLocale)}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -530,21 +535,22 @@ export function ContentPageEditor({
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>
-                            {{ de: 'Veröffentlichung zurückziehen?', en: 'Unpublish this page?' }[uiLocale]}
+                            {inlineCopy({ de: 'Veröffentlichung zurückziehen?', en: 'Unpublish this page?' }, uiLocale)}
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                            {
+                            {inlineCopy(
                                 {
                                     de: 'Die Seite verschwindet von öffentlichen Listen und Detail-URLs und wird aus der Sitemap entfernt. Der Entwurf bleibt im Admin erhalten. Die Änderung wird sofort gespeichert.',
                                     en: 'The page disappears from public lists and detail URLs and is removed from the sitemap. The draft remains available in admin. This change is saved immediately.',
-                                }[uiLocale]
-                            }
+                                },
+                                uiLocale,
+                            )}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>{{ de: 'Abbrechen', en: 'Cancel' }[uiLocale]}</AlertDialogCancel>
+                        <AlertDialogCancel>{inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, uiLocale)}</AlertDialogCancel>
                         <AlertDialogAction disabled={busy} onClick={() => void confirmUnpublish()}>
-                            {{ de: 'Zurückziehen', en: 'Unpublish' }[uiLocale]}
+                            {inlineCopy({ de: 'Zurückziehen', en: 'Unpublish' }, uiLocale)}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -554,21 +560,22 @@ export function ContentPageEditor({
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>
-                            {{ de: 'Seite endgültig löschen?', en: 'Permanently delete this page?' }[uiLocale]}
+                            {inlineCopy({ de: 'Seite endgültig löschen?', en: 'Permanently delete this page?' }, uiLocale)}
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                            {
+                            {inlineCopy(
                                 {
                                     de: 'Löschen kann nicht rückgängig gemacht werden. Die Seite ist danach weder öffentlich noch im Admin verfügbar.',
                                     en: 'Deletion cannot be undone. The page will no longer be available publicly or in admin.',
-                                }[uiLocale]
-                            }
+                                },
+                                uiLocale,
+                            )}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>{{ de: 'Abbrechen', en: 'Cancel' }[uiLocale]}</AlertDialogCancel>
+                        <AlertDialogCancel>{inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, uiLocale)}</AlertDialogCancel>
                         <AlertDialogAction variant="destructive" disabled={busy} onClick={() => void confirmDelete()}>
-                            {{ de: 'Löschen', en: 'Delete' }[uiLocale]}
+                            {inlineCopy({ de: 'Löschen', en: 'Delete' }, uiLocale)}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -577,32 +584,33 @@ export function ContentPageEditor({
             <Dialog open={scheduleOpen} onOpenChange={setScheduleOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>{{ de: 'Veröffentlichung planen', en: 'Schedule publication' }[uiLocale]}</DialogTitle>
+                        <DialogTitle>{inlineCopy({ de: 'Veröffentlichung planen', en: 'Schedule publication' }, uiLocale)}</DialogTitle>
                         <DialogDescription>
-                            {
+                            {inlineCopy(
                                 {
                                     de: 'Wähle das Go-live-Datum. Ab diesem Tag (Mitternacht Ortszeit) ist die Seite öffentlich sichtbar. Die Änderung wird sofort gespeichert.',
                                     en: 'Choose the go-live date. From that day (local midnight) the page becomes publicly visible. This change is saved immediately.',
-                                }[uiLocale]
-                            }
+                                },
+                                uiLocale,
+                            )}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="flex flex-col gap-2 py-2">
-                        <span className="text-sm font-medium">{{ de: 'Go-live-Datum', en: 'Go-live date' }[uiLocale]}</span>
+                        <span className="text-sm font-medium">{inlineCopy({ de: 'Go-live-Datum', en: 'Go-live date' }, uiLocale)}</span>
                         <DatePicker
                             value={scheduleDate}
                             onValueChange={setScheduleDate}
-                            placeholder={{ de: 'Datum wählen', en: 'Pick a date' }[uiLocale]}
+                            placeholder={inlineCopy({ de: 'Datum wählen', en: 'Pick a date' }, uiLocale)}
                             locale={DATE_FNS_LOCALE[uiLocale]}
                             className="w-full"
                         />
                     </div>
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={() => setScheduleOpen(false)}>
-                            {{ de: 'Abbrechen', en: 'Cancel' }[uiLocale]}
+                            {inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, uiLocale)}
                         </Button>
                         <Button type="button" disabled={busy || !scheduleDate} onClick={() => void confirmSchedule()}>
-                            {{ de: 'Planen', en: 'Schedule' }[uiLocale]}
+                            {inlineCopy({ de: 'Planen', en: 'Schedule' }, uiLocale)}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -642,14 +650,17 @@ function HeroImageField({
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [confirmRemove, setConfirmRemove] = useState(false);
-    const fieldLabel = label ?? { de: 'Hero-Bild', en: 'Hero image' }[uiLocale];
-    const confirmTitle = removeTitle ?? { de: 'Hero-Bild entfernen?', en: 'Remove hero image?' }[uiLocale];
+    const fieldLabel = label ?? inlineCopy({ de: 'Hero-Bild', en: 'Hero image' }, uiLocale);
+    const confirmTitle = removeTitle ?? inlineCopy({ de: 'Hero-Bild entfernen?', en: 'Remove hero image?' }, uiLocale);
     const confirmDescription =
         removeDescription ??
-        {
-            de: 'Das Hero-Bild wird aus dem Entwurf entfernt. Speichern übernimmt die Änderung.',
-            en: 'The hero image is removed from the draft. Saving applies the change.',
-        }[uiLocale];
+        inlineCopy(
+            {
+                de: 'Das Hero-Bild wird aus dem Entwurf entfernt. Speichern übernimmt die Änderung.',
+                en: 'The hero image is removed from the draft. Saving applies the change.',
+            },
+            uiLocale,
+        );
 
     return (
         <div className="flex flex-col gap-2">
@@ -692,11 +703,11 @@ function HeroImageField({
             />
             <div className="flex flex-wrap gap-2">
                 <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => inputRef.current?.click()}>
-                    {{ de: 'Hochladen', en: 'Upload' }[uiLocale]}
+                    {inlineCopy({ de: 'Hochladen', en: 'Upload' }, uiLocale)}
                 </Button>
                 {fileUploadId ? (
                     <Button type="button" variant="ghost" size="sm" onClick={() => setConfirmRemove(true)}>
-                        {{ de: 'Entfernen', en: 'Remove' }[uiLocale]}
+                        {inlineCopy({ de: 'Entfernen', en: 'Remove' }, uiLocale)}
                     </Button>
                 ) : null}
             </div>
@@ -709,7 +720,7 @@ function HeroImageField({
                         <AlertDialogDescription>{confirmDescription}</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>{{ de: 'Abbrechen', en: 'Cancel' }[uiLocale]}</AlertDialogCancel>
+                        <AlertDialogCancel>{inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, uiLocale)}</AlertDialogCancel>
                         <AlertDialogAction
                             variant="destructive"
                             onClick={() => {
@@ -717,7 +728,7 @@ function HeroImageField({
                                 setConfirmRemove(false);
                             }}
                         >
-                            {{ de: 'Entfernen', en: 'Remove' }[uiLocale]}
+                            {inlineCopy({ de: 'Entfernen', en: 'Remove' }, uiLocale)}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

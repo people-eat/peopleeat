@@ -1,3 +1,4 @@
+import { t } from '../../../i18n/t';
 import type { Locale } from '../../utils/locale';
 
 export type AdminOutboundEmailsSection = 'list';
@@ -7,11 +8,7 @@ export const ADMIN_OUTBOUND_EMAILS_SECTIONS: AdminOutboundEmailsSection[] = ['li
 export type AdminOutboundEmailsSectionTo = '/{-$locale}/admin/outbound-emails/list';
 
 export function adminOutboundEmailsSectionLabel(section: AdminOutboundEmailsSection, locale: Locale): string {
-    return (
-        {
-            list: { de: 'Liste', en: 'List' },
-        } as const
-    )[section][locale];
+    return t(locale, 'admin', `section.${section}`);
 }
 
 export function adminOutboundEmailsSectionPath(

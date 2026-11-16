@@ -71,7 +71,7 @@ Toggle `BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS` in `src/shared/featureToggle.ts`
 | Columns   | `BookingRequestOffers.customerReceiptFileUploadId`, `cookStatementFileUploadId`                                                                                    |
 | Capture   | `bookingRequestOfferPaymentPdfsCreate`                                                                                                                             |
 | Routes    | `/server/booking-request-offers/$bookingRequestOfferId/customer-receipt` and `.../cook-statement`                                                                  |
-| Page      | `BookingRequestOfferPaymentDocumentPage`                                                                                                                           |
+| Page      | `BookingRequestOfferPaymentDocumentPage` (`publicBooking.paymentDocument.*`)                                                                                       |
 | Email     | Customer confirmation attaches the receipt when the offer is `PAYED`. Cook mail `BOOKING_REQUEST_OFFER_PAYMENT_STATEMENT` sends only when the statement PDF exists |
 | Mutations | `bookingRequestOfferCustomerReceiptRegenerate`, cook `bookingRequestOfferCookStatementRegenerate`, admin `bookingRequestOfferPaymentDocumentsRegenerate`           |
 | Refresh   | Amendment apply and cook handover of an already paid offer recapture without a new email                                                                           |

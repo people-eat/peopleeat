@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { t } from '../../../i18n/t';
 import { userDisplayName } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
@@ -15,16 +16,15 @@ import {
     AdminWhatsAppMessageReactionUpsertDocument,
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
+import type { Locale } from '../../utils/locale';
 import { adminWhatsAppChatsPageTitle } from './AdminWhatsAppChatsPage';
 
-export const adminWhatsAppChatPageTitle = {
-    de: 'WhatsApp-Chat',
-    en: 'WhatsApp chat',
-} as const;
-export const adminWhatsAppChatPageDescription = {
-    de: 'Concierge-WhatsApp bearbeiten.',
-    en: 'Handle concierge WhatsApp.',
-} as const;
+export function adminWhatsAppChatPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.whatsAppChat.title');
+}
+export function adminWhatsAppChatPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.whatsAppChat.description');
+}
 
 export function adminWhatsAppChatPageVariables(whatsAppConversationId: string) {
     return { whatsAppConversationId };
@@ -80,7 +80,7 @@ export function AdminWhatsAppChatPage({
 
     return (
         <AdminPageChrome
-            crumbs={[{ label: adminWhatsAppChatsPageTitle[locale], to: '/{-$locale}/admin/whats-app-chats' }, { label: peerDisplay }]}
+            crumbs={[{ label: adminWhatsAppChatsPageTitle(locale), to: '/{-$locale}/admin/whats-app-chats' }, { label: peerDisplay }]}
             contentClassName="min-h-0 overflow-hidden gap-0 pb-0"
         >
             <AdminPinnedFooterLayout contentScroll={false} contentClassName="flex w-full min-w-0 flex-col pb-0">

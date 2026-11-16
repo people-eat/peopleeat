@@ -2,7 +2,7 @@ import { RotateCwIcon, ZoomInIcon, ZoomOutIcon } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Cropper from 'react-easy-crop';
 import type { Area, MediaSize, Size } from 'react-easy-crop';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 import { IMAGE_CROP_ASPECT, IMAGE_CROP_PRESETS, imageCropCompress, imageCropZoomBounds } from '../utils/imageCropCompress';
 import type { ImageCropVariant } from '../utils/imageCropCompress';
@@ -24,7 +24,7 @@ export interface ImageCropDialogProps {
 }
 
 export function ImageCropDialog({ open, onOpenChange, imageSrc, variant, onConfirm }: ImageCropDialogProps) {
-    const locale = useLocale();
+    const { t } = useT('common');
     const [crop, setCrop] = useState({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
     const [minZoom, setMinZoom] = useState(1);
@@ -82,50 +82,16 @@ export function ImageCropDialog({ open, onOpenChange, imageSrc, variant, onConfi
             await onConfirm(file);
             onOpenChange(false);
         } catch {
-            setError(
-                {
-                    de: 'Bild konnte nicht gespeichert werden. Bitte erneut versuchen.',
-                    en: 'Could not save the image. Please try again.',
-                }[locale],
-            );
+            setError(t('imageCrop.saveFailed'));
         } finally {
             setBusy(false);
         }
     }
 
-    const title = {
-        avatar: { de: 'Profilbild zuschneiden', en: 'Crop profile picture' },
-        logo: { de: 'Zusätzliches Bild zuschneiden', en: 'Crop additional picture' },
-        meal: { de: 'Foto zuschneiden', en: 'Crop meal image' },
-        content: { de: 'Bild zuschneiden', en: 'Crop image' },
-        contentWide: { de: 'Bild zuschneiden', en: 'Crop image' },
-    }[variant][locale];
-
-    const description = {
-        avatar: {
-            de: 'Verschiebe und zoome das Bild, bis der Ausschnitt passt.',
-            en: 'Drag and zoom until the crop looks right.',
-        },
-        logo: {
-            de: 'Verschiebe und zoome das Bild in den Querformat-Ausschnitt.',
-            en: 'Drag and zoom the picture into the landscape frame.',
-        },
-        meal: {
-            de: 'Verschiebe und zoome das Bild in den quadratischen Ausschnitt.',
-            en: 'Drag and zoom the image into the square frame.',
-        },
-        content: {
-            de: 'Verschiebe und zoome das Bild in den quadratischen Ausschnitt.',
-            en: 'Drag and zoom the image into the square frame.',
-        },
-        contentWide: {
-            de: 'Verschiebe und zoome das Bild in den Querformat-Ausschnitt.',
-            en: 'Drag and zoom the picture into the landscape frame.',
-        },
-    }[variant][locale];
-
-    const zoomLabel = { de: 'Zoom', en: 'Zoom' }[locale];
-    const rotateLabel = { de: 'Drehen', en: 'Rotate' }[locale];
+    const title = t(`imageCrop.title.${variant}`);
+    const description = t(`imageCrop.description.${variant}`);
+    const zoomLabel = t('imageCrop.zoom');
+    const rotateLabel = t('imageCrop.rotate');
     const aspect = IMAGE_CROP_ASPECT[variant];
     const isRound = variant === 'avatar';
     const isRect = !isRound;
@@ -212,7 +178,7 @@ export function ImageCropDialog({ open, onOpenChange, imageSrc, variant, onConfi
                                     size="icon"
                                     className="size-10 sm:size-8"
                                     disabled={busy || zoom <= minZoom}
-                                    aria-label={{ de: 'Verkleinern', en: 'Zoom out' }[locale]}
+                                    aria-label={t('imageCrop.zoomOut')}
                                     onClick={() => setZoom((value) => Math.max(minZoom, Number((value - ZOOM_STEP).toFixed(2))))}
                                 >
                                     <ZoomOutIcon />
@@ -223,7 +189,7 @@ export function ImageCropDialog({ open, onOpenChange, imageSrc, variant, onConfi
                                     size="icon"
                                     className="size-10 sm:size-8"
                                     disabled={busy || zoom >= maxZoom}
-                                    aria-label={{ de: 'Vergrößern', en: 'Zoom in' }[locale]}
+                                    aria-label={t('imageCrop.zoomIn')}
                                     onClick={() => setZoom((value) => Math.min(maxZoom, Number((value + ZOOM_STEP).toFixed(2))))}
                                 >
                                     <ZoomInIcon />
@@ -250,11 +216,11 @@ export function ImageCropDialog({ open, onOpenChange, imageSrc, variant, onConfi
                             size="sm"
                             className="h-10 gap-2 px-3 sm:h-8"
                             disabled={busy}
-                            aria-label={{ de: 'Um 90° drehen', en: 'Rotate 90°' }[locale]}
+                            aria-label={t('imageCrop.rotate90')}
                             onClick={() => setRotation((value) => (value + ROTATION_STEP) % 360)}
                         >
                             <RotateCwIcon className="size-4" />
-                            {{ de: '90°', en: '90°' }[locale]}
+                            {t('imageCrop.rotate90Short')}
                         </Button>
                     </div>
                 </div>
@@ -269,7 +235,7 @@ export function ImageCropDialog({ open, onOpenChange, imageSrc, variant, onConfi
                         disabled={busy}
                         onClick={() => onOpenChange(false)}
                     >
-                        {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                        {t('cancel')}
                     </Button>
                     <Button
                         type="button"
@@ -278,12 +244,7 @@ export function ImageCropDialog({ open, onOpenChange, imageSrc, variant, onConfi
                         onClick={() => void handleConfirm()}
                     >
                         {busy && <Spinner className="size-4" />}
-                        {
-                            {
-                                de: busy ? 'Speichern…' : 'Übernehmen',
-                                en: busy ? 'Saving…' : 'Apply',
-                            }[locale]
-                        }
+                        {busy ? t('imageCrop.saving') : t('imageCrop.apply')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

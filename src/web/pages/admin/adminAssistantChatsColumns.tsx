@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { createColumnHelper } from '@tanstack/react-table';
 
+import { t } from '../../../i18n/t';
 import { formatDate, userDisplayName } from '../../../shared';
 import type { Locale } from '../../../shared/locale';
 import { Badge } from '../../components/base/badge';
@@ -23,7 +24,7 @@ export function adminAssistantChatsColumns(locale: Locale, timeZone: string) {
     return columnHelper.columns([
         columnHelper.accessor((row) => userDisplayName(row.user), {
             id: 'user',
-            header: () => ({ de: 'Nutzer', en: 'User' })[locale],
+            header: () => t(locale, 'admin', 'copy.user'),
             cell: ({ row }) => {
                 const user = row.original.user;
                 return (
@@ -40,24 +41,22 @@ export function adminAssistantChatsColumns(locale: Locale, timeZone: string) {
         }),
         columnHelper.accessor((row) => adminAssistantChatTitle(row.title, locale), {
             id: 'title',
-            header: () => ({ de: 'Titel', en: 'Title' })[locale],
+            header: () => t(locale, 'admin', 'copy.title'),
             cell: ({ row }) => (
                 <div className="flex min-w-0 flex-col gap-1">
                     <span className="line-clamp-2 font-medium text-foreground">{adminAssistantChatTitle(row.original.title, locale)}</span>
-                    {row.original.deletedAt ? (
-                        <Badge variant="outline">{({ de: 'Gelöscht', en: 'Deleted' } as const)[locale]}</Badge>
-                    ) : null}
+                    {row.original.deletedAt ? <Badge variant="outline">{t(locale, 'admin', 'copy.deleted')}</Badge> : null}
                 </div>
             ),
             enableSorting: false,
         }),
         columnHelper.accessor('surface', {
-            header: () => ({ de: 'Oberfläche', en: 'Surface' })[locale],
+            header: () => t(locale, 'admin', 'copy.surface'),
             cell: ({ row }) => <Badge variant="secondary">{adminChatSurfaceLabel(row.original.surface, locale)}</Badge>,
             enableSorting: false,
         }),
         columnHelper.accessor('lastModifiedAt', {
-            header: () => ({ de: 'Zuletzt geändert', en: 'Last modified' })[locale],
+            header: () => t(locale, 'admin', 'copy.lastModified'),
             cell: ({ row }) => (
                 <span className="text-muted-foreground tabular-nums">
                     {formatDate(row.original.lastModifiedAt, { locale, timeZone, dateStyle: 'medium' })}

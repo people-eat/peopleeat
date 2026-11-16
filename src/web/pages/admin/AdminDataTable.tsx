@@ -4,6 +4,8 @@ import type { OnChangeFn, RowData, SortingState } from '@tanstack/react-table';
 import { ChevronRightIcon } from 'lucide-react';
 import type { MouseEvent, ReactNode } from 'react';
 
+import { t } from '../../../i18n/t';
+import { inlineCopy } from '../../../shared';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '../../components/base/pagination';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/base/table';
 import { useLocale } from '../../hooks/useLocale';
@@ -52,7 +54,7 @@ export function AdminDataTable<TData extends RowData>({
 }: AdminDataTableProps<TData>) {
     const locale = useLocale();
     const navigate = useNavigate();
-    const openDetailsLabel = { de: 'Details öffnen', en: 'Open details' }[locale];
+    const openDetailsLabel = t(locale, 'admin', 'copy.openDetails');
     const rowLinks = getRowTo != null;
     const paginationVisible = showPagination ?? onPageChange != null;
 
@@ -171,7 +173,7 @@ export function AdminDataTable<TData extends RowData>({
                         </PaginationItem>
                         <PaginationItem>
                             <span className="px-2 text-sm text-muted-foreground tabular-nums">
-                                {{ de: `Seite ${page} von ${pageCount}`, en: `Page ${page} of ${pageCount}` }[locale]}
+                                {inlineCopy({ de: `Seite ${page} von ${pageCount}`, en: `Page ${page} of ${pageCount}` }, locale)}
                             </span>
                         </PaginationItem>
                         <PaginationItem>

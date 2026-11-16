@@ -53,10 +53,10 @@ These are non-negotiable. The full details are in `docs/conventions.md`.
   multi-write). See [docs/conventions.md](./docs/conventions.md#commands-database-writes).
 - **Environment variables**: never read `process.env` directly — only via `environmentVariablesCreate()`. See
   [docs/architecture/environment.md](./docs/architecture/environment.md).
-- **Bilingual copy**: DE + EN via the inline `{ de: '…', en: '…' }[locale]` literal **at the call site** — no i18n library and no page-level
-  `COPY` const. Hoist a small named const only for strings reused within the file (e.g. shared by `seoMeta()` and the `<h1>`) or needed
-  outside JSX (`aria-label`, `alt`, JSON-LD). Never render raw `error.message` in the UI. No em dashes (`—`) in user-facing copy (prefer
-  commas, periods, colons). See [docs/architecture/i18n.md](./docs/architecture/i18n.md) and
+- **Bilingual copy**: JSON catalogs in `src/i18n/locales/` with type-safe `t(locale, ns, key)` / `useT(ns)`. No page-level `COPY` const and
+  no new inline `{ de, en }` objects. Namespaces match lazy-load boundaries (`common`, `public`, `publicBooking`, `profile`, `profileCook`,
+  `profileCustomer`, `admin`, `email`). Never render raw `error.message` in the UI. No em dashes (`—`) in user-facing copy (prefer commas,
+  periods, colons). See [docs/architecture/i18n.md](./docs/architecture/i18n.md) and
   [docs/conventions.md](./docs/conventions.md#bilingual-copy).
 - **SEO**: every public page uses `seoMeta()` and is listed in `src/web/seo/sitemapRoutes.ts` when indexable. Private / transactional pages
   pass `noindex: true` and stay out of the sitemap.
@@ -137,12 +137,19 @@ in `docs/styles/`.
 1. Add the page component under `src/web/pages/` (and its `.graphql` operations next to it when needed)
 2. Add a thin route under `src/routes/{-$locale}/` that wires `loader` / `head` / search and renders the page (the `{-$locale}` segment
    makes the page bilingual at `/page` and `/en/page`)
-3. Use `seoMeta()` in the route `head()` with bilingual `title` / `description` (export shared title/description consts from the page module
-   when the page UI also needs them)
+3. Use `seoMeta()` in the route `head()` with `t(locale, 'public', '…')` for title / description (same keys as the page `useT('public')`)
 4. **Add the path to `src/web/seo/sitemapRoutes.ts`** if it should be indexed
-5. Bilingual page copy uses the `{ de: '…', en: '…' }[locale]` pattern
+5. Page copy goes in `src/i18n/locales/{locale}/public.json` (or `publicBooking.json` for the booking funnel)
 6. See [docs/architecture/discovery-seo.md](./docs/architecture/discovery-seo.md); when GEO surfaces exist, also mirror
    [docs/architecture/discovery-geo.md](./docs/architecture/discovery-geo.md)
+
+### New UI string
+
+1. Add the key to `src/i18n/locales/de/{namespace}.json` and the `en` file (same key tree). `fr` / `it` may omit until those locales are
+   enabled
+2. Use `useT('namespace')` in React or `t(locale, 'namespace', 'key')` in `head()` / emails / `src/shared`
+3. Pick the namespace that matches the lazy-load boundary — see [docs/architecture/i18n.md](./docs/architecture/i18n.md)
+4. Run `npm run i18n:check` after catalog edits
 
 ### New Background Job
 

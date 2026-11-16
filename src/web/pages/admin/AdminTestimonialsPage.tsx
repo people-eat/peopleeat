@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { createRequest, useClient } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { t } from '../../../i18n/t';
+import { inlineCopy } from '../../../shared';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { AdminTestimonialListCard } from '../../components/AdminTestimonialListCard';
 import type { AdminTestimonialListCardTestimonial } from '../../components/AdminTestimonialListCard';
@@ -11,14 +13,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import type { GqlCAdminTestimonialsPageQuery } from '../../graphql/generated';
 import { AdminTestimonialsPageUpdatesDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
+import type { Locale } from '../../utils/locale';
 import { testimonialPublicationStatusLabel, testimonialTypeLabel } from './adminTestimonialsShared';
 import type { AdminTestimonialType } from './adminTestimonialsShared';
 
-export const adminTestimonialsPageTitle = { de: 'Bewertungen', en: 'Reviews' } as const;
-export const adminTestimonialsPageDescription = {
-    de: 'Kunden- und Koch-Bewertungen verwalten.',
-    en: 'Manage customer and cook reviews.',
-} as const;
+export function adminTestimonialsPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'nav.testimonials.title');
+}
+export function adminTestimonialsPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.testimonials.description');
+}
 
 type TypeFilter = 'ALL' | AdminTestimonialType;
 type PublicationFilter = 'ALL' | 'PUBLISHED' | 'PENDING_REVIEW';
@@ -122,16 +126,16 @@ export function AdminTestimonialsPage({ data }: { data: GqlCAdminTestimonialsPag
                         type="search"
                         value={searchText}
                         onChange={(event) => setSearchText(event.target.value)}
-                        placeholder={{ de: 'Autor oder Text suchen…', en: 'Search author or body…' }[locale]}
-                        aria-label={{ de: 'Bewertungen suchen', en: 'Search testimonials' }[locale]}
+                        placeholder={t(locale, 'admin', 'copy.searchAuthorOrBody')}
+                        aria-label={t(locale, 'admin', 'copy.searchTestimonials')}
                         className="max-w-xs"
                     />
                     <Select value={typeFilter} onValueChange={(value) => setTypeFilter((value as TypeFilter | null) ?? 'ALL')}>
-                        <SelectTrigger size="sm" aria-label={{ de: 'Autor-Typ filtern', en: 'Filter by author type' }[locale]}>
+                        <SelectTrigger size="sm" aria-label={t(locale, 'admin', 'copy.filterByAuthorType')}>
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="ALL">{{ de: 'Alle Autoren', en: 'All authors' }[locale]}</SelectItem>
+                            <SelectItem value="ALL">{t(locale, 'admin', 'copy.allAuthors')}</SelectItem>
                             <SelectItem value="CUSTOMER">{testimonialTypeLabel('CUSTOMER', locale)}</SelectItem>
                             <SelectItem value="COOK">{testimonialTypeLabel('COOK', locale)}</SelectItem>
                         </SelectContent>
@@ -140,23 +144,23 @@ export function AdminTestimonialsPage({ data }: { data: GqlCAdminTestimonialsPag
                         value={publicationFilter}
                         onValueChange={(value) => setPublicationFilter((value as PublicationFilter | null) ?? 'ALL')}
                     >
-                        <SelectTrigger size="sm" aria-label={{ de: 'Status filtern', en: 'Filter by status' }[locale]}>
+                        <SelectTrigger size="sm" aria-label={t(locale, 'admin', 'copy.filterByStatus')}>
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="ALL">{{ de: 'Alle Statuswerte', en: 'All statuses' }[locale]}</SelectItem>
+                            <SelectItem value="ALL">{t(locale, 'admin', 'copy.allStatuses2')}</SelectItem>
                             <SelectItem value="PUBLISHED">{testimonialPublicationStatusLabel('PUBLISHED', locale)}</SelectItem>
                             <SelectItem value="PENDING_REVIEW">{testimonialPublicationStatusLabel('PENDING_REVIEW', locale)}</SelectItem>
                         </SelectContent>
                     </Select>
                     <Select value={linkFilter} onValueChange={(value) => setLinkFilter((value as LinkFilter | null) ?? 'ALL')}>
-                        <SelectTrigger size="sm" aria-label={{ de: 'Verknüpfung filtern', en: 'Filter by link' }[locale]}>
+                        <SelectTrigger size="sm" aria-label={t(locale, 'admin', 'copy.filterByLink')}>
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="ALL">{{ de: 'Alle Verknüpfungen', en: 'All links' }[locale]}</SelectItem>
-                            <SelectItem value="LINKED">{{ de: 'Verknüpft', en: 'Linked' }[locale]}</SelectItem>
-                            <SelectItem value="UNLINKED">{{ de: 'Unverknüpft', en: 'Unlinked' }[locale]}</SelectItem>
+                            <SelectItem value="ALL">{t(locale, 'admin', 'copy.allLinks')}</SelectItem>
+                            <SelectItem value="LINKED">{t(locale, 'admin', 'copy.linked')}</SelectItem>
+                            <SelectItem value="UNLINKED">{t(locale, 'admin', 'copy.unlinked')}</SelectItem>
                         </SelectContent>
                     </Select>
                     {hasActiveFilters ? (
@@ -171,22 +175,23 @@ export function AdminTestimonialsPage({ data }: { data: GqlCAdminTestimonialsPag
                                 setLinkFilter('ALL');
                             }}
                         >
-                            {{ de: 'Filter zurücksetzen', en: 'Clear filters' }[locale]}
+                            {t(locale, 'admin', 'copy.clearFilters')}
                         </Button>
                     ) : null}
                     <p className="text-sm text-muted-foreground tabular-nums sm:ml-auto">
-                        {
+                        {inlineCopy(
                             {
                                 de: `${filtered.length} von ${rows.length} Bewertungen`,
                                 en: `${filtered.length} of ${rows.length} testimonials`,
-                            }[locale]
-                        }
+                            },
+                            locale,
+                        )}
                     </p>
                 </div>
 
                 {filtered.length === 0 ? (
                     <p className="rounded-xl border border-border bg-secondary p-8 text-center text-sm text-muted-foreground">
-                        {{ de: 'Keine Bewertungen gefunden.', en: 'No testimonials found.' }[locale]}
+                        {t(locale, 'admin', 'copy.noTestimonialsFound')}
                     </p>
                 ) : (
                     <ul className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">

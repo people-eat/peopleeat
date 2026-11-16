@@ -22,8 +22,8 @@ export const Route = createFileRoute('/{-$locale}/admin/outbound-emails_/list')(
     head: ({ params }) => {
         const locale = localeFromParam(params);
         return seoMeta({
-            title: adminOutboundEmailsPageTitle[locale],
-            description: adminOutboundEmailsPageDescription[locale],
+            title: adminOutboundEmailsPageTitle(locale),
+            description: adminOutboundEmailsPageDescription(locale),
             path: adminOutboundEmailsSectionPath('list'),
             locale,
             webPageUrl: webPageUrlGet(),

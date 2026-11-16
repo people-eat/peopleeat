@@ -1,23 +1,19 @@
 import { sql } from 'drizzle-orm';
 
+import { t } from '../../i18n/t';
+
 import { bookingRequestFormFunnelArea, bookingRequestFormFunnelSteps } from '../../shared/bookingRequestFormFunnel';
 import type { BookingRequestFormFunnelStep } from '../../shared/bookingRequestFormFunnel';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminAnalyticsBookingRequestFormFlow, GqlSDateTimeRange, GqlSSession } from '../graphql/generated';
 import { dateTimeRangeNormalize } from '../utils/dateTimeRangeNormalize';
 
-const FUNNEL_LABELS: Record<BookingRequestFormFunnelStep, { de: string; en: string }> = {
-    occasion: { de: 'Anlass', en: 'Occasion' },
-    participants: { de: 'Gäste', en: 'Guests' },
-    location: { de: 'Ort', en: 'Location' },
-    dateTime: { de: 'Datum & Zeit', en: 'Date & time' },
-    priceClass: { de: 'Preisklasse', en: 'Price class' },
-    preferences: { de: 'Vorlieben', en: 'Preferences' },
-    restrictions: { de: 'Einschränkungen', en: 'Restrictions' },
-    message: { de: 'Nachricht', en: 'Message' },
-    auth: { de: 'Anmeldung', en: 'Sign-in' },
-    created: { de: 'Anfrage erstellt', en: 'Request created' },
-};
+function funnelLabel(step: BookingRequestFormFunnelStep): { de: string; en: string } {
+    return {
+        de: t('de', 'admin', `analytics.funnels.bookingRequestForm.${step}`),
+        en: t('en', 'admin', `analytics.funnels.bookingRequestForm.${step}`),
+    };
+}
 
 type StepRow = {
     session_id: string;
@@ -138,8 +134,8 @@ export async function adminAnalyticsBookingRequestFormFlow(
             .filter((step) => nodeIds.has(step))
             .map((step) => ({
                 id: step,
-                labelDe: FUNNEL_LABELS[step].de,
-                labelEn: FUNNEL_LABELS[step].en,
+                labelDe: funnelLabel(step).de,
+                labelEn: funnelLabel(step).en,
             }));
 
         const links = [...edgeCounts.entries()].map(([key, value]) => {
@@ -149,8 +145,8 @@ export async function adminAnalyticsBookingRequestFormFlow(
 
         const steps = bookingRequestFormFunnelSteps.map((step) => ({
             id: step,
-            labelDe: FUNNEL_LABELS[step].de,
-            labelEn: FUNNEL_LABELS[step].en,
+            labelDe: funnelLabel(step).de,
+            labelEn: funnelLabel(step).en,
             enteredCount: enteredByStep.get(step)?.size ?? 0,
             completedCount: completedByStep.get(step)?.size ?? 0,
         }));

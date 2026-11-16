@@ -8,12 +8,7 @@ import { Footer } from '../components/Footer';
 import { Header } from '../components/Header';
 import type { GqlCPublicCitiesPageQuery } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
-
-const citiesPageTitle = { de: 'Unsere Städte', en: 'Our Cities' } as const;
-const citiesPageDescription = {
-    de: 'Finde Privatköche in deiner Stadt.',
-    en: 'Find private chefs in your city.',
-} as const;
+import { useT } from '../hooks/useT';
 
 type CityListItem = GqlCPublicCitiesPageQuery['publicCity']['findMany'][number];
 
@@ -40,19 +35,18 @@ function citiesGroupedByCountry(items: readonly CityListItem[]): Array<{
 
 export function CitiesPage({ data }: { data: GqlCPublicCitiesPageQuery }) {
     const locale = useLocale();
+    const { t } = useT('public');
     const groups = useMemo(() => citiesGroupedByCountry(data.publicCity.findMany), [data.publicCity.findMany]);
 
     return (
         <>
             <Header user={data.currentSession.user} />
             <main id="main-content" className="mx-auto w-full max-w-7xl px-4 py-16 @lg:px-6">
-                <h1 className="font-serif text-4xl font-light @md:text-5xl">{citiesPageTitle[locale]}</h1>
-                <p className="mt-3 max-w-2xl text-muted-foreground">{citiesPageDescription[locale]}</p>
+                <h1 className="font-serif text-4xl font-light @md:text-5xl">{t('cities.title')}</h1>
+                <p className="mt-3 max-w-2xl text-muted-foreground">{t('cities.description')}</p>
                 <div className="mt-12 flex flex-col gap-16">
                     {groups.length === 0 ? (
-                        <p className="text-muted-foreground">
-                            {{ de: 'Noch keine Städte veröffentlicht.', en: 'No cities published yet.' }[locale]}
-                        </p>
+                        <p className="text-muted-foreground">{t('cities.empty')}</p>
                     ) : (
                         groups.map((group) => (
                             <section key={group.countryCode} className="flex flex-col gap-6">

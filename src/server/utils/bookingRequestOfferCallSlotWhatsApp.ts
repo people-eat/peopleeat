@@ -1,6 +1,8 @@
 import { eq } from 'drizzle-orm';
 
+import { t } from '../../i18n/t';
 import { formatBookingEventDateFromCountry, formatBookingWhenJoined } from '../../shared';
+import type { Locale } from '../../shared/locale';
 import { bookingRequestOffers, bookingRequests, cookCallSlotBookings, users } from '../db/schema';
 import type { CookCallSlotBookingStatus } from '../domain/bookingRequest';
 import { notificationWhatsAppAllowed } from '../domain/notificationSettings';
@@ -39,14 +41,14 @@ type CallSlotWhatsAppContext = {
     cookId: string;
     customer: {
         firstName: string;
-        locale: 'de' | 'en';
+        locale: Locale;
         timeZone: string;
         phoneNumber: string | null;
         notificationSettings: UserNotificationSettingsStored;
     };
     cookUser: {
         firstName: string;
-        locale: 'de' | 'en';
+        locale: Locale;
         timeZone: string;
         phoneNumber: string | null;
         notificationSettings: UserNotificationSettingsStored;
@@ -188,11 +190,7 @@ async function recipientSend(
     });
     const bodyParameters =
         args.purpose === 'CALL_SLOT_BOOKING_CANCEL' || args.purpose === 'CALL_SLOT_BOOKING_DECLINE'
-            ? [
-                  user.firstName,
-                  args.senderFirstName,
-                  args.reason?.trim() || { de: 'Kein Grund angegeben.', en: 'No reason provided.' }[user.locale],
-              ]
+            ? [user.firstName, args.senderFirstName, args.reason?.trim() || t(user.locale, 'common', 'callSlotNoReason')]
             : args.purpose === 'CALL_SLOT_BOOKING_CREATE'
               ? [user.firstName, args.senderFirstName, dateLabel, timeLabel, bookingRequestDateLabel, args.context.occasion]
               : [user.firstName, args.senderFirstName, dateLabel, timeLabel];

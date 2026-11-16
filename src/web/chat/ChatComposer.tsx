@@ -19,6 +19,7 @@ import { MessageComposer } from '../components/MessageComposer';
 import type { ComposerAttachment } from '../components/MessageComposer';
 import { ChatMessageCreateDocument } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { uploadErrorMessage, uploadFile } from './fileUpload';
 
 type ToolCallApprovalMode = 'auto' | 'manual';
@@ -44,6 +45,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(fu
     ref,
 ) {
     const locale = useLocale();
+    const { t } = useT('common');
     const [internalDraft, setInternalDraft] = useState('');
     const draft = value ?? internalDraft;
     const setDraft = onValueChange ?? setInternalDraft;
@@ -151,9 +153,9 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(fu
         [send],
     );
 
-    const menuLabel = { de: 'Composer-Optionen', en: 'Composer options' }[locale];
-    const attachLabel = { de: 'Datei anhängen', en: 'Attach file' }[locale];
-    const approvalLabel = { de: 'Tool-Freigabe', en: 'Tool approval' }[locale];
+    const menuLabel = t('chatComposer.options');
+    const attachLabel = t('composer.attach');
+    const approvalLabel = t('chatComposer.toolApproval');
     const inputsLocked = isLocked || submitting;
 
     return (
@@ -165,8 +167,8 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(fu
             busy={isLocked}
             submitting={submitting}
             autoFocus={autoFocus}
-            placeholder={{ de: 'Nachricht eingeben…', en: 'Type a message…' }[locale]}
-            ariaLabel={{ de: 'Nachricht', en: 'Message' }[locale]}
+            placeholder={t('composer.placeholder')}
+            ariaLabel={t('chatComposer.messageAria')}
             attachments={attachments}
             onAttachmentsAdd={onAttachmentsAdd}
             onAttachmentRemove={onAttachmentRemove}
@@ -202,12 +204,8 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(fu
                             <DropdownMenuGroup>
                                 <DropdownMenuLabel>{approvalLabel}</DropdownMenuLabel>
                                 <DropdownMenuRadioGroup value={mode} onValueChange={(next) => setMode(next as ToolCallApprovalMode)}>
-                                    <DropdownMenuRadioItem value="auto">
-                                        {{ de: 'Automatisch', en: 'Automatic' }[locale]}
-                                    </DropdownMenuRadioItem>
-                                    <DropdownMenuRadioItem value="manual">
-                                        {{ de: 'Manuell freigeben', en: 'Ask before tools' }[locale]}
-                                    </DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="auto">{t('chatComposer.approvalAutomatic')}</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="manual">{t('chatComposer.approvalManual')}</DropdownMenuRadioItem>
                                 </DropdownMenuRadioGroup>
                             </DropdownMenuGroup>
                         </DropdownMenuContent>

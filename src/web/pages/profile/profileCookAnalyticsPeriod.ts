@@ -1,3 +1,4 @@
+import { t } from '../../../i18n/t';
 import { COOK_ANALYTICS_PERIOD_DEFAULT, cookAnalyticsPeriodParse, cookAnalyticsPeriods } from '../../../shared';
 import type { CookAnalyticsPeriod } from '../../../shared';
 import type { Locale } from '../../utils/locale';
@@ -20,12 +21,7 @@ export function profileCookAnalyticsPageVariables(search: ProfileCookAnalyticsSe
 }
 
 export function cookAnalyticsPeriodLabel(period: CookAnalyticsPeriod, locale: Locale): string {
-    return {
-        PAST_WEEK: { de: 'Woche', en: 'Week' },
-        PAST_MONTH: { de: 'Monat', en: 'Month' },
-        PAST_QUARTER: { de: 'Quartal', en: 'Quarter' },
-        PAST_YEAR: { de: 'Jahr', en: 'Year' },
-    }[period][locale];
+    return t(locale, 'profileCook', `period.${period}`);
 }
 
 export { cookAnalyticsPeriods };

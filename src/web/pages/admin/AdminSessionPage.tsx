@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import { t } from '../../../i18n/t';
 import { formatDate, userDisplayName } from '../../../shared';
 import { AdminListPaginationBar } from '../../components/AdminListPaginationBar';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
@@ -29,11 +30,12 @@ import {
 } from './adminListPaginationSearch';
 import type { AdminListPageSize } from './adminListPaginationSearch';
 
-export const adminSessionPageTitle = { de: 'Sitzung', en: 'Session' } as const;
-export const adminSessionPageDescription = {
-    de: 'Details einer Browser-Sitzung.',
-    en: 'Details for a browser session.',
-} as const;
+export function adminSessionPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.session.title');
+}
+export function adminSessionPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.session.description');
+}
 
 const SESSION_TABS = ['overview', 'events'] as const;
 
@@ -84,13 +86,13 @@ type AdminSessionDetail = NonNullable<NonNullable<NonNullable<GqlCAdminSessionPa
 
 type AdminSessionTabDef = {
     id: AdminSessionTab;
-    label: Record<Locale, string>;
+    labelKey: string;
     Icon: LucideIcon;
 };
 
 const ADMIN_SESSION_TABS: readonly AdminSessionTabDef[] = [
-    { id: 'overview', label: { de: 'Übersicht', en: 'Overview' }, Icon: AppWindowIcon },
-    { id: 'events', label: { de: 'Ereignisse', en: 'Events' }, Icon: LayersIcon },
+    { id: 'overview', labelKey: 'session.tabs.overview', Icon: AppWindowIcon },
+    { id: 'events', labelKey: 'session.tabs.events', Icon: LayersIcon },
 ];
 
 function resolveAdminSessionTab(tab: AdminSessionTab | undefined): AdminSessionTab {
@@ -120,7 +122,7 @@ export function AdminSessionPage({
     const session = admin?.session ?? null;
     const events = admin?.sessionEvents ?? [];
     const eventsTotal = admin?.sessionEventsCounts?.[0] ?? 0;
-    const crumbLabel = session?.user ? userDisplayName(session.user) : adminSessionPageTitle[locale];
+    const crumbLabel = session?.user ? userDisplayName(session.user) : adminSessionPageTitle(locale);
     const tab = resolveAdminSessionTab(search.tab);
     const eventsPage = search.page ?? 1;
     const eventsPageSize = adminListPageSize(search);
@@ -153,14 +155,14 @@ export function AdminSessionPage({
 
     return (
         <AdminPageChrome
-            crumbs={[{ label: { de: 'Sitzungen', en: 'Sessions' }[locale], to: '/{-$locale}/admin/sessions' }, { label: crumbLabel }]}
+            crumbs={[{ label: t(locale, 'admin', 'copy.sessions'), to: '/{-$locale}/admin/sessions' }, { label: crumbLabel }]}
             contentClassName="min-h-0 overflow-hidden gap-0"
         >
             {session ? (
                 <AdminPinnedFooterLayout footer={footer} contentClassName="grid w-full content-start gap-6">
                     <Tabs value={tab}>
-                        <TabsList variant="line" aria-label={{ de: 'Sitzungsbereiche', en: 'Session sections' }[locale]}>
-                            {ADMIN_SESSION_TABS.map(({ id, label, Icon }) => (
+                        <TabsList variant="line" aria-label={t(locale, 'admin', 'copy.sessionSections')}>
+                            {ADMIN_SESSION_TABS.map(({ id, labelKey, Icon }) => (
                                 <TabsTrigger key={id} value={id} asChild>
                                     <Link
                                         to="/{-$locale}/admin/sessions/$sessionId"
@@ -169,7 +171,7 @@ export function AdminSessionPage({
                                         replace
                                     >
                                         <Icon aria-hidden />
-                                        {label[locale]}
+                                        {t(locale, 'admin', labelKey)}
                                     </Link>
                                 </TabsTrigger>
                             ))}
@@ -179,15 +181,12 @@ export function AdminSessionPage({
                     {tab === 'overview' ? (
                         <AdminSessionOverviewFields session={session} />
                     ) : (
-                        <AdminSessionEventTimeline
-                            events={events}
-                            emptyLabel={{ de: 'Keine Ereignisse für diese Sitzung.', en: 'No events for this session.' }[locale]}
-                        />
+                        <AdminSessionEventTimeline events={events} emptyLabel={t(locale, 'admin', 'copy.noEventsForThisSession')} />
                     )}
                 </AdminPinnedFooterLayout>
             ) : (
                 <main id="main-content" className="grid w-full content-start gap-6 px-4 pb-6">
-                    <p className="text-sm text-muted-foreground">{{ de: 'Sitzung nicht gefunden.', en: 'Session not found.' }[locale]}</p>
+                    <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.sessionNotFound')}</p>
                 </main>
             )}
         </AdminPageChrome>
@@ -197,9 +196,9 @@ export function AdminSessionPage({
 function AdminSessionOverviewFields({ session }: { session: AdminSessionDetail }) {
     const locale = useLocale();
     const timeZone = useTimeZone();
-    const empty = { de: '-', en: '-' }[locale];
-    const yes = { de: 'Ja', en: 'Yes' }[locale];
-    const no = { de: 'Nein', en: 'No' }[locale];
+    const empty = t(locale, 'admin', 'copy.empty2');
+    const yes = t(locale, 'admin', 'copy.yes');
+    const no = t(locale, 'admin', 'copy.no');
     const lastInteraction = formatDate(session.lastInteractionAt, { locale, timeZone, dateStyle: 'long' });
     const created = formatDate(session.createdAt, { locale, timeZone, dateStyle: 'long' });
     const terminated = session.wasTerminatedAt ? formatDate(session.wasTerminatedAt, { locale, timeZone, dateStyle: 'long' }) : empty;
@@ -213,51 +212,34 @@ function AdminSessionOverviewFields({ session }: { session: AdminSessionDetail }
 
     return (
         <dl className="grid gap-4">
-            <DetailField
-                label={{ de: 'Sitzungs-ID', en: 'Session ID' }[locale]}
-                value={session.sessionId}
-                mono
-                copyText={session.sessionId}
-            />
+            <DetailField label={t(locale, 'admin', 'copy.sessionId')} value={session.sessionId} mono copyText={session.sessionId} />
             <Separator />
             <AdminSessionUserField session={session} />
             <Separator />
-            <DetailField
-                label={{ de: 'Zuletzt aktiv', en: 'Last interaction' }[locale]}
-                value={lastInteraction}
-                copyText={lastInteraction}
-            />
+            <DetailField label={t(locale, 'admin', 'copy.lastInteraction')} value={lastInteraction} copyText={lastInteraction} />
             <Separator />
-            <DetailField label={{ de: 'Erstellt', en: 'Created' }[locale]} value={created} copyText={created} />
+            <DetailField label={t(locale, 'admin', 'copy.created')} value={created} copyText={created} />
             <Separator />
             <DetailField
-                label={{ de: 'Beendet', en: 'Terminated' }[locale]}
+                label={t(locale, 'admin', 'copy.terminated')}
                 value={terminated}
                 copyText={session.wasTerminatedAt ? terminated : undefined}
             />
             <Separator />
-            <DetailField
-                label={{ de: 'Verbindung aktiv', en: 'Connection active' }[locale]}
-                value={connectionActive}
-                copyText={connectionActive}
-            />
+            <DetailField label={t(locale, 'admin', 'copy.connectionActive')} value={connectionActive} copyText={connectionActive} />
             <Separator />
-            <DetailField label={{ de: 'Bot', en: 'Bot' }[locale]} value={isBot} copyText={isBot} />
+            <DetailField label={t(locale, 'admin', 'copy.bot')} value={isBot} copyText={isBot} />
             <Separator />
-            <DetailField label={{ de: 'Impersonation', en: 'Impersonation' }[locale]} value={isImpersonation} copyText={isImpersonation} />
+            <DetailField label={t(locale, 'admin', 'copy.impersonation')} value={isImpersonation} copyText={isImpersonation} />
             <Separator />
-            <DetailField
-                label={{ de: 'User-Agent', en: 'User agent' }[locale]}
-                value={userAgent}
-                copyText={session.userAgent ?? undefined}
-            />
+            <DetailField label={t(locale, 'admin', 'copy.userAgent')} value={userAgent} copyText={session.userAgent ?? undefined} />
             <Separator />
-            <DetailField label={{ de: 'IP-Hash', en: 'IP hash' }[locale]} value={ipHash} mono copyText={session.ipHash ?? undefined} />
+            <DetailField label={t(locale, 'admin', 'copy.ipHash')} value={ipHash} mono copyText={session.ipHash ?? undefined} />
             <Separator />
-            <DetailField label={{ de: 'Referrer', en: 'Referrer' }[locale]} value={referrer} copyText={session.referrer ?? undefined} />
+            <DetailField label={t(locale, 'admin', 'copy.referrer')} value={referrer} copyText={session.referrer ?? undefined} />
             <Separator />
             <DetailField
-                label={{ de: 'Einstiegspfad', en: 'Landing path' }[locale]}
+                label={t(locale, 'admin', 'copy.landingPath')}
                 value={landingPath}
                 mono
                 copyText={session.landingPath ?? undefined}
@@ -268,14 +250,14 @@ function AdminSessionOverviewFields({ session }: { session: AdminSessionDetail }
 
 function AdminSessionUserField({ session }: { session: AdminSessionDetail }) {
     const locale = useLocale();
-    const anonymousLabel = { de: 'Anonym', en: 'Anonymous' }[locale];
-    const openUserLabel = { de: 'Nutzer öffnen', en: 'Open user' }[locale];
+    const anonymousLabel = t(locale, 'admin', 'copy.anonymous');
+    const openUserLabel = t(locale, 'admin', 'copy.openUser');
 
     if (!session.user) {
         const fallback = session.userId ?? anonymousLabel;
         return (
             <DetailField
-                label={{ de: 'Nutzer', en: 'User' }[locale]}
+                label={t(locale, 'admin', 'copy.user')}
                 value={<span className="text-muted-foreground">{fallback}</span>}
                 copyText={session.userId ?? undefined}
             />
@@ -287,7 +269,7 @@ function AdminSessionUserField({ session }: { session: AdminSessionDetail }) {
 
     return (
         <div className="grid gap-1">
-            <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{{ de: 'Nutzer', en: 'User' }[locale]}</dt>
+            <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t(locale, 'admin', 'copy.user')}</dt>
             <dd className="flex min-w-0 items-center gap-3">
                 <Avatar className="size-10 shrink-0">
                     {profilePictureUrl ? <AvatarImage src={profilePictureUrl} alt="" className="object-cover" /> : null}
@@ -320,8 +302,8 @@ function CopyValueButton({ text }: { text: string }) {
     const locale = useLocale();
     const [copied, setCopied] = useState(false);
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const idleLabel = { de: 'Kopieren', en: 'Copy' }[locale];
-    const ariaLabel = copied ? { de: 'Kopiert', en: 'Copied' }[locale] : idleLabel;
+    const idleLabel = t(locale, 'admin', 'copy.copy');
+    const ariaLabel = copied ? t(locale, 'admin', 'copy.copied') : idleLabel;
 
     useEffect(() => {
         return () => {
@@ -332,9 +314,9 @@ function CopyValueButton({ text }: { text: string }) {
     const onCopy = useCallback(async () => {
         try {
             await navigator.clipboard.writeText(text);
-            toast.success({ de: 'In die Zwischenablage kopiert', en: 'Copied to clipboard' }[locale]);
+            toast.success(t(locale, 'admin', 'copy.copiedToClipboard'));
         } catch {
-            toast.error({ de: 'Kopieren in die Zwischenablage fehlgeschlagen', en: 'Could not copy to clipboard' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.couldNotCopyToClipboard'));
         }
         setCopied(true);
         if (timerRef.current) clearTimeout(timerRef.current);

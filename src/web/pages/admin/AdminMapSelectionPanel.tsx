@@ -3,6 +3,7 @@ import { XIcon } from 'lucide-react';
 import { useEffect } from 'react';
 import { useQuery } from 'urql';
 
+import { t } from '../../../i18n/t';
 import { bookingRequestStatusLabel } from '../../../shared/bookingRequestStatus';
 import { Button } from '../../components/base/button';
 import type {
@@ -100,13 +101,17 @@ export function AdminMapSelectionPanel({
                       : focus.id
                   : (venue?.name ?? focus.id);
 
-    const kindLabel = {
-        cook: { de: 'Koch', en: 'Cook' },
-        booking: { de: 'Buchungsanfrage', en: 'Booking request' },
-        city: { de: 'Stadt', en: 'City' },
-        venue: { de: 'Location', en: 'Venue' },
-        place: { de: 'Ort', en: 'Place' },
-    }[focus.kind][locale];
+    const kindLabel = t(
+        locale,
+        'admin',
+        {
+            cook: 'copy.cook',
+            booking: 'copy.bookingRequest',
+            city: 'copy.city',
+            venue: 'copy.venue',
+            place: 'copy.place',
+        }[focus.kind],
+    );
 
     return (
         <aside className="pointer-events-auto flex max-h-[min(70vh,28rem)] w-full flex-col overflow-hidden rounded-lg border bg-background/95 shadow-md backdrop-blur-sm">
@@ -120,7 +125,7 @@ export function AdminMapSelectionPanel({
                     variant="ghost"
                     size="icon-xs"
                     onClick={onClose}
-                    aria-label={{ de: 'Auswahl schließen', en: 'Clear selection' }[locale]}
+                    aria-label={t(locale, 'admin', 'copy.clearSelection')}
                 >
                     <XIcon />
                 </Button>
@@ -130,24 +135,24 @@ export function AdminMapSelectionPanel({
                 {focus.kind === 'cook' && cook ? (
                     <>
                         <p>
-                            {{ de: 'Status', en: 'Status' }[locale]}:{' '}
-                            {
+                            {t(locale, 'admin', 'copy.status')}:{' '}
+                            {t(
+                                locale,
+                                'admin',
                                 {
-                                    LISTABLE: { de: 'Öffentlich sichtbar', en: 'Listable' },
-                                    PENDING: { de: 'Ausstehend', en: 'Pending' },
-                                    HIDDEN: { de: 'Verborgen', en: 'Hidden' },
-                                }[cook.mapStatus][locale]
-                            }
+                                    LISTABLE: 'copy.listable',
+                                    PENDING: 'copy.pending',
+                                    HIDDEN: 'copy.hidden',
+                                }[cook.mapStatus],
+                            )}
                         </p>
                         <p>
-                            {{ de: 'Radius', en: 'Radius' }[locale]}:{' '}
-                            {cook.maximumTravelDistance == null
-                                ? { de: 'Unbegrenzt', en: 'Unlimited' }[locale]
-                                : `${cook.maximumTravelDistance} km`}
+                            {t(locale, 'admin', 'copy.radius')}:{' '}
+                            {cook.maximumTravelDistance == null ? t(locale, 'admin', 'copy.unlimited') : `${cook.maximumTravelDistance} km`}
                         </p>
                         <Button type="button" variant="outline" size="sm" asChild>
                             <Link to="/{-$locale}/admin/users/$userId" params={{ userId: cook.cookId }} search={{ tab: 'cook-profile' }}>
-                                {{ de: 'Kochprofil öffnen', en: 'Open cook profile' }[locale]}
+                                {t(locale, 'admin', 'copy.openCookProfile')}
                             </Link>
                         </Button>
                     </>
@@ -156,17 +161,17 @@ export function AdminMapSelectionPanel({
                 {focus.kind === 'booking' && booking ? (
                     <>
                         <p>
-                            {{ de: 'Status', en: 'Status' }[locale]}: {bookingRequestStatusLabel(booking.status, locale, 'admin')}
+                            {t(locale, 'admin', 'copy.status')}: {bookingRequestStatusLabel(booking.status, locale, 'admin')}
                         </p>
                         <p>
-                            {{ de: 'Veröffentlichung', en: 'Publication' }[locale]}: {booking.publicationStatus}
+                            {t(locale, 'admin', 'copy.publication')}: {booking.publicationStatus}
                         </p>
                         <Button type="button" variant="outline" size="sm" asChild>
                             <Link
                                 to="/{-$locale}/admin/booking-requests/$bookingRequestId"
                                 params={{ bookingRequestId: booking.bookingRequestId }}
                             >
-                                {{ de: 'Anfrage öffnen', en: 'Open request' }[locale]}
+                                {t(locale, 'admin', 'copy.openRequest')}
                             </Link>
                         </Button>
                     </>
@@ -175,12 +180,12 @@ export function AdminMapSelectionPanel({
                 {focus.kind === 'city' && city ? (
                     <>
                         <p>
-                            {{ de: 'Veröffentlicht', en: 'Published' }[locale]}:{' '}
-                            {city.published ? { de: 'Ja', en: 'Yes' }[locale] : { de: 'Nein', en: 'No' }[locale]}
+                            {t(locale, 'admin', 'copy.published2')}:{' '}
+                            {city.published ? t(locale, 'admin', 'copy.yes') : t(locale, 'admin', 'copy.no')}
                         </p>
                         <Button type="button" variant="outline" size="sm" asChild>
                             <Link to="/{-$locale}/admin/cities/$cityId" params={{ cityId: city.cityId }}>
-                                {{ de: 'Stadt öffnen', en: 'Open city' }[locale]}
+                                {t(locale, 'admin', 'copy.openCity')}
                             </Link>
                         </Button>
                     </>
@@ -189,13 +194,13 @@ export function AdminMapSelectionPanel({
                 {focus.kind === 'venue' && venue ? (
                     <>
                         <p>
-                            {{ de: 'Veröffentlicht', en: 'Published' }[locale]}:{' '}
-                            {venue.published ? { de: 'Ja', en: 'Yes' }[locale] : { de: 'Nein', en: 'No' }[locale]}
+                            {t(locale, 'admin', 'copy.published2')}:{' '}
+                            {venue.published ? t(locale, 'admin', 'copy.yes') : t(locale, 'admin', 'copy.no')}
                         </p>
                         {venue.partnerName ? <p className="text-muted-foreground">{venue.partnerName}</p> : null}
                         <Button type="button" variant="outline" size="sm" asChild>
                             <Link to="/{-$locale}/admin/partner-venues/$partnerVenueId" params={{ partnerVenueId: venue.partnerVenueId }}>
-                                {{ de: 'Location öffnen', en: 'Open venue' }[locale]}
+                                {t(locale, 'admin', 'copy.openVenue')}
                             </Link>
                         </Button>
                     </>
@@ -210,14 +215,12 @@ export function AdminMapSelectionPanel({
                 {focus.kind === 'booking' || focus.kind === 'city' || focus.kind === 'place' ? (
                     <div className="space-y-2 border-t pt-3">
                         <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                            {{ de: 'Köche im Radius', en: 'Cooks in radius' }[locale]}
+                            {t(locale, 'admin', 'copy.cooksInRadius')}
                         </h3>
                         {coverageFetching ? (
-                            <p className="text-muted-foreground">{{ de: 'Laden…', en: 'Loading…' }[locale]}</p>
+                            <p className="text-muted-foreground">{t(locale, 'admin', 'copy.loading')}</p>
                         ) : coverageRows.length === 0 ? (
-                            <p className="text-muted-foreground">
-                                {{ de: 'Keine Köche mit Angebotsrecht.', en: 'No offer-capable cooks.' }[locale]}
-                            </p>
+                            <p className="text-muted-foreground">{t(locale, 'admin', 'copy.noOfferCapableCooks')}</p>
                         ) : (
                             <ul className="space-y-1.5">
                                 {coverageRows.slice(0, 25).map((row) => {
@@ -244,9 +247,7 @@ export function AdminMapSelectionPanel({
                 ) : null}
 
                 {focus.kind !== 'place' && !cook && !booking && !city && !venue ? (
-                    <p className="text-muted-foreground">
-                        {{ de: 'Punkt nicht in den geladenen Ebenen.', en: 'Point not in the loaded layers.' }[locale]}
-                    </p>
+                    <p className="text-muted-foreground">{t(locale, 'admin', 'copy.pointNotInTheLoadedLayers')}</p>
                 ) : null}
             </div>
         </aside>

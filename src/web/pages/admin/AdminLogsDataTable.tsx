@@ -1,5 +1,6 @@
 import type { OnChangeFn, SortingState } from '@tanstack/react-table';
 
+import { t } from '../../../i18n/t';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { AdminDataTable } from './AdminDataTable';
@@ -29,7 +30,7 @@ export function AdminLogsDataTable({ data, sorting, onSortingChange }: AdminLogs
                 to: '/{-$locale}/admin/logs/$logId',
                 params: { logId: row.logId },
             })}
-            emptyMessage={{ de: 'Keine Log-Nachrichten gefunden.', en: 'No log messages found.' }[locale]}
+            emptyMessage={t(locale, 'admin', 'copy.noLogMessagesFound')}
         />
     );
 }

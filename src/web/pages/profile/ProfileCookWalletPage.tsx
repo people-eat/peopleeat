@@ -3,6 +3,7 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useClient, useMutation } from 'urql';
 
+import { t } from '../../../i18n/t';
 import { formatCurrency, formatDate } from '../../../shared';
 import {
     cookStripeAccountDetailsCategories,
@@ -113,9 +114,9 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
                 if (key === 'return') {
                     const result = await syncStatus({});
                     if (result.error || !result.data?.user.cook.stripeStatusSync.success) {
-                        toast.error({ de: 'Status konnte nicht aktualisiert werden.', en: 'Could not refresh status.' }[locale]);
+                        toast.error(t(locale, 'profileCook', 'wallet.statusRefreshFailed'));
                     } else {
-                        toast.success({ de: 'Wallet-Status aktualisiert.', en: 'Wallet status updated.' }[locale]);
+                        toast.success(t(locale, 'profileCook', 'wallet.statusUpdated'));
                         await refreshStripeDetails();
                     }
                     await navigate({ search: {}, replace: true });
@@ -126,7 +127,7 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
                 const result = await startOnboarding({ returnUrl, refreshUrl });
                 const payload = result.data?.user.cook.stripeOnboardingStart;
                 if (result.error || !payload) {
-                    toast.error({ de: 'Onboarding konnte nicht gestartet werden.', en: 'Could not start onboarding.' }[locale]);
+                    toast.error(t(locale, 'profileCook', 'wallet.onboardingFailed'));
                     await navigate({ search: {}, replace: true });
                     return;
                 }
@@ -135,15 +136,10 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
                     return;
                 }
                 if (payload.kind === 'ALREADY_COMPLETE') {
-                    toast.success({ de: 'Wallet ist bereits eingerichtet.', en: 'Wallet is already set up.' }[locale]);
+                    toast.success(t(locale, 'profileCook', 'wallet.alreadySetUp'));
                     await refreshStripeDetails();
                 } else if (payload.kind === 'NOT_APPROVED') {
-                    toast.message(
-                        {
-                            de: 'Dein Profil muss zuerst freigeschaltet werden.',
-                            en: 'Your profile must be approved first.',
-                        }[locale],
-                    );
+                    toast.message(t(locale, 'profileCook', 'wallet.mustBeApproved'));
                 }
                 await navigate({ search: {}, replace: true });
             } finally {
@@ -160,20 +156,15 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
             const result = await startOnboarding({ returnUrl, refreshUrl });
             const payload = result.data?.user.cook.stripeOnboardingStart;
             if (result.error || !payload) {
-                toast.error({ de: 'Onboarding konnte nicht gestartet werden.', en: 'Could not start onboarding.' }[locale]);
+                toast.error(t(locale, 'profileCook', 'wallet.onboardingFailed'));
                 return;
             }
             if (payload.kind === 'NOT_APPROVED') {
-                toast.message(
-                    {
-                        de: 'Dein Profil muss zuerst freigeschaltet werden.',
-                        en: 'Your profile must be approved first.',
-                    }[locale],
-                );
+                toast.message(t(locale, 'profileCook', 'wallet.mustBeApproved'));
                 return;
             }
             if (payload.kind === 'ALREADY_COMPLETE') {
-                toast.success({ de: 'Wallet ist bereits eingerichtet.', en: 'Wallet is already set up.' }[locale]);
+                toast.success(t(locale, 'profileCook', 'wallet.alreadySetUp'));
                 await refreshStripeDetails();
                 return;
             }
@@ -191,7 +182,7 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
             const result = await dashboardUrlCreate({});
             const url = result.data?.user.cook.stripeDashboardUrlCreate.url;
             if (result.error || !url) {
-                toast.error({ de: 'Dashboard konnte nicht geöffnet werden.', en: 'Could not open the dashboard.' }[locale]);
+                toast.error(t(locale, 'profileCook', 'wallet.dashboardFailed'));
                 return;
             }
             window.location.assign(url);
@@ -205,10 +196,10 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
         try {
             const result = await syncStatus({});
             if (result.error || !result.data?.user.cook.stripeStatusSync.success) {
-                toast.error({ de: 'Status konnte nicht aktualisiert werden.', en: 'Could not refresh status.' }[locale]);
+                toast.error(t(locale, 'profileCook', 'wallet.statusRefreshFailed'));
                 return;
             }
-            toast.success({ de: 'Wallet-Status aktualisiert.', en: 'Wallet status updated.' }[locale]);
+            toast.success(t(locale, 'profileCook', 'wallet.statusUpdated'));
             await refreshStripeDetails();
         } finally {
             setBusy(false);
@@ -219,12 +210,16 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
         return null;
     }
 
-    const primaryLabel = {
-        EMPTY: { de: 'Wallet hinzufügen', en: 'Add wallet' },
-        PREPARED: { de: 'Einrichtung fortsetzen', en: 'Continue setup' },
-        ACTIVE_WAS_RESET: { de: 'Wallet aktualisieren', en: 'Update wallet' },
-        COMPLETED: { de: 'Stripe-Dashboard öffnen', en: 'Open Stripe dashboard' },
-    }[cook.stripeStatus][locale];
+    const primaryLabel = t(
+        locale,
+        'profileCook',
+        {
+            EMPTY: 'wallet.addWallet',
+            PREPARED: 'wallet.continueSetup',
+            ACTIVE_WAS_RESET: 'wallet.updateWallet',
+            COMPLETED: 'wallet.openDashboard',
+        }[cook.stripeStatus],
+    );
 
     const detailsChecklist =
         stripeDetails != null && cookStripeAccountDetailsHasActionableContent(stripeDetails, cook.stripeStatus)
@@ -237,27 +232,20 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
     const showWalletBalance = walletBalanceEnabled && stripeWallet != null;
     const poolCta = (
         <Button asChild size="sm">
-            <Link to="/{-$locale}/profile/booking-request-pool">
-                {{ de: 'Zum Anfragen-Pool', en: 'Go to booking request pool' }[locale]}
-            </Link>
+            <Link to="/{-$locale}/profile/booking-request-pool">{t(locale, 'profileCook', 'wallet.goToPool')}</Link>
         </Button>
     );
 
     return (
         <main id="main-content" className="mx-auto grid w-full max-w-3xl content-start gap-6">
             <div className="grid gap-2">
-                <h1 className="font-serif text-3xl/tight text-foreground">{route.title[locale]}</h1>
-                <p className="text-muted-foreground">{route.description[locale]}</p>
+                <h1 className="font-serif text-3xl/tight text-foreground">{route.title(locale)}</h1>
+                <p className="text-muted-foreground">{route.description(locale)}</p>
             </div>
 
             {!cook.isApprovedByAdmin ? (
-                <StatusAlert tone="info" title={{ de: 'Freischaltung ausstehend', en: 'Approval pending' }[locale]}>
-                    {
-                        {
-                            de: 'Dein Profil muss zuerst von unserem Team freigeschaltet werden, bevor du Stripe einrichten kannst.',
-                            en: 'Your profile must be approved by our team before you can set up Stripe.',
-                        }[locale]
-                    }
+                <StatusAlert tone="info" title={t(locale, 'profileCook', 'wallet.approvalPending')}>
+                    {t(locale, 'profileCook', 'wallet.approvalPendingBody')}
                 </StatusAlert>
             ) : (
                 <div className="grid gap-4">
@@ -283,38 +271,19 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
                                 {detailsChecklist.details.pendingVerification.length > 0 &&
                                 detailsChecklist.details.currentlyDue.length === 0 &&
                                 detailsChecklist.details.pastDue.length === 0 ? (
-                                    <p>
-                                        {
-                                            {
-                                                de: 'Du musst gerade nichts weiter tun. Wir aktualisieren den Status, sobald Stripe fertig ist.',
-                                                en: 'Nothing more to do right now. We will update the status once Stripe finishes.',
-                                            }[locale]
-                                        }
-                                    </p>
+                                    <p>{t(locale, 'profileCook', 'wallet.waitingStripe')}</p>
                                 ) : null}
                                 {detailsChecklist.details.detailsSubmitted &&
                                 (!detailsChecklist.details.chargesEnabled || !detailsChecklist.details.payoutsEnabled) &&
                                 cook.stripeStatus !== 'COMPLETED' ? (
-                                    <p>
-                                        {
-                                            {
-                                                de: 'Zahlungen oder Auszahlungen sind bei Stripe noch nicht freigeschaltet.',
-                                                en: 'Charges or payouts are not enabled on Stripe yet.',
-                                            }[locale]
-                                        }
-                                    </p>
+                                    <p>{t(locale, 'profileCook', 'wallet.chargesNotEnabled')}</p>
                                 ) : null}
                             </div>
                         </StatusAlert>
                     ) : null}
                     {cook.stripeStatus === 'COMPLETED' ? (
-                        <StatusAlert tone="info" title={{ de: 'Bereit für Angebote', en: 'Ready to make offers' }[locale]} action={poolCta}>
-                            {
-                                {
-                                    de: 'Im Anfragen-Pool findest du Buchungsanfragen in deinem Umkreis. Erstelle Angebote und verdiene mit peopleeat.',
-                                    en: 'In the booking request pool you will find requests in your area. Create offers and earn with peopleeat.',
-                                }[locale]
-                            }
+                        <StatusAlert tone="info" title={t(locale, 'profileCook', 'wallet.readyTitle')} action={poolCta}>
+                            {t(locale, 'profileCook', 'wallet.readyBody')}
                         </StatusAlert>
                     ) : null}
                     <div className="flex flex-wrap gap-2">
@@ -329,7 +298,7 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
                         )}
                         {cook.stripeStatus !== 'EMPTY' && cook.stripeStatus !== 'COMPLETED' ? (
                             <Button type="button" variant="outline" disabled={busy} onClick={() => void onSync()}>
-                                {{ de: 'Noch nicht aktualisiert?', en: 'Not updated yet?' }[locale]}
+                                {t(locale, 'profileCook', 'wallet.notUpdatedYet')}
                             </Button>
                         ) : null}
                     </div>
@@ -340,53 +309,37 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
                 <section className="grid gap-6" aria-labelledby="wallet-balance-heading">
                     <div className="grid gap-3">
                         <h2 id="wallet-balance-heading" className="font-serif text-2xl/tight text-foreground">
-                            {{ de: 'Guthaben', en: 'Balance' }[locale]}
+                            {t(locale, 'profileCook', 'wallet.balance')}
                         </h2>
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div className="grid gap-1">
-                                <p className="text-sm text-muted-foreground">{{ de: 'Verfügbar', en: 'Available' }[locale]}</p>
+                                <p className="text-sm text-muted-foreground">{t(locale, 'common', 'stripe.transactionStatus.AVAILABLE')}</p>
                                 <p className="text-3xl/tight font-semibold tabular-nums text-foreground">
                                     {formatCurrency(stripeWallet.availableCents, { locale })}
                                 </p>
                             </div>
                             <div className="grid gap-1">
-                                <p className="text-sm text-muted-foreground">{{ de: 'Ausstehend', en: 'Pending' }[locale]}</p>
+                                <p className="text-sm text-muted-foreground">{t(locale, 'common', 'stripe.transactionStatus.PENDING')}</p>
                                 <p className="text-3xl/tight font-semibold tabular-nums text-foreground">
                                     {formatCurrency(stripeWallet.pendingCents, { locale })}
                                 </p>
                             </div>
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                            {
-                                {
-                                    de: 'Verfügbar bedeutet bereit für die Bankauszahlung. Ausstehend wird nach der Stripe-Frist freigegeben. Die Überweisung auf dein Konto löst unser Team nach dem Event aus.',
-                                    en: 'Available means ready for bank payout. Pending clears after the Stripe hold period. Our team releases the transfer to your bank after the event.',
-                                }[locale]
-                            }
-                        </p>
+                        <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'wallet.balanceHint')}</p>
                     </div>
 
                     <div className="grid gap-3">
-                        <h2 className="font-serif text-2xl/tight text-foreground">
-                            {{ de: 'Letzte Bewegungen', en: 'Recent activity' }[locale]}
-                        </h2>
+                        <h2 className="font-serif text-2xl/tight text-foreground">{t(locale, 'profileCook', 'wallet.recentActivity')}</h2>
                         {stripeWallet.transactions.length === 0 ? (
-                            <p className="text-muted-foreground">
-                                {
-                                    {
-                                        de: 'Noch keine Bewegungen. Sobald Kunden zahlen, erscheinen Gutschriften hier.',
-                                        en: 'No activity yet. Credits appear here once customers pay.',
-                                    }[locale]
-                                }
-                            </p>
+                            <p className="text-muted-foreground">{t(locale, 'profileCook', 'wallet.noActivity')}</p>
                         ) : (
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>{{ de: 'Datum', en: 'Date' }[locale]}</TableHead>
-                                        <TableHead>{{ de: 'Art', en: 'Type' }[locale]}</TableHead>
-                                        <TableHead>{{ de: 'Status', en: 'Status' }[locale]}</TableHead>
-                                        <TableHead className="text-right">{{ de: 'Betrag', en: 'Amount' }[locale]}</TableHead>
+                                        <TableHead>{t(locale, 'profileCook', 'actions.date')}</TableHead>
+                                        <TableHead>{t(locale, 'profileCook', 'calls.exceptionType')}</TableHead>
+                                        <TableHead>{t(locale, 'profileCook', 'actions.status')}</TableHead>
+                                        <TableHead className="text-right">{t(locale, 'profileCook', 'actions.amount')}</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>

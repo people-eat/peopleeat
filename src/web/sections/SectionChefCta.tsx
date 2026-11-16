@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router';
 import { ImageOffIcon, StarIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
+import { t } from '../../i18n/t';
 import type { Locale } from '../../shared/locale';
 import { SITE_GOOGLE_MAPS_URL, SITE_WHATSAPP_URL } from '../../shared/siteBranding';
 import { AppImage } from '../components/AppImage';
@@ -34,7 +35,7 @@ export function SectionChefCta({
     className?: string;
 }) {
     const hasImage = Boolean(imageUrl);
-    const ctaLabel = { de: 'Deinen Privatkoch finden', en: 'Request' }[locale];
+    const ctaLabel = t(locale, 'public', 'chefCta.findChef');
     const trimmedCtaUrl = ctaUrl?.trim() || null;
 
     return (
@@ -60,10 +61,10 @@ export function SectionChefCta({
                             hasImage ? 'text-white/90' : 'text-muted-foreground',
                         )}
                     >
-                        {{ de: 'Privatkoch mieten', en: 'Hire a private chef' }[locale]}
+                        {t(locale, 'public', 'chefCta.hire')}
                     </p>
                     <p className={cn('text-xs font-light @md:text-sm', hasImage ? 'text-white/80' : 'text-muted-foreground')}>
-                        {{ de: 'Menüs ab 85 € p.P. • Mindestbuchung 400 €', en: 'Menus from €85 p.p. • Minimum booking €400' }[locale]}
+                        {t(locale, 'public', 'chefCta.priceLine')}
                     </p>
                 </div>
             </div>
@@ -79,7 +80,7 @@ export function SectionChefCta({
                     rel="noopener noreferrer"
                     className="text-sm text-muted-foreground underline-offset-4 hover:underline"
                 >
-                    {{ de: 'WhatsApp uns', en: 'WhatsApp Us' }[locale]} <span aria-hidden="true">→</span>
+                    {t(locale, 'public', 'chefCta.whatsapp')} <span aria-hidden="true">→</span>
                 </a>
                 <a
                     href={SITE_GOOGLE_MAPS_URL}

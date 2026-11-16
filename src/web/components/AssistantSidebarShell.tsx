@@ -14,11 +14,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ComponentProps, ReactNode, PointerEvent as ReactPointerEvent, RefObject } from 'react';
 import { useMutation, useQuery } from 'urql';
 
+import { t } from '../../i18n/t';
 import { idCreate } from '../../shared/idCreate';
 import { clearActiveChatId, readActiveChatId, writeActiveChatId } from '../chat/assistantActiveChatStorage';
 import { assistantChatDetailTo, assistantChatIndexTo } from '../chat/assistantChatRoutes';
 import { assistantChatTitle } from '../chat/assistantChatTitle';
-import { ASSISTANT_EMPTY_COPY, assistantSidebarLabels } from '../chat/assistantSidebarCopy';
+import { assistantEmptyBlurb, assistantSidebarLabel } from '../chat/assistantSidebarCopy';
 import type { AssistantSidebarSurface } from '../chat/assistantSidebarCopy';
 import { assistantSidebarSuggestions } from '../chat/assistantSidebarSuggestions';
 import {
@@ -227,14 +228,14 @@ export function AssistantSidebarShell({ surface, ...props }: ComponentProps<type
 
     const headerTitle =
         mode === 'list'
-            ? assistantSidebarLabels.allChatsTitle[locale]
+            ? assistantSidebarLabel('allChatsTitle', locale)
             : chatId
               ? composeTitle?.trim()
                   ? composeTitle
-                  : assistantSidebarLabels.newChatTitle[locale]
-              : assistantSidebarLabels.defaultTitle[locale];
+                  : assistantSidebarLabel('newChatTitle', locale)
+              : assistantSidebarLabel('defaultTitle', locale);
 
-    const fullscreenLabel = assistantSidebarLabels.openFullscreen[locale];
+    const fullscreenLabel = assistantSidebarLabel('openFullscreen', locale);
     const fullscreenTo = chatId ? assistantChatDetailTo(surface) : assistantChatIndexTo(surface);
     const fullscreenParams = chatId ? { chatId } : undefined;
 
@@ -247,7 +248,7 @@ export function AssistantSidebarShell({ surface, ...props }: ComponentProps<type
             <SidebarHeader>
                 <div className="flex items-center gap-1 px-2 py-1.5">
                     {mode === 'list' ? (
-                        <HeaderIconButton label={assistantSidebarLabels.backToChat[locale]} onClick={backToCompose}>
+                        <HeaderIconButton label={assistantSidebarLabel('backToChat', locale)} onClick={backToCompose}>
                             <ArrowLeftIcon />
                         </HeaderIconButton>
                     ) : (
@@ -258,7 +259,7 @@ export function AssistantSidebarShell({ surface, ...props }: ComponentProps<type
                             type="button"
                             className="min-w-0 flex-1 truncate rounded-md px-1 text-left text-sm font-medium hover:bg-sidebar-accent focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:outline-none"
                             onClick={() => openRename(chatId, composeTitle ?? '')}
-                            title={assistantSidebarLabels.rename[locale]}
+                            title={assistantSidebarLabel('rename', locale)}
                         >
                             {headerTitle}
                         </button>
@@ -266,12 +267,12 @@ export function AssistantSidebarShell({ surface, ...props }: ComponentProps<type
                         <span className="min-w-0 flex-1 truncate px-1 text-sm font-medium">{headerTitle}</span>
                     )}
                     {mode === 'compose' && chatId ? (
-                        <HeaderIconButton label={assistantSidebarLabels.newChat[locale]} onClick={requestNewChat}>
+                        <HeaderIconButton label={assistantSidebarLabel('newChat', locale)} onClick={requestNewChat}>
                             <SquarePenIcon />
                         </HeaderIconButton>
                     ) : null}
                     {mode === 'compose' ? (
-                        <HeaderIconButton label={assistantSidebarLabels.allChats[locale]} onClick={openList}>
+                        <HeaderIconButton label={assistantSidebarLabel('allChats', locale)} onClick={openList}>
                             <HistoryIcon />
                         </HeaderIconButton>
                     ) : null}
@@ -280,7 +281,7 @@ export function AssistantSidebarShell({ surface, ...props }: ComponentProps<type
                             <SquareArrowOutUpRightIcon />
                         </HeaderIconLink>
                     ) : null}
-                    <HeaderIconButton label={assistantSidebarLabels.close[locale]} onClick={onClose}>
+                    <HeaderIconButton label={assistantSidebarLabel('close', locale)} onClick={onClose}>
                         <XIcon />
                     </HeaderIconButton>
                 </div>
@@ -330,12 +331,12 @@ export function AssistantSidebarShell({ surface, ...props }: ComponentProps<type
             <AlertDialog open={confirmNewChatOpen} onOpenChange={setConfirmNewChatOpen}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>{assistantSidebarLabels.leaveRunningTitle[locale]}</AlertDialogTitle>
-                        <AlertDialogDescription>{assistantSidebarLabels.leaveRunningDescription[locale]}</AlertDialogDescription>
+                        <AlertDialogTitle>{assistantSidebarLabel('leaveRunningTitle', locale)}</AlertDialogTitle>
+                        <AlertDialogDescription>{assistantSidebarLabel('leaveRunningDescription', locale)}</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>{assistantSidebarLabels.cancel[locale]}</AlertDialogCancel>
-                        <AlertDialogAction onClick={doNewChat}>{assistantSidebarLabels.leaveRunningConfirm[locale]}</AlertDialogAction>
+                        <AlertDialogCancel>{t(locale, 'common', 'cancel')}</AlertDialogCancel>
+                        <AlertDialogAction onClick={doNewChat}>{assistantSidebarLabel('leaveRunningConfirm', locale)}</AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
@@ -343,12 +344,12 @@ export function AssistantSidebarShell({ surface, ...props }: ComponentProps<type
             <Dialog open={renameChatId != null} onOpenChange={(openDialog) => !openDialog && setRenameChatId(undefined)}>
                 <DialogContent showCloseButton className="sm:max-w-md">
                     <DialogHeader>
-                        <DialogTitle>{assistantSidebarLabels.renameTitle[locale]}</DialogTitle>
+                        <DialogTitle>{assistantSidebarLabel('renameTitle', locale)}</DialogTitle>
                     </DialogHeader>
                     <Input
                         value={renameDraft}
                         onChange={(event) => setRenameDraft(event.target.value)}
-                        placeholder={assistantSidebarLabels.renamePlaceholder[locale]}
+                        placeholder={assistantSidebarLabel('renamePlaceholder', locale)}
                         maxLength={60}
                         autoFocus
                         onKeyDown={(event) => {
@@ -360,10 +361,10 @@ export function AssistantSidebarShell({ surface, ...props }: ComponentProps<type
                     />
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={() => setRenameChatId(undefined)}>
-                            {assistantSidebarLabels.cancel[locale]}
+                            {t(locale, 'common', 'cancel')}
                         </Button>
                         <Button type="button" disabled={!renameDraft.trim()} onClick={() => void saveRename()}>
-                            {assistantSidebarLabels.renameSave[locale]}
+                            {assistantSidebarLabel('renameSave', locale)}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -372,13 +373,13 @@ export function AssistantSidebarShell({ surface, ...props }: ComponentProps<type
             <AlertDialog open={deleteChatId != null} onOpenChange={(openDialog) => !openDialog && setDeleteChatId(undefined)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>{assistantSidebarLabels.deleteTitle[locale]}</AlertDialogTitle>
-                        <AlertDialogDescription>{assistantSidebarLabels.deleteDescription[locale]}</AlertDialogDescription>
+                        <AlertDialogTitle>{assistantSidebarLabel('deleteTitle', locale)}</AlertDialogTitle>
+                        <AlertDialogDescription>{assistantSidebarLabel('deleteDescription', locale)}</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>{assistantSidebarLabels.cancel[locale]}</AlertDialogCancel>
+                        <AlertDialogCancel>{t(locale, 'common', 'cancel')}</AlertDialogCancel>
                         <AlertDialogAction variant="destructive" onClick={() => void confirmDelete()}>
-                            {assistantSidebarLabels.deleteConfirm[locale]}
+                            {assistantSidebarLabel('deleteConfirm', locale)}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -473,8 +474,8 @@ function AssistantResizeHandle({
     return (
         <button
             type="button"
-            aria-label={assistantSidebarLabels.resize[locale]}
-            title={assistantSidebarLabels.resize[locale]}
+            aria-label={assistantSidebarLabel('resize', locale)}
+            title={assistantSidebarLabel('resize', locale)}
             onPointerDown={onPointerDown}
             className="group/resize absolute inset-y-2 left-0 z-30 hidden w-4 -translate-x-1/2 cursor-ew-resize touch-none md:block"
         >
@@ -510,8 +511,8 @@ function ComposeEmpty({
     railOpen: boolean;
 }) {
     const locale = useLocale();
-    const blurb = ASSISTANT_EMPTY_COPY[surface].blurb[locale];
-    const suggestions = assistantSidebarSuggestions(surface, path);
+    const blurb = assistantEmptyBlurb(surface, locale);
+    const suggestions = assistantSidebarSuggestions(surface, path, locale);
     const [{ data, fetching }, reexecute] = useQuery({
         query: UserAssistantChatsDocument,
         variables: { criterion: { surface, skip: 0, take: 1 } },
@@ -535,7 +536,7 @@ function ComposeEmpty({
                     <Button type="button" variant="secondary" size="sm" className="max-w-sm" onClick={() => onContinue(lastChat.chatId)}>
                         <HistoryIcon />
                         <span className="truncate">
-                            {assistantSidebarLabels.continueLast[locale]}
+                            {assistantSidebarLabel('continueLast', locale)}
                             {': '}
                             {assistantChatTitle(lastChat.title, locale)}
                         </span>
@@ -544,25 +545,22 @@ function ComposeEmpty({
                     <Skeleton className="h-8 w-56 max-w-sm" aria-hidden />
                 ) : showContinueEmpty ? (
                     <p className="flex h-8 max-w-sm items-center justify-center text-center text-sm text-muted-foreground">
-                        {assistantSidebarLabels.emptyList[locale]}
+                        {assistantSidebarLabel('emptyList', locale)}
                     </p>
                 ) : null}
                 <div className="flex max-w-sm flex-wrap justify-center gap-2">
-                    {suggestions.map((suggestion) => {
-                        const label = suggestion[locale];
-                        return (
-                            <Button
-                                key={label}
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                className="h-auto max-w-full whitespace-normal px-3 py-1.5 text-left text-xs"
-                                onClick={() => onSuggest(label)}
-                            >
-                                {label}
-                            </Button>
-                        );
-                    })}
+                    {suggestions.map((label) => (
+                        <Button
+                            key={label}
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="h-auto max-w-full whitespace-normal px-3 py-1.5 text-left text-xs"
+                            onClick={() => onSuggest(label)}
+                        >
+                            {label}
+                        </Button>
+                    ))}
                 </div>
             </div>
             <ComposerBar>
@@ -703,7 +701,7 @@ function ComposeActive({
     if (error) {
         return (
             <div className="grid flex-1 place-items-center px-4 text-center text-sm text-destructive">
-                {assistantSidebarLabels.loadError[locale]}
+                {assistantSidebarLabel('loadError', locale)}
             </div>
         );
     }
@@ -721,7 +719,7 @@ function ComposeActive({
             <ChatTranscriptShell
                 mode="assistant"
                 className="min-h-0 flex-1"
-                jumpToLatestLabel={assistantSidebarLabels.jumpToLatest[locale]}
+                jumpToLatestLabel={assistantSidebarLabel('jumpToLatest', locale)}
             >
                 {items}
             </ChatTranscriptShell>
@@ -796,12 +794,12 @@ function AssistantChatList({
     if (error) {
         return (
             <div className="grid flex-1 place-items-center px-4 text-center text-sm text-destructive">
-                {assistantSidebarLabels.listError[locale]}
+                {assistantSidebarLabel('listError', locale)}
             </div>
         );
     }
 
-    const emptyLabel = searchText ? assistantSidebarLabels.searchEmpty[locale] : assistantSidebarLabels.emptyList[locale];
+    const emptyLabel = searchText ? assistantSidebarLabel('searchEmpty', locale) : assistantSidebarLabel('emptyList', locale);
 
     return (
         <>
@@ -809,8 +807,8 @@ function AssistantChatList({
                 <Input
                     value={searchDraft}
                     onChange={(event) => setSearchDraft(event.target.value)}
-                    placeholder={assistantSidebarLabels.searchPlaceholder[locale]}
-                    aria-label={assistantSidebarLabels.searchPlaceholder[locale]}
+                    placeholder={assistantSidebarLabel('searchPlaceholder', locale)}
+                    aria-label={assistantSidebarLabel('searchPlaceholder', locale)}
                     className="h-8 bg-sidebar"
                 />
             </div>
@@ -844,7 +842,7 @@ function AssistantChatList({
                                                     variant="ghost"
                                                     size="icon"
                                                     className="size-7"
-                                                    aria-label={assistantSidebarLabels.chatActions[locale]}
+                                                    aria-label={assistantSidebarLabel('chatActions', locale)}
                                                     onClick={(event) => event.stopPropagation()}
                                                 >
                                                     <EllipsisVerticalIcon />
@@ -853,11 +851,11 @@ function AssistantChatList({
                                             <DropdownMenuContent align="end" className="min-w-40">
                                                 <DropdownMenuItem onSelect={() => onRename(chat.chatId, chat.title)}>
                                                     <PencilIcon />
-                                                    {assistantSidebarLabels.rename[locale]}
+                                                    {assistantSidebarLabel('rename', locale)}
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem variant="destructive" onSelect={() => onDelete(chat.chatId)}>
                                                     <Trash2Icon />
-                                                    {assistantSidebarLabels.delete[locale]}
+                                                    {assistantSidebarLabel('delete', locale)}
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
@@ -876,7 +874,7 @@ function AssistantChatList({
                             disabled={fetching}
                             onClick={() => setTake((current) => current + LIST_PAGE_SIZE)}
                         >
-                            {assistantSidebarLabels.loadMore[locale]}
+                            {assistantSidebarLabel('loadMore', locale)}
                         </Button>
                     </div>
                 ) : null}
@@ -884,7 +882,7 @@ function AssistantChatList({
             <div className="border-t border-sidebar-border p-3">
                 <Button type="button" className="w-full" onClick={onNewChat}>
                     <SquarePenIcon />
-                    {assistantSidebarLabels.newChat[locale]}
+                    {assistantSidebarLabel('newChat', locale)}
                 </Button>
             </div>
         </>

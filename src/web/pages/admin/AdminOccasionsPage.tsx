@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { t } from '../../../i18n/t';
 import { formatDate, occasionFormatsSectionEmpty } from '../../../shared';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { Badge } from '../../components/base/badge';
@@ -15,13 +16,15 @@ import { AdminOccasionsPageUpdatesDocument, AdminOccasionUpsertDocument } from '
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
+import type { Locale } from '../../utils/locale';
 import { AdminOverviewListCardLink } from './AdminOverviewListCard';
 
-export const adminOccasionsPageTitle = { de: 'Anlässe', en: 'Occasions' } as const;
-export const adminOccasionsPageDescription = {
-    de: 'Anlassseiten verwalten.',
-    en: 'Manage occasion landing pages.',
-} as const;
+export function adminOccasionsPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'nav.occasions.title');
+}
+export function adminOccasionsPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'nav.occasions.description');
+}
 
 export function AdminOccasionsPage({ data }: { data: GqlCAdminOccasionsPageQuery }) {
     const locale = useLocale();
@@ -87,7 +90,7 @@ export function AdminOccasionsPage({ data }: { data: GqlCAdminOccasionsPageQuery
             if (!id || result.error) throw new Error('create failed');
             await navigate({ to: '/{-$locale}/admin/occasions/$occasionId', params: { occasionId: id } });
         } catch {
-            toast.error({ de: 'Anlegen fehlgeschlagen.', en: 'Could not create.' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.couldNotCreate'));
         } finally {
             setBusy(false);
         }
@@ -100,27 +103,27 @@ export function AdminOccasionsPage({ data }: { data: GqlCAdminOccasionsPageQuery
                     <div className="grid gap-2">
                         <h1 className="flex items-center gap-3 font-serif text-4xl/tight text-foreground">
                             <PartyPopperIcon className="size-8 text-muted-foreground" aria-hidden />
-                            {adminOccasionsPageTitle[locale]}
+                            {adminOccasionsPageTitle(locale)}
                         </h1>
-                        <p className="text-muted-foreground">{adminOccasionsPageDescription[locale]}</p>
+                        <p className="text-muted-foreground">{adminOccasionsPageDescription(locale)}</p>
                     </div>
                     <Button type="button" disabled={busy} onClick={() => void createOccasion()}>
                         <PlusIcon className="size-4" />
-                        {{ de: 'Neuer Anlass', en: 'New occasion' }[locale]}
+                        {t(locale, 'admin', 'copy.newOccasion')}
                     </Button>
                 </div>
                 <Input
                     type="search"
                     value={draftQ}
                     onChange={(event) => setDraftQ(event.target.value)}
-                    placeholder={{ de: 'Name oder Pfad suchen…', en: 'Search name or path…' }[locale]}
-                    aria-label={{ de: 'Anlässe suchen', en: 'Search occasions' }[locale]}
+                    placeholder={t(locale, 'admin', 'copy.searchNameOrPath')}
+                    aria-label={t(locale, 'admin', 'copy.searchOccasions')}
                     className="max-w-sm"
                 />
                 {occasions.length === 0 ? (
-                    <p className="text-muted-foreground">{{ de: 'Noch keine Anlässe.', en: 'No occasions yet.' }[locale]}</p>
+                    <p className="text-muted-foreground">{t(locale, 'admin', 'copy.noOccasionsYet')}</p>
                 ) : filteredOccasions.length === 0 ? (
-                    <p className="text-muted-foreground">{{ de: 'Keine Treffer.', en: 'No matches.' }[locale]}</p>
+                    <p className="text-muted-foreground">{t(locale, 'admin', 'copy.noMatches')}</p>
                 ) : (
                     <ul className="grid gap-2">
                         {filteredOccasions.map((occasion) => (
@@ -133,8 +136,8 @@ export function AdminOccasionsPage({ data }: { data: GqlCAdminOccasionsPageQuery
                                             {occasion.name}
                                             <Badge variant="outline">
                                                 {occasion.publishedAt
-                                                    ? { de: 'Veröffentlicht', en: 'Published' }[locale]
-                                                    : { de: 'Entwurf', en: 'Draft' }[locale]}
+                                                    ? t(locale, 'admin', 'copy.published2')
+                                                    : t(locale, 'admin', 'copy.draft')}
                                             </Badge>
                                         </>
                                     }

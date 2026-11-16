@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { inlineCopy } from '../../shared';
 
 import { bookingRequestOfferStatusHue, bookingRequestOfferStatusLabel } from '../../shared/bookingRequestOfferStatus';
 import { bookingRequestStatusHue, bookingRequestStatusLabel } from '../../shared/bookingRequestStatus';
@@ -66,18 +67,21 @@ function TokensBoard() {
     return (
         <WarmPage className="mx-auto flex max-w-5xl flex-col gap-12">
             <header className="grid max-w-2xl gap-2">
-                <h1 className="font-serif text-3xl font-semibold tracking-tight">{{ de: 'Design-Tokens', en: 'Design tokens' }[locale]}</h1>
+                <h1 className="font-serif text-3xl font-semibold tracking-tight">
+                    {inlineCopy({ de: 'Design-Tokens', en: 'Design tokens' }, locale)}
+                </h1>
                 <p className="text-muted-foreground">
-                    {
+                    {inlineCopy(
                         {
                             de: 'Flächen, Typografie-Skala, Status- und Buchungsfarben. Für die Produktstimmung siehe Foundations/Mood Board.',
                             en: 'Surfaces, type scale, status and booking colors. For product mood see Foundations/Mood Board.',
-                        }[locale]
-                    }
+                        },
+                        locale,
+                    )}
                 </p>
             </header>
 
-            <GallerySection title={{ de: 'Flächen', en: 'Surfaces' }[locale]}>
+            <GallerySection title={inlineCopy({ de: 'Flächen', en: 'Surfaces' }, locale)}>
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                     {surfaceTokens.map((token) => (
                         <Swatch key={token.name} name={token.name} className={token.className} />
@@ -86,10 +90,11 @@ function TokensBoard() {
             </GallerySection>
 
             <GallerySection
-                title={{ de: 'Typografie-Skala', en: 'Type scale' }[locale]}
-                caption={
-                    { de: 'font-serif für Überschriften, font-sans für UI.', en: 'font-serif for headings, font-sans for UI.' }[locale]
-                }
+                title={inlineCopy({ de: 'Typografie-Skala', en: 'Type scale' }, locale)}
+                caption={inlineCopy(
+                    { de: 'font-serif für Überschriften, font-sans für UI.', en: 'font-serif for headings, font-sans for UI.' },
+                    locale,
+                )}
             >
                 <div className="grid gap-3 rounded-xl border border-border bg-secondary p-6 shadow-xs">
                     <p className="font-serif text-4xl font-semibold">text-4xl serif</p>
@@ -103,11 +108,11 @@ function TokensBoard() {
                 </div>
             </GallerySection>
 
-            <GallerySection title={{ de: 'Status-Töne', en: 'Status tones' }[locale]}>
+            <GallerySection title={inlineCopy({ de: 'Status-Töne', en: 'Status tones' }, locale)}>
                 <div className="grid gap-6 sm:grid-cols-2">
                     <div className="grid gap-3">
                         <p className="text-sm font-medium text-muted-foreground">
-                            {{ de: 'Icons und Badges', en: 'Icons and badges' }[locale]}
+                            {inlineCopy({ de: 'Icons und Badges', en: 'Icons and badges' }, locale)}
                         </p>
                         <div className="flex flex-wrap items-center gap-3">
                             {tones.map((tone) => (
@@ -130,7 +135,7 @@ function TokensBoard() {
                     </div>
                     <div className="grid gap-3">
                         <p className="text-sm font-medium text-muted-foreground">
-                            {{ de: 'Token-Klassen (Referenz)', en: 'Token classes (reference)' }[locale]}
+                            {inlineCopy({ de: 'Token-Klassen (Referenz)', en: 'Token classes (reference)' }, locale)}
                         </p>
                         <ul className="grid gap-1 font-mono text-xs text-muted-foreground">
                             {tones.map((tone) => (
@@ -144,7 +149,7 @@ function TokensBoard() {
                 </div>
             </GallerySection>
 
-            <GallerySection title={{ de: 'Buchungspillen', en: 'Booking pills' }[locale]}>
+            <GallerySection title={inlineCopy({ de: 'Buchungspillen', en: 'Booking pills' }, locale)}>
                 <div className="grid gap-4">
                     <div className="flex flex-wrap gap-2">
                         {requestStatuses.map((status) => (
@@ -164,13 +169,14 @@ function TokensBoard() {
             </GallerySection>
 
             <GallerySection
-                title={{ de: 'Fokus und Accent', en: 'Focus and accent' }[locale]}
-                caption={
+                title={inlineCopy({ de: 'Fokus und Accent', en: 'Focus and accent' }, locale)}
+                caption={inlineCopy(
                     {
                         de: 'Accent ist Markenorange und Fokusring, nicht Hover-Wash und nicht Statusgelb.',
                         en: 'Accent is brand orange and the focus ring, not hover washes and not status yellow.',
-                    }[locale]
-                }
+                    },
+                    locale,
+                )}
             >
                 <div className="flex flex-wrap items-center gap-4">
                     <button
@@ -178,7 +184,7 @@ function TokensBoard() {
                         className="rounded-md border border-input bg-secondary px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                         autoFocus
                     >
-                        {{ de: 'Fokus sichtbar', en: 'Focus visible' }[locale]}
+                        {inlineCopy({ de: 'Fokus sichtbar', en: 'Focus visible' }, locale)}
                     </button>
                     <span className="rounded-md bg-accent/15 px-3 py-2 text-sm">bg-accent/15</span>
                     <span className="rounded-md bg-muted px-3 py-2 text-sm">bg-muted (hover)</span>

@@ -12,13 +12,8 @@ import type { GqlCChefsPageQuery } from '../graphql/generated';
 import { ChefsDiscoveryTrackDocument } from '../graphql/generated';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { SectionChefForAnyOccasion } from '../sections/SectionChefForAnyOccasion';
-
-const chefsPageTitle = { de: 'Köche', en: 'Chefs' } as const;
-const chefsPageDescription = {
-    de: 'Entdecke Privatköche für dein Dinner zu Hause.',
-    en: 'Discover private chefs for dinner at home.',
-} as const;
 
 export type ChefsSearch = {
     q?: string;
@@ -37,6 +32,7 @@ export function chefsPageVariables(search: ChefsSearch) {
 
 export function ChefsPage({ data, search }: { data: GqlCChefsPageQuery; search: ChefsSearch }) {
     const locale = useLocale();
+    const { t } = useT('public');
     const navigate = useNavigate({ from: '/{-$locale}/chefs' });
     const cooks = data.publicCook.findMany;
     const [, trackDiscovery] = useMutation(ChefsDiscoveryTrackDocument);
@@ -89,25 +85,21 @@ export function ChefsPage({ data, search }: { data: GqlCChefsPageQuery; search: 
                 <section className="mx-auto w-full max-w-7xl px-4 pb-16 @lg:px-6">
                     <div className="flex flex-col gap-6 @sm:flex-row @sm:items-end @sm:justify-between">
                         <div>
-                            <h1 className="font-serif text-3xl font-light @md:text-4xl">{chefsPageTitle[locale]}</h1>
-                            <p className="mt-3 max-w-2xl text-muted-foreground">{chefsPageDescription[locale]}</p>
+                            <h1 className="font-serif text-3xl font-light @md:text-4xl">{t('chefs.title')}</h1>
+                            <p className="mt-3 max-w-2xl text-muted-foreground">{t('chefs.description')}</p>
                         </div>
                         <Input
                             value={draftQ}
                             onChange={(event) => setDraftQ(event.target.value)}
-                            placeholder={{ de: 'Köche suchen…', en: 'Search chefs…' }[locale]}
+                            placeholder={t('chefs.searchPlaceholder')}
                             className="max-w-xs"
-                            aria-label={{ de: 'Köche suchen', en: 'Search chefs' }[locale]}
+                            aria-label={t('chefs.searchAria')}
                         />
                     </div>
 
                     <div className="mt-10">
                         {cooks.length === 0 ? (
-                            <p className="text-muted-foreground">
-                                {search.q
-                                    ? { de: 'Keine Köche gefunden.', en: 'No chefs found.' }[locale]
-                                    : { de: 'Noch keine Köche veröffentlicht.', en: 'No chefs published yet.' }[locale]}
-                            </p>
+                            <p className="text-muted-foreground">{search.q ? t('chefs.emptySearch') : t('chefs.empty')}</p>
                         ) : (
                             <ul className="grid grid-cols-1 gap-4 @md:grid-cols-2 @lg:grid-cols-3 @xl:grid-cols-4">
                                 {cooks.map((cook) => (

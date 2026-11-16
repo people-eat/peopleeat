@@ -1,4 +1,5 @@
 import { PlusIcon, Trash2Icon } from 'lucide-react';
+import { inlineCopy } from '../../shared';
 
 import type {
     CookPresenceLinks,
@@ -21,45 +22,48 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 export function cookPresenceLinksIssueMessage(issue: CookPresenceLinksIssue, locale: Locale): string {
     const field =
         issue.field === 'otherProfiles'
-            ? `${{ de: 'Weiteres Profil', en: 'Another profile' }[locale]} ${(issue.index ?? 0) + 1}`
+            ? `${inlineCopy({ de: 'Weiteres Profil', en: 'Another profile' }, locale)} ${(issue.index ?? 0) + 1}`
             : {
-                  websiteUrl: { de: 'Website', en: 'Website' }[locale],
+                  websiteUrl: inlineCopy({ de: 'Website', en: 'Website' }, locale),
                   instagramUrl: 'Instagram',
-                  googleProfileUrl: { de: 'Google-Profil', en: 'Google profile' }[locale],
+                  googleProfileUrl: inlineCopy({ de: 'Google-Profil', en: 'Google profile' }, locale),
                   takeAChefUrl: 'Take a Chef',
               }[issue.field];
 
-    const detail = {
-        url: { de: 'Bitte gib eine gültige https-Adresse ein.', en: 'Enter a valid https address.' },
-        https: { de: 'Bitte gib eine gültige https-Adresse ein.', en: 'Enter a valid https address.' },
-        credentials: {
-            de: 'Die Adresse darf kein Passwort enthalten.',
-            en: 'The address must not include a password.',
-        },
-        tooLong: { de: 'Die Adresse ist zu lang.', en: 'The address is too long.' },
-        instagramHost: {
-            de: 'Die Instagram-Adresse muss auf instagram.com liegen.',
-            en: 'The Instagram address must be on instagram.com.',
-        },
-        googleHost: {
-            de: 'Die Google-Adresse muss ein Maps-, g.page- oder Unternehmensprofil-Link sein.',
-            en: 'The Google address must be a Maps, g.page, or Business Profile link.',
-        },
-        takeAChefHost: {
-            de: 'Die Take-a-Chef-Adresse muss auf takeachef.com liegen.',
-            en: 'The Take a Chef address must be on takeachef.com.',
-        },
-        labelRequired: { de: 'Bitte benenne die Plattform.', en: 'Name the platform.' },
-        labelTooLong: { de: 'Der Plattformname ist zu lang.', en: 'The platform name is too long.' },
-        duplicatePlatform: {
-            de: 'Diese Plattform ist schon eingetragen.',
-            en: 'That platform is already listed.',
-        },
-        tooMany: {
-            de: 'Höchstens fünf weitere Profile.',
-            en: 'At most five other profiles.',
-        },
-    }[issue.code][locale];
+    const detail = inlineCopy(
+        {
+            url: { de: 'Bitte gib eine gültige https-Adresse ein.', en: 'Enter a valid https address.' },
+            https: { de: 'Bitte gib eine gültige https-Adresse ein.', en: 'Enter a valid https address.' },
+            credentials: {
+                de: 'Die Adresse darf kein Passwort enthalten.',
+                en: 'The address must not include a password.',
+            },
+            tooLong: { de: 'Die Adresse ist zu lang.', en: 'The address is too long.' },
+            instagramHost: {
+                de: 'Die Instagram-Adresse muss auf instagram.com liegen.',
+                en: 'The Instagram address must be on instagram.com.',
+            },
+            googleHost: {
+                de: 'Die Google-Adresse muss ein Maps-, g.page- oder Unternehmensprofil-Link sein.',
+                en: 'The Google address must be a Maps, g.page, or Business Profile link.',
+            },
+            takeAChefHost: {
+                de: 'Die Take-a-Chef-Adresse muss auf takeachef.com liegen.',
+                en: 'The Take a Chef address must be on takeachef.com.',
+            },
+            labelRequired: { de: 'Bitte benenne die Plattform.', en: 'Name the platform.' },
+            labelTooLong: { de: 'Der Plattformname ist zu lang.', en: 'The platform name is too long.' },
+            duplicatePlatform: {
+                de: 'Diese Plattform ist schon eingetragen.',
+                en: 'That platform is already listed.',
+            },
+            tooMany: {
+                de: 'Höchstens fünf weitere Profile.',
+                en: 'At most five other profiles.',
+            },
+        }[issue.code],
+        locale,
+    );
 
     return `${field}: ${detail}`;
 }
@@ -69,7 +73,9 @@ export function CookPresenceLinksReadout({ links }: { links: unknown }) {
     const rows = presenceRows(cookPresenceLinksFromStored(links), locale);
     if (rows.length === 0) {
         return (
-            <p className="text-sm text-muted-foreground">{{ de: 'Noch keine Profile angegeben.', en: 'No other profiles yet.' }[locale]}</p>
+            <p className="text-sm text-muted-foreground">
+                {inlineCopy({ de: 'Noch keine Profile angegeben.', en: 'No other profiles yet.' }, locale)}
+            </p>
         );
     }
 
@@ -114,7 +120,7 @@ export function CookPresenceLinksFields({
         <div className="grid min-w-0 gap-4">
             <UrlField
                 id={`${idPrefix}-website`}
-                label={{ de: 'Website', en: 'Website' }[locale]}
+                label={inlineCopy({ de: 'Website', en: 'Website' }, locale)}
                 placeholder="https://"
                 value={value.websiteUrl}
                 disabled={disabled}
@@ -130,7 +136,7 @@ export function CookPresenceLinksFields({
             />
             <UrlField
                 id={`${idPrefix}-google`}
-                label={{ de: 'Google-Profil', en: 'Google profile' }[locale]}
+                label={inlineCopy({ de: 'Google-Profil', en: 'Google profile' }, locale)}
                 placeholder="https://maps.app.goo.gl/"
                 value={value.googleProfileUrl}
                 disabled={disabled}
@@ -149,14 +155,14 @@ export function CookPresenceLinksFields({
                 <div key={`${idPrefix}-other-${index}`} className="grid min-w-0 gap-2 rounded-lg border border-border p-3">
                     <div className="flex items-center justify-between gap-2">
                         <label htmlFor={`${idPrefix}-other-${index}-platform`} className="text-sm font-medium">
-                            {{ de: 'Weiteres Profil', en: 'Another profile' }[locale]}
+                            {inlineCopy({ de: 'Weiteres Profil', en: 'Another profile' }, locale)}
                         </label>
                         <Button
                             type="button"
                             variant="ghost"
                             size="icon-xs"
                             disabled={disabled}
-                            aria-label={{ de: 'Profil entfernen', en: 'Remove profile' }[locale]}
+                            aria-label={inlineCopy({ de: 'Profil entfernen', en: 'Remove profile' }, locale)}
                             onClick={() => patch({ otherProfiles: value.otherProfiles.filter((_, row) => row !== index) })}
                         >
                             <Trash2Icon aria-hidden />
@@ -188,7 +194,7 @@ export function CookPresenceLinksFields({
                     {profile.platform === 'OTHER' ? (
                         <div className="grid gap-2">
                             <label htmlFor={`${idPrefix}-other-${index}-label`} className="text-sm font-medium">
-                                {{ de: 'Name der Plattform', en: 'Platform name' }[locale]}
+                                {inlineCopy({ de: 'Name der Plattform', en: 'Platform name' }, locale)}
                             </label>
                             <Input
                                 id={`${idPrefix}-other-${index}-label`}
@@ -206,7 +212,7 @@ export function CookPresenceLinksFields({
                     ) : null}
                     <div className="grid gap-2">
                         <label htmlFor={`${idPrefix}-other-${index}-url`} className="text-sm font-medium">
-                            {{ de: 'Adresse', en: 'Address' }[locale]}
+                            {inlineCopy({ de: 'Adresse', en: 'Address' }, locale)}
                         </label>
                         <Input
                             id={`${idPrefix}-other-${index}-url`}
@@ -242,7 +248,7 @@ export function CookPresenceLinksFields({
                     }
                 >
                     <PlusIcon aria-hidden />
-                    {{ de: 'Weiteres Profil hinzufügen', en: 'Add another profile' }[locale]}
+                    {inlineCopy({ de: 'Weiteres Profil hinzufügen', en: 'Add another profile' }, locale)}
                 </Button>
             )}
         </div>
@@ -284,17 +290,17 @@ function UrlField({
 }
 
 function platformOptionLabel(platform: CookPresenceOtherPlatform, locale: Locale): string {
-    if (platform === 'OTHER') return { de: 'Andere', en: 'Other' }[locale];
+    if (platform === 'OTHER') return inlineCopy({ de: 'Andere', en: 'Other' }, locale);
     return cookPresenceOtherPlatformLabel(platform);
 }
 
 function presenceRows(links: CookPresenceLinks | null | undefined, locale: Locale): Array<{ label: string; url: string }> {
     if (links == null) return [];
     const rows: Array<{ label: string; url: string }> = [];
-    if (links.websiteUrl) rows.push({ label: { de: 'Website', en: 'Website' }[locale], url: links.websiteUrl });
+    if (links.websiteUrl) rows.push({ label: inlineCopy({ de: 'Website', en: 'Website' }, locale), url: links.websiteUrl });
     if (links.instagramUrl) rows.push({ label: 'Instagram', url: links.instagramUrl });
     if (links.googleProfileUrl) {
-        rows.push({ label: { de: 'Google-Profil', en: 'Google profile' }[locale], url: links.googleProfileUrl });
+        rows.push({ label: inlineCopy({ de: 'Google-Profil', en: 'Google profile' }, locale), url: links.googleProfileUrl });
     }
     if (links.takeAChefUrl) rows.push({ label: 'Take a Chef', url: links.takeAChefUrl });
     for (const profile of links.otherProfiles) {

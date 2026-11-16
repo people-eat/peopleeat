@@ -1,16 +1,16 @@
 import { ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon } from 'lucide-react';
 import type { ComponentProps } from 'react';
-import { useLocale } from '../../hooks/useLocale';
+import { useT } from '../../hooks/useT';
 import { cn } from '../../utils/cn';
 import type { Button } from './button';
 import { buttonVariants } from './button';
 
 function Pagination({ className, ...props }: ComponentProps<'nav'>) {
-    const locale = useLocale();
+    const { t } = useT('common');
     return (
         <nav
             role="navigation"
-            aria-label={{ de: 'Seitennummerierung', en: 'Pagination' }[locale]}
+            aria-label={t('pagination.nav')}
             data-slot="pagination"
             className={cn('mx-auto flex w-full justify-center', className)}
             {...props}
@@ -50,41 +50,36 @@ function PaginationLink({ className, isActive, size = 'icon', ...props }: Pagina
 }
 
 function PaginationPrevious({ className, ...props }: ComponentProps<typeof PaginationLink>) {
-    const locale = useLocale();
+    const { t } = useT('common');
     return (
         <PaginationLink
-            aria-label={{ de: 'Zur vorherigen Seite', en: 'Go to previous page' }[locale]}
+            aria-label={t('pagination.previousAria')}
             size="default"
             className={cn('gap-1 px-2.5 sm:pl-2.5', className)}
             {...props}
         >
             <ChevronLeftIcon />
-            <span className="hidden sm:block">{{ de: 'Zurück', en: 'Previous' }[locale]}</span>
+            <span className="hidden sm:block">{t('pagination.previous')}</span>
         </PaginationLink>
     );
 }
 
 function PaginationNext({ className, ...props }: ComponentProps<typeof PaginationLink>) {
-    const locale = useLocale();
+    const { t } = useT('common');
     return (
-        <PaginationLink
-            aria-label={{ de: 'Zur nächsten Seite', en: 'Go to next page' }[locale]}
-            size="default"
-            className={cn('gap-1 px-2.5 sm:pr-2.5', className)}
-            {...props}
-        >
-            <span className="hidden sm:block">{{ de: 'Weiter', en: 'Next' }[locale]}</span>
+        <PaginationLink aria-label={t('pagination.nextAria')} size="default" className={cn('gap-1 px-2.5 sm:pr-2.5', className)} {...props}>
+            <span className="hidden sm:block">{t('pagination.next')}</span>
             <ChevronRightIcon />
         </PaginationLink>
     );
 }
 
 function PaginationEllipsis({ className, ...props }: ComponentProps<'span'>) {
-    const locale = useLocale();
+    const { t } = useT('common');
     return (
         <span aria-hidden data-slot="pagination-ellipsis" className={cn('flex size-9 items-center justify-center', className)} {...props}>
             <MoreHorizontalIcon className="size-4" />
-            <span className="sr-only">{{ de: 'Weitere Seiten', en: 'More pages' }[locale]}</span>
+            <span className="sr-only">{t('pagination.more')}</span>
         </span>
     );
 }

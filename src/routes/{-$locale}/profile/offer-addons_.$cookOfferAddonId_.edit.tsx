@@ -18,8 +18,8 @@ export const Route = createFileRoute('/{-$locale}/profile/offer-addons_/$cookOff
     head: ({ params }) => {
         const locale = localeFromParam(params);
         return seoMeta({
-            title: profileCookOfferAddonEditPageTitle[locale],
-            description: profileCookOfferAddonEditPageDescription[locale],
+            title: profileCookOfferAddonEditPageTitle(locale),
+            description: profileCookOfferAddonEditPageDescription(locale),
             path: `/profile/offer-addons/${params.cookOfferAddonId}/edit`,
             locale,
             webPageUrl: webPageUrlGet(),

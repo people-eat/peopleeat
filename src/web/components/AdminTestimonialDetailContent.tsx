@@ -1,5 +1,7 @@
 import { StarIcon } from 'lucide-react';
 
+import { t } from '../../i18n/t';
+import { inlineCopy } from '../../shared';
 import { useLocale } from '../hooks/useLocale';
 import { cn } from '../utils/cn';
 import { AppImage } from './AppImage';
@@ -7,7 +9,7 @@ import { AppImage } from './AppImage';
 function AdminTestimonialRating({ rating }: { rating: number }) {
     const locale = useLocale();
     const average = rating.toFixed(1);
-    const label = { de: `${average.replace('.', ',')} von 5 Sternen`, en: `${average} out of 5 stars` }[locale];
+    const label = inlineCopy({ de: `${average.replace('.', ',')} von 5 Sternen`, en: `${average} out of 5 stars` }, locale);
 
     return (
         <div className="flex items-center gap-1.5">
@@ -38,7 +40,7 @@ export function AdminTestimonialDetailContent({
     imageUrls: ReadonlyArray<string>;
 }) {
     const locale = useLocale();
-    const emptyBody = { de: 'Noch kein Text.', en: 'No body yet.' }[locale];
+    const emptyBody = t(locale, 'admin', 'copy.noBodyYet');
     const trimmedBody = body.trim();
 
     return (
@@ -47,9 +49,7 @@ export function AdminTestimonialDetailContent({
                 {occasion?.trim() ? (
                     <h2 className="min-w-0 flex-1 text-base font-medium text-foreground">{occasion.trim()}</h2>
                 ) : (
-                    <h2 className="min-w-0 flex-1 text-base font-medium text-muted-foreground">
-                        {{ de: 'Ohne Anlass', en: 'No occasion' }[locale]}
-                    </h2>
+                    <h2 className="min-w-0 flex-1 text-base font-medium text-muted-foreground">{t(locale, 'admin', 'copy.noOccasion')}</h2>
                 )}
                 {rating != null ? <AdminTestimonialRating rating={rating} /> : null}
             </div>
@@ -59,7 +59,7 @@ export function AdminTestimonialDetailContent({
             </blockquote>
 
             {imageUrls.length > 0 ? (
-                <ul className="grid grid-cols-4 gap-1.5" aria-label={{ de: 'Fotos der Bewertung', en: 'Review photos' }[locale]}>
+                <ul className="grid grid-cols-4 gap-1.5" aria-label={t(locale, 'admin', 'copy.reviewPhotos')}>
                     {imageUrls.map((url) => (
                         <li key={url}>
                             <div className="relative aspect-square w-full overflow-hidden rounded-md bg-muted">
@@ -69,7 +69,7 @@ export function AdminTestimonialDetailContent({
                     ))}
                 </ul>
             ) : (
-                <p className="text-sm text-muted-foreground">{{ de: 'Noch keine Bilder.', en: 'No images yet.' }[locale]}</p>
+                <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noImagesYet')}</p>
             )}
         </section>
     );

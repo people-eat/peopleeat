@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { t } from '../../../i18n/t';
+import { contentLocaleText } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { ContentPageEditor, contentPageEditorTabFromSearch } from '../../components/ContentPageEditor';
 import type { ContentPageEditorSearch, ContentPageEditorValues } from '../../components/ContentPageEditor';
@@ -10,14 +12,16 @@ import { contentSectionsFromGql, contentSectionsToInput } from '../../components
 import type { GqlCAdminBlogPostPageQuery } from '../../graphql/generated';
 import { AdminBlogPostDeleteDocument, AdminBlogPostPageUpdatesDocument, AdminBlogPostUpsertDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
+import type { Locale } from '../../utils/locale';
 
 export { parseContentPageEditorSearch as parseAdminBlogPostPageSearch } from '../../components/ContentPageEditor';
 
-export const adminBlogPostPageTitle = { de: 'Beitrag bearbeiten', en: 'Edit post' } as const;
-export const adminBlogPostPageDescription = {
-    de: 'Blog-Beitrag bearbeiten.',
-    en: 'Edit blog post.',
-} as const;
+export function adminBlogPostPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.blogPost.title');
+}
+export function adminBlogPostPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.blogPost.description');
+}
 
 type BlogRow = NonNullable<NonNullable<GqlCAdminBlogPostPageQuery['currentSession']['user']>['admin']>['blogPost'];
 
@@ -73,13 +77,13 @@ export function AdminBlogPostPage({
         return unsubscribe;
     }, [client, blogPostId, seedAdmin]);
 
-    const postTitle = { de: values.titleDe, en: values.titleEn }[locale].trim();
+    const postTitle = contentLocaleText(values.titleDe, values.titleEn, locale).trim();
 
     return (
         <AdminPageChrome
             crumbs={[
-                { label: { de: 'Blog Beiträge', en: 'Blog Posts' }[locale], to: '/{-$locale}/admin/blog-posts' },
-                { label: postTitle || { de: 'Beitrag', en: 'Post' }[locale] },
+                { label: t(locale, 'admin', 'copy.blogPosts'), to: '/{-$locale}/admin/blog-posts' },
+                { label: postTitle || t(locale, 'admin', 'copy.post') },
             ]}
         >
             <ContentPageEditor

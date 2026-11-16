@@ -1,3 +1,4 @@
+import { tEmail } from '../../../i18n/tEmail';
 import type { Locale } from '../../../shared/locale';
 import { EmailButton } from './EmailButton';
 import { EmailChatBubble } from './EmailChatBubble';
@@ -17,32 +18,23 @@ export function BookingRequestOfferChatMessageNotifyBody({
     messageBody,
     chatUrl,
 }: BookingRequestOfferChatMessageNotifyBodyProps) {
-    const intro = {
-        de: `du hast eine neue Nachricht von ${senderFirstName} erhalten.`,
-        en: `you received a new message from ${senderFirstName}.`,
-    }[locale];
-    const cta = { de: 'Im Chat anzeigen', en: 'View in chat' }[locale];
-
     return (
         <>
-            <EmailText>{intro}</EmailText>
+            <EmailText>{tEmail(locale, 'chat.notify.intro', { senderFirstName })}</EmailText>
             <EmailChatBubble>{messageBody}</EmailChatBubble>
-            <EmailButton href={chatUrl}>{cta}</EmailButton>
+            <EmailButton href={chatUrl}>{tEmail(locale, 'chat.notify.cta')}</EmailButton>
         </>
     );
 }
 
 export function bookingRequestOfferChatMessageNotifyHeading(locale: Locale): string {
-    return { de: 'Du hast eine neue Nachricht!', en: 'You have a new message!' }[locale];
+    return tEmail(locale, 'chat.notify.heading');
 }
 
 export function bookingRequestOfferChatMessageNotifyPreview(locale: Locale, senderFirstName: string): string {
-    return {
-        de: `Neue Nachricht von ${senderFirstName}. Jetzt im Chat lesen`,
-        en: `New message from ${senderFirstName}. Read it in chat`,
-    }[locale];
+    return tEmail(locale, 'chat.notify.preview', { senderFirstName });
 }
 
 export function bookingRequestOfferChatMessageNotifyAttachmentFallback(locale: Locale): string {
-    return { de: '(Anhang)', en: '(Attachment)' }[locale];
+    return tEmail(locale, 'chat.notify.attachment');
 }

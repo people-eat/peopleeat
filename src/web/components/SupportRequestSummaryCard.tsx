@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router';
 import { format, parseISO } from 'date-fns';
 import { de as deLocale, enUS } from 'date-fns/locale';
 import { HeadsetIcon } from 'lucide-react';
+import { inlineCopy } from '../../shared';
 
 import { formatInboxListTimestamp } from '../chat/formatInboxListTimestamp';
 import { useLocale } from '../hooks/useLocale';
@@ -57,14 +58,17 @@ export function SupportRequestSummaryCard({
     const locale = useLocale();
     const timeZone = useTimeZone();
     const dateLocale = locale === 'de' ? deLocale : enUS;
-    const statusLabel = request.status === 'RESOLVED' ? { de: 'Erledigt', en: 'Resolved' }[locale] : { de: 'Offen', en: 'Open' }[locale];
+    const statusLabel =
+        request.status === 'RESOLVED'
+            ? inlineCopy({ de: 'Erledigt', en: 'Resolved' }, locale)
+            : inlineCopy({ de: 'Offen', en: 'Open' }, locale);
     const unread = unreadCount ?? request.userUnreadNotificationCount ?? request.adminUnreadNotificationCount ?? 0;
     const hasUnread = unread > 0;
     const customerLabel = customerName?.trim() ?? '';
     const title = customerLabel.length > 0 ? customerLabel : request.subject;
     const contextLabel = request.bookingRequest
         ? `${request.bookingRequest.occasion} · ${format(parseISO(request.bookingRequest.dateTime), 'PP', { locale: dateLocale })}`
-        : { de: 'Allgemeine Anfrage', en: 'General request' }[locale];
+        : inlineCopy({ de: 'Allgemeine Anfrage', en: 'General request' }, locale);
     const preview = customerLabel.length > 0 ? request.subject : contextLabel;
     const showContextUnderTitle = customerLabel.length > 0;
     const showConciergeAvatar = customerLabel.length === 0;
@@ -77,12 +81,13 @@ export function SupportRequestSummaryCard({
         >
             <NotificationBadge
                 count={unread}
-                label={
+                label={inlineCopy(
                     {
                         de: `${unread} ungelesene Nachrichten`,
                         en: `${unread} unread messages`,
-                    }[locale]
-                }
+                    },
+                    locale,
+                )}
             />
             <span className="relative shrink-0">
                 <Avatar className="size-12">

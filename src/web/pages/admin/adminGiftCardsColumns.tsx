@@ -1,5 +1,6 @@
 import { createColumnHelper } from '@tanstack/react-table';
 
+import { t } from '../../../i18n/t';
 import { formatCurrency, formatDate } from '../../../shared';
 import type { Locale } from '../../../shared/locale';
 import { Badge } from '../../components/base/badge';
@@ -24,17 +25,14 @@ export type AdminGiftCardsSortField = (typeof ADMIN_GIFT_CARDS_SORT_FIELDS)[numb
 const columnHelper = createColumnHelper<AdminGiftCardsDataTableFeatures, AdminGiftCardsTableRow>();
 
 export function adminGiftCardPaymentStatusLabel(status: GqlCGiftCardPaymentStatus, locale: Locale) {
-    return {
-        PREPARED: { de: 'Vorbereitet', en: 'Prepared' },
-        PAYED: { de: 'Bezahlt', en: 'Paid' },
-    }[status][locale];
+    return t(locale, 'admin', `giftCards.status.${status}`);
 }
 
 export function adminGiftCardsColumns(locale: Locale, timeZone: string) {
     return columnHelper.columns([
         columnHelper.accessor('createdAt', {
             header: ({ column }) => (
-                <AdminDataTableSortHeader column={column}>{{ de: 'Erstellt', en: 'Created' }[locale]}</AdminDataTableSortHeader>
+                <AdminDataTableSortHeader column={column}>{t(locale, 'admin', 'copy.created')}</AdminDataTableSortHeader>
             ),
             cell: ({ row }) => (
                 <span className="text-muted-foreground tabular-nums">
@@ -44,12 +42,12 @@ export function adminGiftCardsColumns(locale: Locale, timeZone: string) {
         }),
         columnHelper.accessor('originalBalanceCents', {
             header: ({ column }) => (
-                <AdminDataTableSortHeader column={column}>{{ de: 'Betrag', en: 'Amount' }[locale]}</AdminDataTableSortHeader>
+                <AdminDataTableSortHeader column={column}>{t(locale, 'admin', 'copy.amount3')}</AdminDataTableSortHeader>
             ),
             cell: ({ row }) => <span className="tabular-nums">{formatCurrency(row.original.originalBalanceCents, { locale })}</span>,
         }),
         columnHelper.accessor('paymentStatus', {
-            header: () => ({ de: 'Status', en: 'Status' })[locale],
+            header: () => t(locale, 'admin', 'copy.status'),
             cell: ({ row }) => (
                 <Badge variant={row.original.paymentStatus === 'PAYED' ? 'default' : 'secondary'}>
                     {adminGiftCardPaymentStatusLabel(row.original.paymentStatus, locale)}
@@ -58,24 +56,22 @@ export function adminGiftCardsColumns(locale: Locale, timeZone: string) {
             enableSorting: false,
         }),
         columnHelper.accessor('buyerEmail', {
-            header: ({ column }) => (
-                <AdminDataTableSortHeader column={column}>{{ de: 'Käufer', en: 'Buyer' }[locale]}</AdminDataTableSortHeader>
-            ),
+            header: ({ column }) => <AdminDataTableSortHeader column={column}>{t(locale, 'admin', 'copy.buyer')}</AdminDataTableSortHeader>,
             cell: ({ row }) => <span className="text-muted-foreground">{row.original.buyerEmail}</span>,
         }),
         columnHelper.accessor('recipientName', {
             id: 'recipient',
-            header: () => ({ de: 'Empfänger', en: 'Recipient' })[locale],
+            header: () => t(locale, 'admin', 'copy.recipient'),
             cell: ({ row }) => <span>{row.original.recipientName}</span>,
             enableSorting: false,
         }),
         columnHelper.accessor('occasion', {
-            header: () => ({ de: 'Anlass', en: 'Occasion' })[locale],
+            header: () => t(locale, 'admin', 'copy.occasion'),
             cell: ({ row }) => <span className="text-muted-foreground">{row.original.occasion}</span>,
             enableSorting: false,
         }),
         columnHelper.accessor('redeemCode', {
-            header: () => ({ de: 'Code', en: 'Code' })[locale],
+            header: () => t(locale, 'admin', 'copy.code'),
             cell: ({ row }) => <span className="font-mono text-sm tracking-wide">{row.original.redeemCode}</span>,
             enableSorting: false,
         }),

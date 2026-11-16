@@ -1,4 +1,5 @@
 import { CheckIcon, PlusIcon } from 'lucide-react';
+import { inlineCopy } from '../../shared';
 
 import { useLocale } from '../hooks/useLocale';
 import { cn } from '../utils/cn';
@@ -69,18 +70,24 @@ export function OfferMenuConfiguration({
                             {isMultiSelect ? (
                                 <span className="text-sm text-muted-foreground">
                                     {isComplete
-                                        ? {
-                                              de: `${selectedMealIds.length} / ${limit} gewählt`,
-                                              en: `${selectedMealIds.length} / ${limit} selected`,
-                                          }[locale]
-                                        : {
-                                              de: `Noch ${remaining} von ${limit} wählen`,
-                                              en: `Select ${remaining} of ${limit}`,
-                                          }[locale]}
+                                        ? inlineCopy(
+                                              {
+                                                  de: `${selectedMealIds.length} / ${limit} gewählt`,
+                                                  en: `${selectedMealIds.length} / ${limit} selected`,
+                                              },
+                                              locale,
+                                          )
+                                        : inlineCopy(
+                                              {
+                                                  de: `Noch ${remaining} von ${limit} wählen`,
+                                                  en: `Select ${remaining} of ${limit}`,
+                                              },
+                                              locale,
+                                          )}
                                 </span>
                             ) : course.mealOptions.length > 1 ? (
                                 <span className="text-sm text-muted-foreground">
-                                    {{ de: '1 Gericht wählen', en: 'Choose 1 dish' }[locale]}
+                                    {inlineCopy({ de: '1 Gericht wählen', en: 'Choose 1 dish' }, locale)}
                                 </span>
                             ) : null}
                         </div>
@@ -106,8 +113,8 @@ export function OfferMenuConfiguration({
                                                     aria-pressed={isSelected}
                                                     aria-label={
                                                         isSelected
-                                                            ? { de: 'Auswahl entfernen', en: 'Remove selection' }[locale]
-                                                            : { de: 'Gericht wählen', en: 'Select meal' }[locale]
+                                                            ? inlineCopy({ de: 'Auswahl entfernen', en: 'Remove selection' }, locale)
+                                                            : inlineCopy({ de: 'Gericht wählen', en: 'Select meal' }, locale)
                                                     }
                                                     onClick={() => {
                                                         if (!isMultiSelect) {

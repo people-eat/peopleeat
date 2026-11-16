@@ -3,7 +3,9 @@ import { useEffect, useEffectEvent, useId, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
+import { t } from '../../../i18n/t';
 import { cookBookingRequestOfferFunnelArea, formatCountryName, formatCurrency } from '../../../shared';
+import type { Locale } from '../../../shared/locale';
 import { Button } from '../../components/base/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../components/base/dialog';
 import { StatusAlert } from '../../components/base/status-alert';
@@ -22,7 +24,6 @@ import {
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { useUserUpdatesSeed } from '../../hooks/useUserUpdatesSeed';
-import type { Locale } from '../../utils/locale';
 import { cookStubRouteBySlug } from './cookCatalog';
 
 function isPoolUnavailableKind(typename: string | undefined): typename is CookBookingRequestPoolUnavailableKind {
@@ -36,41 +37,25 @@ function isPoolUnavailableKind(typename: string | undefined): typename is CookBo
 
 const poolRoute = cookStubRouteBySlug('booking-request-pool');
 
-export const profileCookBookingRequestPageTitle = {
-    de: 'Buchungsanfrage aus dem Pool',
-    en: 'Booking request from the pool',
-} as const;
-export const profileCookBookingRequestPageDescription = {
-    de: 'Anfrage prüfen, ablehnen oder ein Angebot erstellen.',
-    en: 'Review the request, decline it, or create an offer.',
-} as const;
+export function profileCookBookingRequestPageTitle(locale: Locale): string {
+    return t(locale, 'profileCook', 'poolRequest.title');
+}
+export function profileCookBookingRequestPageDescription(locale: Locale): string {
+    return t(locale, 'profileCook', 'poolRequest.description');
+}
 
-const DECLINE_REASONS: Record<Locale, string[]> = {
-    de: [
-        'Zu weit weg',
-        'Am gewünschten Datum nicht verfügbar',
-        'Anfrage zu kurzfristig',
-        'Budget passt nicht',
-        'Gruppengröße passt nicht',
-        'Unzureichende Informationen',
-        'Nicht mein Spezialgebiet / Stil',
-        'Menüanforderungen nicht umsetzbar',
-        'Küchenausstattung unzureichend',
-        'Anfrage wirkt unklar / unseriös',
-    ],
-    en: [
-        'Too far away',
-        'Not available on the requested date',
-        'Request made too short notice',
-        'Budget does not match',
-        'Group size does not fit',
-        'Insufficient information',
-        'Not within my specialty / style',
-        'Menu requirements not feasible',
-        'Insufficient kitchen equipment',
-        'Request appears unclear / unreliable',
-    ],
-};
+const DECLINE_REASON_KEYS = [
+    'tooFar',
+    'notAvailable',
+    'tooShortNotice',
+    'budget',
+    'groupSize',
+    'insufficientInfo',
+    'notMyStyle',
+    'menuNotFeasible',
+    'kitchen',
+    'unclear',
+] as const;
 
 export function ProfileCookBookingRequestPage({
     data,
@@ -161,21 +146,11 @@ export function ProfileCookBookingRequestPage({
 
     function tryOpenOfferCreate() {
         if (!stripeReady) {
-            toast.error(
-                {
-                    de: 'Bitte richte zuerst deine Auszahlungen in der Wallet ein.',
-                    en: 'Please set up payouts in your wallet first.',
-                }[locale],
-            );
+            toast.error(t(locale, 'profileCook', 'poolRequest.setupWalletFirst'));
             return;
         }
         if (!hasTravelOrigin) {
-            toast.error(
-                {
-                    de: 'Bitte hinterlege zuerst deinen Reise-Startort unter Reise.',
-                    en: 'Please set your travel origin under Travel first.',
-                }[locale],
-            );
+            toast.error(t(locale, 'profileCook', 'poolRequest.setupTravelFirst'));
             return;
         }
         trackOfferCreateStarted();
@@ -188,12 +163,7 @@ export function ProfileCookBookingRequestPage({
     async function onDecline() {
         const reason = declineReason.trim();
         if (reason.length === 0) {
-            toast.error(
-                {
-                    de: 'Bitte gib einen Grund an.',
-                    en: 'Please provide a reason.',
-                }[locale],
-            );
+            toast.error(t(locale, 'profileCook', 'poolRequest.reasonRequired'));
             return;
         }
         setDeclining(true);
@@ -203,7 +173,7 @@ export function ProfileCookBookingRequestPage({
                 throw new Error('decline failed');
             }
             declinedRef.current = true;
-            toast.success({ de: 'Anfrage ausgeblendet.', en: 'Request hidden.' }[locale]);
+            toast.success(t(locale, 'profileCook', 'poolRequest.hidden'));
             setDeclineOpen(false);
             // More open requests → keep reviewing the pool; last one → declined tab (not an empty open pool).
             if (remainingOpenAfterThis > 0) {
@@ -212,7 +182,7 @@ export function ProfileCookBookingRequestPage({
                 await navigate({ to: poolRoute.to, search: { view: 'declined' } });
             }
         } catch {
-            toast.error({ de: 'Ausblenden fehlgeschlagen.', en: 'Could not hide the request.' }[locale]);
+            toast.error(t(locale, 'profileCook', 'poolRequest.hideFailed'));
         } finally {
             setDeclining(false);
         }
@@ -236,12 +206,12 @@ export function ProfileCookBookingRequestPage({
                     !isDeclined ? (
                         <div className="grid w-full gap-3 @md:grid-cols-[minmax(0,1fr)_auto] @md:items-center">
                             <p className="text-sm font-semibold text-foreground">
-                                {{ de: 'Verdiene ca.', en: 'Make about' }[locale]}{' '}
+                                {t(locale, 'profileCook', 'poolRequest.makeAbout')}{' '}
                                 {formatCurrency(request.estimatedCookPayoutCents, { locale })}
                             </p>
                             <div className="grid grid-cols-2 gap-2">
                                 <Button type="button" variant="outline" className="w-full" onClick={() => setDeclineOpen(true)}>
-                                    {{ de: 'Nicht interessiert?', en: 'Not interested?' }[locale]}
+                                    {t(locale, 'profileCook', 'poolRequest.notInterested')}
                                 </Button>
                                 <Button
                                     type="button"
@@ -249,7 +219,7 @@ export function ProfileCookBookingRequestPage({
                                     disabled={!stripeReady || !hasTravelOrigin}
                                     onClick={tryOpenOfferCreate}
                                 >
-                                    {{ de: 'Angebot machen', en: 'Make offer' }[locale]}
+                                    {t(locale, 'profileCook', 'poolRequest.makeOffer')}
                                 </Button>
                             </div>
                         </div>
@@ -261,86 +231,55 @@ export function ProfileCookBookingRequestPage({
                         tone="info"
                         title={
                             request.isExclusive
-                                ? { de: 'Dieser Gast hat dich direkt angefragt', en: 'This guest requested you' }[locale]
-                                : {
-                                      de: 'Dieser Gast hat dich angefragt, die Anfrage ist auch für andere offen',
-                                      en: 'This guest requested you, and the request is also open to others',
-                                  }[locale]
+                                ? t(locale, 'profileCook', 'poolRequest.requestedYou')
+                                : t(locale, 'profileCook', 'poolRequest.requestedYouOpen')
                         }
                     >
                         {request.requestedMenu
-                            ? {
-                                  de: `Die Anfrage kam über dein öffentliches Kochprofil, für das Menü „${request.requestedMenu.title}“.`,
-                                  en: `This request came from your public chef profile, for the menu “${request.requestedMenu.title}”.`,
-                              }[locale]
-                            : {
-                                  de: 'Die Anfrage kam über dein öffentliches Kochprofil.',
-                                  en: 'This request came from your public chef profile.',
-                              }[locale]}
+                            ? t(locale, 'profileCook', 'poolRequest.fromProfileMenu', {
+                                  title: request.requestedMenu.title,
+                              })
+                            : t(locale, 'profileCook', 'poolRequest.fromProfile')}
                     </StatusAlert>
                 ) : null}
 
-                <StatusAlert tone="info" title={{ de: 'Was ist zu tun?', en: 'What to do?' }[locale]}>
+                <StatusAlert tone="info" title={t(locale, 'profileCook', 'poolRequest.whatToDo')}>
                     <ul className="list-disc space-y-1 pl-4">
-                        <li>
-                            {
-                                {
-                                    de: 'Erstelle ein Angebot mit optionalen Menüs und einem Preis.',
-                                    en: 'Create an offer with optional menus and a price.',
-                                }[locale]
-                            }
-                        </li>
-                        <li>
-                            {
-                                {
-                                    de: 'Der Kunde prüft dein Angebot. Bei Annahme könnt ihr Details klären.',
-                                    en: 'The customer reviews your offer. If they accept, you can discuss details.',
-                                }[locale]
-                            }
-                        </li>
+                        <li>{t(locale, 'profileCook', 'poolRequest.createHint')}</li>
+                        <li>{t(locale, 'profileCook', 'poolRequest.customerReviews')}</li>
                     </ul>
                 </StatusAlert>
 
                 {!stripeReady ? (
                     <StatusAlert
                         tone="warning"
-                        title={{ de: 'Auszahlungen einrichten', en: 'Set up payouts' }[locale]}
+                        title={t(locale, 'profileCook', 'poolRequest.setupPayouts')}
                         action={
                             <Button asChild variant="outline" size="sm">
-                                <Link to="/{-$locale}/profile/wallet">{{ de: 'Zur Wallet', en: 'Go to wallet' }[locale]}</Link>
+                                <Link to="/{-$locale}/profile/wallet">{t(locale, 'profileCook', 'poolRequest.goToWallet')}</Link>
                             </Button>
                         }
                     >
-                        {
-                            {
-                                de: 'Bevor du Angebote erstellen kannst, musst du deine Stripe-Auszahlungen abschließen.',
-                                en: 'Before you can create offers, finish setting up Stripe payouts.',
-                            }[locale]
-                        }
+                        {t(locale, 'profileCook', 'poolRequest.finishStripe')}
                     </StatusAlert>
                 ) : null}
 
                 {stripeReady && !hasTravelOrigin ? (
                     <StatusAlert
                         tone="warning"
-                        title={{ de: 'Reise-Startort fehlt', en: 'Travel origin missing' }[locale]}
+                        title={t(locale, 'profileCook', 'poolRequest.travelMissing')}
                         action={
                             <Button asChild variant="outline" size="sm">
-                                <Link to="/{-$locale}/profile/travel">{{ de: 'Zur Reise', en: 'Go to travel' }[locale]}</Link>
+                                <Link to="/{-$locale}/profile/travel">{t(locale, 'profileCook', 'poolRequest.goToTravel')}</Link>
                             </Button>
                         }
                     >
-                        {
-                            {
-                                de: 'Für Reisekosten und Distanz brauchst du einen hinterlegten Startort.',
-                                en: 'A travel origin is required for distance and travel expenses.',
-                            }[locale]
-                        }
+                        {t(locale, 'profileCook', 'poolRequest.travelRequired')}
                     </StatusAlert>
                 ) : null}
 
                 {isDeclined ? (
-                    <StatusAlert tone="error" title={{ de: 'Von dir ausgeblendet', en: 'Hidden by you' }[locale]}>
+                    <StatusAlert tone="error" title={t(locale, 'profileCook', 'poolRequest.hiddenByYou')}>
                         {request.cookPoolDetails?.declinationReason ?? null}
                     </StatusAlert>
                 ) : null}
@@ -355,12 +294,7 @@ export function ProfileCookBookingRequestPage({
                     participants={request.participants}
                     preferences={request.preferences}
                     eventLocation={eventLocation}
-                    eventLocationHint={
-                        {
-                            de: 'Die genaue Adresse wird nach gemeinsamer Zusage freigegeben. Für die Reisekosten nutzen wir sie bereits.',
-                            en: 'The exact address is shared after both sides accept. We already use it for travel expense calculations.',
-                        }[locale]
-                    }
+                    eventLocationHint={t(locale, 'profileCook', 'offer.exactAddressHint')}
                     estimatedTravelDistanceKm={request.estimatedTravelDistanceKm}
                     estimatedTravelExpensesCents={request.estimatedTravelExpensesCents}
                     setting={request.setting}
@@ -380,58 +314,42 @@ export function ProfileCookBookingRequestPage({
             <Dialog open={declineOpen} onOpenChange={(open) => !declining && setDeclineOpen(open)}>
                 <DialogContent className="sm:max-w-lg">
                     <DialogHeader>
-                        <DialogTitle>
-                            {{ de: 'Kein Interesse an Buchungsanfrage', en: 'Not interested in booking request' }[locale]}
-                        </DialogTitle>
-                        <DialogDescription>
-                            {
-                                {
-                                    de: 'Hilf uns, unseren Service zu verbessern, und sag uns kurz, warum diese Anfrage für dich nicht interessant war.',
-                                    en: 'Help us improve by briefly telling us why this request wasn’t interesting for you.',
-                                }[locale]
-                            }
-                        </DialogDescription>
+                        <DialogTitle>{t(locale, 'profileCook', 'poolRequest.declineTitle')}</DialogTitle>
+                        <DialogDescription>{t(locale, 'profileCook', 'poolRequest.declineBody')}</DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-3">
                         <label htmlFor={declineReasonId} className="text-sm font-medium">
-                            {{ de: 'Grund', en: 'Reason' }[locale]}
+                            {t(locale, 'profileCook', 'poolRequest.reason')}
                         </label>
                         <Textarea
                             id={declineReasonId}
                             rows={3}
                             value={declineReason}
                             onChange={(event) => setDeclineReason(event.target.value)}
-                            placeholder={
-                                {
-                                    de: 'Wähle einen Vorschlag oder beschreibe den Grund.',
-                                    en: 'Choose a suggestion or describe the reason.',
-                                }[locale]
-                            }
+                            placeholder={t(locale, 'profileCook', 'poolRequest.reasonHint')}
                         />
                         <div className="flex flex-wrap gap-2">
-                            {DECLINE_REASONS[locale].map((reason) => (
-                                <button
-                                    key={reason}
-                                    type="button"
-                                    className="rounded-full border border-border bg-background px-3 py-1 text-xs hover:bg-muted"
-                                    onClick={() => setDeclineReason(reason)}
-                                >
-                                    {reason}
-                                </button>
-                            ))}
+                            {DECLINE_REASON_KEYS.map((reasonKey) => {
+                                const reason = t(locale, 'profileCook', `poolRequest.declineReasons.${reasonKey}`);
+                                return (
+                                    <button
+                                        key={reasonKey}
+                                        type="button"
+                                        className="rounded-full border border-border bg-background px-3 py-1 text-xs hover:bg-muted"
+                                        onClick={() => setDeclineReason(reason)}
+                                    >
+                                        {reason}
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
                     <DialogFooter>
                         <Button type="button" variant="outline" disabled={declining} onClick={() => setDeclineOpen(false)}>
-                            {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                            {t(locale, 'common', 'cancel')}
                         </Button>
                         <Button type="button" disabled={declining} onClick={() => void onDecline()}>
-                            {
-                                {
-                                    de: declining ? 'Wird ausgeblendet…' : 'Anfrage ausblenden',
-                                    en: declining ? 'Hiding…' : 'Hide request',
-                                }[locale]
-                            }
+                            {declining ? t(locale, 'profileCook', 'actions.hiding') : t(locale, 'profileCook', 'actions.hideRequest')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

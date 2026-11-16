@@ -1,7 +1,8 @@
 import type { LucideIcon } from 'lucide-react';
 import { FileTextIcon, GiftIcon, HeadsetIcon } from 'lucide-react';
 
-import type { Locale } from '../../utils/locale';
+import { t } from '../../../i18n/t';
+import type { Locale } from '../../../shared/locale';
 
 export type CustomerNavSlug = 'booking-requests' | 'gift-cards' | 'support-requests';
 
@@ -9,20 +10,31 @@ export type CustomerNavRoute = {
     slug: CustomerNavSlug;
     path: `/profile/${CustomerNavSlug}`;
     to: `/{-$locale}/profile/${CustomerNavSlug}`;
-    title: Record<Locale, string>;
-    description: Record<Locale, string>;
+    title: (locale: Locale) => string;
+    description: (locale: Locale) => string;
     icon: LucideIcon;
 };
+
+const NAV_KEY: Record<CustomerNavSlug, string> = {
+    'booking-requests': 'bookingRequests',
+    'gift-cards': 'giftCards',
+    'support-requests': 'supportRequests',
+};
+
+function customerNavTitle(slug: CustomerNavSlug) {
+    return (locale: Locale) => t(locale, 'profileCustomer', `nav.${NAV_KEY[slug]}.title`);
+}
+
+function customerNavDescription(slug: CustomerNavSlug) {
+    return (locale: Locale) => t(locale, 'profileCustomer', `nav.${NAV_KEY[slug]}.description`);
+}
 
 const bookingRequestsRoute: CustomerNavRoute = {
     slug: 'booking-requests',
     path: '/profile/booking-requests',
     to: '/{-$locale}/profile/booking-requests',
-    title: { de: 'Buchungsanfragen', en: 'Booking requests' },
-    description: {
-        de: 'Deine gesendeten Buchungsanfragen.',
-        en: 'Your sent booking requests.',
-    },
+    title: customerNavTitle('booking-requests'),
+    description: customerNavDescription('booking-requests'),
     icon: FileTextIcon,
 };
 
@@ -30,11 +42,8 @@ const giftCardsRoute: CustomerNavRoute = {
     slug: 'gift-cards',
     path: '/profile/gift-cards',
     to: '/{-$locale}/profile/gift-cards',
-    title: { de: 'Geschenkkarten', en: 'Gift cards' },
-    description: {
-        de: 'Verschenke peopleeat und verwalte deine Käufe.',
-        en: 'Gift peopleeat and manage your purchases.',
-    },
+    title: customerNavTitle('gift-cards'),
+    description: customerNavDescription('gift-cards'),
     icon: GiftIcon,
 };
 
@@ -42,11 +51,8 @@ const supportRequestsRoute: CustomerNavRoute = {
     slug: 'support-requests',
     path: '/profile/support-requests',
     to: '/{-$locale}/profile/support-requests',
-    title: { de: 'Support', en: 'Support' },
-    description: {
-        de: 'Deine Support-Anfragen an peopleeat.',
-        en: 'Your support requests to peopleeat.',
-    },
+    title: customerNavTitle('support-requests'),
+    description: customerNavDescription('support-requests'),
     icon: HeadsetIcon,
 };
 

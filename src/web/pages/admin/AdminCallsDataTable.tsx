@@ -1,5 +1,6 @@
 import type { OnChangeFn, SortingState } from '@tanstack/react-table';
 
+import { t } from '../../../i18n/t';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { adminCallsColumns } from './adminCallsColumns';
@@ -45,7 +46,7 @@ export function AdminCallsDataTable({ data, sorting, onSortingChange }: AdminCal
             onSortingChange={onSortingChange}
             showPagination={false}
             getRowTo={adminCallsRowLink}
-            emptyMessage={{ de: 'Kein Anruf-Verkehr gefunden.', en: 'No call traffic found.' }[locale]}
+            emptyMessage={t(locale, 'admin', 'copy.noCallTrafficFound')}
         />
     );
 }

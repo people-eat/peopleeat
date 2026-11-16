@@ -1,3 +1,4 @@
+import { t } from '../../../i18n/t';
 import { SITE_WHATSAPP_URL } from '../../../shared/siteBranding';
 import { Button } from '../../components/base/button';
 import { StatusAlert } from '../../components/base/status-alert';
@@ -9,21 +10,16 @@ export function ProfileBanBanner() {
     return (
         <StatusAlert
             tone="warning"
-            title={{ de: 'Dein Profil ist eingeschränkt.', en: 'Your profile is restricted.' }[locale]}
+            title={t(locale, 'profile', 'ban.title')}
             action={
                 <Button asChild size="sm" variant="outline">
                     <a href={SITE_WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
-                        {{ de: 'WhatsApp Support', en: 'WhatsApp support' }[locale]}
+                        {t(locale, 'profile', 'ban.whatsapp')}
                     </a>
                 </Button>
             }
         >
-            {
-                {
-                    de: 'Du kannst dich anmelden, aber Buchungen und Angebote sind gesperrt. Melde dich bei uns, wenn du Fragen hast.',
-                    en: 'You can sign in, but bookings and offers are blocked. Contact us if you have questions.',
-                }[locale]
-            }
+            {t(locale, 'profile', 'ban.body')}
         </StatusAlert>
     );
 }

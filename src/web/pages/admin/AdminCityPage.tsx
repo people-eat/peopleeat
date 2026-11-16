@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { t } from '../../../i18n/t';
 import type { CityCountryCode } from '../../../shared';
 import { cityCountryCodeLabel, cityCountryCodes, contentLocaleText, fileUploadPublicUrl, userDisplayName } from '../../../shared';
 import type { CityCenterSelection } from '../../components/AdminCityCenterField';
@@ -35,15 +36,17 @@ import {
     AdminCityUpsertDocument,
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
+import type { Locale } from '../../utils/locale';
 import { CITY_CHEF_CTA_FALLBACK_IMAGE, CITY_HERO_FALLBACK_IMAGE } from '../cityPageAssets';
 
 export { parseContentPageEditorSearch as parseAdminCityPageSearch } from '../../components/ContentPageEditor';
 
-export const adminCityPageTitle = { de: 'Stadt bearbeiten', en: 'Edit city' } as const;
-export const adminCityPageDescription = {
-    de: 'Stadtseite bearbeiten.',
-    en: 'Edit city landing page.',
-} as const;
+export function adminCityPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.city.title');
+}
+export function adminCityPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.city.description');
+}
 
 type CityEditorValues = ContentPageEditorValues & {
     nameDe: string;
@@ -164,7 +167,7 @@ export function AdminCityPage({ data, cityId, search }: { data: GqlCAdminCityPag
         return unsubscribe;
     }, [client, cityId, seedAdmin]);
 
-    const cityName = { de: values.nameDe, en: values.nameEn }[locale].trim();
+    const cityName = contentLocaleText(values.nameDe, values.nameEn, locale).trim();
     const assignedIds = assignedCooks.map((row) => row.cook.cookId);
     const candidates = useMemo(() => {
         const byId = new Map<string, FeaturedCookOption>();
@@ -229,8 +232,8 @@ export function AdminCityPage({ data, cityId, search }: { data: GqlCAdminCityPag
     return (
         <AdminPageChrome
             crumbs={[
-                { label: { de: 'Städte', en: 'Cities' }[locale], to: '/{-$locale}/admin/cities' },
-                { label: cityName || { de: 'Stadt', en: 'City' }[locale] },
+                { label: t(locale, 'admin', 'copy.cities'), to: '/{-$locale}/admin/cities' },
+                { label: cityName || t(locale, 'admin', 'copy.city') },
             ]}
         >
             <ContentPageEditor
@@ -250,7 +253,7 @@ export function AdminCityPage({ data, cityId, search }: { data: GqlCAdminCityPag
                 citiesCountryCode={values.countryCode}
                 knownFrom
                 chefForAnyOccasion={{
-                    displayName: contentLocaleText(values.nameDe, values.nameEn, locale).trim() || { de: 'Stadt', en: 'City' }[locale],
+                    displayName: contentLocaleText(values.nameDe, values.nameEn, locale).trim() || t(locale, 'admin', 'copy.city'),
                     headlineDe: values.firstSectionHeadlineDe,
                     headlineEn: values.firstSectionHeadlineEn,
                     bodyDe: values.firstSectionBodyDe,
@@ -262,7 +265,7 @@ export function AdminCityPage({ data, cityId, search }: { data: GqlCAdminCityPag
                 identityFields={
                     <Card className="gap-4 py-4" data-content-editor-anchor="top">
                         <CardHeader className="px-4">
-                            <CardTitle>{{ de: 'Stadtname', en: 'City name' }[locale]}</CardTitle>
+                            <CardTitle>{t(locale, 'admin', 'copy.cityName')}</CardTitle>
                         </CardHeader>
                         <CardContent className="flex flex-col gap-3 px-4">
                             <label className="flex flex-col gap-1.5 text-sm">
@@ -274,13 +277,13 @@ export function AdminCityPage({ data, cityId, search }: { data: GqlCAdminCityPag
                                 <Input value={values.nameEn} onChange={(e) => patchCityValues({ nameEn: e.target.value })} />
                             </label>
                             <label className="flex flex-col gap-1.5 text-sm">
-                                <span className="font-medium">{{ de: 'Land', en: 'Country' }[locale]}</span>
+                                <span className="font-medium">{t(locale, 'admin', 'copy.country')}</span>
                                 <Select
                                     value={values.countryCode}
                                     onValueChange={(value) => patchCityValues({ countryCode: value as CityCountryCode })}
                                     disabled={busy}
                                 >
-                                    <SelectTrigger aria-label={{ de: 'Land', en: 'Country' }[locale]}>
+                                    <SelectTrigger aria-label={t(locale, 'admin', 'copy.country')}>
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -312,33 +315,28 @@ export function AdminCityPage({ data, cityId, search }: { data: GqlCAdminCityPag
                     <>
                         <Card className="gap-4 py-4" data-content-editor-anchor="first-section">
                             <CardHeader className="px-4">
-                                <CardTitle>{{ de: 'Erster Abschnitt', en: 'First section' }[locale]}</CardTitle>
+                                <CardTitle>{t(locale, 'admin', 'copy.firstSection')}</CardTitle>
                                 <CardDescription>
-                                    {
-                                        {
-                                            de: 'Headline, Text und Bild neben der CTA-Karte auf der Stadtseite.',
-                                            en: 'Headline, body, and image beside the CTA card on the city page.',
-                                        }[locale]
-                                    }
+                                    {t(locale, 'admin', 'copy.headlineBodyAndImageBesideTheCtaCardOnTheCityPage')}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="flex flex-col gap-3 px-4">
                                 <label className="flex flex-col gap-1.5 text-sm">
-                                    <span className="font-medium">{{ de: 'Headline (DE)', en: 'Headline (DE)' }[locale]}</span>
+                                    <span className="font-medium">{t(locale, 'admin', 'copy.headlineDe')}</span>
                                     <Input
                                         value={values.firstSectionHeadlineDe}
                                         onChange={(e) => patchCityValues({ firstSectionHeadlineDe: e.target.value })}
                                     />
                                 </label>
                                 <label className="flex flex-col gap-1.5 text-sm">
-                                    <span className="font-medium">{{ de: 'Headline (EN)', en: 'Headline (EN)' }[locale]}</span>
+                                    <span className="font-medium">{t(locale, 'admin', 'copy.headlineEn')}</span>
                                     <Input
                                         value={values.firstSectionHeadlineEn}
                                         onChange={(e) => patchCityValues({ firstSectionHeadlineEn: e.target.value })}
                                     />
                                 </label>
                                 <label className="flex flex-col gap-1.5 text-sm">
-                                    <span className="font-medium">{{ de: 'Text (DE)', en: 'Body (DE)' }[locale]}</span>
+                                    <span className="font-medium">{t(locale, 'admin', 'copy.bodyDe')}</span>
                                     <Textarea
                                         value={values.firstSectionBodyDe}
                                         onChange={(e) => patchCityValues({ firstSectionBodyDe: e.target.value })}
@@ -346,7 +344,7 @@ export function AdminCityPage({ data, cityId, search }: { data: GqlCAdminCityPag
                                     />
                                 </label>
                                 <label className="flex flex-col gap-1.5 text-sm">
-                                    <span className="font-medium">{{ de: 'Text (EN)', en: 'Body (EN)' }[locale]}</span>
+                                    <span className="font-medium">{t(locale, 'admin', 'copy.bodyEn')}</span>
                                     <Textarea
                                         value={values.firstSectionBodyEn}
                                         onChange={(e) => patchCityValues({ firstSectionBodyEn: e.target.value })}
@@ -358,14 +356,13 @@ export function AdminCityPage({ data, cityId, search }: { data: GqlCAdminCityPag
                                     uiLocale={locale}
                                     onUploadStart={markPageDirty}
                                     onChange={(firstSectionImageFileUploadId) => patchCityValues({ firstSectionImageFileUploadId })}
-                                    label={{ de: 'Abschnittsbild', en: 'Section image' }[locale]}
-                                    removeTitle={{ de: 'Abschnittsbild entfernen?', en: 'Remove section image?' }[locale]}
-                                    removeDescription={
-                                        {
-                                            de: 'Das Abschnittsbild wird aus dem Entwurf entfernt. Speichern übernimmt die Änderung. Ohne Bild gilt das Standardfoto.',
-                                            en: 'The section image is removed from the draft. Saving applies the change. Without an image the default photo is used.',
-                                        }[locale]
-                                    }
+                                    label={t(locale, 'admin', 'copy.sectionImage')}
+                                    removeTitle={t(locale, 'admin', 'copy.removeSectionImage')}
+                                    removeDescription={t(
+                                        locale,
+                                        'admin',
+                                        'copy.theSectionImageIsRemovedFromTheDraftSavingAppliesTheChangeWi',
+                                    )}
                                 />
                             </CardContent>
                         </Card>
@@ -374,12 +371,7 @@ export function AdminCityPage({ data, cityId, search }: { data: GqlCAdminCityPag
                             assignedIds={assignedIds}
                             candidates={candidates}
                             busy={busy}
-                            emptyHint={
-                                {
-                                    de: 'Leer lassen: öffentliche Seite zeigt Köche im Anfahrtsradius automatisch.',
-                                    en: 'Leave empty: the public page shows chefs in travel radius automatically.',
-                                }[locale]
-                            }
+                            emptyHint={t(locale, 'admin', 'copy.leaveEmptyThePublicPageShowsChefsInTravelRadiusAutomatically')}
                             onSave={async (cookIds) => {
                                 const result = await updateCooks({ cityId, cookIds });
                                 if (result.error || !result.data?.admin.cityCooksUpdate.success) {
@@ -421,12 +413,7 @@ export function AdminCityPage({ data, cityId, search }: { data: GqlCAdminCityPag
                             assignedEntries={assignedTestimonials.map(testimonialEntryFromAdminAssignment)}
                             candidates={testimonialCandidates}
                             busy={busy}
-                            emptyHint={
-                                {
-                                    de: 'Leer lassen: öffentliche Seite zeigt keine Bewertungen.',
-                                    en: 'Leave empty: the public page shows no testimonials.',
-                                }[locale]
-                            }
+                            emptyHint={t(locale, 'admin', 'copy.leaveEmptyThePublicPageShowsNoTestimonials')}
                             onSave={async (entries) => {
                                 const result = await updateTestimonials({ cityId, entries });
                                 if (result.error || !result.data?.admin.cityTestimonialsUpdate.success) {
@@ -453,7 +440,7 @@ export function AdminCityPage({ data, cityId, search }: { data: GqlCAdminCityPag
                 }
                 onSave={async (next) => {
                     if (!center) {
-                        toast.error({ de: 'Bitte ein Stadtzentrum wählen.', en: 'Please choose a city center.' }[locale]);
+                        toast.error(t(locale, 'admin', 'copy.pleaseChooseACityCenter'));
                         throw new Error('missing center');
                     }
                     setBusy(true);

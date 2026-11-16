@@ -1,3 +1,4 @@
+import { t } from '../../i18n/t';
 import { bookingRequestPriceClassTypes, defaultBookingRequestDateTime } from '../../shared/bookingRequestFormDefaults';
 import type { BookingRequestFormPriceClassType } from '../../shared/bookingRequestFormDefaults';
 import { bookingRequestParticipantsFromCounts } from '../../shared/bookingRequestParticipants';
@@ -130,25 +131,15 @@ function parsePreferences(value: unknown): string[] | undefined {
     return undefined;
 }
 
-export function bookingRequestPlanCuisineLabel(key: BookingRequestPlanCuisineKey, locale: 'de' | 'en'): string {
-    return {
-        mediterranean: { de: 'Mediterran', en: 'Mediterranean' },
-        regional: { de: 'Regional & saisonal', en: 'Regional & seasonal' },
-        asian: { de: 'Asiatisch inspiriert', en: 'Asian inspired' },
-        chef: { de: 'Empfehlung des Chefs', en: "Chef's recommendation" },
-    }[key][locale];
+export function bookingRequestPlanCuisineLabel(key: BookingRequestPlanCuisineKey, locale: Locale): string {
+    return t(locale, 'publicBooking', `plan.cuisine.${key}.label`);
 }
 
-export function bookingRequestPlanCuisineSubtitle(key: BookingRequestPlanCuisineKey, locale: 'de' | 'en'): string {
-    return {
-        mediterranean: { de: 'Sonne, Kräuter & leichte Aromen', en: 'Sun, herbs & light flavors' },
-        regional: { de: 'Vertraute Zutaten, neu interpretiert', en: 'Familiar ingredients, newly interpreted' },
-        asian: { de: 'Frische Kräuter & spannende Aromen', en: 'Fresh herbs & exciting flavors' },
-        chef: { de: 'Wir finden gemeinsam eure Richtung', en: 'We find your direction together' },
-    }[key][locale];
+export function bookingRequestPlanCuisineSubtitle(key: BookingRequestPlanCuisineKey, locale: Locale): string {
+    return t(locale, 'publicBooking', `plan.cuisine.${key}.subtitle`);
 }
 
-function bookingRequestPlanCuisinePreference(key: BookingRequestPlanCuisineKey, locale: 'de' | 'en'): string {
+function bookingRequestPlanCuisinePreference(key: BookingRequestPlanCuisineKey, locale: Locale): string {
     return bookingRequestPlanCuisineLabel(key, locale);
 }
 
@@ -156,10 +147,7 @@ function bookingRequestPlanCreateMessage(values: BookingRequestPlanValues, local
     const notes = values.originalMessage.trim();
     if (notes.length === 0) return null;
     const cuisine = bookingRequestPlanCuisineLabel(values.cuisine, locale);
-    return {
-        de: `Menürichtung: ${cuisine}.\n\n${notes}`,
-        en: `Cuisine direction: ${cuisine}.\n\n${notes}`,
-    }[locale];
+    return t(locale, 'publicBooking', 'plan.createMessage', { cuisine, notes });
 }
 
 export function bookingRequestPlanCreateInputFromValues(
@@ -170,12 +158,7 @@ export function bookingRequestPlanCreateInputFromValues(
     if (values.adultCount < 1) return null;
     const originalMessage = bookingRequestPlanCreateMessage(values, locale);
     if (!originalMessage) return null;
-    const occasion =
-        values.occasion.trim() ||
-        {
-            de: 'Familienfest',
-            en: 'Family Party',
-        }[locale];
+    const occasion = values.occasion.trim() || t(locale, 'publicBooking', 'plan.defaultOccasion');
     return {
         occasion,
         dateTime: values.dateTime.toISOString(),
@@ -415,11 +398,8 @@ export function bookingRequestPlanUsesDateChips(bounds: BookingRequestFormDateTi
     return bounds.minDateTime != null && bounds.maxDateTime != null && dayCount > 0 && dayCount <= BOOKING_REQUEST_PLAN_DATE_CHIP_MAX;
 }
 
-export function bookingRequestPlanChefArrivalHint(locale: 'de' | 'en'): string {
-    return {
-        de: 'Euer Koch kommt in der Regel 1.5 Stunden vor Menübeginn an.',
-        en: 'Your chef usually arrives 1.5 hours before the menu starts.',
-    }[locale];
+export function bookingRequestPlanChefArrivalHint(locale: Locale): string {
+    return t(locale, 'publicBooking', 'plan.chefArrivalHint');
 }
 
 export { bookingRequestFormDateTimeBoundsFromSearch, bookingRequestFormHourOptions, bookingRequestFormMinuteOptions };

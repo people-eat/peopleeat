@@ -5,8 +5,8 @@ import { Tabs as TabsPrimitive } from 'radix-ui';
 import type { ComponentProps } from 'react';
 import { useEffect, useRef, useState } from 'react';
 
-import { useLocale } from '../../hooks/useLocale';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
+import { useT } from '../../hooks/useT';
 import { cn } from '../../utils/cn';
 import { Button } from './button';
 
@@ -52,7 +52,7 @@ function TabsList({
     variant = 'default',
     ...props
 }: ComponentProps<typeof TabsPrimitive.List> & VariantProps<typeof tabsListVariants>) {
-    const locale = useLocale();
+    const { t } = useT('common');
     const prefersReducedMotion = usePrefersReducedMotion();
     const scrollerRef = useRef<HTMLDivElement>(null);
     const listRef = useRef<HTMLDivElement>(null);
@@ -119,7 +119,7 @@ function TabsList({
                     size="icon-xs"
                     tabIndex={-1}
                     className="absolute top-4 left-0 z-10 -translate-y-1/2 bg-background/80 text-muted-foreground shadow-sm hover:text-foreground"
-                    aria-label={{ de: 'Tabs nach links scrollen', en: 'Scroll tabs left' }[locale]}
+                    aria-label={t('tabs.scrollLeft')}
                     onClick={() => scrollByPage(-1)}
                 >
                     <ChevronLeftIcon aria-hidden />
@@ -132,7 +132,7 @@ function TabsList({
                     size="icon-xs"
                     tabIndex={-1}
                     className="absolute top-4 right-0 z-10 -translate-y-1/2 bg-background/80 text-muted-foreground shadow-sm hover:text-foreground"
-                    aria-label={{ de: 'Tabs nach rechts scrollen', en: 'Scroll tabs right' }[locale]}
+                    aria-label={t('tabs.scrollRight')}
                     onClick={() => scrollByPage(1)}
                 >
                     <ChevronRightIcon aria-hidden />

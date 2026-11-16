@@ -1,4 +1,4 @@
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 
 const partners = [
     {
@@ -24,13 +24,13 @@ const partners = [
 ];
 
 export function SectionKnownFrom() {
-    const locale = useLocale();
+    const { t } = useT('public');
 
     return (
         <section className="flex w-full flex-col gap-16 overflow-x-hidden">
             <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4">
                 <div className="flex flex-col items-center gap-4 rounded-xl bg-[#3F3F3F] p-4 text-[#FDF6EB] @lg:flex-row">
-                    <span className="text-nowrap">{{ de: 'Bekannt durch', en: 'Known for' }[locale]}:</span>
+                    <span className="text-nowrap">{t('home.knownFrom')}:</span>
 
                     <ul className="flex w-full items-center justify-evenly gap-2">
                         {partners.map(({ name, imagePath, url }) => (

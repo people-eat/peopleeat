@@ -4,11 +4,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode, RefObject } from 'react';
 import { useMutation, useQuery } from 'urql';
 
+import { t } from '../../i18n/t';
 import { idCreate } from '../../shared/idCreate';
 import { writeActiveChatId } from '../chat/assistantActiveChatStorage';
 import { assistantChatDetailTo, assistantChatIndexTo } from '../chat/assistantChatRoutes';
 import { assistantChatTitle } from '../chat/assistantChatTitle';
-import { ASSISTANT_EMPTY_COPY, assistantSidebarLabels } from '../chat/assistantSidebarCopy';
+import { assistantEmptyBlurb, assistantSidebarLabel } from '../chat/assistantSidebarCopy';
 import type { AssistantSidebarSurface } from '../chat/assistantSidebarCopy';
 import { assistantSidebarSuggestions } from '../chat/assistantSidebarSuggestions';
 import { ChatComposer } from '../chat/ChatComposer';
@@ -57,7 +58,7 @@ export function AssistantChatWorkspace({
     const [title, setTitle] = useState<string | undefined>(undefined);
     const [refreshNonce, setRefreshNonce] = useState(0);
     const composerRef = useRef<ChatComposerHandle>(null);
-    const navToggleLabel = { de: 'Seitenleiste umschalten', en: 'Toggle Sidebar' }[locale];
+    const navToggleLabel = t(locale, 'common', 'sidebar.toggle');
 
     useEffect(() => {
         if (chatId) writeActiveChatId(surface, chatId);
@@ -90,8 +91,8 @@ export function AssistantChatWorkspace({
     const headerTitle = chatId
         ? title?.trim()
             ? title
-            : assistantSidebarLabels.newChatTitle[locale]
-        : assistantSidebarLabels.defaultTitle[locale];
+            : assistantSidebarLabel('newChatTitle', locale)
+        : assistantSidebarLabel('defaultTitle', locale);
 
     return (
         <main id="main-content" className="flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden">
@@ -163,29 +164,26 @@ function WorkspaceEmpty({
     onSuggest: (text: string) => void;
 }) {
     const locale = useLocale();
-    const blurb = ASSISTANT_EMPTY_COPY[surface].blurb[locale];
-    const suggestions = assistantSidebarSuggestions(surface, path);
+    const blurb = assistantEmptyBlurb(surface, locale);
+    const suggestions = assistantSidebarSuggestions(surface, path, locale);
 
     return (
         <>
             <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 overflow-y-auto px-4 py-10">
                 <p className="max-w-md text-center text-sm text-muted-foreground">{blurb}</p>
                 <div className="flex max-w-lg flex-wrap justify-center gap-2">
-                    {suggestions.map((suggestion) => {
-                        const label = suggestion[locale];
-                        return (
-                            <Button
-                                key={label}
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                className="h-auto max-w-full whitespace-normal px-3 py-1.5 text-left text-xs"
-                                onClick={() => onSuggest(label)}
-                            >
-                                {label}
-                            </Button>
-                        );
-                    })}
+                    {suggestions.map((label) => (
+                        <Button
+                            key={label}
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="h-auto max-w-full whitespace-normal px-3 py-1.5 text-left text-xs"
+                            onClick={() => onSuggest(label)}
+                        >
+                            {label}
+                        </Button>
+                    ))}
                 </div>
             </div>
             <div className="shrink-0 px-4 pt-3 pb-(--chat-composer-pb)">
@@ -320,7 +318,7 @@ function WorkspaceActive({
     if (error) {
         return (
             <div className="grid flex-1 place-items-center px-4 text-center text-sm text-destructive">
-                {assistantSidebarLabels.loadError[locale]}
+                {assistantSidebarLabel('loadError', locale)}
             </div>
         );
     }
@@ -338,7 +336,7 @@ function WorkspaceActive({
             <ChatTranscriptShell
                 mode="assistant"
                 className="min-h-0 flex-1"
-                jumpToLatestLabel={assistantSidebarLabels.jumpToLatest[locale]}
+                jumpToLatestLabel={assistantSidebarLabel('jumpToLatest', locale)}
             >
                 {items}
             </ChatTranscriptShell>

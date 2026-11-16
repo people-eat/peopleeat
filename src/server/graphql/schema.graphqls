@@ -15,9 +15,12 @@ scalar Longitude
 # TimeZoneResolver. See docs/architecture/i18n.md.
 scalar TimeZone
 
+# Public URL / Users.locale values. See docs/architecture/i18n.md.
 enum Locale {
     de
     en
+    fr
+    it
 }
 
 # Markets that own public city landing pages. Taxonomy only — not a Countries CMS.

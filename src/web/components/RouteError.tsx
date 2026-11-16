@@ -2,6 +2,7 @@ import { isNotFound, useRouter } from '@tanstack/react-router';
 import type { ErrorComponentProps } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { clientObservabilityRouteErrorReport } from '../observability/clientObservability';
 import { localePath } from '../utils/locale';
 import { Button } from './base/button';
@@ -19,6 +20,7 @@ export function RouteError({ error, reset }: ErrorComponentProps) {
 function RouteErrorFallback({ error, reset }: ErrorComponentProps) {
     const router = useRouter();
     const locale = useLocale();
+    const { t } = useT('common');
 
     useEffect(() => {
         console.error('[route-error]', error);
@@ -29,15 +31,8 @@ function RouteErrorFallback({ error, reset }: ErrorComponentProps) {
     return (
         <main id="main-content" className="flex min-h-screen items-center justify-center px-4">
             <div className="max-w-md text-center">
-                <h1 className="text-4xl font-bold">{{ de: 'Etwas ist schiefgelaufen', en: 'Something went wrong' }[locale]}</h1>
-                <p className="text-muted-foreground mt-2">
-                    {
-                        {
-                            de: 'Bitte versuche es erneut. Wenn das Problem bleibt, komm später wieder.',
-                            en: 'Please try again. If it keeps happening, check back later.',
-                        }[locale]
-                    }
-                </p>
+                <h1 className="text-4xl font-bold">{t('routeError.title')}</h1>
+                <p className="text-muted-foreground mt-2">{t('routeError.body')}</p>
                 <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
                     <Button
                         type="button"
@@ -46,10 +41,10 @@ function RouteErrorFallback({ error, reset }: ErrorComponentProps) {
                             void router.invalidate();
                         }}
                     >
-                        {{ de: 'Erneut versuchen', en: 'Try again' }[locale]}
+                        {t('routeError.tryAgain')}
                     </Button>
                     <Button type="button" variant="outline" asChild>
-                        <a href={localePath(locale, '/')}>{{ de: 'Zur Startseite', en: 'Back to home' }[locale]}</a>
+                        <a href={localePath(locale, '/')}>{t('routeError.backHome')}</a>
                     </Button>
                 </div>
             </div>

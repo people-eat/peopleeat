@@ -1,87 +1,34 @@
+import { i18nCreateSync } from '../i18n/i18nCreate';
+import { t } from '../i18n/t';
 import { formatCurrency } from './formatCurrency';
 import type { Locale } from './locale';
 
 export const bookingRequestPriceClassTypes = ['LOW', 'MEDIUM', 'HIGH'] as const;
 export type BookingRequestFormPriceClassType = (typeof bookingRequestPriceClassTypes)[number];
 
+function catalogStringList(locale: Locale, key: string): string[] {
+    const instance = i18nCreateSync(locale, ['common', 'publicBooking']);
+    const value = (instance.t as (k: string, o: { ns: string; returnObjects: true }) => unknown)(key, {
+        ns: 'publicBooking',
+        returnObjects: true,
+    });
+    if (!Array.isArray(value) || value.some((item) => typeof item !== 'string')) {
+        throw new Error(`Expected string[] at publicBooking:${key}`);
+    }
+    return value;
+}
+
 export function defaultBookingRequestOccasions(locale: Locale): string[] {
-    return {
-        de: ['Geburtstag', 'Romantisches Dinner', 'Hochzeit', 'Familienfest', 'Treffen mit Freunden', 'Team Event'],
-        en: ['Birthday', 'Romantic Dinner', 'Wedding', 'Family Party', 'Meet with Friends', 'Team Event'],
-    }[locale];
+    return catalogStringList(locale, 'formDefaults.occasions');
 }
 
 export function defaultBookingRequestPreferences(locale: Locale): string[] {
-    return {
-        de: [
-            'Italienisch',
-            'Französisch',
-            'Asiatisch',
-            'Vegetarisch',
-            'Vegan',
-            'Mediterran',
-            'BBQ',
-            'Meeresfrüchte',
-            'Fisch',
-            'Fleisch',
-            'Sharing Plates',
-        ],
-        en: ['Italian', 'French', 'Asian', 'Vegetarian', 'Vegan', 'Mediterranean', 'BBQ', 'Seafood', 'Fish', 'Meat', 'Sharing Plates'],
-    }[locale];
+    return catalogStringList(locale, 'formDefaults.preferences');
 }
 
 /** Default dietary restriction / allergen chips for booking-request participants. */
 export function defaultBookingRequestRestrictions(locale: Locale): string[] {
-    return {
-        de: [
-            'Gluten / Weizen',
-            'Nüsse',
-            'Erdnüsse',
-            'Milch / Laktose',
-            'Eier',
-            'Soja',
-            'Fisch',
-            'Schalentiere',
-            'Weichtiere',
-            'Sesam',
-            'Sellerie',
-            'Senf',
-            'Lupinen',
-            'Fruktose',
-            'Histamin',
-            'Sorbit',
-            'Vegetarisch',
-            'Vegan',
-            'Halal',
-            'Koscher',
-            'Kein Schweinefleisch',
-            'Alkoholverzicht',
-        ],
-        en: [
-            'Gluten / Wheat',
-            'Nuts',
-            'Peanuts',
-            'Milk / Lactose',
-            'Eggs',
-            'Soy',
-            'Fish',
-            'Crustaceans',
-            'Molluscs',
-            'Sesame',
-            'Celery',
-            'Mustard',
-            'Lupin',
-            'Fructose',
-            'Histamine',
-            'Sorbitol',
-            'Vegetarian',
-            'Vegan',
-            'Halal',
-            'Kosher',
-            'No pork',
-            'No alcohol',
-        ],
-    }[locale];
+    return catalogStringList(locale, 'formDefaults.restrictions');
 }
 
 export type BookingRequestPriceClassInfo = {
@@ -92,49 +39,19 @@ export type BookingRequestPriceClassInfo = {
     isPopular: boolean;
 };
 
+const priceClassMinimumCents: Record<BookingRequestFormPriceClassType, number> = {
+    LOW: 7500,
+    MEDIUM: 9000,
+    HIGH: 12000,
+};
+
 export function bookingRequestPriceClassInfo(type: BookingRequestFormPriceClassType, locale: Locale): BookingRequestPriceClassInfo {
-    if (type === 'LOW') {
-        return {
-            title: 'Casual Dining',
-            description: {
-                de: 'Für Abende, bei denen es einfach ums Zusammensein geht.',
-                en: "For evenings where it's simply about being together.",
-            }[locale],
-            commonOccasions: {
-                de: ['JGAs', 'Hochzeitsfeiern', 'Team Events', 'Kochkurse'],
-                en: ['Bachelor parties', 'Wedding celebrations', 'Team Events', 'Cooking classes'],
-            }[locale],
-            minimumAmountPerPersonCents: 7500,
-            isPopular: false,
-        };
-    }
-    if (type === 'MEDIUM') {
-        return {
-            title: 'Signature Menü',
-            description: {
-                de: 'Wenn du als Gastgeber mehr willst als ein gutes Essen.',
-                en: 'If you, as a host, want more than just a good meal.',
-            }[locale],
-            commonOccasions: {
-                de: ['Familientreffen', 'Abende mit Freunden', 'Dinner in Ferienwohnungen'],
-                en: ['Family gatherings', 'Evenings with friends', 'Dinners in holiday apartments'],
-            }[locale],
-            minimumAmountPerPersonCents: 9000,
-            isPopular: true,
-        };
-    }
     return {
-        title: 'Prestige Experience',
-        description: {
-            de: 'Für Anlässe, an denen besondere Erinnerungen entstehen.',
-            en: 'For occasions that create special memories.',
-        }[locale],
-        commonOccasions: {
-            de: ['Jubiläen', 'Candlelight Dinner', 'Besondere Anlässe'],
-            en: ['Anniversaries', 'Candlelight Dinners', 'Special Occasions'],
-        }[locale],
-        minimumAmountPerPersonCents: 12000,
-        isPopular: false,
+        title: t(locale, 'publicBooking', `formDefaults.priceClasses.${type}.title`),
+        description: t(locale, 'publicBooking', `formDefaults.priceClasses.${type}.description`),
+        commonOccasions: catalogStringList(locale, `formDefaults.priceClasses.${type}.commonOccasions`),
+        minimumAmountPerPersonCents: priceClassMinimumCents[type],
+        isPopular: type === 'MEDIUM',
     };
 }
 
@@ -142,10 +59,11 @@ export function bookingRequestPriceClassInfo(type: BookingRequestFormPriceClassT
 export function bookingRequestPriceClassLabel(type: BookingRequestFormPriceClassType, locale: Locale): string {
     const info = bookingRequestPriceClassInfo(type, locale);
     const minimum = formatCurrency(info.minimumAmountPerPersonCents, { locale });
-    return {
-        de: `${info.title} (ab ${minimum} p.P.)`,
-        en: `${info.title} (from ${minimum} p.p.)`,
-    }[locale];
+    return t(locale, 'publicBooking', 'formDefaults.priceClassLabel', { title: info.title, minimum });
+}
+
+export function bookingRequestPriceClassCustomLabel(locale: Locale): string {
+    return t(locale, 'publicBooking', 'formDefaults.priceClassCustom');
 }
 
 /** Default event time: ~3 weeks out at 19:00 local. */

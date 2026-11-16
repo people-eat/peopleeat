@@ -2,6 +2,7 @@ import type { DocumentNode } from 'graphql';
 import { useState } from 'react';
 import { useQuery } from 'urql';
 
+import { t } from '../../i18n/t';
 import type { Locale } from '../../shared';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from './base/combobox';
@@ -47,7 +48,7 @@ export function AdminCityCenterField({
 
     return (
         <div className="flex flex-col gap-1.5 text-sm">
-            <span className="font-medium">{{ de: 'Stadtzentrum', en: 'City center' }[locale]}</span>
+            <span className="font-medium">{t(locale, 'admin', 'copy.cityCenter')}</span>
             <Combobox
                 filter={null}
                 items={suggestions.map((suggestion) => suggestion.displayText)}
@@ -74,15 +75,13 @@ export function AdminCityCenterField({
             >
                 <ComboboxInput
                     className="w-full"
-                    placeholder={{ de: 'Stadt suchen…', en: 'Search city…' }[locale]}
+                    placeholder={t(locale, 'admin', 'copy.searchCity')}
                     showClear={false}
                     disabled={disabled}
                     required={!value}
                 />
                 <ComboboxContent>
-                    <ComboboxEmpty>
-                        {fetching ? { de: 'Suche…', en: 'Searching…' }[locale] : { de: 'Keine Treffer.', en: 'No matches.' }[locale]}
-                    </ComboboxEmpty>
+                    <ComboboxEmpty>{fetching ? t(locale, 'admin', 'copy.searching') : t(locale, 'admin', 'copy.noMatches')}</ComboboxEmpty>
                     <ComboboxList>{(displayText: string) => <ComboboxItem value={displayText}>{displayText}</ComboboxItem>}</ComboboxList>
                 </ComboboxContent>
             </Combobox>
@@ -91,14 +90,7 @@ export function AdminCityCenterField({
                     {value.latitude.toFixed(5)}, {value.longitude.toFixed(5)}
                 </p>
             ) : (
-                <p className="text-xs text-muted-foreground">
-                    {
-                        {
-                            de: 'Erforderlich für Koch-Empfehlungen im Umkreis.',
-                            en: 'Required for nearby chef recommendations.',
-                        }[locale]
-                    }
-                </p>
+                <p className="text-xs text-muted-foreground">{t(locale, 'admin', 'copy.requiredForNearbyChefRecommendations')}</p>
             )}
         </div>
     );

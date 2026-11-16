@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
+import { inlineCopy } from '../../shared';
 
 import { groupMessagesByDate, peerUserMessageStreak } from '../chat/chatTranscript';
 import { useComposerFileAttachments } from '../chat/useComposerFileAttachments';
@@ -39,7 +40,7 @@ function SupportPresenceBanner({
     className?: string;
 }) {
     const locale = useLocale();
-    const openUserLabel = { de: 'Nutzer öffnen', en: 'Open user' }[locale];
+    const openUserLabel = inlineCopy({ de: 'Nutzer öffnen', en: 'Open user' }, locale);
 
     const avatar = (
         <Avatar size="lg" className="size-12">
@@ -104,7 +105,7 @@ export function SupportRequestChat({
 
     const resolvedSubtitle =
         subtitle === undefined
-            ? { de: 'Support-Chat mit dem peopleeat Team.', en: 'Support chat with the peopleeat team.' }[locale]
+            ? inlineCopy({ de: 'Support-Chat mit dem peopleeat Team.', en: 'Support chat with the peopleeat team.' }, locale)
             : subtitle;
 
     const presenceProps = {
@@ -121,7 +122,7 @@ export function SupportRequestChat({
             <SupportPresenceBanner {...presenceProps} className="hidden md:flex" />
             <ChatTranscriptShell
                 mode="human"
-                jumpToLatestLabel={{ de: 'Zum neuesten springen', en: 'Jump to latest' }[locale]}
+                jumpToLatestLabel={inlineCopy({ de: 'Zum neuesten springen', en: 'Jump to latest' }, locale)}
                 contentClassName="w-full gap-3"
                 className="min-h-0 min-w-0"
                 viewportClassName="px-1 sm:px-2"
@@ -132,12 +133,13 @@ export function SupportRequestChat({
                 {messages.length === 0 ? (
                     <MessageScrollerItem>
                         <p className="flex min-h-48 flex-1 items-center justify-center px-4 text-center text-sm text-muted-foreground">
-                            {
+                            {inlineCopy(
                                 {
                                     de: 'Noch keine Nachrichten.',
                                     en: 'No messages yet.',
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                         </p>
                     </MessageScrollerItem>
                 ) : (
@@ -167,7 +169,7 @@ export function SupportRequestChat({
                         onValueChange={setDraft}
                         busy={busy}
                         showDisclaimer={false}
-                        ariaLabel={{ de: 'Support-Nachricht', en: 'Support message' }[locale]}
+                        ariaLabel={inlineCopy({ de: 'Support-Nachricht', en: 'Support message' }, locale)}
                         attachments={attachments}
                         onAttachmentsAdd={onAttachmentsAdd}
                         onAttachmentRemove={onAttachmentRemove}

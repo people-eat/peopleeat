@@ -1,3 +1,4 @@
+import { inlineCopy } from './locale';
 import type { Locale } from './locale';
 import { toStripeCountryCode } from './toStripeCountryCode';
 
@@ -329,8 +330,8 @@ export function expansionMarketFaqEntries(
     locale: Locale,
 ): ReadonlyArray<{ question: string; answer: string }> {
     return faqs.map((faq) => ({
-        question: faq.question[locale],
-        answer: faq.answer[locale],
+        question: inlineCopy(faq.question, locale),
+        answer: inlineCopy(faq.answer, locale),
     }));
 }
 

@@ -21,8 +21,8 @@ export const Route = createFileRoute('/{-$locale}/admin/meals')({
     head: ({ params }) => {
         const locale = localeFromParam(params);
         return seoMeta({
-            title: adminMealsPageTitle[locale],
-            description: adminMealsPageDescription[locale],
+            title: adminMealsPageTitle(locale),
+            description: adminMealsPageDescription(locale),
             path: '/admin/meals',
             locale,
             webPageUrl: webPageUrlGet(),

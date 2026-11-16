@@ -1,3 +1,4 @@
+import { t } from '../../i18n/t';
 import {
     DEFAULT_TIME_ZONE,
     formatBookingEventWhenFromCountry,
@@ -60,6 +61,10 @@ export type BookingRequestOfferCookStatementPageProps = DocumentBase & {
 export type BookingRequestOfferPaymentDocumentPageProps =
     BookingRequestOfferCustomerReceiptPageProps | BookingRequestOfferCookStatementPageProps;
 
+function copy(locale: Locale, key: string): string {
+    return t(locale, 'publicBooking', `paymentDocument.${key}`);
+}
+
 export function BookingRequestOfferPaymentDocumentPage(props: BookingRequestOfferPaymentDocumentPageProps) {
     const locale = props.locale;
     const timeZone = props.timeZone || DEFAULT_TIME_ZONE;
@@ -73,26 +78,11 @@ export function BookingRequestOfferPaymentDocumentPage(props: BookingRequestOffe
             venueCity: props.venueCity,
         }),
     );
-    const title =
-        props.kind === 'customer-receipt'
-            ? { de: 'Zahlungsbeleg', en: 'Payment receipt' }[locale]
-            : { de: 'Abrechnung', en: 'Payout statement' }[locale];
+    const title = props.kind === 'customer-receipt' ? copy(locale, 'receiptTitle') : copy(locale, 'statementTitle');
     const lines = props.kind === 'customer-receipt' ? customerLines(props, locale) : cookLines(props, locale);
-    const totalLabel =
-        props.kind === 'customer-receipt'
-            ? { de: 'Gezahlter Betrag', en: 'Amount paid' }[locale]
-            : { de: 'Auszahlungsbetrag', en: 'Payout' }[locale];
+    const totalLabel = props.kind === 'customer-receipt' ? copy(locale, 'amountPaid') : copy(locale, 'payout');
     const totalCents = props.kind === 'customer-receipt' ? props.totalCentsCustomer : props.payoutCentsCook;
-    const footer =
-        props.kind === 'customer-receipt'
-            ? {
-                  de: 'Zahlungsbeleg für eine peopleeat-Buchung. Keine Rechnung. Die Bewirtung rechnet der Koch direkt mit dir ab.',
-                  en: 'Payment receipt for a peopleeat booking. Not an invoice. The cook invoices you directly for the catering.',
-              }[locale]
-            : {
-                  de: 'Abrechnung zur Dokumentation. Keine Rechnung. Bitte stelle deine Rechnung an den Gast über Menü und Fahrtkosten. Die peopleeat-Gebühr ist vom Auszahlungsbetrag einbehalten.',
-                  en: 'Statement for your records. Not an invoice. Please invoice the guest for the menu and travel. The peopleeat fee is withheld from the payout.',
-              }[locale];
+    const footer = props.kind === 'customer-receipt' ? copy(locale, 'receiptFooter') : copy(locale, 'statementFooter');
 
     return (
         <main
@@ -114,14 +104,14 @@ export function BookingRequestOfferPaymentDocumentPage(props: BookingRequestOffe
 
             <section className="grid gap-5 py-6">
                 <dl className="grid gap-2">
-                    <DocumentRow label={{ de: 'Datum', en: 'Date' }[locale]} value={paidAt} />
-                    <DocumentRow label={{ de: 'Anlass', en: 'Occasion' }[locale]} value={props.occasion} />
-                    <DocumentRow label={{ de: 'Termin', en: 'Event' }[locale]} value={eventAt} />
+                    <DocumentRow label={copy(locale, 'date')} value={paidAt} />
+                    <DocumentRow label={copy(locale, 'occasion')} value={props.occasion} />
+                    <DocumentRow label={copy(locale, 'event')} value={eventAt} />
                     <DocumentRow
-                        label={props.kind === 'customer-receipt' ? { de: 'Koch', en: 'Cook' }[locale] : { de: 'Gast', en: 'Guest' }[locale]}
+                        label={props.kind === 'customer-receipt' ? copy(locale, 'cook') : copy(locale, 'guest')}
                         value={props.kind === 'customer-receipt' ? props.cookName : props.guestName}
                     />
-                    <DocumentRow label={{ de: 'Buchungsnummer', en: 'Booking number' }[locale]} value={props.bookingRequestId} mono />
+                    <DocumentRow label={copy(locale, 'bookingNumber')} value={props.bookingRequestId} mono />
                 </dl>
                 <dl className="grid gap-2 border-t border-neutral-200 pt-4">
                     {lines.map((line) => (
@@ -134,11 +124,7 @@ export function BookingRequestOfferPaymentDocumentPage(props: BookingRequestOffe
             {props.invoiceAddress ? (
                 <section className="grid gap-3 border-t border-neutral-200 pt-8">
                     <h2 className="text-sm font-medium tracking-wide text-neutral-500 uppercase">
-                        {
-                            (props.kind === 'customer-receipt'
-                                ? { de: 'Rechnungsadresse', en: 'Billing address' }
-                                : { de: 'Rechnungsadresse des Gastes', en: 'Guest billing address' })[locale]
-                        }
+                        {props.kind === 'customer-receipt' ? copy(locale, 'billingAddress') : copy(locale, 'guestBillingAddress')}
                     </h2>
                     <AddressBlock locale={locale} address={props.invoiceAddress} />
                 </section>
@@ -150,43 +136,36 @@ export function BookingRequestOfferPaymentDocumentPage(props: BookingRequestOffe
 }
 
 function customerLines(props: BookingRequestOfferCustomerReceiptPageProps, locale: Locale): { label: string; amountCents: number }[] {
-    const lines: { label: string; amountCents: number }[] = [
-        { label: { de: 'Menü', en: 'Menu' }[locale], amountCents: props.menuPriceCents },
-    ];
+    const lines: { label: string; amountCents: number }[] = [{ label: copy(locale, 'menu'), amountCents: props.menuPriceCents }];
     if (props.travelExpensesCents > 0) {
-        lines.push({ label: { de: 'Fahrtkosten', en: 'Travel' }[locale], amountCents: props.travelExpensesCents });
+        lines.push({ label: copy(locale, 'travel'), amountCents: props.travelExpensesCents });
     }
     if (props.platformFeeCentsCustomer > 0) {
-        lines.push({ label: { de: 'Servicegebühr', en: 'Service fee' }[locale], amountCents: props.platformFeeCentsCustomer });
+        lines.push({ label: copy(locale, 'serviceFee'), amountCents: props.platformFeeCentsCustomer });
     }
     if (props.paymentProviderFeeCents > 0) {
-        lines.push({
-            label: { de: 'Zahlungsabwicklung', en: 'Payment processing' }[locale],
-            amountCents: props.paymentProviderFeeCents,
-        });
+        lines.push({ label: copy(locale, 'paymentProcessing'), amountCents: props.paymentProviderFeeCents });
     }
     if (props.giftCardAppliedCents > 0) {
-        lines.push({ label: { de: 'Gutschein', en: 'Gift card' }[locale], amountCents: -props.giftCardAppliedCents });
+        lines.push({ label: copy(locale, 'giftCard'), amountCents: -props.giftCardAppliedCents });
     }
     if (props.promoDiscountCents > 0) {
-        lines.push({ label: { de: 'Aktionscode', en: 'Promo code' }[locale], amountCents: -props.promoDiscountCents });
+        lines.push({ label: copy(locale, 'promoCode'), amountCents: -props.promoDiscountCents });
     }
     return lines;
 }
 
 function cookLines(props: BookingRequestOfferCookStatementPageProps, locale: Locale): { label: string; amountCents: number }[] {
-    const lines: { label: string; amountCents: number }[] = [
-        { label: { de: 'Menü', en: 'Menu' }[locale], amountCents: props.menuPriceCents },
-    ];
+    const lines: { label: string; amountCents: number }[] = [{ label: copy(locale, 'menu'), amountCents: props.menuPriceCents }];
     if (props.travelExpensesCents > 0) {
-        lines.push({ label: { de: 'Fahrtkosten', en: 'Travel' }[locale], amountCents: props.travelExpensesCents });
+        lines.push({ label: copy(locale, 'travel'), amountCents: props.travelExpensesCents });
     }
     lines.push({
-        label: { de: 'Rechnungsbetrag an den Gast', en: 'Amount to invoice the guest' }[locale],
+        label: copy(locale, 'invoiceGuest'),
         amountCents: props.menuPriceCents + props.travelExpensesCents,
     });
     if (props.platformFeeCentsCook > 0) {
-        lines.push({ label: { de: 'peopleeat-Gebühr', en: 'peopleeat fee' }[locale], amountCents: -props.platformFeeCentsCook });
+        lines.push({ label: copy(locale, 'peopleeatFee'), amountCents: -props.platformFeeCentsCook });
     }
     return lines;
 }

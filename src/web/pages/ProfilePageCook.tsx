@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { ChevronRightIcon } from 'lucide-react';
 
+import { t } from '../../i18n/t';
 import { Button } from '../components/base/button';
 import { Card, CardContent } from '../components/base/card';
 import { StatusAlert } from '../components/base/status-alert';
@@ -55,22 +56,22 @@ function OverviewAnalyticsStrip({ cook }: { cook: GqlCProfilePageCookStatusFragm
     const stats = [
         {
             key: 'views',
-            label: { de: 'Profilbesuche', en: 'Profile views' }[locale],
+            label: t(locale, 'profileCook', 'analytics.profileViews'),
             value: String(analytics.publicProfileViewCount),
         },
         {
             key: 'response',
-            label: { de: 'Zeit bis Öffnen', en: 'Time to open' }[locale],
+            label: t(locale, 'profileCook', 'analytics.timeToOpen'),
             value: cookAnalyticsFormatDurationMinutes(analytics.medianNotifyToOpenMinutes, locale),
         },
         {
             key: 'offers',
-            label: { de: 'Angebote', en: 'Offers' }[locale],
+            label: t(locale, 'profileCook', 'overview.metricOffers'),
             value: String(analytics.offersCreatedCount),
         },
         {
             key: 'conversion',
-            label: { de: 'Conversion', en: 'Conversion' }[locale],
+            label: t(locale, 'profileCook', 'analytics.conversion'),
             value: cookAnalyticsFormatPercent(analytics.offerConversionRate, locale),
         },
     ] as const;
@@ -79,9 +80,9 @@ function OverviewAnalyticsStrip({ cook }: { cook: GqlCProfilePageCookStatusFragm
         <section className="grid gap-3" aria-labelledby="cook-overview-analytics">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <h2 id="cook-overview-analytics" className="text-sm font-medium text-foreground">
-                    {{ de: 'Analysen', en: 'Analytics' }[locale]}
+                    {t(locale, 'profileCook', 'nav.analytics.title')}
                 </h2>
-                <p className="text-xs text-muted-foreground">{{ de: 'Vergangener Monat', en: 'Past month' }[locale]}</p>
+                <p className="text-xs text-muted-foreground">{t(locale, 'profileCook', 'overview.pastMonth')}</p>
             </div>
             <dl className="grid gap-3 sm:grid-cols-2">
                 {stats.map((stat) => (
@@ -96,7 +97,7 @@ function OverviewAnalyticsStrip({ cook }: { cook: GqlCProfilePageCookStatusFragm
             <div>
                 <Button asChild variant="outline" size="sm">
                     <Link to="/{-$locale}/profile/analytics">
-                        {{ de: 'Alle Analysen', en: 'View all analytics' }[locale]}
+                        {t(locale, 'profileCook', 'overview.viewAllAnalytics')}
                         <ChevronRightIcon aria-hidden />
                     </Link>
                 </Button>
@@ -113,16 +114,14 @@ export function ProfilePageCook({ name, cook }: { name: string; cook: GqlCProfil
     return (
         <main id="main-content" className="mx-auto grid min-h-0 w-full max-w-3xl flex-1 content-start gap-8">
             <div className="grid gap-2">
-                <h1 className="font-serif text-2xl/tight text-foreground">{{ de: `Hallo ${name},`, en: `Hello ${name},` }[locale]}</h1>
-                <p className="text-muted-foreground">
-                    {{ de: 'Hier siehst du, was als Nächstes ansteht.', en: 'Here is what to do next.' }[locale]}
-                </p>
+                <h1 className="font-serif text-2xl/tight text-foreground">{t(locale, 'profile', 'overview.hello', { name })}</h1>
+                <p className="text-muted-foreground">{t(locale, 'profile', 'overview.subtitle')}</p>
             </div>
 
             {overview.attention.length > 0 ? (
                 <section className="grid gap-3" aria-labelledby="cook-overview-attention">
                     <h2 id="cook-overview-attention" className="text-sm font-medium text-foreground">
-                        {{ de: 'Aufmerksamkeit', en: 'Attention' }[locale]}
+                        {t(locale, 'profile', 'overview.attention')}
                     </h2>
                     <div className="grid gap-3">
                         {overview.attention.map((item) => (
@@ -144,7 +143,7 @@ export function ProfilePageCook({ name, cook }: { name: string; cook: GqlCProfil
             {overview.gettingStarted.length > 0 ? (
                 <section className="grid gap-3" aria-labelledby="cook-overview-getting-started">
                     <h2 id="cook-overview-getting-started" className="text-sm font-medium text-foreground">
-                        {{ de: 'Erste Schritte', en: 'Getting started' }[locale]}
+                        {t(locale, 'profile', 'overview.gettingStarted')}
                     </h2>
                     <ul className="grid gap-3">
                         {overview.gettingStarted.map((step) => (
@@ -164,13 +163,8 @@ export function ProfilePageCook({ name, cook }: { name: string; cook: GqlCProfil
             ) : null}
 
             {overview.allClear ? (
-                <StatusAlert tone="info" title={{ de: 'Alles erledigt', en: "You're all set" }[locale]}>
-                    {
-                        {
-                            de: 'Dein Profil ist eingerichtet. Nutze die Seitenleiste für Anfragen und Angebote.',
-                            en: 'Your profile is set up. Use the sidebar for requests and offers.',
-                        }[locale]
-                    }
+                <StatusAlert tone="info" title={t(locale, 'profile', 'overview.allSet')}>
+                    {t(locale, 'profileCook', 'overview.allSetBody')}
                 </StatusAlert>
             ) : null}
         </main>

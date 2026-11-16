@@ -1,3 +1,4 @@
+import { tEmail } from '../../../i18n/tEmail';
 import type { Locale } from '../../../shared/locale';
 import { EmailButton, EmailLayout, EmailText } from '../components';
 
@@ -15,32 +16,22 @@ export function AdminCookApprovalUpdateForCookEmail({
     profileUrl,
 }: AdminCookApprovalUpdateForCookEmailProps) {
     const subject = adminCookApprovalUpdateForCookEmailSubject(locale);
-    const preview = {
-        de: 'Dein Koch-Profil ist freigeschaltet. Als Nächstes: Wallet und Sichtbarkeit',
-        en: 'Your chef profile is approved. Next up: wallet and visibility',
-    }[locale];
-    const intro = {
-        de: 'Gute Neuigkeiten: Dein Koch-Profil wurde von unserem Team freigeschaltet. Du kannst jetzt dein Wallet einrichten und dich für Kunden sichtbar machen.',
-        en: 'Good news: our team approved your chef profile. You can now set up your wallet and make yourself visible to customers.',
-    }[locale];
-    const nudge = {
-        de: 'Öffne dein Profil, um den nächsten Schritt zu sehen.',
-        en: 'Open your profile to see the next step.',
-    }[locale];
-    const cta = { de: 'Zum Profil', en: 'Go to profile' }[locale];
 
     return (
-        <EmailLayout locale={locale} webPageUrl={webPageUrl} preview={preview} subject={subject} recipientFirstName={recipientFirstName}>
-            <EmailText>{intro}</EmailText>
-            <EmailText>{nudge}</EmailText>
-            <EmailButton href={profileUrl}>{cta}</EmailButton>
+        <EmailLayout
+            locale={locale}
+            webPageUrl={webPageUrl}
+            preview={tEmail(locale, 'cook.approval.preview')}
+            subject={subject}
+            recipientFirstName={recipientFirstName}
+        >
+            <EmailText>{tEmail(locale, 'cook.approval.intro')}</EmailText>
+            <EmailText>{tEmail(locale, 'cook.approval.nudge')}</EmailText>
+            <EmailButton href={profileUrl}>{tEmail(locale, 'common.ctaProfile')}</EmailButton>
         </EmailLayout>
     );
 }
 
 export function adminCookApprovalUpdateForCookEmailSubject(locale: Locale): string {
-    return {
-        de: 'Dein Koch-Profil wurde freigeschaltet',
-        en: 'Your chef profile was approved',
-    }[locale];
+    return tEmail(locale, 'cook.approval.subject');
 }

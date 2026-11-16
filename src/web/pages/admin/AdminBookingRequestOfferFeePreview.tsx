@@ -1,10 +1,12 @@
 import type { ReactNode } from 'react';
 
+import { t } from '../../../i18n/t';
 import {
     BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_COOK,
     BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_CUSTOMER,
     bookingRequestOfferPriceCalculate,
     formatCurrency,
+    inlineCopy,
 } from '../../../shared';
 import { cn } from '../../utils/cn';
 import type { Locale } from '../../utils/locale';
@@ -67,15 +69,7 @@ export function AdminBookingRequestOfferFeePreview({
         BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_CUSTOMER;
 
     if (menuPriceCents <= 0) {
-        return (
-            <p className="text-sm text-muted-foreground">
-                {
-                    { de: 'Gib einen Menüpreis ein, um die Gebührenvorschau zu sehen.', en: 'Enter a menu price to see the fee preview.' }[
-                        locale
-                    ]
-                }
-            </p>
-        );
+        return <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.enterAMenuPriceToSeeTheFeePreview')}</p>;
     }
 
     const preview = bookingRequestOfferPriceCalculate({
@@ -91,24 +85,26 @@ export function AdminBookingRequestOfferFeePreview({
     return (
         <div className="grid gap-3 rounded-lg border border-border bg-muted/30 p-4">
             <div className="grid gap-0.5">
-                <p className="text-sm font-medium text-foreground">{{ de: 'Live-Vorschau', en: 'Live preview' }[locale]}</p>
+                <p className="text-sm font-medium text-foreground">{t(locale, 'admin', 'copy.livePreview')}</p>
                 <p className="text-xs text-muted-foreground">
-                    {
+                    {inlineCopy(
                         {
                             de: `Standard: ${BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_COOK} % Koch / ${BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_CUSTOMER} % Kunde`,
                             en: `Default: ${BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_COOK}% cook / ${BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_CUSTOMER}% customer`,
-                        }[locale]
-                    }
+                        },
+                        locale,
+                    )}
                 </p>
             </div>
             <dl className="grid gap-2 text-sm">
                 <PreviewRow
-                    label={
+                    label={inlineCopy(
                         {
                             de: `Plattformgebühr Koch (${preview.platformFeePercentCook} %)`,
                             en: `Platform fee cook (${preview.platformFeePercentCook}%)`,
-                        }[locale]
-                    }
+                        },
+                        locale,
+                    )}
                     value={money(preview.platformFeeCentsCook, locale)}
                     delta={
                         baseline ? (
@@ -117,12 +113,13 @@ export function AdminBookingRequestOfferFeePreview({
                     }
                 />
                 <PreviewRow
-                    label={
+                    label={inlineCopy(
                         {
                             de: `Plattformgebühr Kunde (${preview.platformFeePercentCustomer} %)`,
                             en: `Platform fee customer (${preview.platformFeePercentCustomer}%)`,
-                        }[locale]
-                    }
+                        },
+                        locale,
+                    )}
                     value={money(preview.platformFeeCentsCustomer, locale)}
                     delta={
                         baseline ? (
@@ -131,7 +128,7 @@ export function AdminBookingRequestOfferFeePreview({
                     }
                 />
                 <PreviewRow
-                    label={{ de: 'Zahlungsanbietergebühr', en: 'Payment provider fee' }[locale]}
+                    label={t(locale, 'admin', 'copy.paymentProviderFee')}
                     value={money(preview.paymentProviderFeeCents, locale)}
                     delta={
                         baseline ? (
@@ -140,17 +137,17 @@ export function AdminBookingRequestOfferFeePreview({
                     }
                 />
                 <PreviewRow
-                    label={{ de: 'Koch-Auszahlung', en: 'Cook payout' }[locale]}
+                    label={t(locale, 'admin', 'copy.cookPayout')}
                     value={money(preview.payoutCentsCook, locale)}
                     delta={baseline ? <Delta before={baseline.payoutCentsCook} after={preview.payoutCentsCook} locale={locale} /> : null}
                 />
                 <PreviewRow
-                    label={{ de: 'Kundentotal', en: 'Customer total' }[locale]}
+                    label={t(locale, 'admin', 'copy.customerTotal2')}
                     value={money(totalCentsCustomerAfter, locale)}
                     delta={baselineTotal != null ? <Delta before={baselineTotal} after={totalCentsCustomerAfter} locale={locale} /> : null}
                 />
                 <PreviewRow
-                    label={{ de: 'Plattformgewinn', en: 'Platform profit' }[locale]}
+                    label={t(locale, 'admin', 'copy.platformProfit')}
                     value={money(platformWinCents, locale)}
                     highlight
                     delta={

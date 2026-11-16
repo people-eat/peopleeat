@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { inlineCopy } from '../../shared';
 
 import { useFeatureToggleActive } from '../hooks/useFeatureToggleActive';
 import { useLocale } from '../hooks/useLocale';
@@ -34,15 +35,20 @@ export function MenuDetailsDialog({
     const headerTitle = dialogTitle?.trim() || title;
     const isDeleted = deletedAt != null;
     const courseLabel =
-        courseCount === 1 ? { de: '1 Gang', en: '1 course' }[locale] : { de: `${courseCount} Gänge`, en: `${courseCount} courses` }[locale];
-    const bodyDescription = description.trim().length > 0 ? description : { de: 'Keine Beschreibung', en: 'No description' }[locale];
+        courseCount === 1
+            ? inlineCopy({ de: '1 Gang', en: '1 course' }, locale)
+            : inlineCopy({ de: `${courseCount} Gänge`, en: `${courseCount} courses` }, locale);
+    const bodyDescription =
+        description.trim().length > 0 ? description : inlineCopy({ de: 'Keine Beschreibung', en: 'No description' }, locale);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-3xl">
                 <DialogHeader>
                     <DialogTitle>{headerTitle}</DialogTitle>
-                    <DialogDescription className="sr-only">{{ de: 'Details zum Menü', en: 'Menu details' }[locale]}</DialogDescription>
+                    <DialogDescription className="sr-only">
+                        {inlineCopy({ de: 'Details zum Menü', en: 'Menu details' }, locale)}
+                    </DialogDescription>
                 </DialogHeader>
                 <div className="flex flex-col justify-start gap-8 lg:flex-row">
                     <CookMenuCardMedia images={images} className="size-56 rounded-2xl lg:size-80" />
@@ -50,12 +56,14 @@ export function MenuDetailsDialog({
                         <h2 className="text-xl font-semibold">{title}</h2>
                         <p className="whitespace-pre-wrap text-muted-foreground">{bodyDescription}</p>
                         <div className="flex flex-wrap items-center gap-2">
-                            {isDeleted ? <Badge variant="destructive">{{ de: 'Gelöscht', en: 'Deleted' }[locale]}</Badge> : null}
+                            {isDeleted ? (
+                                <Badge variant="destructive">{inlineCopy({ de: 'Gelöscht', en: 'Deleted' }, locale)}</Badge>
+                            ) : null}
                             {publicationEnabled && !isDeleted ? (
                                 <Badge variant="outline">
                                     {publishedAt
-                                        ? { de: 'Veröffentlicht', en: 'Published' }[locale]
-                                        : { de: 'Entwurf', en: 'Draft' }[locale]}
+                                        ? inlineCopy({ de: 'Veröffentlicht', en: 'Published' }, locale)
+                                        : inlineCopy({ de: 'Entwurf', en: 'Draft' }, locale)}
                                 </Badge>
                             ) : null}
                             <span className="text-sm text-muted-foreground">{courseLabel}</span>

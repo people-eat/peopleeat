@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { toast } from 'sonner';
 import { useMutation, useQuery } from 'urql';
+import { inlineCopy } from '../../shared';
 
 import { COOK_MENU_SUGGESTION_FILE_MAX } from '../../shared/cookMenuSuggestion';
 import { FILE_UPLOAD_ACCEPT } from '../../shared/fileUploadMediaTypes';
@@ -52,20 +53,20 @@ function generatingStatusCopy(locale: Locale, index: number, fromFiles: boolean)
         { de: 'Wir suchen passende Gerichte aus deinen Gerichten…', en: 'Finding dishes you already have…' },
         { de: 'Die Gänge werden zusammengestellt…', en: 'Putting the courses together…' },
     ] as const;
-    return (lines[index] ?? lines[0])[locale];
+    return inlineCopy(lines[index] ?? lines[0], locale);
 }
 
 function suggestionReuseSummary(locale: Locale, reusedCount: number, newCount: number): string {
     const fromDishes =
         reusedCount === 1
-            ? { de: '1 aus deinen Gerichten', en: '1 from your dishes' }[locale]
-            : { de: `${reusedCount} aus deinen Gerichten`, en: `${reusedCount} from your dishes` }[locale];
+            ? inlineCopy({ de: '1 aus deinen Gerichten', en: '1 from your dishes' }, locale)
+            : inlineCopy({ de: `${reusedCount} aus deinen Gerichten`, en: `${reusedCount} from your dishes` }, locale);
     const newDrafts =
         newCount === 1
-            ? { de: '1 neuer Entwurf', en: '1 new draft' }[locale]
-            : { de: `${newCount} neue Entwürfe`, en: `${newCount} new drafts` }[locale];
+            ? inlineCopy({ de: '1 neuer Entwurf', en: '1 new draft' }, locale)
+            : inlineCopy({ de: `${newCount} neue Entwürfe`, en: `${newCount} new drafts` }, locale);
     if (newCount === 0) {
-        return { de: `Alle ${reusedCount} aus deinen Gerichten`, en: `All ${reusedCount} from your dishes` }[locale];
+        return inlineCopy({ de: `Alle ${reusedCount} aus deinen Gerichten`, en: `All ${reusedCount} from your dishes` }, locale);
     }
     if (reusedCount === 0) return newDrafts;
     return `${fromDishes}, ${newDrafts}`;
@@ -248,7 +249,7 @@ export function CookMenuCreateDialog({
             onOpenChange(false);
         } catch {
             if (!openRef.current) return;
-            toast.error({ de: 'Menü konnte nicht angelegt werden.', en: 'Could not create the menu.' }[locale]);
+            toast.error(inlineCopy({ de: 'Menü konnte nicht angelegt werden.', en: 'Could not create the menu.' }, locale));
         } finally {
             setApplying(false);
         }
@@ -269,11 +270,11 @@ export function CookMenuCreateDialog({
         setDraft({ ...draft, courses });
         toast(
             removedCourse
-                ? { de: `Gang „${course.title}“ entfernt.`, en: `Removed course "${course.title}".` }[locale]
-                : { de: 'Gericht entfernt.', en: 'Dish removed.' }[locale],
+                ? inlineCopy({ de: `Gang „${course.title}“ entfernt.`, en: `Removed course "${course.title}".` }, locale)
+                : inlineCopy({ de: 'Gericht entfernt.', en: 'Dish removed.' }, locale),
             {
                 action: {
-                    label: { de: 'Rückgängig', en: 'Undo' }[locale],
+                    label: inlineCopy({ de: 'Rückgängig', en: 'Undo' }, locale),
                     onClick: () => setDraft(previous),
                 },
             },
@@ -287,10 +288,10 @@ export function CookMenuCreateDialog({
     const generateDisabled = busy || hasUploading || (notes.trim().length === 0 && uploadedFileUploadIds.length === 0);
     const title =
         step === 'chooser'
-            ? { de: 'Wie möchtest du das Menü anlegen?', en: 'How do you want to create this menu?' }[locale]
+            ? inlineCopy({ de: 'Wie möchtest du das Menü anlegen?', en: 'How do you want to create this menu?' }, locale)
             : step === 'review'
-              ? { de: 'Prüfe deinen Menüvorschlag', en: 'Review your menu suggestion' }[locale]
-              : { de: 'Aus Text oder Datei', en: 'From text or a file' }[locale];
+              ? inlineCopy({ de: 'Prüfe deinen Menüvorschlag', en: 'Review your menu suggestion' }, locale)
+              : inlineCopy({ de: 'Aus Text oder Datei', en: 'From text or a file' }, locale);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -309,12 +310,13 @@ export function CookMenuCreateDialog({
                     <DialogTitle>{title}</DialogTitle>
                     {step === 'input' || step === 'generating' ? (
                         <DialogDescription>
-                            {
+                            {inlineCopy(
                                 {
                                     de: 'Wir nutzen zuerst deine Gerichte und schlagen nur für Lücken neue vor. Gespeichert wird erst, wenn du zustimmst.',
                                     en: 'We use your dishes first and only suggest new ones for gaps. Nothing is saved until you confirm.',
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                         </DialogDescription>
                     ) : null}
                     {step === 'review' && draft != null && suggestionHasMeals(draft) ? (
@@ -327,26 +329,28 @@ export function CookMenuCreateDialog({
                         <CreateChooserCard
                             tone="accent"
                             icon={<PencilSparklesIcon className="size-5" />}
-                            title={{ de: 'Aus Text oder Datei', en: 'From text or a file' }[locale]}
-                            description={
+                            title={inlineCopy({ de: 'Aus Text oder Datei', en: 'From text or a file' }, locale)}
+                            description={inlineCopy(
                                 {
                                     de: 'Füge eine Speisekarte ein oder beschreibe den Anlass. Wir nutzen zuerst deine Gerichte.',
                                     en: 'Paste a menu or describe the occasion. We use your dishes first.',
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                             disabled={busy}
                             onClick={() => setStep('input')}
                         />
                         <CreateChooserCard
                             tone="sky"
                             icon={<TextCursorInputIcon className="size-5" />}
-                            title={{ de: 'Selbst zusammenstellen', en: 'Start from scratch' }[locale]}
-                            description={
+                            title={inlineCopy({ de: 'Selbst zusammenstellen', en: 'Start from scratch' }, locale)}
+                            description={inlineCopy(
                                 {
                                     de: 'Titel und drei Gänge, die du selbst füllst.',
                                     en: 'A title and three courses you fill yourself.',
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                             disabled={busy}
                             onClick={onEmptyCreate}
                         />
@@ -361,12 +365,13 @@ export function CookMenuCreateDialog({
                         </p>
                         {generatingFromFiles ? (
                             <p className="mt-1 text-sm text-muted-foreground">
-                                {
+                                {inlineCopy(
                                     {
                                         de: 'Bei längeren Dateien kann das etwas dauern.',
                                         en: 'Longer files can take a little while.',
-                                    }[locale]
-                                }
+                                    },
+                                    locale,
+                                )}
                             </p>
                         ) : null}
                     </div>
@@ -388,7 +393,7 @@ export function CookMenuCreateDialog({
                                 {(field) => (
                                     <label className="grid w-full gap-2 self-start text-sm">
                                         <span className="font-medium">
-                                            {{ de: 'Speisekarte oder Anlass', en: 'Menu or occasion' }[locale]}
+                                            {inlineCopy({ de: 'Speisekarte oder Anlass', en: 'Menu or occasion' }, locale)}
                                         </span>
                                         <Textarea
                                             name={field.name}
@@ -398,12 +403,13 @@ export function CookMenuCreateDialog({
                                             onChange={(event) => field.handleChange(event.target.value)}
                                             onPaste={onPaste}
                                             disabled={busy || step === 'generating'}
-                                            placeholder={
+                                            placeholder={inlineCopy(
                                                 {
                                                     de: 'Speisekarte einfügen oder Anlass beschreiben, z. B. Italienisches 4-Gänge-Menü für 8 Gäste, eine Person vegetarisch.',
                                                     en: 'Paste a menu or describe the occasion, e.g. Italian 4-course dinner for 8, one vegetarian guest.',
-                                                }[locale]
-                                            }
+                                                },
+                                                locale,
+                                            )}
                                         />
                                     </label>
                                 )}
@@ -414,21 +420,27 @@ export function CookMenuCreateDialog({
                                     isDragOver && 'ring-2 ring-ring/50',
                                 )}
                             >
-                                <p className="text-sm font-medium">{{ de: 'Dateien', en: 'Files' }[locale]}</p>
+                                <p className="text-sm font-medium">{inlineCopy({ de: 'Dateien', en: 'Files' }, locale)}</p>
                                 <p className="text-sm text-muted-foreground">
                                     {filesAtCap
-                                        ? {
-                                              de: `PDF, Foto einer Speisekarte (auch handschriftlich), Text oder Word. ${COOK_MENU_SUGGESTION_FILE_MAX} von ${COOK_MENU_SUGGESTION_FILE_MAX} Dateien.`,
-                                              en: `PDF, photo of a menu (handwritten works too), text, or Word. ${COOK_MENU_SUGGESTION_FILE_MAX} of ${COOK_MENU_SUGGESTION_FILE_MAX} files.`,
-                                          }[locale]
-                                        : {
-                                              de: 'PDF, Foto einer Speisekarte (auch handschriftlich), Text oder Word. Bis zu 5 Dateien.',
-                                              en: 'PDF, photo of a menu (handwritten works too), text, or Word. Up to 5 files.',
-                                          }[locale]}
+                                        ? inlineCopy(
+                                              {
+                                                  de: `PDF, Foto einer Speisekarte (auch handschriftlich), Text oder Word. ${COOK_MENU_SUGGESTION_FILE_MAX} von ${COOK_MENU_SUGGESTION_FILE_MAX} Dateien.`,
+                                                  en: `PDF, photo of a menu (handwritten works too), text, or Word. ${COOK_MENU_SUGGESTION_FILE_MAX} of ${COOK_MENU_SUGGESTION_FILE_MAX} files.`,
+                                              },
+                                              locale,
+                                          )
+                                        : inlineCopy(
+                                              {
+                                                  de: 'PDF, Foto einer Speisekarte (auch handschriftlich), Text oder Word. Bis zu 5 Dateien.',
+                                                  en: 'PDF, photo of a menu (handwritten works too), text, or Word. Up to 5 files.',
+                                              },
+                                              locale,
+                                          )}
                                 </p>
                                 <div className="flex flex-wrap items-center gap-2">
                                     <span className="hidden text-sm text-muted-foreground sm:inline">
-                                        {{ de: 'Dateien hierher ziehen oder', en: 'Drag files here or' }[locale]}
+                                        {inlineCopy({ de: 'Dateien hierher ziehen oder', en: 'Drag files here or' }, locale)}
                                     </span>
                                     <Button
                                         type="button"
@@ -438,7 +450,7 @@ export function CookMenuCreateDialog({
                                         onClick={openPicker}
                                     >
                                         <FileTextIcon className="size-4" />
-                                        {{ de: 'Datei hinzufügen', en: 'Add file' }[locale]}
+                                        {inlineCopy({ de: 'Datei hinzufügen', en: 'Add file' }, locale)}
                                     </Button>
                                 </div>
                                 <input
@@ -464,12 +476,13 @@ export function CookMenuCreateDialog({
                             </div>
                             {generateFailed ? (
                                 <StatusAlert tone="error">
-                                    {
+                                    {inlineCopy(
                                         {
                                             de: 'Daraus konnten wir kein Menü machen. Versuch es noch einmal, gern mit mehr Details zu den Gängen.',
                                             en: 'We could not build a menu from this. Try again, ideally with more detail on the courses.',
-                                        }[locale]
-                                    }
+                                        },
+                                        locale,
+                                    )}
                                 </StatusAlert>
                             ) : null}
                         </div>
@@ -480,17 +493,18 @@ export function CookMenuCreateDialog({
                     <div className="min-h-0 flex-1 overflow-y-auto">
                         <div className="grid content-start gap-4 p-2">
                             <label className="grid gap-2 text-sm">
-                                <span className="font-medium">{{ de: 'Titel', en: 'Title' }[locale]}</span>
+                                <span className="font-medium">{inlineCopy({ de: 'Titel', en: 'Title' }, locale)}</span>
                                 <Input value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} />
                             </label>
                             {newCount > 0 ? (
                                 <StatusAlert tone="info">
-                                    {
+                                    {inlineCopy(
                                         {
                                             de: 'Neue Gerichte haben noch kein Foto. Für Angebote reicht das. Für deine öffentliche Kochseite brauchst du später Fotos.',
                                             en: 'New dishes have no photo yet. That is fine for offers. Your public cook page needs photos later.',
-                                        }[locale]
-                                    }
+                                        },
+                                        locale,
+                                    )}
                                 </StatusAlert>
                             ) : null}
                             {suggestionHasMeals(draft) ? (
@@ -517,7 +531,10 @@ export function CookMenuCreateDialog({
                                                                     type="button"
                                                                     variant="ghost"
                                                                     size="icon"
-                                                                    aria-label={{ de: 'Gericht entfernen', en: 'Remove dish' }[locale]}
+                                                                    aria-label={inlineCopy(
+                                                                        { de: 'Gericht entfernen', en: 'Remove dish' },
+                                                                        locale,
+                                                                    )}
                                                                     onClick={() => removeMeal(courseIndex, mealIndex)}
                                                                 >
                                                                     <XIcon className="size-4" />
@@ -525,7 +542,9 @@ export function CookMenuCreateDialog({
                                                             }
                                                             meta={
                                                                 meal.type === 'NEW_MEAL' ? (
-                                                                    <Badge variant="outline">{{ de: 'Neu', en: 'New' }[locale]}</Badge>
+                                                                    <Badge variant="outline">
+                                                                        {inlineCopy({ de: 'Neu', en: 'New' }, locale)}
+                                                                    </Badge>
                                                                 ) : undefined
                                                             }
                                                         />
@@ -537,16 +556,17 @@ export function CookMenuCreateDialog({
                                 ))
                             ) : (
                                 <p className="text-sm text-muted-foreground">
-                                    {
+                                    {inlineCopy(
                                         {
                                             de: 'Keine Gerichte mehr übrig. Ändere deine Angaben und versuch es erneut.',
                                             en: 'No dishes left. Edit your details and try again.',
-                                        }[locale]
-                                    }
+                                        },
+                                        locale,
+                                    )}
                                 </p>
                             )}
                             <label className="grid gap-2 text-sm">
-                                <span className="font-medium">{{ de: 'Beschreibung', en: 'Description' }[locale]}</span>
+                                <span className="font-medium">{inlineCopy({ de: 'Beschreibung', en: 'Description' }, locale)}</span>
                                 <Textarea
                                     rows={3}
                                     value={draft.description}
@@ -560,7 +580,7 @@ export function CookMenuCreateDialog({
                 <DialogFooter className={cn('flex-row justify-end', workStep && 'shrink-0 border-t border-border px-6 py-3')}>
                     {step === 'chooser' ? (
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                            {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                            {inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, locale)}
                         </Button>
                     ) : null}
                     {step === 'input' || step === 'generating' ? (
@@ -572,7 +592,7 @@ export function CookMenuCreateDialog({
                                 disabled={step === 'generating'}
                                 onClick={() => setStep('chooser')}
                             >
-                                {{ de: 'Zurück', en: 'Back' }[locale]}
+                                {inlineCopy({ de: 'Zurück', en: 'Back' }, locale)}
                             </Button>
                             <Button
                                 type="submit"
@@ -581,12 +601,13 @@ export function CookMenuCreateDialog({
                                 disabled={generateDisabled || step === 'generating'}
                             >
                                 {step === 'generating' ? <Spinner aria-hidden /> : <SparklesIcon className="size-4" />}
-                                {
+                                {inlineCopy(
                                     {
                                         de: step === 'generating' ? 'Wird vorbereitet…' : 'Menü vorschlagen',
                                         en: step === 'generating' ? 'Preparing…' : 'Suggest menu',
-                                    }[locale]
-                                }
+                                    },
+                                    locale,
+                                )}
                             </Button>
                         </>
                     ) : null}
@@ -599,7 +620,7 @@ export function CookMenuCreateDialog({
                                 disabled={applying}
                                 onClick={() => setStep('input')}
                             >
-                                {{ de: 'Angaben ändern', en: 'Edit details' }[locale]}
+                                {inlineCopy({ de: 'Angaben ändern', en: 'Edit details' }, locale)}
                             </Button>
                             <Button
                                 type="button"
@@ -608,14 +629,20 @@ export function CookMenuCreateDialog({
                                 onClick={() => void onApply()}
                             >
                                 {context === 'offer'
-                                    ? {
-                                          de: applying ? 'Wird angelegt…' : 'Anlegen und auswählen',
-                                          en: applying ? 'Creating…' : 'Create and select',
-                                      }[locale]
-                                    : {
-                                          de: applying ? 'Wird angelegt…' : 'Menü anlegen',
-                                          en: applying ? 'Creating…' : 'Create menu',
-                                      }[locale]}
+                                    ? inlineCopy(
+                                          {
+                                              de: applying ? 'Wird angelegt…' : 'Anlegen und auswählen',
+                                              en: applying ? 'Creating…' : 'Create and select',
+                                          },
+                                          locale,
+                                      )
+                                    : inlineCopy(
+                                          {
+                                              de: applying ? 'Wird angelegt…' : 'Menü anlegen',
+                                              en: applying ? 'Creating…' : 'Create menu',
+                                          },
+                                          locale,
+                                      )}
                             </Button>
                         </>
                     ) : null}

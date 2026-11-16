@@ -1,7 +1,8 @@
 import { Link } from '@tanstack/react-router';
 import { MapPinIcon } from 'lucide-react';
 
-import { formatCurrency, userDisplayName } from '../../shared';
+import { t } from '../../i18n/t';
+import { formatCurrency, inlineCopy, userDisplayName } from '../../shared';
 import type { BookingRequestOfferStatus } from '../../shared/bookingRequestOfferStatus';
 import { bookingRequestOfferStatusHue, bookingRequestOfferStatusLabel } from '../../shared/bookingRequestOfferStatus';
 import { useLocale } from '../hooks/useLocale';
@@ -64,9 +65,7 @@ export function AdminBookingRequestOfferCard({
           : null;
     const callHint = callBookingOverviewHint(offer.callBookings, 'admin', locale, timeZone);
     const city = offer.cook.exactTravelOriginAddress?.city.trim() ?? '';
-    const ctaLabel = hasMenu
-        ? { de: 'Menüvorschlag anzeigen', en: 'Show menu suggestion' }[locale]
-        : { de: 'Angebot anzeigen', en: 'View offer' }[locale];
+    const ctaLabel = hasMenu ? t(locale, 'admin', 'copy.showMenuSuggestion') : t(locale, 'admin', 'copy.viewOffer3');
 
     return (
         <Link
@@ -80,12 +79,13 @@ export function AdminBookingRequestOfferCard({
         >
             <NotificationBadge
                 count={unreadCount}
-                label={
+                label={inlineCopy(
                     {
                         de: `${unreadCount} ungelesene Benachrichtigungen`,
                         en: `${unreadCount} unread notifications`,
-                    }[locale]
-                }
+                    },
+                    locale,
+                )}
             />
 
             <div className="flex min-w-0 flex-col gap-3">
@@ -115,7 +115,7 @@ export function AdminBookingRequestOfferCard({
 
                 {menuHint ? <p className="line-clamp-2 text-sm text-foreground">{menuHint}</p> : null}
                 <p className="flex items-center justify-between gap-3 text-sm font-semibold">
-                    <span>{{ de: 'Gesamtpreis', en: 'Total' }[locale]}</span>
+                    <span>{t(locale, 'admin', 'copy.total2')}</span>
                     <span className="shrink-0">{formatCurrency(priceCents, { locale, maximumFractionDigits: 0 })}</span>
                 </p>
 

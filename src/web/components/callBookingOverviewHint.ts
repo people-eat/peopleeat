@@ -1,3 +1,4 @@
+import { t } from '../../i18n/t';
 import { formatBookingCallWhen, formatBookingWhenJoined } from '../../shared';
 import type { BookingWhenPeer } from '../../shared';
 import { cookCallSlotBookingNextStepIsBefore, cookCallSlotBookingNextStepPick } from '../../shared/cookCallSlotBookingStatus';
@@ -42,7 +43,7 @@ function confirmedCallHint(
     const when = callWhenLabel(booking, locale, timeZone, peers);
     return {
         booking,
-        label: { de: `Gesprächstermin bestätigt · ${when}`, en: `Discovery call confirmed · ${when}` }[locale],
+        label: t(locale, 'common', 'callBookingHint.confirmed', { when }),
         openCall: true,
     };
 }
@@ -63,11 +64,11 @@ function participantCallHint(
     const label =
         step === 'RESPONSE_NEEDED'
             ? role === 'customer'
-                ? { de: `Terminvorschlag wartet auf dich · ${when}`, en: `Call suggestion awaiting your response · ${when}` }[locale]
-                : { de: `Terminanfrage wartet auf dich · ${when}`, en: `Call request awaiting your response · ${when}` }[locale]
+                ? t(locale, 'common', 'callBookingHint.awaitingYouSuggestion', { when })
+                : t(locale, 'common', 'callBookingHint.awaitingYouRequest', { when })
             : role === 'customer'
-              ? { de: `Terminanfrage ausstehend · ${when}`, en: `Call request pending · ${when}` }[locale]
-              : { de: `Terminvorschlag ausstehend · ${when}`, en: `Call suggestion pending · ${when}` }[locale];
+              ? t(locale, 'common', 'callBookingHint.pendingRequest', { when })
+              : t(locale, 'common', 'callBookingHint.pendingSuggestion', { when });
     return { booking, label, openCall: true, step };
 }
 
@@ -94,7 +95,7 @@ export function callBookingOverviewHint(
         const when = callWhenLabel(pendingAwaitingCustomer, locale, timeZone, peers);
         return {
             booking: pendingAwaitingCustomer,
-            label: { de: `Terminvorschlag wartet auf Kunden · ${when}`, en: `Call suggestion awaiting customer · ${when}` }[locale],
+            label: t(locale, 'common', 'callBookingHint.awaitingCustomerSuggestion', { when }),
             openCall: true,
         };
     }
@@ -103,7 +104,7 @@ export function callBookingOverviewHint(
         const when = callWhenLabel(pendingAwaitingCook, locale, timeZone, peers);
         return {
             booking: pendingAwaitingCook,
-            label: { de: `Terminanfrage wartet auf Koch · ${when}`, en: `Call request awaiting chef · ${when}` }[locale],
+            label: t(locale, 'common', 'callBookingHint.awaitingCookRequest', { when }),
             openCall: true,
         };
     }

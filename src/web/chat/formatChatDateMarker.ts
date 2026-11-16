@@ -1,3 +1,4 @@
+import { t } from '../../i18n/t';
 import { formatDate } from '../../shared';
 import type { Locale } from '../utils/locale';
 
@@ -23,12 +24,12 @@ export function formatChatDateMarker(isoDay: string, locale: Locale, now: Date =
 
     const todayKey = localDayKey(now);
     if (isoDay === todayKey) {
-        return { de: 'Heute', en: 'Today' }[locale];
+        return t(locale, 'common', 'chatDate.today');
     }
 
     const yesterdayKey = localDayKey(shiftLocalDay(now, -1));
     if (isoDay === yesterdayKey) {
-        return { de: 'Gestern', en: 'Yesterday' }[locale];
+        return t(locale, 'common', 'chatDate.yesterday');
     }
 
     return formatDate(isoDay, { locale, dateStyle: 'long' });

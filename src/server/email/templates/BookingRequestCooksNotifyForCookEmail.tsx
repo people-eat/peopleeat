@@ -1,3 +1,4 @@
+import { tEmail } from '../../../i18n/tEmail';
 import { formatBookingEventDate } from '../../../shared/formatBookingWhen';
 import type { Locale } from '../../../shared/locale';
 import { timeZoneFromCountry } from '../../../shared/timeZone';
@@ -39,56 +40,24 @@ export function BookingRequestCooksNotifyForCookEmail({
     });
     const subject = bookingRequestCooksNotifyForCookEmailSubject(locale, { direct });
     const preview = direct
-        ? {
-              de: `Ein Gast hat dich direkt angefragt („${occasion}“): jetzt Menü vorschlagen`,
-              en: `A guest requested you (“${occasion}”): propose a menu now`,
-          }[locale]
-        : {
-              de: `Neue Anfrage in ${city} („${occasion}“): jetzt Menü vorschlagen`,
-              en: `New request in ${city} (“${occasion}”): propose a menu now`,
-          }[locale];
+        ? tEmail(locale, 'booking.cooksNotify.previewDirect', { occasion })
+        : tEmail(locale, 'booking.cooksNotify.previewPool', { city, occasion });
     const menuTitle = requestedMenuTitle?.trim() || null;
     const intro = direct
         ? menuTitle
-            ? {
-                  de: `Ein Gast hat dich über dein Kochprofil für „${menuTitle}“ angefragt („${occasion}“ am ${when} in ${city}).`,
-                  en: `A guest requested you from your chef profile for “${menuTitle}” (“${occasion}” on ${when} in ${city}).`,
-              }[locale]
-            : {
-                  de: `Ein Gast hat dich über dein Kochprofil angefragt („${occasion}“ am ${when} in ${city}).`,
-                  en: `A guest requested you from your chef profile (“${occasion}” on ${when} in ${city}).`,
-              }[locale]
-        : {
-              de: `Gute Neuigkeiten: Eine neue Buchungsanfrage in ${city} ist verfügbar („${occasion}“ am ${when}).`,
-              en: `Good news: a new booking request in ${city} is available (“${occasion}” on ${when}).`,
-          }[locale];
-    const nudge = {
-        de: 'Erstelle jetzt einen Menüvorschlag, damit der Kunde schnell zusagen kann. Wir empfehlen, innerhalb der nächsten Stunde zu reagieren.',
-        en: 'Create a menu proposal now so the customer can accept quickly. We recommend responding within the next hour.',
-    }[locale];
-    const linkLabel = {
-        de: 'Anfrage ansehen',
-        en: 'View request',
-    }[locale];
+            ? tEmail(locale, 'booking.cooksNotify.introDirectMenu', { menuTitle, occasion, when, city })
+            : tEmail(locale, 'booking.cooksNotify.introDirect', { occasion, when, city })
+        : tEmail(locale, 'booking.cooksNotify.introPool', { city, occasion, when });
 
     return (
         <EmailLayout locale={locale} webPageUrl={webPageUrl} preview={preview} subject={subject} recipientFirstName={recipientFirstName}>
             <EmailText>{intro}</EmailText>
-            <EmailText>{nudge}</EmailText>
-            <EmailButton href={poolUrl}>{linkLabel}</EmailButton>
+            <EmailText>{tEmail(locale, 'booking.cooksNotify.nudge')}</EmailText>
+            <EmailButton href={poolUrl}>{tEmail(locale, 'common.ctaRequest')}</EmailButton>
         </EmailLayout>
     );
 }
 
 export function bookingRequestCooksNotifyForCookEmailSubject(locale: Locale, options?: { direct?: boolean }): string {
-    if (options?.direct) {
-        return {
-            de: 'Ein Gast hat dich direkt angefragt',
-            en: 'A guest requested you',
-        }[locale];
-    }
-    return {
-        de: 'Buchungsanfrage in deiner Region',
-        en: 'Booking request in your area',
-    }[locale];
+    return tEmail(locale, options?.direct ? 'booking.cooksNotify.subjectDirect' : 'booking.cooksNotify.subjectPool');
 }

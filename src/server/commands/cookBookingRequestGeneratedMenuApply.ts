@@ -1,6 +1,6 @@
 import { and, eq, isNull } from 'drizzle-orm';
 
-import { DEFAULT_LOCALE } from '../../shared';
+import { DEFAULT_LOCALE, inlineCopy } from '../../shared';
 import type { Locale } from '../../shared/locale';
 import { bookingRequestCooks, meals, users } from '../db/schema';
 import type { BookingRequestCookMenuEvaluation } from '../domain/bookingRequest';
@@ -18,10 +18,13 @@ import { featureToggleIsEnabled } from '../utils/featureToggleIsEnabled';
 import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 
 function appliedRecommendationEvaluationSummary(locale: Locale): string {
-    return {
-        de: 'Von der Plattform für diese Anfrage empfohlen.',
-        en: 'Recommended by the platform for this request.',
-    }[locale];
+    return inlineCopy(
+        {
+            de: 'Von der Plattform für diese Anfrage empfohlen.',
+            en: 'Recommended by the platform for this request.',
+        },
+        locale,
+    );
 }
 
 /** Materialize the stored AI-generated menu recommendation into a draft inventory menu. */

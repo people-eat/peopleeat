@@ -6,6 +6,8 @@ import type { SubmitEventHandler } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
+import { t } from '../../../i18n/t';
+import { inlineCopy } from '../../../shared';
 import { userBirthDatePickerBounds } from '../../../shared/userBirthDate';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
@@ -24,12 +26,14 @@ import type { CookCreateFieldsState } from '../../components/CookCreateFields';
 import { AdminUserCreateDocument } from '../../graphql/generated';
 import type { GqlCUserPreferredCommunication } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
+import type { Locale } from '../../utils/locale';
 
-export const adminUserCreatePageTitle = { de: 'Benutzer anlegen', en: 'Create user' } as const;
-export const adminUserCreatePageDescription = {
-    de: 'Konto manuell anlegen. Rechtstexte werden bei der ersten Anmeldung bestätigt.',
-    en: 'Create an account manually. Legal texts are accepted on first log-on.',
-} as const;
+export function adminUserCreatePageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.userCreate.title');
+}
+export function adminUserCreatePageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.userCreate.description');
+}
 
 const CREATE_FORM_ID = 'admin-user-create-form';
 
@@ -67,20 +71,23 @@ export function AdminUserCreatePage() {
             const built = cookCreateInputFromFields(cookFields);
             if ('error' in built) {
                 toast.error(
-                    {
-                        travelExpenses: {
-                            de: 'Bitte gib gültige Reisekosten ein (mind. 0,25 €).',
-                            en: 'Please enter valid travel expenses (at least €0.25).',
-                        },
-                        travelDistance: {
-                            de: 'Die maximale Reisestrecke muss zwischen 5 und 250 km liegen.',
-                            en: 'Maximum travel distance must be between 5 and 250 km.',
-                        },
-                        incomplete: {
-                            de: 'Bitte vervollständige das Koch-Profil.',
-                            en: 'Please complete the chef profile.',
-                        },
-                    }[built.error][locale],
+                    inlineCopy(
+                        {
+                            travelExpenses: {
+                                de: 'Bitte gib gültige Reisekosten ein (mind. 0,25 €).',
+                                en: 'Please enter valid travel expenses (at least €0.25).',
+                            },
+                            travelDistance: {
+                                de: 'Die maximale Reisestrecke muss zwischen 5 und 250 km liegen.',
+                                en: 'Maximum travel distance must be between 5 and 250 km.',
+                            },
+                            incomplete: {
+                                de: 'Bitte vervollständige das Koch-Profil.',
+                                en: 'Please complete the chef profile.',
+                            },
+                        }[built.error],
+                        locale,
+                    ),
                 );
                 return;
             }
@@ -135,23 +142,25 @@ export function AdminUserCreatePage() {
                 footer={
                     <>
                         <Button type="button" variant="outline" disabled={busy} asChild>
-                            <Link to="/{-$locale}/admin/users">{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</Link>
+                            <Link to="/{-$locale}/admin/users">{inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, locale)}</Link>
                         </Button>
                         <Button type="submit" form={CREATE_FORM_ID} disabled={submitDisabled}>
-                            {busy ? { de: 'Anlegen…', en: 'Creating…' }[locale] : { de: 'Benutzer anlegen', en: 'Create user' }[locale]}
+                            {busy
+                                ? inlineCopy({ de: 'Anlegen…', en: 'Creating…' }, locale)
+                                : inlineCopy({ de: 'Benutzer anlegen', en: 'Create user' }, locale)}
                         </Button>
                     </>
                 }
             >
                 <div className="grid gap-2">
-                    <h1 className="font-serif text-4xl/tight text-foreground">{adminUserCreatePageTitle[locale]}</h1>
-                    <p className="text-muted-foreground">{adminUserCreatePageDescription[locale]}</p>
+                    <h1 className="font-serif text-4xl/tight text-foreground">{adminUserCreatePageTitle(locale)}</h1>
+                    <p className="text-muted-foreground">{adminUserCreatePageDescription(locale)}</p>
                 </div>
 
                 <form id={CREATE_FORM_ID} className="grid gap-5" onSubmit={onSubmit}>
                     <div className="grid gap-2">
                         <label htmlFor="admin-user-first-name" className="text-sm font-medium">
-                            {{ de: 'Vorname', en: 'First name' }[locale]}
+                            {inlineCopy({ de: 'Vorname', en: 'First name' }, locale)}
                         </label>
                         <Input
                             id="admin-user-first-name"
@@ -165,7 +174,7 @@ export function AdminUserCreatePage() {
 
                     <div className="grid gap-2">
                         <label htmlFor="admin-user-last-name" className="text-sm font-medium">
-                            {{ de: 'Nachname', en: 'Last name' }[locale]}
+                            {inlineCopy({ de: 'Nachname', en: 'Last name' }, locale)}
                         </label>
                         <Input
                             id="admin-user-last-name"
@@ -179,7 +188,7 @@ export function AdminUserCreatePage() {
 
                     <div className="grid gap-2">
                         <label htmlFor="admin-user-email" className="text-sm font-medium">
-                            {{ de: 'E-Mail', en: 'Email' }[locale]}
+                            {inlineCopy({ de: 'E-Mail', en: 'Email' }, locale)}
                         </label>
                         <Input
                             id="admin-user-email"
@@ -194,7 +203,7 @@ export function AdminUserCreatePage() {
 
                     <div className="grid gap-2">
                         <label htmlFor="admin-user-phone" className="text-sm font-medium">
-                            {{ de: 'Telefonnummer', en: 'Phone number' }[locale]}
+                            {inlineCopy({ de: 'Telefonnummer', en: 'Phone number' }, locale)}
                         </label>
                         <Input
                             id="admin-user-phone"
@@ -209,12 +218,12 @@ export function AdminUserCreatePage() {
 
                     <div className="grid gap-2">
                         <span id="admin-user-birth-date-label" className="text-sm font-medium">
-                            {{ de: 'Geburtsdatum', en: 'Date of birth' }[locale]}
+                            {inlineCopy({ de: 'Geburtsdatum', en: 'Date of birth' }, locale)}
                         </span>
                         <DatePicker
                             value={birthDate}
                             onValueChange={setBirthDate}
-                            placeholder={{ de: 'Geburtsdatum', en: 'Date of birth' }[locale]}
+                            placeholder={inlineCopy({ de: 'Geburtsdatum', en: 'Date of birth' }, locale)}
                             className="w-full"
                             disabled={{ after: birthDateBounds.disabledAfter }}
                             locale={locale === 'de' ? dateFnsDe : dateFnsEn}
@@ -229,19 +238,19 @@ export function AdminUserCreatePage() {
 
                     <div className="grid gap-2">
                         <span className="text-sm font-medium">
-                            {{ de: 'Bevorzugte Kommunikation', en: 'Preferred communication' }[locale]}
+                            {inlineCopy({ de: 'Bevorzugte Kommunikation', en: 'Preferred communication' }, locale)}
                         </span>
                         <Select
                             value={preferredCommunication || undefined}
                             onValueChange={(value) => setPreferredCommunication(value as GqlCUserPreferredCommunication)}
                         >
                             <SelectTrigger className="w-full">
-                                <SelectValue placeholder={{ de: 'Auswählen…', en: 'Select…' }[locale]} />
+                                <SelectValue placeholder={inlineCopy({ de: 'Auswählen…', en: 'Select…' }, locale)} />
                             </SelectTrigger>
                             <SelectContent>
                                 {preferredCommunicationOptions.map((option) => (
                                     <SelectItem key={option.value} value={option.value}>
-                                        {option[locale]}
+                                        {inlineCopy({ de: option.de, en: option.en }, locale)}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -249,40 +258,42 @@ export function AdminUserCreatePage() {
                     </div>
 
                     <fieldset className="grid gap-3">
-                        <legend className="text-sm font-medium">{{ de: 'Mitgliedschaft', en: 'Membership' }[locale]}</legend>
+                        <legend className="text-sm font-medium">{inlineCopy({ de: 'Mitgliedschaft', en: 'Membership' }, locale)}</legend>
                         <p className="text-sm text-muted-foreground">
-                            {
+                            {inlineCopy(
                                 {
                                     de: 'Ohne Koch-Profil zählt das Konto als Kunde. Admin und Koch können kombiniert werden.',
                                     en: 'Without a cook profile the account counts as a customer. Admin and cook can be combined.',
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                         </p>
                         <label className="flex items-center gap-2 text-sm">
                             <Checkbox checked={asAdmin} onCheckedChange={(checked) => setAsAdmin(checked === true)} />
-                            {{ de: 'Admin', en: 'Admin' }[locale]}
+                            {inlineCopy({ de: 'Admin', en: 'Admin' }, locale)}
                         </label>
                         <label className="flex items-center gap-2 text-sm">
                             <Checkbox checked={asCook} onCheckedChange={(checked) => setAsCook(checked === true)} />
-                            {{ de: 'Koch', en: 'Cook' }[locale]}
+                            {inlineCopy({ de: 'Koch', en: 'Cook' }, locale)}
                         </label>
                     </fieldset>
 
                     {asCook ? (
                         <div className="grid gap-3 border-t border-border pt-5">
-                            <p className="text-sm font-medium">{{ de: 'Koch-Profil', en: 'Chef profile' }[locale]}</p>
+                            <p className="text-sm font-medium">{inlineCopy({ de: 'Koch-Profil', en: 'Chef profile' }, locale)}</p>
                             <CookCreateFields value={cookFields} onChange={setCookFields} disabled={busy} idPrefix="admin-user-cook" />
                         </div>
                     ) : null}
 
                     {error ? (
                         <p className="text-sm text-destructive" role="alert">
-                            {
+                            {inlineCopy(
                                 {
                                     de: 'Anlegen fehlgeschlagen. Prüfe die Angaben (E-Mail oder Telefon ggf. bereits vergeben).',
                                     en: 'Could not create. Check the fields (email or phone may already be registered).',
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                         </p>
                     ) : null}
                 </form>

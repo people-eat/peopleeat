@@ -1,3 +1,4 @@
+import { t } from '../../../i18n/t';
 import type { Locale } from '../../utils/locale';
 
 export type AdminSessionsSection = 'list';
@@ -7,11 +8,7 @@ export const ADMIN_SESSIONS_SECTIONS: AdminSessionsSection[] = ['list'];
 export type AdminSessionsSectionTo = '/{-$locale}/admin/sessions/list';
 
 export function adminSessionsSectionLabel(section: AdminSessionsSection, locale: Locale): string {
-    return (
-        {
-            list: { de: 'Liste', en: 'List' },
-        } as const
-    )[section][locale];
+    return t(locale, 'admin', `section.${section}`);
 }
 
 export function adminSessionsSectionPath(section: AdminSessionsSection): `/admin/sessions/${AdminSessionsSection}` {
@@ -32,10 +29,5 @@ export function parseAdminSessionsSectionFromPath(path: string): AdminSessionsSe
 }
 
 export function adminSessionKindLabel(kind: 'human' | 'bot', locale: Locale): string {
-    return (
-        {
-            human: { de: 'Mensch', en: 'Human' },
-            bot: { de: 'Bot', en: 'Bot' },
-        } as const
-    )[kind][locale];
+    return t(locale, 'admin', `sessions.visitorKind.${kind}`);
 }

@@ -149,7 +149,9 @@ Lifecycle emails: create / cook notify / request update / cancel — `src/server
   `src/shared/bookingRequestParticipants.ts`, `src/shared/bookingRequestFormFunnel.ts` (stable funnel step ids for session events),
   `src/web/pages/bookingRequestFormSearch.ts`, `src/routes/{-$locale}/booking-request_.form.tsx`. Viewport-locked (`h-dvh`) with an inset
   scroller — document gutters off via `workspace-no-document-scroll` ([theme.md](../styles/theme.md)). Funnel instrumentation:
-  [session-events.md](../architecture/session-events.md), [admin-analytics.md](./admin-analytics.md).
+  [session-events.md](../architecture/session-events.md), [admin-analytics.md](./admin-analytics.md). Public funnel chrome:
+  `src/i18n/locales/{de,en}/publicBooking.json` via `useT('publicBooking')` / `t(locale, 'publicBooking', key)`. Shared pickers used on
+  profile/admin keep inline `{ de, en }` copy so the namespace stays out of those bundles.
 - Submitted: `BookingRequestSubmittedPage.tsx` (+ `.graphql`), `src/routes/{-$locale}/booking-request_.$bookingRequestId_.submitted.tsx`
   (same viewport-lock path match). Square step images: `public/booking-request/submitted/{1,2,3}.webp` (regenerate via
   `npm run images:optimize-public`).

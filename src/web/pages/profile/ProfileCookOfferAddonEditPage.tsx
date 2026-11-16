@@ -5,7 +5,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
+import { t } from '../../../i18n/t';
 import { centsToEuros, eurosToCents } from '../../../shared';
+import type { Locale } from '../../../shared/locale';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -38,14 +40,12 @@ import { cookNavRouteBySlug } from './cookCatalog';
 
 const addonsRoute = cookNavRouteBySlug('offer-addons');
 
-export const profileCookOfferAddonEditPageTitle = {
-    de: 'Zusatzleistung bearbeiten',
-    en: 'Edit offer extra',
-} as const;
-export const profileCookOfferAddonEditPageDescription = {
-    de: 'Zusatzleistungen gehören zu deinem Angebot. Der Gast kann sie vor der Annahme dazuwählen, zum Beispiel Wein, Besteck oder gedruckte Speisekarten. Der Preis passt sich danach an.',
-    en: 'Offer extras sit on your offer. Guests can turn them on before they accept, for example wine, cutlery, or printed menus. The price updates with their choice.',
-} as const;
+export function profileCookOfferAddonEditPageTitle(locale: Locale): string {
+    return t(locale, 'profileCook', 'offerAddonEdit.title');
+}
+export function profileCookOfferAddonEditPageDescription(locale: Locale): string {
+    return t(locale, 'profileCook', 'offerAddonEdit.description');
+}
 
 type AddonRow = NonNullable<
     NonNullable<NonNullable<GqlCProfileCookOfferAddonEditPageQuery['currentSession']['user']>['cook']>['offerAddon']
@@ -115,11 +115,11 @@ export function ProfileCookOfferAddonEditPage({
         onSubmit: async ({ value }) => {
             const priceCents = eurosToCents(value.priceEuros);
             if (value.title.trim().length === 0) {
-                toast.error({ de: 'Bitte einen Titel eingeben.', en: 'Please enter a title.' }[locale]);
+                toast.error(t(locale, 'profileCook', 'offerAddonEdit.titleRequired'));
                 return;
             }
             if (priceCents == null || priceCents < 0) {
-                toast.error({ de: 'Bitte einen gültigen Preis eingeben.', en: 'Please enter a valid price.' }[locale]);
+                toast.error(t(locale, 'profileCook', 'offerAddonEdit.validPrice'));
                 return;
             }
             const result = await upsertAddon({
@@ -134,10 +134,10 @@ export function ProfileCookOfferAddonEditPage({
                 },
             });
             if (result.error || !result.data?.user.cook.offerAddonUpsert.success) {
-                toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+                toast.error(t(locale, 'common', 'saveFailed'));
                 return;
             }
-            toast.success({ de: 'Gespeichert.', en: 'Saved.' }[locale]);
+            toast.success(t(locale, 'profileCook', 'actions.saved'));
             await leaveToLibrary();
         },
     });
@@ -167,10 +167,10 @@ export function ProfileCookOfferAddonEditPage({
             if (result.error || !result.data?.user.cook.offerAddonDelete.success) {
                 throw new Error('delete failed');
             }
-            toast.success({ de: 'Gelöscht.', en: 'Deleted.' }[locale]);
+            toast.success(t(locale, 'profileCook', 'actions.deleted'));
             await leaveToLibrary();
         } catch {
-            toast.error({ de: 'Löschen fehlgeschlagen.', en: 'Could not delete.' }[locale]);
+            toast.error(t(locale, 'profileCook', 'actions.deleteFailed'));
             setDeleting(false);
         }
     }
@@ -183,10 +183,7 @@ export function ProfileCookOfferAddonEditPage({
     }
 
     const canDelete = addon.bookingRequestOfferId == null;
-    const imageRemoveDescription = {
-        de: 'Das Bild wird entfernt. Speichere danach, um die Änderung zu übernehmen.',
-        en: 'The image will be removed. Save afterwards to apply the change.',
-    }[locale];
+    const imageRemoveDescription = t(locale, 'profileCook', 'offerAddonEdit.imageWillRemove');
 
     const overflowMenu = canDelete ? (
         <DropdownMenu>
@@ -196,7 +193,7 @@ export function ProfileCookOfferAddonEditPage({
                     variant="outline"
                     size="icon"
                     disabled={isSubmitting || imageBusy || deleting}
-                    aria-label={{ de: 'Weitere Aktionen', en: 'More actions' }[locale]}
+                    aria-label={t(locale, 'profileCook', 'actions.moreActions')}
                 >
                     <MoreHorizontalIcon className="size-4" />
                 </Button>
@@ -207,7 +204,7 @@ export function ProfileCookOfferAddonEditPage({
                     disabled={isSubmitting || imageBusy || deleting}
                     onSelect={() => setConfirmDelete(true)}
                 >
-                    {{ de: 'Löschen', en: 'Delete' }[locale]}
+                    {t(locale, 'profileCook', 'actions.delete')}
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
@@ -228,7 +225,7 @@ export function ProfileCookOfferAddonEditPage({
                                 disabled={isSubmitting || imageBusy || deleting}
                                 asChild
                             >
-                                <Link to={addonsRoute.to}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</Link>
+                                <Link to={addonsRoute.to}>{t(locale, 'common', 'cancel')}</Link>
                             </Button>
                             <Button
                                 type="submit"
@@ -236,22 +233,22 @@ export function ProfileCookOfferAddonEditPage({
                                 className="flex-1 md:flex-initial"
                                 disabled={isSubmitting || imageBusy || deleting}
                             >
-                                {isSubmitting ? { de: 'Speichern…', en: 'Saving…' }[locale] : { de: 'Speichern', en: 'Save' }[locale]}
+                                {isSubmitting ? t(locale, 'profileCook', 'actions.saving') : t(locale, 'common', 'save')}
                             </Button>
                         </>
                     ) : (
                         <>
                             {overflowMenu}
                             <Button type="button" disabled={isSubmitting || imageBusy || deleting} asChild>
-                                <Link to={addonsRoute.to}>{{ de: 'Zur Übersicht', en: 'Back to list' }[locale]}</Link>
+                                <Link to={addonsRoute.to}>{t(locale, 'profileCook', 'offerAddonEdit.backToList')}</Link>
                             </Button>
                         </>
                     )
                 }
             >
                 <div className="grid gap-1">
-                    <h1 className="font-serif text-2xl/tight text-foreground">{profileCookOfferAddonEditPageTitle[locale]}</h1>
-                    <p className="text-sm text-muted-foreground">{profileCookOfferAddonEditPageDescription[locale]}</p>
+                    <h1 className="font-serif text-2xl/tight text-foreground">{profileCookOfferAddonEditPageTitle(locale)}</h1>
+                    <p className="text-sm text-muted-foreground">{profileCookOfferAddonEditPageDescription(locale)}</p>
                 </div>
                 <form
                     id="offer-addon-form"
@@ -266,7 +263,7 @@ export function ProfileCookOfferAddonEditPage({
                         {(field) => (
                             <div className="grid gap-1.5">
                                 <label htmlFor="offer-addon-title" className="text-sm font-medium">
-                                    {{ de: 'Titel', en: 'Title' }[locale]}
+                                    {t(locale, 'profileCook', 'actions.title')}
                                 </label>
                                 <Input
                                     id="offer-addon-title"
@@ -279,12 +276,7 @@ export function ProfileCookOfferAddonEditPage({
                                     aria-describedby="offer-addon-title-help"
                                 />
                                 <p id="offer-addon-title-help" className="text-sm text-muted-foreground">
-                                    {
-                                        {
-                                            de: 'So heißt die Leistung auf dem Angebot.',
-                                            en: 'This is the name the guest sees on the offer.',
-                                        }[locale]
-                                    }
+                                    {t(locale, 'profileCook', 'offerAddonEdit.titleHelp')}
                                 </p>
                             </div>
                         )}
@@ -293,7 +285,7 @@ export function ProfileCookOfferAddonEditPage({
                         {(field) => (
                             <div className="grid gap-1.5">
                                 <label htmlFor="offer-addon-description" className="text-sm font-medium">
-                                    {{ de: 'Beschreibung', en: 'Description' }[locale]}
+                                    {t(locale, 'profileCook', 'actions.description')}
                                 </label>
                                 <Textarea
                                     id="offer-addon-description"
@@ -305,12 +297,7 @@ export function ProfileCookOfferAddonEditPage({
                                     aria-describedby="offer-addon-description-help"
                                 />
                                 <p id="offer-addon-description-help" className="text-sm text-muted-foreground">
-                                    {
-                                        {
-                                            de: 'Optional. Erklärt dem Gast, was enthalten ist.',
-                                            en: 'Optional. Tells the guest what is included.',
-                                        }[locale]
-                                    }
+                                    {t(locale, 'profileCook', 'offerAddonEdit.descriptionHelp')}
                                 </p>
                             </div>
                         )}
@@ -319,7 +306,7 @@ export function ProfileCookOfferAddonEditPage({
                         {(field) => (
                             <div className="grid gap-1.5">
                                 <label htmlFor="offer-addon-pricing-unit" className="text-sm font-medium">
-                                    {{ de: 'Preiseinheit', en: 'Pricing unit' }[locale]}
+                                    {t(locale, 'profileCook', 'offerAddonEdit.pricingUnit')}
                                 </label>
                                 <Select
                                     value={field.state.value}
@@ -348,12 +335,9 @@ export function ProfileCookOfferAddonEditPage({
                         {(field) => (
                             <div className="grid gap-1.5">
                                 <label htmlFor="offer-addon-price" className="text-sm font-medium">
-                                    {
-                                        {
-                                            de: pricingUnit === 'PER_PERSON' ? 'Preis pro Person (€)' : 'Preis (€)',
-                                            en: pricingUnit === 'PER_PERSON' ? 'Price per person (€)' : 'Price (€)',
-                                        }[locale]
-                                    }
+                                    {pricingUnit === 'PER_PERSON'
+                                        ? t(locale, 'profileCook', 'offerAddonEdit.pricePerPerson')
+                                        : t(locale, 'profileCook', 'offerAddonEdit.price')}
                                 </label>
                                 <Input
                                     id="offer-addon-price"
@@ -373,14 +357,7 @@ export function ProfileCookOfferAddonEditPage({
                         )}
                     </form.Field>
                     <div className="grid gap-1.5">
-                        <p className="text-sm text-muted-foreground">
-                            {
-                                {
-                                    de: 'Optional. Der Gast sieht das Bild neben der Leistung auf dem Angebot.',
-                                    en: 'Optional. The guest sees this picture next to the extra on the offer.',
-                                }[locale]
-                            }
-                        </p>
+                        <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'offerAddonEdit.imageHelp')}</p>
                         <CookMealImageField
                             value={{ imageFileUploadId, imageUrl }}
                             disabled={isSubmitting || deleting}
@@ -398,18 +375,11 @@ export function ProfileCookOfferAddonEditPage({
             <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>{{ de: 'Zusatzleistung löschen?', en: 'Delete this offer extra?' }[locale]}</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {
-                                {
-                                    de: 'Sie verschwindet aus deiner Bibliothek. Angebote, die sie schon enthalten, bleiben unverändert.',
-                                    en: 'It leaves your library. Offers that already include it stay as they are.',
-                                }[locale]
-                            }
-                        </AlertDialogDescription>
+                        <AlertDialogTitle>{t(locale, 'profileCook', 'offerAddonEdit.deleteTitle')}</AlertDialogTitle>
+                        <AlertDialogDescription>{t(locale, 'profileCook', 'offerAddonEdit.deleteBody')}</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel disabled={deleting}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogCancel disabled={deleting}>{t(locale, 'common', 'cancel')}</AlertDialogCancel>
                         <AlertDialogAction
                             variant="destructive"
                             disabled={deleting}
@@ -418,7 +388,7 @@ export function ProfileCookOfferAddonEditPage({
                                 void onDelete();
                             }}
                         >
-                            {{ de: 'Löschen', en: 'Delete' }[locale]}
+                            {t(locale, 'profileCook', 'actions.delete')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

@@ -1,5 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto';
 
+import { DEFAULT_LOCALE, isLocale } from '../../shared/locale';
+import type { Locale } from '../../shared/locale';
 import { phoneNumberNormalize } from '../../shared/phoneNumber';
 import { textNormalizeTitledOrNull } from '../../shared/textNormalize';
 import { userBirthDateMeetsMinimumAge } from '../../shared/userBirthDate';
@@ -59,8 +61,10 @@ export function authGoogleReturnToWithError(returnTo: string): string {
     return `${pathAndSearch}${join}authError=google${hash}`;
 }
 
-export function authGoogleLocaleFromReturnTo(returnTo: string): 'de' | 'en' {
-    return returnTo === '/en' || returnTo.startsWith('/en/') ? 'en' : 'de';
+export function authGoogleLocaleFromReturnTo(returnTo: string): Locale {
+    const first = returnTo.split('/').filter(Boolean)[0];
+    if (isLocale(first) && first !== DEFAULT_LOCALE) return first;
+    return DEFAULT_LOCALE;
 }
 
 export function authGooglePkceCreate(): AuthGooglePkce {
@@ -76,7 +80,7 @@ export function authGoogleAuthorizationUrlCreate(args: {
     state: string;
     nonce: string;
     codeChallenge: string;
-    locale: 'de' | 'en';
+    locale: Locale;
 }): string {
     const scopes = ['openid', 'email', 'profile'];
     if (args.env.googleOauthPeopleScopes) {

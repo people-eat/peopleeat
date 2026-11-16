@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
+import { i18nResourcesLoad } from '../../i18n/catalogCache';
 import { BookingRequestOfferPaymentDocumentPage } from './BookingRequestOfferPaymentDocumentPage';
 
 const paidAt = new Date('2026-06-01T16:00:00.000Z');
@@ -16,6 +17,11 @@ const invoiceAddress = {
     line1: 'Musterstraße 1',
     line2: '',
 };
+
+beforeAll(async () => {
+    await i18nResourcesLoad('de', ['common', 'publicBooking']);
+    await i18nResourcesLoad('en', ['common', 'publicBooking']);
+});
 
 describe('BookingRequestOfferPaymentDocumentPage', () => {
     it('renders a German customer receipt that is not an invoice', () => {

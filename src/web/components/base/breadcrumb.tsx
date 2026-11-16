@@ -1,12 +1,12 @@
 import { ChevronRightIcon, MoreHorizontalIcon } from 'lucide-react';
 import { Slot } from 'radix-ui';
 import type { ComponentProps } from 'react';
-import { useLocale } from '../../hooks/useLocale';
+import { useT } from '../../hooks/useT';
 import { cn } from '../../utils/cn';
 
 function Breadcrumb({ ...props }: ComponentProps<'nav'>) {
-    const locale = useLocale();
-    return <nav aria-label={{ de: 'Navigationspfad', en: 'Breadcrumb' }[locale]} data-slot="breadcrumb" {...props} />;
+    const { t } = useT('common');
+    return <nav aria-label={t('breadcrumb.nav')} data-slot="breadcrumb" {...props} />;
 }
 
 function BreadcrumbList({ className, ...props }: ComponentProps<'ol'>) {
@@ -75,7 +75,7 @@ function BreadcrumbSeparator({ children, className, ...props }: ComponentProps<'
 }
 
 function BreadcrumbEllipsis({ className, ...props }: ComponentProps<'span'>) {
-    const locale = useLocale();
+    const { t } = useT('common');
     return (
         <span
             data-slot="breadcrumb-ellipsis"
@@ -85,7 +85,7 @@ function BreadcrumbEllipsis({ className, ...props }: ComponentProps<'span'>) {
             {...props}
         >
             <MoreHorizontalIcon className="size-4" />
-            <span className="sr-only">{{ de: 'Weitere', en: 'More' }[locale]}</span>
+            <span className="sr-only">{t('breadcrumb.more')}</span>
         </span>
     );
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { defaultBookingRequestRestrictions, textNormalizeTitled } from '../../shared';
+import { defaultBookingRequestRestrictions, inlineCopy, textNormalizeTitled } from '../../shared';
 import type { BookingRequestParticipantDraft, Locale } from '../../shared';
 import { useLocale } from '../hooks/useLocale';
 import { Button } from './base/button';
@@ -33,8 +33,8 @@ function shouldRevealInitially(participant: BookingRequestParticipantDraft, loca
     if (participant.restrictions.length > 0) return true;
     const defaultName =
         participant.type === 'ADULT'
-            ? { de: `Erwachsener ${indexWithinType + 1}`, en: `Adult ${indexWithinType + 1}` }[locale]
-            : { de: `Kind ${indexWithinType + 1}`, en: `Child ${indexWithinType + 1}` }[locale];
+            ? inlineCopy({ de: `Erwachsener ${indexWithinType + 1}`, en: `Adult ${indexWithinType + 1}` }, locale)
+            : inlineCopy({ de: `Kind ${indexWithinType + 1}`, en: `Child ${indexWithinType + 1}` }, locale);
     return participant.name.trim() !== defaultName;
 }
 
@@ -121,8 +121,8 @@ export function BookingRequestParticipantsRestrictionsEditor({
         const indexWithinType = sameType.findIndex((item) => item.key === key);
         const defaultName =
             participant.type === 'ADULT'
-                ? { de: `Erwachsener ${indexWithinType + 1}`, en: `Adult ${indexWithinType + 1}` }[locale]
-                : { de: `Kind ${indexWithinType + 1}`, en: `Child ${indexWithinType + 1}` }[locale];
+                ? inlineCopy({ de: `Erwachsener ${indexWithinType + 1}`, en: `Adult ${indexWithinType + 1}` }, locale)
+                : inlineCopy({ de: `Kind ${indexWithinType + 1}`, en: `Child ${indexWithinType + 1}` }, locale);
         setRevealedKeys((previous) => {
             const next = new Set(previous);
             next.delete(key);
@@ -139,19 +139,23 @@ export function BookingRequestParticipantsRestrictionsEditor({
         const filter = filterByKey[participant.key] ?? '';
         const customOptions = participant.restrictions.filter((restriction) => !defaults.includes(restriction));
         const options = [...defaults, ...customOptions].filter((option) => option.toLowerCase().includes(filter.toLowerCase()));
-        const typeLabel = participant.type === 'ADULT' ? { de: 'Erwachsener', en: 'Adult' }[locale] : { de: 'Kind', en: 'Child' }[locale];
+        const typeLabel =
+            participant.type === 'ADULT'
+                ? inlineCopy({ de: 'Erwachsener', en: 'Adult' }, locale)
+                : inlineCopy({ de: 'Kind', en: 'Child' }, locale);
 
         return (
             <div className="grid gap-4" key={participant.key}>
                 <div className="flex flex-col items-stretch gap-3 @md:flex-row @md:items-end">
                     <label className="grid flex-1 gap-1.5">
                         <span className="text-sm font-medium">
-                            {
+                            {inlineCopy(
                                 {
                                     de: 'Name des betroffenen Teilnehmers (optional)',
                                     en: 'Name of the affected participant (optional)',
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                         </span>
                         <Input
                             value={participant.name}
@@ -161,7 +165,7 @@ export function BookingRequestParticipantsRestrictionsEditor({
                         />
                     </label>
                     <Button type="button" variant="destructive" disabled={disabled} onClick={() => hideParticipant(participant.key)}>
-                        {{ de: 'Entfernen', en: 'Remove' }[locale]}
+                        {inlineCopy({ de: 'Entfernen', en: 'Remove' }, locale)}
                     </Button>
                 </div>
                 <div className="flex flex-col items-stretch gap-3 @md:flex-row @md:items-end">
@@ -169,12 +173,13 @@ export function BookingRequestParticipantsRestrictionsEditor({
                         className="flex-1"
                         value={filter}
                         disabled={disabled}
-                        placeholder={
+                        placeholder={inlineCopy(
                             {
                                 de: 'Einschränkung oder Allergie (suchen oder hier eigene eingeben)',
                                 en: 'Select from the options below or add your own one here',
-                            }[locale]
-                        }
+                            },
+                            locale,
+                        )}
                         onChange={(event) => setFilterByKey((previous) => ({ ...previous, [participant.key]: event.target.value }))}
                     />
                     <Button
@@ -189,7 +194,7 @@ export function BookingRequestParticipantsRestrictionsEditor({
                             setFilterByKey((previous) => ({ ...previous, [participant.key]: '' }));
                         }}
                     >
-                        {{ de: 'Eigene hinzufügen', en: 'Add custom' }[locale]}
+                        {inlineCopy({ de: 'Eigene hinzufügen', en: 'Add custom' }, locale)}
                     </Button>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -229,11 +234,17 @@ export function BookingRequestParticipantsRestrictionsEditor({
                     onClick={() => revealNext('ADULT')}
                 >
                     {revealedAdults.length === 0
-                        ? { de: 'Hat einer der Erwachsenen Einschränkungen?', en: 'Do any of the adults have any restrictions?' }[locale]
-                        : {
-                              de: 'Hat ein weiterer der Erwachsenen Einschränkungen?',
-                              en: 'Do any of the other adults have any restrictions?',
-                          }[locale]}
+                        ? inlineCopy(
+                              { de: 'Hat einer der Erwachsenen Einschränkungen?', en: 'Do any of the adults have any restrictions?' },
+                              locale,
+                          )
+                        : inlineCopy(
+                              {
+                                  de: 'Hat ein weiterer der Erwachsenen Einschränkungen?',
+                                  en: 'Do any of the other adults have any restrictions?',
+                              },
+                              locale,
+                          )}
                 </Button>
             ) : null}
             {revealedDiscounted.map((participant, index) => renderParticipantEditor(participant, index))}
@@ -246,11 +257,17 @@ export function BookingRequestParticipantsRestrictionsEditor({
                     onClick={() => revealNext('DISCOUNTED')}
                 >
                     {revealedDiscounted.length === 0
-                        ? { de: 'Hat eines der Kinder Einschränkungen?', en: 'Do any of the children have any restrictions?' }[locale]
-                        : {
-                              de: 'Hat ein weiteres der Kinder Einschränkungen?',
-                              en: 'Do any of the other children have any restrictions?',
-                          }[locale]}
+                        ? inlineCopy(
+                              { de: 'Hat eines der Kinder Einschränkungen?', en: 'Do any of the children have any restrictions?' },
+                              locale,
+                          )
+                        : inlineCopy(
+                              {
+                                  de: 'Hat ein weiteres der Kinder Einschränkungen?',
+                                  en: 'Do any of the other children have any restrictions?',
+                              },
+                              locale,
+                          )}
                 </Button>
             ) : null}
         </div>

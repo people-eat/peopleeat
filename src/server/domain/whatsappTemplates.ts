@@ -1,4 +1,4 @@
-import type { Locale } from '../../shared/locale';
+import type { CatalogLocale } from '../../shared/locale';
 
 type WhatsAppTemplateCopy = {
     header: string;
@@ -6,6 +6,9 @@ type WhatsAppTemplateCopy = {
     buttonLabel?: string;
     quickReplies?: string[];
 };
+
+/** Meta-registered template languages. Catalog stays DE/EN only. */
+export type WhatsAppTemplateLanguage = 'de' | 'en';
 
 export type WhatsAppTemplateDefinition = {
     name: string;
@@ -18,12 +21,18 @@ export type WhatsAppTemplateDefinition = {
 
 export type WhatsAppTemplateSnapshot = {
     name: string;
-    languageCode: Locale;
+    /** Effective Meta language actually sent (`de` or `en`), not the recipient catalog locale. */
+    languageCode: WhatsAppTemplateLanguage;
     header: string;
     body: string;
     bodyParameters: string[];
     buttons: { type: 'URL' | 'QUICK_REPLY'; label: string; url?: string }[];
 };
+
+/** Map recipient catalog locale to a registered Meta template language. Only German uses `de`; all others use `en`. */
+export function whatsappTemplateLocale(locale: CatalogLocale): WhatsAppTemplateLanguage {
+    return locale === 'de' ? 'de' : 'en';
+}
 
 export const whatsappTemplateDefinitions: WhatsAppTemplateDefinition[] = [
     {
@@ -378,20 +387,21 @@ export function whatsappTemplateDefinitionFind(name: string): WhatsAppTemplateDe
 
 export function whatsappTemplateSnapshotCreate(
     definition: WhatsAppTemplateDefinition,
-    locale: Locale,
+    locale: CatalogLocale,
     parameters: ReadonlyArray<string>,
     buttonUrl?: string,
 ): WhatsAppTemplateSnapshot {
     if (parameters.length !== definition.parameters.length || parameters.some((value) => !value.trim())) {
         throw new Error(`Invalid body parameters for WhatsApp template ${definition.name}`);
     }
-    const copy = definition[locale];
+    const languageCode = whatsappTemplateLocale(locale);
+    const copy = definition[languageCode];
     if (Boolean(copy.buttonLabel) !== Boolean(buttonUrl)) {
         throw new Error(`Invalid URL button for WhatsApp template ${definition.name}`);
     }
     return {
         name: definition.name,
-        languageCode: locale,
+        languageCode,
         header: copy.header,
         body: copy.body.replace(/\{\{(\d+)\}\}/gu, (_token, index: string) => parameters[Number(index) - 1]!),
         bodyParameters: [...parameters],

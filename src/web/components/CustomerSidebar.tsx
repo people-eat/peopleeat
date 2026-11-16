@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { createRequest, useClient } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { t } from '../../i18n/t';
 import { CustomerSidebarNavBadgesUpdatesDocument } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
 import { useSessionImpersonation } from '../hooks/useSessionImpersonation';
@@ -82,7 +83,7 @@ export function CustomerSidebar({
     }, [client]);
 
     const overviewItem = {
-        title: { de: 'Übersicht', en: 'Overview' }[locale],
+        title: t(locale, 'profile', 'chrome.overview'),
         to: '/{-$locale}/profile' as const,
         icon: <SummaryIcon />,
         isActive: path === '/profile',
@@ -94,18 +95,12 @@ export function CustomerSidebar({
         const Icon = route.icon;
         const count = route.slug === 'support-requests' && supportUnreadCount > 0 ? supportUnreadCount : undefined;
         return {
-            title: route.title[locale],
+            title: route.title(locale),
             to: route.to,
             icon: <Icon />,
             isActive: path === route.path || path.startsWith(`${route.path}/`),
             count,
-            countLabel:
-                count != null
-                    ? {
-                          de: `${count} ungelesene Support-Nachrichten`,
-                          en: `${count} unread support messages`,
-                      }[locale]
-                    : undefined,
+            countLabel: count != null ? t(locale, 'profileCustomer', 'chrome.supportUnreadCount', { count }) : undefined,
         };
     });
 
@@ -163,7 +158,7 @@ export function CustomerSidebar({
                             <SidebarMenuButton asChild size="sm">
                                 <Link to="/{-$locale}/admin">
                                     <UserStarIcon />
-                                    <span>{adminPageTitle[locale]}</span>
+                                    <span>{adminPageTitle(locale)}</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
@@ -172,7 +167,7 @@ export function CustomerSidebar({
                         <SidebarMenuButton asChild size="sm" isActive={path === '/profile/account'}>
                             <Link to="/{-$locale}/profile/account">
                                 <UserCogIcon />
-                                <span>{accountPageTitle[locale]}</span>
+                                <span>{accountPageTitle(locale)}</span>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

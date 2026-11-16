@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { MapPinIcon } from 'lucide-react';
 
+import { t } from '../../i18n/t';
 import { formatCurrency, userDisplayName } from '../../shared';
 import { useLocale } from '../hooks/useLocale';
 import type { Locale } from '../utils/locale';
@@ -68,9 +69,7 @@ export function AdminBookingRequestCookWithoutOfferCard({
         <div className="relative flex h-full flex-col justify-between rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm">
             <div className="flex min-w-0 flex-col gap-3">
                 <BookingStatusPill hue={alreadyNotified ? 'blue' : 'yellow'} className="w-fit self-end">
-                    {alreadyNotified
-                        ? { de: 'Benachrichtigt', en: 'Notified' }[locale]
-                        : { de: 'Noch nicht benachrichtigt', en: 'Not yet notified' }[locale]}
+                    {alreadyNotified ? t(locale, 'admin', 'copy.notified') : t(locale, 'admin', 'copy.notYetNotified')}
                 </BookingStatusPill>
 
                 <div className="flex items-start gap-3">
@@ -98,11 +97,11 @@ export function AdminBookingRequestCookWithoutOfferCard({
 
                 <dl className="grid gap-1.5 text-sm">
                     <div className="flex items-center justify-between gap-3">
-                        <dt className="text-muted-foreground">{{ de: 'Anfahrt', en: 'Travel' }[locale]}</dt>
+                        <dt className="text-muted-foreground">{t(locale, 'admin', 'copy.travel')}</dt>
                         <dd className="shrink-0 font-semibold tabular-nums">{distanceLabel}</dd>
                     </div>
                     <div className="flex items-center justify-between gap-3">
-                        <dt className="text-muted-foreground">{{ de: 'Reisekosten ca.', en: 'Travel est.' }[locale]}</dt>
+                        <dt className="text-muted-foreground">{t(locale, 'admin', 'copy.travelEst')}</dt>
                         <dd className="shrink-0 font-semibold tabular-nums">
                             {formatCurrency(cookInTravelRadius.estimatedTravelExpensesCents, {
                                 locale,
@@ -111,7 +110,7 @@ export function AdminBookingRequestCookWithoutOfferCard({
                         </dd>
                     </div>
                     <div className="flex items-center justify-between gap-3">
-                        <dt className="text-muted-foreground">{{ de: 'Menüpreis-Vorschlag', en: 'Suggested menu' }[locale]}</dt>
+                        <dt className="text-muted-foreground">{t(locale, 'admin', 'copy.suggestedMenu')}</dt>
                         <dd className="shrink-0 font-semibold tabular-nums">
                             {formatCurrency(cookInTravelRadius.suggestedMenuPriceCents, {
                                 locale,
@@ -126,7 +125,7 @@ export function AdminBookingRequestCookWithoutOfferCard({
                     params={{ userId: cookInTravelRadius.cook.cookId }}
                     className="text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                 >
-                    {{ de: 'Profil anzeigen', en: 'View profile' }[locale]}
+                    {t(locale, 'admin', 'copy.viewProfile')}
                 </Link>
             </div>
 
@@ -137,15 +136,10 @@ export function AdminBookingRequestCookWithoutOfferCard({
                     search={{ cookId: cookInTravelRadius.cook.cookId }}
                     className="inline-flex h-9 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground"
                 >
-                    {{ de: 'Angebot erstellen', en: 'Create offer' }[locale]}
+                    {t(locale, 'admin', 'copy.createOffer')}
                 </Link>
                 {hasAcceptedOffer ? null : (
-                    <span
-                        className="block"
-                        title={
-                            isPublicationApproved ? undefined : { de: 'Erst nach Freigabe möglich', en: 'Available after approval' }[locale]
-                        }
-                    >
+                    <span className="block" title={isPublicationApproved ? undefined : t(locale, 'admin', 'copy.availableAfterApproval')}>
                         <Button
                             type="button"
                             variant="outline"
@@ -153,9 +147,7 @@ export function AdminBookingRequestCookWithoutOfferCard({
                             disabled={!isPublicationApproved || notifyBusy}
                             onClick={() => onNotify(cookInTravelRadius.cook.cookId)}
                         >
-                            {alreadyNotified
-                                ? { de: 'Erneut benachrichtigen', en: 'Send again' }[locale]
-                                : { de: 'Auch diesem Koch vorschlagen', en: 'Suggest to this cook too' }[locale]}
+                            {alreadyNotified ? t(locale, 'admin', 'copy.sendAgain') : t(locale, 'admin', 'copy.suggestToThisCookToo')}
                         </Button>
                     </span>
                 )}

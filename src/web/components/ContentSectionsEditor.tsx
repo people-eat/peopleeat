@@ -13,7 +13,8 @@ import {
 } from 'lucide-react';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 
-import type { ContentSection, ContentSectionKind, Locale } from '../../shared';
+import { inlineCopy } from '../../shared';
+import type { ContentSection, ContentSectionKind, InlineCopy, Locale } from '../../shared';
 import { fileUploadPublicUrl } from '../../shared/contentSection';
 import { idCreate } from '../../shared/idCreate';
 import { uploadErrorMessage, uploadFile } from '../chat/fileUpload';
@@ -43,7 +44,7 @@ const ImageCropDialog = lazy(async () => {
     return { default: mod.ImageCropDialog };
 });
 
-const KIND_OPTIONS: { kind: ContentSectionKind; label: Record<Locale, string> }[] = [
+const KIND_OPTIONS: { kind: ContentSectionKind; label: InlineCopy }[] = [
     { kind: 'content', label: { de: 'Inhalt', en: 'Content' } },
     { kind: 'image', label: { de: 'Bild', en: 'Image' } },
     { kind: 'quote', label: { de: 'Zitat', en: 'Quote' } },
@@ -135,20 +136,20 @@ export function ContentSectionsEditor({
         <div className="flex flex-col gap-4">
             <Card className="gap-4 py-4">
                 <CardHeader className="px-4">
-                    <CardTitle>{{ de: 'Abschnitt hinzufügen', en: 'Add section' }[uiLocale]}</CardTitle>
+                    <CardTitle>{inlineCopy({ de: 'Abschnitt hinzufügen', en: 'Add section' }, uiLocale)}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-3 px-4">
                     <div className="flex flex-wrap gap-2">
                         {KIND_OPTIONS.map(({ kind, label }) => (
                             <Button key={kind} type="button" variant="outline" size="sm" onClick={() => add(kind)}>
                                 <PlusIcon className="size-3.5" />
-                                {label[uiLocale]}
+                                {inlineCopy(label, uiLocale)}
                             </Button>
                         ))}
                     </div>
                     {sections.length === 0 ? (
                         <p className="text-sm text-muted-foreground">
-                            {{ de: 'Noch keine Abschnitte.', en: 'No sections yet.' }[uiLocale]}
+                            {inlineCopy({ de: 'Noch keine Abschnitte.', en: 'No sections yet.' }, uiLocale)}
                         </p>
                     ) : null}
                 </CardContent>
@@ -231,25 +232,28 @@ export function ContentSectionsEditor({
             <AlertDialog open={deleteIndex !== null} onOpenChange={(open) => !open && setDeleteIndex(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>{{ de: 'Abschnitt löschen?', en: 'Delete this section?' }[uiLocale]}</AlertDialogTitle>
+                        <AlertDialogTitle>
+                            {inlineCopy({ de: 'Abschnitt löschen?', en: 'Delete this section?' }, uiLocale)}
+                        </AlertDialogTitle>
                         <AlertDialogDescription>
-                            {
+                            {inlineCopy(
                                 {
                                     de: 'Der Abschnitt wird aus dem Entwurf entfernt. Speichern übernimmt die Änderung.',
                                     en: 'The section is removed from the draft. Saving applies the change.',
-                                }[uiLocale]
-                            }
+                                },
+                                uiLocale,
+                            )}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>{{ de: 'Abbrechen', en: 'Cancel' }[uiLocale]}</AlertDialogCancel>
+                        <AlertDialogCancel>{inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, uiLocale)}</AlertDialogCancel>
                         <AlertDialogAction
                             variant="destructive"
                             onClick={() => {
                                 if (deleteIndex !== null) removeAt(deleteIndex);
                             }}
                         >
-                            {{ de: 'Löschen', en: 'Delete' }[uiLocale]}
+                            {inlineCopy({ de: 'Löschen', en: 'Delete' }, uiLocale)}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -277,7 +281,8 @@ function KindIcon({ kind }: { kind: ContentSectionKind }) {
 }
 
 function sectionSummary(section: ContentSection, editLocale: Locale, uiLocale: Locale): string {
-    const kindLabel = KIND_OPTIONS.find((o) => o.kind === section.kind)?.label[uiLocale] ?? section.kind;
+    const kindLabelCopy = KIND_OPTIONS.find((o) => o.kind === section.kind)?.label;
+    const kindLabel = kindLabelCopy ? inlineCopy(kindLabelCopy, uiLocale) : section.kind;
     const withDetail = (detail: string) => {
         const trimmed = detail.trim();
         return trimmed ? `${kindLabel}: ${trimmed}` : kindLabel;
@@ -300,7 +305,9 @@ function sectionSummary(section: ContentSection, editLocale: Locale, uiLocale: L
             const firstQuestion = first ? (editLocale === 'en' ? first.questionEn || first.questionDe : first.questionDe) : '';
             const count = section.entries.length;
             const countLabel =
-                count === 1 ? { de: '1 Eintrag', en: '1 entry' }[uiLocale] : { de: `${count} Einträge`, en: `${count} entries` }[uiLocale];
+                count === 1
+                    ? inlineCopy({ de: '1 Eintrag', en: '1 entry' }, uiLocale)
+                    : inlineCopy({ de: `${count} Einträge`, en: `${count} entries` }, uiLocale);
             return withDetail(firstQuestion.trim() || countLabel);
         }
     }
@@ -321,7 +328,7 @@ function SectionFields({
         case 'content':
             return (
                 <div className="flex flex-col gap-4">
-                    <Field label={{ de: 'Titel', en: 'Title' }[uiLocale]}>
+                    <Field label={inlineCopy({ de: 'Titel', en: 'Title' }, uiLocale)}>
                         <Input
                             value={editLocale === 'en' ? (section.titleEn ?? '') : (section.titleDe ?? '')}
                             onChange={(e) =>
@@ -331,7 +338,7 @@ function SectionFields({
                             }
                         />
                     </Field>
-                    <Field label={{ de: 'Untertitel', en: 'Subtitle' }[uiLocale]}>
+                    <Field label={inlineCopy({ de: 'Untertitel', en: 'Subtitle' }, uiLocale)}>
                         <Input
                             value={editLocale === 'en' ? (section.subtitleEn ?? '') : (section.subtitleDe ?? '')}
                             onChange={(e) =>
@@ -343,7 +350,7 @@ function SectionFields({
                             }
                         />
                     </Field>
-                    <Field label={{ de: 'Text (Markdown)', en: 'Body (Markdown)' }[uiLocale]}>
+                    <Field label={inlineCopy({ de: 'Text (Markdown)', en: 'Body (Markdown)' }, uiLocale)}>
                         <Textarea
                             rows={8}
                             value={editLocale === 'en' ? section.bodyEn : section.bodyDe}
@@ -366,7 +373,7 @@ function SectionFields({
                                 checked={Boolean(section.imageFirst)}
                                 onCheckedChange={(checked) => onChange({ ...section, imageFirst: checked === true })}
                             />
-                            {{ de: 'Bild zuerst anzeigen', en: 'Show image first' }[uiLocale]}
+                            {inlineCopy({ de: 'Bild zuerst anzeigen', en: 'Show image first' }, uiLocale)}
                         </label>
                     ) : null}
                 </div>
@@ -388,7 +395,7 @@ function SectionFields({
         case 'quote':
             return (
                 <div className="flex flex-col gap-4">
-                    <Field label={{ de: 'Zitat', en: 'Quote' }[uiLocale]}>
+                    <Field label={inlineCopy({ de: 'Zitat', en: 'Quote' }, uiLocale)}>
                         <Textarea
                             rows={3}
                             value={editLocale === 'en' ? section.quoteEn : section.quoteDe}
@@ -399,7 +406,7 @@ function SectionFields({
                             }
                         />
                     </Field>
-                    <Field label={{ de: 'Zuschreibung', en: 'Attribution' }[uiLocale]}>
+                    <Field label={inlineCopy({ de: 'Zuschreibung', en: 'Attribution' }, uiLocale)}>
                         <Input
                             value={editLocale === 'en' ? (section.attributionEn ?? '') : (section.attributionDe ?? '')}
                             onChange={(e) =>
@@ -416,7 +423,7 @@ function SectionFields({
         case 'list':
             return (
                 <div className="flex flex-col gap-4">
-                    <Field label={{ de: 'Titel', en: 'Title' }[uiLocale]}>
+                    <Field label={inlineCopy({ de: 'Titel', en: 'Title' }, uiLocale)}>
                         <Input
                             value={editLocale === 'en' ? (section.titleEn ?? '') : (section.titleDe ?? '')}
                             onChange={(e) =>
@@ -426,7 +433,7 @@ function SectionFields({
                             }
                         />
                     </Field>
-                    <Field label={{ de: 'Stil', en: 'Style' }[uiLocale]}>
+                    <Field label={inlineCopy({ de: 'Stil', en: 'Style' }, uiLocale)}>
                         <Select
                             value={section.style}
                             onValueChange={(value) => onChange({ ...section, style: value as 'BULLET' | 'NUMBERED' })}
@@ -435,12 +442,12 @@ function SectionFields({
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="BULLET">{{ de: 'Aufzählung', en: 'Bullets' }[uiLocale]}</SelectItem>
-                                <SelectItem value="NUMBERED">{{ de: 'Nummeriert', en: 'Numbered' }[uiLocale]}</SelectItem>
+                                <SelectItem value="BULLET">{inlineCopy({ de: 'Aufzählung', en: 'Bullets' }, uiLocale)}</SelectItem>
+                                <SelectItem value="NUMBERED">{inlineCopy({ de: 'Nummeriert', en: 'Numbered' }, uiLocale)}</SelectItem>
                             </SelectContent>
                         </Select>
                     </Field>
-                    <Field label={{ de: 'Einträge (eine Zeile pro Punkt)', en: 'Items (one per line)' }[uiLocale]}>
+                    <Field label={inlineCopy({ de: 'Einträge (eine Zeile pro Punkt)', en: 'Items (one per line)' }, uiLocale)}>
                         <Textarea
                             rows={6}
                             value={(editLocale === 'en' ? section.itemsEn : section.itemsDe).join('\n')}
@@ -455,7 +462,7 @@ function SectionFields({
         case 'cta':
             return (
                 <div className="flex flex-col gap-4">
-                    <Field label={{ de: 'Überschrift', en: 'Headline' }[uiLocale]}>
+                    <Field label={inlineCopy({ de: 'Überschrift', en: 'Headline' }, uiLocale)}>
                         <Input
                             value={editLocale === 'en' ? section.headlineEn : section.headlineDe}
                             onChange={(e) =>
@@ -467,7 +474,7 @@ function SectionFields({
                             }
                         />
                     </Field>
-                    <Field label={{ de: 'Text', en: 'Body' }[uiLocale]}>
+                    <Field label={inlineCopy({ de: 'Text', en: 'Body' }, uiLocale)}>
                         <Textarea
                             rows={3}
                             value={editLocale === 'en' ? (section.bodyEn ?? '') : (section.bodyDe ?? '')}
@@ -478,7 +485,7 @@ function SectionFields({
                             }
                         />
                     </Field>
-                    <Field label={{ de: 'Button-Text', en: 'Button label' }[uiLocale]}>
+                    <Field label={inlineCopy({ de: 'Button-Text', en: 'Button label' }, uiLocale)}>
                         <Input
                             value={editLocale === 'en' ? section.buttonLabelEn : section.buttonLabelDe}
                             onChange={(e) =>
@@ -498,7 +505,7 @@ function SectionFields({
         case 'qa':
             return (
                 <div className="flex flex-col gap-4">
-                    <Field label={{ de: 'Titel', en: 'Title' }[uiLocale]}>
+                    <Field label={inlineCopy({ de: 'Titel', en: 'Title' }, uiLocale)}>
                         <Input
                             value={editLocale === 'en' ? (section.titleEn ?? '') : (section.titleDe ?? '')}
                             onChange={(e) =>
@@ -510,7 +517,7 @@ function SectionFields({
                     </Field>
                     <div className="flex flex-col gap-3">
                         <div className="flex items-center justify-between gap-2">
-                            <span className="text-sm font-medium">{{ de: 'Einträge', en: 'Entries' }[uiLocale]}</span>
+                            <span className="text-sm font-medium">{inlineCopy({ de: 'Einträge', en: 'Entries' }, uiLocale)}</span>
                             <Button
                                 type="button"
                                 variant="outline"
@@ -532,14 +539,14 @@ function SectionFields({
                                 }
                             >
                                 <PlusIcon className="size-3.5" />
-                                {{ de: 'Eintrag', en: 'Entry' }[uiLocale]}
+                                {inlineCopy({ de: 'Eintrag', en: 'Entry' }, uiLocale)}
                             </Button>
                         </div>
                         {section.entries.map((entry, entryIndex) => (
                             <div key={entry.entryId} className="flex flex-col gap-3 rounded-md border border-border/70 p-3">
                                 <div className="flex items-center justify-between gap-2">
                                     <span className="text-xs font-medium text-muted-foreground">
-                                        {{ de: `Eintrag ${entryIndex + 1}`, en: `Entry ${entryIndex + 1}` }[uiLocale]}
+                                        {inlineCopy({ de: `Eintrag ${entryIndex + 1}`, en: `Entry ${entryIndex + 1}` }, uiLocale)}
                                     </span>
                                     <Button
                                         type="button"
@@ -557,7 +564,7 @@ function SectionFields({
                                         <Trash2Icon className="size-4" />
                                     </Button>
                                 </div>
-                                <Field label={{ de: 'Frage', en: 'Question' }[uiLocale]}>
+                                <Field label={inlineCopy({ de: 'Frage', en: 'Question' }, uiLocale)}>
                                     <Input
                                         value={editLocale === 'en' ? entry.questionEn : entry.questionDe}
                                         onChange={(e) => {
@@ -572,7 +579,7 @@ function SectionFields({
                                         }}
                                     />
                                 </Field>
-                                <Field label={{ de: 'Antwort (Markdown)', en: 'Answer (Markdown)' }[uiLocale]}>
+                                <Field label={inlineCopy({ de: 'Antwort (Markdown)', en: 'Answer (Markdown)' }, uiLocale)}>
                                     <Textarea
                                         rows={4}
                                         value={editLocale === 'en' ? entry.answerEn : entry.answerDe}
@@ -637,10 +644,13 @@ function ImageUploadField({
         setError(null);
         if (!file.type.startsWith('image/')) {
             setError(
-                {
-                    de: 'Bitte ein Bild (JPEG, PNG, WebP oder GIF) wählen.',
-                    en: 'Please choose an image (JPEG, PNG, WebP, or GIF).',
-                }[uiLocale],
+                inlineCopy(
+                    {
+                        de: 'Bitte ein Bild (JPEG, PNG, WebP oder GIF) wählen.',
+                        en: 'Please choose an image (JPEG, PNG, WebP, or GIF).',
+                    },
+                    uiLocale,
+                ),
             );
             if (inputRef.current) inputRef.current.value = '';
             return;
@@ -677,7 +687,7 @@ function ImageUploadField({
     return (
         <>
             <div className="flex flex-col gap-2">
-                <span className="text-sm font-medium">{{ de: 'Bild', en: 'Image' }[uiLocale]}</span>
+                <span className="text-sm font-medium">{inlineCopy({ de: 'Bild', en: 'Image' }, uiLocale)}</span>
                 {fileUploadId ? <img src={fileUploadPublicUrl(fileUploadId)} alt="" className={previewClassName} /> : null}
                 <input
                     ref={inputRef}
@@ -689,16 +699,17 @@ function ImageUploadField({
                 />
                 <div className="flex flex-wrap gap-2">
                     <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => inputRef.current?.click()}>
-                        {
+                        {inlineCopy(
                             {
                                 de: busy ? 'Lädt…' : 'Bild auswählen',
                                 en: busy ? 'Uploading…' : 'Select image',
-                            }[uiLocale]
-                        }
+                            },
+                            uiLocale,
+                        )}
                     </Button>
                     {fileUploadId ? (
                         <Button type="button" variant="ghost" size="sm" disabled={busy} onClick={() => setConfirmRemove(true)}>
-                            {{ de: 'Entfernen', en: 'Remove' }[uiLocale]}
+                            {inlineCopy({ de: 'Entfernen', en: 'Remove' }, uiLocale)}
                         </Button>
                     ) : null}
                 </div>
@@ -707,18 +718,19 @@ function ImageUploadField({
                 <AlertDialog open={confirmRemove} onOpenChange={setConfirmRemove}>
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>{{ de: 'Bild entfernen?', en: 'Remove this image?' }[uiLocale]}</AlertDialogTitle>
+                            <AlertDialogTitle>{inlineCopy({ de: 'Bild entfernen?', en: 'Remove this image?' }, uiLocale)}</AlertDialogTitle>
                             <AlertDialogDescription>
-                                {
+                                {inlineCopy(
                                     {
                                         de: 'Das Bild wird aus diesem Abschnitt entfernt. Speichern übernimmt die Änderung.',
                                         en: 'The image is removed from this section. Saving applies the change.',
-                                    }[uiLocale]
-                                }
+                                    },
+                                    uiLocale,
+                                )}
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                            <AlertDialogCancel>{{ de: 'Abbrechen', en: 'Cancel' }[uiLocale]}</AlertDialogCancel>
+                            <AlertDialogCancel>{inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, uiLocale)}</AlertDialogCancel>
                             <AlertDialogAction
                                 variant="destructive"
                                 onClick={() => {
@@ -726,7 +738,7 @@ function ImageUploadField({
                                     setConfirmRemove(false);
                                 }}
                             >
-                                {{ de: 'Entfernen', en: 'Remove' }[uiLocale]}
+                                {inlineCopy({ de: 'Entfernen', en: 'Remove' }, uiLocale)}
                             </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>

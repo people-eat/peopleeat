@@ -1,6 +1,6 @@
 import { useRouterState } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 
 type Phase = 'idle' | 'loading' | 'completing';
@@ -9,7 +9,7 @@ const SHOW_DELAY_MS = 120;
 const COMPLETE_FADE_MS = 200;
 
 export function NavigationProgress() {
-    const locale = useLocale();
+    const { t } = useT('common');
     const isLoading = useRouterState({
         select: (s) => s.isLoading || s.matches.some((m) => m.isFetching !== false),
     });
@@ -55,7 +55,7 @@ export function NavigationProgress() {
 
     if (phase === 'idle') return null;
 
-    const statusLabel = { de: 'Seite wird geladen', en: 'Loading page' }[locale];
+    const statusLabel = t('navigationProgress.label');
 
     return (
         <>

@@ -1,3 +1,4 @@
+import { tEmail } from '../../../i18n/tEmail';
 import type { Locale } from '../../../shared/locale';
 import { formatCallSlotDate, formatCallSlotTime } from './bookingRequestOfferCallSlotEmailFormat';
 import { EmailButton, EmailLayout, EmailText } from './index';
@@ -25,44 +26,22 @@ export function BookingRequestOfferCallSlotConfirmBody({
 }: BookingRequestOfferCallSlotConfirmBodyProps) {
     const callDate = formatCallSlotDate(startAt, locale, timeZone);
     const callTime = formatCallSlotTime(startAt, locale, timeZone);
-    const preview = {
-        de: `${accepterFirstName} hat deinen Video-Call bestätigt. Termin steht`,
-        en: `${accepterFirstName} confirmed your video call. You're all set`,
-    }[locale];
+    const preview = tEmail(locale, 'callSlot.confirm.preview', { accepterFirstName });
     const subject = bookingRequestOfferCallSlotConfirmEmailSubject(locale);
-    const intro = {
-        de: `${accepterFirstName} hat deine Video-Call-Anfrage bestätigt:`,
-        en: `${accepterFirstName} confirmed your video call request:`,
-    }[locale];
-    const reminderNote = {
-        de: 'Du erhältst 60 Minuten vor Beginn eine Erinnerung mit dem Link zum Video-Call.',
-        en: 'You will receive a reminder with the video call link 60 minutes before it starts.',
-    }[locale];
-    const calendarNote = {
-        de: 'Im Anhang ist eine Kalenderdatei. Sie erinnert dich 15 Minuten vorher.',
-        en: 'A calendar file is attached. It reminds you 15 minutes before.',
-    }[locale];
-    const linkLabel = {
-        de: 'Zum Angebot',
-        en: 'Open the offer',
-    }[locale];
 
     return (
         <EmailLayout locale={locale} webPageUrl={webPageUrl} preview={preview} subject={subject} recipientFirstName={recipientFirstName}>
-            <EmailText>{intro}</EmailText>
+            <EmailText>{tEmail(locale, 'callSlot.confirm.intro', { accepterFirstName })}</EmailText>
             <EmailText style={{ marginBottom: '4px' }}>{callDate}</EmailText>
             <EmailText>{callTime}</EmailText>
             {whenSecondary ? <EmailText>{whenSecondary}</EmailText> : null}
-            <EmailText>{reminderNote}</EmailText>
-            <EmailText>{calendarNote}</EmailText>
-            <EmailButton href={offerUrl}>{linkLabel}</EmailButton>
+            <EmailText>{tEmail(locale, 'callSlot.confirm.reminderNote')}</EmailText>
+            <EmailText>{tEmail(locale, 'callSlot.confirm.calendarNote')}</EmailText>
+            <EmailButton href={offerUrl}>{tEmail(locale, 'common.ctaOffer')}</EmailButton>
         </EmailLayout>
     );
 }
 
 export function bookingRequestOfferCallSlotConfirmEmailSubject(locale: Locale): string {
-    return {
-        de: 'Dein Video-Call wurde bestätigt',
-        en: 'Your video call was confirmed',
-    }[locale];
+    return tEmail(locale, 'callSlot.confirm.subject');
 }

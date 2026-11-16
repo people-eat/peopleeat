@@ -2,10 +2,12 @@ import { Link } from '@tanstack/react-router';
 import { ArrowLeftIcon, MapPinIcon, StarIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
+import { t as translate } from '../../i18n/t';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/base/avatar';
 import { Button } from '../components/base/button';
 import { CookProfileTags } from '../components/CookProfileTags';
 import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 import type { Locale } from '../utils/locale';
 
@@ -15,7 +17,7 @@ type SectionCookHeroRating = {
 };
 
 export function chefsIndexLinkLabel(locale: Locale): string {
-    return { de: 'Alle Köche', en: 'All chefs' }[locale];
+    return translate(locale, 'public', 'chefs.indexLink');
 }
 
 export type SectionCookHeroCook = {
@@ -46,13 +48,12 @@ function initialsFromName(name: string): string {
 }
 
 function CookRating({ rating }: { rating: SectionCookHeroRating }) {
-    const locale = useLocale();
+    const { t } = useT('public');
     const hasReviews = rating.reviewCount > 0 && rating.averageRating != null;
     const filledStars = hasReviews ? Math.round(rating.averageRating!) : 0;
-    const reviewLabel = rating.reviewCount === 1 ? { de: 'Bewertung', en: 'review' }[locale] : { de: 'Bewertungen', en: 'reviews' }[locale];
     const summary = hasReviews
-        ? `${rating.averageRating!.toFixed(1)} · ${rating.reviewCount} ${reviewLabel}`
-        : { de: 'Noch keine Bewertungen', en: 'No reviews yet' }[locale];
+        ? t('chef.reviewSummary', { rating: rating.averageRating!.toFixed(1), count: rating.reviewCount })
+        : t('chef.noReviews');
 
     return (
         <div className="flex items-center gap-2">
@@ -86,6 +87,7 @@ export function SectionCookHero({
     bookCta?: SectionCookHeroBookCta;
 }) {
     const locale = useLocale();
+    const { t } = useT('public');
     const showTopBar = showChefsIndexLink || shareButton != null;
 
     return (
@@ -155,15 +157,11 @@ export function SectionCookHero({
                                 search={bookCta?.cookId ? { cookId: bookCta.cookId } : {}}
                                 onClick={onBookCtaClick}
                             >
-                                {bookCta?.label ?? { de: 'Anfrage senden', en: 'Send request' }[locale]}
+                                {bookCta?.label ?? t('chef.sendRequestDefault')}
                             </Link>
                         </Button>
                         <p className="text-center text-sm text-muted-foreground @3xl:text-left">
-                            {bookCta?.underline ??
-                                {
-                                    de: 'Unverbindlich und kostenlos',
-                                    en: 'Free of charge and without obligation',
-                                }[locale]}
+                            {bookCta?.underline ?? t('chef.requestUnderlineDefault')}
                         </p>
                     </div>
                 </div>

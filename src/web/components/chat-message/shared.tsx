@@ -3,6 +3,7 @@ import { BracesIcon, CheckIcon, CopyIcon } from 'lucide-react';
 import type { PropsWithChildren } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { inlineCopy } from '../../../shared';
 import { useLocale } from '../../hooks/useLocale';
 import { cn } from '../../utils/cn';
 import { Button } from '../base/button';
@@ -72,8 +73,8 @@ export function CopyButton({ text, label }: { text: string; label?: string }) {
     const locale = useLocale();
     const [copied, setCopied] = useState(false);
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const idleLabel = label ?? { de: 'Nachricht kopieren', en: 'Copy message' }[locale];
-    const ariaLabel = copied ? { de: 'Kopiert', en: 'Copied' }[locale] : idleLabel;
+    const idleLabel = label ?? inlineCopy({ de: 'Nachricht kopieren', en: 'Copy message' }, locale);
+    const ariaLabel = copied ? inlineCopy({ de: 'Kopiert', en: 'Copied' }, locale) : idleLabel;
     useEffect(() => {
         return () => {
             if (timerRef.current) clearTimeout(timerRef.current);
@@ -82,9 +83,9 @@ export function CopyButton({ text, label }: { text: string; label?: string }) {
     const onCopy = useCallback(async () => {
         try {
             await navigator.clipboard.writeText(text);
-            toast.success({ de: 'In die Zwischenablage kopiert', en: 'Copied to clipboard' }[locale]);
+            toast.success(inlineCopy({ de: 'In die Zwischenablage kopiert', en: 'Copied to clipboard' }, locale));
         } catch {
-            toast.error({ de: 'Kopieren in die Zwischenablage fehlgeschlagen', en: 'Could not copy to clipboard' }[locale]);
+            toast.error(inlineCopy({ de: 'Kopieren in die Zwischenablage fehlgeschlagen', en: 'Could not copy to clipboard' }, locale));
         }
         setCopied(true);
         if (timerRef.current) clearTimeout(timerRef.current);
@@ -135,12 +136,12 @@ export function ToolArgumentsButton({
     const inputText = formatToolDebugJson(input);
     const outputText = errorText != null && errorText.length > 0 ? formatToolDebugJson({ errorText, output }) : formatToolDebugJson(output);
     const hasOutput = outputText.length > 0;
-    const argsLabel = { de: 'Argumente anzeigen', en: 'Show arguments' }[locale];
-    const dialogTitle = { de: 'Werkzeug-Argumente', en: 'Tool arguments' }[locale];
-    const inputTab = { de: 'Eingabe', en: 'Input' }[locale];
-    const outputTab = { de: 'Ausgabe', en: 'Output' }[locale];
-    const emptyOutput = { de: 'Noch keine Ausgabe.', en: 'No output yet.' }[locale];
-    const emptyInput = { de: 'Keine Eingabe.', en: 'No input.' }[locale];
+    const argsLabel = inlineCopy({ de: 'Argumente anzeigen', en: 'Show arguments' }, locale);
+    const dialogTitle = inlineCopy({ de: 'Werkzeug-Argumente', en: 'Tool arguments' }, locale);
+    const inputTab = inlineCopy({ de: 'Eingabe', en: 'Input' }, locale);
+    const outputTab = inlineCopy({ de: 'Ausgabe', en: 'Output' }, locale);
+    const emptyOutput = inlineCopy({ de: 'Noch keine Ausgabe.', en: 'No output yet.' }, locale);
+    const emptyInput = inlineCopy({ de: 'Keine Eingabe.', en: 'No input.' }, locale);
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -194,7 +195,7 @@ function ToolDebugPane({ text, copyDisabled }: { text: string; copyDisabled: boo
     return (
         <div className="relative min-h-0">
             <div className="absolute top-2 right-2 z-10">
-                {copyDisabled ? null : <CopyButton text={text} label={{ de: 'JSON kopieren', en: 'Copy JSON' }[locale]} />}
+                {copyDisabled ? null : <CopyButton text={text} label={inlineCopy({ de: 'JSON kopieren', en: 'Copy JSON' }, locale)} />}
             </div>
             <pre className="max-h-[min(50vh,24rem)] overflow-auto rounded-md border border-border/60 bg-muted/40 p-3 pr-10 text-xs/relaxed whitespace-pre-wrap break-all text-foreground">
                 {text}

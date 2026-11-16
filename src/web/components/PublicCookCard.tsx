@@ -2,8 +2,7 @@ import { Link } from '@tanstack/react-router';
 import { MapPinIcon, StarIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
-import type { Locale } from '../../shared/locale';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 import { Avatar, AvatarFallback, AvatarImage } from './base/avatar';
 import { bookingRequestCardInteractionClassName } from './bookingRequestCardInteraction';
@@ -33,12 +32,12 @@ function initialsFromName(name: string): string {
     return `${parts[0]![0] ?? ''}${parts[1]![0] ?? ''}`.toUpperCase();
 }
 
-function CookCardRating({ rating, locale }: { rating: NonNullable<PublicCookCardCook['rating']>; locale: Locale }) {
+function CookCardRating({ rating }: { rating: NonNullable<PublicCookCardCook['rating']> }) {
+    const { t } = useT('public');
     if (rating.reviewCount <= 0 || rating.averageRating == null) return null;
 
     const filledStars = Math.round(rating.averageRating);
-    const reviewLabel = rating.reviewCount === 1 ? { de: 'Bewertung', en: 'review' }[locale] : { de: 'Bewertungen', en: 'reviews' }[locale];
-    const summary = `${rating.averageRating.toFixed(1)} · ${rating.reviewCount} ${reviewLabel}`;
+    const summary = t('chef.reviewSummary', { rating: rating.averageRating.toFixed(1), count: rating.reviewCount });
 
     return (
         <div className="flex items-center gap-1.5">
@@ -56,17 +55,7 @@ function CookCardRating({ rating, locale }: { rating: NonNullable<PublicCookCard
     );
 }
 
-function PublicCookCardBody({
-    cook,
-    locale,
-    showCity,
-    badge,
-}: {
-    cook: PublicCookCardCook;
-    locale: Locale;
-    showCity: boolean;
-    badge?: ReactNode;
-}) {
+function PublicCookCardBody({ cook, showCity, badge }: { cook: PublicCookCardCook; showCity: boolean; badge?: ReactNode }) {
     const name = cook.user.display;
     const city = showCity ? cook.city?.trim() || null : null;
 
@@ -98,7 +87,7 @@ function PublicCookCardBody({
 
                 {cook.rating != null && cook.rating.reviewCount > 0 && cook.rating.averageRating != null ? (
                     <div className="mt-auto pt-0.5">
-                        <CookCardRating rating={cook.rating} locale={locale} />
+                        <CookCardRating rating={cook.rating} />
                     </div>
                 ) : null}
             </div>
@@ -128,13 +117,12 @@ export function PublicCookCard({
     /** Admin preview chip (e.g. not publicly listed). */
     badge?: ReactNode;
 }) {
-    const locale = useLocale();
     const cardClassName = cn(
         'flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm',
         interactive && bookingRequestCardInteractionClassName,
         className,
     );
-    const body: ReactNode = <PublicCookCardBody cook={cook} locale={locale} showCity={showCity} badge={badge} />;
+    const body: ReactNode = <PublicCookCardBody cook={cook} showCity={showCity} badge={badge} />;
 
     if (!interactive) {
         return <div className={cardClassName}>{body}</div>;

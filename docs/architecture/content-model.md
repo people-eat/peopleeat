@@ -32,7 +32,9 @@ Split by editing cadence:
 ## Consequences
 
 - Agents and humans must pick the right store up front — moving a field later means a migration or a content rewrite.
-- Public bilingual lists pay the `*De` / `*En` typing cost; admin-only lists may skip it (see below).
+- Public bilingual lists pay the `*De` / `*En` typing cost; admin-only lists may skip it (see below). **UI chrome is a different store**:
+  product strings live in `src/i18n` catalogs ([i18n.md](./i18n.md)), not CMS columns. `contentLocaleText` falls back to DE for `fr` / `it`
+  until these columns become a locale map.
 - Conventions below are the day-to-day shape of DB-backed lists; feature docs cover each surface's behaviour.
 
 ## Conventions for DB-backed editable lists

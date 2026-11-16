@@ -1,16 +1,17 @@
 import { useEffect, useId, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
+import { inlineCopy } from '../../shared';
 
+import type { InlineCopy } from '../../shared';
 import { ProfileCustomerBookingRequestOfferDeclineDocument } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
 import { cn } from '../utils/cn';
-import type { Locale } from '../utils/locale';
 import { Button } from './base/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './base/dialog';
 import { Textarea } from './base/textarea';
 
-const DECLINE_REASONS: Record<Locale, readonly string[]> = {
+const DECLINE_REASONS: InlineCopy<readonly string[]> = {
     de: [
         '💰 Angebot war zu teuer',
         '🍽️ Menüs waren nicht das, wonach ich gesucht habe',
@@ -49,10 +50,13 @@ export function CustomerBookingRequestOfferDeclineDialog({
         const trimmed = reason.trim();
         if (trimmed.length === 0) {
             toast.error(
-                {
-                    de: 'Bitte lass uns wissen, warum du dieses Angebot ablehnen möchtest.',
-                    en: 'Please let us know why you want to decline the offer.',
-                }[locale],
+                inlineCopy(
+                    {
+                        de: 'Bitte lass uns wissen, warum du dieses Angebot ablehnen möchtest.',
+                        en: 'Please let us know why you want to decline the offer.',
+                    },
+                    locale,
+                ),
             );
             return;
         }
@@ -64,9 +68,9 @@ export function CustomerBookingRequestOfferDeclineDialog({
             }
             onClose();
             onCompleted?.();
-            toast.success({ de: 'Angebot abgelehnt.', en: 'Offer declined.' }[locale]);
+            toast.success(inlineCopy({ de: 'Angebot abgelehnt.', en: 'Offer declined.' }, locale));
         } catch {
-            toast.error({ de: 'Ablehnung fehlgeschlagen.', en: 'Could not decline the offer.' }[locale]);
+            toast.error(inlineCopy({ de: 'Ablehnung fehlgeschlagen.', en: 'Could not decline the offer.' }, locale));
         } finally {
             setBusy(false);
         }
@@ -81,29 +85,31 @@ export function CustomerBookingRequestOfferDeclineDialog({
         >
             <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
-                    <DialogTitle>{{ de: 'Angebot ablehnen', en: 'Decline offer' }[locale]}</DialogTitle>
+                    <DialogTitle>{inlineCopy({ de: 'Angebot ablehnen', en: 'Decline offer' }, locale)}</DialogTitle>
                     <DialogDescription>
-                        {
+                        {inlineCopy(
                             {
                                 de: 'Hilf uns gerne, unseren Service zu verbessern, und sag uns kurz, warum du dieses Angebot ablehnen möchtest.',
                                 en: 'Feel free to help us improve our service by briefly letting us know why you want to decline this offer.',
-                            }[locale]
-                        }
+                            },
+                            locale,
+                        )}
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="grid gap-3">
                     <div className="grid gap-1.5">
                         <label htmlFor={reasonId} className="text-sm font-medium text-foreground">
-                            {{ de: 'Grund', en: 'Reason' }[locale]}
+                            {inlineCopy({ de: 'Grund', en: 'Reason' }, locale)}
                         </label>
                         <p className="text-sm text-muted-foreground">
-                            {
+                            {inlineCopy(
                                 {
                                     de: 'Wähle einen der Vorschläge aus oder beschreibe kurz den Grund deiner Absage.',
                                     en: 'Please choose one of the suggestions or briefly describe the reason for your decline.',
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                         </p>
                         <Textarea
                             id={reasonId}
@@ -116,9 +122,9 @@ export function CustomerBookingRequestOfferDeclineDialog({
                     <div
                         className="flex flex-wrap gap-2"
                         role="group"
-                        aria-label={{ de: 'Vorgeschlagene Gründe', en: 'Suggested reasons' }[locale]}
+                        aria-label={inlineCopy({ de: 'Vorgeschlagene Gründe', en: 'Suggested reasons' }, locale)}
                     >
-                        {DECLINE_REASONS[locale].map((option) => {
+                        {inlineCopy(DECLINE_REASONS, locale).map((option) => {
                             const selected = reason === option;
                             return (
                                 <button
@@ -143,7 +149,7 @@ export function CustomerBookingRequestOfferDeclineDialog({
 
                 <DialogFooter>
                     <Button type="button" variant="outline" disabled={busy} onClick={onClose}>
-                        {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                        {inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, locale)}
                     </Button>
                     <Button
                         type="button"
@@ -151,7 +157,7 @@ export function CustomerBookingRequestOfferDeclineDialog({
                         disabled={busy || reason.trim().length === 0}
                         onClick={() => void onDecline()}
                     >
-                        {{ de: busy ? 'Wird abgelehnt…' : 'Ablehnen', en: busy ? 'Declining…' : 'Decline' }[locale]}
+                        {inlineCopy({ de: busy ? 'Wird abgelehnt…' : 'Ablehnen', en: busy ? 'Declining…' : 'Decline' }, locale)}
                     </Button>
                 </DialogFooter>
             </DialogContent>

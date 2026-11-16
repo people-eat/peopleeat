@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from 'urql';
 
+import { t } from '../../../i18n/t';
 import { Button } from '../../components/base/button';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '../../components/base/combobox';
 import { Input } from '../../components/base/input';
@@ -110,14 +111,14 @@ export function AdminCookInventoryListToolbar({
                     });
                 }}
             >
-                <SelectTrigger size="sm" aria-label={{ de: 'Status filtern', en: 'Filter by status' }[locale]} className="w-auto min-w-36">
+                <SelectTrigger size="sm" aria-label={t(locale, 'admin', 'copy.filterByStatus')} className="w-auto min-w-36">
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="__all__">{{ de: 'Alle Status', en: 'All statuses' }[locale]}</SelectItem>
-                    <SelectItem value="PUBLISHED">{{ de: 'Veröffentlicht', en: 'Published' }[locale]}</SelectItem>
-                    <SelectItem value="DRAFT">{{ de: 'Entwurf', en: 'Draft' }[locale]}</SelectItem>
-                    <SelectItem value="DELETED">{{ de: 'Gelöscht', en: 'Deleted' }[locale]}</SelectItem>
+                    <SelectItem value="__all__">{t(locale, 'admin', 'copy.allStatuses')}</SelectItem>
+                    <SelectItem value="PUBLISHED">{t(locale, 'admin', 'copy.published2')}</SelectItem>
+                    <SelectItem value="DRAFT">{t(locale, 'admin', 'copy.draft')}</SelectItem>
+                    <SelectItem value="DELETED">{t(locale, 'admin', 'copy.deleted')}</SelectItem>
                 </SelectContent>
             </Select>
 
@@ -137,16 +138,16 @@ export function AdminCookInventoryListToolbar({
                     });
                 }}
             >
-                <SelectTrigger size="sm" aria-label={{ de: 'Sortierung', en: 'Sort' }[locale]} className="w-auto min-w-40">
+                <SelectTrigger size="sm" aria-label={t(locale, 'admin', 'copy.sort')} className="w-auto min-w-40">
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="createdAt:desc">{{ de: 'Neueste zuerst', en: 'Newest first' }[locale]}</SelectItem>
-                    <SelectItem value="createdAt:asc">{{ de: 'Älteste zuerst', en: 'Oldest first' }[locale]}</SelectItem>
-                    <SelectItem value="title:asc">{{ de: 'Titel A–Z', en: 'Title A–Z' }[locale]}</SelectItem>
-                    <SelectItem value="title:desc">{{ de: 'Titel Z–A', en: 'Title Z–A' }[locale]}</SelectItem>
-                    <SelectItem value="publishedAt:desc">{{ de: 'Zuletzt veröffentlicht', en: 'Recently published' }[locale]}</SelectItem>
-                    <SelectItem value="deletedAt:desc">{{ de: 'Zuletzt gelöscht', en: 'Recently deleted' }[locale]}</SelectItem>
+                    <SelectItem value="createdAt:desc">{t(locale, 'admin', 'copy.newestFirst')}</SelectItem>
+                    <SelectItem value="createdAt:asc">{t(locale, 'admin', 'copy.oldestFirst')}</SelectItem>
+                    <SelectItem value="title:asc">{t(locale, 'admin', 'copy.titleAZ')}</SelectItem>
+                    <SelectItem value="title:desc">{t(locale, 'admin', 'copy.titleZA')}</SelectItem>
+                    <SelectItem value="publishedAt:desc">{t(locale, 'admin', 'copy.recentlyPublished')}</SelectItem>
+                    <SelectItem value="deletedAt:desc">{t(locale, 'admin', 'copy.recentlyDeleted')}</SelectItem>
                 </SelectContent>
             </Select>
 
@@ -159,15 +160,15 @@ export function AdminCookInventoryListToolbar({
                         });
                     }}
                 >
-                    <SelectTrigger size="sm" aria-label={{ de: 'Bildfilter', en: 'Image filter' }[locale]} className="w-auto min-w-40">
+                    <SelectTrigger size="sm" aria-label={t(locale, 'admin', 'copy.imageFilter')} className="w-auto min-w-40">
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="__all__">{{ de: 'Alle Bilder', en: 'All images' }[locale]}</SelectItem>
-                        <SelectItem value="with">{{ de: 'Mit Bild', en: 'With image' }[locale]}</SelectItem>
-                        <SelectItem value="without">{{ de: 'Ohne Bild', en: 'Without image' }[locale]}</SelectItem>
-                        <SelectItem value="public">{{ de: 'Auf Profil', en: 'On public page' }[locale]}</SelectItem>
-                        <SelectItem value="notPublic">{{ de: 'Nicht auf Profil', en: 'Not on public page' }[locale]}</SelectItem>
+                        <SelectItem value="__all__">{t(locale, 'admin', 'copy.allImages')}</SelectItem>
+                        <SelectItem value="with">{t(locale, 'admin', 'copy.withImage')}</SelectItem>
+                        <SelectItem value="without">{t(locale, 'admin', 'copy.withoutImage')}</SelectItem>
+                        <SelectItem value="public">{t(locale, 'admin', 'copy.onPublicPage')}</SelectItem>
+                        <SelectItem value="notPublic">{t(locale, 'admin', 'copy.notOnPublicPage')}</SelectItem>
                     </SelectContent>
                 </Select>
             ) : null}
@@ -201,15 +202,13 @@ export function AdminCookInventoryListToolbar({
                 >
                     <ComboboxInput
                         className="w-full"
-                        placeholder={{ de: 'Koch filtern…', en: 'Filter cook…' }[locale]}
+                        placeholder={t(locale, 'admin', 'copy.filterCook')}
                         showClear={search.cookId != null}
-                        aria-label={{ de: 'Koch filtern', en: 'Filter cook' }[locale]}
+                        aria-label={t(locale, 'admin', 'copy.filterCook2')}
                     />
                     <ComboboxContent>
                         <ComboboxEmpty>
-                            {cooksFetching
-                                ? { de: 'Suche…', en: 'Searching…' }[locale]
-                                : { de: 'Keine Treffer.', en: 'No matches.' }[locale]}
+                            {cooksFetching ? t(locale, 'admin', 'copy.searching') : t(locale, 'admin', 'copy.noMatches')}
                         </ComboboxEmpty>
                         <ComboboxList>
                             {(userId: string) => {
@@ -236,7 +235,7 @@ export function AdminCookInventoryListToolbar({
                         })
                     }
                 >
-                    {{ de: 'Filter zurücksetzen', en: 'Clear filters' }[locale]}
+                    {t(locale, 'admin', 'copy.clearFilters')}
                 </Button>
             ) : null}
         </div>

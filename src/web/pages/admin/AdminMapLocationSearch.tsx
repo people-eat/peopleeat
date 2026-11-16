@@ -2,6 +2,7 @@ import { SearchIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useQuery } from 'urql';
 
+import { t } from '../../../i18n/t';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '../../components/base/combobox';
 import { InputGroupAddon } from '../../components/base/input-group';
 import { AdminMapLocationSuggestionsDocument } from '../../graphql/generated';
@@ -29,7 +30,7 @@ export function AdminMapLocationSearch({ selected, onSelect }: AdminMapLocationS
         pause: debouncedSearch.trim().length < 2 || selected?.label === searchText,
     });
     const suggestions = data?.currentSession.locationSuggestions ?? [];
-    const searchPlaceholder = { de: 'Ort suchen…', en: 'Search location…' }[locale];
+    const searchPlaceholder = t(locale, 'admin', 'copy.searchLocation');
 
     return (
         <Combobox
@@ -72,9 +73,7 @@ export function AdminMapLocationSearch({ selected, onSelect }: AdminMapLocationS
                 </InputGroupAddon>
             </ComboboxInput>
             <ComboboxContent>
-                <ComboboxEmpty>
-                    {fetching ? { de: 'Suche…', en: 'Searching…' }[locale] : { de: 'Keine Treffer.', en: 'No matches.' }[locale]}
-                </ComboboxEmpty>
+                <ComboboxEmpty>{fetching ? t(locale, 'admin', 'copy.searching') : t(locale, 'admin', 'copy.noMatches')}</ComboboxEmpty>
                 <ComboboxList>{(displayText: string) => <ComboboxItem value={displayText}>{displayText}</ComboboxItem>}</ComboboxList>
             </ComboboxContent>
         </Combobox>

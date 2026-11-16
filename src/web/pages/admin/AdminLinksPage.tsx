@@ -1,15 +1,20 @@
 import { SquareArrowOutUpRightIcon } from 'lucide-react';
 
+import { t } from '../../../i18n/t';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { useLocale } from '../../hooks/useLocale';
 import type { Locale } from '../../utils/locale';
-import { adminStubRouteBySlug } from './adminCatalog';
+import { adminStubRouteBySlug, adminStubRouteDescription, adminStubRouteTitle } from './adminCatalog';
 import { AdminOverviewListCardExternal } from './AdminOverviewListCard';
 
 const route = adminStubRouteBySlug('links');
 
-export const adminLinksPageTitle = route.title;
-export const adminLinksPageDescription = route.description;
+export function adminLinksPageTitle(locale: Locale): string {
+    return adminStubRouteTitle(route.slug, locale);
+}
+export function adminLinksPageDescription(locale: Locale): string {
+    return adminStubRouteDescription(route.slug, locale);
+}
 
 type AdminImportantLink = {
     title: string;
@@ -17,13 +22,13 @@ type AdminImportantLink = {
 };
 
 type AdminImportantLinkGroup = {
-    title: Record<Locale, string>;
+    titleKey: string;
     links: readonly AdminImportantLink[];
 };
 
 const ADMIN_IMPORTANT_LINK_GROUPS: readonly AdminImportantLinkGroup[] = [
     {
-        title: { de: 'Infrastruktur', en: 'Infrastructure' },
+        titleKey: 'copy.infrastructure',
         links: [
             {
                 title: 'Coolify',
@@ -80,7 +85,7 @@ const ADMIN_IMPORTANT_LINK_GROUPS: readonly AdminImportantLinkGroup[] = [
         ],
     },
     {
-        title: { de: 'Benachrichtigungen & Messaging', en: 'Notifications & messaging' },
+        titleKey: 'copy.notificationsMessaging',
         links: [
             {
                 title: 'Resend',
@@ -101,7 +106,7 @@ const ADMIN_IMPORTANT_LINK_GROUPS: readonly AdminImportantLinkGroup[] = [
         ],
     },
     {
-        title: { de: 'Social Media', en: 'Social media' },
+        titleKey: 'copy.socialMedia',
         links: [
             {
                 title: 'Facebook',
@@ -128,14 +133,14 @@ export function AdminLinksPage() {
                 <div className="grid gap-2">
                     <h1 className="flex items-center gap-3 font-serif text-4xl/tight text-foreground">
                         <SquareArrowOutUpRightIcon className="size-8 text-muted-foreground" aria-hidden />
-                        {adminLinksPageTitle[locale]}
+                        {adminLinksPageTitle(locale)}
                     </h1>
-                    <p className="text-muted-foreground">{adminLinksPageDescription[locale]}</p>
+                    <p className="text-muted-foreground">{adminLinksPageDescription(locale)}</p>
                 </div>
                 <div className="grid gap-8">
                     {ADMIN_IMPORTANT_LINK_GROUPS.map((group) => (
-                        <section key={group.title.en} className="grid gap-3">
-                            <h2 className="text-lg font-medium">{group.title[locale]}</h2>
+                        <section key={group.titleKey} className="grid gap-3">
+                            <h2 className="text-lg font-medium">{t(locale, 'admin', group.titleKey)}</h2>
                             <ul className="grid gap-2 sm:grid-cols-2">
                                 {group.links.map((link) => (
                                     <li key={link.href}>

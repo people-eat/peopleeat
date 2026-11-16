@@ -1,0 +1,308 @@
+{
+    "auth": {
+        "otp": {
+            "preview": "Ton code de connexion peopleeat : {code} (valable 10 minutes)",
+            "subject": "Ton code de connexion peopleeat : {code}",
+            "body": "Saisis ce code sur la page de connexion. Il est valable dix minutes."
+        },
+        "accountDelete": {
+            "preview": "Code pour supprimer ton compte : {code}",
+            "subject": "Code pour supprimer ton compte",
+            "body": "Saisis ce code sur la page du compte pour confirmer la suppression. Il est valable dix minutes. Si ce n’était pas toi, ignore cet e-mail."
+        },
+        "emailUpdate": {
+            "preview": "Confirme ta nouvelle adresse e-mail. Code : {code}",
+            "subject": "Confirme ta nouvelle adresse e-mail",
+            "body": "Saisis ce code sur la page du compte pour confirmer ta nouvelle adresse e-mail. Il est valable dix minutes."
+        }
+    },
+    "common": {
+        "greetingNamed": "Salut {name},",
+        "greeting": "Salut,",
+        "questionsTitle": "Tu as des questions ?",
+        "questionsBefore": "Contacte-nous volontiers à ",
+        "questionsAfter": " à tout moment pour tes questions et demandes. Notre équipe est là pour toi.",
+        "signOffClosing": "À bientôt,",
+        "signOffTeam": "Ton équipe peopleeat ❤️",
+        "ctaOffer": "Voir l’offre",
+        "ctaChat": "Ouvrir le chat",
+        "ctaRequest": "Voir la demande",
+        "ctaBooking": "Voir la réservation",
+        "ctaProfile": "Aller au profil",
+        "ctaViewOffer": "Voir l’offre",
+        "reason": "Motif",
+        "reasonLine": "Motif : {reason}",
+        "subjectLine": "Objet : {subject}",
+        "calendarRemovalEvening": "Si tu as enregistré la soirée, retire-la de ton calendrier.",
+        "calendarRemovalSlot": "Si tu as enregistré le rendez-vous, retire-le de ton calendrier.",
+        "calendarFileDayBefore": "Un fichier calendrier est joint. L’heure indique le début, et il te rappelle un jour avant.",
+        "occasionWhen": "{occasion} · {when}"
+    },
+    "booking": {
+        "number": "Numéro de réservation",
+        "details": {
+            "heading": "Détails de la réservation",
+            "priceClass": "Catégorie de menu",
+            "occasion": "Occasion",
+            "date": "Date",
+            "address": "Lieu",
+            "adults": "Participants adultes",
+            "children": "Enfants",
+            "menus": "Menu proposé",
+            "feesNote": "Note bien que des frais de déplacement et des frais de service peuvent s’ajouter."
+        },
+        "cancellation": {
+            "heading": "Conditions d’annulation",
+            "terms": "CGU",
+            "before": "L’annulation gratuite est possible jusqu’à l’acceptation de la demande et jusqu’à deux semaines avant l’événement. En cas d’annulation plus tardive, des frais peuvent s’appliquer. Si tu dois modifier ta réservation, contacte-nous le plus tôt possible pour que nous puissions t’aider au mieux. Tu trouveras plus d’informations dans nos ",
+            "after": "."
+        },
+        "create": {
+            "previewDirect": "{cookName} consulte ta demande",
+            "previewPool": "Ta demande est bien arrivée. Des chefs près de chez toi préparent des menus",
+            "intro": "Merci pour ta demande ! Nous confirmons par ce message que nous l’avons bien reçue.",
+            "nextHeading": "Et ensuite ?",
+            "stepDirectMenu": "{cookName} consulte ta demande pour « {menuTitle} » et t’envoie une offre.",
+            "stepDirect": "{cookName} consulte ta demande et t’envoie une offre.",
+            "stepDirectDecide": "Tu décides ensuite tranquillement.",
+            "stepDirectOpen": "Tu peux aussi ouvrir la demande à tout moment aux autres chefs près de chez toi.",
+            "stepDirectChat": "Après la réservation, tu peux discuter avec le chef.",
+            "stepPoolMenus": "Nos chefs près de chez toi préparent des propositions de menu.",
+            "stepPoolNotify": "Tu recevras une notification dès que de nouvelles propositions arrivent.",
+            "stepPoolAdjust": "Tu peux demander des ajustements à tout moment.",
+            "stepPoolChat": "Après la réservation, tu peux discuter avec le chef.",
+            "statusNote": "Tu peux consulter le statut de ta demande à tout moment.",
+            "subject": "Demande de réservation"
+        },
+        "directNeedsExpansion": {
+            "preview": "{requestedCookFirstName} ne peut pas cette fois. Ta demande est toujours là.",
+            "body": "{requestedCookFirstName} ne peut pas cette fois. Ta demande est toujours là. Reçois des offres d’autres chefs près de chez toi.",
+            "cta": "Recevoir aussi des offres d’autres chefs",
+            "subject": "{requestedCookFirstName} ne peut pas cette fois"
+        },
+        "update": {
+            "preview": "À vérifier : {customerFirstName} a modifié la demande de réservation",
+            "body": "{customerFirstName} a modifié la demande de réservation. Vérifie les changements et confirme à nouveau ton offre si tu souhaites toujours proposer ce service.",
+            "cta": "Vérifier les modifications",
+            "dateNote": "La date a changé et n’est pas encore reconfirmée. Retire l’ancienne soirée de ton calendrier.",
+            "subject": "Modifications de la demande de réservation"
+        },
+        "cancelCustomer": {
+            "preview": "Ton annulation est confirmée. Nous sommes là quand tu voudras réserver à nouveau",
+            "body": "Dommage que tu aies annulé ta demande. Nous espérons que ça marchera la prochaine fois, et nous restons à ta disposition dès que tu souhaiteras à nouveau un chef privé.",
+            "closing": "Bonne continuation et à bientôt !",
+            "subject": "Annulation"
+        },
+        "cancelCook": {
+            "preview": "Une demande a été retirée. De nouvelles opportunités t’attendent dans le pool",
+            "intro": "Une demande pour laquelle tu avais créé une offre a été retirée. Ton offre n’est donc plus valable.",
+            "closing": "Continue de surveiller le pool des demandes de réservation pour ne pas manquer de nouvelles opportunités. Nous t’informons aussi par e-mail des nouvelles demandes dans ta région.",
+            "subject": "Demande annulée"
+        },
+        "cooksNotify": {
+            "previewDirect": "Un hôte t’a demandé directement (« {occasion} ») : propose un menu maintenant",
+            "previewPool": "Nouvelle demande à {city} (« {occasion} ») : propose un menu maintenant",
+            "introDirectMenu": "Un hôte t’a demandé via ton profil de chef pour « {menuTitle} » (« {occasion} » le {when} à {city}).",
+            "introDirect": "Un hôte t’a demandé via ton profil de chef (« {occasion} » le {when} à {city}).",
+            "introPool": "Bonne nouvelle : une nouvelle demande de réservation est disponible à {city} (« {occasion} » le {when}).",
+            "nudge": "Crée maintenant une proposition de menu pour que le client puisse accepter rapidement. Nous recommandons de répondre dans l’heure.",
+            "subjectDirect": "Un hôte t’a demandé directement",
+            "subjectPool": "Demande de réservation dans ta région"
+        },
+        "calendarDateMoved": {
+            "preview": "La date a changé. Retire l’ancienne soirée de ton calendrier",
+            "body": "La date a changé et n’est pas encore reconfirmée. Retire l’ancienne soirée de ton calendrier.",
+            "subject": "Date de la réservation modifiée"
+        },
+        "calendarRestored": {
+            "preview": "La soirée est confirmée. Le fichier calendrier est en pièce jointe",
+            "body": "{occasion} · {when}. La soirée est confirmée. Un fichier calendrier est joint. L’heure indique le début. Si tu avais enregistré l’ancienne soirée, remplace-la par ce fichier.",
+            "subject": "Soirée reconfirmée"
+        }
+    },
+    "offer": {
+        "create": {
+            "preview": "Le chef {cookFirstName} t’a envoyé une proposition de menu. À découvrir",
+            "intro": "Bonne nouvelle : le chef {cookFirstName} t’a envoyé une offre avec une proposition de menu.",
+            "cta": "Voir la proposition de menu",
+            "subject": "Offre reçue"
+        },
+        "menusUpdate": {
+            "preview": "Le chef {cookFirstName} a adapté ton menu selon tes souhaits",
+            "intro": "Bonne nouvelle : le chef {cookFirstName} a adapté le menu de ton offre selon tes souhaits.",
+            "cta": "Voir le menu",
+            "subject": "Menu de l’offre adapté"
+        },
+        "acceptCook": {
+            "preview": "Super nouvelle : {customerFirstName} a accepté ta proposition de menu",
+            "intro": "Super nouvelle ! {customerFirstName} a accepté ta proposition de menu. Vous pouvez maintenant régler les derniers détails directement dans le chat sur peopleeat.",
+            "venue": "Lieu : {venue}",
+            "nudge": "Écris au client rapidement pour clarifier tout ce qui compte pour l’événement.",
+            "closing": "Bonne réussite !",
+            "subject": "Offre acceptée"
+        },
+        "acceptNotChosen": {
+            "preview": "Cette demande est attribuée. Bientôt de nouvelles près de chez toi",
+            "intro": "{customerFirstName} a malheureusement choisi un autre chef privé. Cette demande n’est donc plus disponible.",
+            "closing": "Mais pas d’inquiétude : de nouvelles demandes près de chez toi arriveront bientôt ! Surveille le pool et réagis vite pour décrocher la prochaine réservation.",
+            "subject": "Demande attribuée ailleurs"
+        },
+        "declineCook": {
+            "preview": "{customerFirstName} n’a pas choisi ton offre. De nouvelles demandes t’attendent",
+            "intro": "{customerFirstName} n’a malheureusement pas retenu ton offre.",
+            "reasonLabel": "Motif du refus",
+            "closing": "Mais pas d’inquiétude : il y aura encore plein d’autres occasions. Surveille le pool des demandes de réservation. Nous t’informons aussi par e-mail quand de nouvelles demandes arrivent.",
+            "subject": "Offre refusée"
+        },
+        "amendmentCreate": {
+            "preview": "{customerFirstName} souhaite modifier le nombre de participants",
+            "body": "{customerFirstName} a proposé une modification du nombre de participants. Vérifie la proposition et accepte-la ou refuse-la. La réservation reste inchangée jusqu’à ta décision.",
+            "cta": "Examiner la proposition",
+            "subject": "Modification du nombre de participants proposée"
+        },
+        "amendmentAccept": {
+            "preview": "{cookFirstName} a accepté la modification",
+            "giftCardCredit": " Le crédit inutilisé a été recrédité sur ta carte cadeau.",
+            "payDifference": " Merci de régler le complément dans le paiement.",
+            "checkoutUpdated": " Ton paiement a été mis à jour. Merci de finaliser le règlement.",
+            "laterChargeUpdated": " Le montant du prélèvement ultérieur sur carte a été ajusté.",
+            "refund": " La différence te sera remboursée.",
+            "chargeSavedMethod": " La différence sera prélevée sur ton moyen de paiement enregistré.",
+            "body": "{cookFirstName} a accepté ta modification de réservation.{moneyNote} Tu trouveras les détails mis à jour dans ton offre.",
+            "ctaPay": "Payer maintenant",
+            "venueNote": "L’adresse a changé : {venue}. Mets-la à jour dans ton calendrier.",
+            "subject": "Modification de réservation acceptée"
+        },
+        "amendmentDecline": {
+            "preview": "{cookFirstName} a refusé la modification du nombre de participants",
+            "body": "{cookFirstName} a refusé ta proposition de modification du nombre de participants. La réservation reste inchangée. Tu peux écrire via le chat si tu veux en parler.",
+            "subject": "Modification du nombre de participants refusée"
+        }
+    },
+    "payment": {
+        "finalize": {
+            "preview": "Ta réservation avec {cookFirstName} est confirmée. Voici la suite",
+            "heading": "Ta réservation avec {cookFirstName} est confirmée !",
+            "intro": "Super choix pour le menu de {cookFirstName} ! Ce sera une expérience inoubliable. Nous sommes ravis que tu sois de la partie. Tu peux maintenant discuter de tous les détails restants directement avec le chef.",
+            "receiptNote": "Un reçu de paiement est aussi joint. Ce n’est pas une facture. Le chef facture la prestation directement auprès de toi.",
+            "subject": "Confirmation de réservation"
+        },
+        "statement": {
+            "preview": "Ton montant de versement et les frais peopleeat retenus",
+            "body": "La réservation ({occasion}) est payée. En pièce jointe, tu trouveras ton décompte avec le menu, les frais de déplacement, les frais peopleeat et le montant versé. Ce n’est pas une facture. Merci d’établir ta facture à l’hôte pour le menu et les frais de déplacement.",
+            "subject": "Décompte de ta réservation"
+        },
+        "pullAnnouncement": {
+            "preview": "Ton événement approche : paiement de {amount} le {when}",
+            "intro": "Pour ton occasion, nous avons prévu un paiement chez nous. Comme ton événement a lieu bientôt, nous prélèverons le montant le {when}.",
+            "why": "C’est nécessaire pour que le chef puisse acheter à l’avance les aliments et le matériel pour ton événement.",
+            "detailsHeading": "Détails du prélèvement",
+            "price": "Prix",
+            "chargeDate": "Date de prélèvement",
+            "cardNote": "Assure-toi que ta carte dispose de fonds suffisants et qu’elle n’expire pas avant la date de prélèvement. Si tu souhaites mettre à jour la carte que nous débiterons, contacte-nous.",
+            "subject": "Nous débiterons bientôt ta carte"
+        }
+    },
+    "callSlot": {
+        "request": {
+            "preview": "{senderFirstName} souhaite te rencontrer en appel vidéo. Confirme le créneau",
+            "intro": "{senderFirstName} souhaite convenir d’un appel vidéo avec toi pour faire connaissance et parler des détails de l’événement. Confirme ou refuse le créneau proposé.",
+            "proposalHeading": "Proposition d’appel vidéo",
+            "eventHeading": "À propos de l’événement",
+            "eventDate": "Date",
+            "occasion": "Occasion",
+            "subject": "Nouvelle demande d’appel vidéo"
+        },
+        "confirm": {
+            "preview": "{accepterFirstName} a confirmé ton appel vidéo. Le rendez-vous est fixé",
+            "intro": "{accepterFirstName} a confirmé ta demande d’appel vidéo :",
+            "reminderNote": "Tu recevras un rappel avec le lien d’appel vidéo 60 minutes avant le début.",
+            "calendarNote": "Un fichier calendrier est joint. Il te rappelle 15 minutes avant.",
+            "subject": "Ton appel vidéo a été confirmé"
+        },
+        "decline": {
+            "preview": "{declinerFirstName} ne peut pas à ce créneau. Propose-en un autre volontiers",
+            "intro": "{declinerFirstName} ne peut malheureusement pas venir au créneau souhaité.",
+            "nextStep": "Tu peux volontiers demander un nouveau créneau.",
+            "subject": "Ton appel vidéo n’a pas pu être confirmé"
+        },
+        "cancel": {
+            "preview": "{cancelerFirstName} a annulé l’appel vidéo. Convenons d’un nouveau créneau",
+            "introConfirmed": "{cancelerFirstName} a annulé l’appel vidéo confirmé :",
+            "introPending": "{cancelerFirstName} a retiré la demande d’appel vidéo :",
+            "nextStep": "Tu peux volontiers convenir d’un nouveau créneau.",
+            "subject": "Appel vidéo annulé"
+        },
+        "reminder": {
+            "preview": "Ton appel vidéo avec {counterpartyFirstName} commence dans 60 minutes. Lien à l’intérieur",
+            "intro": "Ton appel vidéo avec {counterpartyFirstName} commence dans 60 minutes.",
+            "joinNote": "Nous te souhaitons un bel échange ! Tu peux rejoindre l’appel via le lien suivant :",
+            "subject": "Rappel : appel vidéo dans 60 minutes"
+        }
+    },
+    "chat": {
+        "notify": {
+            "intro": "tu as reçu un nouveau message de {senderFirstName}.",
+            "cta": "Voir dans le chat",
+            "heading": "Tu as un nouveau message !",
+            "preview": "Nouveau message de {senderFirstName}. Lis-le dans le chat",
+            "attachment": "(Pièce jointe)",
+            "subject": "Il y a un nouveau message sur une de tes offres."
+        }
+    },
+    "testimonial": {
+        "memory": {
+            "preview": "Ton événement avec {counterpartyFirstName} est en cours. Garde des souvenirs pour plus tard",
+            "bodyCustomer": "Ton événement avec {counterpartyFirstName} est en cours. Photos et impressions t’aideront plus tard pour un avis.",
+            "bodyCook": "Ton événement avec {counterpartyFirstName} est en cours. Note volontiers quelques impressions pour plus tard.",
+            "cta": "Ouvrir la réservation",
+            "subject": "Garde des souvenirs de ton événement"
+        },
+        "review": {
+            "previewEvening": "Rappel : comment s’est passé ton événement avec {counterpartyFirstName} ?",
+            "previewMorning": "Comment s’est passé ton événement avec {counterpartyFirstName} ? Un court avis",
+            "bodyCustomer": "Comment s’est passé ton événement avec {counterpartyFirstName} ? Un court avis aide les autres hôtes.",
+            "bodyCook": "Comment s’est passé ton événement avec {counterpartyFirstName} ? Un court avis nous aide à améliorer la plateforme.",
+            "cta": "Écrire un avis",
+            "subjectEvening": "Rappel : évalue ton événement",
+            "subjectMorning": "Comment s’est passé ton événement ?"
+        }
+    },
+    "giftCard": {
+        "pay": {
+            "preview": "Ton bon cadeau de {amount} pour {recipient} est prêt",
+            "body": "Merci pour ton achat. Le bon cadeau de {amount} pour {recipient} est valable jusqu’au {expiry}.",
+            "redeemCode": "Code d’utilisation",
+            "message": "Ton message",
+            "attachments": "En pièce jointe, tu trouveras le bon imprimable (à offrir) et le reçu d’achat.",
+            "subject": "Ton bon cadeau peopleeat"
+        }
+    },
+    "support": {
+        "create": {
+            "preview": "Ta demande d’assistance est bien reçue. Nous te répondons dans le chat",
+            "intro": "Merci pour ton message. Nous avons reçu ta demande d’assistance et te répondrons dès que possible dans le chat.",
+            "cta": "Ouvrir la demande",
+            "subject": "Demande d’assistance reçue"
+        },
+        "reply": {
+            "preview": "Nouvelle réponse à ta demande d’assistance. Lis-la dans le chat",
+            "intro": "Notre équipe a répondu à ta demande d’assistance. Ouvre le chat pour lire le message.",
+            "cta": "Lire la réponse",
+            "subject": "Nouvelle réponse d’assistance"
+        },
+        "resolve": {
+            "preview": "Ta demande d’assistance est résolue. Tu peux répondre à tout moment si besoin",
+            "intro": "Nous avons marqué ta demande d’assistance comme résolue. S’il reste quelque chose d’ouvert, réponds simplement dans le chat : la demande se rouvre alors.",
+            "subject": "Demande d’assistance résolue"
+        }
+    },
+    "cook": {
+        "approval": {
+            "preview": "Ton profil de chef est activé. Ensuite : portefeuille et visibilité",
+            "intro": "Bonne nouvelle : ton profil de chef a été activé par notre équipe. Tu peux maintenant configurer ton portefeuille et te rendre visible pour les clients.",
+            "nudge": "Ouvre ton profil pour voir la prochaine étape.",
+            "subject": "Ton profil de chef a été activé"
+        }
+    }
+}

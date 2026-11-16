@@ -2,13 +2,15 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import { ListIcon, VideoIcon } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
 
-import { formatIsoDate } from '../../../shared';
+import { t } from '../../../i18n/t';
+import { formatIsoDate, inlineCopy } from '../../../shared';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { DateRangePicker } from '../../components/base/date-range-picker';
 import type { GqlCAdminCallListItemKind, GqlCAdminCallsOverviewPageQuery, GqlCAdminCallTrafficCriterion } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { DATE_FNS_LOCALE } from '../../utils/dateFnsLocale';
+import type { Locale } from '../../utils/locale';
 import { adminCallsSectionTo } from './adminCalls';
 import { AdminCallsAttentionBoard } from './AdminCallsAttentionBoard';
 import { AdminOverviewBarChart } from './AdminOverviewBarChart';
@@ -18,11 +20,12 @@ import { adminOverviewRangeResolve, adminOverviewRangeToGraphQlVariables } from 
 import type { AdminOverviewRangeSearch } from './adminOverviewRange';
 import { AdminOverviewStatCard } from './AdminOverviewStatCard';
 
-export const adminCallsOverviewPageTitle = { de: 'Anrufe', en: 'Calls' } as const;
-export const adminCallsOverviewPageDescription = {
-    de: 'Live-Aufmerksamkeit, Verkehrsverteilung und Koch-Statistik.',
-    en: 'Live attention, traffic distribution, and cook stats.',
-} as const;
+export function adminCallsOverviewPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'nav.calls.title');
+}
+export function adminCallsOverviewPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.callsOverview.description');
+}
 
 /**
  * Order matches `callTrafficCounts` indices on the overview query.
@@ -86,21 +89,21 @@ export function AdminCallsOverviewPage({ data, search }: { data: GqlCAdminCallsO
         kind: GqlCAdminCallListItemKind;
         rangeScoped: boolean;
     }[] = [
-        { key: 'live', label: { de: 'Live', en: 'Live' }[locale], value: live, kind: 'LIVE', rangeScoped: false },
-        { key: 'pending', label: { de: 'Ausstehend', en: 'Pending' }[locale], value: pending, kind: 'PENDING', rangeScoped: false },
-        { key: 'upcoming', label: { de: 'Bevorstehend', en: 'Upcoming' }[locale], value: upcoming, kind: 'UPCOMING', rangeScoped: false },
+        { key: 'live', label: t(locale, 'admin', 'copy.live'), value: live, kind: 'LIVE', rangeScoped: false },
+        { key: 'pending', label: t(locale, 'admin', 'copy.pending'), value: pending, kind: 'PENDING', rangeScoped: false },
+        { key: 'upcoming', label: t(locale, 'admin', 'copy.upcoming'), value: upcoming, kind: 'UPCOMING', rangeScoped: false },
         {
             key: 'completed',
-            label: { de: 'Erledigt', en: 'Completed' }[locale],
+            label: t(locale, 'admin', 'copy.completed'),
             value: completed,
             kind: 'RECENT_SLOT',
             rangeScoped: true,
         },
-        { key: 'declined', label: { de: 'Abgelehnt', en: 'Declined' }[locale], value: declined, kind: 'DECLINED', rangeScoped: true },
-        { key: 'canceled', label: { de: 'Storniert', en: 'Canceled' }[locale], value: canceled, kind: 'CANCELED', rangeScoped: true },
+        { key: 'declined', label: t(locale, 'admin', 'copy.declined'), value: declined, kind: 'DECLINED', rangeScoped: true },
+        { key: 'canceled', label: t(locale, 'admin', 'copy.canceled'), value: canceled, kind: 'CANCELED', rangeScoped: true },
         {
             key: 'rooms',
-            label: { de: 'Räume beendet', en: 'Rooms ended' }[locale],
+            label: t(locale, 'admin', 'copy.roomsEnded'),
             value: roomsEnded,
             kind: 'RECENT_ROOM',
             rangeScoped: true,
@@ -128,13 +131,13 @@ export function AdminCallsOverviewPage({ data, search }: { data: GqlCAdminCallsO
                 <div className="grid gap-2">
                     <h1 className="flex items-center gap-3 font-serif text-4xl/tight text-foreground">
                         <VideoIcon className="size-8 text-muted-foreground" aria-hidden />
-                        {adminCallsOverviewPageTitle[locale]}
+                        {adminCallsOverviewPageTitle(locale)}
                     </h1>
-                    <p className="text-muted-foreground">{adminCallsOverviewPageDescription[locale]}</p>
+                    <p className="text-muted-foreground">{adminCallsOverviewPageDescription(locale)}</p>
                 </div>
 
                 <section className="grid gap-3">
-                    <h2 className="text-lg font-medium">{{ de: 'Bereiche', en: 'Sections' }[locale]}</h2>
+                    <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.sections')}</h2>
                     <ul className="grid gap-2 sm:grid-cols-2">
                         <li>
                             <AdminOverviewNavCard
@@ -142,36 +145,31 @@ export function AdminCallsOverviewPage({ data, search }: { data: GqlCAdminCallsO
                                 search={adminCallsListSearch({ kind: undefined })}
                                 icon={ListIcon}
                             >
-                                {{ de: 'Liste', en: 'List' }[locale]}
+                                {t(locale, 'admin', 'copy.list')}
                             </AdminOverviewNavCard>
                         </li>
                     </ul>
                 </section>
 
                 <section className="grid gap-3">
-                    <h2 className="text-lg font-medium">{{ de: 'Aufmerksamkeit', en: 'Needs attention' }[locale]}</h2>
+                    <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.needsAttention')}</h2>
                     <AdminCallsAttentionBoard seedCalls={seedCalls} />
                 </section>
 
                 <section className="grid gap-3">
                     <div className="flex flex-wrap items-end justify-between gap-3">
-                        <h2 className="text-lg font-medium">{{ de: 'Verteilung', en: 'Distribution' }[locale]}</h2>
+                        <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.distribution')}</h2>
                         <DateRangePicker
                             value={pickerValue}
                             onValueChange={onRangeChange}
                             locale={DATE_FNS_LOCALE[locale]}
-                            placeholder={{ de: 'Zeitraum wählen', en: 'Pick a date range' }[locale]}
+                            placeholder={t(locale, 'admin', 'copy.pickADateRange')}
                             className="w-auto"
-                            aria-label={{ de: 'Zeitraum für Anruf-Statistik', en: 'Date range for call statistics' }[locale]}
+                            aria-label={t(locale, 'admin', 'copy.dateRangeForCallStatistics')}
                         />
                     </div>
                     <p className="text-sm text-muted-foreground">
-                        {
-                            {
-                                de: 'Live / Ausstehend / Bevorstehend sind aktuell. Erledigt, Abgelehnt, Storniert und beendete Räume gelten für den Zeitraum.',
-                                en: 'Live / Pending / Upcoming are current. Completed, declined, canceled, and ended rooms use the selected range.',
-                            }[locale]
-                        }
+                        {t(locale, 'admin', 'copy.livePendingUpcomingAreCurrentCompletedDeclinedCanceledAndEnd')}
                     </p>
                     <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                         {distribution.map((entry) => (
@@ -190,39 +188,31 @@ export function AdminCallsOverviewPage({ data, search }: { data: GqlCAdminCallsO
                     </dl>
                     {confirmRate != null || declineRate != null ? (
                         <p className="text-sm text-muted-foreground">
-                            {
+                            {inlineCopy(
                                 {
                                     de: `Im Zeitraum: Bestätigungsquote ${confirmRate ?? '—'}% · Ablehnungsquote ${declineRate ?? '—'}% (bezogen auf erledigte + abgelehnte + stornierte Termine).`,
                                     en: `In range: confirm rate ${confirmRate ?? '—'}% · decline rate ${declineRate ?? '—'}% (of completed + declined + canceled slots).`,
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                         </p>
                     ) : null}
                 </section>
 
                 <section className="grid gap-3">
-                    <h2 className="text-lg font-medium">{{ de: 'Terminanfragen', en: 'Slot requests' }[locale]}</h2>
+                    <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.slotRequests')}</h2>
                     <AdminOverviewBarChart
                         data={buckets.map((bucket) => ({ bucketStart: bucket.bucketStart, count: bucket.count }))}
                         locale={locale}
                         timeZone={timeZone}
-                        ariaLabel={
-                            {
-                                de: 'Balkendiagramm der Terminanfragen im gewählten Zeitraum',
-                                en: 'Bar chart of slot requests in the selected range',
-                            }[locale]
-                        }
+                        ariaLabel={t(locale, 'admin', 'copy.barChartOfSlotRequestsInTheSelectedRange')}
                     />
                 </section>
 
                 <section className="grid gap-3">
-                    <h2 className="text-lg font-medium">
-                        {{ de: 'Köche mit den meisten Anrufen', en: 'Cooks with the most calls' }[locale]}
-                    </h2>
+                    <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.cooksWithTheMostCalls')}</h2>
                     {cookStats.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">
-                            {{ de: 'Keine Anruf-Aktivität im Zeitraum.', en: 'No call activity in this range.' }[locale]}
-                        </p>
+                        <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noCallActivityInThisRange')}</p>
                     ) : (
                         <ul className="grid gap-2">
                             {cookStats.map((stat) => (
@@ -246,12 +236,13 @@ export function AdminCallsOverviewPage({ data, search }: { data: GqlCAdminCallsO
                                     >
                                         <span className="font-medium text-foreground">{stat.displayName}</span>
                                         <span className="text-sm text-muted-foreground tabular-nums">
-                                            {
+                                            {inlineCopy(
                                                 {
                                                     de: `${stat.roomCount} Räume · ${stat.completedSlotCount} erledigt · ${stat.declinedCount} abgelehnt · ${stat.pendingAwaitingCookCount} wartend`,
                                                     en: `${stat.roomCount} rooms · ${stat.completedSlotCount} completed · ${stat.declinedCount} declined · ${stat.pendingAwaitingCookCount} awaiting`,
-                                                }[locale]
-                                            }
+                                                },
+                                                locale,
+                                            )}
                                         </span>
                                     </Link>
                                 </li>

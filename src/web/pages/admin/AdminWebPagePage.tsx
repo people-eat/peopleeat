@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { t } from '../../../i18n/t';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import { Button } from '../../components/base/button';
@@ -13,13 +14,15 @@ import { Textarea } from '../../components/base/textarea';
 import type { GqlCAdminWebPagePageQuery, GqlCWebPageKey } from '../../graphql/generated';
 import { AdminWebPagePageUpdatesDocument, AdminWebPageUpsertDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
+import type { Locale } from '../../utils/locale';
 import { adminWebPageLabel } from './adminWebPages';
 
-export const adminWebPagePageTitle = { de: 'Webseite bearbeiten', en: 'Edit website' } as const;
-export const adminWebPagePageDescription = {
-    de: 'SEO-Titel und -Beschreibung bearbeiten.',
-    en: 'Edit SEO title and description.',
-} as const;
+export function adminWebPagePageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.webPage.title');
+}
+export function adminWebPagePageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.webPage.description');
+}
 
 type WebPageRow = NonNullable<NonNullable<GqlCAdminWebPagePageQuery['currentSession']['user']>['admin']>['webPage'];
 
@@ -81,9 +84,9 @@ export function AdminWebPagePage({ data, webPageKey }: { data: GqlCAdminWebPageP
             if (!result.data?.admin.webPageUpsert.success || result.error) {
                 throw new Error('update failed');
             }
-            toast.success({ de: 'Gespeichert.', en: 'Saved.' }[locale]);
+            toast.success(t(locale, 'admin', 'copy.saved'));
         } catch {
-            toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.couldNotSave'));
         } finally {
             setBusy(false);
         }
@@ -92,7 +95,7 @@ export function AdminWebPagePage({ data, webPageKey }: { data: GqlCAdminWebPageP
     return (
         <AdminPageChrome
             crumbs={[
-                { label: { de: 'Webseiten', en: 'Websites' }[locale], to: '/{-$locale}/admin/web-pages' },
+                { label: t(locale, 'admin', 'copy.websites'), to: '/{-$locale}/admin/web-pages' },
                 { label: adminWebPageLabel(webPageKey, locale) },
             ]}
         >
@@ -100,27 +103,25 @@ export function AdminWebPagePage({ data, webPageKey }: { data: GqlCAdminWebPageP
                 contentClassName="flex max-w-2xl flex-col gap-6"
                 footer={
                     <Button type="button" disabled={busy} onClick={() => void onSave()}>
-                        {busy ? { de: 'Speichern…', en: 'Saving…' }[locale] : { de: 'Speichern', en: 'Save' }[locale]}
+                        {busy ? t(locale, 'admin', 'copy.saving2') : t(locale, 'admin', 'copy.save')}
                     </Button>
                 }
             >
                 <div>
                     <div className="flex flex-wrap items-center gap-2">
                         <h1 className="text-2xl font-medium">{adminWebPageLabel(webPageKey, locale)}</h1>
-                        {!persisted ? (
-                            <StatusBadge tone="info">{{ de: 'Nicht konfiguriert', en: 'Not configured' }[locale]}</StatusBadge>
-                        ) : null}
+                        {!persisted ? <StatusBadge tone="info">{t(locale, 'admin', 'copy.notConfigured')}</StatusBadge> : null}
                     </div>
-                    <p className="text-sm text-muted-foreground">{adminWebPagePageDescription[locale]}</p>
+                    <p className="text-sm text-muted-foreground">{adminWebPagePageDescription(locale)}</p>
                 </div>
                 <Card className="gap-4 py-4">
                     <CardHeader className="px-4">
-                        <CardTitle>{{ de: 'Deutsch', en: 'German' }[locale]}</CardTitle>
+                        <CardTitle>{t(locale, 'admin', 'copy.german')}</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col gap-3 px-4">
                         <div className="flex flex-col gap-1.5">
                             <label htmlFor="titleDe" className="text-sm font-medium">
-                                {{ de: 'Titel', en: 'Title' }[locale]}
+                                {t(locale, 'admin', 'copy.title')}
                             </label>
                             <Input
                                 id="titleDe"
@@ -130,7 +131,7 @@ export function AdminWebPagePage({ data, webPageKey }: { data: GqlCAdminWebPageP
                         </div>
                         <div className="flex flex-col gap-1.5">
                             <label htmlFor="descriptionDe" className="text-sm font-medium">
-                                {{ de: 'Beschreibung', en: 'Description' }[locale]}
+                                {t(locale, 'admin', 'copy.description')}
                             </label>
                             <Textarea
                                 id="descriptionDe"
@@ -143,12 +144,12 @@ export function AdminWebPagePage({ data, webPageKey }: { data: GqlCAdminWebPageP
                 </Card>
                 <Card className="gap-4 py-4">
                     <CardHeader className="px-4">
-                        <CardTitle>{{ de: 'Englisch', en: 'English' }[locale]}</CardTitle>
+                        <CardTitle>{t(locale, 'admin', 'copy.english')}</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col gap-3 px-4">
                         <div className="flex flex-col gap-1.5">
                             <label htmlFor="titleEn" className="text-sm font-medium">
-                                {{ de: 'Titel', en: 'Title' }[locale]}
+                                {t(locale, 'admin', 'copy.title')}
                             </label>
                             <Input
                                 id="titleEn"
@@ -158,7 +159,7 @@ export function AdminWebPagePage({ data, webPageKey }: { data: GqlCAdminWebPageP
                         </div>
                         <div className="flex flex-col gap-1.5">
                             <label htmlFor="descriptionEn" className="text-sm font-medium">
-                                {{ de: 'Beschreibung', en: 'Description' }[locale]}
+                                {t(locale, 'admin', 'copy.description')}
                             </label>
                             <Textarea
                                 id="descriptionEn"

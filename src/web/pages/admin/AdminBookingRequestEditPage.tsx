@@ -5,6 +5,7 @@ import { useEffect, useId, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation, useQuery } from 'urql';
 
+import { t } from '../../../i18n/t';
 import {
     bookingRequestOfferPriceCalculate,
     bookingRequestParticipantsFromCounts,
@@ -12,9 +13,15 @@ import {
     bookingRequestSettingFromChoice,
     defaultBookingRequestOccasions,
     defaultBookingRequestPreferences,
+    inlineCopy,
     textNormalizeTitled,
 } from '../../../shared';
-import type { BookingRequestKitchenDetailsDraft, BookingRequestParticipantDraft, BookingRequestSettingChoice } from '../../../shared';
+import type {
+    BookingRequestKitchenDetailsDraft,
+    BookingRequestParticipantDraft,
+    BookingRequestSettingChoice,
+    InlineCopy,
+} from '../../../shared';
 import { AdminBookingRequestOfferAmendmentConfirmDialog } from '../../components/AdminBookingRequestOfferAmendmentConfirmDialog';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
@@ -60,7 +67,8 @@ import { useFeatureToggleActive } from '../../hooks/useFeatureToggleActive';
 import { useLocale } from '../../hooks/useLocale';
 import { cn } from '../../utils/cn';
 import { DATE_FNS_LOCALE } from '../../utils/dateFnsLocale';
-import { adminStubRouteBySlug } from './adminCatalog';
+import type { Locale } from '../../utils/locale';
+import { adminStubRouteBySlug, adminStubRouteTitle } from './adminCatalog';
 
 const listRoute = adminStubRouteBySlug('booking-requests');
 const FORM_ID = 'admin-booking-request-edit-form';
@@ -75,11 +83,12 @@ const occasionIcons = [
     <UsersIcon className="size-4" key="users" />,
 ];
 
-export const adminBookingRequestEditPageTitle = { de: 'Anfrage bearbeiten', en: 'Edit request' } as const;
-export const adminBookingRequestEditPageDescription = {
-    de: 'Anlass, Termin, Ort, Präferenzen, Nachrichten, Preisklasse und Einschränkungen anpassen.',
-    en: 'Edit occasion, date, venue, preferences, messages, price class, and restrictions.',
-} as const;
+export function adminBookingRequestEditPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.bookingRequestEdit.title');
+}
+export function adminBookingRequestEditPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.bookingRequestEdit.description');
+}
 
 export function adminBookingRequestEditPageVariables(bookingRequestId: string) {
     return { bookingRequestId };
@@ -102,7 +111,7 @@ type FormValues = {
     kitchenPhotos: BookingRequestKitchenDetailsPhoto[];
 };
 
-const PRICE_CLASS_OPTIONS: readonly { value: GqlCBookingRequestPriceClassType | 'NONE'; de: string; en: string }[] = [
+const PRICE_CLASS_OPTIONS: readonly ({ value: GqlCBookingRequestPriceClassType | 'NONE' } & InlineCopy)[] = [
     { value: 'NONE', de: 'Keine', en: 'None' },
     { value: 'LOW', de: 'Niedrig', en: 'Low' },
     { value: 'MEDIUM', de: 'Mittel', en: 'Medium' },
@@ -282,9 +291,9 @@ export function AdminBookingRequestEditPage({
             toast.success(
                 pendingSubmit.amendmentInput
                     ? bypassCookApproval
-                        ? { de: 'Buchungsänderung angewendet.', en: 'Booking change applied.' }[locale]
-                        : { de: 'Buchungsänderung dem Koch vorgeschlagen.', en: 'Booking change proposed to the chef.' }[locale]
-                    : { de: 'Anfrage aktualisiert.', en: 'Request updated.' }[locale],
+                        ? t(locale, 'admin', 'copy.bookingChangeApplied')
+                        : t(locale, 'admin', 'copy.bookingChangeProposedToTheChef')
+                    : t(locale, 'admin', 'copy.requestUpdated'),
             );
             setConfirmOpen(false);
             await navigate({
@@ -292,7 +301,7 @@ export function AdminBookingRequestEditPage({
                 params: { bookingRequestId },
             });
         } catch {
-            toast.error({ de: 'Aktualisierung fehlgeschlagen.', en: 'Update failed.' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.updateFailed'));
         } finally {
             setConfirmBusy(false);
         }
@@ -302,15 +311,15 @@ export function AdminBookingRequestEditPage({
         defaultValues: formFromRequest(seedRequest),
         onSubmit: async ({ value }) => {
             if (value.occasion.trim().length === 0) {
-                toast.error({ de: 'Anlass ist erforderlich.', en: 'Occasion is required.' }[locale]);
+                toast.error(t(locale, 'admin', 'copy.occasionIsRequired'));
                 return;
             }
             if (value.originalMessage.trim().length === 0) {
-                toast.error({ de: 'Nachricht ist erforderlich.', en: 'Message is required.' }[locale]);
+                toast.error(t(locale, 'admin', 'copy.messageIsRequired'));
                 return;
             }
             if (value.exactEventAddress.displayText.trim().length === 0) {
-                toast.error({ de: 'Bitte eine vollständige Adresse wählen.', en: 'Please choose a full address.' }[locale]);
+                toast.error(t(locale, 'admin', 'copy.pleaseChooseAFullAddress'));
                 return;
             }
 
@@ -337,10 +346,13 @@ export function AdminBookingRequestEditPage({
                     dualAcceptedOffer.paymentStatus === 'PAYED';
                 if (!allowedPayment) {
                     toast.error(
-                        {
-                            de: `Zahlungsstatus ${dualAcceptedOffer.paymentStatus} erlaubt keine Änderung (nur EMPTY, SETUP oder PAYED).`,
-                            en: `Payment status ${dualAcceptedOffer.paymentStatus} does not allow changes (only EMPTY, SETUP, or PAYED).`,
-                        }[locale],
+                        inlineCopy(
+                            {
+                                de: `Zahlungsstatus ${dualAcceptedOffer.paymentStatus} erlaubt keine Änderung (nur EMPTY, SETUP oder PAYED).`,
+                                en: `Payment status ${dualAcceptedOffer.paymentStatus} does not allow changes (only EMPTY, SETUP, or PAYED).`,
+                            },
+                            locale,
+                        ),
                     );
                     return;
                 }
@@ -395,13 +407,13 @@ export function AdminBookingRequestEditPage({
                               participants: nextParticipants,
                           }),
                 });
-                toast.success({ de: 'Anfrage aktualisiert.', en: 'Request updated.' }[locale]);
+                toast.success(t(locale, 'admin', 'copy.requestUpdated'));
                 await navigate({
                     to: '/{-$locale}/admin/booking-requests/$bookingRequestId',
                     params: { bookingRequestId },
                 });
             } catch {
-                toast.error({ de: 'Aktualisierung fehlgeschlagen.', en: 'Update failed.' }[locale]);
+                toast.error(t(locale, 'admin', 'copy.updateFailed'));
             }
         },
     });
@@ -497,13 +509,13 @@ export function AdminBookingRequestEditPage({
     return (
         <AdminPageChrome
             crumbs={[
-                { label: listRoute.title[locale], to: '/{-$locale}/admin/booking-requests' },
+                { label: adminStubRouteTitle(listRoute.slug, locale), to: '/{-$locale}/admin/booking-requests' },
                 {
-                    label: seedRequest.occasion.trim() || { de: 'Anfrage', en: 'Request' }[locale],
+                    label: seedRequest.occasion.trim() || t(locale, 'admin', 'copy.request'),
                     to: '/{-$locale}/admin/booking-requests/$bookingRequestId',
                     params: { bookingRequestId },
                 },
-                { label: adminBookingRequestEditPageTitle[locale] },
+                { label: adminBookingRequestEditPageTitle(locale) },
             ]}
             contentClassName="min-h-0 overflow-hidden gap-0"
         >
@@ -514,31 +526,26 @@ export function AdminBookingRequestEditPage({
                         <>
                             <Button type="button" variant="outline" disabled={isSubmitting || confirmBusy} asChild>
                                 <Link to="/{-$locale}/admin/booking-requests/$bookingRequestId" params={{ bookingRequestId }}>
-                                    {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                    {t(locale, 'admin', 'copy.cancel')}
                                 </Link>
                             </Button>
                             <Button type="submit" form={FORM_ID} disabled={submitDisabled || confirmBusy}>
-                                {isSubmitting ? { de: 'Speichern…', en: 'Saving…' }[locale] : { de: 'Speichern', en: 'Save' }[locale]}
+                                {isSubmitting ? t(locale, 'admin', 'copy.saving2') : t(locale, 'admin', 'copy.save')}
                             </Button>
                         </>
                     ) : (
                         <Button type="button" disabled={isSubmitting} asChild>
                             <Link to="/{-$locale}/admin/booking-requests/$bookingRequestId" params={{ bookingRequestId }}>
-                                {{ de: 'Zur Anfrage', en: 'Back to request' }[locale]}
+                                {t(locale, 'admin', 'copy.backToRequest')}
                             </Link>
                         </Button>
                     )
                 }
             >
                 <div className="grid gap-2">
-                    <h1 className="font-serif text-3xl/tight text-foreground">{adminBookingRequestEditPageTitle[locale]}</h1>
+                    <h1 className="font-serif text-3xl/tight text-foreground">{adminBookingRequestEditPageTitle(locale)}</h1>
                     <p className="text-sm text-muted-foreground">
-                        {
-                            {
-                                de: 'Ops-Patch. Änderungen an Ort, Teilnehmern, Präferenzen oder Einschränkungen setzen die Koch-Annahme zurück und können Angebotspreise automatisch anpassen.',
-                                en: 'Ops patch. Changing venue, guests, preferences, or restrictions resets cook acceptance and may auto-adjust offer prices.',
-                            }[locale]
-                        }
+                        {t(locale, 'admin', 'copy.opsPatchChangingVenueGuestsPreferencesOrRestrictionsResetsCo')}
                     </p>
                 </div>
 
@@ -546,37 +553,20 @@ export function AdminBookingRequestEditPage({
                     tone="warning"
                     title={
                         dualAcceptedOffer
-                            ? {
-                                  de: 'Dual akzeptiertes Angebot: Ort und Teilnehmer laufen über Amendment.',
-                                  en: 'Dual-accepted offer: venue and participants use the amendment path.',
-                              }[locale]
-                            : {
-                                  de: 'Wesentliche Änderungen müssen vom Koch erneut bestätigt werden.',
-                                  en: 'Material changes require the chef to confirm again.',
-                              }[locale]
+                            ? t(locale, 'admin', 'copy.dualAcceptedOfferVenueAndParticipantsUseTheAmendmentPath')
+                            : t(locale, 'admin', 'copy.materialChangesRequireTheChefToConfirmAgain')
                     }
                 >
                     {dualAcceptedOffer
-                        ? {
-                              de: 'Preisfolgen, Zahlungsstatus und ob du die Koch-Freigabe überspringst, wählst du vor dem Speichern im Bestätigungsdialog.',
-                              en: 'Price effects, payment status, and whether to skip cook approval are chosen in the confirm dialog before save.',
-                          }[locale]
-                        : {
-                              de: 'Ändern sich Teilnehmerzahl oder Adresse, kann der Angebotspreis automatisch angepasst werden. Live-Vorschauen erscheinen direkt am Feld. Der Koch bestätigt danach erneut.',
-                              en: 'If the guest count or address changes, the offer price may adjust automatically. Live previews appear next to the field. The chef confirms again afterwards.',
-                          }[locale]}
+                        ? t(locale, 'admin', 'copy.priceEffectsPaymentStatusAndWhetherToSkipCookApprovalAreChos')
+                        : t(locale, 'admin', 'copy.ifTheGuestCountOrAddressChangesTheOfferPriceMayAdjustAutomat')}
                 </StatusAlert>
 
                 {dualAcceptedOffer?.participantAmendment != null ? (
                     <BookingRequestOfferParticipantAmendmentAdminPendingAlert
                         locale={locale}
                         amendment={dualAcceptedOffer.participantAmendment}
-                        footnote={
-                            {
-                                de: 'Speichern ersetzt diesen Vorschlag oder wendet ihn im Bestätigungsdialog sofort an.',
-                                en: 'Saving replaces this proposal, or applies it immediately from the confirm dialog.',
-                            }[locale]
-                        }
+                        footnote={t(locale, 'admin', 'copy.savingReplacesThisProposalOrAppliesItImmediatelyFromTheConfi')}
                     />
                 ) : null}
 
@@ -594,7 +584,7 @@ export function AdminBookingRequestEditPage({
                             <div className="grid gap-4">
                                 <div className="grid gap-1.5">
                                     <label htmlFor="admin-br-occasion" className="text-sm font-medium">
-                                        {{ de: 'Anlass', en: 'Occasion' }[locale]}
+                                        {t(locale, 'admin', 'copy.occasion')}
                                     </label>
                                     <Input
                                         id="admin-br-occasion"
@@ -602,7 +592,7 @@ export function AdminBookingRequestEditPage({
                                         value={field.state.value}
                                         onBlur={field.handleBlur}
                                         onChange={(event) => field.handleChange(event.target.value)}
-                                        placeholder={{ de: 'z. B. Geburtstag, Firmenfeier', en: 'e.g. Birthday, company dinner' }[locale]}
+                                        placeholder={t(locale, 'admin', 'copy.eGBirthdayCompanyDinner')}
                                         disabled={isSubmitting}
                                     />
                                 </div>
@@ -625,12 +615,12 @@ export function AdminBookingRequestEditPage({
                     <form.Field name="dateTime">
                         {(field) => (
                             <div className="grid gap-1.5">
-                                <span className="text-sm font-medium">{{ de: 'Datum & Uhrzeit', en: 'Date & time' }[locale]}</span>
+                                <span className="text-sm font-medium">{t(locale, 'admin', 'copy.dateTime')}</span>
                                 <DateTimePicker
                                     value={new Date(field.state.value)}
                                     onValueChange={(date) => field.handleChange(date.toISOString())}
-                                    placeholder={{ de: 'Datum & Uhrzeit', en: 'Date & time' }[locale]}
-                                    timeAriaLabel={{ de: 'Uhrzeit', en: 'Time' }[locale]}
+                                    placeholder={t(locale, 'admin', 'copy.dateTime')}
+                                    timeAriaLabel={t(locale, 'admin', 'copy.time')}
                                     locale={DATE_FNS_LOCALE[locale]}
                                     className="w-full"
                                     disabled={isSubmitting}
@@ -642,7 +632,7 @@ export function AdminBookingRequestEditPage({
                     <form.Field name="exactEventAddress">
                         {(field) => (
                             <div className="grid gap-1.5">
-                                <span className="text-sm font-medium">{{ de: 'Veranstaltungsort', en: 'Event location' }[locale]}</span>
+                                <span className="text-sm font-medium">{t(locale, 'admin', 'copy.eventLocation')}</span>
                                 <Combobox
                                     filter={null}
                                     items={suggestions.map((suggestion) => suggestion.displayText)}
@@ -654,12 +644,7 @@ export function AdminBookingRequestEditPage({
                                         if (!match) return;
                                         const address = addressFromSuggestion(match);
                                         if (!address) {
-                                            toast.error(
-                                                {
-                                                    de: 'Bitte eine vollständige Adresse wählen.',
-                                                    en: 'Please choose a full address.',
-                                                }[locale],
-                                            );
+                                            toast.error(t(locale, 'admin', 'copy.pleaseChooseAFullAddress'));
                                             return;
                                         }
                                         field.handleChange(address);
@@ -678,7 +663,7 @@ export function AdminBookingRequestEditPage({
                                 >
                                     <ComboboxInput
                                         className="w-full"
-                                        placeholder={{ de: 'Adresse suchen…', en: 'Search address…' }[locale]}
+                                        placeholder={t(locale, 'admin', 'copy.searchAddress')}
                                         showClear={false}
                                         disabled={isSubmitting}
                                         required={!field.state.value.displayText}
@@ -686,8 +671,8 @@ export function AdminBookingRequestEditPage({
                                     <ComboboxContent>
                                         <ComboboxEmpty>
                                             {suggestionsFetching
-                                                ? { de: 'Suche…', en: 'Searching…' }[locale]
-                                                : { de: 'Keine Treffer.', en: 'No matches.' }[locale]}
+                                                ? t(locale, 'admin', 'copy.searching')
+                                                : t(locale, 'admin', 'copy.noMatches')}
                                         </ComboboxEmpty>
                                         <ComboboxList>
                                             {(item: string) => (
@@ -729,9 +714,7 @@ export function AdminBookingRequestEditPage({
                                 <form.Field name="kitchenPhotos">
                                     {(photosField) => (
                                         <div className="grid gap-3">
-                                            <span className="text-sm font-medium">
-                                                {{ de: 'Über die Küche', en: 'About the kitchen' }[locale]}
-                                            </span>
+                                            <span className="text-sm font-medium">{t(locale, 'admin', 'copy.aboutTheKitchen')}</span>
                                             <BookingRequestKitchenDetailsFields
                                                 locale={locale}
                                                 value={kitchenField.state.value}
@@ -750,7 +733,7 @@ export function AdminBookingRequestEditPage({
                     <form.Field name="priceClassType">
                         {(field) => (
                             <div className="grid gap-1.5">
-                                <span className="text-sm font-medium">{{ de: 'Preisklasse', en: 'Price class' }[locale]}</span>
+                                <span className="text-sm font-medium">{t(locale, 'admin', 'copy.priceClass')}</span>
                                 <Select
                                     value={field.state.value}
                                     onValueChange={(next) => {
@@ -764,7 +747,7 @@ export function AdminBookingRequestEditPage({
                                     <SelectContent>
                                         {PRICE_CLASS_OPTIONS.map((option) => (
                                             <SelectItem key={option.value} value={option.value}>
-                                                {option[locale]}
+                                                {inlineCopy(option, locale)}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
@@ -778,7 +761,7 @@ export function AdminBookingRequestEditPage({
                             {(field) => (
                                 <div className="grid gap-1.5">
                                     <label htmlFor="admin-br-adults" className="text-sm font-medium">
-                                        {{ de: 'Erwachsene', en: 'Adults' }[locale]}
+                                        {t(locale, 'admin', 'copy.adults')}
                                     </label>
                                     <Input
                                         id="admin-br-adults"
@@ -797,7 +780,7 @@ export function AdminBookingRequestEditPage({
                             {(field) => (
                                 <div className="grid gap-1.5">
                                     <label htmlFor="admin-br-children" className="text-sm font-medium">
-                                        {{ de: 'Kinder', en: 'Children' }[locale]}
+                                        {t(locale, 'admin', 'copy.children')}
                                     </label>
                                     <Input
                                         id="admin-br-children"
@@ -835,16 +818,15 @@ export function AdminBookingRequestEditPage({
                                 )}
                             >
                                 <span className="grid min-w-0 gap-0.5">
-                                    <span className="text-sm font-medium">
-                                        {{ de: 'Gäste & Einschränkungen', en: 'Guests & restrictions' }[locale]}
-                                    </span>
+                                    <span className="text-sm font-medium">{t(locale, 'admin', 'copy.guestsRestrictions')}</span>
                                     <span className="text-sm text-muted-foreground">
-                                        {
+                                        {inlineCopy(
                                             {
                                                 de: `${guestTotal} Gäste · ${restrictedGuestCount} mit Einschränkungen`,
                                                 en: `${guestTotal} guests · ${restrictedGuestCount} with restrictions`,
-                                            }[locale]
-                                        }
+                                            },
+                                            locale,
+                                        )}
                                     </span>
                                 </span>
                                 <ChevronDownIcon
@@ -857,12 +839,7 @@ export function AdminBookingRequestEditPage({
                             </button>
                             <div id={restrictionsPanelId} hidden={!restrictionsExpanded} className="grid gap-3">
                                 <p className="text-sm text-muted-foreground">
-                                    {
-                                        {
-                                            de: 'Wähle die zutreffenden Einschränkungen pro Gast.',
-                                            en: 'Select the applicable restrictions per guest.',
-                                        }[locale]
-                                    }
+                                    {t(locale, 'admin', 'copy.selectTheApplicableRestrictionsPerGuest')}
                                 </p>
                                 <BookingRequestParticipantsRestrictionsEditor
                                     participants={participants}
@@ -874,17 +851,12 @@ export function AdminBookingRequestEditPage({
                     ) : null}
 
                     <div className="grid gap-3">
-                        <span className="text-sm font-medium">{{ de: 'Präferenzen', en: 'Preferences' }[locale]}</span>
+                        <span className="text-sm font-medium">{t(locale, 'admin', 'copy.preferences')}</span>
                         <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
                             <Input
                                 value={customPreferenceText}
                                 onChange={(event) => setCustomPreferenceText(event.target.value)}
-                                placeholder={
-                                    {
-                                        de: 'Präferenz (suchen oder hier eigene eingeben)',
-                                        en: 'Select from the options below or add your own one here',
-                                    }[locale]
-                                }
+                                placeholder={t(locale, 'admin', 'copy.selectFromTheOptionsBelowOrAddYourOwnOneHere')}
                                 disabled={isSubmitting || preferences.length >= 4}
                             />
                             <Button
@@ -899,7 +871,7 @@ export function AdminBookingRequestEditPage({
                                     setCustomPreferenceText('');
                                 }}
                             >
-                                {{ de: 'Eigene hinzufügen', en: 'Add custom' }[locale]}
+                                {t(locale, 'admin', 'copy.addCustom')}
                             </Button>
                         </div>
                         <form.Field name="preferences">
@@ -929,12 +901,7 @@ export function AdminBookingRequestEditPage({
                                     </div>
                                     {field.state.value.length >= 4 ? (
                                         <StatusAlert tone="info">
-                                            {
-                                                {
-                                                    de: 'Du hast die maximale Anzahl ausgewählter Präferenzen erreicht.',
-                                                    en: 'You have reached the limit of 4 selected preferences.',
-                                                }[locale]
-                                            }
+                                            {t(locale, 'admin', 'copy.youHaveReachedTheLimitOf4SelectedPreferences')}
                                         </StatusAlert>
                                     ) : null}
                                 </div>
@@ -946,7 +913,7 @@ export function AdminBookingRequestEditPage({
                         {(field) => (
                             <div className="grid gap-1.5">
                                 <label htmlFor="admin-br-original-message" className="text-sm font-medium">
-                                    {{ de: 'Originalnachricht', en: 'Original message' }[locale]}
+                                    {t(locale, 'admin', 'copy.originalMessage')}
                                 </label>
                                 <Textarea
                                     id="admin-br-original-message"
@@ -965,7 +932,7 @@ export function AdminBookingRequestEditPage({
                         {(field) => (
                             <div className="grid gap-1.5">
                                 <label htmlFor="admin-br-adjusted-message" className="text-sm font-medium">
-                                    {{ de: 'Angepasste Nachricht (Koch)', en: 'Adjusted message (cook)' }[locale]}
+                                    {t(locale, 'admin', 'copy.adjustedMessageCook')}
                                 </label>
                                 <Textarea
                                     id="admin-br-adjusted-message"
@@ -974,7 +941,7 @@ export function AdminBookingRequestEditPage({
                                     value={field.state.value}
                                     onBlur={field.handleBlur}
                                     onChange={(event) => field.handleChange(event.target.value)}
-                                    placeholder={{ de: 'Leer = Original verwenden', en: 'Empty = use original' }[locale]}
+                                    placeholder={t(locale, 'admin', 'copy.emptyUseOriginal')}
                                     disabled={isSubmitting}
                                 />
                             </div>
@@ -984,12 +951,12 @@ export function AdminBookingRequestEditPage({
                     <form.Field name="expiresAt">
                         {(field) => (
                             <div className="grid gap-1.5">
-                                <span className="text-sm font-medium">{{ de: 'Läuft ab', en: 'Expires' }[locale]}</span>
+                                <span className="text-sm font-medium">{t(locale, 'admin', 'copy.expires')}</span>
                                 <DateTimePicker
                                     value={field.state.value ? new Date(field.state.value) : undefined}
                                     onValueChange={(date) => field.handleChange(date.toISOString())}
-                                    placeholder={{ de: 'Ablauf (optional)', en: 'Expiry (optional)' }[locale]}
-                                    timeAriaLabel={{ de: 'Uhrzeit', en: 'Time' }[locale]}
+                                    placeholder={t(locale, 'admin', 'copy.expiryOptional')}
+                                    timeAriaLabel={t(locale, 'admin', 'copy.time')}
                                     locale={DATE_FNS_LOCALE[locale]}
                                     className="w-full"
                                     disabled={isSubmitting}
@@ -1003,7 +970,7 @@ export function AdminBookingRequestEditPage({
                                         className="justify-self-end"
                                         disabled={isSubmitting}
                                     >
-                                        {{ de: 'Ablauf entfernen', en: 'Clear expiry' }[locale]}
+                                        {t(locale, 'admin', 'copy.clearExpiry')}
                                     </Button>
                                 ) : null}
                             </div>
@@ -1013,12 +980,12 @@ export function AdminBookingRequestEditPage({
                     <form.Field name="createdAt">
                         {(field) => (
                             <div className="grid gap-1.5">
-                                <span className="text-sm font-medium">{{ de: 'Erstellt am', en: 'Created at' }[locale]}</span>
+                                <span className="text-sm font-medium">{t(locale, 'admin', 'copy.createdAt')}</span>
                                 <DateTimePicker
                                     value={new Date(field.state.value)}
                                     onValueChange={(date) => field.handleChange(date.toISOString())}
-                                    placeholder={{ de: 'Erstellt am', en: 'Created at' }[locale]}
-                                    timeAriaLabel={{ de: 'Uhrzeit', en: 'Time' }[locale]}
+                                    placeholder={t(locale, 'admin', 'copy.createdAt')}
+                                    timeAriaLabel={t(locale, 'admin', 'copy.time')}
                                     locale={DATE_FNS_LOCALE[locale]}
                                     className="w-full"
                                     disabled={isSubmitting}

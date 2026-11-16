@@ -1,3 +1,4 @@
+import { tEmail } from '../../../i18n/tEmail';
 import { formatBookingEventDate } from '../../../shared/formatBookingWhen';
 import type { Locale } from '../../../shared/locale';
 import { timeZoneFromCountry } from '../../../shared/timeZone';
@@ -39,7 +40,6 @@ export function BookingRequestEmailDetails({
     suggestedMenuTitles,
     travelAndFeesNote = false,
 }: BookingRequestEmailDetailsProps) {
-    const heading = { de: 'Buchungsdetails', en: 'Booking details' }[locale];
     const when = formatBookingEventDate({
         instant: dateTime,
         locale,
@@ -47,31 +47,20 @@ export function BookingRequestEmailDetails({
         dateStyle: 'long',
         weekday: true,
     });
-    const labels = {
-        priceClass: { de: 'Menükategorie', en: 'Menu category' }[locale],
-        occasion: { de: 'Anlass', en: 'Occasion' }[locale],
-        date: { de: 'Datum', en: 'Date' }[locale],
-        address: { de: 'Ort', en: 'Location' }[locale],
-        adults: { de: 'Erwachsene Teilnehmer', en: 'Adult guests' }[locale],
-        children: { de: 'Kinder', en: 'Children' }[locale],
-        menus: { de: 'Vorgeschlagenes Menü', en: 'Suggested menu' }[locale],
-    };
-    const feesNote = {
-        de: 'Bitte beachte, dass Fahrtkosten und Servicegebühren zusätzlich anfallen können.',
-        en: 'Please note that travel costs and service fees may apply in addition.',
-    }[locale];
 
     return (
         <>
-            <EmailSectionHeading>{heading}</EmailSectionHeading>
-            {priceClassLabel ? detailLine(labels.priceClass, priceClassLabel) : null}
-            {travelAndFeesNote ? <EmailText>{feesNote}</EmailText> : null}
-            {suggestedMenuTitles && suggestedMenuTitles.length > 0 ? detailLine(labels.menus, suggestedMenuTitles.join(', ')) : null}
-            {detailLine(labels.occasion, occasion)}
-            {detailLine(labels.date, when)}
-            {detailLine(labels.address, address)}
-            {adultCount != null ? detailLine(labels.adults, String(adultCount)) : null}
-            {discountedCount != null ? detailLine(labels.children, String(discountedCount)) : null}
+            <EmailSectionHeading>{tEmail(locale, 'booking.details.heading')}</EmailSectionHeading>
+            {priceClassLabel ? detailLine(tEmail(locale, 'booking.details.priceClass'), priceClassLabel) : null}
+            {travelAndFeesNote ? <EmailText>{tEmail(locale, 'booking.details.feesNote')}</EmailText> : null}
+            {suggestedMenuTitles && suggestedMenuTitles.length > 0
+                ? detailLine(tEmail(locale, 'booking.details.menus'), suggestedMenuTitles.join(', '))
+                : null}
+            {detailLine(tEmail(locale, 'booking.details.occasion'), occasion)}
+            {detailLine(tEmail(locale, 'booking.details.date'), when)}
+            {detailLine(tEmail(locale, 'booking.details.address'), address)}
+            {adultCount != null ? detailLine(tEmail(locale, 'booking.details.adults'), String(adultCount)) : null}
+            {discountedCount != null ? detailLine(tEmail(locale, 'booking.details.children'), String(discountedCount)) : null}
         </>
     );
 }

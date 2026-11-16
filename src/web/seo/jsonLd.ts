@@ -18,8 +18,9 @@
 // injected by Vite (`__SITE_LAST_MODIFIED__`).
 // See docs/architecture/discovery-geo.md.
 
+import { t } from '../../i18n/t';
 import type { Locale } from '../../shared/locale';
-import { languageTagFromLocale, LOCALES } from '../../shared/locale';
+import { CATALOG_LOCALES, languageTagFromLocale } from '../../shared/locale';
 import {
     SITE_CONTACT_EMAIL,
     SITE_FACEBOOK_URL,
@@ -90,7 +91,7 @@ export function jsonLdScripts(webPageUrl: string): ReadonlyArray<JsonLdScript> {
         '@id': `${webPageUrl}/#website`,
         url: webPageUrl,
         name: SITE_NAME,
-        inLanguage: LOCALES.map(languageTagFromLocale),
+        inLanguage: CATALOG_LOCALES.map(languageTagFromLocale),
         dateModified: __SITE_LAST_MODIFIED__,
         publisher: { '@id': organizationId(webPageUrl) },
     };
@@ -143,7 +144,7 @@ export function jsonLdPerson(input: {
         name: input.name,
         description: input.description,
         url,
-        jobTitle: { de: 'Privatkoch', en: 'Private chef' }[input.locale],
+        jobTitle: t(input.locale, 'public', 'chef.jobTitle'),
         worksFor: { '@id': organizationId(input.webPageUrl) },
     };
     if (image) person.image = image;

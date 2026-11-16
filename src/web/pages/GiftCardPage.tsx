@@ -22,6 +22,7 @@ import type { GqlCGiftCardPageQuery } from '../graphql/generated';
 import { GiftCardCreateDocument, GiftCardFunnelTrackDocument, GiftCardSessionUpdatesDocument } from '../graphql/generated';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { SITE_WHATSAPP_URL } from '../seo/seoConstants';
 import { cn } from '../utils/cn';
 import type { GiftCardFormSearch, GiftCardFormStep, GiftCardFormValues } from './giftCardFormSearch';
@@ -39,20 +40,14 @@ export type { GiftCardFormSearch } from './giftCardFormSearch';
 
 type GiftCardSession = GqlCGiftCardPageQuery['currentSession'];
 
-const giftCardPageTitle = { de: 'Geschenkkarte', en: 'Gift card' } as const;
-const giftCardPageDescription = {
-    de: 'Verschenke ein unvergessliches Dinner mit einem Privatkoch.',
-    en: 'Gift an unforgettable dinner with a private chef.',
-} as const;
-
 const OCCASIONS = [
-    { value: 'Geburtstag', de: 'Geburtstag', en: 'Birthday' },
-    { value: 'Geburt', de: 'Geburt', en: 'Birth' },
-    { value: 'Hochzeit', de: 'Hochzeit', en: 'Wedding' },
-    { value: 'Jahrestag', de: 'Jahrestag', en: 'Anniversary' },
-    { value: 'Dankeschön', de: 'Dankeschön', en: 'Thank you' },
-    { value: 'Weihnachten', de: 'Weihnachten', en: 'Christmas' },
-    { value: 'Einfach so', de: 'Einfach so', en: 'Just because' },
+    { value: 'Geburtstag', labelKey: 'giftCard.occasionBirthday' as const },
+    { value: 'Geburt', labelKey: 'giftCard.occasionBirth' as const },
+    { value: 'Hochzeit', labelKey: 'giftCard.occasionWedding' as const },
+    { value: 'Jahrestag', labelKey: 'giftCard.occasionAnniversary' as const },
+    { value: 'Dankeschön', labelKey: 'giftCard.occasionThanks' as const },
+    { value: 'Weihnachten', labelKey: 'giftCard.occasionChristmas' as const },
+    { value: 'Einfach so', labelKey: 'giftCard.occasionJustBecause' as const },
 ] as const;
 
 const MIN_BALANCE_CENTS = MIN_AMOUNT_EUROS * 100;
@@ -86,6 +81,8 @@ function GiftCardPageInner({
     search: GiftCardFormSearch;
 }) {
     const locale = useLocale();
+    const { t } = useT('public');
+    const { t: tCommon } = useT('common');
     const client = useClient();
     const navigate = useNavigate({ from: '/{-$locale}/gift-card' });
     const { executeRecaptcha } = useGoogleReCaptcha();
@@ -217,10 +214,10 @@ function GiftCardPageInner({
             const mutationResult = result.data?.user.giftCardCreate;
             if (result.error || !mutationResult?.success || !mutationResult.referenceId) {
                 if (session.giftCardPurchaseError?.code !== 'RECAPTCHA_FAILED' && !recaptchaSiteKey) {
-                    toast.error({ de: 'Gutschein konnte nicht erstellt werden.', en: 'Could not create the gift card.' }[locale]);
+                    toast.error(t('giftCard.createFailed'));
                 } else if (recaptchaSiteKey && !result.error) {
                     window.setTimeout(() => {
-                        toast.error({ de: 'Gutschein konnte nicht erstellt werden.', en: 'Could not create the gift card.' }[locale]);
+                        toast.error(t('giftCard.createFailed'));
                     }, 2000);
                 }
                 return;
@@ -230,12 +227,13 @@ function GiftCardPageInner({
                 params: { giftCardId: mutationResult.referenceId },
             });
         } catch {
-            toast.error({ de: 'Gutschein konnte nicht erstellt werden.', en: 'Could not create the gift card.' }[locale]);
+            toast.error(t('giftCard.createFailed'));
         }
     }
 
     const previewAmount = formatCurrency(balanceCents, { locale });
-    const previewOccasion = OCCASIONS.find((item) => item.value === values.occasion)?.[locale] ?? values.occasion;
+    const previewOccasionKey = OCCASIONS.find((item) => item.value === values.occasion)?.labelKey;
+    const previewOccasion = previewOccasionKey ? t(previewOccasionKey) : values.occasion;
     const busy = isSubmitting;
 
     return (
@@ -245,26 +243,21 @@ function GiftCardPageInner({
             <div className="mx-auto grid w-full max-w-5xl flex-1 gap-10 p-6 sm:p-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
                 <div className="grid content-start gap-8">
                     <div className="grid gap-2">
-                        <h1 className="font-serif text-3xl tracking-tight sm:text-4xl">{giftCardPageTitle[locale]}</h1>
-                        <p className="text-muted-foreground">{giftCardPageDescription[locale]}</p>
+                        <h1 className="font-serif text-3xl tracking-tight sm:text-4xl">{t('giftCard.title')}</h1>
+                        <p className="text-muted-foreground">{t('giftCard.description')}</p>
                     </div>
 
                     {preparedGiftCard ? (
                         <div className="grid gap-4 rounded-xl border border-border bg-secondary p-6">
-                            <p className="font-serif text-xl tracking-tight">
-                                {{ de: 'Offene Zahlung', en: 'Payment in progress' }[locale]}
-                            </p>
+                            <p className="font-serif text-xl tracking-tight">{t('giftCard.paymentInProgress')}</p>
                             <p className="text-muted-foreground">
-                                {
-                                    {
-                                        de: `Du hast einen Gutschein über ${formatCurrency(preparedGiftCard.originalBalanceCents, { locale })} vorbereitet.`,
-                                        en: `You have a prepared gift card for ${formatCurrency(preparedGiftCard.originalBalanceCents, { locale })}.`,
-                                    }[locale]
-                                }
+                                {t('giftCard.preparedAmount', {
+                                    amount: formatCurrency(preparedGiftCard.originalBalanceCents, { locale }),
+                                })}
                             </p>
                             <Button asChild size="lg">
                                 <Link to="/{-$locale}/gift-card/$giftCardId/checkout" params={{ giftCardId: preparedGiftCard.giftCardId }}>
-                                    {{ de: 'Zur Zahlung', en: 'Continue to checkout' }[locale]}
+                                    {t('giftCard.continueCheckout')}
                                 </Link>
                             </Button>
                         </div>
@@ -273,17 +266,8 @@ function GiftCardPageInner({
                     {step === 'auth' && !signedIn ? (
                         <div className="mx-auto grid w-full max-w-md gap-4">
                             <div className="grid gap-1">
-                                <h2 className="font-serif text-2xl tracking-tight">
-                                    {{ de: 'Anmelden zum Kauf', en: 'Sign in to purchase' }[locale]}
-                                </h2>
-                                <p className="text-sm text-muted-foreground">
-                                    {
-                                        {
-                                            de: 'Melde dich per E-Mail-Code oder Passkey an, so findest du den Gutschein später in deinem Profil.',
-                                            en: 'Log on with an email code or a passkey, so you can find the gift card later in your profile.',
-                                        }[locale]
-                                    }
-                                </p>
+                                <h2 className="font-serif text-2xl tracking-tight">{t('giftCard.signInTitle')}</h2>
+                                <p className="text-sm text-muted-foreground">{t('giftCard.signInBody')}</p>
                             </div>
                             <AuthIdentityGate
                                 initialSession={session}
@@ -312,7 +296,7 @@ function GiftCardPageInner({
                                 )}
                             />
                             <Button type="button" variant="ghost" onClick={() => setStep('configure')} disabled={busy}>
-                                {{ de: 'Zurück', en: 'Back' }[locale]}
+                                {t('giftCard.back')}
                             </Button>
                         </div>
                     ) : (
@@ -328,7 +312,7 @@ function GiftCardPageInner({
                                     <form.Field name="customEuros">
                                         {(customField) => (
                                             <fieldset className="grid gap-3">
-                                                <legend className="text-sm font-medium">{{ de: 'Betrag', en: 'Amount' }[locale]}</legend>
+                                                <legend className="text-sm font-medium">{t('giftCard.amount')}</legend>
                                                 <div className="flex flex-wrap gap-2">
                                                     {AMOUNT_PRESETS_EUROS.map((euros) => {
                                                         const active = presetField.state.value === euros;
@@ -355,18 +339,13 @@ function GiftCardPageInner({
                                                         onClick={() => presetField.handleChange('custom')}
                                                         disabled={busy}
                                                     >
-                                                        {{ de: 'Andere', en: 'Custom' }[locale]}
+                                                        {t('giftCard.custom')}
                                                     </Button>
                                                 </div>
                                                 {presetField.state.value === 'custom' ? (
                                                     <div className="grid max-w-xs gap-1.5">
                                                         <label htmlFor="gift-card-custom-amount" className="text-sm font-medium">
-                                                            {
-                                                                {
-                                                                    de: `Betrag in Euro (min. ${MIN_AMOUNT_EUROS})`,
-                                                                    en: `Amount in euros (min. ${MIN_AMOUNT_EUROS})`,
-                                                                }[locale]
-                                                            }
+                                                            {t('giftCard.customAmount', { min: MIN_AMOUNT_EUROS })}
                                                         </label>
                                                         <Input
                                                             id="gift-card-custom-amount"
@@ -388,7 +367,7 @@ function GiftCardPageInner({
                             <form.Field name="occasion">
                                 {(field) => (
                                     <fieldset className="grid gap-3">
-                                        <legend className="text-sm font-medium">{{ de: 'Anlass', en: 'Occasion' }[locale]}</legend>
+                                        <legend className="text-sm font-medium">{t('giftCard.occasion')}</legend>
                                         <div className="flex flex-wrap gap-2">
                                             {OCCASIONS.map((item) => {
                                                 const active = field.state.value === item.value;
@@ -401,7 +380,7 @@ function GiftCardPageInner({
                                                         onClick={() => field.handleChange(item.value)}
                                                         disabled={busy}
                                                     >
-                                                        {item[locale]}
+                                                        {t(item.labelKey)}
                                                     </Button>
                                                 );
                                             })}
@@ -414,7 +393,7 @@ function GiftCardPageInner({
                                 {(field) => (
                                     <div className="grid gap-1.5">
                                         <label htmlFor="gift-card-recipient-name" className="text-sm font-medium">
-                                            {{ de: 'Name der Beschenkten', en: 'Recipient name' }[locale]}
+                                            {t('giftCard.recipientName')}
                                         </label>
                                         <Input
                                             id="gift-card-recipient-name"
@@ -425,21 +404,9 @@ function GiftCardPageInner({
                                             onBlur={field.handleBlur}
                                             onChange={(event) => field.handleChange(event.target.value)}
                                             disabled={busy}
-                                            placeholder={
-                                                {
-                                                    de: 'z. B. Anna, oder Anna & Tom',
-                                                    en: 'e.g. Anna, or Anna & Tom',
-                                                }[locale]
-                                            }
+                                            placeholder={t('giftCard.recipientPlaceholder')}
                                         />
-                                        <p className="text-xs text-muted-foreground">
-                                            {
-                                                {
-                                                    de: 'Ein Name reicht, auch für Paare oder Familien.',
-                                                    en: 'One name is enough, including for couples or families.',
-                                                }[locale]
-                                            }
-                                        </p>
+                                        <p className="text-xs text-muted-foreground">{t('giftCard.recipientHint')}</p>
                                     </div>
                                 )}
                             </form.Field>
@@ -448,7 +415,7 @@ function GiftCardPageInner({
                                 {(field) => (
                                     <div className="grid gap-1.5">
                                         <label htmlFor="gift-card-message" className="text-sm font-medium">
-                                            {{ de: 'Nachricht', en: 'Message' }[locale]}
+                                            {t('giftCard.message')}
                                         </label>
                                         <Textarea
                                             id="gift-card-message"
@@ -456,12 +423,7 @@ function GiftCardPageInner({
                                             value={field.state.value}
                                             onBlur={field.handleBlur}
                                             onChange={(event) => field.handleChange(event.target.value)}
-                                            placeholder={
-                                                {
-                                                    de: 'Persönliche Grüße an die Beschenkten…',
-                                                    en: 'A personal note for the recipient…',
-                                                }[locale]
-                                            }
+                                            placeholder={t('giftCard.messagePlaceholder')}
                                             disabled={busy}
                                         />
                                     </div>
@@ -470,30 +432,16 @@ function GiftCardPageInner({
 
                             {signedIn ? (
                                 <p className="text-sm text-muted-foreground">
-                                    {
-                                        {
-                                            de: `Der Einlöscode geht an ${session.user?.emailAddress ?? ''}.`,
-                                            en: `The redeem code will be sent to ${session.user?.emailAddress ?? ''}.`,
-                                        }[locale]
-                                    }
+                                    {t('giftCard.codeGoesTo', { email: session.user?.emailAddress ?? '' })}
                                 </p>
                             ) : null}
 
                             <Button type="submit" size="lg" disabled={busy || !formValid} className="justify-self-end">
-                                {
-                                    {
-                                        de: busy
-                                            ? 'Wird vorbereitet…'
-                                            : signedIn
-                                              ? `Weiter zur Zahlung · ${previewAmount}`
-                                              : `Anmelden und ${previewAmount} kaufen`,
-                                        en: busy
-                                            ? 'Preparing…'
-                                            : signedIn
-                                              ? `Continue to checkout · ${previewAmount}`
-                                              : `Sign in and buy ${previewAmount}`,
-                                    }[locale]
-                                }
+                                {busy
+                                    ? t('giftCard.preparing')
+                                    : signedIn
+                                      ? t('giftCard.continueWithAmount', { amount: previewAmount })
+                                      : t('giftCard.signInAndBuy', { amount: previewAmount })}
                             </Button>
                         </form>
                     )}
@@ -501,17 +449,15 @@ function GiftCardPageInner({
 
                 <aside
                     className={cn('rounded-xl border border-border bg-secondary p-5 shadow-xs', 'lg:sticky lg:top-20')}
-                    aria-label={{ de: 'Gutschein-Vorschau', en: 'Voucher preview' }[locale]}
+                    aria-label={t('giftCard.previewAria')}
                 >
-                    <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                        {{ de: 'Vorschau', en: 'Preview' }[locale]}
-                    </p>
+                    <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t('giftCard.preview')}</p>
                     <p className="mt-3 font-serif text-3xl tracking-tight">{previewAmount}</p>
                     <p className="mt-1 text-sm text-muted-foreground">{previewOccasion}</p>
                     <div className="mt-6 grid gap-1 border-t border-border/60 pt-4 text-sm">
-                        <p className="font-medium">{values.recipientName.trim() || { de: 'Beschenkte', en: 'Recipient' }[locale]}</p>
+                        <p className="font-medium">{values.recipientName.trim() || t('giftCard.recipientFallback')}</p>
                         <p className="whitespace-pre-wrap text-muted-foreground">
-                            {values.message.trim() || { de: 'Deine Nachricht erscheint hier.', en: 'Your message appears here.' }[locale]}
+                            {values.message.trim() || t('giftCard.messageFallback')}
                         </p>
                     </div>
                 </aside>
@@ -522,23 +468,16 @@ function GiftCardPageInner({
             <Dialog open={recaptchaErrorOpen} onOpenChange={setRecaptchaErrorOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>{{ de: 'Sicherheitsprüfung fehlgeschlagen', en: 'Security check failed' }[locale]}</DialogTitle>
-                        <DialogDescription>
-                            {
-                                {
-                                    de: 'Die reCAPTCHA-Prüfung ist fehlgeschlagen. Bitte versuche es erneut oder kontaktiere uns per WhatsApp.',
-                                    en: 'The reCAPTCHA check failed. Please try again or contact us on WhatsApp.',
-                                }[locale]
-                            }
-                        </DialogDescription>
+                        <DialogTitle>{t('giftCard.recaptchaTitle')}</DialogTitle>
+                        <DialogDescription>{t('giftCard.recaptchaBody')}</DialogDescription>
                     </DialogHeader>
                     <DialogFooter className="gap-2 sm:justify-between">
                         <Button type="button" variant="ghost" onClick={() => setRecaptchaErrorOpen(false)}>
-                            {{ de: 'Schließen', en: 'Close' }[locale]}
+                            {tCommon('close')}
                         </Button>
                         <Button type="button" asChild>
                             <a href={SITE_WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
-                                {{ de: 'WhatsApp öffnen', en: 'Open WhatsApp' }[locale]}
+                                {t('giftCard.openWhatsapp')}
                             </a>
                         </Button>
                     </DialogFooter>

@@ -1,4 +1,6 @@
 import { Undo2Icon } from 'lucide-react';
+import { inlineCopy } from '../../shared';
+import type { Locale } from '../../shared';
 
 import { useLocale } from '../hooks/useLocale';
 import { useSessionImpersonation } from '../hooks/useSessionImpersonation';
@@ -7,8 +9,8 @@ import { SidebarMenuButton, SidebarMenuItem } from './base/sidebar';
 import { Tooltip, TooltipContent, TooltipTrigger } from './base/tooltip';
 import { HeaderButton } from './HeaderButton';
 
-function returnLabel(locale: 'de' | 'en') {
-    return { de: 'Zurück zur Administration', en: 'Return to administration' }[locale];
+function returnLabel(locale: Locale) {
+    return inlineCopy({ de: 'Zurück zur Administration', en: 'Return to administration' }, locale);
 }
 
 /** Desktop header icon (PublicSessionNav). */

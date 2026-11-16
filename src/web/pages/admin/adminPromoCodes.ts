@@ -1,3 +1,4 @@
+import { t } from '../../../i18n/t';
 import type { Locale } from '../../utils/locale';
 
 export type AdminPromoCodesSection = 'list' | 'create';
@@ -7,12 +8,7 @@ export const ADMIN_PROMO_CODES_SECTIONS: AdminPromoCodesSection[] = ['list', 'cr
 export type AdminPromoCodesSectionTo = '/{-$locale}/admin/promo-codes' | '/{-$locale}/admin/promo-codes/create';
 
 export function adminPromoCodesSectionLabel(section: AdminPromoCodesSection, locale: Locale): string {
-    return (
-        {
-            list: { de: 'Liste', en: 'List' },
-            create: { de: 'Anlegen', en: 'Create' },
-        } as const
-    )[section][locale];
+    return t(locale, 'admin', `section.${section}`);
 }
 
 export function adminPromoCodesSectionPath(section: AdminPromoCodesSection): '/admin/promo-codes' | '/admin/promo-codes/create' {

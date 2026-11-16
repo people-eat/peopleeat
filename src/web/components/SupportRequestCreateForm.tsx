@@ -4,6 +4,7 @@ import { de as deLocale, enUS } from 'date-fns/locale';
 import { PaperclipIcon } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useMutation } from 'urql';
+import { inlineCopy } from '../../shared';
 
 import { FILE_UPLOAD_ACCEPT } from '../../shared/fileUploadMediaTypes';
 import { useComposerFileAttachments } from '../chat/useComposerFileAttachments';
@@ -84,14 +85,15 @@ export function SupportRequestCreateForm({
     return (
         <Card>
             <CardHeader>
-                <CardTitle>{{ de: 'Neue Support-Anfrage', en: 'New support request' }[locale]}</CardTitle>
+                <CardTitle>{inlineCopy({ de: 'Neue Support-Anfrage', en: 'New support request' }, locale)}</CardTitle>
                 <CardDescription>
-                    {
+                    {inlineCopy(
                         {
                             de: 'Beschreibe kurz dein Anliegen. Unser Team meldet sich im Chat.',
                             en: 'Briefly describe your issue. Our team will reply in chat.',
-                        }[locale]
-                    }
+                        },
+                        locale,
+                    )}
                 </CardDescription>
             </CardHeader>
             <form
@@ -107,7 +109,7 @@ export function SupportRequestCreateForm({
                             {(field) => (
                                 <div className="grid gap-2">
                                     <label htmlFor={field.name} className="text-sm font-medium">
-                                        {{ de: 'Buchungsanfrage (optional)', en: 'Booking request (optional)' }[locale]}
+                                        {inlineCopy({ de: 'Buchungsanfrage (optional)', en: 'Booking request (optional)' }, locale)}
                                     </label>
                                     <Select
                                         value={field.state.value || NO_BOOKING_VALUE}
@@ -118,7 +120,7 @@ export function SupportRequestCreateForm({
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value={NO_BOOKING_VALUE}>
-                                                {{ de: 'Keine / Allgemein', en: 'None / General' }[locale]}
+                                                {inlineCopy({ de: 'Keine / Allgemein', en: 'None / General' }, locale)}
                                             </SelectItem>
                                             {availableBookings.map((option) => (
                                                 <SelectItem key={option.bookingRequestId} value={option.bookingRequestId}>
@@ -137,7 +139,7 @@ export function SupportRequestCreateForm({
                         {(field) => (
                             <div className="grid gap-2">
                                 <label htmlFor={field.name} className="text-sm font-medium">
-                                    {{ de: 'Betreff', en: 'Subject' }[locale]}
+                                    {inlineCopy({ de: 'Betreff', en: 'Subject' }, locale)}
                                 </label>
                                 <Input
                                     id={field.name}
@@ -153,7 +155,7 @@ export function SupportRequestCreateForm({
                         {(field) => (
                             <div className="grid gap-2">
                                 <label htmlFor={field.name} className="text-sm font-medium">
-                                    {{ de: 'Nachricht', en: 'Message' }[locale]}
+                                    {inlineCopy({ de: 'Nachricht', en: 'Message' }, locale)}
                                 </label>
                                 <Textarea
                                     id={field.name}
@@ -170,7 +172,7 @@ export function SupportRequestCreateForm({
                         <div className="flex flex-wrap items-center gap-2">
                             <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
                                 <PaperclipIcon className="size-4" />
-                                {{ de: 'Datei anhängen', en: 'Attach file' }[locale]}
+                                {inlineCopy({ de: 'Datei anhängen', en: 'Attach file' }, locale)}
                             </Button>
                             <input
                                 ref={fileInputRef}
@@ -201,24 +203,25 @@ export function SupportRequestCreateForm({
                     </div>
                     {submitError ? (
                         <p className="text-sm text-destructive">
-                            {
+                            {inlineCopy(
                                 {
                                     de: 'Anfrage konnte nicht gesendet werden. Bitte versuche es erneut.',
                                     en: 'Could not send the request. Please try again.',
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                         </p>
                     ) : null}
                     <div className="flex flex-wrap justify-end gap-2">
                         {onCancel ? (
                             <Button type="button" variant="outline" onClick={onCancel}>
-                                {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                {inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, locale)}
                             </Button>
                         ) : null}
                         <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting] as const}>
                             {([canSubmit, isSubmitting]) => (
                                 <Button type="submit" disabled={!canSubmit || isSubmitting || hasUploading}>
-                                    {{ de: 'Absenden', en: 'Submit' }[locale]}
+                                    {inlineCopy({ de: 'Absenden', en: 'Submit' }, locale)}
                                 </Button>
                             )}
                         </form.Subscribe>

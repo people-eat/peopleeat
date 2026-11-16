@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { createRequest, useClient } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { t } from '../../../i18n/t';
 import { formatDate } from '../../../shared';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { Badge } from '../../components/base/badge';
@@ -11,20 +12,17 @@ import type { GqlCAdminLegalDocumentPageAdminFragment, GqlCAdminLegalDocumentPag
 import { AdminLegalDocumentPageUpdatesDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
+import type { Locale } from '../../utils/locale';
 import type { AdminLegalKind } from './adminLegal';
 import { adminLegalKindLabel, adminLegalPublishedRows, adminLegalRowsFromAdmin } from './adminLegal';
 
-export function adminLegalVersionPageTitle(kind: AdminLegalKind) {
-    return {
-        de: `${adminLegalKindLabel(kind, 'de')} · Version`,
-        en: `${adminLegalKindLabel(kind, 'en')} · Version`,
-    } as const;
+export function adminLegalVersionPageTitle(kind: AdminLegalKind, locale: Locale): string {
+    return t(locale, 'admin', 'legal.versionTitle', { kind: adminLegalKindLabel(kind, locale) });
 }
 
-export const adminLegalVersionPageDescription = {
-    de: 'Veröffentlichte, unveränderliche Version.',
-    en: 'Published immutable version.',
-} as const;
+export function adminLegalVersionPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'legal.versionDescription');
+}
 
 export function AdminLegalVersionPage({
     data,
@@ -66,7 +64,7 @@ export function AdminLegalVersionPage({
         return null;
     }
 
-    const title = adminLegalVersionPageTitle(kind);
+    const title = adminLegalVersionPageTitle(kind, locale);
 
     return (
         <AdminPathPageChrome>
@@ -75,9 +73,9 @@ export function AdminLegalVersionPage({
                     <div className="flex flex-wrap items-center gap-3">
                         <h1 className="flex items-center gap-3 font-serif text-4xl/tight text-foreground">
                             <ScaleIcon className="size-8 shrink-0 text-muted-foreground" aria-hidden />
-                            {title[locale]}
+                            {title}
                         </h1>
-                        {version && isCurrent ? <Badge variant="outline">{{ de: 'Aktuell', en: 'Current' }[locale]}</Badge> : null}
+                        {version && isCurrent ? <Badge variant="outline">{t(locale, 'admin', 'copy.current')}</Badge> : null}
                     </div>
                     {version ? (
                         <p className="text-muted-foreground">
@@ -85,7 +83,7 @@ export function AdminLegalVersionPage({
                             {version.changeSummaryDe.trim() ? ` · ${version.changeSummaryDe}` : ''}
                         </p>
                     ) : (
-                        <p className="text-muted-foreground">{adminLegalVersionPageDescription[locale]}</p>
+                        <p className="text-muted-foreground">{adminLegalVersionPageDescription(locale)}</p>
                     )}
                 </div>
 
@@ -94,7 +92,7 @@ export function AdminLegalVersionPage({
                         <MarkdownBody text={version.bodyDe} />
                     </div>
                 ) : (
-                    <p className="text-sm text-muted-foreground">{{ de: 'Version nicht gefunden.', en: 'Version not found.' }[locale]}</p>
+                    <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.versionNotFound')}</p>
                 )}
             </main>
         </AdminPathPageChrome>

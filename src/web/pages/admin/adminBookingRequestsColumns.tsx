@@ -1,5 +1,6 @@
 import { createColumnHelper } from '@tanstack/react-table';
 
+import { t } from '../../../i18n/t';
 import { formatBookingEventWhenFromCountry, formatBookingWhenJoined, formatDate, userDisplayName } from '../../../shared';
 import { bookingRequestStatusHue, bookingRequestStatusLabel } from '../../../shared/bookingRequestStatus';
 import type { Locale } from '../../../shared/locale';
@@ -31,19 +32,14 @@ export type AdminBookingRequestsSortField = (typeof ADMIN_BOOKING_REQUESTS_SORT_
 const columnHelper = createColumnHelper<AdminBookingRequestsDataTableFeatures, AdminBookingRequestsTableRow>();
 
 export function adminBookingRequestPublicationStatusLabel(status: GqlCBookingRequestPublicationStatus, locale: Locale) {
-    return {
-        PUBLICATION_BLOCKED_BY_ADMIN_REVIEW: { de: 'Admin-Prüfung', en: 'Admin review' },
-        PUBLICATION_AUTO_APPROVED: { de: 'Auto-freigegeben', en: 'Auto-approved' },
-        PUBLICATION_APPROVED_BY_ADMIN: { de: 'Admin-freigegeben', en: 'Admin-approved' },
-        PUBLICATION_DIRECT_TO_COOK: { de: 'Direktanfrage', en: 'Direct to cook' },
-    }[status][locale];
+    return t(locale, 'admin', `bookingRequests.publication.${status}`);
 }
 
 export function adminBookingRequestsColumns(locale: Locale, timeZone: string) {
     return columnHelper.columns([
         columnHelper.accessor('createdAt', {
             header: ({ column }) => (
-                <AdminDataTableSortHeader column={column}>{{ de: 'Erstellt', en: 'Created' }[locale]}</AdminDataTableSortHeader>
+                <AdminDataTableSortHeader column={column}>{t(locale, 'admin', 'copy.created')}</AdminDataTableSortHeader>
             ),
             cell: ({ row }) => (
                 <span className="text-muted-foreground tabular-nums">
@@ -52,9 +48,7 @@ export function adminBookingRequestsColumns(locale: Locale, timeZone: string) {
             ),
         }),
         columnHelper.accessor('dateTime', {
-            header: ({ column }) => (
-                <AdminDataTableSortHeader column={column}>{{ de: 'Termin', en: 'Event' }[locale]}</AdminDataTableSortHeader>
-            ),
+            header: ({ column }) => <AdminDataTableSortHeader column={column}>{t(locale, 'admin', 'copy.event')}</AdminDataTableSortHeader>,
             cell: ({ row }) => (
                 <span className="text-sm tabular-nums">
                     {formatBookingWhenJoined(
@@ -71,13 +65,13 @@ export function adminBookingRequestsColumns(locale: Locale, timeZone: string) {
         }),
         columnHelper.accessor('occasion', {
             header: ({ column }) => (
-                <AdminDataTableSortHeader column={column}>{{ de: 'Anlass', en: 'Occasion' }[locale]}</AdminDataTableSortHeader>
+                <AdminDataTableSortHeader column={column}>{t(locale, 'admin', 'copy.occasion')}</AdminDataTableSortHeader>
             ),
             cell: ({ row }) => <span className="font-medium">{row.original.occasion}</span>,
         }),
         columnHelper.accessor('customerName', {
             id: 'customer',
-            header: () => ({ de: 'Kunde', en: 'Customer' })[locale],
+            header: () => t(locale, 'admin', 'copy.customer'),
             cell: ({ row }) => (
                 <div className="grid gap-0.5">
                     <span>{row.original.customerName}</span>
@@ -87,12 +81,12 @@ export function adminBookingRequestsColumns(locale: Locale, timeZone: string) {
             enableSorting: false,
         }),
         columnHelper.accessor('location', {
-            header: () => ({ de: 'Ort', en: 'Location' })[locale],
+            header: () => t(locale, 'admin', 'copy.location2'),
             cell: ({ row }) => <span className="text-muted-foreground">{row.original.location}</span>,
             enableSorting: false,
         }),
         columnHelper.accessor('status', {
-            header: () => ({ de: 'Status', en: 'Status' })[locale],
+            header: () => t(locale, 'admin', 'copy.status'),
             cell: ({ row }) => (
                 // `w-max`: Badge uses overflow-hidden, so as a grid item its min-width collapses to 0 and
                 // long labels (e.g. "Zahlungsmittel hinterlegen") paint over Offers/Cook. Size to content.
@@ -108,13 +102,13 @@ export function adminBookingRequestsColumns(locale: Locale, timeZone: string) {
             enableSorting: false,
         }),
         columnHelper.accessor('offerCount', {
-            header: () => ({ de: 'Angebote', en: 'Offers' })[locale],
+            header: () => t(locale, 'admin', 'copy.offers'),
             cell: ({ row }) => <span className="tabular-nums text-muted-foreground">{row.original.offerCount}</span>,
             enableSorting: false,
         }),
         columnHelper.accessor('cookName', {
-            header: () => ({ de: 'Koch', en: 'Cook' })[locale],
-            cell: ({ row }) => <span className="text-muted-foreground">{row.original.cookName ?? { de: '—', en: '—' }[locale]}</span>,
+            header: () => t(locale, 'admin', 'copy.cook'),
+            cell: ({ row }) => <span className="text-muted-foreground">{row.original.cookName ?? t(locale, 'admin', 'copy.empty')}</span>,
             enableSorting: false,
         }),
     ]);

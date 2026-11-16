@@ -1,5 +1,5 @@
 import type { PropsWithChildren } from 'react';
-import { useLocale } from '../../hooks/useLocale';
+import { useT } from '../../hooks/useT';
 import { cn } from '../../utils/cn';
 import {
     MessageScroller,
@@ -26,7 +26,7 @@ export interface ChatTranscriptShellProps extends PropsWithChildren {
     /** Localised label for the SR-only text on the jump-to-latest pill.
      *  Required — every surface knows its own locale. */
     jumpToLatestLabel: string;
-    /** Accessible name for the messages region. Defaults via `useLocale`
+    /** Accessible name for the messages region. Defaults via `useT('common')`
      *  to "Nachrichten" / "Messages". */
     messagesAriaLabel?: string;
     /** Transcript scroll mode. Defaults to `assistant` (last-anchor turn
@@ -51,8 +51,8 @@ export function ChatTranscriptShell({
     contentClassName,
     children,
 }: ChatTranscriptShellProps) {
-    const locale = useLocale();
-    const regionLabel = messagesAriaLabel ?? { de: 'Nachrichten', en: 'Messages' }[locale];
+    const { t } = useT('common');
+    const regionLabel = messagesAriaLabel ?? t('chatTranscript.messages');
     const isAssistant = mode === 'assistant';
 
     return (

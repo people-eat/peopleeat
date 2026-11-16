@@ -6,7 +6,8 @@ import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
-import { centsToEuros, eurosToCents } from '../../../shared';
+import { t } from '../../../i18n/t';
+import { centsToEuros, eurosToCents, inlineCopy } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import {
@@ -33,14 +34,16 @@ import {
     AdminOfferAddonTemplatePageUpsertDocument,
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
+import type { Locale } from '../../utils/locale';
 import type { OfferAddonPricingUnit } from '../../utils/offerAddonPriceLabel';
 import { offerAddonPriceFieldHelp, offerAddonPricingUnitHelp, offerAddonPricingUnitLabel } from '../../utils/offerAddonPriceLabel';
 
-export const adminOfferAddonTemplatePageTitle = { de: 'Zusatzleistung', en: 'Offer extra' } as const;
-export const adminOfferAddonTemplatePageDescription = {
-    de: 'Köche können diese Vorlage in ihre Bibliothek übernehmen und Preis sowie Text anpassen. Preiseinheit und Preis sind ein Vorschlag.',
-    en: 'Cooks can copy this template into their library and then change the price and wording. Pricing unit and price are a suggestion.',
-} as const;
+export function adminOfferAddonTemplatePageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.offerAddonTemplate.title');
+}
+export function adminOfferAddonTemplatePageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.offerAddonTemplate.description');
+}
 
 type TemplateRow = NonNullable<
     NonNullable<NonNullable<GqlCAdminOfferAddonTemplatePageQuery['currentSession']['user']>['admin']>['offerAddonTemplate']
@@ -112,15 +115,15 @@ export function AdminOfferAddonTemplatePage({
             const suggestedPriceCents = eurosToCents(value.suggestedPriceEuros);
             const position = Number.parseInt(value.position, 10);
             if (value.titleDe.trim().length === 0 || value.titleEn.trim().length === 0) {
-                toast.error({ de: 'Beide Titel werden gebraucht.', en: 'Both titles are required.' }[locale]);
+                toast.error(t(locale, 'admin', 'copy.bothTitlesAreRequired'));
                 return;
             }
             if (suggestedPriceCents == null || suggestedPriceCents < 0) {
-                toast.error({ de: 'Bitte einen gültigen Preis eingeben.', en: 'Please enter a valid price.' }[locale]);
+                toast.error(t(locale, 'admin', 'copy.pleaseEnterAValidPrice'));
                 return;
             }
             if (!Number.isInteger(position) || position < 0) {
-                toast.error({ de: 'Die Position muss 0 oder größer sein.', en: 'Position must be 0 or greater.' }[locale]);
+                toast.error(t(locale, 'admin', 'copy.positionMustBe0OrGreater'));
                 return;
             }
             const result = await upsert({
@@ -138,10 +141,10 @@ export function AdminOfferAddonTemplatePage({
                 },
             });
             if (result.error || !result.data?.admin.offerAddonTemplateUpsert.success) {
-                toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+                toast.error(t(locale, 'admin', 'copy.couldNotSave'));
                 return;
             }
-            toast.success({ de: 'Gespeichert.', en: 'Saved.' }[locale]);
+            toast.success(t(locale, 'admin', 'copy.saved'));
             form.reset(value);
         },
     });
@@ -182,18 +185,15 @@ export function AdminOfferAddonTemplatePage({
             if (result.error || !result.data?.admin.offerAddonTemplateDelete.success) {
                 throw new Error('delete failed');
             }
-            toast.success({ de: 'Gelöscht.', en: 'Deleted.' }[locale]);
+            toast.success(t(locale, 'admin', 'copy.deleted2'));
             await leaveToList();
         } catch {
-            toast.error({ de: 'Löschen fehlgeschlagen.', en: 'Could not delete.' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.couldNotDelete'));
             setDeleting(false);
         }
     }
 
-    const imageRemoveDescription = {
-        de: 'Das Bild wird von der Vorlage entfernt. Speichere danach, um die Änderung zu übernehmen.',
-        en: 'The image will be removed from this template. Save afterwards to apply the change.',
-    }[locale];
+    const imageRemoveDescription = t(locale, 'admin', 'copy.theImageWillBeRemovedFromThisTemplateSaveAfterwardsToApplyTh');
 
     const overflowMenu = (
         <DropdownMenu>
@@ -203,7 +203,7 @@ export function AdminOfferAddonTemplatePage({
                     variant="outline"
                     size="icon"
                     disabled={isSubmitting || imageBusy || deleting}
-                    aria-label={{ de: 'Weitere Aktionen', en: 'More actions' }[locale]}
+                    aria-label={t(locale, 'admin', 'copy.moreActions')}
                 >
                     <MoreHorizontalIcon className="size-4" />
                 </Button>
@@ -214,7 +214,7 @@ export function AdminOfferAddonTemplatePage({
                     disabled={isSubmitting || imageBusy || deleting}
                     onSelect={() => setConfirmDelete(true)}
                 >
-                    {{ de: 'Löschen', en: 'Delete' }[locale]}
+                    {t(locale, 'admin', 'copy.delete')}
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
@@ -224,7 +224,7 @@ export function AdminOfferAddonTemplatePage({
         <AdminPageChrome
             crumbs={[
                 {
-                    label: { de: 'Zusatzleistungen', en: 'Offer extras' }[locale],
+                    label: t(locale, 'admin', 'copy.offerExtras2'),
                     to: '/{-$locale}/admin/offer-addon-templates',
                 },
                 { label: template.titleDe },
@@ -243,27 +243,25 @@ export function AdminOfferAddonTemplatePage({
                                 disabled={isSubmitting || imageBusy || deleting}
                                 onClick={() => form.reset()}
                             >
-                                {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                {t(locale, 'admin', 'copy.cancel')}
                             </Button>
                             <Button type="submit" form="offer-addon-template-form" disabled={isSubmitting || imageBusy || deleting}>
-                                {isSubmitting ? { de: 'Speichern…', en: 'Saving…' }[locale] : { de: 'Speichern', en: 'Save' }[locale]}
+                                {isSubmitting ? t(locale, 'admin', 'copy.saving2') : t(locale, 'admin', 'copy.save')}
                             </Button>
                         </>
                     ) : (
                         <>
                             {overflowMenu}
                             <Button type="button" disabled={isSubmitting || imageBusy || deleting} asChild>
-                                <Link to="/{-$locale}/admin/offer-addon-templates">
-                                    {{ de: 'Zur Übersicht', en: 'Back to list' }[locale]}
-                                </Link>
+                                <Link to="/{-$locale}/admin/offer-addon-templates">{t(locale, 'admin', 'copy.backToList2')}</Link>
                             </Button>
                         </>
                     )
                 }
             >
                 <div className="grid gap-1">
-                    <h1 className="font-serif text-3xl/tight text-foreground">{adminOfferAddonTemplatePageTitle[locale]}</h1>
-                    <p className="text-sm text-muted-foreground">{adminOfferAddonTemplatePageDescription[locale]}</p>
+                    <h1 className="font-serif text-3xl/tight text-foreground">{adminOfferAddonTemplatePageTitle(locale)}</h1>
+                    <p className="text-sm text-muted-foreground">{adminOfferAddonTemplatePageDescription(locale)}</p>
                 </div>
                 <form
                     id="offer-addon-template-form"
@@ -278,7 +276,7 @@ export function AdminOfferAddonTemplatePage({
                         {(field) => (
                             <div className="grid gap-1.5">
                                 <label htmlFor="addon-template-title-de" className="text-sm font-medium">
-                                    {{ de: 'Titel (Deutsch)', en: 'Title (German)' }[locale]}
+                                    {t(locale, 'admin', 'copy.titleGerman')}
                                 </label>
                                 <Input
                                     id="addon-template-title-de"
@@ -296,7 +294,7 @@ export function AdminOfferAddonTemplatePage({
                         {(field) => (
                             <div className="grid gap-1.5">
                                 <label htmlFor="addon-template-title-en" className="text-sm font-medium">
-                                    {{ de: 'Titel (Englisch)', en: 'Title (English)' }[locale]}
+                                    {t(locale, 'admin', 'copy.titleEnglish')}
                                 </label>
                                 <Input
                                     id="addon-template-title-en"
@@ -309,12 +307,7 @@ export function AdminOfferAddonTemplatePage({
                                     aria-describedby="addon-template-title-help"
                                 />
                                 <p id="addon-template-title-help" className="text-sm text-muted-foreground">
-                                    {
-                                        {
-                                            de: 'Köche sehen den Titel in ihrer Profilsprache, wenn sie die Vorlage übernehmen.',
-                                            en: 'Cooks see the title in their profile language when they copy the template.',
-                                        }[locale]
-                                    }
+                                    {t(locale, 'admin', 'copy.cooksSeeTheTitleInTheirProfileLanguageWhenTheyCopyTheTemplat')}
                                 </p>
                             </div>
                         )}
@@ -323,7 +316,7 @@ export function AdminOfferAddonTemplatePage({
                         {(field) => (
                             <div className="grid gap-1.5">
                                 <label htmlFor="addon-template-description-de" className="text-sm font-medium">
-                                    {{ de: 'Beschreibung (Deutsch)', en: 'Description (German)' }[locale]}
+                                    {t(locale, 'admin', 'copy.descriptionGerman')}
                                 </label>
                                 <Textarea
                                     id="addon-template-description-de"
@@ -341,7 +334,7 @@ export function AdminOfferAddonTemplatePage({
                         {(field) => (
                             <div className="grid gap-1.5">
                                 <label htmlFor="addon-template-description-en" className="text-sm font-medium">
-                                    {{ de: 'Beschreibung (Englisch)', en: 'Description (English)' }[locale]}
+                                    {t(locale, 'admin', 'copy.descriptionEnglish')}
                                 </label>
                                 <Textarea
                                     id="addon-template-description-en"
@@ -353,12 +346,7 @@ export function AdminOfferAddonTemplatePage({
                                     aria-describedby="addon-template-description-help"
                                 />
                                 <p id="addon-template-description-help" className="text-sm text-muted-foreground">
-                                    {
-                                        {
-                                            de: 'Optional. Der Koch kann den Text nach dem Übernehmen ändern. Der Gast sieht ihn auf dem Angebot.',
-                                            en: 'Optional. The cook can change this after copying. The guest sees it on the offer.',
-                                        }[locale]
-                                    }
+                                    {t(locale, 'admin', 'copy.optionalTheCookCanChangeThisAfterCopyingTheGuestSeesItOnTheO')}
                                 </p>
                             </div>
                         )}
@@ -367,7 +355,7 @@ export function AdminOfferAddonTemplatePage({
                         {(field) => (
                             <div className="grid gap-1.5">
                                 <label htmlFor="addon-template-pricing-unit" className="text-sm font-medium">
-                                    {{ de: 'Preiseinheit', en: 'Pricing unit' }[locale]}
+                                    {t(locale, 'admin', 'copy.pricingUnit')}
                                 </label>
                                 <Select
                                     value={field.state.value}
@@ -396,15 +384,16 @@ export function AdminOfferAddonTemplatePage({
                         {(field) => (
                             <div className="grid gap-1.5">
                                 <label htmlFor="addon-template-price" className="text-sm font-medium">
-                                    {
+                                    {inlineCopy(
                                         {
                                             de:
                                                 pricingUnit === 'PER_PERSON'
                                                     ? 'Vorgeschlagener Preis pro Person (€)'
                                                     : 'Vorgeschlagener Preis (€)',
                                             en: pricingUnit === 'PER_PERSON' ? 'Suggested price per person (€)' : 'Suggested price (€)',
-                                        }[locale]
-                                    }
+                                        },
+                                        locale,
+                                    )}
                                 </label>
                                 <Input
                                     id="addon-template-price"
@@ -427,7 +416,7 @@ export function AdminOfferAddonTemplatePage({
                         {(field) => (
                             <div className="grid gap-1.5">
                                 <label htmlFor="addon-template-position" className="text-sm font-medium">
-                                    {{ de: 'Position', en: 'Position' }[locale]}
+                                    {t(locale, 'admin', 'copy.position')}
                                 </label>
                                 <Input
                                     id="addon-template-position"
@@ -443,12 +432,7 @@ export function AdminOfferAddonTemplatePage({
                                     aria-describedby="addon-template-position-help"
                                 />
                                 <p id="addon-template-position-help" className="text-sm text-muted-foreground">
-                                    {
-                                        {
-                                            de: 'Kleinere Zahlen stehen in der Vorschlagsliste weiter oben.',
-                                            en: 'Lower numbers appear first in the suggestion list.',
-                                        }[locale]
-                                    }
+                                    {t(locale, 'admin', 'copy.lowerNumbersAppearFirstInTheSuggestionList')}
                                 </p>
                             </div>
                         )}
@@ -458,7 +442,7 @@ export function AdminOfferAddonTemplatePage({
                             <div className="grid gap-1.5">
                                 <div className="flex items-center justify-between gap-3 rounded-lg border px-3 py-2">
                                     <label htmlFor="addon-template-published" className="text-sm font-medium">
-                                        {{ de: 'Veröffentlicht', en: 'Published' }[locale]}
+                                        {t(locale, 'admin', 'copy.published2')}
                                     </label>
                                     <Switch
                                         id="addon-template-published"
@@ -469,24 +453,14 @@ export function AdminOfferAddonTemplatePage({
                                     />
                                 </div>
                                 <p id="addon-template-published-help" className="text-sm text-muted-foreground">
-                                    {
-                                        {
-                                            de: 'Nur veröffentlichte Vorlagen erscheinen bei den Köchen unter Vorschläge.',
-                                            en: 'Only published templates show up for cooks under suggestions.',
-                                        }[locale]
-                                    }
+                                    {t(locale, 'admin', 'copy.onlyPublishedTemplatesShowUpForCooksUnderSuggestions')}
                                 </p>
                             </div>
                         )}
                     </form.Field>
                     <div className="grid gap-1.5">
                         <p className="text-sm text-muted-foreground">
-                            {
-                                {
-                                    de: 'Optional. Köche übernehmen das Bild in ihre Bibliothek. Der Gast sieht es auf dem Angebot.',
-                                    en: 'Optional. Cooks copy this picture into their library. The guest sees it on the offer.',
-                                }[locale]
-                            }
+                            {t(locale, 'admin', 'copy.optionalCooksCopyThisPictureIntoTheirLibraryTheGuestSeesItOn')}
                         </p>
                         <CookMealImageField
                             value={{ imageFileUploadId, imageUrl }}
@@ -505,18 +479,13 @@ export function AdminOfferAddonTemplatePage({
             <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>{{ de: 'Vorlage löschen?', en: 'Delete this template?' }[locale]}</AlertDialogTitle>
+                        <AlertDialogTitle>{t(locale, 'admin', 'copy.deleteThisTemplate')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            {
-                                {
-                                    de: 'Köche sehen die Vorlage danach nicht mehr. Bereits übernommene Zusatzleistungen bleiben erhalten.',
-                                    en: 'Cooks will no longer see this template. Extras already copied into a library stay.',
-                                }[locale]
-                            }
+                            {t(locale, 'admin', 'copy.cooksWillNoLongerSeeThisTemplateExtrasAlreadyCopiedIntoALibr')}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel disabled={deleting}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogCancel disabled={deleting}>{t(locale, 'admin', 'copy.cancel')}</AlertDialogCancel>
                         <AlertDialogAction
                             variant="destructive"
                             disabled={deleting}
@@ -525,7 +494,7 @@ export function AdminOfferAddonTemplatePage({
                                 void onDelete();
                             }}
                         >
-                            {{ de: 'Löschen', en: 'Delete' }[locale]}
+                            {t(locale, 'admin', 'copy.delete')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

@@ -1,3 +1,4 @@
+import { tEmail } from '../../../i18n/tEmail';
 import type { Locale } from '../../../shared/locale';
 import { formatCallSlotDate, formatCallSlotTime } from './bookingRequestOfferCallSlotEmailFormat';
 import { EmailButton, EmailLayout, EmailText } from './index';
@@ -30,39 +31,13 @@ export function BookingRequestOfferCallSlotCancelBody({
     const callDate = formatCallSlotDate(startAt, locale, timeZone);
     const callTime = formatCallSlotTime(startAt, locale, timeZone);
     const trimmedReason = reason?.trim() || undefined;
-    const preview = {
-        de: `${cancelerFirstName} hat den Video-Call abgesagt. Neuen Termin vereinbaren`,
-        en: `${cancelerFirstName} canceled the video call. Schedule a new time`,
-    }[locale];
+    const preview = tEmail(locale, 'callSlot.cancel.preview', { cancelerFirstName });
     const subject = bookingRequestOfferCallSlotCancelEmailSubject(locale);
-    const intro = {
-        de: wasConfirmed
-            ? `${cancelerFirstName} hat den bestätigten Video-Call abgesagt:`
-            : `${cancelerFirstName} hat die Video-Call-Anfrage zurückgezogen:`,
-        en: wasConfirmed
-            ? `${cancelerFirstName} canceled the confirmed video call:`
-            : `${cancelerFirstName} withdrew the video call request:`,
-    }[locale];
-    const reasonLine = trimmedReason
-        ? {
-              de: `Grund: ${trimmedReason}`,
-              en: `Reason: ${trimmedReason}`,
-          }[locale]
-        : undefined;
-    const nextStep = {
-        de: 'Du kannst gerne einen neuen Termin vereinbaren.',
-        en: 'Feel free to schedule a new time.',
-    }[locale];
-    const calendarRemoval = wasConfirmed
-        ? {
-              de: 'Falls du den Termin gespeichert hast, nimm ihn bitte aus dem Kalender.',
-              en: 'If you saved this, please remove it from your calendar.',
-          }[locale]
-        : undefined;
-    const linkLabel = {
-        de: 'Zum Angebot',
-        en: 'Open the offer',
-    }[locale];
+    const intro = tEmail(locale, wasConfirmed ? 'callSlot.cancel.introConfirmed' : 'callSlot.cancel.introPending', {
+        cancelerFirstName,
+    });
+    const reasonLine = trimmedReason ? tEmail(locale, 'common.reasonLine', { reason: trimmedReason }) : undefined;
+    const calendarRemoval = wasConfirmed ? tEmail(locale, 'common.calendarRemovalSlot') : undefined;
 
     return (
         <EmailLayout locale={locale} webPageUrl={webPageUrl} preview={preview} subject={subject} recipientFirstName={recipientFirstName}>
@@ -71,16 +46,13 @@ export function BookingRequestOfferCallSlotCancelBody({
             <EmailText>{callTime}</EmailText>
             {whenSecondary ? <EmailText>{whenSecondary}</EmailText> : null}
             {reasonLine ? <EmailText>{reasonLine}</EmailText> : null}
-            <EmailText>{nextStep}</EmailText>
+            <EmailText>{tEmail(locale, 'callSlot.cancel.nextStep')}</EmailText>
             {calendarRemoval ? <EmailText>{calendarRemoval}</EmailText> : null}
-            <EmailButton href={offerUrl}>{linkLabel}</EmailButton>
+            <EmailButton href={offerUrl}>{tEmail(locale, 'common.ctaOffer')}</EmailButton>
         </EmailLayout>
     );
 }
 
 export function bookingRequestOfferCallSlotCancelEmailSubject(locale: Locale): string {
-    return {
-        de: 'Video-Call abgesagt',
-        en: 'Video call canceled',
-    }[locale];
+    return tEmail(locale, 'callSlot.cancel.subject');
 }

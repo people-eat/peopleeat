@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { createRequest, useClient, useMutation, useQuery } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { t } from '../../../i18n/t';
 import { fileUploadPublicUrl, formatCurrency, userDisplayName } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/base/card';
@@ -41,14 +42,16 @@ import {
 } from '../../graphql/generated';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useLocale } from '../../hooks/useLocale';
+import type { Locale } from '../../utils/locale';
 
 export { parseContentPageEditorSearch as parseAdminPartnerVenuePageSearch } from '../../components/ContentPageEditor';
 
-export const adminPartnerVenuePageTitle = { de: 'Location bearbeiten', en: 'Edit venue' } as const;
-export const adminPartnerVenuePageDescription = {
-    de: 'Locationseite bearbeiten.',
-    en: 'Edit venue landing page.',
-} as const;
+export function adminPartnerVenuePageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.partnerVenue.title');
+}
+export function adminPartnerVenuePageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.partnerVenue.description');
+}
 
 type VenueEditorValues = ContentPageEditorValues & {
     partnerId: string;
@@ -322,8 +325,8 @@ export function AdminPartnerVenuePage({
     return (
         <AdminPageChrome
             crumbs={[
-                { label: { de: 'Partner', en: 'Partners' }[locale], to: '/{-$locale}/admin/partners' },
-                { label: values.name.trim() || { de: 'Location', en: 'Venue' }[locale] },
+                { label: t(locale, 'admin', 'copy.partners'), to: '/{-$locale}/admin/partners' },
+                { label: values.name.trim() || t(locale, 'admin', 'copy.venue') },
             ]}
         >
             <ContentPageEditor
@@ -345,7 +348,7 @@ export function AdminPartnerVenuePage({
                 venuesExplore
                 knownFrom
                 chefForAnyOccasion={{
-                    displayName: values.name.trim() || { de: 'Location', en: 'Venue' }[locale],
+                    displayName: values.name.trim() || t(locale, 'admin', 'copy.venue'),
                     headlineDe: values.firstSectionHeadlineDe,
                     headlineEn: values.firstSectionHeadlineEn,
                     bodyDe: values.firstSectionBodyDe,
@@ -363,16 +366,9 @@ export function AdminPartnerVenuePage({
                             className="mt-0.5"
                         />
                         <span className="flex flex-col gap-0.5">
-                            <span className="font-medium">
-                                {{ de: 'Dunkles Overlay auf Hero-Bild', en: 'Dark overlay on hero image' }[locale]}
-                            </span>
+                            <span className="font-medium">{t(locale, 'admin', 'copy.darkOverlayOnHeroImage')}</span>
                             <span className="text-xs text-muted-foreground">
-                                {
-                                    {
-                                        de: 'Für bessere Lesbarkeit der Überschrift. Ausschalten, wenn das Foto bereits dunkel genug ist.',
-                                        en: 'Improves headline contrast. Turn off when the photo is already dark enough.',
-                                    }[locale]
-                                }
+                                {t(locale, 'admin', 'copy.improvesHeadlineContrastTurnOffWhenThePhotoIsAlreadyDarkEnou')}
                             </span>
                         </span>
                     </label>
@@ -380,11 +376,11 @@ export function AdminPartnerVenuePage({
                 identityFields={
                     <Card className="gap-4 py-4" data-content-editor-anchor="top">
                         <CardHeader className="px-4">
-                            <CardTitle>{{ de: 'Location', en: 'Venue' }[locale]}</CardTitle>
+                            <CardTitle>{t(locale, 'admin', 'copy.venue')}</CardTitle>
                         </CardHeader>
                         <CardContent className="flex flex-col gap-3 px-4">
                             <label className="flex flex-col gap-1.5 text-sm">
-                                <span className="font-medium">{{ de: 'Partner', en: 'Partner' }[locale]}</span>
+                                <span className="font-medium">{t(locale, 'admin', 'copy.partner')}</span>
                                 <Select
                                     value={values.partnerId}
                                     onValueChange={(partnerId) => {
@@ -404,7 +400,7 @@ export function AdminPartnerVenuePage({
                                 </Select>
                             </label>
                             <label className="flex flex-col gap-1.5 text-sm">
-                                <span className="font-medium">{{ de: 'Name', en: 'Name' }[locale]}</span>
+                                <span className="font-medium">{t(locale, 'admin', 'copy.name')}</span>
                                 <Input value={values.name} onChange={(e) => patchVenueValues({ name: e.target.value })} />
                             </label>
                         </CardContent>
@@ -414,33 +410,28 @@ export function AdminPartnerVenuePage({
                     <>
                         <Card className="gap-4 py-4" data-content-editor-anchor="first-section">
                             <CardHeader className="px-4">
-                                <CardTitle>{{ de: 'Erster Abschnitt', en: 'First section' }[locale]}</CardTitle>
+                                <CardTitle>{t(locale, 'admin', 'copy.firstSection')}</CardTitle>
                                 <CardDescription>
-                                    {
-                                        {
-                                            de: 'Headline, Text und Bild neben der CTA-Karte auf der Locationseite.',
-                                            en: 'Headline, body, and image beside the CTA card on the venue page.',
-                                        }[locale]
-                                    }
+                                    {t(locale, 'admin', 'copy.headlineBodyAndImageBesideTheCtaCardOnTheVenuePage')}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="flex flex-col gap-3 px-4">
                                 <label className="flex flex-col gap-1.5 text-sm">
-                                    <span className="font-medium">{{ de: 'Headline (DE)', en: 'Headline (DE)' }[locale]}</span>
+                                    <span className="font-medium">{t(locale, 'admin', 'copy.headlineDe')}</span>
                                     <Input
                                         value={values.firstSectionHeadlineDe}
                                         onChange={(e) => patchVenueValues({ firstSectionHeadlineDe: e.target.value })}
                                     />
                                 </label>
                                 <label className="flex flex-col gap-1.5 text-sm">
-                                    <span className="font-medium">{{ de: 'Headline (EN)', en: 'Headline (EN)' }[locale]}</span>
+                                    <span className="font-medium">{t(locale, 'admin', 'copy.headlineEn')}</span>
                                     <Input
                                         value={values.firstSectionHeadlineEn}
                                         onChange={(e) => patchVenueValues({ firstSectionHeadlineEn: e.target.value })}
                                     />
                                 </label>
                                 <label className="flex flex-col gap-1.5 text-sm">
-                                    <span className="font-medium">{{ de: 'Text (DE)', en: 'Body (DE)' }[locale]}</span>
+                                    <span className="font-medium">{t(locale, 'admin', 'copy.bodyDe')}</span>
                                     <Textarea
                                         value={values.firstSectionBodyDe}
                                         onChange={(e) => patchVenueValues({ firstSectionBodyDe: e.target.value })}
@@ -448,7 +439,7 @@ export function AdminPartnerVenuePage({
                                     />
                                 </label>
                                 <label className="flex flex-col gap-1.5 text-sm">
-                                    <span className="font-medium">{{ de: 'Text (EN)', en: 'Body (EN)' }[locale]}</span>
+                                    <span className="font-medium">{t(locale, 'admin', 'copy.bodyEn')}</span>
                                     <Textarea
                                         value={values.firstSectionBodyEn}
                                         onChange={(e) => patchVenueValues({ firstSectionBodyEn: e.target.value })}
@@ -460,14 +451,13 @@ export function AdminPartnerVenuePage({
                                     uiLocale={locale}
                                     onUploadStart={markPageDirty}
                                     onChange={(firstSectionImageFileUploadId) => patchVenueValues({ firstSectionImageFileUploadId })}
-                                    label={{ de: 'Abschnittsbild', en: 'Section image' }[locale]}
-                                    removeTitle={{ de: 'Abschnittsbild entfernen?', en: 'Remove section image?' }[locale]}
-                                    removeDescription={
-                                        {
-                                            de: 'Das Abschnittsbild wird aus dem Entwurf entfernt. Speichern übernimmt die Änderung.',
-                                            en: 'The section image is removed from the draft. Saving applies the change.',
-                                        }[locale]
-                                    }
+                                    label={t(locale, 'admin', 'copy.sectionImage')}
+                                    removeTitle={t(locale, 'admin', 'copy.removeSectionImage')}
+                                    removeDescription={t(
+                                        locale,
+                                        'admin',
+                                        'copy.theSectionImageIsRemovedFromTheDraftSavingAppliesTheChange',
+                                    )}
                                 />
                                 <label className="flex items-start gap-2 text-sm">
                                     <Checkbox
@@ -476,33 +466,21 @@ export function AdminPartnerVenuePage({
                                         className="mt-0.5"
                                     />
                                     <span className="flex flex-col gap-0.5">
-                                        <span className="font-medium">
-                                            {{ de: 'Dunkles Overlay auf CTA-Bild', en: 'Dark overlay on CTA image' }[locale]}
-                                        </span>
+                                        <span className="font-medium">{t(locale, 'admin', 'copy.darkOverlayOnCtaImage')}</span>
                                         <span className="text-xs text-muted-foreground">
-                                            {
-                                                {
-                                                    de: 'Verlauf über dem Abschnittsbild für weiße Texte. Ausschalten, wenn nicht nötig.',
-                                                    en: 'Gradient over the section image for white text. Turn off when not needed.',
-                                                }[locale]
-                                            }
+                                            {t(locale, 'admin', 'copy.gradientOverTheSectionImageForWhiteTextTurnOffWhenNotNeeded')}
                                         </span>
                                     </span>
                                 </label>
                                 <label className="flex flex-col gap-1.5 text-sm">
-                                    <span className="font-medium">{{ de: 'CTA-Link', en: 'CTA link' }[locale]}</span>
+                                    <span className="font-medium">{t(locale, 'admin', 'copy.ctaLink')}</span>
                                     <Input
                                         value={values.firstSectionCtaUrl}
                                         onChange={(e) => patchVenueValues({ firstSectionCtaUrl: e.target.value })}
                                         placeholder="/booking-request/form"
                                     />
                                     <span className="text-xs text-muted-foreground">
-                                        {
-                                            {
-                                                de: 'Optional. Leer lassen für das Buchungsformular. Absolute http(s)-URL oder pfadrelativer Link.',
-                                                en: 'Optional. Leave empty for the booking form. Absolute http(s) URL or site-relative path.',
-                                            }[locale]
-                                        }
+                                        {t(locale, 'admin', 'copy.optionalLeaveEmptyForTheBookingFormAbsoluteHttpSUrlOrSiteRel')}
                                     </span>
                                 </label>
                             </CardContent>
@@ -510,14 +488,9 @@ export function AdminPartnerVenuePage({
 
                         <Card className="gap-4 py-4" data-content-editor-anchor="location">
                             <CardHeader className="px-4">
-                                <CardTitle>{{ de: 'Standort', en: 'Location' }[locale]}</CardTitle>
+                                <CardTitle>{t(locale, 'admin', 'copy.location')}</CardTitle>
                                 <CardDescription>
-                                    {
-                                        {
-                                            de: 'Optional. Wird für /booking-request/plan?venueId=… vorausgefüllt. URL-Parameter überschreiben den Ort.',
-                                            en: 'Optional. Prefills /booking-request/plan?venueId=…. URL params override the venue.',
-                                        }[locale]
-                                    }
+                                    {t(locale, 'admin', 'copy.optionalPrefillsBookingRequestPlanVenueidUrlParamsOverrideTh')}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="flex flex-col gap-3 px-4">
@@ -535,12 +508,7 @@ export function AdminPartnerVenuePage({
                                         if (!match) return;
                                         const address = addressFromSuggestion(match);
                                         if (!address) {
-                                            toast.error(
-                                                {
-                                                    de: 'Bitte eine vollständige Adresse wählen.',
-                                                    en: 'Please choose a full address.',
-                                                }[locale],
-                                            );
+                                            toast.error(t(locale, 'admin', 'copy.pleaseChooseAFullAddress'));
                                             return;
                                         }
                                         patchVenueValues({
@@ -559,19 +527,14 @@ export function AdminPartnerVenuePage({
                                 >
                                     <ComboboxInput
                                         className="w-full"
-                                        placeholder={
-                                            {
-                                                de: 'Musterstraße 1, 80331 München',
-                                                en: '123 Main Street, 12345 Springfield',
-                                            }[locale]
-                                        }
+                                        placeholder={t(locale, 'admin', 'copy.n123MainStreet12345Springfield')}
                                         showClear={values.locationAddress != null}
                                     />
                                     <ComboboxContent>
                                         <ComboboxEmpty>
                                             {suggestionsFetching
-                                                ? { de: 'Suche…', en: 'Searching…' }[locale]
-                                                : { de: 'Keine Treffer.', en: 'No matches.' }[locale]}
+                                                ? t(locale, 'admin', 'copy.searching')
+                                                : t(locale, 'admin', 'copy.noMatches')}
                                         </ComboboxEmpty>
                                         <ComboboxList>
                                             {(item: string) => (
@@ -587,21 +550,14 @@ export function AdminPartnerVenuePage({
 
                         <Card className="gap-4 py-4" data-content-editor-anchor="first-section">
                             <CardHeader className="px-4">
-                                <CardTitle>{{ de: 'Promo-Code', en: 'Promo code' }[locale]}</CardTitle>
+                                <CardTitle>{t(locale, 'admin', 'copy.promoCode')}</CardTitle>
                                 <CardDescription>
-                                    {
-                                        {
-                                            de: 'Optionaler Rabatt auf der CTA-Karte. Abgelaufene Codes werden öffentlich ausgeblendet.',
-                                            en: 'Optional discount on the CTA card. Expired codes are hidden on the public page.',
-                                        }[locale]
-                                    }
+                                    {t(locale, 'admin', 'copy.optionalDiscountOnTheCtaCardExpiredCodesAreHiddenOnThePublic')}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="flex flex-col gap-3 px-4">
                                 <label className="flex flex-col gap-1.5 text-sm">
-                                    <span className="font-medium">
-                                        {{ de: 'Zugewiesener Promo-Code', en: 'Assigned promo code' }[locale]}
-                                    </span>
+                                    <span className="font-medium">{t(locale, 'admin', 'copy.assignedPromoCode')}</span>
                                     <Select
                                         value={values.promoCodeId ?? '__none__'}
                                         onValueChange={(value) => patchVenueValues({ promoCodeId: value === '__none__' ? null : value })}
@@ -610,16 +566,14 @@ export function AdminPartnerVenuePage({
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="__none__">
-                                                {{ de: 'Kein Promo-Code', en: 'No promo code' }[locale]}
-                                            </SelectItem>
+                                            <SelectItem value="__none__">{t(locale, 'admin', 'copy.noPromoCode')}</SelectItem>
                                             {promoCodes.map((promoCode) => {
                                                 const expired = new Date(promoCode.expiresAt) <= new Date();
                                                 const amount = formatCurrency(promoCode.amountCents, {
                                                     locale,
                                                     maximumFractionDigits: 0,
                                                 });
-                                                const expiredLabel = expired ? { de: 'abgelaufen', en: 'expired' }[locale] : undefined;
+                                                const expiredLabel = expired ? t(locale, 'admin', 'copy.expired') : undefined;
                                                 return (
                                                     <SelectItem key={promoCode.promoCodeId} value={promoCode.promoCodeId}>
                                                         {promoCode.redeemCode} · {amount}
@@ -635,14 +589,9 @@ export function AdminPartnerVenuePage({
 
                         <Card className="gap-4 py-4" data-content-editor-anchor="how-it-works">
                             <CardHeader className="px-4">
-                                <CardTitle>{{ de: 'So funktioniert es', en: 'How it works' }[locale]}</CardTitle>
+                                <CardTitle>{t(locale, 'admin', 'copy.howItWorks')}</CardTitle>
                                 <CardDescription>
-                                    {
-                                        {
-                                            de: 'Der Abschnitt erscheint auf der Partnerseite unter den Bewertungen.',
-                                            en: 'This section appears on the partner page below testimonials.',
-                                        }[locale]
-                                    }
+                                    {t(locale, 'admin', 'copy.thisSectionAppearsOnThePartnerPageBelowTestimonials')}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="flex flex-col gap-3 px-4">
@@ -653,16 +602,9 @@ export function AdminPartnerVenuePage({
                                         className="mt-0.5"
                                     />
                                     <span className="flex flex-col gap-0.5">
-                                        <span className="font-medium">
-                                            {{ de: 'Alternative Medien verwenden', en: 'Use alternative media' }[locale]}
-                                        </span>
+                                        <span className="font-medium">{t(locale, 'admin', 'copy.useAlternativeMedia')}</span>
                                         <span className="text-xs text-muted-foreground">
-                                            {
-                                                {
-                                                    de: 'Andere Videos und Bilder für Partner mit speziellem Bildmaterial (z. B. Ferienhäuser).',
-                                                    en: 'Different videos and images for partners with special footage (e.g. holiday homes).',
-                                                }[locale]
-                                            }
+                                            {t(locale, 'admin', 'copy.differentVideosAndImagesForPartnersWithSpecialFootageEGHolid')}
                                         </span>
                                     </span>
                                 </label>
@@ -671,14 +613,9 @@ export function AdminPartnerVenuePage({
 
                         <Card className="gap-4 py-4" data-content-editor-anchor="featured-cooks-show-city">
                             <CardHeader className="px-4">
-                                <CardTitle>{{ de: 'Koch-Karten', en: 'Cook cards' }[locale]}</CardTitle>
+                                <CardTitle>{t(locale, 'admin', 'copy.cookCards')}</CardTitle>
                                 <CardDescription>
-                                    {
-                                        {
-                                            de: 'Steuert, was auf den hervorgehobenen Koch-Karten der Partnerseite erscheint.',
-                                            en: 'Controls what appears on featured cook cards on the partner page.',
-                                        }[locale]
-                                    }
+                                    {t(locale, 'admin', 'copy.controlsWhatAppearsOnFeaturedCookCardsOnThePartnerPage')}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="flex flex-col gap-3 px-4">
@@ -689,16 +626,9 @@ export function AdminPartnerVenuePage({
                                         className="mt-0.5"
                                     />
                                     <span className="flex flex-col gap-0.5">
-                                        <span className="font-medium">
-                                            {{ de: 'Stadt auf Koch-Karten anzeigen', en: 'Show city on cook cards' }[locale]}
-                                        </span>
+                                        <span className="font-medium">{t(locale, 'admin', 'copy.showCityOnCookCards')}</span>
                                         <span className="text-xs text-muted-foreground">
-                                            {
-                                                {
-                                                    de: 'Reise-Ursprungsstadt des Kochs unter dem Namen. Ausschalten, wenn die Stadt für diesen Partner irreführend ist.',
-                                                    en: 'Cook travel-origin city under the name. Turn off when city is misleading for this partner.',
-                                                }[locale]
-                                            }
+                                            {t(locale, 'admin', 'copy.cookTravelOriginCityUnderTheNameTurnOffWhenCityIsMisleadingF')}
                                         </span>
                                     </span>
                                 </label>
@@ -712,12 +642,7 @@ export function AdminPartnerVenuePage({
                             busy={busy}
                             candidateSearch={cookSearch}
                             onCandidateSearchChange={setCookSearch}
-                            emptyHint={
-                                {
-                                    de: 'Leer lassen: auf der Locationseite werden keine Köche gezeigt.',
-                                    en: 'Leave empty: the venue page shows no chefs.',
-                                }[locale]
-                            }
+                            emptyHint={t(locale, 'admin', 'copy.leaveEmptyTheVenuePageShowsNoChefs')}
                             onSave={async (cookIds) => {
                                 const result = await updateCooks({ partnerVenueId, cookIds });
                                 if (result.error || !result.data?.admin.partnerVenueCooksUpdate.success) {
@@ -769,12 +694,7 @@ export function AdminPartnerVenuePage({
                             assignedEntries={assignedTestimonials.map(testimonialEntryFromAdminAssignment)}
                             candidates={testimonialCandidates}
                             busy={busy}
-                            emptyHint={
-                                {
-                                    de: 'Leer lassen: auf der Locationseite werden keine Bewertungen gezeigt.',
-                                    en: 'Leave empty: the venue page shows no testimonials.',
-                                }[locale]
-                            }
+                            emptyHint={t(locale, 'admin', 'copy.leaveEmptyTheVenuePageShowsNoTestimonials')}
                             onSave={async (entries) => {
                                 const result = await updateTestimonials({ partnerVenueId, entries });
                                 if (result.error || !result.data?.admin.partnerVenueTestimonialsUpdate.success) {

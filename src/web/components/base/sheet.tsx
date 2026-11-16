@@ -3,7 +3,7 @@
 import { XIcon } from 'lucide-react';
 import { Dialog as SheetPrimitive } from 'radix-ui';
 import type { ComponentProps } from 'react';
-import { useLocale } from '../../hooks/useLocale';
+import { useT } from '../../hooks/useT';
 import { cn } from '../../utils/cn';
 import { Button } from './button';
 
@@ -46,8 +46,8 @@ function SheetContent({
     side?: 'top' | 'right' | 'bottom' | 'left';
     showCloseButton?: boolean;
 }) {
-    const locale = useLocale();
-    const closeLabel = { de: 'Schließen', en: 'Close' }[locale];
+    const { t } = useT('common');
+    const closeLabel = t('close');
     return (
         <SheetPortal>
             <SheetOverlay />

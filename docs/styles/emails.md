@@ -13,17 +13,17 @@ Layout:
 
 ## Anatomy
 
-| #   | Block     | Component         | Notes                                                                           |
-| --- | --------- | ----------------- | ------------------------------------------------------------------------------- |
-| 1   | Header    | `EmailHeader`     | Centered `SITE_LOGO` wordmark (same asset as site header / footer)              |
-| 2   | Hero      | optional `hero`   | Illustration between logo and subject (e.g. offer-chat new-message icon)        |
-| 3   | Subject   | `EmailHeading`    | Bold title — usually matches the SMTP subject                                   |
-| 4   | Greeting  | `EmailGreeting`   | DE `Hallo {firstName},` / EN `Hey {firstName},` — omit name → `Hallo,` / `Hey,` |
-| 5   | Body      | template children | Template-specific copy; use `EmailText` for paragraphs                          |
-| 6   | CTA       | `EmailButton`     | Centered primary action — mirrors web `Button` default variant                  |
-| 7   | Questions | `EmailQuestions`  | “Du hast Fragen?” + `SITE_CONTACT_EMAIL` mailto                                 |
-| 8   | Sign-off  | `EmailSignOff`    | “Liebe Grüße,” / peopleeat team + heart                                         |
-| 9   | Footer    | `EmailFooter`     | Centered Instagram icon → `SITE_INSTAGRAM_URL`                                  |
+| #   | Block     | Component         | Notes                                                                                     |
+| --- | --------- | ----------------- | ----------------------------------------------------------------------------------------- |
+| 1   | Header    | `EmailHeader`     | Centered `SITE_LOGO` wordmark (same asset as site header / footer)                        |
+| 2   | Hero      | optional `hero`   | Illustration between logo and subject (e.g. offer-chat new-message icon)                  |
+| 3   | Subject   | `EmailHeading`    | Bold title — usually matches the SMTP subject                                             |
+| 4   | Greeting  | `EmailGreeting`   | DE `Hallo` / EN `Hey` / FR `Salut` / IT `Ciao` `{firstName},` (omit name → bare greeting) |
+| 5   | Body      | template children | Template-specific copy; use `EmailText` for paragraphs                                    |
+| 6   | CTA       | `EmailButton`     | Centered primary action — mirrors web `Button` default variant                            |
+| 7   | Questions | `EmailQuestions`  | “Du hast Fragen?” + `SITE_CONTACT_EMAIL` mailto                                           |
+| 8   | Sign-off  | `EmailSignOff`    | “Liebe Grüße,” / peopleeat team + heart                                                   |
+| 9   | Footer    | `EmailFooter`     | Centered Instagram icon → `SITE_INSTAGRAM_URL`                                            |
 
 Compose with `EmailLayout` — it wires 1–4 and 7–9 around the body children (optional `hero` between logo and subject). Put CTAs in the body
 with `EmailButton` (do not hand-roll styled `<a>` tags for primary actions).
@@ -119,7 +119,8 @@ Sendable templates follow **`{Sender}For{Audience}Email`** — full rule in
 ## Rules
 
 - Do not hand-roll a second header / footer / questions / primary CTA block inside a template — extend the shared components.
-- Keep bilingual copy as inline `{ de: '…', en: '…' }[locale]` at the call site (same as the web).
+- Keep bilingual copy in `src/i18n/locales/{locale}/email.json` and read it with `tEmail(locale, key)` (same catalogs as the rest of the
+  product).
 - Match audience voice from [copy.md](./copy.md) (plain language for customers/cooks; admin-facing sends may stay operational).
 - Never put secrets or raw `error.message` in email copy.
 - One audience per sendable file; share identical markup via `email/components/` when a sender fans out to two roles.

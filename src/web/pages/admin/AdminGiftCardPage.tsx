@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
-import { formatCurrency, formatDate } from '../../../shared';
+import { t } from '../../../i18n/t';
+import { formatCurrency, formatDate, inlineCopy } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { Badge } from '../../components/base/badge';
 import { Button } from '../../components/base/button';
@@ -12,14 +13,16 @@ import type { GqlCAdminGiftCardPageQuery, GqlCAdminOutboundEmailPurpose } from '
 import { AdminGiftCardPdfsRegenerateDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
+import type { Locale } from '../../utils/locale';
 import { adminGiftCardPaymentStatusLabel } from './adminGiftCardsColumns';
 import { adminOutboundEmailMetaBadgeClassName, adminOutboundEmailPurposeLabel } from './adminOutboundEmailsColumns';
 
-export const adminGiftCardPageTitle = { de: 'Gutschein', en: 'Gift card' } as const;
-export const adminGiftCardPageDescription = {
-    de: 'Details eines Gutscheinkaufs.',
-    en: 'Details for a gift card purchase.',
-} as const;
+export function adminGiftCardPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.giftCard.title');
+}
+export function adminGiftCardPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.giftCard.description');
+}
 
 type AdminGiftCardDetail = NonNullable<NonNullable<NonNullable<GqlCAdminGiftCardPageQuery['currentSession']['user']>['admin']>['giftCard']>;
 
@@ -47,19 +50,16 @@ export function AdminGiftCardPage({ data }: { data: GqlCAdminGiftCardPageQuery }
     const admin = data.currentSession.user?.admin;
     const giftCard = admin?.giftCard ?? null;
     const outboundEmails = admin?.outboundEmails ?? [];
-    const crumbLabel = giftCard?.redeemCode.trim() || adminGiftCardPageTitle[locale];
+    const crumbLabel = giftCard?.redeemCode.trim() || adminGiftCardPageTitle(locale);
 
     return (
         <AdminPageChrome
-            crumbs={[
-                { label: { de: 'Gutscheinverkäufe', en: 'Voucher Purchases' }[locale], to: '/{-$locale}/admin/gift-cards' },
-                { label: crumbLabel },
-            ]}
+            crumbs={[{ label: t(locale, 'admin', 'copy.voucherPurchases'), to: '/{-$locale}/admin/gift-cards' }, { label: crumbLabel }]}
         >
             <main id="main-content" className="grid w-full content-start gap-8">
                 <div className="grid gap-2">
-                    <h1 className="font-serif text-4xl/tight text-foreground">{adminGiftCardPageTitle[locale]}</h1>
-                    <p className="text-muted-foreground">{{ de: 'Gutscheindetails', en: 'Gift card details' }[locale]}</p>
+                    <h1 className="font-serif text-4xl/tight text-foreground">{adminGiftCardPageTitle(locale)}</h1>
+                    <p className="text-muted-foreground">{t(locale, 'admin', 'copy.giftCardDetails')}</p>
                 </div>
 
                 {giftCard ? (
@@ -68,9 +68,7 @@ export function AdminGiftCardPage({ data }: { data: GqlCAdminGiftCardPageQuery }
                         <AdminGiftCardEmailsSection emails={outboundEmails} />
                     </>
                 ) : (
-                    <p className="text-sm text-muted-foreground">
-                        {{ de: 'Gutschein nicht gefunden.', en: 'Gift card not found.' }[locale]}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.giftCardNotFound')}</p>
                 )}
             </main>
         </AdminPageChrome>
@@ -83,7 +81,7 @@ function AdminGiftCardDetailFields({ giftCard }: { giftCard: AdminGiftCardDetail
     const router = useRouter();
     const [, regeneratePdfs] = useMutation(AdminGiftCardPdfsRegenerateDocument);
     const [regenerating, setRegenerating] = useState(false);
-    const empty = { de: '—', en: '—' }[locale];
+    const empty = t(locale, 'admin', 'copy.empty');
     const address = giftCard.invoiceAddress;
     const paid = giftCard.paymentStatus === 'PAYED';
 
@@ -92,10 +90,10 @@ function AdminGiftCardDetailFields({ giftCard }: { giftCard: AdminGiftCardDetail
         try {
             const result = await regeneratePdfs({ giftCardId: giftCard.giftCardId });
             if (result.error || !result.data?.admin.giftCardPdfsRegenerate.success) {
-                toast.error({ de: 'PDFs konnten nicht erzeugt werden.', en: 'Could not generate PDFs.' }[locale]);
+                toast.error(t(locale, 'admin', 'copy.couldNotGeneratePdfs'));
                 return;
             }
-            toast.success({ de: 'PDFs aktualisiert.', en: 'PDFs updated.' }[locale]);
+            toast.success(t(locale, 'admin', 'copy.pdfsUpdated'));
             await router.invalidate();
         } finally {
             setRegenerating(false);
@@ -104,12 +102,10 @@ function AdminGiftCardDetailFields({ giftCard }: { giftCard: AdminGiftCardDetail
 
     return (
         <dl className="grid gap-4">
-            <DetailField label={{ de: 'Gutschein-ID', en: 'Gift card ID' }[locale]} value={giftCard.giftCardId} mono />
+            <DetailField label={t(locale, 'admin', 'copy.giftCardId')} value={giftCard.giftCardId} mono />
             <Separator />
             <div className="grid gap-1">
-                <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                    {{ de: 'Status', en: 'Status' }[locale]}
-                </dt>
+                <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t(locale, 'admin', 'copy.status')}</dt>
                 <dd>
                     <Badge variant={giftCard.paymentStatus === 'PAYED' ? 'default' : 'secondary'}>
                         {adminGiftCardPaymentStatusLabel(giftCard.paymentStatus, locale)}
@@ -117,16 +113,14 @@ function AdminGiftCardDetailFields({ giftCard }: { giftCard: AdminGiftCardDetail
                 </dd>
             </div>
             <Separator />
-            <DetailField label={{ de: 'Betrag', en: 'Amount' }[locale]} value={formatCurrency(giftCard.originalBalanceCents, { locale })} />
+            <DetailField label={t(locale, 'admin', 'copy.amount3')} value={formatCurrency(giftCard.originalBalanceCents, { locale })} />
             <Separator />
-            <DetailField label={{ de: 'Restguthaben', en: 'Balance' }[locale]} value={formatCurrency(giftCard.balanceCents, { locale })} />
+            <DetailField label={t(locale, 'admin', 'copy.balance')} value={formatCurrency(giftCard.balanceCents, { locale })} />
             <Separator />
-            <DetailField label={{ de: 'Code', en: 'Code' }[locale]} value={giftCard.redeemCode} mono />
+            <DetailField label={t(locale, 'admin', 'copy.code')} value={giftCard.redeemCode} mono />
             <Separator />
             <div className="grid gap-1">
-                <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                    {{ de: 'Käufer', en: 'Buyer' }[locale]}
-                </dt>
+                <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t(locale, 'admin', 'copy.buyer')}</dt>
                 <dd className="text-sm text-foreground">
                     <div className="grid gap-0.5">
                         <span>{giftCard.buyerEmail}</span>
@@ -143,15 +137,15 @@ function AdminGiftCardDetailFields({ giftCard }: { giftCard: AdminGiftCardDetail
                 </dd>
             </div>
             <Separator />
-            <DetailField label={{ de: 'Empfänger', en: 'Recipient' }[locale]} value={giftCard.recipientName} />
+            <DetailField label={t(locale, 'admin', 'copy.recipient')} value={giftCard.recipientName} />
             <Separator />
-            <DetailField label={{ de: 'Anlass', en: 'Occasion' }[locale]} value={giftCard.occasion} />
+            <DetailField label={t(locale, 'admin', 'copy.occasion')} value={giftCard.occasion} />
             <Separator />
-            <DetailField label={{ de: 'Nachricht', en: 'Message' }[locale]} value={giftCard.message || empty} />
+            <DetailField label={t(locale, 'admin', 'copy.message')} value={giftCard.message || empty} />
             <Separator />
             <div className="grid gap-1">
                 <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                    {{ de: 'Rechnungsadresse', en: 'Invoice address' }[locale]}
+                    {t(locale, 'admin', 'copy.invoiceAddress')}
                 </dt>
                 <dd className="text-sm text-foreground">
                     {address ? (
@@ -175,7 +169,7 @@ function AdminGiftCardDetailFields({ giftCard }: { giftCard: AdminGiftCardDetail
             <Separator />
             <div className="grid gap-1">
                 <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                    {{ de: 'Kaufbeleg', en: 'Purchase receipt' }[locale]}
+                    {t(locale, 'admin', 'copy.purchaseReceipt')}
                 </dt>
                 <dd className="text-sm text-foreground">
                     {giftCard.invoiceFileUpload ? (
@@ -195,7 +189,7 @@ function AdminGiftCardDetailFields({ giftCard }: { giftCard: AdminGiftCardDetail
             <Separator />
             <div className="grid gap-1">
                 <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                    {{ de: 'Gutschein-PDF', en: 'Gift card PDF' }[locale]}
+                    {t(locale, 'admin', 'copy.giftCardPdf')}
                 </dt>
                 <dd className="text-sm text-foreground">
                     {giftCard.voucherFileUpload ? (
@@ -217,7 +211,7 @@ function AdminGiftCardDetailFields({ giftCard }: { giftCard: AdminGiftCardDetail
                     <Separator />
                     <div className="grid gap-2">
                         <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                            {{ de: 'PDFs', en: 'PDFs' }[locale]}
+                            {t(locale, 'admin', 'copy.pdfs')}
                         </dt>
                         <dd>
                             <Button
@@ -227,12 +221,13 @@ function AdminGiftCardDetailFields({ giftCard }: { giftCard: AdminGiftCardDetail
                                 disabled={regenerating}
                                 onClick={() => void onRegeneratePdfs()}
                             >
-                                {
+                                {inlineCopy(
                                     {
                                         de: regenerating ? 'Wird erzeugt…' : 'PDFs neu erzeugen',
                                         en: regenerating ? 'Generating…' : 'Regenerate PDFs',
-                                    }[locale]
-                                }
+                                    },
+                                    locale,
+                                )}
                             </Button>
                         </dd>
                     </div>
@@ -240,12 +235,12 @@ function AdminGiftCardDetailFields({ giftCard }: { giftCard: AdminGiftCardDetail
             ) : null}
             <Separator />
             <DetailField
-                label={{ de: 'Erstellt', en: 'Created' }[locale]}
+                label={t(locale, 'admin', 'copy.created')}
                 value={formatDate(giftCard.createdAt, { locale, timeZone, dateStyle: 'long' })}
             />
             <Separator />
             <DetailField
-                label={{ de: 'Gültig bis', en: 'Expires' }[locale]}
+                label={t(locale, 'admin', 'copy.expires2')}
                 value={formatDate(giftCard.expiresAt, { locale, timeZone, dateStyle: 'long' })}
             />
         </dl>
@@ -258,9 +253,9 @@ function AdminGiftCardEmailsSection({ emails }: { emails: AdminGiftCardOutboundE
 
     return (
         <section className="grid gap-4">
-            <h2 className="font-serif text-2xl/tight text-foreground">{{ de: 'E-Mails', en: 'Emails' }[locale]}</h2>
+            <h2 className="font-serif text-2xl/tight text-foreground">{t(locale, 'admin', 'copy.emails')}</h2>
             {emails.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{{ de: 'Keine zugehörigen E-Mails.', en: 'No related emails.' }[locale]}</p>
+                <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noRelatedEmails')}</p>
             ) : (
                 <ul className="grid gap-3">
                     {emails.map((email) => (

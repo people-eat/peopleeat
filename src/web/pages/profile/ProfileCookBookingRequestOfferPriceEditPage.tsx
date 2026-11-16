@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
+import { t } from '../../../i18n/t';
 import { bookingRequestPaidParticipants } from '../../../shared';
 import { Button } from '../../components/base/button';
 import { BookingRequestOfferPriceConfigurationPanel } from '../../components/BookingRequestOfferPriceConfigurationPanel';
@@ -85,7 +86,7 @@ export function ProfileCookBookingRequestOfferPriceEditPage({
 
     async function onSave() {
         if (!priceValid || menuPriceCents <= 0 || saving) {
-            toast.error({ de: 'Bitte gib einen gültigen Preis ein.', en: 'Please enter a valid price.' }[locale]);
+            toast.error(t(locale, 'profileCook', 'offerPriceEdit.validPrice'));
             return;
         }
         setSaving(true);
@@ -94,14 +95,14 @@ export function ProfileCookBookingRequestOfferPriceEditPage({
             if (!result.data?.user.cook.bookingRequestOfferPriceUpdate.success) {
                 throw new Error('price update failed');
             }
-            toast.success({ de: 'Preis aktualisiert.', en: 'Price updated.' }[locale]);
+            toast.success(t(locale, 'profileCook', 'offerPriceEdit.updated'));
             await navigate({
                 to: '/{-$locale}/profile/booking-request-offers/$bookingRequestOfferId',
                 params: { bookingRequestOfferId },
                 search: { tab: 'offer' },
             });
         } catch {
-            toast.error({ de: 'Preisupdate fehlgeschlagen.', en: 'Could not update the price.' }[locale]);
+            toast.error(t(locale, 'profileCook', 'offerPriceEdit.updateFailed'));
         } finally {
             setSaving(false);
         }
@@ -120,11 +121,11 @@ export function ProfileCookBookingRequestOfferPriceEditPage({
                                 params={{ bookingRequestOfferId }}
                                 search={{ tab: 'offer' }}
                             >
-                                {{ de: 'Verwerfen', en: 'Discard' }[locale]}
+                                {t(locale, 'profileCook', 'actions.discard')}
                             </Link>
                         </Button>
                         <Button type="button" disabled={saving || !priceValid} onClick={() => void onSave()}>
-                            {{ de: saving ? 'Wird gespeichert…' : 'Speichern', en: saving ? 'Saving…' : 'Save' }[locale]}
+                            {saving ? t(locale, 'profileCook', 'actions.savingProgress') : t(locale, 'common', 'save')}
                         </Button>
                     </>
                 ) : (
@@ -134,15 +135,15 @@ export function ProfileCookBookingRequestOfferPriceEditPage({
                             params={{ bookingRequestOfferId }}
                             search={{ tab: 'offer' }}
                         >
-                            {{ de: 'Zum Angebot', en: 'Back to offer' }[locale]}
+                            {t(locale, 'profileCook', 'offerMenusEdit.backToOffer')}
                         </Link>
                     </Button>
                 )
             }
         >
             <div className="grid gap-1">
-                <h1 className="font-serif text-2xl text-foreground">{profileCookBookingRequestOfferPriceEditPageTitle[locale]}</h1>
-                <p className="text-sm text-muted-foreground">{profileCookBookingRequestOfferPriceEditPageDescription[locale]}</p>
+                <h1 className="font-serif text-2xl text-foreground">{profileCookBookingRequestOfferPriceEditPageTitle(locale)}</h1>
+                <p className="text-sm text-muted-foreground">{profileCookBookingRequestOfferPriceEditPageDescription(locale)}</p>
             </div>
 
             <BookingRequestOfferPriceConfigurationPanel

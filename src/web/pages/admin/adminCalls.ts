@@ -1,3 +1,4 @@
+import { t } from '../../../i18n/t';
 import type { Locale } from '../../utils/locale';
 
 export type AdminCallsSection = 'list';
@@ -7,11 +8,7 @@ export const ADMIN_CALLS_SECTIONS: AdminCallsSection[] = ['list'];
 export type AdminCallsSectionTo = '/{-$locale}/admin/calls/list';
 
 export function adminCallsSectionLabel(section: AdminCallsSection, locale: Locale): string {
-    return (
-        {
-            list: { de: 'Liste', en: 'List' },
-        } as const
-    )[section][locale];
+    return t(locale, 'admin', `section.${section}`);
 }
 
 export function adminCallsSectionPath(section: AdminCallsSection): `/admin/calls/${AdminCallsSection}` {

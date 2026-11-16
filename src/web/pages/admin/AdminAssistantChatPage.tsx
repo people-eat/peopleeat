@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { useMemo } from 'react';
 
+import { t } from '../../../i18n/t';
 import { formatDate, userDisplayName } from '../../../shared';
 import type { TranscriptTurn } from '../../chat/chatTranscript';
 import { groupMessagesByDate, transcriptRowsFromTurns } from '../../chat/chatTranscript';
@@ -14,13 +15,15 @@ import { ChatDateMarker } from '../../components/chat-message/ChatDateMarker';
 import type { GqlCAdminAssistantChatPageQuery } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
+import type { Locale } from '../../utils/locale';
 import { adminAssistantChatTitle, adminChatSurfaceLabel } from './adminAssistantChats';
 
-export const adminAssistantChatPageTitle = { de: 'Assistent-Chat', en: 'Assistant chat' } as const;
-export const adminAssistantChatPageDescription = {
-    de: 'Transcript eines Assistent-Chats.',
-    en: 'Transcript for an assistant chat.',
-} as const;
+export function adminAssistantChatPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.assistantChat.title');
+}
+export function adminAssistantChatPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.assistantChat.description');
+}
 
 type AdminAssistantChatDetail = NonNullable<
     NonNullable<NonNullable<GqlCAdminAssistantChatPageQuery['currentSession']['user']>['admin']>['assistantChat']
@@ -29,20 +32,17 @@ type AdminAssistantChatDetail = NonNullable<
 export function AdminAssistantChatPage({ data }: { data: GqlCAdminAssistantChatPageQuery }) {
     const locale = useLocale();
     const chat = data.currentSession.user?.admin?.assistantChat ?? null;
-    const crumbLabel = chat ? adminAssistantChatTitle(chat.title, locale) : adminAssistantChatPageTitle[locale];
+    const crumbLabel = chat ? adminAssistantChatTitle(chat.title, locale) : adminAssistantChatPageTitle(locale);
 
     return (
         <AdminPageChrome
-            crumbs={[
-                { label: { de: 'Assistent-Chats', en: 'Assistant chats' }[locale], to: '/{-$locale}/admin/assistant-chats' },
-                { label: crumbLabel },
-            ]}
+            crumbs={[{ label: t(locale, 'admin', 'copy.assistantChats'), to: '/{-$locale}/admin/assistant-chats' }, { label: crumbLabel }]}
         >
             <main id="main-content" className="grid w-full content-start gap-8">
                 {chat ? (
                     <AdminAssistantChatDetailFields chat={chat} />
                 ) : (
-                    <p className="text-sm text-muted-foreground">{{ de: 'Chat nicht gefunden.', en: 'Chat not found.' }[locale]}</p>
+                    <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.chatNotFound')}</p>
                 )}
             </main>
         </AdminPageChrome>
@@ -59,16 +59,14 @@ function AdminAssistantChatDetailFields({ chat }: { chat: AdminAssistantChatDeta
                 <h1 className="font-serif text-4xl/tight text-foreground">{adminAssistantChatTitle(chat.title, locale)}</h1>
                 <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                     <Badge variant="secondary">{adminChatSurfaceLabel(chat.surface, locale)}</Badge>
-                    {chat.deletedAt ? <Badge variant="outline">{{ de: 'Gelöscht', en: 'Deleted' }[locale]}</Badge> : null}
+                    {chat.deletedAt ? <Badge variant="outline">{t(locale, 'admin', 'copy.deleted')}</Badge> : null}
                     <span className="tabular-nums">{formatDate(chat.lastModifiedAt, { locale, timeZone, dateStyle: 'medium' })}</span>
                 </div>
             </div>
 
             <dl className="grid gap-4">
                 <div className="grid gap-1">
-                    <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                        {{ de: 'Nutzer', en: 'User' }[locale]}
-                    </dt>
+                    <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t(locale, 'admin', 'copy.user')}</dt>
                     <dd className="text-sm text-foreground">
                         <div className="grid gap-0.5">
                             <Link
@@ -83,21 +81,21 @@ function AdminAssistantChatDetailFields({ chat }: { chat: AdminAssistantChatDeta
                     </dd>
                 </div>
                 <Separator />
-                <DetailField label={{ de: 'Chat-ID', en: 'Chat ID' }[locale]} value={chat.chatId} mono />
+                <DetailField label={t(locale, 'admin', 'copy.chatId')} value={chat.chatId} mono />
                 <Separator />
                 <DetailField
-                    label={{ de: 'Erstellt', en: 'Created' }[locale]}
+                    label={t(locale, 'admin', 'copy.created')}
                     value={formatDate(chat.createdAt, { locale, timeZone, dateStyle: 'long' })}
                 />
                 <Separator />
                 <DetailField
-                    label={{ de: 'Zuletzt geändert', en: 'Last modified' }[locale]}
+                    label={t(locale, 'admin', 'copy.lastModified')}
                     value={formatDate(chat.lastModifiedAt, { locale, timeZone, dateStyle: 'long' })}
                 />
             </dl>
 
             <section className="grid gap-3">
-                <h2 className="text-lg font-medium">{{ de: 'Transcript', en: 'Transcript' }[locale]}</h2>
+                <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.transcript')}</h2>
                 <AdminAssistantChatTranscript turns={chat.turns} />
             </section>
         </div>
@@ -119,18 +117,14 @@ function AdminAssistantChatTranscript({ turns }: { turns: ReadonlyArray<Transcri
     const grouped = groupMessagesByDate(rows);
 
     if (rows.length === 0) {
-        return (
-            <p className="text-sm text-muted-foreground">
-                {{ de: 'Dieser Chat hat noch keine Nachrichten.', en: 'This chat has no messages yet.' }[locale]}
-            </p>
-        );
+        return <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.thisChatHasNoMessagesYet')}</p>;
     }
 
     return (
         <div className="h-[min(70vh,40rem)] overflow-hidden rounded-xl border border-border">
             <ChatTranscriptShell
                 mode="assistant"
-                jumpToLatestLabel={{ de: 'Zum neuesten springen', en: 'Jump to latest' }[locale]}
+                jumpToLatestLabel={t(locale, 'admin', 'copy.jumpToLatest')}
                 contentClassName="w-full gap-3"
                 className="min-h-0 min-w-0"
                 viewportClassName="px-3"

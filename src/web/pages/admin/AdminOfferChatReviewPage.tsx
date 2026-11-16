@@ -5,7 +5,8 @@ import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
-import { formatDateTime, userDisplayName } from '../../../shared';
+import { t } from '../../../i18n/t';
+import { formatDateTime, inlineCopy, userDisplayName } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import { Button } from '../../components/base/button';
@@ -21,17 +22,16 @@ import {
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
+import type { Locale } from '../../utils/locale';
 import { adminBookingRequestCustomerLabel } from './adminBookingRequestsColumns';
 import { adminOfferChatReviewsPageTitle } from './AdminOfferChatReviewsPage';
 
-export const adminOfferChatReviewPageTitle = {
-    de: 'Angebots-Chat prüfen',
-    en: 'Review offer chat',
-} as const;
-export const adminOfferChatReviewPageDescription = {
-    de: 'Gespräch prüfen und bestätigen.',
-    en: 'Review the conversation and acknowledge.',
-} as const;
+export function adminOfferChatReviewPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.offerChatReview.title');
+}
+export function adminOfferChatReviewPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.offerChatReview.description');
+}
 
 export function adminOfferChatReviewPageVariables(bookingRequestOfferId: string) {
     return { bookingRequestOfferId };
@@ -87,12 +87,7 @@ export function AdminOfferChatReviewPage({
             const result = await acknowledge({ bookingRequestOfferId });
             const payload = result.data?.admin.bookingRequestOfferChatReviewAcknowledge;
             if (result.error || !payload) {
-                toast.error(
-                    {
-                        de: 'Bestätigung fehlgeschlagen.',
-                        en: 'Could not acknowledge.',
-                    }[locale],
-                );
+                toast.error(t(locale, 'admin', 'copy.couldNotAcknowledge'));
                 return;
             }
             if (payload.nextOfferId) {
@@ -111,24 +106,24 @@ export function AdminOfferChatReviewPage({
 
     const pendingHint =
         pendingCount > 0
-            ? {
-                  de:
-                      pendingCount === 1
-                          ? '1 neue Nachricht seit der letzten Prüfung.'
-                          : `${pendingCount} neue Nachrichten seit der letzten Prüfung.`,
-                  en: pendingCount === 1 ? '1 new message since last review.' : `${pendingCount} new messages since last review.`,
-              }[locale]
-            : {
-                  de: 'Keine ausstehenden Nachrichten. Du kannst trotzdem bestätigen und weitergehen.',
-                  en: 'No pending messages. You can still acknowledge and continue.',
-              }[locale];
+            ? inlineCopy(
+                  {
+                      de:
+                          pendingCount === 1
+                              ? '1 neue Nachricht seit der letzten Prüfung.'
+                              : `${pendingCount} neue Nachrichten seit der letzten Prüfung.`,
+                      en: pendingCount === 1 ? '1 new message since last review.' : `${pendingCount} new messages since last review.`,
+                  },
+                  locale,
+              )
+            : t(locale, 'admin', 'copy.noPendingMessagesYouCanStillAcknowledgeAndContinue');
 
-    const respondInOfferLabel = { de: 'Im Angebot antworten', en: 'Respond in offer' }[locale];
-    const confirmLabel = { de: 'Bestätigen', en: 'Confirm' }[locale];
+    const respondInOfferLabel = t(locale, 'admin', 'copy.respondInOffer');
+    const confirmLabel = t(locale, 'admin', 'copy.confirm');
 
     return (
         <AdminPageChrome
-            crumbs={[{ label: adminOfferChatReviewsPageTitle[locale], to: '/{-$locale}/admin/offer-chat-reviews' }, { label: cookLabel }]}
+            crumbs={[{ label: adminOfferChatReviewsPageTitle(locale), to: '/{-$locale}/admin/offer-chat-reviews' }, { label: cookLabel }]}
             contentClassName="min-h-0 overflow-hidden gap-0 pb-0"
         >
             <AdminPinnedFooterLayout
@@ -200,12 +195,7 @@ export function AdminOfferChatReviewPage({
                             message,
                         });
                         if (result.error || !result.data?.admin.bookingRequestOfferChatMessageUpdate.success) {
-                            toast.error(
-                                {
-                                    de: 'Nachricht konnte nicht gespeichert werden.',
-                                    en: 'Could not save the message.',
-                                }[locale],
-                            );
+                            toast.error(t(locale, 'admin', 'copy.couldNotSaveTheMessage'));
                             return false;
                         }
                         return true;
@@ -218,14 +208,8 @@ export function AdminOfferChatReviewPage({
                         if (result.error || !result.data?.admin.bookingRequestOfferChatMessageVisibilityUpdate.success) {
                             toast.error(
                                 hiddenByAdmin
-                                    ? {
-                                          de: 'Nachricht konnte nicht verborgen werden.',
-                                          en: 'Could not hide the message.',
-                                      }[locale]
-                                    : {
-                                          de: 'Nachricht konnte nicht wieder angezeigt werden.',
-                                          en: 'Could not show the message again.',
-                                      }[locale],
+                                    ? t(locale, 'admin', 'copy.couldNotHideTheMessage')
+                                    : t(locale, 'admin', 'copy.couldNotShowTheMessageAgain'),
                             );
                             return false;
                         }
@@ -236,12 +220,7 @@ export function AdminOfferChatReviewPage({
                             bookingRequestOfferEventId: chatMessageId,
                         });
                         if (result.error || !result.data?.admin.bookingRequestOfferChatMessageDelete.success) {
-                            toast.error(
-                                {
-                                    de: 'Nachricht konnte nicht gelöscht werden.',
-                                    en: 'Could not delete the message.',
-                                }[locale],
-                            );
+                            toast.error(t(locale, 'admin', 'copy.couldNotDeleteTheMessage'));
                             return false;
                         }
                         return true;
@@ -252,12 +231,7 @@ export function AdminOfferChatReviewPage({
                             emoji,
                         });
                         if (result.error || !result.data?.admin.bookingRequestOfferChatMessageReactionUpsert.success) {
-                            toast.error(
-                                {
-                                    de: 'Reaktion konnte nicht gespeichert werden.',
-                                    en: 'Could not save the reaction.',
-                                }[locale],
-                            );
+                            toast.error(t(locale, 'admin', 'copy.couldNotSaveTheReaction'));
                             return false;
                         }
                         return true;

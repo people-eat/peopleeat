@@ -1,67 +1,65 @@
+import { t } from '../../i18n/t';
 import type { Locale } from '../utils/locale';
-import { ASSISTANT_EMPTY_COPY } from './assistantSidebarCopy';
+import { assistantEmptySuggestions } from './assistantSidebarCopy';
 import type { AssistantSidebarSurface } from './assistantSidebarCopy';
-
-type Localized = Record<Locale, string>;
 
 /**
  * Empty-state suggestion chips: page-aware chip first (when matched), then the
  * static surface starters, ending with “What can you do?”. Labels are sent
  * verbatim on tap.
  */
-export function assistantSidebarSuggestions(surface: AssistantSidebarSurface, pathWithoutLocale: string): Localized[] {
-    const base = ASSISTANT_EMPTY_COPY[surface].suggestions;
-    const contextual = contextualSuggestion(surface, pathWithoutLocale);
+export function assistantSidebarSuggestions(surface: AssistantSidebarSurface, pathWithoutLocale: string, locale: Locale): string[] {
+    const base = assistantEmptySuggestions(surface, locale);
+    const contextual = contextualSuggestion(surface, pathWithoutLocale, locale);
     if (!contextual) return base;
 
     const meta = base[base.length - 1]!;
     const starters = base.slice(0, -1);
-    const withoutDup = starters.filter((chip) => chip.en !== contextual.en && chip.de !== contextual.de);
+    const withoutDup = starters.filter((chip) => chip !== contextual);
     return [contextual, ...withoutDup, meta];
 }
 
-function contextualSuggestion(surface: AssistantSidebarSurface, path: string): Localized | null {
+function contextualSuggestion(surface: AssistantSidebarSurface, path: string, locale: Locale): string | null {
     if (surface === 'admin') {
         if (path.startsWith('/admin/support') || path.includes('/support-request')) {
-            return { de: 'Offene Support-Anfragen zeigen', en: 'Show open support requests' };
+            return t(locale, 'common', 'assistantSidebar.suggest.adminSupport');
         }
         if (path.startsWith('/admin/users') || path.startsWith('/admin/user/')) {
-            return { de: 'Nutzer per E-Mail finden', en: 'Find a user by email' };
+            return t(locale, 'common', 'assistantSidebar.suggest.adminUsers');
         }
         if (path.includes('cook') || path.includes('approval')) {
-            return { de: 'Offene Koch-Freigaben zeigen', en: 'Show pending cook approvals' };
+            return t(locale, 'common', 'assistantSidebar.suggest.adminCookApprovals');
         }
         return null;
     }
 
     if (surface === 'cook') {
         if (path.includes('/meal')) {
-            return { de: 'Hilf mir bei meinen Gerichten', en: 'Help me with my meals' };
+            return t(locale, 'common', 'assistantSidebar.suggest.cookMeals');
         }
         if (path.includes('/menu')) {
-            return { de: 'Hilf mir bei meinen Menüs', en: 'Help me with my menus' };
+            return t(locale, 'common', 'assistantSidebar.suggest.cookMenus');
         }
         if (path.includes('/booking-request') || path.includes('/offer')) {
-            return { de: 'Offene Anfragen zeigen', en: 'Show open requests' };
+            return t(locale, 'common', 'assistantSidebar.suggest.cookRequests');
         }
         if (path.includes('/travel')) {
-            return { de: 'Reisegebiet erklären', en: 'Explain my travel area' };
+            return t(locale, 'common', 'assistantSidebar.suggest.cookTravel');
         }
         if (path.includes('/profile') || path.includes('/chef')) {
-            return { de: 'Mein Profil verbessern', en: 'Improve my profile' };
+            return t(locale, 'common', 'assistantSidebar.suggest.cookProfile');
         }
         return null;
     }
 
-    // customer
     if (path.includes('/booking-request')) {
-        return { de: 'Buchungsanfrage starten', en: 'Start a booking request' };
+        return t(locale, 'common', 'assistantSidebar.suggest.customerBooking');
     }
     if (path.includes('/chef') || path.includes('/cook')) {
-        return { de: 'Koch in meiner Stadt finden', en: 'Find a chef in my city' };
+        return t(locale, 'common', 'assistantSidebar.suggest.customerChef');
     }
     if (path.includes('/support')) {
-        return { de: 'Support-Anfrage starten', en: 'Start a support request' };
+        return t(locale, 'common', 'assistantSidebar.suggest.customerSupport');
     }
     return null;
 }

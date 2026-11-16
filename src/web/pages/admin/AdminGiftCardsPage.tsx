@@ -2,6 +2,8 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import type { SortingState, Updater } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
 
+import { t } from '../../../i18n/t';
+import { inlineCopy } from '../../../shared';
 import { AdminListPaginationBar } from '../../components/AdminListPaginationBar';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
@@ -10,6 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from '../../components/base/tabs';
 import type { GqlCAdminGiftCardsPageQuery, GqlCGiftCardPaymentStatus } from '../../graphql/generated';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useLocale } from '../../hooks/useLocale';
+import type { Locale } from '../../utils/locale';
 import { ADMIN_GIFT_CARDS_SORT_FIELDS, adminGiftCardPaymentStatusLabel } from './adminGiftCardsColumns';
 import type { AdminGiftCardsSortField } from './adminGiftCardsColumns';
 import { AdminGiftCardsDataTable } from './AdminGiftCardsDataTable';
@@ -30,11 +33,12 @@ import {
     parseAdminListSortSearch,
 } from './adminListSortSearch';
 
-export const adminGiftCardsPageTitle = { de: 'Gutscheinliste', en: 'Gift card list' } as const;
-export const adminGiftCardsPageDescription = {
-    de: 'Gekaufte Gutscheine durchsuchen und einsehen.',
-    en: 'Browse and inspect purchased gift cards.',
-} as const;
+export function adminGiftCardsPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.giftCards.title');
+}
+export function adminGiftCardsPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.giftCards.description');
+}
 
 const ADMIN_GIFT_CARDS_ALL_STATUSES: GqlCGiftCardPaymentStatus[] = ['PREPARED', 'PAYED'];
 
@@ -124,7 +128,7 @@ export function AdminGiftCardsPage({ data, search }: { data: GqlCAdminGiftCardsP
     }
 
     const statusTabs: { value: GqlCGiftCardPaymentStatus | undefined; label: string }[] = [
-        { value: undefined, label: { de: 'Alle', en: 'All' }[locale] },
+        { value: undefined, label: t(locale, 'admin', 'copy.all') },
         ...ADMIN_GIFT_CARDS_ALL_STATUSES.map((status) => ({
             value: status,
             label: adminGiftCardPaymentStatusLabel(status, locale),
@@ -164,7 +168,7 @@ export function AdminGiftCardsPage({ data, search }: { data: GqlCAdminGiftCardsP
                 }
             >
                 <Tabs value={search.status ?? 'all'}>
-                    <TabsList variant="line" aria-label={{ de: 'Zahlungsstatus', en: 'Payment status' }[locale]}>
+                    <TabsList variant="line" aria-label={t(locale, 'admin', 'copy.paymentStatus')}>
                         {statusTabs.map((tab) => (
                             <TabsTrigger key={tab.value ?? 'all'} value={tab.value ?? 'all'} asChild>
                                 <Link
@@ -188,16 +192,17 @@ export function AdminGiftCardsPage({ data, search }: { data: GqlCAdminGiftCardsP
                         type="search"
                         value={draftQ}
                         onChange={(event) => setDraftQ(event.target.value)}
-                        placeholder={{ de: 'E-Mail, Name oder Code suchen…', en: 'Search email, name, or code…' }[locale]}
-                        aria-label={{ de: 'Gutscheine suchen', en: 'Search gift cards' }[locale]}
+                        placeholder={t(locale, 'admin', 'copy.searchEmailNameOrCode')}
+                        aria-label={t(locale, 'admin', 'copy.searchGiftCards')}
                     />
                     <p className="text-sm text-muted-foreground tabular-nums">
-                        {
+                        {inlineCopy(
                             {
                                 de: `${total} ${total === 1 ? 'Gutschein' : 'Gutscheine'}`,
                                 en: `${total} ${total === 1 ? 'gift card' : 'gift cards'}`,
-                            }[locale]
-                        }
+                            },
+                            locale,
+                        )}
                     </p>
                 </div>
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
+import { t } from '../../../i18n/t';
 import { Button } from '../../components/base/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../../components/base/dialog';
 import type { GqlCProfileCookOfferAddonsPageQuery } from '../../graphql/generated';
@@ -57,13 +58,13 @@ export function ProfileCookOfferAddonsPage({ data }: { data: GqlCProfileCookOffe
             if (!cookOfferAddonId || result.error || !result.data?.user.cook.offerAddonUpsert.success) {
                 throw new Error('create failed');
             }
-            toast.success({ de: 'Zusatzleistung angelegt.', en: 'Offer extra created.' }[locale]);
+            toast.success(t(locale, 'profileCook', 'offerAddons.created'));
             await navigate({
                 to: '/{-$locale}/profile/offer-addons/$cookOfferAddonId/edit',
                 params: { cookOfferAddonId },
             });
         } catch {
-            toast.error({ de: 'Anlegen fehlgeschlagen.', en: 'Could not create.' }[locale]);
+            toast.error(t(locale, 'profileCook', 'actions.createFailed'));
         } finally {
             setCreating(false);
         }
@@ -77,14 +78,14 @@ export function ProfileCookOfferAddonsPage({ data }: { data: GqlCProfileCookOffe
             if (!cookOfferAddonId || result.error || !result.data?.user.cook.offerAddonCloneFromTemplate.success) {
                 throw new Error('clone failed');
             }
-            toast.success({ de: 'Vorschlag übernommen.', en: 'Suggestion added.' }[locale]);
+            toast.success(t(locale, 'profileCook', 'offerAddons.suggestionAdded'));
             setSuggestionsOpen(false);
             await navigate({
                 to: '/{-$locale}/profile/offer-addons/$cookOfferAddonId/edit',
                 params: { cookOfferAddonId },
             });
         } catch {
-            toast.error({ de: 'Übernehmen fehlgeschlagen.', en: 'Could not add the suggestion.' }[locale]);
+            toast.error(t(locale, 'profileCook', 'offerAddons.suggestionFailed'));
         } finally {
             setCloningId(null);
         }
@@ -94,32 +95,23 @@ export function ProfileCookOfferAddonsPage({ data }: { data: GqlCProfileCookOffe
         <main id="main-content" className="grid w-full min-w-0 content-start gap-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="grid gap-2">
-                    <h1 className="font-serif text-2xl/tight text-foreground">{profileCookOfferAddonsPageTitle[locale]}</h1>
-                    <p className="text-muted-foreground">{profileCookOfferAddonsPageDescription[locale]}</p>
+                    <h1 className="font-serif text-2xl/tight text-foreground">{profileCookOfferAddonsPageTitle(locale)}</h1>
+                    <p className="text-muted-foreground">{profileCookOfferAddonsPageDescription(locale)}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                     <Dialog open={suggestionsOpen} onOpenChange={setSuggestionsOpen}>
                         <DialogTrigger asChild>
                             <Button type="button" variant="outline" disabled={creating || cloningId != null}>
-                                {{ de: 'Aus Vorschlägen', en: 'Add from suggestions' }[locale]}
+                                {t(locale, 'profileCook', 'offerAddons.fromSuggestions')}
                             </Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
-                                <DialogTitle>{{ de: 'Vorschläge', en: 'Suggestions' }[locale]}</DialogTitle>
-                                <DialogDescription>
-                                    {
-                                        {
-                                            de: 'Übernimm eine Vorlage in deine Bibliothek. Preis und Text kannst du danach anpassen.',
-                                            en: 'Copy a template into your library. You can change the price and text afterwards.',
-                                        }[locale]
-                                    }
-                                </DialogDescription>
+                                <DialogTitle>{t(locale, 'profileCook', 'offerAddons.suggestions')}</DialogTitle>
+                                <DialogDescription>{t(locale, 'profileCook', 'offerAddons.suggestionsHint')}</DialogDescription>
                             </DialogHeader>
                             {templates.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">
-                                    {{ de: 'Keine Vorschläge.', en: 'No suggestions.' }[locale]}
-                                </p>
+                                <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'offerAddons.noSuggestions')}</p>
                             ) : (
                                 <ul className="grid max-h-96 gap-2 overflow-y-auto">
                                     {templates.map((template) => (
@@ -142,15 +134,9 @@ export function ProfileCookOfferAddonsPage({ data }: { data: GqlCProfileCookOffe
                                                 disabled={cloningId != null}
                                                 onClick={() => void onClone(template.offerAddonTemplateId)}
                                             >
-                                                {
-                                                    {
-                                                        de:
-                                                            cloningId === template.offerAddonTemplateId
-                                                                ? 'Wird hinzugefügt…'
-                                                                : 'Hinzufügen',
-                                                        en: cloningId === template.offerAddonTemplateId ? 'Adding…' : 'Add',
-                                                    }[locale]
-                                                }
+                                                {cloningId === template.offerAddonTemplateId
+                                                    ? t(locale, 'profileCook', 'offerAddons.adding')
+                                                    : t(locale, 'profileCook', 'offerAddons.add')}
                                             </Button>
                                         </li>
                                     ))}
@@ -160,20 +146,13 @@ export function ProfileCookOfferAddonsPage({ data }: { data: GqlCProfileCookOffe
                     </Dialog>
                     <Button type="button" disabled={creating || cloningId != null} onClick={() => void onCreate()}>
                         <PlusIcon className="size-4" />
-                        {
-                            {
-                                de: creating ? 'Wird angelegt…' : 'Eigene Zusatzleistung',
-                                en: creating ? 'Creating…' : 'Custom offer extra',
-                            }[locale]
-                        }
+                        {creating ? t(locale, 'profileCook', 'actions.creating') : t(locale, 'profileCook', 'actions.newExtra')}
                     </Button>
                 </div>
             </div>
 
             {addons.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                    {{ de: 'Noch keine Zusatzleistungen.', en: 'No offer extras yet.' }[locale]}
-                </p>
+                <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'offerAddons.empty')}</p>
             ) : (
                 <ul className="grid gap-3">
                     {addons.map((addon) => (

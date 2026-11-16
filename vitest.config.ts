@@ -35,7 +35,12 @@ export default defineConfig({
                 test: {
                     name: 'server',
                     environment: 'node',
-                    include: ['src/server/**/*.test.{ts,tsx}', 'src/shared/**/*.test.{ts,tsx}', 'scripts/**/*.test.{ts,tsx}'],
+                    include: [
+                        'src/server/**/*.test.{ts,tsx}',
+                        'src/shared/**/*.test.{ts,tsx}',
+                        'src/i18n/**/*.test.{ts,tsx}',
+                        'scripts/**/*.test.{ts,tsx}',
+                    ],
                     setupFiles: ['src/server/test/vitestSetup.ts'],
                     clearMocks: true,
                     // Remote shared test DB + lifecycle side effects (email/WhatsApp) under parallel load.

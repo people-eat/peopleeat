@@ -1,5 +1,6 @@
 import { StarIcon } from 'lucide-react';
 import { useState } from 'react';
+import { inlineCopy } from '../../shared';
 
 import { useLocale } from '../hooks/useLocale';
 import { cn } from '../utils/cn';
@@ -41,7 +42,7 @@ export function TestimonialRatingInput({
     return (
         <div
             role="radiogroup"
-            aria-label={{ de: 'Sternebewertung', en: 'Star rating' }[locale]}
+            aria-label={inlineCopy({ de: 'Sternebewertung', en: 'Star rating' }, locale)}
             className={cn('inline-flex items-center gap-0.5', className)}
             onMouseLeave={() => setHover(null)}
         >
@@ -53,12 +54,13 @@ export function TestimonialRatingInput({
                         type="button"
                         role="radio"
                         aria-checked={value === position}
-                        aria-label={
+                        aria-label={inlineCopy(
                             {
                                 de: `${position} ${position === 1 ? 'Stern' : 'Sterne'}`,
                                 en: `${position} ${position === 1 ? 'star' : 'stars'}`,
-                            }[locale]
-                        }
+                            },
+                            locale,
+                        )}
                         disabled={disabled}
                         className={cn(
                             'rounded-sm p-0.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',

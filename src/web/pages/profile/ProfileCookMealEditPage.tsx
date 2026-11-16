@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
+import { t } from '../../../i18n/t';
+import type { Locale } from '../../../shared/locale';
 import { Button } from '../../components/base/button';
 import { Input } from '../../components/base/input';
 import { Textarea } from '../../components/base/textarea';
@@ -17,14 +19,12 @@ import { cookStubRouteBySlug } from './cookCatalog';
 
 const mealsRoute = cookStubRouteBySlug('meals');
 
-export const profileCookMealEditPageTitle = {
-    de: 'Gericht bearbeiten',
-    en: 'Edit meal',
-} as const;
-export const profileCookMealEditPageDescription = {
-    de: 'Titel, Beschreibung und Bild bearbeiten.',
-    en: 'Edit title, description, and image.',
-} as const;
+export function profileCookMealEditPageTitle(locale: Locale): string {
+    return t(locale, 'profileCook', 'mealEdit.title');
+}
+export function profileCookMealEditPageDescription(locale: Locale): string {
+    return t(locale, 'profileCook', 'mealEdit.description');
+}
 
 type MealRow = NonNullable<NonNullable<NonNullable<GqlCProfileCookMealPageQuery['currentSession']['user']>['cook']>['meal']>;
 
@@ -69,10 +69,10 @@ export function ProfileCookMealEditPage({ data, mealId }: { data: GqlCProfileCoo
                 },
             });
             if (result.error || !result.data?.user.cook.mealUpsert.success) {
-                toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+                toast.error(t(locale, 'common', 'saveFailed'));
                 return;
             }
-            toast.success({ de: 'Gespeichert.', en: 'Saved.' }[locale]);
+            toast.success(t(locale, 'profileCook', 'actions.saved'));
             await navigate({ to: '/{-$locale}/profile/meals/$mealId', params: { mealId } });
         },
     });
@@ -101,17 +101,17 @@ export function ProfileCookMealEditPage({ data, mealId }: { data: GqlCProfileCoo
                     <>
                         <Button type="button" variant="outline" disabled={isSubmitting || imageBusy} asChild>
                             <Link to="/{-$locale}/profile/meals/$mealId" params={{ mealId }}>
-                                {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                {t(locale, 'common', 'cancel')}
                             </Link>
                         </Button>
                         <Button type="submit" form="meal-form" disabled={isSubmitting || imageBusy}>
-                            {isSubmitting ? { de: 'Speichern…', en: 'Saving…' }[locale] : { de: 'Speichern', en: 'Save' }[locale]}
+                            {isSubmitting ? t(locale, 'profileCook', 'actions.saving') : t(locale, 'common', 'save')}
                         </Button>
                     </>
                 ) : (
                     <Button type="button" disabled={isSubmitting || imageBusy} asChild>
                         <Link to="/{-$locale}/profile/meals/$mealId" params={{ mealId }}>
-                            {{ de: 'Zur Gerichtansicht', en: 'Back to meal' }[locale]}
+                            {t(locale, 'profileCook', 'mealEdit.backToMeal')}
                         </Link>
                     </Button>
                 )
@@ -130,7 +130,7 @@ export function ProfileCookMealEditPage({ data, mealId }: { data: GqlCProfileCoo
                     {(field) => (
                         <div className="grid gap-1.5">
                             <label htmlFor="meal-title" className="text-sm font-medium">
-                                {{ de: 'Titel', en: 'Title' }[locale]}
+                                {t(locale, 'profileCook', 'actions.title')}
                             </label>
                             <Input
                                 id="meal-title"
@@ -148,7 +148,7 @@ export function ProfileCookMealEditPage({ data, mealId }: { data: GqlCProfileCoo
                     {(field) => (
                         <div className="grid gap-1.5">
                             <label htmlFor="meal-description" className="text-sm font-medium">
-                                {{ de: 'Beschreibung', en: 'Description' }[locale]}
+                                {t(locale, 'profileCook', 'actions.description')}
                             </label>
                             <Textarea
                                 id="meal-description"

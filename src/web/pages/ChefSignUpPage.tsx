@@ -4,6 +4,7 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation, useQuery } from 'urql';
 
+import { inlineCopy } from '../../shared';
 import { chefSignUpFunnelArea } from '../../shared/chefSignUpFunnel';
 import type { ChefSignUpFunnelClientStep } from '../../shared/chefSignUpFunnel';
 import { expansionMarketFromParam } from '../../shared/expansionMarkets';
@@ -21,8 +22,8 @@ import type { GqlCChefSignUpPageQuery, GqlCLocationSuggestion } from '../graphql
 import { ChefSignUpCookCreateDocument, ChefSignUpFunnelTrackDocument, CookCreateLocationSuggestionsDocument } from '../graphql/generated';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 
-const chefSignUpPageTitle = { de: 'Als Koch registrieren', en: 'Chef sign-up' } as const;
 const TRAVEL_DISTANCE_OPTIONS = ['50', '100', '150', '200'] as const;
 
 type ChefSignUpFormValues = {
@@ -64,7 +65,9 @@ export function ChefSignUpPage({
     inviteCookId?: string;
 }) {
     const locale = useLocale();
+    const { t } = useT('public');
     const market = expansionMarketFromParam(marketSlug);
+    const inCountry = market ? (locale === 'de' ? market.inCountryDe : market.inCountryEn) : '';
     const [success, setSuccess] = useState(Boolean(loaderData.currentSession.user?.cook));
     const [session, setSession] = useState(loaderData.currentSession);
     const [, cookCreate] = useMutation(ChefSignUpCookCreateDocument);
@@ -111,27 +114,17 @@ export function ChefSignUpPage({
         } satisfies ChefSignUpFormValues,
         onSubmit: async ({ value }) => {
             if (!value.selectedLocation?.displayText) {
-                toast.error({ de: 'Bitte vervollständige das Koch-Profil.', en: 'Please complete the chef profile.' }[locale]);
+                toast.error(t('chefSignUp.completeProfile'));
                 return;
             }
             const cents = euroTextToCents(value.travelExpensesText);
             if (cents === null || cents < 25) {
-                toast.error(
-                    {
-                        de: 'Bitte gib gültige Reisekosten ein (mind. 0,25 €).',
-                        en: 'Please enter valid travel expenses (at least €0.25).',
-                    }[locale],
-                );
+                toast.error(t('chefSignUp.invalidTravelExpenses'));
                 return;
             }
             const distance = Number(value.maximumTravelDistanceText);
             if (!Number.isInteger(distance) || distance < 5 || distance > 250) {
-                toast.error(
-                    {
-                        de: 'Die maximale Reisestrecke muss zwischen 5 und 250 km liegen.',
-                        en: 'Maximum travel distance must be between 5 and 250 km.',
-                    }[locale],
-                );
+                toast.error(t('chefSignUp.invalidTravelDistance'));
                 return;
             }
 
@@ -149,12 +142,12 @@ export function ChefSignUpPage({
                     setSuccess(true);
                     return;
                 }
-                toast.error({ de: 'Koch-Konto konnte nicht erstellt werden.', en: 'Could not create the chef account.' }[locale]);
+                toast.error(t('chefSignUp.createFailed'));
                 return;
             }
             trackFunnelStep('step_completed', 'profile');
             setSuccess(true);
-            toast.success({ de: 'Koch-Konto erstellt.', en: 'Chef account created.' }[locale]);
+            toast.success(t('chefSignUp.created'));
         },
     });
 
@@ -177,56 +170,33 @@ export function ChefSignUpPage({
 
             <div className="mx-auto grid w-full max-w-lg flex-1 content-start gap-10 p-8">
                 <div className="grid gap-3">
-                    <h1 className="font-serif text-3xl tracking-tight">{chefSignUpPageTitle[locale]}</h1>
+                    <h1 className="font-serif text-3xl tracking-tight">{t('chefSignUp.title')}</h1>
                     {inviteCookId && !alreadyCook ? (
-                        <StatusAlert tone="info" title={{ de: 'Einladung von einem Koch', en: 'Invited by a chef' }[locale]}>
-                            {
-                                {
-                                    de: 'Du wurdest von einem peopleeat-Koch eingeladen. Deine Registrierung wird dem einladenden Koch zugeordnet.',
-                                    en: 'A peopleeat chef invited you. Your registration will be attributed to that chef.',
-                                }[locale]
-                            }
+                        <StatusAlert tone="info" title={t('chefSignUp.inviteTitle')}>
+                            {t('chefSignUp.inviteBody')}
                         </StatusAlert>
                     ) : null}
                     {market ? (
-                        <StatusAlert tone="info" title={market.foundingChefTitle[locale]}>
-                            {
-                                {
-                                    de: `Du meldest dich als Gründungskoch ${market.inCountryDe} an. Profil und Menü jetzt. Gastanfragen ab Anfang 2027.`,
-                                    en: `You are joining as a founding chef ${market.inCountryEn}. Profile and menu now. Guest requests from early 2027.`,
-                                }[locale]
-                            }
+                        <StatusAlert tone="info" title={inlineCopy(market.foundingChefTitle, locale)}>
+                            {t('chefSignUp.marketBody', { inCountry })}
                         </StatusAlert>
                     ) : null}
                     <p className="leading-relaxed text-muted-foreground">
-                        {alreadyCook
-                            ? {
-                                  de: 'Willkommen bei peopleeat! Gehe zu deinem Profil, um die nächsten Schritte abzuschließen.',
-                                  en: 'Welcome to peopleeat! Go to your profile to finalise next steps',
-                              }[locale]
-                            : {
-                                  de: 'Log-on und Koch-Profil in einem Schritt, oder bestehendes Konto zum Koch erweitern.',
-                                  en: 'Log on and create your chef profile in one step, or upgrade an existing account.',
-                              }[locale]}
+                        {alreadyCook ? t('chefSignUp.alreadyCookIntro') : t('chefSignUp.intro')}
                     </p>
                 </div>
 
                 {alreadyCook ? (
                     <StatusAlert
                         tone="success"
-                        title={{ de: 'Du bist als Koch registriert', en: 'You are registered as a chef' }[locale]}
+                        title={t('chefSignUp.registeredTitle')}
                         action={
                             <Button type="button" asChild>
-                                <Link to="/{-$locale}/profile">{{ de: 'Zum Profil', en: 'Go to profile' }[locale]}</Link>
+                                <Link to="/{-$locale}/profile">{t('chefSignUp.goToProfile')}</Link>
                             </Button>
                         }
                     >
-                        {
-                            {
-                                de: 'Als Nächstes Sichtbarkeit und Stripe-Onboarding unter Profil erledigen.',
-                                en: 'Next: finish visibility and Stripe onboarding under Profile.',
-                            }[locale]
-                        }
+                        {t('chefSignUp.registeredBody')}
                     </StatusAlert>
                 ) : (
                     <AuthIdentityGate
@@ -253,30 +223,14 @@ export function ChefSignUpPage({
                                 }}
                             >
                                 <div className="grid gap-1.5">
-                                    <p className="font-medium">{{ de: 'Koch-Profil anlegen', en: 'Create chef profile' }[locale]}</p>
-                                    <p className="text-sm/relaxed text-muted-foreground">
-                                        {
-                                            {
-                                                de: 'Dein Konto ist bereit. Vervollständige das Koch-Profil, um Mitglied zu werden.',
-                                                en: 'Your account is ready. Complete the chef profile to become a member.',
-                                            }[locale]
-                                        }
-                                    </p>
+                                    <p className="font-medium">{t('chefSignUp.createProfile')}</p>
+                                    <p className="text-sm/relaxed text-muted-foreground">{t('chefSignUp.createProfileBody')}</p>
                                 </div>
 
                                 <div className="grid gap-3">
                                     <div className="grid gap-1.5">
-                                        <span className="text-sm font-medium">
-                                            {{ de: 'Startadresse für die Reisestrecke', en: 'Travel origin address' }[locale]}
-                                        </span>
-                                        <p className="text-sm/relaxed text-muted-foreground">
-                                            {
-                                                {
-                                                    de: 'Wird nicht für Gastgeber angezeigt. Sie sehen nur die Stadt.',
-                                                    en: 'Not shown to hosts. They only see the city.',
-                                                }[locale]
-                                            }
-                                        </p>
+                                        <span className="text-sm font-medium">{t('chefSignUp.originAddress')}</span>
+                                        <p className="text-sm/relaxed text-muted-foreground">{t('chefSignUp.originHint')}</p>
                                     </div>
                                     <Combobox
                                         filter={null}
@@ -302,14 +256,12 @@ export function ChefSignUpPage({
                                         <ComboboxInput
                                             className="w-full"
                                             disabled={isSubmitting}
-                                            placeholder={{ de: 'Adresse suchen…', en: 'Search address…' }[locale]}
+                                            placeholder={t('chefSignUp.searchAddress')}
                                             showClear={false}
                                         />
                                         <ComboboxContent>
                                             <ComboboxEmpty>
-                                                {suggestionsFetching
-                                                    ? { de: 'Suche…', en: 'Searching…' }[locale]
-                                                    : { de: 'Keine Treffer.', en: 'No matches.' }[locale]}
+                                                {suggestionsFetching ? t('chefSignUp.searching') : t('chefSignUp.noMatches')}
                                             </ComboboxEmpty>
                                             <ComboboxList>
                                                 {(item: string) => (
@@ -322,12 +274,7 @@ export function ChefSignUpPage({
                                     </Combobox>
                                     {selectedLocation?.structuredAddress ? (
                                         <p className="text-sm text-muted-foreground">
-                                            {
-                                                {
-                                                    de: `Gastgeber sehen ${selectedLocation.structuredAddress.city}.`,
-                                                    en: `Hosts will see ${selectedLocation.structuredAddress.city}.`,
-                                                }[locale]
-                                            }
+                                            {t('chefSignUp.hostsSeeCity', { city: selectedLocation.structuredAddress.city })}
                                         </p>
                                     ) : null}
                                 </div>
@@ -336,9 +283,7 @@ export function ChefSignUpPage({
                                     <form.Field name="maximumTravelDistanceText">
                                         {(field) => (
                                             <div className="grid gap-2">
-                                                <span className="text-sm font-medium">
-                                                    {{ de: 'Maximale Reisestrecke', en: 'Maximum travel distance' }[locale]}
-                                                </span>
+                                                <span className="text-sm font-medium">{t('chefSignUp.maxDistance')}</span>
                                                 <Select
                                                     value={field.state.value}
                                                     disabled={isSubmitting}
@@ -362,7 +307,7 @@ export function ChefSignUpPage({
                                         {(field) => (
                                             <div className="grid gap-2">
                                                 <label htmlFor="chef-sign-up-travel-expenses" className="text-sm font-medium">
-                                                    {{ de: 'Reisekosten je km', en: 'Travel expenses per km' }[locale]}
+                                                    {t('chefSignUp.travelPerKm')}
                                                 </label>
                                                 <div className="relative">
                                                     <Input
@@ -384,7 +329,7 @@ export function ChefSignUpPage({
                                 </div>
 
                                 <Button type="submit" className="mt-1" disabled={isSubmitting || !formReady}>
-                                    {{ de: 'Als Koch registrieren', en: 'Register as chef' }[locale]}
+                                    {t('chefSignUp.submit')}
                                 </Button>
                             </form>
                         )}

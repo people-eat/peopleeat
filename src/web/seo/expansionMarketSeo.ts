@@ -1,5 +1,7 @@
+import { t } from '../../i18n/t';
 import type { ExpansionMarket } from '../../shared/expansionMarkets';
 import { expansionMarketFaqEntries } from '../../shared/expansionMarkets';
+import { inlineCopy } from '../../shared/locale';
 import type { Locale } from '../../shared/locale';
 import { jsonLdBreadcrumbList, jsonLdCountryService, jsonLdFaqPage, jsonLdHeadScripts } from './jsonLd';
 import { SITE_NAME } from './seoConstants';
@@ -9,8 +11,8 @@ import { webPageUrlGet } from './webPageUrlGet';
 export function expansionMarketComingToHead(market: ExpansionMarket, locale: Locale) {
     const webPageUrl = webPageUrlGet();
     const path = market.comingToPath;
-    const title = market.comingToTitle[locale];
-    const description = market.comingToDescription[locale];
+    const title = inlineCopy(market.comingToTitle, locale);
+    const description = inlineCopy(market.comingToDescription, locale);
     return {
         ...seoMeta({ title, description, path, locale, webPageUrl }),
         scripts: jsonLdHeadScripts([
@@ -39,14 +41,14 @@ export function expansionMarketComingToHead(market: ExpansionMarket, locale: Loc
 export function expansionMarketFoundingChefHead(market: ExpansionMarket, locale: Locale) {
     const webPageUrl = webPageUrlGet();
     const path = market.foundingChefPath;
-    const title = market.foundingChefTitle[locale];
-    const description = market.foundingChefDescription[locale];
+    const title = inlineCopy(market.foundingChefTitle, locale);
+    const description = inlineCopy(market.foundingChefDescription, locale);
     return {
         ...seoMeta({ title, description, path, locale, webPageUrl }),
         scripts: jsonLdHeadScripts([
             jsonLdBreadcrumbList(webPageUrl, locale, [
                 { name: SITE_NAME, path: '/' },
-                { name: { de: 'Koch werden', en: 'How to become a chef' }[locale], path: '/how-to-become-a-chef' },
+                { name: t(locale, 'public', 'howToBecome.breadcrumb'), path: '/how-to-become-a-chef' },
                 { name: title, path },
             ]),
             jsonLdCountryService({

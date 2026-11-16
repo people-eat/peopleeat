@@ -5,7 +5,8 @@ import { toast } from 'sonner';
 import { createRequest, useClient, useMutation, useQuery } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
-import { formatDate, userDisplayName } from '../../../shared';
+import { t } from '../../../i18n/t';
+import { formatDate, inlineCopy, userDisplayName } from '../../../shared';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import {
     AlertDialog,
@@ -36,6 +37,7 @@ import {
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
+import type { Locale } from '../../utils/locale';
 import {
     adminFeatureToggleDescription,
     adminFeatureToggleLabel,
@@ -45,11 +47,12 @@ import {
 import type { AdminFeatureToggleOverrideMode } from './adminFeatureToggles';
 import { adminOverviewCardClassName } from './adminOverviewLinkCard';
 
-export const adminFeatureTogglesPageTitle = { de: 'Feature Toggles', en: 'Feature Toggles' } as const;
-export const adminFeatureTogglesPageDescription = {
-    de: 'Globale Feature Toggles und Nutzer-Ausnahmen. Fehlende Einträge gelten als aus.',
-    en: 'Global feature toggles and per-user overrides. Missing entries count as off.',
-} as const;
+export function adminFeatureTogglesPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'nav.featureToggles.title');
+}
+export function adminFeatureTogglesPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.featureToggles.description');
+}
 
 type FeatureToggleRow = NonNullable<
     NonNullable<NonNullable<GqlCAdminFeatureTogglesPageQuery['currentSession']['user']>['admin']>['featureToggles']
@@ -165,19 +168,20 @@ function FeatureToggleAddOverrideDialog({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>{{ de: 'Nutzer-Ausnahme hinzufügen', en: 'Add user override' }[locale]}</DialogTitle>
+                    <DialogTitle>{inlineCopy({ de: 'Nutzer-Ausnahme hinzufügen', en: 'Add user override' }, locale)}</DialogTitle>
                     <DialogDescription>
-                        {
+                        {inlineCopy(
                             {
                                 de: `Ausnahme für „${label}“ festlegen.`,
                                 en: `Set an override for “${label}”.`,
-                            }[locale]
-                        }
+                            },
+                            locale,
+                        )}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4">
                     <div className="grid gap-2">
-                        <span className="text-sm font-medium">{{ de: 'Nutzer', en: 'User' }[locale]}</span>
+                        <span className="text-sm font-medium">{inlineCopy({ de: 'Nutzer', en: 'User' }, locale)}</span>
                         <Combobox
                             items={users.map((entry) => entry.userId)}
                             value={selectedUser?.userId ?? null}
@@ -205,15 +209,15 @@ function FeatureToggleAddOverrideDialog({
                         >
                             <ComboboxInput
                                 className="w-full"
-                                placeholder={{ de: 'Nutzer suchen…', en: 'Search users…' }[locale]}
+                                placeholder={inlineCopy({ de: 'Nutzer suchen…', en: 'Search users…' }, locale)}
                                 showClear={false}
                                 disabled={busy}
                             />
                             <ComboboxContent>
                                 <ComboboxEmpty>
                                     {usersFetching
-                                        ? { de: 'Suche…', en: 'Searching…' }[locale]
-                                        : { de: 'Keine Treffer.', en: 'No matches.' }[locale]}
+                                        ? inlineCopy({ de: 'Suche…', en: 'Searching…' }, locale)
+                                        : inlineCopy({ de: 'Keine Treffer.', en: 'No matches.' }, locale)}
                                 </ComboboxEmpty>
                                 <ComboboxList>
                                     {(userId: string) => {
@@ -230,7 +234,7 @@ function FeatureToggleAddOverrideDialog({
                         </Combobox>
                     </div>
                     <div className="grid gap-2">
-                        <span className="text-sm font-medium">{{ de: 'Modus', en: 'Mode' }[locale]}</span>
+                        <span className="text-sm font-medium">{inlineCopy({ de: 'Modus', en: 'Mode' }, locale)}</span>
                         <Select value={addMode} disabled={busy} onValueChange={(value) => setAddMode(value as 'user-on' | 'user-off')}>
                             <SelectTrigger className="w-full">
                                 <SelectValue />
@@ -244,10 +248,10 @@ function FeatureToggleAddOverrideDialog({
                 </div>
                 <DialogFooter>
                     <Button type="button" variant="outline" disabled={busy} onClick={() => onOpenChange(false)}>
-                        {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                        {inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, locale)}
                     </Button>
                     <Button type="button" disabled={!selectedUser || busy} onClick={() => void onAdd()}>
-                        {{ de: 'Hinzufügen', en: 'Add' }[locale]}
+                        {inlineCopy({ de: 'Hinzufügen', en: 'Add' }, locale)}
                     </Button>
                 </DialogFooter>
             </DialogContent>
@@ -275,7 +279,7 @@ function FeatureToggleCard({
     const [dialogOpen, setDialogOpen] = useState(false);
     const [pendingEnabled, setPendingEnabled] = useState<boolean | null>(null);
     const label = adminFeatureToggleLabel(featureToggle.featureToggleKey, locale);
-    const addOverrideLabel = { de: 'Nutzer-Ausnahme hinzufügen', en: 'Add user override' }[locale];
+    const addOverrideLabel = inlineCopy({ de: 'Nutzer-Ausnahme hinzufügen', en: 'Add user override' }, locale);
     const toggleBusy = busyKey === featureToggle.featureToggleKey;
     const addBusy = busyUserKey?.startsWith(`${featureToggle.featureToggleKey}:`) === true;
     const hasOverrides = featureToggle.userOverrides.length > 0;
@@ -293,16 +297,17 @@ function FeatureToggleCard({
                     <div className="flex flex-wrap items-center gap-2">
                         <p className="font-medium">{label}</p>
                         {!featureToggle.persisted ? (
-                            <StatusBadge tone="info">{{ de: 'Nicht konfiguriert', en: 'Not configured' }[locale]}</StatusBadge>
+                            <StatusBadge tone="info">{inlineCopy({ de: 'Nicht konfiguriert', en: 'Not configured' }, locale)}</StatusBadge>
                         ) : null}
                         {hasOverrides ? (
                             <StatusBadge tone="info">
-                                {
+                                {inlineCopy(
                                     {
                                         de: `${featureToggle.userOverrides.length} Ausnahme${featureToggle.userOverrides.length === 1 ? '' : 'n'}`,
                                         en: `${featureToggle.userOverrides.length} override${featureToggle.userOverrides.length === 1 ? '' : 's'}`,
-                                    }[locale]
-                                }
+                                    },
+                                    locale,
+                                )}
                             </StatusBadge>
                         ) : null}
                     </div>
@@ -389,7 +394,7 @@ function FeatureToggleCard({
                                         variant="ghost"
                                         size="icon-sm"
                                         disabled={busy}
-                                        aria-label={{ de: 'Ausnahme entfernen', en: 'Clear override' }[locale]}
+                                        aria-label={inlineCopy({ de: 'Ausnahme entfernen', en: 'Clear override' }, locale)}
                                         onClick={() => void onOverrideModeChange(override.userId, 'default')}
                                     >
                                         <XIcon aria-hidden />
@@ -419,32 +424,44 @@ function FeatureToggleCard({
                     <AlertDialogHeader>
                         <AlertDialogTitle>
                             {pendingEnabled
-                                ? {
-                                      de: `„${label}“ aktivieren?`,
-                                      en: `Enable “${label}”?`,
-                                  }[locale]
-                                : {
-                                      de: `„${label}“ deaktivieren?`,
-                                      en: `Disable “${label}”?`,
-                                  }[locale]}
+                                ? inlineCopy(
+                                      {
+                                          de: `„${label}“ aktivieren?`,
+                                          en: `Enable “${label}”?`,
+                                      },
+                                      locale,
+                                  )
+                                : inlineCopy(
+                                      {
+                                          de: `„${label}“ deaktivieren?`,
+                                          en: `Disable “${label}”?`,
+                                      },
+                                      locale,
+                                  )}
                         </AlertDialogTitle>
                         <AlertDialogDescription className="grid gap-3">
                             <span>{adminFeatureToggleDescription(featureToggle.featureToggleKey, locale)}</span>
                             <span>
                                 {pendingEnabled
-                                    ? {
-                                          de: 'Der globale Standard wird auf an gesetzt. Nutzer-Ausnahmen haben weiter Vorrang.',
-                                          en: 'Sets the global default to on. Per-user overrides still take precedence.',
-                                      }[locale]
-                                    : {
-                                          de: 'Der globale Standard wird auf aus gesetzt. Nutzer-Ausnahmen haben weiter Vorrang.',
-                                          en: 'Sets the global default to off. Per-user overrides still take precedence.',
-                                      }[locale]}
+                                    ? inlineCopy(
+                                          {
+                                              de: 'Der globale Standard wird auf an gesetzt. Nutzer-Ausnahmen haben weiter Vorrang.',
+                                              en: 'Sets the global default to on. Per-user overrides still take precedence.',
+                                          },
+                                          locale,
+                                      )
+                                    : inlineCopy(
+                                          {
+                                              de: 'Der globale Standard wird auf aus gesetzt. Nutzer-Ausnahmen haben weiter Vorrang.',
+                                              en: 'Sets the global default to off. Per-user overrides still take precedence.',
+                                          },
+                                          locale,
+                                      )}
                             </span>
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel disabled={toggleBusy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogCancel disabled={toggleBusy}>{inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, locale)}</AlertDialogCancel>
                         <AlertDialogAction
                             variant={pendingEnabled ? 'default' : 'destructive'}
                             disabled={toggleBusy}
@@ -454,10 +471,10 @@ function FeatureToggleCard({
                             }}
                         >
                             {toggleBusy
-                                ? { de: 'Wird gespeichert…', en: 'Saving…' }[locale]
+                                ? inlineCopy({ de: 'Wird gespeichert…', en: 'Saving…' }, locale)
                                 : pendingEnabled
-                                  ? { de: 'Aktivieren', en: 'Enable' }[locale]
-                                  : { de: 'Deaktivieren', en: 'Disable' }[locale]}
+                                  ? inlineCopy({ de: 'Aktivieren', en: 'Enable' }, locale)
+                                  : inlineCopy({ de: 'Deaktivieren', en: 'Disable' }, locale)}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -466,7 +483,7 @@ function FeatureToggleCard({
     );
 }
 
-function featureToggleMatchesSearch(featureToggle: FeatureToggleRow, query: string, locale: 'de' | 'en'): boolean {
+function featureToggleMatchesSearch(featureToggle: FeatureToggleRow, query: string, locale: Locale): boolean {
     if (!query) return true;
     const label = adminFeatureToggleLabel(featureToggle.featureToggleKey, locale).toLowerCase();
     const key = featureToggle.featureToggleKey.toLowerCase();
@@ -480,7 +497,7 @@ function featureTogglesFilteredSorted({
 }: {
     featureToggles: FeatureToggleRow[];
     search: AdminFeatureTogglesSearch;
-    locale: 'de' | 'en';
+    locale: Locale;
 }): FeatureToggleRow[] {
     const searchQuery = (search.q ?? '').toLowerCase();
     const statusFilter: StatusFilter = search.status ?? 'all';
@@ -605,13 +622,15 @@ export function AdminFeatureTogglesPage({ data, search }: { data: GqlCAdminFeatu
         try {
             const result = await featureToggleUpsert({ featureToggleKey, enabled });
             if (result.error || !result.data?.admin.featureToggleUpsert.success) {
-                toast.error({ de: 'Feature Toggle konnte nicht geändert werden.', en: 'Could not update feature toggle.' }[locale]);
+                toast.error(
+                    inlineCopy({ de: 'Feature Toggle konnte nicht geändert werden.', en: 'Could not update feature toggle.' }, locale),
+                );
                 return;
             }
             toast.success(
                 enabled
-                    ? { de: 'Feature Toggle aktiviert.', en: 'Feature toggle enabled.' }[locale]
-                    : { de: 'Feature Toggle deaktiviert.', en: 'Feature toggle disabled.' }[locale],
+                    ? inlineCopy({ de: 'Feature Toggle aktiviert.', en: 'Feature toggle enabled.' }, locale)
+                    : inlineCopy({ de: 'Feature Toggle deaktiviert.', en: 'Feature toggle disabled.' }, locale),
             );
         } finally {
             setBusyKey(null);
@@ -624,21 +643,21 @@ export function AdminFeatureTogglesPage({ data, search }: { data: GqlCAdminFeatu
             if (mode === 'default') {
                 const result = await deleteOverride({ userId, featureToggleKey });
                 if (result.error || !result.data?.admin.featureToggleUserOverrideDelete.success) {
-                    toast.error({ de: 'Ausnahme konnte nicht entfernt werden.', en: 'Could not clear the override.' }[locale]);
+                    toast.error(inlineCopy({ de: 'Ausnahme konnte nicht entfernt werden.', en: 'Could not clear the override.' }, locale));
                     return;
                 }
-                toast.success({ de: 'Ausnahme entfernt.', en: 'Override cleared.' }[locale]);
+                toast.success(inlineCopy({ de: 'Ausnahme entfernt.', en: 'Override cleared.' }, locale));
                 return;
             }
             const result = await upsertOverride({ userId, featureToggleKey, enabled: mode === 'user-on' });
             if (result.error || !result.data?.admin.featureToggleUserOverrideUpsert.success) {
-                toast.error({ de: 'Ausnahme konnte nicht gespeichert werden.', en: 'Could not save the override.' }[locale]);
+                toast.error(inlineCopy({ de: 'Ausnahme konnte nicht gespeichert werden.', en: 'Could not save the override.' }, locale));
                 return;
             }
             toast.success(
                 mode === 'user-on'
-                    ? { de: 'Feature für diesen Nutzer aktiviert.', en: 'Feature enabled for this user.' }[locale]
-                    : { de: 'Feature für diesen Nutzer deaktiviert.', en: 'Feature disabled for this user.' }[locale],
+                    ? inlineCopy({ de: 'Feature für diesen Nutzer aktiviert.', en: 'Feature enabled for this user.' }, locale)
+                    : inlineCopy({ de: 'Feature für diesen Nutzer deaktiviert.', en: 'Feature disabled for this user.' }, locale),
             );
         } finally {
             setBusyUserKey(null);
@@ -650,13 +669,13 @@ export function AdminFeatureTogglesPage({ data, search }: { data: GqlCAdminFeatu
         try {
             const result = await upsertOverride({ userId, featureToggleKey, enabled });
             if (result.error || !result.data?.admin.featureToggleUserOverrideUpsert.success) {
-                toast.error({ de: 'Ausnahme konnte nicht gespeichert werden.', en: 'Could not save the override.' }[locale]);
+                toast.error(inlineCopy({ de: 'Ausnahme konnte nicht gespeichert werden.', en: 'Could not save the override.' }, locale));
                 return;
             }
             toast.success(
                 enabled
-                    ? { de: 'Feature für diesen Nutzer aktiviert.', en: 'Feature enabled for this user.' }[locale]
-                    : { de: 'Feature für diesen Nutzer deaktiviert.', en: 'Feature disabled for this user.' }[locale],
+                    ? inlineCopy({ de: 'Feature für diesen Nutzer aktiviert.', en: 'Feature enabled for this user.' }, locale)
+                    : inlineCopy({ de: 'Feature für diesen Nutzer deaktiviert.', en: 'Feature disabled for this user.' }, locale),
             );
         } finally {
             setBusyUserKey(null);
@@ -671,8 +690,8 @@ export function AdminFeatureTogglesPage({ data, search }: { data: GqlCAdminFeatu
                         type="search"
                         value={draftQ}
                         onChange={(event) => setDraftQ(event.target.value)}
-                        placeholder={{ de: 'Name oder Key suchen…', en: 'Search name or key…' }[locale]}
-                        aria-label={{ de: 'Feature Toggles suchen', en: 'Search feature toggles' }[locale]}
+                        placeholder={inlineCopy({ de: 'Name oder Key suchen…', en: 'Search name or key…' }, locale)}
+                        aria-label={inlineCopy({ de: 'Feature Toggles suchen', en: 'Search feature toggles' }, locale)}
                         className="w-full min-w-0 basis-full @5xl:max-w-sm @5xl:flex-1 @5xl:basis-56"
                     />
                     <div className="flex w-full min-w-0 flex-wrap items-center gap-3 @5xl:w-auto @5xl:flex-1">
@@ -688,14 +707,14 @@ export function AdminFeatureTogglesPage({ data, search }: { data: GqlCAdminFeatu
                             <SelectTrigger
                                 size="sm"
                                 className="w-auto shrink-0"
-                                aria-label={{ de: 'Status filtern', en: 'Filter by status' }[locale]}
+                                aria-label={inlineCopy({ de: 'Status filtern', en: 'Filter by status' }, locale)}
                             >
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all">{{ de: 'Alle Status', en: 'All statuses' }[locale]}</SelectItem>
-                                <SelectItem value="enabled">{{ de: 'Aktiv', en: 'Enabled' }[locale]}</SelectItem>
-                                <SelectItem value="disabled">{{ de: 'Inaktiv', en: 'Disabled' }[locale]}</SelectItem>
+                                <SelectItem value="all">{inlineCopy({ de: 'Alle Status', en: 'All statuses' }, locale)}</SelectItem>
+                                <SelectItem value="enabled">{inlineCopy({ de: 'Aktiv', en: 'Enabled' }, locale)}</SelectItem>
+                                <SelectItem value="disabled">{inlineCopy({ de: 'Inaktiv', en: 'Disabled' }, locale)}</SelectItem>
                             </SelectContent>
                         </Select>
 
@@ -711,14 +730,18 @@ export function AdminFeatureTogglesPage({ data, search }: { data: GqlCAdminFeatu
                             <SelectTrigger
                                 size="sm"
                                 className="w-auto shrink-0"
-                                aria-label={{ de: 'Konfiguration filtern', en: 'Filter by configuration' }[locale]}
+                                aria-label={inlineCopy({ de: 'Konfiguration filtern', en: 'Filter by configuration' }, locale)}
                             >
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all">{{ de: 'Alle Konfigurationen', en: 'All configurations' }[locale]}</SelectItem>
-                                <SelectItem value="configured">{{ de: 'Konfiguriert', en: 'Configured' }[locale]}</SelectItem>
-                                <SelectItem value="not-configured">{{ de: 'Nicht konfiguriert', en: 'Not configured' }[locale]}</SelectItem>
+                                <SelectItem value="all">
+                                    {inlineCopy({ de: 'Alle Konfigurationen', en: 'All configurations' }, locale)}
+                                </SelectItem>
+                                <SelectItem value="configured">{inlineCopy({ de: 'Konfiguriert', en: 'Configured' }, locale)}</SelectItem>
+                                <SelectItem value="not-configured">
+                                    {inlineCopy({ de: 'Nicht konfiguriert', en: 'Not configured' }, locale)}
+                                </SelectItem>
                             </SelectContent>
                         </Select>
 
@@ -734,15 +757,17 @@ export function AdminFeatureTogglesPage({ data, search }: { data: GqlCAdminFeatu
                             <SelectTrigger
                                 size="sm"
                                 className="w-auto shrink-0"
-                                aria-label={{ de: 'Ausnahmen filtern', en: 'Filter by overrides' }[locale]}
+                                aria-label={inlineCopy({ de: 'Ausnahmen filtern', en: 'Filter by overrides' }, locale)}
                             >
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all">{{ de: 'Alle Ausnahmen', en: 'All overrides' }[locale]}</SelectItem>
-                                <SelectItem value="with-overrides">{{ de: 'Mit Ausnahmen', en: 'With overrides' }[locale]}</SelectItem>
+                                <SelectItem value="all">{inlineCopy({ de: 'Alle Ausnahmen', en: 'All overrides' }, locale)}</SelectItem>
+                                <SelectItem value="with-overrides">
+                                    {inlineCopy({ de: 'Mit Ausnahmen', en: 'With overrides' }, locale)}
+                                </SelectItem>
                                 <SelectItem value="without-overrides">
-                                    {{ de: 'Ohne Ausnahmen', en: 'Without overrides' }[locale]}
+                                    {inlineCopy({ de: 'Ohne Ausnahmen', en: 'Without overrides' }, locale)}
                                 </SelectItem>
                             </SelectContent>
                         </Select>
@@ -762,17 +787,25 @@ export function AdminFeatureTogglesPage({ data, search }: { data: GqlCAdminFeatu
                                 })
                             }
                         >
-                            <SelectTrigger size="sm" className="w-auto shrink-0" aria-label={{ de: 'Sortierung', en: 'Sort' }[locale]}>
+                            <SelectTrigger
+                                size="sm"
+                                className="w-auto shrink-0"
+                                aria-label={inlineCopy({ de: 'Sortierung', en: 'Sort' }, locale)}
+                            >
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="label-asc">{{ de: 'Name A–Z', en: 'Name A–Z' }[locale]}</SelectItem>
-                                <SelectItem value="key-asc">{{ de: 'Key A–Z', en: 'Key A–Z' }[locale]}</SelectItem>
+                                <SelectItem value="label-asc">{inlineCopy({ de: 'Name A–Z', en: 'Name A–Z' }, locale)}</SelectItem>
+                                <SelectItem value="key-asc">{inlineCopy({ de: 'Key A–Z', en: 'Key A–Z' }, locale)}</SelectItem>
                                 <SelectItem value="updated-desc">
-                                    {{ de: 'Zuletzt aktualisiert', en: 'Recently updated' }[locale]}
+                                    {inlineCopy({ de: 'Zuletzt aktualisiert', en: 'Recently updated' }, locale)}
                                 </SelectItem>
-                                <SelectItem value="overrides-desc">{{ de: 'Meiste Ausnahmen', en: 'Most overrides' }[locale]}</SelectItem>
-                                <SelectItem value="enabled-first">{{ de: 'Aktive zuerst', en: 'Enabled first' }[locale]}</SelectItem>
+                                <SelectItem value="overrides-desc">
+                                    {inlineCopy({ de: 'Meiste Ausnahmen', en: 'Most overrides' }, locale)}
+                                </SelectItem>
+                                <SelectItem value="enabled-first">
+                                    {inlineCopy({ de: 'Aktive zuerst', en: 'Enabled first' }, locale)}
+                                </SelectItem>
                             </SelectContent>
                         </Select>
 
@@ -783,27 +816,28 @@ export function AdminFeatureTogglesPage({ data, search }: { data: GqlCAdminFeatu
                                 className="h-auto shrink-0 p-0 text-sm text-muted-foreground"
                                 onClick={clearFilters}
                             >
-                                {{ de: 'Filter zurücksetzen', en: 'Clear filters' }[locale]}
+                                {inlineCopy({ de: 'Filter zurücksetzen', en: 'Clear filters' }, locale)}
                             </Button>
                         ) : null}
 
                         <p className="text-sm text-muted-foreground tabular-nums xl:ml-auto">
-                            {
+                            {inlineCopy(
                                 {
                                     de: `${visibleFeatureToggles.length} von ${featureToggles.length}`,
                                     en: `${visibleFeatureToggles.length} of ${featureToggles.length}`,
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                         </p>
                     </div>
                 </div>
 
                 {featureToggles.length === 0 ? (
                     <p className="text-sm text-muted-foreground">
-                        {{ de: 'Noch keine Feature Toggles.', en: 'No feature toggles yet.' }[locale]}
+                        {inlineCopy({ de: 'Noch keine Feature Toggles.', en: 'No feature toggles yet.' }, locale)}
                     </p>
                 ) : visibleFeatureToggles.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">{{ de: 'Keine Treffer.', en: 'No matches.' }[locale]}</p>
+                    <p className="text-sm text-muted-foreground">{inlineCopy({ de: 'Keine Treffer.', en: 'No matches.' }, locale)}</p>
                 ) : (
                     <ul className="grid gap-3">
                         {visibleFeatureToggles.map((featureToggle) => (

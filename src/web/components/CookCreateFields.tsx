@@ -1,5 +1,6 @@
 import type { Dispatch, SetStateAction } from 'react';
 import { useQuery } from 'urql';
+import { inlineCopy } from '../../shared';
 
 import type { GqlCCookCreate, GqlCLocationSuggestion } from '../graphql/generated';
 import { CookCreateLocationSuggestionsDocument } from '../graphql/generated';
@@ -98,15 +99,16 @@ export function CookCreateFields({
             <div className="grid gap-3">
                 <div className="grid gap-1.5">
                     <span className="text-sm font-medium">
-                        {{ de: 'Startadresse für die Reisestrecke', en: 'Travel origin address' }[locale]}
+                        {inlineCopy({ de: 'Startadresse für die Reisestrecke', en: 'Travel origin address' }, locale)}
                     </span>
                     <p className="text-sm/relaxed text-muted-foreground">
-                        {
+                        {inlineCopy(
                             {
                                 de: 'Wird nicht für Gastgeber angezeigt. Sie sehen nur die Stadt.',
                                 en: 'Not shown to hosts. They only see the city.',
-                            }[locale]
-                        }
+                            },
+                            locale,
+                        )}
                     </p>
                 </div>
                 <Combobox
@@ -138,14 +140,14 @@ export function CookCreateFields({
                     <ComboboxInput
                         className="w-full"
                         disabled={disabled}
-                        placeholder={{ de: 'Adresse suchen…', en: 'Search address…' }[locale]}
+                        placeholder={inlineCopy({ de: 'Adresse suchen…', en: 'Search address…' }, locale)}
                         showClear={false}
                     />
                     <ComboboxContent>
                         <ComboboxEmpty>
                             {suggestionsFetching
-                                ? { de: 'Suche…', en: 'Searching…' }[locale]
-                                : { de: 'Keine Treffer.', en: 'No matches.' }[locale]}
+                                ? inlineCopy({ de: 'Suche…', en: 'Searching…' }, locale)
+                                : inlineCopy({ de: 'Keine Treffer.', en: 'No matches.' }, locale)}
                         </ComboboxEmpty>
                         <ComboboxList>
                             {(item: string) => (
@@ -158,19 +160,22 @@ export function CookCreateFields({
                 </Combobox>
                 {value.selectedLocation?.structuredAddress ? (
                     <p className="text-sm text-muted-foreground">
-                        {
+                        {inlineCopy(
                             {
                                 de: `Gastgeber sehen ${value.selectedLocation.structuredAddress.city}.`,
                                 en: `Hosts will see ${value.selectedLocation.structuredAddress.city}.`,
-                            }[locale]
-                        }
+                            },
+                            locale,
+                        )}
                     </p>
                 ) : null}
             </div>
 
             <div className="grid gap-5 sm:grid-cols-2">
                 <div className="grid gap-2">
-                    <span className="text-sm font-medium">{{ de: 'Maximale Reisestrecke', en: 'Maximum travel distance' }[locale]}</span>
+                    <span className="text-sm font-medium">
+                        {inlineCopy({ de: 'Maximale Reisestrecke', en: 'Maximum travel distance' }, locale)}
+                    </span>
                     <Select
                         value={value.maximumTravelDistanceText}
                         disabled={disabled}
@@ -190,7 +195,7 @@ export function CookCreateFields({
                 </div>
                 <div className="grid gap-2">
                     <label htmlFor={`${idPrefix}-travel-expenses`} className="text-sm font-medium">
-                        {{ de: 'Reisekosten je km', en: 'Travel expenses per km' }[locale]}
+                        {inlineCopy({ de: 'Reisekosten je km', en: 'Travel expenses per km' }, locale)}
                     </label>
                     <div className="relative">
                         <Input

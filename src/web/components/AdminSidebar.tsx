@@ -5,6 +5,7 @@ import type { ComponentProps, ReactNode, UIEvent } from 'react';
 import { createRequest, useClient } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { t } from '../../i18n/t';
 import { AdminSidebarNavBadgesUpdatesDocument } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
 import { accountPageTitle } from '../pages/accountLabels';
@@ -36,7 +37,7 @@ import {
     parseAdminCallsSectionFromPath,
 } from '../pages/admin/adminCalls';
 import type { AdminCallsSectionTo } from '../pages/admin/adminCalls';
-import { ADMIN_NAV_GROUPS, adminStubRouteBySlug } from '../pages/admin/adminCatalog';
+import { ADMIN_NAV_GROUPS, adminNavGroupLabel, adminStubRouteBySlug, adminStubRouteTitle } from '../pages/admin/adminCatalog';
 import type { AdminNavItemKey, AdminStubSlug } from '../pages/admin/adminCatalog';
 import {
     ADMIN_GIFT_CARDS_SECTIONS,
@@ -239,7 +240,7 @@ export function AdminSidebar({
         if (key === 'overview') {
             return {
                 key,
-                title: { de: 'Übersicht', en: 'Overview' }[locale],
+                title: t(locale, 'admin', 'nav.overview.title'),
                 to: '/{-$locale}/admin',
                 icon: <SummaryIcon />,
                 isActive: path === '/admin',
@@ -248,7 +249,7 @@ export function AdminSidebar({
         if (key === 'users') {
             return {
                 key,
-                title: { de: 'Benutzer', en: 'Users' }[locale],
+                title: t(locale, 'admin', 'nav.users.title'),
                 to: '/{-$locale}/admin/users',
                 icon: <UsersIcon />,
                 isActive: path === '/admin/users' || path.startsWith('/admin/users/'),
@@ -258,7 +259,7 @@ export function AdminSidebar({
         if (key === 'legal') {
             return {
                 key,
-                title: { de: 'Rechtstexte', en: 'Legal texts' }[locale],
+                title: t(locale, 'admin', 'nav.legal.title'),
                 to: '/{-$locale}/admin/legal',
                 icon: <ScaleIcon />,
                 isActive: path === '/admin/legal' || path.startsWith('/admin/legal/'),
@@ -278,7 +279,7 @@ export function AdminSidebar({
                     : undefined;
         return {
             key,
-            title: route.title[locale],
+            title: adminStubRouteTitle(route.slug, locale),
             to: route.to,
             icon: <Icon />,
             isActive: path === route.path || path.startsWith(`${route.path}/`),
@@ -286,19 +287,10 @@ export function AdminSidebar({
             countLabel:
                 count != null
                     ? route.slug === 'whats-app-chats'
-                        ? {
-                              de: `${count} ungelesene WhatsApp-Chats`,
-                              en: `${count} unread WhatsApp chats`,
-                          }[locale]
+                        ? t(locale, 'admin', 'sidebar.unreadWhatsApp', { count })
                         : route.slug === 'offer-chat-reviews'
-                          ? {
-                                de: `${count} Angebots-Chats zur Prüfung`,
-                                en: `${count} offer chats for review`,
-                            }[locale]
-                          : {
-                                de: `${count} ungelesene Support-Anfragen`,
-                                en: `${count} unread support requests`,
-                            }[locale]
+                          ? t(locale, 'admin', 'sidebar.offerChatsForReview', { count })
+                          : t(locale, 'admin', 'sidebar.unreadSupport', { count })
                     : undefined,
             sessionsSubs: route.slug === 'sessions',
             giftCardsSubs: route.slug === 'gift-cards',
@@ -314,7 +306,7 @@ export function AdminSidebar({
 
     const navGroups = ADMIN_NAV_GROUPS.map((group) => ({
         id: group.id,
-        label: group.label?.[locale] ?? null,
+        label: adminNavGroupLabel(group.id, locale),
         items: group.items.map(navItemForKey),
     }));
 
@@ -363,7 +355,7 @@ export function AdminSidebar({
                         variant="outline"
                         size="icon-sm"
                         className="absolute top-2 left-1/2 z-10 -translate-x-1/2 bg-sidebar shadow-sm group-data-[collapsible=icon]:hidden"
-                        aria-label={{ de: 'Nach oben scrollen', en: 'Scroll to top' }[locale]}
+                        aria-label={t(locale, 'admin', 'sidebar.scrollToTop')}
                         onClick={() => {
                             sidebarContentRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
                         }}
@@ -374,9 +366,7 @@ export function AdminSidebar({
                 <SidebarContent ref={sidebarContentRef} onScroll={onSidebarContentScroll}>
                     {filteredNavGroups.length === 0 ? (
                         <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-                            <p className="px-4 py-2 text-sm text-muted-foreground">
-                                {{ de: 'Kein Eintrag gefunden.', en: 'No entries found.' }[locale]}
-                            </p>
+                            <p className="px-4 py-2 text-sm text-muted-foreground">{t(locale, 'admin', 'sidebar.noEntries')}</p>
                         </SidebarGroup>
                     ) : null}
                     {filteredNavGroups.map((group) => (
@@ -625,7 +615,7 @@ export function AdminSidebar({
                         <SidebarMenuButton asChild size="sm">
                             <Link to="/{-$locale}/profile">
                                 <UserIcon />
-                                <span>{profilePageTitle[locale]}</span>
+                                <span>{profilePageTitle(locale)}</span>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -633,7 +623,7 @@ export function AdminSidebar({
                         <SidebarMenuButton asChild size="sm" isActive={path === '/admin/account'}>
                             <Link to="/{-$locale}/admin/account">
                                 <UserCogIcon />
-                                <span>{accountPageTitle[locale]}</span>
+                                <span>{accountPageTitle(locale)}</span>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

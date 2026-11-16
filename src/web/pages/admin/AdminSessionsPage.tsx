@@ -2,6 +2,8 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import type { SortingState, Updater } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
 
+import { t } from '../../../i18n/t';
+import { inlineCopy } from '../../../shared';
 import { AdminListPaginationBar } from '../../components/AdminListPaginationBar';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
@@ -10,6 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from '../../components/base/tabs';
 import type { GqlCAdminSessionKind, GqlCAdminSessionsPageQuery } from '../../graphql/generated';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useLocale } from '../../hooks/useLocale';
+import type { Locale } from '../../utils/locale';
 import {
     adminListPageCount,
     adminListPageSize,
@@ -31,11 +34,12 @@ import { ADMIN_SESSIONS_SORT_FIELDS } from './adminSessionsColumns';
 import type { AdminSessionsSortField } from './adminSessionsColumns';
 import { AdminSessionsDataTable } from './AdminSessionsDataTable';
 
-export const adminSessionsPageTitle = { de: 'Sitzungsliste', en: 'Session list' } as const;
-export const adminSessionsPageDescription = {
-    de: 'Sitzungen durchsuchen und einsehen.',
-    en: 'Browse and inspect sessions.',
-} as const;
+export function adminSessionsPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.sessions.title');
+}
+export function adminSessionsPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.sessions.description');
+}
 
 const ADMIN_SESSIONS_ALL_KINDS: GqlCAdminSessionKind[] = ['human', 'bot'];
 
@@ -125,7 +129,7 @@ export function AdminSessionsPage({ data, search }: { data: GqlCAdminSessionsPag
     }
 
     const kindTabs: { value: GqlCAdminSessionKind | undefined; label: string }[] = [
-        { value: undefined, label: { de: 'Alle', en: 'All' }[locale] },
+        { value: undefined, label: t(locale, 'admin', 'copy.all') },
         ...ADMIN_SESSIONS_ALL_KINDS.map((kind) => ({
             value: kind,
             label: adminSessionKindLabel(kind, locale),
@@ -154,7 +158,7 @@ export function AdminSessionsPage({ data, search }: { data: GqlCAdminSessionsPag
                 }
             >
                 <Tabs value={search.kind ?? 'all'}>
-                    <TabsList variant="line" aria-label={{ de: 'Sitzungs-Art', en: 'Session kind' }[locale]}>
+                    <TabsList variant="line" aria-label={t(locale, 'admin', 'copy.sessionKind')}>
                         {kindTabs.map((tab) => (
                             <TabsTrigger key={tab.value ?? 'all'} value={tab.value ?? 'all'} asChild>
                                 <Link
@@ -178,21 +182,17 @@ export function AdminSessionsPage({ data, search }: { data: GqlCAdminSessionsPag
                         type="search"
                         value={draftQ}
                         onChange={(event) => setDraftQ(event.target.value)}
-                        placeholder={
-                            {
-                                de: 'Sitzungs-ID, Nutzer-ID oder User-Agent suchen…',
-                                en: 'Search session id, user id, or user agent…',
-                            }[locale]
-                        }
-                        aria-label={{ de: 'Sitzungen suchen', en: 'Search sessions' }[locale]}
+                        placeholder={t(locale, 'admin', 'copy.searchSessionIdUserIdOrUserAgent')}
+                        aria-label={t(locale, 'admin', 'copy.searchSessions')}
                     />
                     <p className="text-sm text-muted-foreground tabular-nums">
-                        {
+                        {inlineCopy(
                             {
                                 de: `${total} ${total === 1 ? 'Sitzung' : 'Sitzungen'}`,
                                 en: `${total} ${total === 1 ? 'session' : 'sessions'}`,
-                            }[locale]
-                        }
+                            },
+                            locale,
+                        )}
                     </p>
                 </div>
 

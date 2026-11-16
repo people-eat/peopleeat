@@ -1,3 +1,4 @@
+import { t } from '../../../i18n/t';
 import type { Locale } from '../../utils/locale';
 
 export type AdminAiGenerationsSection = 'list';
@@ -7,11 +8,7 @@ export const ADMIN_AI_GENERATIONS_SECTIONS: AdminAiGenerationsSection[] = ['list
 export type AdminAiGenerationsSectionTo = '/{-$locale}/admin/ai-generations/list';
 
 export function adminAiGenerationsSectionLabel(section: AdminAiGenerationsSection, locale: Locale): string {
-    return (
-        {
-            list: { de: 'Liste', en: 'List' },
-        } as const
-    )[section][locale];
+    return t(locale, 'admin', `section.${section}`);
 }
 
 export function adminAiGenerationsSectionPath(section: AdminAiGenerationsSection): `/admin/ai-generations/${AdminAiGenerationsSection}` {

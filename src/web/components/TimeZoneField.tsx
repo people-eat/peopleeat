@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import { DEFAULT_TIME_ZONE } from '../../shared';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from './base/combobox';
 
@@ -50,14 +50,14 @@ export function TimeZoneField({
     showLabel?: boolean;
     className?: string;
 }) {
-    const locale = useLocale();
+    const { t } = useT('common');
     const options = useMemo(() => timeZoneOptions(), []);
 
     return (
         <div className={cn('grid gap-2', className)}>
             {showLabel ? (
                 <label htmlFor="user-time-zone" className="text-sm font-medium text-foreground">
-                    {{ de: 'Zeitzone', en: 'Time zone' }[locale]}
+                    {t('timeZoneField.label')}
                 </label>
             ) : null}
             <Combobox
@@ -81,12 +81,12 @@ export function TimeZoneField({
                 <ComboboxInput
                     id="user-time-zone"
                     className="w-full"
-                    placeholder={{ de: 'Zeitzone suchen…', en: 'Search time zone…' }[locale]}
+                    placeholder={t('timeZoneField.placeholder')}
                     showClear={false}
                     disabled={disabled}
                 />
                 <ComboboxContent>
-                    <ComboboxEmpty>{{ de: 'Keine Treffer.', en: 'No matches.' }[locale]}</ComboboxEmpty>
+                    <ComboboxEmpty>{t('timeZoneField.empty')}</ComboboxEmpty>
                     <ComboboxList>
                         {(item: string) => (
                             <ComboboxItem key={item} value={item}>
@@ -96,14 +96,7 @@ export function TimeZoneField({
                     </ComboboxList>
                 </ComboboxContent>
             </Combobox>
-            <p className="text-sm text-muted-foreground">
-                {
-                    {
-                        de: 'Termine und Uhrzeiten werden in dieser Zeitzone angezeigt.',
-                        en: 'Dates and times are shown in this time zone.',
-                    }[locale]
-                }
-            </p>
+            <p className="text-sm text-muted-foreground">{t('timeZoneField.hint')}</p>
         </div>
     );
 }

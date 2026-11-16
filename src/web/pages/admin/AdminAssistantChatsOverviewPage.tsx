@@ -2,6 +2,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { BotMessageSquareIcon, ListIcon } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
 
+import { t } from '../../../i18n/t';
 import { formatIsoDate } from '../../../shared';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { DateRangePicker } from '../../components/base/date-range-picker';
@@ -9,6 +10,7 @@ import type { GqlCAdminAssistantChatCriterion, GqlCAdminAssistantChatsOverviewPa
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { DATE_FNS_LOCALE } from '../../utils/dateFnsLocale';
+import type { Locale } from '../../utils/locale';
 import { adminAssistantChatsSectionTo, adminChatSurfaceLabel } from './adminAssistantChats';
 import { AdminOverviewBarChart } from './AdminOverviewBarChart';
 import { AdminOverviewNavCard } from './AdminOverviewNavCard';
@@ -16,11 +18,12 @@ import { adminOverviewRangeResolve, adminOverviewRangeToGraphQlVariables } from 
 import type { AdminOverviewRangeSearch } from './adminOverviewRange';
 import { AdminOverviewStatCard } from './AdminOverviewStatCard';
 
-export const adminAssistantChatsOverviewPageTitle = { de: 'Assistent-Chats', en: 'Assistant chats' } as const;
-export const adminAssistantChatsOverviewPageDescription = {
-    de: 'Verteilung und Neuanlagen der Assistent-Chats.',
-    en: 'Assistant chat distribution and creations.',
-} as const;
+export function adminAssistantChatsOverviewPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'nav.assistantChats.title');
+}
+export function adminAssistantChatsOverviewPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.assistantChatsOverview.description');
+}
 
 /** Order matches `assistantChatsCounts` indices on the overview query. */
 const ADMIN_ASSISTANT_CHAT_COUNT_CRITERIA: GqlCAdminAssistantChatCriterion[] = [
@@ -68,7 +71,7 @@ export function AdminAssistantChatsOverviewPage({
     }[] = [
         {
             key: 'total',
-            label: { de: 'Gesamt', en: 'Total' }[locale],
+            label: t(locale, 'admin', 'copy.total'),
             value: total,
             surface: undefined,
         },
@@ -113,13 +116,13 @@ export function AdminAssistantChatsOverviewPage({
                 <div className="grid gap-2">
                     <h1 className="flex items-center gap-3 font-serif text-4xl/tight text-foreground">
                         <BotMessageSquareIcon className="size-8 text-muted-foreground" aria-hidden />
-                        {adminAssistantChatsOverviewPageTitle[locale]}
+                        {adminAssistantChatsOverviewPageTitle(locale)}
                     </h1>
-                    <p className="text-muted-foreground">{adminAssistantChatsOverviewPageDescription[locale]}</p>
+                    <p className="text-muted-foreground">{adminAssistantChatsOverviewPageDescription(locale)}</p>
                 </div>
 
                 <section className="grid gap-3">
-                    <h2 className="text-lg font-medium">{{ de: 'Bereiche', en: 'Sections' }[locale]}</h2>
+                    <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.sections')}</h2>
                     <ul className="grid gap-2 sm:grid-cols-2">
                         <li>
                             <AdminOverviewNavCard
@@ -127,14 +130,14 @@ export function AdminAssistantChatsOverviewPage({
                                 search={adminAssistantChatsListSearch(undefined)}
                                 icon={ListIcon}
                             >
-                                {{ de: 'Liste', en: 'List' }[locale]}
+                                {t(locale, 'admin', 'copy.list')}
                             </AdminOverviewNavCard>
                         </li>
                     </ul>
                 </section>
 
                 <section className="grid gap-3">
-                    <h2 className="text-lg font-medium">{{ de: 'Verteilung', en: 'Distribution' }[locale]}</h2>
+                    <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.distribution')}</h2>
                     <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                         {distribution.map((entry) => (
                             <AdminOverviewStatCard
@@ -150,31 +153,21 @@ export function AdminAssistantChatsOverviewPage({
 
                 <section className="grid gap-3">
                     <div className="flex flex-wrap items-end justify-between gap-3">
-                        <h2 className="text-lg font-medium">{{ de: 'Neuanlagen', en: 'Creations' }[locale]}</h2>
+                        <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.creations')}</h2>
                         <DateRangePicker
                             value={pickerValue}
                             onValueChange={onRangeChange}
                             locale={DATE_FNS_LOCALE[locale]}
-                            placeholder={{ de: 'Zeitraum wählen', en: 'Pick a date range' }[locale]}
+                            placeholder={t(locale, 'admin', 'copy.pickADateRange')}
                             className="w-auto"
-                            aria-label={
-                                {
-                                    de: 'Zeitraum für Assistent-Chat-Neuanlagen',
-                                    en: 'Date range for assistant chat creations',
-                                }[locale]
-                            }
+                            aria-label={t(locale, 'admin', 'copy.dateRangeForAssistantChatCreations')}
                         />
                     </div>
                     <AdminOverviewBarChart
                         data={buckets.map((bucket) => ({ bucketStart: bucket.bucketStart, count: bucket.count }))}
                         locale={locale}
                         timeZone={timeZone}
-                        ariaLabel={
-                            {
-                                de: 'Balkendiagramm der Assistent-Chat-Neuanlagen im gewählten Zeitraum',
-                                en: 'Bar chart of assistant chat creations in the selected range',
-                            }[locale]
-                        }
+                        ariaLabel={t(locale, 'admin', 'copy.barChartOfAssistantChatCreationsInTheSelectedRange')}
                     />
                 </section>
             </main>

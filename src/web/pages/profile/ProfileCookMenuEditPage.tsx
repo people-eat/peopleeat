@@ -4,6 +4,8 @@ import { useEffect } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
+import { t } from '../../../i18n/t';
+import type { Locale } from '../../../shared/locale';
 import { Button } from '../../components/base/button';
 import { Input } from '../../components/base/input';
 import { StatusAlert } from '../../components/base/status-alert';
@@ -20,14 +22,12 @@ import { cookStubRouteBySlug } from './cookCatalog';
 
 const menusRoute = cookStubRouteBySlug('menus');
 
-export const profileCookMenuEditPageTitle = {
-    de: 'Menü bearbeiten',
-    en: 'Edit menu',
-} as const;
-export const profileCookMenuEditPageDescription = {
-    de: 'Titel, Beschreibung und Gänge bearbeiten.',
-    en: 'Edit title, description, and courses.',
-} as const;
+export function profileCookMenuEditPageTitle(locale: Locale): string {
+    return t(locale, 'profileCook', 'menuEdit.title');
+}
+export function profileCookMenuEditPageDescription(locale: Locale): string {
+    return t(locale, 'profileCook', 'menuEdit.description');
+}
 
 type MenuRow = NonNullable<NonNullable<NonNullable<GqlCProfileCookMenuPageQuery['currentSession']['user']>['cook']>['menu']>;
 
@@ -112,10 +112,10 @@ export function ProfileCookMenuEditPage({
                 if (result.error || !result.data?.user.cook.menuUpsert.success) {
                     throw new Error('save failed');
                 }
-                toast.success({ de: 'Gespeichert.', en: 'Saved.' }[locale]);
+                toast.success(t(locale, 'profileCook', 'actions.saved'));
                 await navigateAfterEdit();
             } catch {
-                toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+                toast.error(t(locale, 'common', 'saveFailed'));
             }
         },
     });
@@ -156,27 +156,27 @@ export function ProfileCookMenuEditPage({
                     <>
                         {safeReturnTo != null ? (
                             <Button type="button" variant="outline" disabled={isSubmitting} onClick={() => void navigateAfterEdit()}>
-                                {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                {t(locale, 'common', 'cancel')}
                             </Button>
                         ) : (
                             <Button type="button" variant="outline" disabled={isSubmitting} asChild>
                                 <Link to="/{-$locale}/profile/menus/$menuId" params={{ menuId }}>
-                                    {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                    {t(locale, 'common', 'cancel')}
                                 </Link>
                             </Button>
                         )}
                         <Button type="submit" form="menu-form" disabled={isSubmitting}>
-                            {isSubmitting ? { de: 'Speichern…', en: 'Saving…' }[locale] : { de: 'Speichern', en: 'Save' }[locale]}
+                            {isSubmitting ? t(locale, 'profileCook', 'actions.saving') : t(locale, 'common', 'save')}
                         </Button>
                     </>
                 ) : safeReturnTo != null ? (
                     <Button type="button" disabled={isSubmitting} onClick={() => void navigateAfterEdit()}>
-                        {{ de: 'Zurück', en: 'Back' }[locale]}
+                        {t(locale, 'profileCook', 'actions.back')}
                     </Button>
                 ) : (
                     <Button type="button" disabled={isSubmitting} asChild>
                         <Link to="/{-$locale}/profile/menus/$menuId" params={{ menuId }}>
-                            {{ de: 'Zur Menüansicht', en: 'Back to menu' }[locale]}
+                            {t(locale, 'profileCook', 'menuEdit.backToMenu')}
                         </Link>
                     </Button>
                 )
@@ -195,7 +195,7 @@ export function ProfileCookMenuEditPage({
                     {(field) => (
                         <div className="grid gap-1.5">
                             <label htmlFor="menu-title" className="text-sm font-medium">
-                                {{ de: 'Titel', en: 'Title' }[locale]}
+                                {t(locale, 'profileCook', 'actions.title')}
                             </label>
                             <Input
                                 id="menu-title"
@@ -213,7 +213,7 @@ export function ProfileCookMenuEditPage({
                     {(field) => (
                         <div className="grid gap-1.5">
                             <label htmlFor="menu-description" className="text-sm font-medium">
-                                {{ de: 'Beschreibung', en: 'Description' }[locale]}
+                                {t(locale, 'profileCook', 'actions.description')}
                             </label>
                             <Textarea
                                 id="menu-description"
@@ -228,39 +228,19 @@ export function ProfileCookMenuEditPage({
                 </form.Field>
                 <div className="grid gap-3">
                     <div>
-                        <h2 className="text-sm font-medium">{{ de: 'Gänge', en: 'Courses' }[locale]}</h2>
+                        <h2 className="text-sm font-medium">{t(locale, 'profileCook', 'menuEdit.courses')}</h2>
                         <p className="text-sm text-muted-foreground">
-                            {
-                                (isOfferMenu
-                                    ? {
-                                          de: 'Jeder Gang braucht mindestens ein Gericht.',
-                                          en: 'Each course needs at least one meal.',
-                                      }
-                                    : {
-                                          de: 'Jeder Gang braucht mindestens ein Gericht zum Veröffentlichen.',
-                                          en: 'Each course needs at least one meal to publish.',
-                                      })[locale]
-                            }
+                            {isOfferMenu
+                                ? t(locale, 'profileCook', 'menuEdit.eachCourseNeedsMeal')
+                                : t(locale, 'profileCook', 'menuEdit.eachCourseNeedsMealToPublish')}
                         </p>
                     </div>
                     {incompleteCourseCount > 0 ? (
                         <StatusAlert
                             tone="warning"
-                            title={
-                                incompleteCourseCount === 1
-                                    ? { de: '1 Gang ist unvollständig', en: '1 course is incomplete' }[locale]
-                                    : {
-                                          de: `${incompleteCourseCount} Gänge sind unvollständig`,
-                                          en: `${incompleteCourseCount} courses are incomplete`,
-                                      }[locale]
-                            }
+                            title={t(locale, 'profileCook', 'menu.incompleteCourses', { count: incompleteCourseCount })}
                         >
-                            {
-                                {
-                                    de: 'Unvollständige Gänge sind mit einem Warnhinweis markiert. Zum Veröffentlichen braucht jeder Gang mindestens ein Gericht.',
-                                    en: 'Incomplete courses are marked with a warning. To publish, every course needs at least one meal.',
-                                }[locale]
-                            }
+                            {t(locale, 'profileCook', 'menuEdit.incompleteMarked')}
                         </StatusAlert>
                     ) : null}
                     <form.Field name="courses">

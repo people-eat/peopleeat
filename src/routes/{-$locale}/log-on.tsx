@@ -1,5 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
 
+import { t } from '../../i18n/t';
 import { contentLocaleText } from '../../shared/contentSection';
 import { LogOnPageDocument } from '../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../web/graphql/routeLoaderGraphqlClient';
@@ -30,12 +31,13 @@ export const Route = createFileRoute('/{-$locale}/log-on')({
     head: ({ params, loaderData }) => {
         const locale = localeFromParam(params);
         const webPage = loaderData?.publicWebPage.findOne;
-        if (!webPage) {
-            return {};
-        }
+        const title = webPage ? contentLocaleText(webPage.titleDe, webPage.titleEn, locale) : t(locale, 'public', 'logOn.seo.title');
+        const description = webPage
+            ? contentLocaleText(webPage.descriptionDe, webPage.descriptionEn, locale)
+            : t(locale, 'public', 'logOn.seo.description');
         return seoMeta({
-            title: contentLocaleText(webPage.titleDe, webPage.titleEn, locale),
-            description: contentLocaleText(webPage.descriptionDe, webPage.descriptionEn, locale),
+            title,
+            description,
             path: '/log-on',
             locale,
             webPageUrl: webPageUrlGet(),

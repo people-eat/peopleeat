@@ -1,25 +1,16 @@
 import { AppImage } from '../components/AppImage';
 import { Reveal } from '../components/Reveal';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 
 /** Full-bleed quote band over lifestyle photography. */
 export function SectionSharedExperiences() {
-    const locale = useLocale();
-
-    const lines = {
-        de: ['Leben ist von Erlebnissen geprägt,', 'aber die Besten sind jene,', 'die man mit anderen Menschen teilt.'],
-        en: ['Life is shaped by experiences,', 'but the best ones are those', 'shared with other people.'],
-    }[locale];
+    const { t } = useT('public');
+    const lines = [t('home.shared.line1'), t('home.shared.line2'), t('home.shared.line3')];
 
     return (
         <Reveal as="section" className="relative w-full overflow-hidden" overMedia>
             <AppImage
-                alt={
-                    {
-                        de: 'Ein kreativ dekorierter Tisch mit Obst, Gemüse, Kerzen, Sektgläsern und Käse steht draußen im Park an einem Herbsttag.',
-                        en: 'A creatively decorated table with fruit, vegetables, candles, champagne glasses, and cheese stands outdoors in a park on an autumn day.',
-                    }[locale]
-                }
+                alt={t('home.shared.alt')}
                 className="relative size-full object-cover object-center"
                 height={800}
                 src="/home/empty-section/dinner-table-in-nature.webp"

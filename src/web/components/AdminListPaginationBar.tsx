@@ -1,3 +1,5 @@
+import { t } from '../../i18n/t';
+import { inlineCopy } from '../../shared';
 import { useLocale } from '../hooks/useLocale';
 import { ADMIN_LIST_PAGE_SIZE_OPTIONS } from '../pages/admin/adminListPaginationSearch';
 import type { AdminListPageSize } from '../pages/admin/adminListPaginationSearch';
@@ -25,13 +27,13 @@ export function AdminListPaginationBar({
     const to = Math.min(page * pageSize, total);
     const canPrev = page > 1;
     const canNext = page < pageCount;
-    const pageSizeAriaLabel = { de: 'Einträge pro Seite', en: 'Items per page' }[locale];
+    const pageSizeAriaLabel = t(locale, 'admin', 'copy.itemsPerPage');
 
     return (
         <div className="@container flex w-full flex-nowrap items-center justify-between gap-2 @xl:gap-3">
             <div className="flex min-w-0 flex-nowrap items-center gap-2 @xl:gap-3">
                 <label className="flex items-center gap-2 text-sm">
-                    <span className="hidden text-muted-foreground @xl:inline">{{ de: 'Pro Seite', en: 'Per page' }[locale]}</span>
+                    <span className="hidden text-muted-foreground @xl:inline">{t(locale, 'admin', 'copy.perPage')}</span>
                     <Select
                         value={String(pageSize)}
                         onValueChange={(value) => {
@@ -58,12 +60,13 @@ export function AdminListPaginationBar({
                         {from}–{to}/{total}
                     </span>
                     <span className="hidden @xl:inline">
-                        {
+                        {inlineCopy(
                             {
                                 de: `${from}–${to} von ${total}`,
                                 en: `${from}–${to} of ${total}`,
-                            }[locale]
-                        }
+                            },
+                            locale,
+                        )}
                     </span>
                 </p>
             </div>
@@ -92,7 +95,7 @@ export function AdminListPaginationBar({
                                 {page}/{pageCount}
                             </span>
                             <span className="hidden @xl:inline">
-                                {{ de: `Seite ${page} von ${pageCount}`, en: `Page ${page} of ${pageCount}` }[locale]}
+                                {inlineCopy({ de: `Seite ${page} von ${pageCount}`, en: `Page ${page} of ${pageCount}` }, locale)}
                             </span>
                         </span>
                     </PaginationItem>

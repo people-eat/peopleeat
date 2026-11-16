@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
+import { t } from '../../../i18n/t';
 import { formatDate, isCallJoinable } from '../../../shared';
 import { callCalendarEventIcsInput } from '../../../shared/calendarEventContent';
 import { COOK_CALL_DURATIONS_MINUTES, COOK_CALL_MAX_WEEKLY_RULES, formatMinuteOfDay } from '../../../shared/cookCallAvailability';
@@ -91,22 +92,16 @@ function schedulingEnabledConfirmCopy({ nextEnabled, locale }: { nextEnabled: bo
 } {
     if (nextEnabled) {
         return {
-            title: { de: 'Anrufplanung aktivieren?', en: 'Enable call scheduling?' }[locale],
-            description: {
-                de: 'Gastgeber können kurze Kennenlerngespräche in deinen Zeitfenstern anfragen. Bestehende Termine bleiben unverändert.',
-                en: 'Hosts can request short intro calls in your time windows. Existing appointments stay unchanged.',
-            }[locale],
-            confirm: { de: 'Aktivieren', en: 'Enable' }[locale],
+            title: t(locale, 'profileCook', 'calls.enableTitle'),
+            description: t(locale, 'profileCook', 'calls.enableBody'),
+            confirm: t(locale, 'profileCook', 'actions.enable'),
         };
     }
 
     return {
-        title: { de: 'Anrufplanung deaktivieren?', en: 'Disable call scheduling?' }[locale],
-        description: {
-            de: 'Neue Anfragen sind nicht mehr möglich. Bereits geplante Gespräche bleiben bestehen. Deine Zeitfenster und Ausnahmen bleiben gespeichert.',
-            en: 'New requests will no longer be possible. Already scheduled calls stay in place. Your time windows and exceptions remain saved.',
-        }[locale],
-        confirm: { de: 'Deaktivieren', en: 'Disable' }[locale],
+        title: t(locale, 'profileCook', 'calls.disableTitle'),
+        description: t(locale, 'profileCook', 'calls.disableBody'),
+        confirm: t(locale, 'profileCook', 'actions.disable'),
     };
 }
 
@@ -169,14 +164,10 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                 input: { callSchedulingEnabled: pendingEnabled },
             });
             if (result.error || !result.data?.user.cook.update.success) {
-                toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+                toast.error(t(locale, 'common', 'saveFailed'));
                 return;
             }
-            toast.success(
-                pendingEnabled
-                    ? { de: 'Anrufplanung aktiviert.', en: 'Call scheduling enabled.' }[locale]
-                    : { de: 'Anrufplanung deaktiviert.', en: 'Call scheduling disabled.' }[locale],
-            );
+            toast.success(pendingEnabled ? t(locale, 'profileCook', 'calls.enabled') : t(locale, 'profileCook', 'calls.disabled'));
         } finally {
             setSettingsSaving(false);
             setPendingEnabled(null);
@@ -191,15 +182,10 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
         try {
             const result = await updateCook({ input: { callDurationMinutes } });
             if (result.error || !result.data?.user.cook.update.success) {
-                toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+                toast.error(t(locale, 'common', 'saveFailed'));
                 return;
             }
-            toast.success(
-                {
-                    de: `Gesprächsdauer auf ${callDurationMinutes} Minuten gesetzt.`,
-                    en: `Call duration set to ${callDurationMinutes} minutes.`,
-                }[locale],
-            );
+            toast.success(t(locale, 'profileCook', 'calls.durationSet', { minutes: callDurationMinutes }));
         } finally {
             setSettingsSaving(false);
         }
@@ -211,18 +197,18 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
             if (editingRule) {
                 const deleted = await deleteRule({ cookCallAvailabilityRuleId: editingRule.cookCallAvailabilityRuleId });
                 if (deleted.error || !deleted.data?.user.cook.callAvailabilityRuleDelete.success) {
-                    toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+                    toast.error(t(locale, 'common', 'saveFailed'));
                     return;
                 }
             }
             const created = await createRule({ rule });
             if (created.error || !created.data?.user.cook.callAvailabilityRuleCreate.success) {
-                toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+                toast.error(t(locale, 'common', 'saveFailed'));
                 return;
             }
             setRuleDialogOpen(false);
             setEditingRule(null);
-            toast.success({ de: 'Zeitfenster gespeichert.', en: 'Time window saved.' }[locale]);
+            toast.success(t(locale, 'profileCook', 'calls.windowSaved'));
         } finally {
             setRuleSaving(false);
         }
@@ -231,10 +217,10 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
     async function onDeleteRule(cookCallAvailabilityRuleId: string) {
         const result = await deleteRule({ cookCallAvailabilityRuleId });
         if (result.error || !result.data?.user.cook.callAvailabilityRuleDelete.success) {
-            toast.error({ de: 'Löschen fehlgeschlagen.', en: 'Could not delete.' }[locale]);
+            toast.error(t(locale, 'profileCook', 'actions.deleteFailed'));
             return;
         }
-        toast.success({ de: 'Zeitfenster gelöscht.', en: 'Time window deleted.' }[locale]);
+        toast.success(t(locale, 'profileCook', 'calls.windowDeleted'));
     }
 
     async function onSaveException(exception: {
@@ -247,11 +233,11 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
         try {
             const result = await createException({ exception });
             if (result.error || !result.data?.user.cook.callAvailabilityExceptionCreate.success) {
-                toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+                toast.error(t(locale, 'common', 'saveFailed'));
                 return;
             }
             setExceptionDialogOpen(false);
-            toast.success({ de: 'Ausnahme gespeichert.', en: 'Exception saved.' }[locale]);
+            toast.success(t(locale, 'profileCook', 'calls.exceptionSaved'));
         } finally {
             setExceptionSaving(false);
         }
@@ -260,10 +246,10 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
     async function onDeleteException(cookCallAvailabilityExceptionId: string) {
         const result = await deleteException({ cookCallAvailabilityExceptionId });
         if (result.error || !result.data?.user.cook.callAvailabilityExceptionDelete.success) {
-            toast.error({ de: 'Löschen fehlgeschlagen.', en: 'Could not delete.' }[locale]);
+            toast.error(t(locale, 'profileCook', 'actions.deleteFailed'));
             return;
         }
-        toast.success({ de: 'Ausnahme gelöscht.', en: 'Exception deleted.' }[locale]);
+        toast.success(t(locale, 'profileCook', 'calls.exceptionDeleted'));
     }
 
     async function onConfirmBooking(cookCallSlotBookingId: string) {
@@ -271,10 +257,10 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
         try {
             const result = await confirmSlot({ cookCallSlotBookingId });
             if (result.error || !result.data?.user.cook.bookingRequestOfferCallSlotConfirm.success) {
-                toast.error({ de: 'Bestätigung fehlgeschlagen.', en: 'Could not confirm.' }[locale]);
+                toast.error(t(locale, 'profileCook', 'offer.confirmFailed'));
                 return;
             }
-            toast.success({ de: 'Termin bestätigt.', en: 'Appointment confirmed.' }[locale]);
+            toast.success(t(locale, 'profileCook', 'calls.appointmentConfirmed'));
         } finally {
             setSlotBusy(false);
         }
@@ -288,12 +274,12 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                 reason: declineReason.trim() || null,
             });
             if (result.error || !result.data?.user.cook.bookingRequestOfferCallSlotDecline.success) {
-                toast.error({ de: 'Ablehnung fehlgeschlagen.', en: 'Could not decline.' }[locale]);
+                toast.error(t(locale, 'profileCook', 'calls.declineFailed'));
                 return;
             }
             setDecliningId(null);
             setDeclineReason('');
-            toast.success({ de: 'Anfrage abgelehnt.', en: 'Request declined.' }[locale]);
+            toast.success(t(locale, 'profileCook', 'calls.requestDeclined'));
         } finally {
             setSlotBusy(false);
         }
@@ -307,12 +293,12 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                 reason: cancelReason.trim() || null,
             });
             if (result.error || !result.data?.user.cook.bookingRequestOfferCallSlotCancel.success) {
-                toast.error({ de: 'Absage fehlgeschlagen.', en: 'Could not cancel.' }[locale]);
+                toast.error(t(locale, 'profileCook', 'calls.cancelFailed'));
                 return;
             }
             setCancelingId(null);
             setCancelReason('');
-            toast.success({ de: 'Termin abgesagt.', en: 'Appointment canceled.' }[locale]);
+            toast.success(t(locale, 'profileCook', 'calls.appointmentCanceled'));
         } finally {
             setSlotBusy(false);
         }
@@ -329,22 +315,15 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
     return (
         <main id="main-content" className="mx-auto grid w-full max-w-3xl content-start gap-6">
             <div className="grid gap-2">
-                <h1 className="font-serif text-3xl/tight text-foreground">{route.title[locale]}</h1>
-                <p className="text-muted-foreground">{route.description[locale]}</p>
+                <h1 className="font-serif text-3xl/tight text-foreground">{route.title(locale)}</h1>
+                <p className="text-muted-foreground">{route.description(locale)}</p>
             </div>
 
             {sortedBookings.length > 0 ? (
                 <section className="grid gap-4">
                     <div className="grid gap-1">
-                        <h2 className="text-sm font-medium">{{ de: 'Geplante Gespräche', en: 'Scheduled calls' }[locale]}</h2>
-                        <p className="text-xs text-muted-foreground">
-                            {
-                                {
-                                    de: 'Ausstehende Anfragen und bestätigte Termine',
-                                    en: 'Pending requests and confirmed appointments',
-                                }[locale]
-                            }
-                        </p>
+                        <h2 className="text-sm font-medium">{t(locale, 'profileCook', 'calls.scheduled')}</h2>
+                        <p className="text-xs text-muted-foreground">{t(locale, 'profileCook', 'calls.scheduledHint')}</p>
                     </div>
                     <div className="grid gap-3">
                         {sortedBookings.map((booking) => {
@@ -404,7 +383,7 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                                                         disabled={slotBusy}
                                                         onClick={() => void onConfirmBooking(booking.cookCallSlotBookingId)}
                                                     >
-                                                        {{ de: 'Bestätigen', en: 'Confirm' }[locale]}
+                                                        {t(locale, 'profileCook', 'actions.confirm')}
                                                     </Button>
                                                     <Button
                                                         type="button"
@@ -416,7 +395,7 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                                                             setDeclineReason('');
                                                         }}
                                                     >
-                                                        {{ de: 'Ablehnen', en: 'Decline' }[locale]}
+                                                        {t(locale, 'profileCook', 'actions.decline')}
                                                     </Button>
                                                     <Button asChild type="button" size="sm" variant="outline">
                                                         <Link
@@ -424,7 +403,7 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                                                             params={{ bookingRequestOfferId: booking.bookingRequestOfferId }}
                                                             search={{ tab: 'call' }}
                                                         >
-                                                            {{ de: 'Angebot ansehen', en: 'View offer' }[locale]}
+                                                            {t(locale, 'profileCook', 'calls.viewOffer')}
                                                         </Link>
                                                     </Button>
                                                 </div>
@@ -435,7 +414,7 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                                                     <Textarea
                                                         value={declineReason}
                                                         onChange={(event) => setDeclineReason(event.target.value)}
-                                                        placeholder={{ de: 'Optionaler Grund', en: 'Optional reason' }[locale]}
+                                                        placeholder={t(locale, 'profileCook', 'actions.optionalReason')}
                                                         rows={3}
                                                     />
                                                     <div className="flex flex-wrap justify-end gap-2">
@@ -446,7 +425,7 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                                                             disabled={slotBusy}
                                                             onClick={() => setDecliningId(null)}
                                                         >
-                                                            {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                                            {t(locale, 'common', 'cancel')}
                                                         </Button>
                                                         <Button
                                                             type="button"
@@ -455,7 +434,7 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                                                             disabled={slotBusy}
                                                             onClick={() => void onDeclineBooking(booking.cookCallSlotBookingId)}
                                                         >
-                                                            {{ de: 'Absage senden', en: 'Send decline' }[locale]}
+                                                            {t(locale, 'profileCook', 'calls.sendDecline')}
                                                         </Button>
                                                     </div>
                                                 </div>
@@ -473,7 +452,7 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                                                             setCancelReason('');
                                                         }}
                                                     >
-                                                        {{ de: 'Vorschlag zurückziehen', en: 'Withdraw suggestion' }[locale]}
+                                                        {t(locale, 'profileCook', 'calls.withdrawSuggestion')}
                                                     </Button>
                                                     <Button asChild type="button" size="sm">
                                                         <Link
@@ -481,7 +460,7 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                                                             params={{ bookingRequestOfferId: booking.bookingRequestOfferId }}
                                                             search={{ tab: 'call' }}
                                                         >
-                                                            {{ de: 'Angebot ansehen', en: 'View offer' }[locale]}
+                                                            {t(locale, 'profileCook', 'calls.viewOffer')}
                                                         </Link>
                                                     </Button>
                                                 </div>
@@ -503,7 +482,7 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                                                             setCancelReason('');
                                                         }}
                                                     >
-                                                        {{ de: 'Termin absagen', en: 'Cancel appointment' }[locale]}
+                                                        {t(locale, 'profileCook', 'calls.cancelAppointment')}
                                                     </Button>
                                                     <AddToCalendarLink
                                                         appearance="action"
@@ -542,12 +521,9 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                                                             params={{ bookingRequestOfferId: booking.bookingRequestOfferId }}
                                                             search={{ tab: 'call' }}
                                                         >
-                                                            {
-                                                                {
-                                                                    de: joinable ? 'Zum Anruf' : 'Angebot ansehen',
-                                                                    en: joinable ? 'Go to call' : 'View offer',
-                                                                }[locale]
-                                                            }
+                                                            {joinable
+                                                                ? t(locale, 'profileCook', 'calls.goToCall')
+                                                                : t(locale, 'profileCook', 'calls.viewOffer')}
                                                         </Link>
                                                     </Button>
                                                 </div>
@@ -556,19 +532,14 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                                             {isCanceling ? (
                                                 <div className="grid gap-2 rounded-md bg-secondary/40">
                                                     <p className="text-sm font-medium">
-                                                        {
-                                                            {
-                                                                de: isConfirmed
-                                                                    ? 'Termin wirklich absagen?'
-                                                                    : 'Vorschlag wirklich zurückziehen?',
-                                                                en: isConfirmed ? 'Cancel this appointment?' : 'Withdraw this suggestion?',
-                                                            }[locale]
-                                                        }
+                                                        {isConfirmed
+                                                            ? t(locale, 'profileCook', 'calls.cancelAppointmentConfirm')
+                                                            : t(locale, 'profileCook', 'calls.withdrawSuggestionConfirm')}
                                                     </p>
                                                     <Textarea
                                                         value={cancelReason}
                                                         onChange={(event) => setCancelReason(event.target.value)}
-                                                        placeholder={{ de: 'Optionaler Grund', en: 'Optional reason' }[locale]}
+                                                        placeholder={t(locale, 'profileCook', 'actions.optionalReason')}
                                                         rows={3}
                                                     />
                                                     <div className="flex flex-wrap justify-end gap-2">
@@ -579,7 +550,7 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                                                             disabled={slotBusy}
                                                             onClick={() => setCancelingId(null)}
                                                         >
-                                                            {{ de: 'Zurück', en: 'Back' }[locale]}
+                                                            {t(locale, 'profileCook', 'actions.back')}
                                                         </Button>
                                                         <Button
                                                             type="button"
@@ -588,12 +559,9 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                                                             disabled={slotBusy}
                                                             onClick={() => void onCancelBooking(booking.cookCallSlotBookingId)}
                                                         >
-                                                            {
-                                                                {
-                                                                    de: isConfirmed ? 'Termin absagen' : 'Vorschlag zurückziehen',
-                                                                    en: isConfirmed ? 'Cancel appointment' : 'Withdraw suggestion',
-                                                                }[locale]
-                                                            }
+                                                            {isConfirmed
+                                                                ? t(locale, 'profileCook', 'calls.cancelAppointment')
+                                                                : t(locale, 'profileCook', 'calls.withdrawSuggestion')}
                                                         </Button>
                                                     </div>
                                                 </div>
@@ -610,22 +578,15 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
             <Card>
                 <CardHeader>
                     <div className="grid gap-1">
-                        <CardTitle>{{ de: 'Anrufplanung', en: 'Call scheduling' }[locale]}</CardTitle>
-                        <CardDescription>
-                            {
-                                {
-                                    de: 'Gastgeber können kurze Kennenlerngespräche anfragen.',
-                                    en: 'Hosts can request short intro calls.',
-                                }[locale]
-                            }
-                        </CardDescription>
+                        <CardTitle>{t(locale, 'profileCook', 'calls.scheduling')}</CardTitle>
+                        <CardDescription>{t(locale, 'profileCook', 'calls.schedulingHint')}</CardDescription>
                     </div>
                     <CardAction>
                         <Switch checked={enabled} disabled={settingsSaving} onCheckedChange={(checked) => setPendingEnabled(checked)} />
                     </CardAction>
                 </CardHeader>
                 <CardContent className="grid gap-2">
-                    <span className="text-sm font-medium">{{ de: 'Gesprächsdauer', en: 'Call duration' }[locale]}</span>
+                    <span className="text-sm font-medium">{t(locale, 'profileCook', 'calls.duration')}</span>
                     <Select value={duration} disabled={settingsSaving} onValueChange={(value) => void onDurationChange(value)}>
                         <SelectTrigger className="w-full max-w-xs">
                             <SelectValue />
@@ -633,7 +594,7 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                         <SelectContent>
                             {COOK_CALL_DURATIONS_MINUTES.map((option) => (
                                 <SelectItem key={option} value={String(option)}>
-                                    {option} {{ de: 'Minuten', en: 'minutes' }[locale]}
+                                    {option} {t(locale, 'profileCook', 'calls.minutes')}
                                 </SelectItem>
                             ))}
                         </SelectContent>
@@ -644,14 +605,12 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
             <div className={cn('grid gap-4', availabilityDisabled && 'pointer-events-none opacity-50')}>
                 <Card>
                     <CardHeader>
-                        <CardTitle>{{ de: 'Meine Zeitfenster', en: 'My time windows' }[locale]}</CardTitle>
-                        <CardDescription>{{ de: 'Wiederholt sich wöchentlich', en: 'Repeats weekly' }[locale]}</CardDescription>
+                        <CardTitle>{t(locale, 'profileCook', 'calls.myWindows')}</CardTitle>
+                        <CardDescription>{t(locale, 'profileCook', 'calls.repeatsWeekly')}</CardDescription>
                     </CardHeader>
                     <CardContent className="grid gap-4">
                         {sortedRules.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">
-                                {{ de: 'Noch keine Zeitfenster definiert.', en: 'No time windows defined yet.' }[locale]}
-                            </p>
+                            <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'calls.noWindows')}</p>
                         ) : null}
                         <div className="grid gap-3">
                             {sortedRules.map((rule) => (
@@ -670,7 +629,7 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                                             type="button"
                                             variant="outline"
                                             size="icon"
-                                            aria-label={{ de: 'Bearbeiten', en: 'Edit' }[locale]}
+                                            aria-label={t(locale, 'profileCook', 'actions.edit')}
                                             onClick={() => {
                                                 setEditingRule(rule);
                                                 setRuleDialogOpen(true);
@@ -682,7 +641,7 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                                             type="button"
                                             variant="outline"
                                             size="icon"
-                                            aria-label={{ de: 'Löschen', en: 'Delete' }[locale]}
+                                            aria-label={t(locale, 'profileCook', 'actions.delete')}
                                             onClick={() => void onDeleteRule(rule.cookCallAvailabilityRuleId)}
                                         >
                                             <Trash2Icon />
@@ -702,17 +661,12 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                                         setRuleDialogOpen(true);
                                     }}
                                 >
-                                    + {{ de: 'Zeitfenster hinzufügen', en: 'Add time window' }[locale]}
+                                    + {t(locale, 'profileCook', 'calls.addWindow')}
                                 </Button>
                             </div>
                             {sortedRules.length >= COOK_CALL_MAX_WEEKLY_RULES ? (
                                 <p className="text-xs text-muted-foreground">
-                                    {
-                                        {
-                                            de: `Maximal ${COOK_CALL_MAX_WEEKLY_RULES} wöchentliche Zeitfenster erreicht.`,
-                                            en: `Maximum of ${COOK_CALL_MAX_WEEKLY_RULES} weekly time windows reached.`,
-                                        }[locale]
-                                    }
+                                    {t(locale, 'profileCook', 'calls.maxWindows', { count: COOK_CALL_MAX_WEEKLY_RULES })}
                                 </p>
                             ) : null}
                         </div>
@@ -721,29 +675,22 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>{{ de: 'Ausnahmen', en: 'Exceptions' }[locale]}</CardTitle>
-                        <CardDescription>
-                            {
-                                {
-                                    de: 'Tage frei nehmen oder einmalige Zeitfenster anbieten',
-                                    en: 'Take days off or offer one-off windows',
-                                }[locale]
-                            }
-                        </CardDescription>
+                        <CardTitle>{t(locale, 'profileCook', 'calls.exceptions')}</CardTitle>
+                        <CardDescription>{t(locale, 'profileCook', 'calls.exceptionsHint')}</CardDescription>
                     </CardHeader>
                     <CardContent className="grid gap-4">
                         {sortedExceptions.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">{{ de: 'Keine Ausnahmen.', en: 'No exceptions.' }[locale]}</p>
+                            <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'calls.noExceptions')}</p>
                         ) : null}
                         <div className="grid gap-3">
                             {sortedExceptions.map((exception) => {
                                 const typeLabel =
                                     exception.type === 'BLOCK'
-                                        ? { de: 'Geblockt', en: 'Blocked' }[locale]
-                                        : { de: 'Zusätzlich verfügbar', en: 'Extra availability' }[locale];
+                                        ? t(locale, 'profileCook', 'calls.blocked')
+                                        : t(locale, 'profileCook', 'calls.extraAvailability');
                                 const isAllDay = exception.startMinuteOfDay == null || exception.endMinuteOfDay == null;
                                 const rangeLabel = isAllDay
-                                    ? { de: 'ganztägig', en: 'all day' }[locale]
+                                    ? t(locale, 'profileCook', 'calls.allDay')
                                     : `${formatMinuteOfDay(exception.startMinuteOfDay!)}–${formatMinuteOfDay(exception.endMinuteOfDay!)}`;
                                 return (
                                     <div
@@ -761,7 +708,7 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                                             type="button"
                                             variant="outline"
                                             size="icon"
-                                            aria-label={{ de: 'Löschen', en: 'Delete' }[locale]}
+                                            aria-label={t(locale, 'profileCook', 'actions.delete')}
                                             onClick={() => void onDeleteException(exception.cookCallAvailabilityExceptionId)}
                                         >
                                             <Trash2Icon />
@@ -772,7 +719,7 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                         </div>
                         <div className="flex justify-end">
                             <Button type="button" variant="outline" onClick={() => setExceptionDialogOpen(true)}>
-                                + {{ de: 'Ausnahme hinzufügen', en: 'Add exception' }[locale]}
+                                + {t(locale, 'profileCook', 'calls.addException')}
                             </Button>
                         </div>
                     </CardContent>
@@ -819,7 +766,7 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                         <AlertDialogDescription>{schedulingConfirmCopy?.description}</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel disabled={settingsSaving}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogCancel disabled={settingsSaving}>{t(locale, 'common', 'cancel')}</AlertDialogCancel>
                         <AlertDialogAction
                             variant={pendingEnabled === false ? 'destructive' : 'default'}
                             disabled={settingsSaving}
@@ -829,8 +776,8 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                             }}
                         >
                             {settingsSaving
-                                ? { de: 'Speichern…', en: 'Saving…' }[locale]
-                                : (schedulingConfirmCopy?.confirm ?? { de: 'Bestätigen', en: 'Confirm' }[locale])}
+                                ? t(locale, 'profileCook', 'actions.saving')
+                                : (schedulingConfirmCopy?.confirm ?? t(locale, 'profileCook', 'actions.confirm'))}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

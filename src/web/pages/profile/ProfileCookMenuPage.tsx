@@ -4,7 +4,9 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
+import { t } from '../../../i18n/t';
 import { formatDateTime } from '../../../shared';
+import type { Locale } from '../../../shared/locale';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -37,14 +39,12 @@ import { cookStubRouteBySlug } from './cookCatalog';
 
 const menusRoute = cookStubRouteBySlug('menus');
 
-export const profileCookMenuPageTitle = {
-    de: 'Menü ansehen, veröffentlichen oder löschen',
-    en: 'View, publish, or delete a menu',
-} as const;
-export const profileCookMenuPageDescription = {
-    de: 'Titel, Beschreibung, Gänge und Veröffentlichung verwalten.',
-    en: 'Manage title, description, courses, and publication.',
-} as const;
+export function profileCookMenuPageTitle(locale: Locale): string {
+    return t(locale, 'profileCook', 'menu.seoTitle');
+}
+export function profileCookMenuPageDescription(locale: Locale): string {
+    return t(locale, 'profileCook', 'menu.seoDescription');
+}
 
 type MenuRow = NonNullable<NonNullable<NonNullable<GqlCProfileCookMenuPageQuery['currentSession']['user']>['cook']>['menu']>;
 type TemplateMenu = NonNullable<MenuRow['templateMenu']>;
@@ -68,25 +68,25 @@ function mealTitlesLine(meals: ReadonlyArray<{ title: string }>, emptyLabel: str
 function menuSyncChanges(
     offerMenu: Pick<MenuRow, 'title' | 'description' | 'courses'>,
     template: Pick<TemplateMenu, 'title' | 'description' | 'courses'>,
-    locale: 'de' | 'en',
+    locale: Locale,
 ): SyncChange[] {
-    const emptyMeal = { de: '(kein Gericht)', en: '(no meal)' }[locale];
-    const untitledCourse = { de: 'Unbenannter Gang', en: 'Untitled course' }[locale];
+    const emptyMeal = t(locale, 'profileCook', 'menu.noMeal');
+    const untitledCourse = t(locale, 'profileCook', 'menu.untitledCourse');
     const changes: SyncChange[] = [];
 
     if (offerMenu.title.trim() !== template.title.trim()) {
         changes.push({
-            label: { de: 'Titel', en: 'Title' }[locale],
-            from: template.title.trim() || { de: '(leer)', en: '(empty)' }[locale],
-            to: offerMenu.title.trim() || { de: '(leer)', en: '(empty)' }[locale],
+            label: t(locale, 'profileCook', 'actions.title'),
+            from: template.title.trim() || t(locale, 'profileCook', 'menu.empty'),
+            to: offerMenu.title.trim() || t(locale, 'profileCook', 'menu.empty'),
         });
     }
 
     if (offerMenu.description.trim() !== template.description.trim()) {
         changes.push({
-            label: { de: 'Beschreibung', en: 'Description' }[locale],
-            from: template.description.trim() || { de: '(leer)', en: '(empty)' }[locale],
-            to: offerMenu.description.trim() || { de: '(leer)', en: '(empty)' }[locale],
+            label: t(locale, 'profileCook', 'actions.description'),
+            from: template.description.trim() || t(locale, 'profileCook', 'menu.empty'),
+            to: offerMenu.description.trim() || t(locale, 'profileCook', 'menu.empty'),
         });
     }
 
@@ -94,20 +94,20 @@ function menuSyncChanges(
     for (let index = 0; index < maxCourses; index += 1) {
         const offerCourse = offerMenu.courses[index];
         const templateCourse = template.courses[index];
-        const courseLabel = { de: `Gang ${index + 1}`, en: `Course ${index + 1}` }[locale];
+        const courseLabel = t(locale, 'profileCook', 'menu.courseN', { index: index + 1 });
 
         if (offerCourse == null && templateCourse != null) {
             changes.push({
                 label: courseLabel,
                 from: templateCourse.title.trim() || untitledCourse,
-                to: { de: '(entfernt)', en: '(removed)' }[locale],
+                to: t(locale, 'profileCook', 'menu.removed'),
             });
             continue;
         }
         if (offerCourse != null && templateCourse == null) {
             changes.push({
                 label: courseLabel,
-                from: { de: '(neu)', en: '(new)' }[locale],
+                from: t(locale, 'profileCook', 'menu.isNew'),
                 to: [offerCourse.title.trim() || untitledCourse, mealTitlesLine(offerCourse.mealOptions, emptyMeal)].join(': '),
             });
             continue;
@@ -125,8 +125,8 @@ function menuSyncChanges(
             const fromParts = [templateTitle, templateMeals];
             const toParts = [offerTitle, offerMeals];
             if (offerLimit !== templateLimit) {
-                fromParts.push({ de: `Auswahl bis ${templateLimit}`, en: `Pick up to ${templateLimit}` }[locale]);
-                toParts.push({ de: `Auswahl bis ${offerLimit}`, en: `Pick up to ${offerLimit}` }[locale]);
+                fromParts.push(t(locale, 'profileCook', 'menu.pickUpToTemplate', { limit: templateLimit }));
+                toParts.push(t(locale, 'profileCook', 'menu.pickUpToOffer', { limit: offerLimit }));
             }
             changes.push({
                 label: courseLabel,
@@ -185,11 +185,9 @@ export function ProfileCookMenuPage({ data, menuId }: { data: GqlCProfileCookMen
             if (result.error || !result.data?.user.cook.menuUpsert.success) {
                 throw new Error('publish failed');
             }
-            toast.success(
-                next ? { de: 'Veröffentlicht.', en: 'Published.' }[locale] : { de: 'Zurückgezogen.', en: 'Unpublished.' }[locale],
-            );
+            toast.success(next ? t(locale, 'profileCook', 'actions.publishedToast') : t(locale, 'profileCook', 'actions.unpublished'));
         } catch {
-            toast.error({ de: 'Aktion fehlgeschlagen.', en: 'Action failed.' }[locale]);
+            toast.error(t(locale, 'profileCook', 'actions.actionFailed'));
         } finally {
             setBusy(false);
         }
@@ -202,10 +200,10 @@ export function ProfileCookMenuPage({ data, menuId }: { data: GqlCProfileCookMen
             if (result.error || !result.data?.user.cook.menuDelete.success) {
                 throw new Error('delete failed');
             }
-            toast.success({ de: 'Gelöscht.', en: 'Deleted.' }[locale]);
+            toast.success(t(locale, 'profileCook', 'actions.deleted'));
             await navigate({ to: menusRoute.to });
         } catch {
-            toast.error({ de: 'Löschen fehlgeschlagen.', en: 'Could not delete.' }[locale]);
+            toast.error(t(locale, 'profileCook', 'actions.deleteFailed'));
         } finally {
             setBusy(false);
         }
@@ -217,10 +215,10 @@ export function ProfileCookMenuPage({ data, menuId }: { data: GqlCProfileCookMen
             const result = await copyMenu({ menuId });
             const newMenuId = result.data?.user.cook.menuCopy.referenceId;
             if (!newMenuId || result.error) throw new Error('copy failed');
-            toast.success({ de: 'Menü kopiert.', en: 'Menu copied.' }[locale]);
+            toast.success(t(locale, 'profileCook', 'menu.copied'));
             await navigate({ to: '/{-$locale}/profile/menus/$menuId', params: { menuId: newMenuId } });
         } catch {
-            toast.error({ de: 'Kopieren fehlgeschlagen.', en: 'Could not copy.' }[locale]);
+            toast.error(t(locale, 'profileCook', 'menu.copyFailed'));
         } finally {
             setBusy(false);
         }
@@ -234,10 +232,10 @@ export function ProfileCookMenuPage({ data, menuId }: { data: GqlCProfileCookMen
             if (!templateMenuId || result.error || !result.data?.user.cook.menuSyncToTemplate.success) {
                 throw new Error('sync failed');
             }
-            toast.success({ de: 'Vorlage aktualisiert.', en: 'Template updated.' }[locale]);
+            toast.success(t(locale, 'profileCook', 'menu.templateUpdated'));
             await navigate({ to: '/{-$locale}/profile/menus/$menuId', params: { menuId: templateMenuId } });
         } catch {
-            toast.error({ de: 'Sync fehlgeschlagen.', en: 'Could not sync.' }[locale]);
+            toast.error(t(locale, 'profileCook', 'menu.syncFailed'));
         } finally {
             setBusy(false);
             setConfirm(null);
@@ -278,7 +276,7 @@ export function ProfileCookMenuPage({ data, menuId }: { data: GqlCProfileCookMen
                                         variant="outline"
                                         size="icon"
                                         disabled={busy}
-                                        aria-label={{ de: 'Weitere Aktionen', en: 'More actions' }[locale]}
+                                        aria-label={t(locale, 'profileCook', 'actions.moreActions')}
                                     >
                                         <MoreHorizontalIcon className="size-4" />
                                     </Button>
@@ -291,13 +289,13 @@ export function ProfileCookMenuPage({ data, menuId }: { data: GqlCProfileCookMen
                                                 params={{ bookingRequestOfferId: offerContext.bookingRequestOfferId }}
                                                 search={{ tab: 'offer' }}
                                             >
-                                                {{ de: 'Angebot öffnen', en: 'Open offer' }[locale]}
+                                                {t(locale, 'profileCook', 'menu.openOffer')}
                                             </Link>
                                         </DropdownMenuItem>
                                     ) : null}
                                     {canSyncToTemplate ? (
                                         <DropdownMenuItem disabled={busy} onSelect={() => setConfirm('sync')}>
-                                            {{ de: 'In Vorlage übernehmen', en: 'Sync to template' }[locale]}
+                                            {t(locale, 'profileCook', 'menu.syncToTemplate')}
                                         </DropdownMenuItem>
                                     ) : null}
                                 </DropdownMenuContent>
@@ -310,22 +308,22 @@ export function ProfileCookMenuPage({ data, menuId }: { data: GqlCProfileCookMen
                                         variant="outline"
                                         size="icon"
                                         disabled={busy}
-                                        aria-label={{ de: 'Weitere Aktionen', en: 'More actions' }[locale]}
+                                        aria-label={t(locale, 'profileCook', 'actions.moreActions')}
                                     >
                                         <MoreHorizontalIcon className="size-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuItem disabled={busy} onSelect={() => void onCopy()}>
-                                        {{ de: 'Kopieren', en: 'Copy' }[locale]}
+                                        {t(locale, 'profileCook', 'actions.copy')}
                                     </DropdownMenuItem>
                                     {publicationEnabled && menu.publishedAt != null ? (
                                         <DropdownMenuItem disabled={busy} onSelect={() => void setPublished(null)}>
-                                            {{ de: 'Zurückziehen', en: 'Unpublish' }[locale]}
+                                            {t(locale, 'profileCook', 'actions.unpublish')}
                                         </DropdownMenuItem>
                                     ) : null}
                                     <DropdownMenuItem variant="destructive" disabled={busy} onSelect={() => setConfirm('delete')}>
-                                        {{ de: 'Löschen', en: 'Delete' }[locale]}
+                                        {t(locale, 'profileCook', 'actions.delete')}
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
@@ -333,14 +331,14 @@ export function ProfileCookMenuPage({ data, menuId }: { data: GqlCProfileCookMen
 
                         {!isOfferMenu && publicationEnabled && menu.publishedAt == null ? (
                             <Button type="button" variant="outline" disabled={busy || !canPublish} onClick={() => setConfirm('publish')}>
-                                {{ de: 'Veröffentlichen', en: 'Publish' }[locale]}
+                                {t(locale, 'profileCook', 'actions.publish')}
                             </Button>
                         ) : null}
 
                         {(!isOfferMenu || canEditOfferMenu) && (
                             <Button asChild>
                                 <Link to="/{-$locale}/profile/menus/$menuId/edit" params={{ menuId }}>
-                                    {{ de: 'Bearbeiten', en: 'Edit' }[locale]}
+                                    {t(locale, 'profileCook', 'actions.edit')}
                                 </Link>
                             </Button>
                         )}
@@ -350,79 +348,42 @@ export function ProfileCookMenuPage({ data, menuId }: { data: GqlCProfileCookMen
                 {isOfferMenu || publicationEnabled || menu.generatedAt != null ? (
                     <div className="flex flex-wrap items-center gap-2">
                         {isOfferMenu ? (
-                            <Badge variant="outline">{{ de: 'Angebotsmenü', en: 'Offer menu' }[locale]}</Badge>
+                            <Badge variant="outline">{t(locale, 'profileCook', 'menu.offerMenu')}</Badge>
                         ) : publicationEnabled ? (
                             <Badge variant="outline">
-                                {menu.publishedAt
-                                    ? { de: 'Veröffentlicht', en: 'Published' }[locale]
-                                    : { de: 'Entwurf', en: 'Draft' }[locale]}
+                                {menu.publishedAt ? t(locale, 'profileCook', 'meals.published') : t(locale, 'profileCook', 'meals.draft')}
                             </Badge>
                         ) : null}
-                        {menu.generatedAt != null ? <Badge variant="outline">{{ de: 'Generiert', en: 'Generated' }[locale]}</Badge> : null}
+                        {menu.generatedAt != null ? <Badge variant="outline">{t(locale, 'profileCook', 'actions.generated')}</Badge> : null}
                     </div>
                 ) : null}
 
                 {isOfferMenu ? (
-                    <StatusAlert tone="info" title={{ de: 'Kopie für ein Angebot', en: 'Per-offer copy' }[locale]}>
-                        <p>
-                            {
-                                {
-                                    de: 'Dieses Menü gehört zu einem Angebot. Änderungen an der Vorlage gelten hier nicht automatisch.',
-                                    en: 'This menu belongs to an offer. Edits to the library template do not apply here automatically.',
-                                }[locale]
-                            }
-                        </p>
+                    <StatusAlert tone="info" title={t(locale, 'profileCook', 'menu.perOfferCopy')}>
+                        <p>{t(locale, 'profileCook', 'menu.perOfferHint')}</p>
                         {offerMeta != null ? <p className="mt-1">{offerMeta}</p> : null}
-                        {!canEditOfferMenu ? (
-                            <p className="mt-1">
-                                {
-                                    {
-                                        de: 'Das Angebot ist nicht mehr in Verhandlung. Du kannst die Kopie ansehen und in die Vorlage übernehmen.',
-                                        en: 'This offer is no longer negotiable. You can view the copy and sync it to the template.',
-                                    }[locale]
-                                }
-                            </p>
-                        ) : null}
+                        {!canEditOfferMenu ? <p className="mt-1">{t(locale, 'profileCook', 'menu.noLongerNegotiable')}</p> : null}
                     </StatusAlert>
                 ) : null}
 
                 <div className="grid gap-1">
                     <h1 className="font-serif text-3xl/tight text-foreground">{menu.title}</h1>
                     <p className="text-muted-foreground whitespace-pre-wrap">
-                        {menu.description.trim() ? menu.description : { de: 'Keine Beschreibung.', en: 'No description.' }[locale]}
+                        {menu.description.trim() ? menu.description : t(locale, 'profileCook', 'actions.noDescription')}
                     </p>
                 </div>
 
                 <section className="grid gap-3">
                     <div>
-                        <h2 className="text-base font-semibold">{{ de: 'Gänge', en: 'Courses' }[locale]}</h2>
-                        <p className="text-sm text-muted-foreground">
-                            {
-                                {
-                                    de: 'Pro Gang wählen Gäste aus den angebotenen Gerichten. Mehrfachauswahl ist am Gang gekennzeichnet.',
-                                    en: 'Guests pick from the meals in each course. Courses that allow multiple dishes say so next to the title.',
-                                }[locale]
-                            }
-                        </p>
+                        <h2 className="text-base font-semibold">{t(locale, 'profileCook', 'menuEdit.courses')}</h2>
+                        <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'menu.coursesHint')}</p>
                     </div>
                     {!isOfferMenu && incompleteCourseCount > 0 ? (
                         <StatusAlert
                             tone="warning"
-                            title={
-                                incompleteCourseCount === 1
-                                    ? { de: '1 Gang ist unvollständig', en: '1 course is incomplete' }[locale]
-                                    : {
-                                          de: `${incompleteCourseCount} Gänge sind unvollständig`,
-                                          en: `${incompleteCourseCount} courses are incomplete`,
-                                      }[locale]
-                            }
+                            title={t(locale, 'profileCook', 'menu.incompleteCourses', { count: incompleteCourseCount })}
                         >
-                            {
-                                {
-                                    de: 'Zum Veröffentlichen braucht jeder Gang mindestens ein Gericht.',
-                                    en: 'To publish, every course needs at least one meal.',
-                                }[locale]
-                            }
+                            {t(locale, 'profileCook', 'menu.publishNeedsMeals')}
                         </StatusAlert>
                     ) : null}
                     <div className="grid gap-6">
@@ -433,27 +394,20 @@ export function ProfileCookMenuPage({ data, menuId }: { data: GqlCProfileCookMen
                                 <div key={course.courseId} className="grid gap-2">
                                     <div className="flex flex-wrap items-baseline justify-between gap-2">
                                         <p className="text-base font-medium">
-                                            {course.title.trim() ? course.title : { de: 'Unbenannter Gang', en: 'Untitled course' }[locale]}
+                                            {course.title.trim() ? course.title : t(locale, 'profileCook', 'menu.untitledCourse')}
                                         </p>
                                         {isMultiSelect ? (
                                             <Badge variant="outline">
-                                                {
-                                                    {
-                                                        de: `Bis zu ${selectionLimit} Gerichte auswählbar`,
-                                                        en: `Up to ${selectionLimit} dishes selectable`,
-                                                    }[locale]
-                                                }
+                                                {t(locale, 'profileCook', 'menu.upToDishes', { limit: selectionLimit })}
                                             </Badge>
                                         ) : course.mealOptions.length > 1 ? (
                                             <span className="text-sm text-muted-foreground">
-                                                {{ de: '1 Gericht auswählbar', en: '1 dish selectable' }[locale]}
+                                                {t(locale, 'profileCook', 'menu.oneDish')}
                                             </span>
                                         ) : null}
                                     </div>
                                     {course.mealOptions.length === 0 ? (
-                                        <p className="text-sm text-muted-foreground">
-                                            {{ de: 'Keine Gerichte.', en: 'No meals.' }[locale]}
-                                        </p>
+                                        <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'menu.noMeals')}</p>
                                     ) : (
                                         <ul className="grid gap-2">
                                             {course.mealOptions.map((meal) => (
@@ -473,20 +427,13 @@ export function ProfileCookMenuPage({ data, menuId }: { data: GqlCProfileCookMen
             <AlertDialog open={confirm === 'delete'} onOpenChange={(open) => !open && setConfirm(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>{{ de: 'Menü löschen?', en: 'Delete this menu?' }[locale]}</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {
-                                {
-                                    de: 'Das Menü verschwindet aus deiner Liste. Admins können es weiterhin einsehen.',
-                                    en: 'The menu disappears from your list. Admins can still inspect it.',
-                                }[locale]
-                            }
-                        </AlertDialogDescription>
+                        <AlertDialogTitle>{t(locale, 'profileCook', 'menu.deleteTitle')}</AlertDialogTitle>
+                        <AlertDialogDescription>{t(locale, 'profileCook', 'menu.deleteBody')}</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogCancel>{t(locale, 'common', 'cancel')}</AlertDialogCancel>
                         <AlertDialogAction variant="destructive" onClick={() => void onDelete()}>
-                            {{ de: 'Löschen', en: 'Delete' }[locale]}
+                            {t(locale, 'profileCook', 'actions.delete')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -495,20 +442,13 @@ export function ProfileCookMenuPage({ data, menuId }: { data: GqlCProfileCookMen
             <AlertDialog open={confirm === 'publish'} onOpenChange={(open) => !open && setConfirm(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>{{ de: 'Menü veröffentlichen?', en: 'Publish this menu?' }[locale]}</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {
-                                {
-                                    de: 'Das Menü wird als veröffentlicht markiert.',
-                                    en: 'The menu will be marked published.',
-                                }[locale]
-                            }
-                        </AlertDialogDescription>
+                        <AlertDialogTitle>{t(locale, 'profileCook', 'menu.publishTitle')}</AlertDialogTitle>
+                        <AlertDialogDescription>{t(locale, 'profileCook', 'menu.publishBody')}</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogCancel>{t(locale, 'common', 'cancel')}</AlertDialogCancel>
                         <AlertDialogAction onClick={() => void setPublished(new Date().toISOString())}>
-                            {{ de: 'Veröffentlichen', en: 'Publish' }[locale]}
+                            {t(locale, 'profileCook', 'actions.publish')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -517,25 +457,11 @@ export function ProfileCookMenuPage({ data, menuId }: { data: GqlCProfileCookMen
             <AlertDialog open={confirm === 'sync'} onOpenChange={(open) => !open && setConfirm(null)}>
                 <AlertDialogContent className="max-w-lg">
                     <AlertDialogHeader>
-                        <AlertDialogTitle>{{ de: 'In Vorlage übernehmen?', en: 'Sync to template?' }[locale]}</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {
-                                {
-                                    de: 'Diese Werte der Bibliotheks-Vorlage werden durch das Angebotsmenü ersetzt.',
-                                    en: 'These library template values will be replaced by the offer menu.',
-                                }[locale]
-                            }
-                        </AlertDialogDescription>
+                        <AlertDialogTitle>{t(locale, 'profileCook', 'menu.syncTitle')}</AlertDialogTitle>
+                        <AlertDialogDescription>{t(locale, 'profileCook', 'menu.syncBody')}</AlertDialogDescription>
                     </AlertDialogHeader>
                     {syncChanges.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">
-                            {
-                                {
-                                    de: 'Keine Unterschiede zur Vorlage. Übernehmen ändert nichts.',
-                                    en: 'No differences from the template. Syncing will not change anything.',
-                                }[locale]
-                            }
-                        </p>
+                        <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'menu.syncNoDiff')}</p>
                     ) : (
                         <ul className="grid max-h-72 gap-3 overflow-y-auto text-sm">
                             {syncChanges.map((change) => (
@@ -550,9 +476,9 @@ export function ProfileCookMenuPage({ data, menuId }: { data: GqlCProfileCookMen
                         </ul>
                     )}
                     <AlertDialogFooter>
-                        <AlertDialogCancel>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogCancel>{t(locale, 'common', 'cancel')}</AlertDialogCancel>
                         <AlertDialogAction disabled={busy || syncChanges.length === 0} onClick={() => void onSyncToTemplate()}>
-                            {{ de: 'Übernehmen', en: 'Sync' }[locale]}
+                            {t(locale, 'profileCook', 'menu.sync')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

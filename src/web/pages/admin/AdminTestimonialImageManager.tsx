@@ -2,6 +2,8 @@ import { PlusIcon, XIcon } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import { t } from '../../../i18n/t';
+import { inlineCopy } from '../../../shared';
 import { uploadErrorMessage, uploadFile } from '../../chat/fileUpload';
 import { Button } from '../../components/base/button';
 import { Spinner } from '../../components/base/spinner';
@@ -42,7 +44,7 @@ export function AdminTestimonialImageManager({
 
         const images = Array.from(fileList).filter((file) => file.type.startsWith('image/'));
         if (images.length === 0) {
-            toast.error({ de: 'Bitte ein Bild auswählen.', en: 'Please choose an image.' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.pleaseChooseAnImage'));
             if (inputRef.current) inputRef.current.value = '';
             return;
         }
@@ -50,10 +52,13 @@ export function AdminTestimonialImageManager({
         const remaining = MAX_IMAGES - existingIds.length;
         if (remaining <= 0) {
             toast.error(
-                {
-                    de: `Höchstens ${MAX_IMAGES} Bilder pro Bewertung.`,
-                    en: `At most ${MAX_IMAGES} photos per review.`,
-                }[locale],
+                inlineCopy(
+                    {
+                        de: `Höchstens ${MAX_IMAGES} Bilder pro Bewertung.`,
+                        en: `At most ${MAX_IMAGES} photos per review.`,
+                    },
+                    locale,
+                ),
             );
             if (inputRef.current) inputRef.current.value = '';
             return;
@@ -82,10 +87,13 @@ export function AdminTestimonialImageManager({
             }
             if (capped) {
                 toast.error(
-                    {
-                        de: `Höchstens ${MAX_IMAGES} Bilder pro Bewertung.`,
-                        en: `At most ${MAX_IMAGES} photos per review.`,
-                    }[locale],
+                    inlineCopy(
+                        {
+                            de: `Höchstens ${MAX_IMAGES} Bilder pro Bewertung.`,
+                            en: `At most ${MAX_IMAGES} photos per review.`,
+                        },
+                        locale,
+                    ),
                 );
             }
         } catch (error) {
@@ -105,7 +113,7 @@ export function AdminTestimonialImageManager({
                 .filter((id): id is string => id != null);
             if (!(await onSave(nextIds))) throw new Error('save failed');
         } catch {
-            toast.error({ de: 'Entfernen fehlgeschlagen.', en: 'Could not remove the image.' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.couldNotRemoveTheImage'));
         } finally {
             setBusy(false);
         }
@@ -123,7 +131,7 @@ export function AdminTestimonialImageManager({
                             size="icon-xs"
                             disabled={busy}
                             onClick={() => void removeImage(url)}
-                            aria-label={{ de: 'Bild entfernen', en: 'Remove image' }[locale]}
+                            aria-label={t(locale, 'admin', 'copy.removeImage')}
                             className={cn(
                                 'absolute top-1 right-1 rounded-full opacity-0 shadow-sm group-hover:opacity-100',
                                 'pointer-fine:opacity-0 focus-visible:opacity-100',
@@ -140,7 +148,7 @@ export function AdminTestimonialImageManager({
                         disabled={busy}
                         onClick={() => inputRef.current?.click()}
                         className="size-20 border-dashed text-muted-foreground"
-                        aria-label={{ de: 'Bilder hinzufügen', en: 'Add photos' }[locale]}
+                        aria-label={t(locale, 'admin', 'copy.addPhotos')}
                     >
                         {busy ? <Spinner className="size-4" /> : <PlusIcon className="size-4" aria-hidden />}
                     </Button>

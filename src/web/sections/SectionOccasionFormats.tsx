@@ -1,5 +1,6 @@
 import { ImageOffIcon } from 'lucide-react';
 
+import { t } from '../../i18n/t';
 import { contentLocaleText } from '../../shared/contentSection';
 import type { Locale } from '../../shared/locale';
 import { occasionFormatsSectionHasContent } from '../../shared/occasionFormatsSection';
@@ -60,12 +61,10 @@ export function SectionOccasionFormats({
         <section className={cn('mx-auto w-full max-w-7xl px-4 py-16 @lg:px-6', className)}>
             <div className="mx-auto mb-12 flex max-w-3xl flex-col gap-4 text-center">
                 <h2 className="font-serif text-3xl font-light @md:text-4xl">
-                    {title || (
-                        <span className="italic text-muted-foreground">{{ de: 'Überschrift fehlt', en: 'Title missing' }[locale]}</span>
-                    )}
+                    {title || <span className="italic text-muted-foreground">{t(locale, 'public', 'preview.titleMissing')}</span>}
                 </h2>
                 <p className={cn('text-base/7', subtitle ? 'text-muted-foreground' : 'italic text-muted-foreground')}>
-                    {subtitle || { de: 'Untertitel fehlt', en: 'Subtitle missing' }[locale]}
+                    {subtitle || t(locale, 'public', 'preview.subtitleMissing')}
                 </p>
             </div>
 
@@ -84,22 +83,20 @@ export function SectionOccasionFormats({
                                 ) : (
                                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-muted-foreground">
                                         <ImageOffIcon className="size-10" aria-hidden />
-                                        <p className="text-sm font-medium">{{ de: 'Kein Bild', en: 'No image' }[locale]}</p>
+                                        <p className="text-sm font-medium">{t(locale, 'public', 'preview.noImage')}</p>
                                     </div>
                                 )}
                             </div>
                             <h3 className="font-serif text-xl font-normal">
                                 {cardTitle || (
-                                    <span className="italic text-muted-foreground">
-                                        {{ de: 'Titel fehlt', en: 'Title missing' }[locale]}
-                                    </span>
+                                    <span className="italic text-muted-foreground">{t(locale, 'public', 'preview.titleMissing')}</span>
                                 )}
                             </h3>
                             <p className={cn('grow text-sm/6', cardBody ? 'text-muted-foreground' : 'italic text-muted-foreground')}>
-                                {cardBody || { de: 'Text fehlt', en: 'Body missing' }[locale]}
+                                {cardBody || t(locale, 'public', 'preview.bodyMissing')}
                             </p>
                             <p className={cn('text-xs text-muted-foreground', facts.length === 0 ? 'italic' : undefined)}>
-                                {facts.length > 0 ? facts.join(' | ') : { de: 'Details fehlen', en: 'Details missing' }[locale]}
+                                {facts.length > 0 ? facts.join(' | ') : t(locale, 'public', 'preview.detailsMissing')}
                             </p>
                         </article>
                     );

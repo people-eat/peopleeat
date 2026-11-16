@@ -50,6 +50,6 @@ open state.
 | Locale UI    | `src/web/components/LocaleMismatchGate.tsx`                                                                             |
 | Legal UI     | `LegalAcceptanceGate.tsx` (dialog) + `LegalAcceptancePanel.tsx`; in-page sign-in uses the panel from `AuthIdentityGate` |
 | Cookie UI    | `src/web/components/CookieBanner.tsx`, `CookieConsentContext.tsx`                                                       |
-| Mount        | `src/web/components/RootDocument.tsx` under `GraphQLClientProvider`                                                     |
+| Mount        | `src/web/components/RootDocument.tsx` under `I18nProvider` (`common`) and `GraphQLClientProvider`                       |
 
 See [cookie-consent.md](./cookie-consent.md), [admin-legal.md](./admin-legal.md), [i18n.md](../architecture/i18n.md).

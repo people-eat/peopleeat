@@ -2,9 +2,11 @@ import { lazy, Suspense } from 'react';
 import type { ReactNode } from 'react';
 
 import { featureToggleIsActive } from '../../../shared/featureToggle';
+import { I18nProvider } from '../../components/I18nProvider';
 import { ProfileBanStatusUpdatesDocument } from '../../graphql/generated';
 import type { GqlCProfilePageQuery } from '../../graphql/generated';
 import { FeatureToggleKeysProvider } from '../../hooks/useFeatureToggleActive';
+import { useLocale } from '../../hooks/useLocale';
 import { useUserUpdatesSeed } from '../../hooks/useUserUpdatesSeed';
 import { ProfileBanBanner } from './ProfileBanBanner';
 
@@ -28,6 +30,7 @@ const ProfileCustomerShell = lazy(async () => {
 });
 
 export function ProfileLayout({ loaderData }: { loaderData: GqlCProfilePageQuery }) {
+    const locale = useLocale();
     const seedUser = loaderData.currentSession.user;
     // Seed from the loader user (stable identity). Do not wrap `{ userId, status }`
     // inline — a new object each render re-triggers useUserUpdatesSeed's setState
@@ -72,5 +75,13 @@ export function ProfileLayout({ loaderData }: { loaderData: GqlCProfilePageQuery
         );
     }
 
-    return <FeatureToggleKeysProvider value={activeFeatureToggleKeys}>{shell}</FeatureToggleKeysProvider>;
+    const roleNamespaces = user.cook
+        ? (['common', 'profile', 'profileCook'] as const)
+        : (['common', 'profile', 'profileCustomer'] as const);
+
+    return (
+        <I18nProvider locale={locale} namespaces={roleNamespaces}>
+            <FeatureToggleKeysProvider value={activeFeatureToggleKeys}>{shell}</FeatureToggleKeysProvider>
+        </I18nProvider>
+    );
 }

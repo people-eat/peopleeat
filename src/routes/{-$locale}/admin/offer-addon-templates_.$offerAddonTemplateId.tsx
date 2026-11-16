@@ -25,8 +25,8 @@ export const Route = createFileRoute('/{-$locale}/admin/offer-addon-templates_/$
     head: ({ params }) => {
         const locale = localeFromParam(params);
         return seoMeta({
-            title: adminOfferAddonTemplatePageTitle[locale],
-            description: adminOfferAddonTemplatePageDescription[locale],
+            title: adminOfferAddonTemplatePageTitle(locale),
+            description: adminOfferAddonTemplatePageDescription(locale),
             path: `/admin/offer-addon-templates/${params.offerAddonTemplateId}`,
             locale,
             webPageUrl: webPageUrlGet(),

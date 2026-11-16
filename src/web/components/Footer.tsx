@@ -5,6 +5,7 @@ import { useMutation } from 'urql';
 import type { Locale } from '../../shared/locale';
 import { FooterNewsletterSubscriptionCreateDocument } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import {
     SITE_FACEBOOK_URL,
     SITE_INSTAGRAM_URL,
@@ -24,17 +25,17 @@ import { LanguageSwitcher } from './LanguageSwitcher';
 const COMPANY_NAME = 'peopleeat UG';
 
 const COMPANY_LINKS = [
-    { to: '/{-$locale}/about-us' as const, label: { de: 'Über uns', en: 'About us' } },
-    { to: '/{-$locale}/how-to-become-a-chef' as const, label: { de: 'Koch werden', en: 'Become a chef' } },
-    { to: '/{-$locale}/blog-posts' as const, label: { de: 'Blog', en: 'Blog' } },
+    { to: '/{-$locale}/about-us' as const, labelKey: 'footer.aboutUs' as const },
+    { to: '/{-$locale}/how-to-become-a-chef' as const, labelKey: 'footer.becomeChef' as const },
+    { to: '/{-$locale}/blog-posts' as const, labelKey: 'footer.blog' as const },
 ] as const;
 
 const DISCOVER_LINKS = [
-    { to: '/{-$locale}/booking-request/form' as const, label: { de: 'Buchungsanfrage', en: 'Booking request' } },
-    { to: '/{-$locale}/cities' as const, label: { de: 'Städte', en: 'Cities' } },
-    { to: '/{-$locale}/venues' as const, label: { de: 'Locations', en: 'Venues' } },
-    { to: '/{-$locale}/occasions' as const, label: { de: 'Anlässe', en: 'Occasions' } },
-    { to: '/{-$locale}/chefs' as const, label: { de: 'Köche entdecken', en: 'Discover chefs' } },
+    { to: '/{-$locale}/booking-request/form' as const, labelKey: 'footer.bookingRequest' as const },
+    { to: '/{-$locale}/cities' as const, labelKey: 'footer.cities' as const },
+    { to: '/{-$locale}/venues' as const, labelKey: 'footer.venues' as const },
+    { to: '/{-$locale}/occasions' as const, labelKey: 'footer.occasions' as const },
+    { to: '/{-$locale}/chefs' as const, labelKey: 'footer.discoverChefs' as const },
 ] as const;
 
 const SOCIAL_LINKS = [
@@ -44,9 +45,9 @@ const SOCIAL_LINKS = [
 ] as const;
 
 const LEGAL_LINKS = [
-    { to: '/{-$locale}/privacy-policy' as const, label: { de: 'Datenschutzerklärung', en: 'Privacy policy' } },
-    { to: '/{-$locale}/terms-and-conditions' as const, label: { de: 'AGB', en: 'Terms and conditions' } },
-    { to: '/{-$locale}/imprint' as const, label: { de: 'Impressum', en: 'Imprint' } },
+    { to: '/{-$locale}/privacy-policy' as const, labelKey: 'footer.privacy' as const },
+    { to: '/{-$locale}/terms-and-conditions' as const, labelKey: 'footer.terms' as const },
+    { to: '/{-$locale}/imprint' as const, labelKey: 'footer.imprint' as const },
 ] as const;
 
 const linkClassName = 'text-sm text-muted-foreground transition-colors hover:text-foreground';
@@ -58,16 +59,17 @@ export function Footer({
     locale?: Locale;
     onLocaleChange?: (locale: Locale) => void;
 } = {}) {
+    const { t } = useT('public');
     const routeLocale = useLocale();
     const locale = localeProp ?? routeLocale;
     const cookieConsent = useCookieConsent();
     const currentYear = new Date().getFullYear();
-    const companyNavLabel = { de: 'Unternehmen', en: 'Company' }[locale];
-    const discoverNavLabel = { de: 'Entdecken', en: 'Discover' }[locale];
-    const socialNavLabel = 'Social Media';
-    const legalNavLabel = { de: 'Rechtliches', en: 'Legal' }[locale];
-    const cookieSettingsLabel = { de: 'Cookie-Einstellungen', en: 'Cookie settings' }[locale];
-    const newsletterNavLabel = { de: 'Newsletter', en: 'Newsletter' }[locale];
+    const companyNavLabel = t('footer.company');
+    const discoverNavLabel = t('footer.discover');
+    const socialNavLabel = t('footer.social');
+    const legalNavLabel = t('footer.legal');
+    const cookieSettingsLabel = t('footer.cookieSettings');
+    const newsletterNavLabel = t('footer.newsletter');
     const [newsletterEmail, setNewsletterEmail] = useState('');
     const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'success' | 'error'>('idle');
     const [{ fetching: newsletterFetching }, newsletterSubscribe] = useMutation(FooterNewsletterSubscriptionCreateDocument);
@@ -105,18 +107,18 @@ export function Footer({
                         {COMPANY_LINKS.map((item) => (
                             <li key={item.to}>
                                 <Link to={item.to} className={linkClassName}>
-                                    {item.label[locale]}
+                                    {t(item.labelKey)}
                                 </Link>
                             </li>
                         ))}
                         <li>
                             <Link to="/{-$locale}/coming-to/$country" params={{ country: 'netherlands' }} className={linkClassName}>
-                                {{ de: 'peopleeat in den Niederlanden', en: 'peopleeat in the Netherlands' }[locale]}
+                                {t('footer.netherlands')}
                             </Link>
                         </li>
                         <li>
                             <Link to="/{-$locale}/coming-to/$country" params={{ country: 'switzerland' }} className={linkClassName}>
-                                {{ de: 'peopleeat in der Schweiz', en: 'peopleeat in Switzerland' }[locale]}
+                                {t('footer.switzerland')}
                             </Link>
                         </li>
                     </ul>
@@ -128,7 +130,7 @@ export function Footer({
                         {DISCOVER_LINKS.map((item) => (
                             <li key={item.to}>
                                 <Link to={item.to} className={linkClassName}>
-                                    {item.label[locale]}
+                                    {t(item.labelKey)}
                                 </Link>
                             </li>
                         ))}
@@ -149,24 +151,17 @@ export function Footer({
                 </nav>
 
                 <div className="col-span-2 flex flex-col gap-4 @4xl:col-span-1">
-                    <h2 className="text-base font-medium text-foreground">{{ de: 'Hast du Fragen?', en: 'Have questions?' }[locale]}</h2>
+                    <h2 className="text-base font-medium text-foreground">{t('footer.haveQuestions')}</h2>
                     <div>
                         <Button asChild>
                             <a href={SITE_WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
-                                {{ de: 'Kontaktiere uns', en: 'Contact us' }[locale]}
+                                {t('footer.contactUs')}
                             </a>
                         </Button>
                     </div>
                     <form className="flex flex-col gap-2" onSubmit={newsletterSubmit} aria-label={newsletterNavLabel}>
                         <h2 className="text-sm font-medium text-foreground">{newsletterNavLabel}</h2>
-                        <p className="text-sm text-muted-foreground">
-                            {
-                                {
-                                    de: 'Tipps und Neuigkeiten zu private Dining. Jederzeit abbestellbar.',
-                                    en: 'Tips and news about private dining. Unsubscribe anytime.',
-                                }[locale]
-                            }
-                        </p>
+                        <p className="text-sm text-muted-foreground">{t('footer.newsletterBlurb')}</p>
                         <div className="flex flex-col gap-2 @sm:flex-row">
                             <Input
                                 type="email"
@@ -175,26 +170,21 @@ export function Footer({
                                 required
                                 value={newsletterEmail}
                                 onChange={(event) => setNewsletterEmail(event.target.value)}
-                                placeholder={{ de: 'E-Mail-Adresse', en: 'Email address' }[locale]}
-                                aria-label={{ de: 'E-Mail-Adresse', en: 'Email address' }[locale]}
+                                placeholder={t('footer.emailPlaceholder')}
+                                aria-label={t('footer.emailPlaceholder')}
                             />
                             <Button type="submit" disabled={newsletterFetching}>
-                                {{ de: 'Anmelden', en: 'Subscribe' }[locale]}
+                                {t('footer.subscribe')}
                             </Button>
                         </div>
                         {newsletterStatus === 'success' ? (
                             <p className="text-sm text-foreground" role="status">
-                                {{ de: 'Danke, du bist angemeldet.', en: 'Thanks, you are subscribed.' }[locale]}
+                                {t('footer.subscribed')}
                             </p>
                         ) : null}
                         {newsletterStatus === 'error' ? (
                             <p className="text-sm text-destructive" role="alert">
-                                {
-                                    {
-                                        de: 'Anmeldung fehlgeschlagen. Bitte prüfe die E-Mail-Adresse.',
-                                        en: 'Subscription failed. Please check the email address.',
-                                    }[locale]
-                                }
+                                {t('footer.subscribeFailed')}
                             </p>
                         ) : null}
                     </form>
@@ -204,12 +194,12 @@ export function Footer({
             <div className="mt-12 border-t border-border pt-8">
                 <div className="flex flex-col items-center gap-4 text-sm text-muted-foreground @4xl:flex-row @4xl:justify-between">
                     <p>
-                        © {currentYear} {COMPANY_NAME}, {{ de: 'alle Rechte vorbehalten', en: 'all rights reserved' }[locale]}.
+                        © {currentYear} {COMPANY_NAME}, {t('footer.allRightsReserved')}.
                     </p>
                     <nav aria-label={legalNavLabel} className="flex flex-wrap items-center justify-center gap-6">
                         {LEGAL_LINKS.map((item) => (
                             <Link key={item.to} to={item.to} className="transition-colors hover:text-foreground">
-                                {item.label[locale]}
+                                {t(item.labelKey)}
                             </Link>
                         ))}
                         {cookieConsent ? (

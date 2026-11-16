@@ -2,12 +2,15 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import type { SortingState, Updater } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
 
+import { t } from '../../../i18n/t';
+import { inlineCopy } from '../../../shared';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { Input } from '../../components/base/input';
 import { Tabs, TabsList, TabsTrigger } from '../../components/base/tabs';
 import type { GqlCAdminAiGenerationKind, GqlCAdminAiGenerationsPageQuery } from '../../graphql/generated';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useLocale } from '../../hooks/useLocale';
+import type { Locale } from '../../utils/locale';
 import { ADMIN_AI_GENERATION_KINDS, ADMIN_AI_GENERATIONS_SORT_FIELDS, adminAiGenerationKindLabel } from './adminAiGenerationsColumns';
 import type { AdminAiGenerationsSortField } from './adminAiGenerationsColumns';
 import { AdminAiGenerationsDataTable } from './AdminAiGenerationsDataTable';
@@ -19,11 +22,12 @@ import {
     parseAdminListSortSearch,
 } from './adminListSortSearch';
 
-export const adminAiGenerationsPageTitle = { de: 'AI-Generierungen-Liste', en: 'AI generations list' } as const;
-export const adminAiGenerationsPageDescription = {
-    de: 'One-Shot-AI-Aufrufe durchsuchen und einsehen.',
-    en: 'Browse and inspect one-shot AI calls.',
-} as const;
+export function adminAiGenerationsPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.aiGenerations.title');
+}
+export function adminAiGenerationsPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'nav.aiGenerations.description');
+}
 
 const ADMIN_AI_GENERATIONS_PAGE_SIZE = 25;
 
@@ -109,7 +113,7 @@ export function AdminAiGenerationsPage({ data, search }: { data: GqlCAdminAiGene
     }
 
     const kindTabs: { value: GqlCAdminAiGenerationKind | undefined; label: string }[] = [
-        { value: undefined, label: { de: 'Alle', en: 'All' }[locale] },
+        { value: undefined, label: t(locale, 'admin', 'copy.all') },
         ...ADMIN_AI_GENERATION_KINDS.map((kind) => ({
             value: kind,
             label: adminAiGenerationKindLabel(kind, locale),
@@ -120,7 +124,7 @@ export function AdminAiGenerationsPage({ data, search }: { data: GqlCAdminAiGene
         <AdminPathPageChrome>
             <main id="main-content" className="grid w-full content-start gap-6">
                 <Tabs value={search.kind ?? 'all'}>
-                    <TabsList variant="line" aria-label={{ de: 'AI-Art', en: 'AI kind' }[locale]}>
+                    <TabsList variant="line" aria-label={t(locale, 'admin', 'copy.aiKind')}>
                         {kindTabs.map((tab) => (
                             <TabsTrigger key={tab.value ?? 'all'} value={tab.value ?? 'all'} asChild>
                                 <Link
@@ -145,16 +149,17 @@ export function AdminAiGenerationsPage({ data, search }: { data: GqlCAdminAiGene
                         type="search"
                         value={draftQ}
                         onChange={(event) => setDraftQ(event.target.value)}
-                        placeholder={{ de: 'System, Prompt oder Output suchen…', en: 'Search system, prompt, or output…' }[locale]}
-                        aria-label={{ de: 'AI-Generierungen suchen', en: 'Search AI generations' }[locale]}
+                        placeholder={t(locale, 'admin', 'copy.searchSystemPromptOrOutput')}
+                        aria-label={t(locale, 'admin', 'copy.searchAiGenerations')}
                     />
                     <p className="text-sm text-muted-foreground tabular-nums">
-                        {
+                        {inlineCopy(
                             {
                                 de: `${total} ${total === 1 ? 'Aufruf' : 'Aufrufe'}`,
                                 en: `${total} ${total === 1 ? 'call' : 'calls'}`,
-                            }[locale]
-                        }
+                            },
+                            locale,
+                        )}
                     </p>
                 </div>
 

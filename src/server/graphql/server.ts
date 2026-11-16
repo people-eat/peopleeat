@@ -7,6 +7,7 @@ import { makeExecutableSchema } from '@graphql-tools/schema';
 import { SpanStatusCode, trace } from '@opentelemetry/api';
 import { parse, subscribe } from 'graphql';
 import { serverRuntimeCreate } from '../domain/serverRuntimeCreate';
+import { serverI18nBootstrap } from '../i18nBootstrap';
 import { ensureJobsStarted } from '../jobs';
 import { chatTurnRecover } from '../lib/chatTurnRecover';
 import { graphqlErrorClass, graphqlOperationNameResolve, graphqlOperationType } from '../observability/graphqlOperationMeta';
@@ -17,6 +18,7 @@ import { resolversCreate } from './resolversCreate';
 import schemaSource from './schema.graphqls?raw';
 
 observabilityStart();
+serverI18nBootstrap();
 
 const serverRuntime = serverRuntimeCreate();
 

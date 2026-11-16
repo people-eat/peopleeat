@@ -3,6 +3,8 @@ import type { SortingState, Updater } from '@tanstack/react-table';
 import { PlusIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import { t } from '../../../i18n/t';
+import { inlineCopy } from '../../../shared';
 import { AdminListPaginationBar } from '../../components/AdminListPaginationBar';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
@@ -11,7 +13,8 @@ import { Input } from '../../components/base/input';
 import type { GqlCAdminPromoCodesPageQuery } from '../../graphql/generated';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useLocale } from '../../hooks/useLocale';
-import { adminStubRouteBySlug } from './adminCatalog';
+import type { Locale } from '../../utils/locale';
+import { adminStubRouteBySlug, adminStubRouteDescription, adminStubRouteTitle } from './adminCatalog';
 import {
     adminListPageCount,
     adminListPageSize,
@@ -35,8 +38,12 @@ import { AdminPromoCodesDataTable } from './AdminPromoCodesDataTable';
 
 const route = adminStubRouteBySlug('promo-codes');
 
-export const adminPromoCodesPageTitle = route.title;
-export const adminPromoCodesPageDescription = route.description;
+export function adminPromoCodesPageTitle(locale: Locale): string {
+    return adminStubRouteTitle(route.slug, locale);
+}
+export function adminPromoCodesPageDescription(locale: Locale): string {
+    return adminStubRouteDescription(route.slug, locale);
+}
 
 export type AdminPromoCodesSearch = {
     q?: string;
@@ -155,22 +162,23 @@ export function AdminPromoCodesPage({ data, search }: { data: GqlCAdminPromoCode
                             type="search"
                             value={draftQ}
                             onChange={(event) => setDraftQ(event.target.value)}
-                            placeholder={{ de: 'Einlöscode suchen…', en: 'Search redeem code…' }[locale]}
-                            aria-label={{ de: 'Promo-Codes suchen', en: 'Search promo codes' }[locale]}
+                            placeholder={t(locale, 'admin', 'copy.searchRedeemCode')}
+                            aria-label={t(locale, 'admin', 'copy.searchPromoCodes')}
                         />
                         <p className="text-sm text-muted-foreground tabular-nums">
-                            {
+                            {inlineCopy(
                                 {
                                     de: `${total} ${total === 1 ? 'Promo-Code' : 'Promo-Codes'}`,
                                     en: `${total} ${total === 1 ? 'promo code' : 'promo codes'}`,
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                         </p>
                     </div>
                     <Button asChild>
                         <Link to={adminPromoCodesSectionTo('create')}>
                             <PlusIcon aria-hidden />
-                            {{ de: 'Anlegen', en: 'Create' }[locale]}
+                            {t(locale, 'admin', 'copy.create')}
                         </Link>
                     </Button>
                 </div>

@@ -1,5 +1,6 @@
 import { GiftIcon } from 'lucide-react';
 
+import { t } from '../../i18n/t';
 import { contentLocaleText } from '../../shared/contentSection';
 import { formatCurrency } from '../../shared/formatCurrency';
 import type { Locale } from '../../shared/locale';
@@ -48,14 +49,10 @@ export function SectionChefForAnyOccasion({
             <div className="grid grid-cols-1 items-center gap-10 @lg:grid-cols-2 @lg:gap-16">
                 <div className="flex flex-col gap-8">
                     <h2 className="font-serif text-3xl font-light @md:text-4xl">
-                        {headline || (
-                            <span className="italic text-muted-foreground">
-                                {{ de: 'Überschrift fehlt', en: 'Headline missing' }[locale]}
-                            </span>
-                        )}
+                        {headline || <span className="italic text-muted-foreground">{t(locale, 'public', 'preview.headlineMissing')}</span>}
                     </h2>
                     <p className={cn('text-lg/8', body ? 'text-muted-foreground' : 'italic text-muted-foreground')}>
-                        {body || { de: 'Text fehlt', en: 'Body missing' }[locale]}
+                        {body || t(locale, 'public', 'preview.bodyMissing')}
                     </p>
                 </div>
 
@@ -65,27 +62,20 @@ export function SectionChefForAnyOccasion({
                     imageUrl={imageUrl}
                     ctaUrl={ctaUrl}
                     imageOverlay={imageOverlay}
-                    noImageLabel={{ de: 'Kein Bild', en: 'No image' }[locale]}
+                    noImageLabel={t(locale, 'public', 'preview.noImage')}
                     banner={
                         promo && formattedAmount ? (
                             <div className="flex w-full items-center gap-3 rounded-xl bg-[#F5EDE4] px-4 py-3">
                                 <GiftIcon aria-hidden="true" className="size-6 shrink-0 text-foreground" />
                                 <div className="flex flex-col">
                                     <p className="text-sm font-semibold text-foreground">
-                                        {
-                                            {
-                                                de: `${formattedAmount} Geschenk für ${displayName} Kunden`,
-                                                en: `${formattedAmount} gift for ${displayName} customers`,
-                                            }[locale]
-                                        }
+                                        {t(locale, 'public', 'chefCta.promoGift', {
+                                            amount: formattedAmount,
+                                            name: displayName,
+                                        })}
                                     </p>
                                     <p className="text-sm text-muted-foreground">
-                                        {
-                                            {
-                                                de: `Mit dem Code ${promo.redeemCode}`,
-                                                en: `With the code ${promo.redeemCode}`,
-                                            }[locale]
-                                        }
+                                        {t(locale, 'public', 'chefCta.promoCode', { code: promo.redeemCode })}
                                     </p>
                                 </div>
                             </div>

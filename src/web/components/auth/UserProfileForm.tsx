@@ -10,6 +10,7 @@ import { textNormalizeTitled } from '../../../shared/textNormalize';
 import { userBirthDatePickerBounds } from '../../../shared/userBirthDate';
 import type { GqlCCookCreate, GqlCUserPreferredCommunication } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
+import { useT } from '../../hooks/useT';
 import { Button } from '../base/button';
 import { Checkbox } from '../base/checkbox';
 import { DatePicker } from '../base/date-picker';
@@ -73,6 +74,7 @@ export function UserProfileForm({
     onSubmit: (values: UserProfileFormValues) => void | Promise<void>;
 }) {
     const locale = useLocale();
+    const { t } = useT('public');
     const birthDateBounds = userBirthDatePickerBounds();
     const [firstName, setFirstName] = useState(initialValues?.firstName ?? '');
     const [lastName, setLastName] = useState(initialValues?.lastName ?? '');
@@ -97,16 +99,10 @@ export function UserProfileForm({
     const termsRef = useRef<HTMLLabelElement>(null);
     const privacyRef = useRef<HTMLLabelElement>(null);
 
-    const requiredMessage = { de: 'Bitte ausfüllen.', en: 'Please fill this in.' }[locale];
-    const acceptMessage = { de: 'Bitte akzeptieren.', en: 'Please accept this.' }[locale];
-    const preferredMessage = {
-        de: 'Bitte wähle, wie wir dich erreichen sollen.',
-        en: 'Please choose how we should reach you.',
-    }[locale];
-    const phoneInvalidMessage = {
-        de: 'Bitte mit Ländervorwahl eingeben (z. B. +4915123456789).',
-        en: 'Please include the country code (e.g. +4915123456789).',
-    }[locale];
+    const requiredMessage = t('auth.required');
+    const acceptMessage = t('auth.acceptRequired');
+    const preferredMessage = t('auth.preferredCommunicationRequired');
+    const phoneInvalidMessage = t('auth.phoneCountryCode');
     const normalizedPhoneNumber = phoneNumberNormalize(phoneNumber);
 
     const errors: Partial<Record<FieldKey, string>> = {};
@@ -120,7 +116,7 @@ export function UserProfileForm({
             if (!preferredCommunication) errors.preferredCommunication = preferredMessage;
         }
         if (includeCook && 'error' in cookCreateInputFromFields(cookFields, { inviteCookId })) {
-            errors.cook = { de: 'Bitte vervollständige das Koch-Profil.', en: 'Please complete the chef profile.' }[locale];
+            errors.cook = t('auth.cookIncomplete');
         }
         if (!acceptedTermsAndConditions) errors.terms = acceptMessage;
         if (!acceptedPrivacyPolicy) errors.privacy = acceptMessage;
@@ -145,22 +141,12 @@ export function UserProfileForm({
             const built = cookCreateInputFromFields(cookFields, { inviteCookId });
             if ('error' in built) {
                 nextErrors.push('cook');
-                toast.error(
-                    {
-                        travelExpenses: {
-                            de: 'Bitte gib gültige Reisekosten ein (mind. 0,25 €).',
-                            en: 'Please enter valid travel expenses (at least €0.25).',
-                        },
-                        travelDistance: {
-                            de: 'Die maximale Reisestrecke muss zwischen 5 und 250 km liegen.',
-                            en: 'Maximum travel distance must be between 5 and 250 km.',
-                        },
-                        incomplete: {
-                            de: 'Bitte vervollständige das Koch-Profil.',
-                            en: 'Please complete the chef profile.',
-                        },
-                    }[built.error][locale],
-                );
+                const cookErrorKey = {
+                    travelExpenses: 'auth.travelExpensesInvalid',
+                    travelDistance: 'auth.travelDistanceInvalid',
+                    incomplete: 'auth.cookIncomplete',
+                } as const;
+                toast.error(t(cookErrorKey[built.error]));
             } else {
                 cook = built.input;
             }
@@ -216,7 +202,7 @@ export function UserProfileForm({
                             autoComplete="given-name"
                             value={firstName}
                             onChange={(event) => setFirstName(event.target.value)}
-                            placeholder={{ de: 'Vorname', en: 'First name' }[locale]}
+                            placeholder={t('auth.firstName')}
                             disabled={busy}
                             aria-invalid={errors.firstName ? true : undefined}
                         />
@@ -229,7 +215,7 @@ export function UserProfileForm({
                             autoComplete="family-name"
                             value={lastName}
                             onChange={(event) => setLastName(event.target.value)}
-                            placeholder={{ de: 'Nachname', en: 'Last name' }[locale]}
+                            placeholder={t('auth.lastName')}
                             disabled={busy}
                             aria-invalid={errors.lastName ? true : undefined}
                         />
@@ -246,7 +232,7 @@ export function UserProfileForm({
                                 autoComplete="tel"
                                 value={phoneNumber}
                                 onChange={(event) => setPhoneNumber(event.target.value)}
-                                placeholder={{ de: 'Telefonnummer (+49…)', en: 'Phone number (+49…)' }[locale]}
+                                placeholder={t('auth.phonePlaceholder')}
                                 disabled={busy}
                                 aria-invalid={errors.phoneNumber ? true : undefined}
                             />
@@ -256,7 +242,7 @@ export function UserProfileForm({
                             <DatePicker
                                 value={birthDate}
                                 onValueChange={setBirthDate}
-                                placeholder={{ de: 'Geburtsdatum', en: 'Date of birth' }[locale]}
+                                placeholder={t('auth.birthDate')}
                                 className="w-full"
                                 disabled={busy ? true : { after: birthDateBounds.disabledAfter }}
                                 locale={locale === 'de' ? dateFnsDe : dateFnsEn}
@@ -264,7 +250,7 @@ export function UserProfileForm({
                                 defaultMonth={birthDateBounds.defaultMonth}
                                 startMonth={birthDateBounds.startMonth}
                                 endMonth={birthDateBounds.endMonth}
-                                aria-label={{ de: 'Geburtsdatum', en: 'Date of birth' }[locale]}
+                                aria-label={t('auth.birthDate')}
                                 aria-required
                                 aria-invalid={errors.birthDate ? true : undefined}
                             />
@@ -289,7 +275,7 @@ export function UserProfileForm({
 
             {includeCook ? (
                 <div ref={cookFieldsRef} className="grid gap-4 border-t border-border pt-6">
-                    <p className="font-medium">{{ de: 'Koch-Profil', en: 'Chef profile' }[locale]}</p>
+                    <p className="font-medium">{t('auth.cookProfile')}</p>
                     <CookCreateFields value={cookFields} onChange={setCookFields} disabled={busy} idPrefix="auth-cook" />
                     {errors.cook ? <p className="text-sm text-destructive">{errors.cook}</p> : null}
                 </div>
@@ -306,27 +292,11 @@ export function UserProfileForm({
                         aria-invalid={errors.terms ? true : undefined}
                     />
                     <span>
-                        {
-                            {
-                                de: (
-                                    <>
-                                        Ich habe die{' '}
-                                        <Link to="/{-$locale}/terms-and-conditions" target="_blank" className={legalLinkClassName}>
-                                            allgemeinen Geschäftsbedingungen
-                                        </Link>{' '}
-                                        gelesen und akzeptiere sie
-                                    </>
-                                ),
-                                en: (
-                                    <>
-                                        I have read and accept the{' '}
-                                        <Link to="/{-$locale}/terms-and-conditions" target="_blank" className={legalLinkClassName}>
-                                            terms and conditions
-                                        </Link>
-                                    </>
-                                ),
-                            }[locale]
-                        }
+                        {t('auth.acceptTermsBefore')}{' '}
+                        <Link to="/{-$locale}/terms-and-conditions" target="_blank" className={legalLinkClassName}>
+                            {t('auth.acceptTermsLink')}
+                        </Link>
+                        {t('auth.acceptTermsAfter') ? <> {t('auth.acceptTermsAfter')}</> : null}
                     </span>
                 </label>
                 {errors.terms ? <p className="text-sm text-destructive">{errors.terms}</p> : null}
@@ -340,27 +310,11 @@ export function UserProfileForm({
                         aria-invalid={errors.privacy ? true : undefined}
                     />
                     <span>
-                        {
-                            {
-                                de: (
-                                    <>
-                                        Ich habe die{' '}
-                                        <Link to="/{-$locale}/privacy-policy" target="_blank" className={legalLinkClassName}>
-                                            Datenschutzerklärung
-                                        </Link>{' '}
-                                        gelesen und akzeptiere sie
-                                    </>
-                                ),
-                                en: (
-                                    <>
-                                        I have read and accept the{' '}
-                                        <Link to="/{-$locale}/privacy-policy" target="_blank" className={legalLinkClassName}>
-                                            privacy policy
-                                        </Link>
-                                    </>
-                                ),
-                            }[locale]
-                        }
+                        {t('auth.acceptPrivacyBefore')}{' '}
+                        <Link to="/{-$locale}/privacy-policy" target="_blank" className={legalLinkClassName}>
+                            {t('auth.acceptPrivacyLink')}
+                        </Link>
+                        {t('auth.acceptPrivacyAfter') ? <> {t('auth.acceptPrivacyAfter')}</> : null}
                     </span>
                 </label>
                 {errors.privacy ? <p className="text-sm text-destructive">{errors.privacy}</p> : null}

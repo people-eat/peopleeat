@@ -1,3 +1,5 @@
+import { inlineCopy } from '../../shared';
+import type { Locale } from '../../shared';
 import { Button } from './base/button';
 
 export function BiographySuggestionReview({
@@ -9,25 +11,28 @@ export function BiographySuggestionReview({
 }: {
     currentBiography: string;
     suggestedBiography: string;
-    locale: 'de' | 'en';
+    locale: Locale;
     onAccept: () => void;
     onDiscard: () => void;
 }) {
-    const currentLabel = { de: 'Aktuell', en: 'Current' }[locale];
-    const suggestedLabel = { de: 'Vorschlag', en: 'Suggestion' }[locale];
-    const emptyLabel = { de: 'Noch keine Biografie.', en: 'No biography yet.' }[locale];
+    const currentLabel = inlineCopy({ de: 'Aktuell', en: 'Current' }, locale);
+    const suggestedLabel = inlineCopy({ de: 'Vorschlag', en: 'Suggestion' }, locale);
+    const emptyLabel = inlineCopy({ de: 'Noch keine Biografie.', en: 'No biography yet.' }, locale);
 
     return (
         <div className="grid min-w-0 gap-3 rounded-xl border border-border p-4">
             <div className="grid min-w-0 gap-1">
-                <p className="text-sm font-medium">{{ de: 'Biografie-Vorschlag prüfen', en: 'Review biography suggestion' }[locale]}</p>
+                <p className="text-sm font-medium">
+                    {inlineCopy({ de: 'Biografie-Vorschlag prüfen', en: 'Review biography suggestion' }, locale)}
+                </p>
                 <p className="text-sm text-muted-foreground">
-                    {
+                    {inlineCopy(
                         {
                             de: 'Vergleiche den aktuellen Text mit dem KI-Vorschlag. Übernehmen füllt das Textfeld, Speichern schreibt die Biografie.',
                             en: 'Compare the current text with the AI suggestion. Accept fills the text field; Save writes the biography.',
-                        }[locale]
-                    }
+                        },
+                        locale,
+                    )}
                 </p>
             </div>
             <div className="grid min-w-0 items-start gap-3 md:grid-cols-2">
@@ -40,10 +45,10 @@ export function BiographySuggestionReview({
             </div>
             <div className="flex flex-wrap justify-end gap-2">
                 <Button type="button" variant="outline" onClick={onDiscard}>
-                    {{ de: 'Verwerfen', en: 'Discard' }[locale]}
+                    {inlineCopy({ de: 'Verwerfen', en: 'Discard' }, locale)}
                 </Button>
                 <Button type="button" onClick={onAccept}>
-                    {{ de: 'Übernehmen', en: 'Accept' }[locale]}
+                    {inlineCopy({ de: 'Übernehmen', en: 'Accept' }, locale)}
                 </Button>
             </div>
         </div>

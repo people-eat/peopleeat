@@ -10,6 +10,7 @@ import type {
 import { db } from '../db';
 import { bookingRequestOffers, bookingRequests, users } from '../db/schema';
 import { bookingRequestOfferPaymentIsPaid } from '../domain/bookingRequest';
+import { serverI18nBootstrap } from '../i18nBootstrap';
 import { verifyServerToken } from './serverToken';
 
 // Server-only loader for `/server/booking-request-offers/:id/customer-receipt`
@@ -25,6 +26,7 @@ export async function bookingRequestOfferPaymentDocumentLoadServer(input: {
     bookingRequestOfferId: string;
     token: string;
 }): Promise<LoadedDocument> {
+    serverI18nBootstrap();
     if (!verifyServerToken(input.token, input.bookingRequestOfferId)) {
         throw notFound();
     }

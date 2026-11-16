@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
+import { t } from '../../../i18n/t';
 import { Badge } from '../../components/base/badge';
 import { Button } from '../../components/base/button';
 import { Input } from '../../components/base/input';
@@ -111,9 +112,9 @@ export function ProfileCookMealsPage({ data, search }: { data: GqlCProfileCookMe
         });
 
     const statusTabs: { value: MealStatusFilter; label: string; count: number }[] = [
-        { value: 'all', label: { de: 'Alle', en: 'All' }[locale], count: meals.length },
-        { value: 'published', label: { de: 'Veröffentlicht', en: 'Published' }[locale], count: publishedCount },
-        { value: 'draft', label: { de: 'Entwurf', en: 'Draft' }[locale], count: draftCount },
+        { value: 'all', label: t(locale, 'profileCook', 'actions.all'), count: meals.length },
+        { value: 'published', label: t(locale, 'profileCook', 'meals.published'), count: publishedCount },
+        { value: 'draft', label: t(locale, 'profileCook', 'meals.draft'), count: draftCount },
     ];
 
     async function onCreate() {
@@ -122,10 +123,10 @@ export function ProfileCookMealsPage({ data, search }: { data: GqlCProfileCookMe
             const result = await upsertMeal({});
             const mealId = result.data?.user.cook.mealUpsert.referenceId;
             if (!mealId || result.error) throw new Error('create failed');
-            toast.success({ de: 'Gericht angelegt.', en: 'Meal created.' }[locale]);
+            toast.success(t(locale, 'profileCook', 'meals.created'));
             await navigate({ to: '/{-$locale}/profile/meals/$mealId/edit', params: { mealId } });
         } catch {
-            toast.error({ de: 'Anlegen fehlgeschlagen.', en: 'Could not create.' }[locale]);
+            toast.error(t(locale, 'profileCook', 'actions.createFailed'));
         } finally {
             setCreating(false);
         }
@@ -136,25 +137,9 @@ export function ProfileCookMealsPage({ data, search }: { data: GqlCProfileCookMe
             {publishedWithoutImageCount > 0 ? (
                 <StatusAlert
                     tone="warning"
-                    title={
-                        {
-                            de:
-                                publishedWithoutImageCount === 1
-                                    ? '1 veröffentlichtes Gericht ohne Bild'
-                                    : `${publishedWithoutImageCount} veröffentlichte Gerichte ohne Bild`,
-                            en:
-                                publishedWithoutImageCount === 1
-                                    ? '1 published meal without a picture'
-                                    : `${publishedWithoutImageCount} published meals without a picture`,
-                        }[locale]
-                    }
+                    title={t(locale, 'profileCook', 'meals.withoutPictureTitle', { count: publishedWithoutImageCount })}
                 >
-                    {
-                        {
-                            de: 'Gerichte ohne Bild erscheinen nicht auf deiner öffentlichen Kochseite.',
-                            en: 'Meals without a picture do not appear on your public cook page.',
-                        }[locale]
-                    }
+                    {t(locale, 'profileCook', 'public.mealsWithoutPicture')}
                 </StatusAlert>
             ) : null}
 
@@ -163,7 +148,7 @@ export function ProfileCookMealsPage({ data, search }: { data: GqlCProfileCookMe
                     value={statusFilter}
                     onValueChange={(value) => updateSearch({ q: search.q, status: value as MealStatusFilter, sort })}
                 >
-                    <TabsList variant="line" aria-label={{ de: 'Veröffentlichungsstatus', en: 'Publish status' }[locale]}>
+                    <TabsList variant="line" aria-label={t(locale, 'profileCook', 'meals.publishStatus')}>
                         {statusTabs.map((tab) => (
                             <TabsTrigger key={tab.value} value={tab.value}>
                                 {tab.label}
@@ -180,38 +165,33 @@ export function ProfileCookMealsPage({ data, search }: { data: GqlCProfileCookMe
                 <Input
                     value={draftQ}
                     onChange={(event) => setDraftQ(event.target.value)}
-                    placeholder={{ de: 'Gerichte suchen…', en: 'Search meals…' }[locale]}
-                    aria-label={{ de: 'Gerichte suchen', en: 'Search meals' }[locale]}
+                    placeholder={t(locale, 'profileCook', 'meals.searchPlaceholder')}
+                    aria-label={t(locale, 'profileCook', 'meals.searchAria')}
                     className="min-w-0 flex-1 @md:max-w-xs"
                 />
                 <Select
                     value={sort}
                     onValueChange={(value) => updateSearch({ q: search.q, status: statusFilter, sort: value as MealSort })}
                 >
-                    <SelectTrigger className="w-full @md:w-48" aria-label={{ de: 'Sortierung', en: 'Sort order' }[locale]}>
+                    <SelectTrigger className="w-full @md:w-48" aria-label={t(locale, 'profileCook', 'actions.sort')}>
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="updated-desc">{{ de: 'Zuletzt aktualisiert', en: 'Recently updated' }[locale]}</SelectItem>
-                        <SelectItem value="updated-asc">{{ de: 'Älteste zuerst', en: 'Oldest first' }[locale]}</SelectItem>
-                        <SelectItem value="title-asc">{{ de: 'Titel A–Z', en: 'Title A–Z' }[locale]}</SelectItem>
+                        <SelectItem value="updated-desc">{t(locale, 'profileCook', 'actions.sortRecent')}</SelectItem>
+                        <SelectItem value="updated-asc">{t(locale, 'profileCook', 'actions.sortOldest')}</SelectItem>
+                        <SelectItem value="title-asc">{t(locale, 'profileCook', 'actions.sortTitle')}</SelectItem>
                     </SelectContent>
                 </Select>
                 <Button type="button" className="shrink-0" disabled={creating} onClick={() => void onCreate()}>
                     <PlusIcon className="size-4" />
-                    {
-                        {
-                            de: creating ? 'Wird angelegt…' : 'Neues Gericht',
-                            en: creating ? 'Creating…' : 'New meal',
-                        }[locale]
-                    }
+                    {creating ? t(locale, 'profileCook', 'actions.creating') : t(locale, 'profileCook', 'meals.newMeal')}
                 </Button>
             </div>
 
             {meals.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{{ de: 'Noch keine Gerichte.', en: 'No meals yet.' }[locale]}</p>
+                <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'meals.empty')}</p>
             ) : filteredMeals.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{{ de: 'Keine Gerichte gefunden.', en: 'No meals found.' }[locale]}</p>
+                <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'meals.noneFound')}</p>
             ) : (
                 <ul className="grid grid-cols-1 gap-4 @2xl:grid-cols-2 @6xl:grid-cols-3">
                     {filteredMeals.map((meal) => (

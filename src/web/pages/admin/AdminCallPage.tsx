@@ -3,7 +3,8 @@ import { ChevronDownIcon, PhoneIcon, RefreshCwIcon } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useMutation } from 'urql';
 
-import { formatDate, formatTime } from '../../../shared';
+import { t } from '../../../i18n/t';
+import { formatDate, formatTime, inlineCopy } from '../../../shared';
 import { AdminOfferPartyCards } from '../../components/AdminOfferPartyCards';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AudioWaveformPlayer } from '../../components/AudioWaveformPlayer';
@@ -26,12 +27,14 @@ import type { GqlCAdminCallPageQuery } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { cn } from '../../utils/cn';
+import type { Locale } from '../../utils/locale';
 
-export const adminCallPageTitle = { de: 'Anruf', en: 'Call' } as const;
-export const adminCallPageDescription = {
-    de: 'Aufnahme, Zusammenfassung und Transkript eines Discovery-Anrufs.',
-    en: 'Recording, summary, and transcript for a discovery call.',
-} as const;
+export function adminCallPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.call.title');
+}
+export function adminCallPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.call.description');
+}
 
 export function adminCallPageVariables(bookingRequestOfferCallRoomId: string) {
     return { bookingRequestOfferCallRoomId };
@@ -41,14 +44,15 @@ type AdminCallDetail = NonNullable<NonNullable<NonNullable<GqlCAdminCallPageQuer
 type AdminCallRecording = NonNullable<AdminCallDetail['recording']>;
 type TranscriptSegment = NonNullable<AdminCallRecording['transcriptSegments']>[number];
 
-function recordingStatusLabel(status: AdminCallRecording['status'], locale: 'de' | 'en'): string {
-    return {
-        PENDING: { de: 'Aufnahme läuft', en: 'Recording in progress' },
-        EGRESS_COMPLETE: { de: 'Audio gespeichert', en: 'Audio saved' },
-        TRANSCRIBING: { de: 'Transkription…', en: 'Transcribing…' },
-        COMPLETED: { de: 'Fertig', en: 'Completed' },
-        FAILED: { de: 'Fehlgeschlagen', en: 'Failed' },
-    }[status][locale];
+function recordingStatusLabel(status: AdminCallRecording['status'], locale: Locale): string {
+    const key = {
+        PENDING: 'copy.recordingInProgress',
+        EGRESS_COMPLETE: 'copy.audioSaved',
+        TRANSCRIBING: 'copy.transcribing',
+        COMPLETED: 'copy.completed3',
+        FAILED: 'copy.failed',
+    }[status];
+    return t(locale, 'admin', key);
 }
 
 function formatOffset(ms: number): string {
@@ -62,13 +66,13 @@ function speakerDisplayName(
     speakerLabel: string | null | undefined,
     cookDisplayName: string,
     customerDisplayName: string,
-    locale: 'de' | 'en',
+    locale: Locale,
 ): string {
     const key = speakerLabel?.toLowerCase();
     if (key === 'customer') return customerDisplayName;
     if (key === 'cook') return cookDisplayName;
-    if (key === 'admin') return { de: 'Admin', en: 'Admin' }[locale];
-    return { de: 'Unbekannt', en: 'Unknown' }[locale];
+    if (key === 'admin') return t(locale, 'admin', 'copy.admin');
+    return t(locale, 'admin', 'copy.unknown');
 }
 
 function speakerSide(speakerLabel: string | null | undefined): 'customer' | 'other' {
@@ -84,13 +88,13 @@ export function AdminCallPage({
 }) {
     const locale = useLocale();
     const call = data.currentSession.user?.admin?.call ?? null;
-    const crumbLabel = call?.occasion.trim() || adminCallPageTitle[locale];
+    const crumbLabel = call?.occasion.trim() || adminCallPageTitle(locale);
 
     return (
         <AdminPageChrome
             crumbs={[
-                { label: { de: 'Anrufe', en: 'Calls' }[locale], to: '/{-$locale}/admin/calls' },
-                { label: { de: 'Liste', en: 'List' }[locale], to: '/{-$locale}/admin/calls/list' },
+                { label: t(locale, 'admin', 'copy.calls2'), to: '/{-$locale}/admin/calls' },
+                { label: t(locale, 'admin', 'copy.list'), to: '/{-$locale}/admin/calls/list' },
                 { label: crumbLabel },
             ]}
         >
@@ -99,12 +103,13 @@ export function AdminCallPage({
                     <AdminCallDetailBody call={call} />
                 ) : (
                     <p className="text-sm text-muted-foreground">
-                        {
+                        {inlineCopy(
                             {
                                 de: `Anruf ${bookingRequestOfferCallRoomId} wurde nicht gefunden.`,
                                 en: `Call ${bookingRequestOfferCallRoomId} was not found.`,
-                            }[locale]
-                        }
+                            },
+                            locale,
+                        )}
                     </p>
                 )}
             </main>
@@ -124,15 +129,10 @@ function AdminCallDetailBody({ call }: { call: AdminCallDetail }) {
             <section className="grid gap-4">
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                     <Badge variant={call.status === 'ACTIVE' ? 'default' : 'outline'}>
-                        {
-                            {
-                                ACTIVE: { de: 'Live', en: 'Live' },
-                                ENDED: { de: 'Beendet', en: 'Ended' },
-                            }[call.status][locale]
-                        }
+                        {call.status === 'ACTIVE' ? t(locale, 'admin', 'copy.live') : t(locale, 'admin', 'copy.ended')}
                     </Badge>
                     <p className="min-w-0 flex-1 text-base font-medium text-foreground">
-                        {call.occasion || { de: 'Ohne Anlass', en: 'No occasion' }[locale]}
+                        {call.occasion || t(locale, 'admin', 'copy.noOccasion')}
                     </p>
                     <span className="text-sm text-muted-foreground tabular-nums">{when}</span>
                     <Button variant="outline" size="sm" asChild>
@@ -144,7 +144,7 @@ function AdminCallDetailBody({ call }: { call: AdminCallDetail }) {
                             }}
                             search={{ tab: 'offer' }}
                         >
-                            {{ de: 'Zum Angebot', en: 'Open offer' }[locale]}
+                            {t(locale, 'admin', 'copy.openOffer')}
                         </Link>
                     </Button>
                 </div>
@@ -188,14 +188,7 @@ function AdminCallRecordingReview({ call }: { call: AdminCallDetail }) {
     if (!recording) {
         return (
             <section className="grid gap-2 rounded-lg border border-border p-4">
-                <p className="text-sm text-muted-foreground">
-                    {
-                        {
-                            de: 'Für diesen Anruf liegt keine Aufnahme vor.',
-                            en: 'No recording exists for this call.',
-                        }[locale]
-                    }
-                </p>
+                <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noRecordingExistsForThisCall')}</p>
             </section>
         );
     }
@@ -213,7 +206,7 @@ function AdminCallRecordingReview({ call }: { call: AdminCallDetail }) {
             bookingRequestOfferCallRecordingId: recording.bookingRequestOfferCallRecordingId,
         });
         if (result.error || result.data?.admin.bookingRequestOfferCallRecordingSummaryGenerate == null) {
-            setSummaryError({ de: 'Zusammenfassung konnte nicht erstellt werden.', en: 'Could not generate the summary.' }[locale]);
+            setSummaryError(t(locale, 'admin', 'copy.couldNotGenerateTheSummary'));
             return;
         }
         setSummaryText(result.data.admin.bookingRequestOfferCallRecordingSummaryGenerate);
@@ -226,7 +219,7 @@ function AdminCallRecordingReview({ call }: { call: AdminCallDetail }) {
             bookingRequestOfferCallRecordingId: recording.bookingRequestOfferCallRecordingId,
         });
         if (result.error || !result.data?.admin.bookingRequestOfferCallRecordingDelete.success) {
-            setDeleteError({ de: 'Löschen ist fehlgeschlagen.', en: 'Delete failed.' }[locale]);
+            setDeleteError(t(locale, 'admin', 'copy.deleteFailed'));
             return;
         }
         setDeleteOpen(false);
@@ -246,10 +239,10 @@ function AdminCallRecordingReview({ call }: { call: AdminCallDetail }) {
                         ref={playerRef}
                         onCurrentTimeChange={setCurrentSec}
                         labels={{
-                            group: { de: 'Anrufaufnahme', en: 'Call recording' }[locale],
-                            play: { de: 'Anrufaufnahme abspielen', en: 'Play call recording' }[locale],
-                            pause: { de: 'Anrufaufnahme pausieren', en: 'Pause call recording' }[locale],
-                            position: { de: 'Wiedergabeposition', en: 'Playback position' }[locale],
+                            group: t(locale, 'admin', 'copy.callRecording'),
+                            play: t(locale, 'admin', 'copy.playCallRecording'),
+                            pause: t(locale, 'admin', 'copy.pauseCallRecording'),
+                            position: t(locale, 'admin', 'copy.playbackPosition'),
                         }}
                         leading={
                             <div className="flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
@@ -267,41 +260,36 @@ function AdminCallRecordingReview({ call }: { call: AdminCallDetail }) {
 
             {recording.status === 'FAILED' ? (
                 <div className="grid gap-3">
-                    <StatusAlert tone="error" title={{ de: 'Fehler', en: 'Error' }[locale]}>
-                        {recording.errorMessage ?? { de: 'Die Aufnahme ist fehlgeschlagen.', en: 'The recording failed.' }[locale]}
+                    <StatusAlert tone="error" title={t(locale, 'admin', 'copy.error')}>
+                        {recording.errorMessage ?? t(locale, 'admin', 'copy.theRecordingFailed')}
                     </StatusAlert>
                     {deleteError ? (
-                        <StatusAlert tone="error" title={{ de: 'Fehler', en: 'Error' }[locale]}>
+                        <StatusAlert tone="error" title={t(locale, 'admin', 'copy.error')}>
                             {deleteError}
                         </StatusAlert>
                     ) : null}
                     <div>
                         <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
-                            {{ de: 'Fehlgeschlagene Aufnahme löschen', en: 'Delete failed recording' }[locale]}
+                            {t(locale, 'admin', 'copy.deleteFailedRecording')}
                         </Button>
                     </div>
                     <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
                         <AlertDialogContent>
                             <AlertDialogHeader>
-                                <AlertDialogTitle>{{ de: 'Aufnahme löschen?', en: 'Delete recording?' }[locale]}</AlertDialogTitle>
+                                <AlertDialogTitle>{t(locale, 'admin', 'copy.deleteRecording')}</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    {
-                                        {
-                                            de: 'Die fehlgeschlagene Aufnahme wird aus dem Speicher und der Datenbank entfernt. Der Anruf selbst bleibt erhalten.',
-                                            en: 'The failed recording will be removed from storage and the database. The call itself remains.',
-                                        }[locale]
-                                    }
+                                    {t(locale, 'admin', 'copy.theFailedRecordingWillBeRemovedFromStorageAndTheDatabaseTheC')}
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                                <AlertDialogCancel>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                                <AlertDialogCancel>{t(locale, 'admin', 'copy.cancel')}</AlertDialogCancel>
                                 <AlertDialogAction
                                     onClick={(event) => {
                                         event.preventDefault();
                                         void onConfirmDelete();
                                     }}
                                 >
-                                    {{ de: 'Löschen', en: 'Delete' }[locale]}
+                                    {t(locale, 'admin', 'copy.delete')}
                                 </AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
@@ -311,12 +299,7 @@ function AdminCallRecordingReview({ call }: { call: AdminCallDetail }) {
 
             {recording.status === 'PENDING' || recording.status === 'EGRESS_COMPLETE' || recording.status === 'TRANSCRIBING' ? (
                 <p className="text-sm text-muted-foreground">
-                    {
-                        {
-                            de: 'Zusammenfassung und Transkript erscheinen, sobald die Aufnahme fertig verarbeitet ist.',
-                            en: 'Summary and transcript appear once processing finishes.',
-                        }[locale]
-                    }
+                    {t(locale, 'admin', 'copy.summaryAndTranscriptAppearOnceProcessingFinishes')}
                 </p>
             ) : null}
 
@@ -324,7 +307,7 @@ function AdminCallRecordingReview({ call }: { call: AdminCallDetail }) {
                 <div className="grid gap-4">
                     <div className="grid gap-2">
                         <div className="flex flex-wrap items-center justify-between gap-2">
-                            <h3 className="text-sm font-medium text-foreground">{{ de: 'Zusammenfassung', en: 'Summary' }[locale]}</h3>
+                            <h3 className="text-sm font-medium text-foreground">{t(locale, 'admin', 'copy.summary')}</h3>
                             <Button
                                 type="button"
                                 variant="outline"
@@ -335,16 +318,17 @@ function AdminCallRecordingReview({ call }: { call: AdminCallDetail }) {
                                 }}
                             >
                                 <RefreshCwIcon className={cn('size-3.5', summarizing && 'animate-spin')} aria-hidden />
-                                {
+                                {inlineCopy(
                                     {
                                         de: summarizing ? 'Wird erstellt…' : summaryText ? 'Neu erzeugen' : 'Zusammenfassen',
                                         en: summarizing ? 'Generating…' : summaryText ? 'Regenerate' : 'Summarize',
-                                    }[locale]
-                                }
+                                    },
+                                    locale,
+                                )}
                             </Button>
                         </div>
                         {summaryError ? (
-                            <StatusAlert tone="error" title={{ de: 'Fehler', en: 'Error' }[locale]}>
+                            <StatusAlert tone="error" title={t(locale, 'admin', 'copy.error')}>
                                 {summaryError}
                             </StatusAlert>
                         ) : null}
@@ -352,12 +336,7 @@ function AdminCallRecordingReview({ call }: { call: AdminCallDetail }) {
                             <p className="whitespace-pre-wrap text-sm/relaxed text-foreground">{summaryText}</p>
                         ) : (
                             <p className="text-sm text-muted-foreground">
-                                {
-                                    {
-                                        de: 'Noch keine Zusammenfassung. Mit „Zusammenfassen“ erzeugen.',
-                                        en: 'No summary yet. Use Summarize to generate one.',
-                                    }[locale]
-                                }
+                                {t(locale, 'admin', 'copy.noSummaryYetUseSummarizeToGenerateOne')}
                             </p>
                         )}
                     </div>
@@ -374,12 +353,13 @@ function AdminCallRecordingReview({ call }: { call: AdminCallDetail }) {
                                     className={cn('size-4 transition-transform', transcriptOpen && 'rotate-180')}
                                     aria-hidden
                                 />
-                                {
+                                {inlineCopy(
                                     {
                                         de: transcriptOpen ? 'Transkript ausblenden' : 'Transkript anzeigen',
                                         en: transcriptOpen ? 'Hide transcript' : 'Show transcript',
-                                    }[locale]
-                                }
+                                    },
+                                    locale,
+                                )}
                             </button>
 
                             {transcriptOpen ? (

@@ -125,10 +125,10 @@ async function paymentFinalizeAlreadyAdvancedHandle(
 
     const storedIds = paymentDataIntentIds(stored.paymentData);
     const detail = [
-        `Erwartet: status=${args.expected.nextPaymentStatus}, betrag=${args.expected.amountCents}`,
+        `Expected: status=${args.expected.nextPaymentStatus}, amount=${args.expected.amountCents}`,
         args.expected.paymentIntentId ? `pi=${args.expected.paymentIntentId}` : undefined,
         args.expected.setupIntentId ? `si=${args.expected.setupIntentId}` : undefined,
-        `Gespeichert: status=${stored.paymentStatus}, betrag=${offerAmountCents(stored)}`,
+        `Stored: status=${stored.paymentStatus}, amount=${offerAmountCents(stored)}`,
         storedIds.paymentIntentId ? `pi=${storedIds.paymentIntentId}` : undefined,
         storedIds.setupIntentId ? `si=${storedIds.setupIntentId}` : undefined,
     ]

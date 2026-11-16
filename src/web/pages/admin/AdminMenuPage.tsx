@@ -5,7 +5,8 @@ import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
-import { formatDateTime } from '../../../shared';
+import { t } from '../../../i18n/t';
+import { formatDateTime, inlineCopy } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import {
@@ -32,15 +33,14 @@ import {
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
+import type { Locale } from '../../utils/locale';
 
-export const adminMenuPageTitle = {
-    de: 'Menü ansehen, veröffentlichen oder löschen',
-    en: 'View, publish, or delete a menu',
-} as const;
-export const adminMenuPageDescription = {
-    de: 'Menü eines Kochs verwalten (inkl. gelöschter).',
-    en: 'Manage a cook menu (including deleted).',
-} as const;
+export function adminMenuPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.menu.title');
+}
+export function adminMenuPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.menu.description');
+}
 
 type AdminMenu = NonNullable<NonNullable<NonNullable<GqlCAdminMenuPageQuery['currentSession']['user']>['admin']>['cookMenu']>;
 
@@ -97,11 +97,9 @@ export function AdminMenuPage({ data, menuId }: { data: GqlCAdminMenuPageQuery; 
             if (result.error || !result.data?.admin.cookMenuUpsert.success) {
                 throw new Error('publish failed');
             }
-            toast.success(
-                next ? { de: 'Veröffentlicht.', en: 'Published.' }[locale] : { de: 'Zurückgezogen.', en: 'Unpublished.' }[locale],
-            );
+            toast.success(next ? t(locale, 'admin', 'copy.published') : t(locale, 'admin', 'copy.unpublished'));
         } catch {
-            toast.error({ de: 'Aktion fehlgeschlagen.', en: 'Action failed.' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.actionFailed'));
         } finally {
             setBusy(false);
         }
@@ -114,10 +112,10 @@ export function AdminMenuPage({ data, menuId }: { data: GqlCAdminMenuPageQuery; 
             if (result.error || !result.data?.admin.cookMenuDelete.success) {
                 throw new Error('delete failed');
             }
-            toast.success({ de: 'Gelöscht.', en: 'Deleted.' }[locale]);
+            toast.success(t(locale, 'admin', 'copy.deleted2'));
             await navigate({ to: '/{-$locale}/admin/menus' });
         } catch {
-            toast.error({ de: 'Löschen fehlgeschlagen.', en: 'Could not delete.' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.couldNotDelete'));
         } finally {
             setBusy(false);
         }
@@ -129,10 +127,10 @@ export function AdminMenuPage({ data, menuId }: { data: GqlCAdminMenuPageQuery; 
             const result = await copyMenu({ menuId });
             const newMenuId = result.data?.admin.cookMenuCopy.referenceId;
             if (!newMenuId || result.error) throw new Error('copy failed');
-            toast.success({ de: 'Menü kopiert.', en: 'Menu copied.' }[locale]);
+            toast.success(t(locale, 'admin', 'copy.menuCopied'));
             await navigate({ to: '/{-$locale}/admin/menus/$menuId', params: { menuId: newMenuId } });
         } catch {
-            toast.error({ de: 'Kopieren fehlgeschlagen.', en: 'Could not copy.' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.couldNotCopy'));
         } finally {
             setBusy(false);
         }
@@ -141,7 +139,7 @@ export function AdminMenuPage({ data, menuId }: { data: GqlCAdminMenuPageQuery; 
     return (
         <>
             <AdminPageChrome
-                crumbs={[{ label: { de: 'Menüs', en: 'Menus' }[locale], to: '/{-$locale}/admin/menus' }, { label: menu.title }]}
+                crumbs={[{ label: t(locale, 'admin', 'copy.menus'), to: '/{-$locale}/admin/menus' }, { label: menu.title }]}
                 contentClassName="min-h-0 overflow-hidden gap-0"
             >
                 <AdminPinnedFooterLayout
@@ -149,7 +147,7 @@ export function AdminMenuPage({ data, menuId }: { data: GqlCAdminMenuPageQuery; 
                     footer={
                         isDeleted ? (
                             <Button type="button" variant="outline" asChild>
-                                <Link to="/{-$locale}/admin/menus">{{ de: 'Zur Liste', en: 'Back to list' }[locale]}</Link>
+                                <Link to="/{-$locale}/admin/menus">{t(locale, 'admin', 'copy.backToList')}</Link>
                             </Button>
                         ) : (
                             <>
@@ -161,29 +159,29 @@ export function AdminMenuPage({ data, menuId }: { data: GqlCAdminMenuPageQuery; 
                                                 variant="outline"
                                                 size="icon"
                                                 disabled={busy}
-                                                aria-label={{ de: 'Weitere Aktionen', en: 'More actions' }[locale]}
+                                                aria-label={t(locale, 'admin', 'copy.moreActions')}
                                             >
                                                 <MoreHorizontalIcon className="size-4" />
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
                                             <DropdownMenuItem disabled={busy} onSelect={() => void onCopy()}>
-                                                {{ de: 'Kopieren', en: 'Copy' }[locale]}
+                                                {t(locale, 'admin', 'copy.copy')}
                                             </DropdownMenuItem>
                                             {menu.publishedAt != null ? (
                                                 <DropdownMenuItem disabled={busy} onSelect={() => void setPublished(null)}>
-                                                    {{ de: 'Zurückziehen', en: 'Unpublish' }[locale]}
+                                                    {t(locale, 'admin', 'copy.unpublish')}
                                                 </DropdownMenuItem>
                                             ) : null}
                                             <DropdownMenuItem variant="destructive" disabled={busy} onSelect={() => setConfirm('delete')}>
-                                                {{ de: 'Löschen', en: 'Delete' }[locale]}
+                                                {t(locale, 'admin', 'copy.delete')}
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 ) : menu.copyOfMenuId != null ? (
                                     <Button type="button" variant="outline" asChild>
                                         <Link to="/{-$locale}/admin/menus/$menuId" params={{ menuId: menu.copyOfMenuId }}>
-                                            {{ de: 'Vorlage öffnen', en: 'Open template' }[locale]}
+                                            {t(locale, 'admin', 'copy.openTemplate')}
                                         </Link>
                                     </Button>
                                 ) : null}
@@ -195,13 +193,13 @@ export function AdminMenuPage({ data, menuId }: { data: GqlCAdminMenuPageQuery; 
                                         disabled={busy || !canPublish}
                                         onClick={() => setConfirm('publish')}
                                     >
-                                        {{ de: 'Veröffentlichen', en: 'Publish' }[locale]}
+                                        {t(locale, 'admin', 'copy.publish')}
                                     </Button>
                                 ) : null}
 
                                 <Button asChild>
                                     <Link to="/{-$locale}/admin/menus/$menuId/edit" params={{ menuId }}>
-                                        {{ de: 'Bearbeiten', en: 'Edit' }[locale]}
+                                        {t(locale, 'admin', 'copy.edit')}
                                     </Link>
                                 </Button>
                             </>
@@ -211,22 +209,20 @@ export function AdminMenuPage({ data, menuId }: { data: GqlCAdminMenuPageQuery; 
                     <div className="flex flex-wrap items-center gap-2">
                         {isDeleted ? (
                             <Badge variant="destructive" className="w-fit">
-                                {{ de: 'Gelöscht', en: 'Deleted' }[locale]}
+                                {t(locale, 'admin', 'copy.deleted')}
                             </Badge>
                         ) : isOfferMenu ? (
                             <Badge variant="outline" className="w-fit">
-                                {{ de: 'Angebotsmenü', en: 'Offer menu' }[locale]}
+                                {t(locale, 'admin', 'copy.offerMenu')}
                             </Badge>
                         ) : (
                             <Badge variant="outline" className="w-fit">
-                                {menu.publishedAt
-                                    ? { de: 'Veröffentlicht', en: 'Published' }[locale]
-                                    : { de: 'Entwurf', en: 'Draft' }[locale]}
+                                {menu.publishedAt ? t(locale, 'admin', 'copy.published2') : t(locale, 'admin', 'copy.draft')}
                             </Badge>
                         )}
                         {menu.generatedAt != null ? (
                             <Badge variant="outline" className="w-fit">
-                                {{ de: 'Generiert', en: 'Generated' }[locale]}
+                                {t(locale, 'admin', 'copy.generated')}
                             </Badge>
                         ) : null}
                         <Link
@@ -240,13 +236,8 @@ export function AdminMenuPage({ data, menuId }: { data: GqlCAdminMenuPageQuery; 
                     </div>
 
                     {isOfferMenu ? (
-                        <StatusAlert tone="info" title={{ de: 'Kopie für ein Angebot', en: 'Per-offer copy' }[locale]}>
-                            {
-                                {
-                                    de: 'Dieses Menü gehört zu einem Angebot. Du kannst Titel, Beschreibung und Gänge bearbeiten. Veröffentlichen, Kopieren und Löschen gelten nur für Vorlagen.',
-                                    en: 'This menu belongs to an offer. You can edit title, description, and courses. Publish, copy, and delete apply only to library templates.',
-                                }[locale]
-                            }
+                        <StatusAlert tone="info" title={t(locale, 'admin', 'copy.perOfferCopy')}>
+                            {t(locale, 'admin', 'copy.thisMenuBelongsToAnOfferYouCanEditTitleDescriptionAndCourses')}
                         </StatusAlert>
                     ) : null}
 
@@ -254,29 +245,25 @@ export function AdminMenuPage({ data, menuId }: { data: GqlCAdminMenuPageQuery; 
                         <h1 className="font-serif text-3xl/tight text-foreground">{menu.title}</h1>
                         {menu.generatedAt != null ? (
                             <p className="text-sm text-muted-foreground">
-                                {
+                                {inlineCopy(
                                     {
                                         de: `Generiert am ${formatDateTime(menu.generatedAt, { locale, timeZone, dateStyle: 'medium', timeStyle: 'short' })}`,
                                         en: `Generated on ${formatDateTime(menu.generatedAt, { locale, timeZone, dateStyle: 'medium', timeStyle: 'short' })}`,
-                                    }[locale]
-                                }
+                                    },
+                                    locale,
+                                )}
                             </p>
                         ) : null}
                         <p className="text-muted-foreground whitespace-pre-wrap">
-                            {menu.description.trim() ? menu.description : { de: 'Keine Beschreibung.', en: 'No description.' }[locale]}
+                            {menu.description.trim() ? menu.description : t(locale, 'admin', 'copy.noDescription')}
                         </p>
                     </div>
 
                     <section className="grid gap-3">
                         <div>
-                            <h2 className="text-base font-semibold">{{ de: 'Gänge', en: 'Courses' }[locale]}</h2>
+                            <h2 className="text-base font-semibold">{t(locale, 'admin', 'copy.courses')}</h2>
                             <p className="text-sm text-muted-foreground">
-                                {
-                                    {
-                                        de: 'Pro Gang wählen Gäste aus den angebotenen Gerichten. Mehrfachauswahl ist am Gang gekennzeichnet.',
-                                        en: 'Guests pick from the meals in each course. Courses that allow multiple dishes say so next to the title.',
-                                    }[locale]
-                                }
+                                {t(locale, 'admin', 'copy.guestsPickFromTheMealsInEachCourseCoursesThatAllowMultipleDi')}
                             </p>
                         </div>
                         {canEdit && incompleteCourseCount > 0 ? (
@@ -284,19 +271,17 @@ export function AdminMenuPage({ data, menuId }: { data: GqlCAdminMenuPageQuery; 
                                 tone="warning"
                                 title={
                                     incompleteCourseCount === 1
-                                        ? { de: '1 Gang ist unvollständig', en: '1 course is incomplete' }[locale]
-                                        : {
-                                              de: `${incompleteCourseCount} Gänge sind unvollständig`,
-                                              en: `${incompleteCourseCount} courses are incomplete`,
-                                          }[locale]
+                                        ? t(locale, 'admin', 'copy.n1CourseIsIncomplete')
+                                        : inlineCopy(
+                                              {
+                                                  de: `${incompleteCourseCount} Gänge sind unvollständig`,
+                                                  en: `${incompleteCourseCount} courses are incomplete`,
+                                              },
+                                              locale,
+                                          )
                                 }
                             >
-                                {
-                                    {
-                                        de: 'Zum Veröffentlichen braucht jeder Gang mindestens ein Gericht.',
-                                        en: 'To publish, every course needs at least one meal.',
-                                    }[locale]
-                                }
+                                {t(locale, 'admin', 'copy.toPublishEveryCourseNeedsAtLeastOneMeal')}
                             </StatusAlert>
                         ) : null}
                         <div className="grid gap-6">
@@ -307,29 +292,26 @@ export function AdminMenuPage({ data, menuId }: { data: GqlCAdminMenuPageQuery; 
                                     <div key={course.courseId} className="grid gap-2">
                                         <div className="flex flex-wrap items-baseline justify-between gap-2">
                                             <p className="text-base font-medium">
-                                                {course.title.trim()
-                                                    ? course.title
-                                                    : { de: 'Unbenannter Gang', en: 'Untitled course' }[locale]}
+                                                {course.title.trim() ? course.title : t(locale, 'admin', 'copy.untitledCourse')}
                                             </p>
                                             {isMultiSelect ? (
                                                 <Badge variant="outline">
-                                                    {
+                                                    {inlineCopy(
                                                         {
                                                             de: `Bis zu ${selectionLimit} Gerichte auswählbar`,
                                                             en: `Up to ${selectionLimit} dishes selectable`,
-                                                        }[locale]
-                                                    }
+                                                        },
+                                                        locale,
+                                                    )}
                                                 </Badge>
                                             ) : course.mealOptions.length > 1 ? (
                                                 <span className="text-sm text-muted-foreground">
-                                                    {{ de: '1 Gericht auswählbar', en: '1 dish selectable' }[locale]}
+                                                    {t(locale, 'admin', 'copy.n1DishSelectable')}
                                                 </span>
                                             ) : null}
                                         </div>
                                         {course.mealOptions.length === 0 ? (
-                                            <p className="text-sm text-muted-foreground">
-                                                {{ de: 'Keine Gerichte.', en: 'No meals.' }[locale]}
-                                            </p>
+                                            <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noMeals')}</p>
                                         ) : (
                                             <ul className="grid gap-2">
                                                 {course.mealOptions.map((meal) => (
@@ -354,20 +336,15 @@ export function AdminMenuPage({ data, menuId }: { data: GqlCAdminMenuPageQuery; 
             <AlertDialog open={confirm === 'delete'} onOpenChange={(open) => !open && setConfirm(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>{{ de: 'Menü löschen?', en: 'Delete this menu?' }[locale]}</AlertDialogTitle>
+                        <AlertDialogTitle>{t(locale, 'admin', 'copy.deleteThisMenu')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            {
-                                {
-                                    de: 'Das Menü verschwindet aus der Kochliste. Admins können es weiterhin einsehen.',
-                                    en: 'The menu disappears from the cook list. Admins can still inspect it.',
-                                }[locale]
-                            }
+                            {t(locale, 'admin', 'copy.theMenuDisappearsFromTheCookListAdminsCanStillInspectIt')}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogCancel>{t(locale, 'admin', 'copy.cancel')}</AlertDialogCancel>
                         <AlertDialogAction variant="destructive" onClick={() => void onDelete()}>
-                            {{ de: 'Löschen', en: 'Delete' }[locale]}
+                            {t(locale, 'admin', 'copy.delete')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -376,20 +353,13 @@ export function AdminMenuPage({ data, menuId }: { data: GqlCAdminMenuPageQuery; 
             <AlertDialog open={confirm === 'publish'} onOpenChange={(open) => !open && setConfirm(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>{{ de: 'Menü veröffentlichen?', en: 'Publish this menu?' }[locale]}</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {
-                                {
-                                    de: 'Das Menü wird als veröffentlicht markiert.',
-                                    en: 'The menu will be marked published.',
-                                }[locale]
-                            }
-                        </AlertDialogDescription>
+                        <AlertDialogTitle>{t(locale, 'admin', 'copy.publishThisMenu')}</AlertDialogTitle>
+                        <AlertDialogDescription>{t(locale, 'admin', 'copy.theMenuWillBeMarkedPublished')}</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogCancel>{t(locale, 'admin', 'copy.cancel')}</AlertDialogCancel>
                         <AlertDialogAction onClick={() => void setPublished(new Date().toISOString())}>
-                            {{ de: 'Veröffentlichen', en: 'Publish' }[locale]}
+                            {t(locale, 'admin', 'copy.publish')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

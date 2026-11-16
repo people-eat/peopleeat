@@ -1,5 +1,6 @@
 import { inArray } from 'drizzle-orm';
 
+import { t } from '../../i18n/t';
 import { users } from '../db/schema';
 import type { BookingRequestCookRequestedMenu } from '../domain/bookingRequest';
 import { notificationEmailAllowed } from '../domain/notificationSettings';
@@ -76,7 +77,7 @@ export async function bookingRequestCooksNotify(
             const locale = cookUser.locale;
             const emailPurpose = options?.direct ? 'BOOKING_REQUEST_COOK_DIRECT_NOTIFY' : 'BOOKING_REQUEST_COOK_NOTIFY';
             const emailAllowed = notificationEmailAllowed(cookUser.notificationSettings, emailPurpose);
-            const city = context.city.trim() || { de: 'deiner Nähe', en: 'your area' }[locale];
+            const city = context.city.trim() || t(locale, 'common', 'bookingRequestCityFallback');
             try {
                 if (emailAllowed) {
                     await serverRuntime.email.send({

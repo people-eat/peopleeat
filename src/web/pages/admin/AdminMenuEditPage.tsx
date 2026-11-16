@@ -5,6 +5,8 @@ import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { t } from '../../../i18n/t';
+import { inlineCopy } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import { Button } from '../../components/base/button';
@@ -17,15 +19,14 @@ import type { CookMenuCourseDraft } from '../../components/CookMenuCoursesEditor
 import type { GqlCAdminMenuEditPageQuery } from '../../graphql/generated';
 import { AdminMenuEditMealUpsertDocument, AdminMenuEditPageUpdatesDocument, AdminMenuUpsertDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
+import type { Locale } from '../../utils/locale';
 
-export const adminMenuEditPageTitle = {
-    de: 'Menü bearbeiten',
-    en: 'Edit menu',
-} as const;
-export const adminMenuEditPageDescription = {
-    de: 'Titel, Beschreibung und Gänge bearbeiten.',
-    en: 'Edit title, description, and courses.',
-} as const;
+export function adminMenuEditPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.menuEdit.title');
+}
+export function adminMenuEditPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.menuEdit.description');
+}
 
 type AdminMenu = NonNullable<NonNullable<NonNullable<GqlCAdminMenuEditPageQuery['currentSession']['user']>['admin']>['cookMenu']>;
 
@@ -105,10 +106,10 @@ export function AdminMenuEditPage({ data, menuId, cookId }: { data: GqlCAdminMen
                 if (result.error || !result.data?.admin.cookMenuUpsert.success) {
                     throw new Error('save failed');
                 }
-                toast.success({ de: 'Gespeichert.', en: 'Saved.' }[locale]);
+                toast.success(t(locale, 'admin', 'copy.saved'));
                 await navigate({ to: '/{-$locale}/admin/menus/$menuId', params: { menuId } });
             } catch {
-                toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+                toast.error(t(locale, 'admin', 'copy.couldNotSave'));
             }
         },
     });
@@ -152,9 +153,9 @@ export function AdminMenuEditPage({ data, menuId, cookId }: { data: GqlCAdminMen
     return (
         <AdminPageChrome
             crumbs={[
-                { label: { de: 'Menüs', en: 'Menus' }[locale], to: '/{-$locale}/admin/menus' },
+                { label: t(locale, 'admin', 'copy.menus'), to: '/{-$locale}/admin/menus' },
                 { label: menu.title, to: '/{-$locale}/admin/menus/$menuId', params: { menuId } },
-                { label: { de: 'Bearbeiten', en: 'Edit' }[locale] },
+                { label: t(locale, 'admin', 'copy.edit') },
             ]}
             contentClassName="min-h-0 overflow-hidden gap-0"
         >
@@ -165,17 +166,17 @@ export function AdminMenuEditPage({ data, menuId, cookId }: { data: GqlCAdminMen
                         <>
                             <Button type="button" variant="outline" disabled={isSubmitting} asChild>
                                 <Link to="/{-$locale}/admin/menus/$menuId" params={{ menuId }}>
-                                    {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                    {t(locale, 'admin', 'copy.cancel')}
                                 </Link>
                             </Button>
                             <Button type="submit" form="admin-menu-form" disabled={isSubmitting}>
-                                {isSubmitting ? { de: 'Speichern…', en: 'Saving…' }[locale] : { de: 'Speichern', en: 'Save' }[locale]}
+                                {isSubmitting ? t(locale, 'admin', 'copy.saving2') : t(locale, 'admin', 'copy.save')}
                             </Button>
                         </>
                     ) : (
                         <Button type="button" disabled={isSubmitting} asChild>
                             <Link to="/{-$locale}/admin/menus/$menuId" params={{ menuId }}>
-                                {{ de: 'Zur Menüansicht', en: 'Back to menu' }[locale]}
+                                {t(locale, 'admin', 'copy.backToMenu')}
                             </Link>
                         </Button>
                     )
@@ -194,7 +195,7 @@ export function AdminMenuEditPage({ data, menuId, cookId }: { data: GqlCAdminMen
                         {(field) => (
                             <div className="grid gap-1.5">
                                 <label htmlFor="admin-menu-title" className="text-sm font-medium">
-                                    {{ de: 'Titel', en: 'Title' }[locale]}
+                                    {t(locale, 'admin', 'copy.title')}
                                 </label>
                                 <Input
                                     id="admin-menu-title"
@@ -212,7 +213,7 @@ export function AdminMenuEditPage({ data, menuId, cookId }: { data: GqlCAdminMen
                         {(field) => (
                             <div className="grid gap-1.5">
                                 <label htmlFor="admin-menu-description" className="text-sm font-medium">
-                                    {{ de: 'Beschreibung', en: 'Description' }[locale]}
+                                    {t(locale, 'admin', 'copy.description')}
                                 </label>
                                 <Textarea
                                     id="admin-menu-description"
@@ -227,10 +228,10 @@ export function AdminMenuEditPage({ data, menuId, cookId }: { data: GqlCAdminMen
                     </form.Field>
                     <div className="grid gap-3">
                         <div>
-                            <h2 className="text-sm font-medium">{{ de: 'Gänge', en: 'Courses' }[locale]}</h2>
+                            <h2 className="text-sm font-medium">{t(locale, 'admin', 'copy.courses')}</h2>
                             <p className="text-sm text-muted-foreground">
-                                {
-                                    (menu.bookingRequestOfferId != null
+                                {inlineCopy(
+                                    menu.bookingRequestOfferId != null
                                         ? {
                                               de: 'Jeder Gang braucht mindestens ein Gericht.',
                                               en: 'Each course needs at least one meal.',
@@ -238,8 +239,9 @@ export function AdminMenuEditPage({ data, menuId, cookId }: { data: GqlCAdminMen
                                         : {
                                               de: 'Jeder Gang braucht mindestens ein Gericht zum Veröffentlichen.',
                                               en: 'Each course needs at least one meal to publish.',
-                                          })[locale]
-                                }
+                                          },
+                                    locale,
+                                )}
                             </p>
                         </div>
                         {incompleteCourseCount > 0 ? (
@@ -247,15 +249,18 @@ export function AdminMenuEditPage({ data, menuId, cookId }: { data: GqlCAdminMen
                                 tone="warning"
                                 title={
                                     incompleteCourseCount === 1
-                                        ? { de: '1 Gang ist unvollständig', en: '1 course is incomplete' }[locale]
-                                        : {
-                                              de: `${incompleteCourseCount} Gänge sind unvollständig`,
-                                              en: `${incompleteCourseCount} courses are incomplete`,
-                                          }[locale]
+                                        ? t(locale, 'admin', 'copy.n1CourseIsIncomplete')
+                                        : inlineCopy(
+                                              {
+                                                  de: `${incompleteCourseCount} Gänge sind unvollständig`,
+                                                  en: `${incompleteCourseCount} courses are incomplete`,
+                                              },
+                                              locale,
+                                          )
                                 }
                             >
-                                {
-                                    (menu.bookingRequestOfferId != null
+                                {inlineCopy(
+                                    menu.bookingRequestOfferId != null
                                         ? {
                                               de: 'Unvollständige Gänge sind mit einem Warnhinweis markiert. Jeder Gang braucht mindestens ein Gericht.',
                                               en: 'Incomplete courses are marked with a warning. Every course needs at least one meal.',
@@ -263,8 +268,9 @@ export function AdminMenuEditPage({ data, menuId, cookId }: { data: GqlCAdminMen
                                         : {
                                               de: 'Unvollständige Gänge sind mit einem Warnhinweis markiert. Zum Veröffentlichen braucht jeder Gang mindestens ein Gericht.',
                                               en: 'Incomplete courses are marked with a warning. To publish, every course needs at least one meal.',
-                                          })[locale]
-                                }
+                                          },
+                                    locale,
+                                )}
                             </StatusAlert>
                         ) : null}
                         <form.Field name="courses">

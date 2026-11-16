@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
 import { AuthTotpChallengeDeleteDocument, AuthTotpVerifyDocument } from '../../graphql/generated';
-import { useLocale } from '../../hooks/useLocale';
+import { useT } from '../../hooks/useT';
 import { Button } from '../base/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../base/dialog';
 import { Input } from '../base/input';
@@ -20,7 +20,7 @@ export function AuthTotpChallenge({
     setBusy: (busy: boolean) => void;
     sessionRefresh: AuthSessionRefresh;
 }) {
-    const locale = useLocale();
+    const { t } = useT('public');
     const [otpCode, setOtpCode] = useState('');
     const [recoveryMode, setRecoveryMode] = useState(false);
     const [recoveryCode, setRecoveryCode] = useState('');
@@ -37,7 +37,7 @@ export function AuthTotpChallenge({
             const refreshed = await sessionRefresh();
             if (result.error || !result.data?.authTotpVerify.success) {
                 if (!refreshed?.user) {
-                    toast.error({ de: 'Code ungültig oder abgelaufen.', en: 'Invalid or expired code.' }[locale]);
+                    toast.error(t('auth.totpInvalid'));
                     verifyStarted.current = false;
                 }
                 return;
@@ -77,19 +77,8 @@ export function AuthTotpChallenge({
         <Dialog open onOpenChange={(open) => !open && void onDismiss()}>
             <DialogContent className="sm:max-w-md" showCloseButton={!busy}>
                 <DialogHeader>
-                    <DialogTitle>{{ de: 'Zwei-Faktor-Authentifizierung', en: 'Two-factor authentication' }[locale]}</DialogTitle>
-                    <DialogDescription>
-                        {
-                            {
-                                de: recoveryMode
-                                    ? 'Gib einen deiner Wiederherstellungscodes ein.'
-                                    : 'Gib den 6-stelligen Code aus deiner Authenticator-App ein.',
-                                en: recoveryMode
-                                    ? 'Enter one of your recovery codes.'
-                                    : 'Enter the 6-digit code from your authenticator app.',
-                            }[locale]
-                        }
-                    </DialogDescription>
+                    <DialogTitle>{t('auth.totpTitle')}</DialogTitle>
+                    <DialogDescription>{recoveryMode ? t('auth.totpRecoveryBody') : t('auth.totpChallengeBody')}</DialogDescription>
                 </DialogHeader>
 
                 {recoveryMode ? (
@@ -98,16 +87,16 @@ export function AuthTotpChallenge({
                             value={recoveryCode}
                             onChange={(event) => setRecoveryCode(event.target.value)}
                             autoComplete="one-time-code"
-                            placeholder={{ de: 'Wiederherstellungscode', en: 'Recovery code' }[locale]}
+                            placeholder={t('auth.recoveryCodePlaceholder')}
                             disabled={busy}
                             autoFocus
                         />
                         <DialogFooter className="gap-2 sm:gap-0">
                             <Button type="button" variant="outline" disabled={busy} onClick={() => setRecoveryMode(false)}>
-                                {{ de: 'Authenticator-Code', en: 'Authenticator code' }[locale]}
+                                {t('auth.authenticatorCode')}
                             </Button>
                             <Button type="submit" disabled={busy || recoveryCode.trim().length < 8}>
-                                {{ de: 'Bestätigen', en: 'Verify' }[locale]}
+                                {t('auth.verify')}
                             </Button>
                         </DialogFooter>
                     </form>
@@ -136,10 +125,10 @@ export function AuthTotpChallenge({
                         </InputOTP>
                         <DialogFooter className="gap-2 sm:justify-between">
                             <Button type="button" variant="ghost" disabled={busy} onClick={() => setRecoveryMode(true)}>
-                                {{ de: 'Wiederherstellungscode', en: 'Use a recovery code' }[locale]}
+                                {t('auth.useRecoveryCode')}
                             </Button>
                             <Button type="submit" disabled={busy || otpCode.length !== 6}>
-                                {{ de: 'Bestätigen', en: 'Verify' }[locale]}
+                                {t('auth.verify')}
                             </Button>
                         </DialogFooter>
                     </form>

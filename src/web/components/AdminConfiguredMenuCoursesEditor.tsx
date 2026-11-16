@@ -1,5 +1,7 @@
 import { ArrowDownIcon, ArrowUpIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 
+import { t } from '../../i18n/t';
+import type { InlineCopy } from '../../shared';
 import { idCreate } from '../../shared/idCreate';
 import { useLocale } from '../hooks/useLocale';
 import { Button } from './base/button';
@@ -46,7 +48,7 @@ function isValidOptionalUrl(value: string): boolean {
     }
 }
 
-export function adminConfiguredMenuDraftValidate(courses: AdminConfiguredMenuCourseDraft[]): { de: string; en: string } | null {
+export function adminConfiguredMenuDraftValidate(courses: AdminConfiguredMenuCourseDraft[]): InlineCopy | null {
     if (courses.length < 1) {
         return { de: 'Mindestens ein Gang ist erforderlich.', en: 'At least one course is required.' };
     }
@@ -89,9 +91,7 @@ export function AdminConfiguredMenuCoursesEditor({
     return (
         <div className="grid gap-4">
             {showValidation && courses.length < 1 ? (
-                <p className="text-sm text-destructive">
-                    {{ de: 'Mindestens ein Gang ist erforderlich.', en: 'At least one course is required.' }[locale]}
-                </p>
+                <p className="text-sm text-destructive">{t(locale, 'admin', 'copy.atLeastOneCourseIsRequired')}</p>
             ) : null}
 
             {courses.map((course, courseIndex) => {
@@ -103,7 +103,7 @@ export function AdminConfiguredMenuCoursesEditor({
                         <div className="flex items-start gap-2">
                             <div className="grid min-w-0 flex-1 gap-1.5">
                                 <label htmlFor={`configured-course-title-${course.key}`} className="text-sm font-medium">
-                                    {{ de: 'Gang', en: 'Course' }[locale]}
+                                    {t(locale, 'admin', 'copy.course')}
                                 </label>
                                 <Input
                                     id={`configured-course-title-${course.key}`}
@@ -113,9 +113,7 @@ export function AdminConfiguredMenuCoursesEditor({
                                     onChange={(event) => updateCourse(course.key, (current) => ({ ...current, title: event.target.value }))}
                                 />
                                 {courseTitleError ? (
-                                    <p className="text-sm text-destructive">
-                                        {{ de: 'Bitte einen Gangnamen angeben.', en: 'Please enter a course name.' }[locale]}
-                                    </p>
+                                    <p className="text-sm text-destructive">{t(locale, 'admin', 'copy.pleaseEnterACourseName')}</p>
                                 ) : null}
                             </div>
                             <div className="flex shrink-0 items-center gap-1 pt-7">
@@ -124,7 +122,7 @@ export function AdminConfiguredMenuCoursesEditor({
                                     size="icon"
                                     variant="ghost"
                                     disabled={disabled || courseIndex === 0}
-                                    aria-label={{ de: 'Nach oben', en: 'Move up' }[locale]}
+                                    aria-label={t(locale, 'admin', 'copy.moveUp')}
                                     onClick={() => onChange(moveItem(courses, courseIndex, courseIndex - 1))}
                                 >
                                     <ArrowUpIcon className="size-4" />
@@ -134,7 +132,7 @@ export function AdminConfiguredMenuCoursesEditor({
                                     size="icon"
                                     variant="ghost"
                                     disabled={disabled || courseIndex === courses.length - 1}
-                                    aria-label={{ de: 'Nach unten', en: 'Move down' }[locale]}
+                                    aria-label={t(locale, 'admin', 'copy.moveDown')}
                                     onClick={() => onChange(moveItem(courses, courseIndex, courseIndex + 1))}
                                 >
                                     <ArrowDownIcon className="size-4" />
@@ -144,7 +142,7 @@ export function AdminConfiguredMenuCoursesEditor({
                                     size="icon"
                                     variant="ghost"
                                     disabled={disabled || courses.length <= 1}
-                                    aria-label={{ de: 'Gang entfernen', en: 'Remove course' }[locale]}
+                                    aria-label={t(locale, 'admin', 'copy.removeCourse')}
                                     onClick={() => onChange(courses.filter((item) => item.key !== course.key))}
                                 >
                                     <Trash2Icon className="size-4 text-destructive" />
@@ -153,9 +151,7 @@ export function AdminConfiguredMenuCoursesEditor({
                         </div>
 
                         {mealsError ? (
-                            <p className="text-sm text-destructive">
-                                {{ de: 'Mindestens ein Gericht ist erforderlich.', en: 'At least one meal is required.' }[locale]}
-                            </p>
+                            <p className="text-sm text-destructive">{t(locale, 'admin', 'copy.atLeastOneMealIsRequired')}</p>
                         ) : null}
 
                         <div className="grid gap-3">
@@ -167,7 +163,7 @@ export function AdminConfiguredMenuCoursesEditor({
                                     <div key={meal.key} className="grid gap-3 rounded-md border border-dashed border-border p-3">
                                         <div className="flex items-center justify-between gap-2">
                                             <p className="text-sm text-muted-foreground">
-                                                {{ de: 'Gericht', en: 'Meal' }[locale]} {mealIndex + 1}
+                                                {t(locale, 'admin', 'copy.meal')} {mealIndex + 1}
                                             </p>
                                             <div className="flex items-center gap-1">
                                                 <Button
@@ -175,7 +171,7 @@ export function AdminConfiguredMenuCoursesEditor({
                                                     size="icon"
                                                     variant="ghost"
                                                     disabled={disabled || mealIndex === 0}
-                                                    aria-label={{ de: 'Nach oben', en: 'Move up' }[locale]}
+                                                    aria-label={t(locale, 'admin', 'copy.moveUp')}
                                                     onClick={() =>
                                                         updateCourse(course.key, (current) => ({
                                                             ...current,
@@ -190,7 +186,7 @@ export function AdminConfiguredMenuCoursesEditor({
                                                     size="icon"
                                                     variant="ghost"
                                                     disabled={disabled || mealIndex === course.meals.length - 1}
-                                                    aria-label={{ de: 'Nach unten', en: 'Move down' }[locale]}
+                                                    aria-label={t(locale, 'admin', 'copy.moveDown')}
                                                     onClick={() =>
                                                         updateCourse(course.key, (current) => ({
                                                             ...current,
@@ -205,7 +201,7 @@ export function AdminConfiguredMenuCoursesEditor({
                                                     size="icon"
                                                     variant="ghost"
                                                     disabled={disabled || course.meals.length <= 1}
-                                                    aria-label={{ de: 'Gericht entfernen', en: 'Remove meal' }[locale]}
+                                                    aria-label={t(locale, 'admin', 'copy.removeMeal')}
                                                     onClick={() =>
                                                         updateCourse(course.key, (current) => ({
                                                             ...current,
@@ -219,7 +215,7 @@ export function AdminConfiguredMenuCoursesEditor({
                                         </div>
                                         <div className="grid gap-1.5">
                                             <label htmlFor={`configured-meal-title-${meal.key}`} className="text-sm font-medium">
-                                                {{ de: 'Gerichtstitel', en: 'Meal title' }[locale]}
+                                                {t(locale, 'admin', 'copy.mealTitle')}
                                             </label>
                                             <Input
                                                 id={`configured-meal-title-${meal.key}`}
@@ -237,13 +233,13 @@ export function AdminConfiguredMenuCoursesEditor({
                                             />
                                             {mealTitleError ? (
                                                 <p className="text-sm text-destructive">
-                                                    {{ de: 'Bitte einen Gerichtstitel angeben.', en: 'Please enter a meal title.' }[locale]}
+                                                    {t(locale, 'admin', 'copy.pleaseEnterAMealTitle')}
                                                 </p>
                                             ) : null}
                                         </div>
                                         <div className="grid gap-1.5">
                                             <label htmlFor={`configured-meal-description-${meal.key}`} className="text-sm font-medium">
-                                                {{ de: 'Gerichtsbeschreibung', en: 'Meal description' }[locale]}
+                                                {t(locale, 'admin', 'copy.mealDescription')}
                                             </label>
                                             <Textarea
                                                 id={`configured-meal-description-${meal.key}`}
@@ -261,18 +257,14 @@ export function AdminConfiguredMenuCoursesEditor({
                                         </div>
                                         <div className="grid gap-1.5">
                                             <label htmlFor={`configured-meal-image-${meal.key}`} className="text-sm font-medium">
-                                                {{ de: 'Bild-URL', en: 'Image URL' }[locale]}
+                                                {t(locale, 'admin', 'copy.imageUrl')}
                                             </label>
                                             <Input
                                                 id={`configured-meal-image-${meal.key}`}
                                                 value={meal.mealImageUrl}
                                                 disabled={disabled}
                                                 aria-invalid={mealImageUrlError || undefined}
-                                                placeholder={
-                                                    { de: 'Optional, leer lassen zum Entfernen', en: 'Optional, leave empty to clear' }[
-                                                        locale
-                                                    ]
-                                                }
+                                                placeholder={t(locale, 'admin', 'copy.optionalLeaveEmptyToClear')}
                                                 onChange={(event) =>
                                                     updateCourse(course.key, (current) => ({
                                                         ...current,
@@ -284,12 +276,7 @@ export function AdminConfiguredMenuCoursesEditor({
                                             />
                                             {mealImageUrlError ? (
                                                 <p className="text-sm text-destructive">
-                                                    {
-                                                        {
-                                                            de: 'Bitte eine gültige Bild-URL eingeben.',
-                                                            en: 'Please enter a valid image URL.',
-                                                        }[locale]
-                                                    }
+                                                    {t(locale, 'admin', 'copy.pleaseEnterAValidImageUrl')}
                                                 </p>
                                             ) : null}
                                         </div>
@@ -312,7 +299,7 @@ export function AdminConfiguredMenuCoursesEditor({
                                 }
                             >
                                 <PlusIcon className="size-4" />
-                                {{ de: 'Gericht hinzufügen', en: 'Add meal' }[locale]}
+                                {t(locale, 'admin', 'copy.addMeal')}
                             </Button>
                         </div>
                     </section>
@@ -328,7 +315,7 @@ export function AdminConfiguredMenuCoursesEditor({
                     onClick={() => onChange([...courses, createEmptyConfiguredMenuCourse()])}
                 >
                     <PlusIcon className="size-4" />
-                    {{ de: 'Gang hinzufügen', en: 'Add course' }[locale]}
+                    {t(locale, 'admin', 'copy.addCourse')}
                 </Button>
             </div>
         </div>

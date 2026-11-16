@@ -19,8 +19,8 @@ export const Route = createFileRoute('/{-$locale}/profile/support-requests_/crea
     head: ({ params }) => {
         const locale = localeFromParam(params);
         return seoMeta({
-            title: profileCustomerSupportRequestCreatePageTitle[locale],
-            description: profileCustomerSupportRequestCreatePageDescription[locale],
+            title: profileCustomerSupportRequestCreatePageTitle(locale),
+            description: profileCustomerSupportRequestCreatePageDescription(locale),
             path: '/profile/support-requests/create',
             locale,
             webPageUrl: webPageUrlGet(),

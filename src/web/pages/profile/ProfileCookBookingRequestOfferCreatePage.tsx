@@ -3,6 +3,7 @@ import { useEffect, useEffectEvent, useId, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
+import { t } from '../../../i18n/t';
 import { bookingRequestOfferPriceCalculate, containsPhoneNumber, cookBookingRequestOfferFunnelArea } from '../../../shared';
 import type { CookBookingRequestOfferFunnelClientStep, Locale } from '../../../shared';
 import {
@@ -61,29 +62,18 @@ function offerCreateStepFromSearch(step: unknown): ProfileCookBookingRequestOffe
 }
 
 function offerCreateStepCopy(step: ProfileCookBookingRequestOfferCreateStep, locale: Locale): { title: string; subTitle?: string } {
-    const copy = {
-        menus: {
-            title: { de: 'Menüs vorschlagen', en: 'Suggest menus' },
-            subTitle: {
-                de: 'Wähle bestehende Menüs aus oder erstelle neue.',
-                en: 'Choose from existing menus or create new ones.',
-            },
-        },
-        price: {
-            title: { de: 'Preis wählen', en: 'Choose your price' },
-        },
-        message: {
-            title: { de: 'Persönliche Nachricht', en: 'Personal note' },
-            subTitle: {
-                de: 'Optional. Erscheint als erste Nachricht im Angebots-Chat.',
-                en: 'Optional. Appears as your first message in the offer chat.',
-            },
-        },
-    } as const;
-    const stepCopy = copy[step];
+    if (step === 'menus') {
+        return {
+            title: t(locale, 'profileCook', 'offerCreate.suggestMenus'),
+            subTitle: t(locale, 'profileCook', 'offerCreate.suggestMenusHint'),
+        };
+    }
+    if (step === 'price') {
+        return { title: t(locale, 'profileCook', 'offerCreate.choosePrice') };
+    }
     return {
-        title: stepCopy.title[locale],
-        subTitle: 'subTitle' in stepCopy ? stepCopy.subTitle[locale] : undefined,
+        title: t(locale, 'profileCook', 'offerCreate.personalNote'),
+        subTitle: t(locale, 'profileCook', 'offerCreate.personalNoteHint'),
     };
 }
 
@@ -208,23 +198,14 @@ function CookBookingRequestOfferCreateSuccessDialog({
         <AlertDialog open={open}>
             <AlertDialogContent onEscapeKeyDown={(event) => event.preventDefault()}>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>{{ de: 'Angebot erfolgreich versendet!', en: 'Offer sent successfully!' }[locale]}</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        {
-                            {
-                                de: 'Der Kunde wurde über dein Angebot benachrichtigt. Sobald er Fragen hat, Änderungen wünscht oder einen Video-Call vereinbaren möchte, wirst du automatisch benachrichtigt.',
-                                en: 'The guest has been notified about your offer. You will be notified automatically when they have questions, request changes, or want to schedule a video call.',
-                            }[locale]
-                        }
-                    </AlertDialogDescription>
+                    <AlertDialogTitle>{t(locale, 'profileCook', 'offerCreate.sentTitle')}</AlertDialogTitle>
+                    <AlertDialogDescription>{t(locale, 'profileCook', 'offerCreate.sentBody')}</AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     {hasMoreOpenRequests ? (
-                        <AlertDialogCancel onClick={onReviewNext}>
-                            {{ de: 'Weitere Anfragen prüfen', en: 'Review more requests' }[locale]}
-                        </AlertDialogCancel>
+                        <AlertDialogCancel onClick={onReviewNext}>{t(locale, 'profileCook', 'offerCreate.reviewMore')}</AlertDialogCancel>
                     ) : null}
-                    <AlertDialogAction onClick={onGoToOffer}>{{ de: 'Zum Angebot', en: 'Go to offer' }[locale]}</AlertDialogAction>
+                    <AlertDialogAction onClick={onGoToOffer}>{t(locale, 'profileCook', 'offerCreate.goToOffer')}</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
@@ -459,23 +440,13 @@ export function ProfileCookBookingRequestOfferCreatePage({
     async function onCreateOffer() {
         const suggestedMenuIds = completeSelectedMenuIds();
         if (suggestedMenuIds.length === 0) {
-            setMenuSelectionError(
-                {
-                    de: 'Bitte wähle mindestens ein Menü aus.',
-                    en: 'Please select at least one menu.',
-                }[locale],
-            );
+            setMenuSelectionError(t(locale, 'profileCook', 'offerCreate.selectMenu'));
             setStep('menus');
             return;
         }
         setMenuSelectionError(null);
         if (!priceValid || menuPriceCents <= 0) {
-            toast.error(
-                {
-                    de: 'Bitte gib einen gültigen Menüpreis ein.',
-                    en: 'Please enter a valid menu price.',
-                }[locale],
-            );
+            toast.error(t(locale, 'profileCook', 'offerCreate.validPrice'));
             return;
         }
         const trimmedMessage = message.trim();
@@ -501,7 +472,7 @@ export function ProfileCookBookingRequestOfferCreatePage({
             submittedOfferRef.current = true;
             setCreatedOfferId(offerId);
         } catch {
-            toast.error({ de: 'Angebot fehlgeschlagen.', en: 'Could not create the offer.' }[locale]);
+            toast.error(t(locale, 'profileCook', 'offerCreate.createFailed'));
         } finally {
             setCreatingOffer(false);
         }
@@ -529,12 +500,7 @@ export function ProfileCookBookingRequestOfferCreatePage({
     function onContinueToPrice() {
         const suggestedMenuIds = completeSelectedMenuIds();
         if (suggestedMenuIds.length === 0) {
-            setMenuSelectionError(
-                {
-                    de: 'Bitte wähle mindestens ein Menü aus.',
-                    en: 'Please select at least one menu.',
-                }[locale],
-            );
+            setMenuSelectionError(t(locale, 'profileCook', 'offerCreate.selectMenu'));
             menusSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             return;
         }
@@ -547,12 +513,7 @@ export function ProfileCookBookingRequestOfferCreatePage({
 
     function onContinueToMessage() {
         if (!priceValid || menuPriceCents <= 0) {
-            toast.error(
-                {
-                    de: 'Bitte gib einen gültigen Menüpreis ein.',
-                    en: 'Please enter a valid menu price.',
-                }[locale],
-            );
+            toast.error(t(locale, 'profileCook', 'offerCreate.validPrice'));
             return;
         }
         trackFunnelStep('step_completed', 'price');
@@ -632,12 +593,7 @@ export function ProfileCookBookingRequestOfferCreatePage({
             setRecommendationApplied(false);
             applyingGeneratedMenuRef.current = false;
         } catch {
-            toast.error(
-                {
-                    de: 'Empfehlungen konnten nicht aktualisiert werden.',
-                    en: 'Could not refresh recommendations.',
-                }[locale],
-            );
+            toast.error(t(locale, 'profileCook', 'offerCreate.refreshFailed'));
         } finally {
             setRefreshingEvaluation(false);
         }
@@ -657,19 +613,9 @@ export function ProfileCookBookingRequestOfferCreatePage({
             setSelectedMenuIds((current) => (current.includes(menuId) ? current : [...current, menuId]));
             setMenuSelectionError(null);
             setRecommendationApplied(true);
-            toast.success(
-                {
-                    de: 'Empfohlenes Menü angelegt und ausgewählt.',
-                    en: 'Recommended menu created and selected.',
-                }[locale],
-            );
+            toast.success(t(locale, 'profileCook', 'offerCreate.recommendedCreated'));
         } catch {
-            toast.error(
-                {
-                    de: 'Empfehlung konnte nicht übernommen werden.',
-                    en: 'Could not apply the recommendation.',
-                }[locale],
-            );
+            toast.error(t(locale, 'profileCook', 'offerCreate.applyFailed'));
             applyingGeneratedMenuRef.current = false;
         } finally {
             setApplyingGeneratedMenu(false);
@@ -684,10 +630,10 @@ export function ProfileCookBookingRequestOfferCreatePage({
             const menuId = result.data?.user.cook.menuUpsert.referenceId;
             if (!menuId || result.error) throw new Error('create failed');
             const menusForReturn = selectedMenuIds.includes(menuId) ? selectedMenuIds : [...selectedMenuIds, menuId];
-            toast.success({ de: 'Menü angelegt.', en: 'Menu created.' }[locale]);
+            toast.success(t(locale, 'profileCook', 'offerMenusEdit.menuCreated'));
             await navigateToMenuEdit(menuId, menusForReturn);
         } catch {
-            toast.error({ de: 'Anlegen fehlgeschlagen.', en: 'Could not create.' }[locale]);
+            toast.error(t(locale, 'profileCook', 'actions.createFailed'));
             setCreatingMenu(false);
         }
     }
@@ -721,7 +667,7 @@ export function ProfileCookBookingRequestOfferCreatePage({
                         <>
                             <Button type="button" variant="outline" className="flex-1 md:flex-initial" asChild disabled={busy}>
                                 <Link to="/{-$locale}/profile/booking-request-pool/$bookingRequestId" params={{ bookingRequestId }}>
-                                    {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                    {t(locale, 'common', 'cancel')}
                                 </Link>
                             </Button>
                             <Button
@@ -730,7 +676,7 @@ export function ProfileCookBookingRequestOfferCreatePage({
                                 disabled={busy || !hasCompleteMenuSelection}
                                 onClick={onContinueToPrice}
                             >
-                                {{ de: 'Weiter', en: 'Continue' }[locale]}
+                                {t(locale, 'profileCook', 'actions.continue')}
                             </Button>
                         </>
                     ) : step === 'price' ? (
@@ -742,7 +688,7 @@ export function ProfileCookBookingRequestOfferCreatePage({
                                 disabled={busy}
                                 onClick={onBackFromPrice}
                             >
-                                {{ de: 'Zurück', en: 'Back' }[locale]}
+                                {t(locale, 'profileCook', 'actions.back')}
                             </Button>
                             <Button
                                 type="button"
@@ -750,7 +696,7 @@ export function ProfileCookBookingRequestOfferCreatePage({
                                 disabled={busy || !priceValid}
                                 onClick={onContinueToMessage}
                             >
-                                {{ de: 'Weiter', en: 'Continue' }[locale]}
+                                {t(locale, 'profileCook', 'actions.continue')}
                             </Button>
                         </>
                     ) : (
@@ -762,7 +708,7 @@ export function ProfileCookBookingRequestOfferCreatePage({
                                 disabled={busy}
                                 onClick={onBackFromMessage}
                             >
-                                {{ de: 'Zurück', en: 'Back' }[locale]}
+                                {t(locale, 'profileCook', 'actions.back')}
                             </Button>
                             <Button
                                 type="button"
@@ -770,12 +716,9 @@ export function ProfileCookBookingRequestOfferCreatePage({
                                 disabled={busy || !stripeReady || !hasTravelOrigin || !priceValid || messageContainsPhoneNumber}
                                 onClick={() => void onCreateOffer()}
                             >
-                                {
-                                    {
-                                        de: creatingOffer ? 'Wird gesendet…' : 'Angebot machen',
-                                        en: creatingOffer ? 'Sending…' : 'Make offer',
-                                    }[locale]
-                                }
+                                {creatingOffer
+                                    ? t(locale, 'profileCook', 'offerCreate.sending')
+                                    : t(locale, 'profileCook', 'offerCreate.makeOffer')}
                             </Button>
                         </>
                     )
@@ -800,17 +743,17 @@ export function ProfileCookBookingRequestOfferCreatePage({
                     {menuSelectionError != null ? <StatusAlert tone="error">{menuSelectionError}</StatusAlert> : null}
                     {request.requestedMenu ? (
                         <StatusAlert tone="info">
-                            {inventoryMenus.some(
-                                (menu) => menu.menuId === request.requestedMenu?.menuId && cookMenuSelectPanelMenuIsComplete(menu.courses),
-                            )
-                                ? {
-                                      de: `Der Gast hat „${request.requestedMenu.title}“ angefragt. Es ist vorausgewählt. Du kannst Menüs hinzufügen oder tauschen.`,
-                                      en: `The guest asked for “${request.requestedMenu.title}”. It is preselected. You can add or swap menus.`,
-                                  }[locale]
-                                : {
-                                      de: `Der Gast hat „${request.requestedMenu.title}“ angefragt. Dieses Menü ist in deiner Bibliothek nicht mehr verfügbar. Wähle oder erstelle ein Ersatzmenü.`,
-                                      en: `The guest asked for “${request.requestedMenu.title}”. That library menu is no longer available. Pick or create a replacement.`,
-                                  }[locale]}
+                            {t(
+                                locale,
+                                'profileCook',
+                                inventoryMenus.some(
+                                    (menu) =>
+                                        menu.menuId === request.requestedMenu?.menuId && cookMenuSelectPanelMenuIsComplete(menu.courses),
+                                )
+                                    ? 'offerCreate.requestedMenu'
+                                    : 'offerCreate.requestedMenuMissing',
+                                { title: request.requestedMenu.title },
+                            )}
                         </StatusAlert>
                     ) : null}
                     <CookMenuSelectPanel
@@ -821,7 +764,7 @@ export function ProfileCookBookingRequestOfferCreatePage({
                         onMenuApplied={(menuId) => {
                             setSelectedMenuIds((current) => (current.includes(menuId) ? current : [...current, menuId]));
                             setMenuSelectionError(null);
-                            toast.success({ de: 'Menü angelegt und ausgewählt.', en: 'Menu created and selected.' }[locale]);
+                            toast.success(t(locale, 'profileCook', 'offerMenusEdit.menuCreatedSelected'));
                         }}
                         onEditMenu={(menuId) => void onEditMenu(menuId)}
                         createMenuDisabled={busy}
@@ -877,28 +820,14 @@ export function ProfileCookBookingRequestOfferCreatePage({
                     {offerAddonsEnabled ? (
                         <section className="grid gap-3">
                             <div className="grid gap-1">
-                                <h2 className="text-sm font-medium text-foreground">
-                                    {{ de: 'Zusatzleistungen', en: 'Offer extras' }[locale]}
-                                </h2>
-                                <p className="text-sm text-muted-foreground">
-                                    {
-                                        {
-                                            de: 'Optional. Der Gast kann sie vor der Annahme auswählen.',
-                                            en: 'Optional. The guest can choose them before accepting.',
-                                        }[locale]
-                                    }
-                                </p>
+                                <h2 className="text-sm font-medium text-foreground">{t(locale, 'profileCook', 'offerCreate.extras')}</h2>
+                                <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'offerCreate.extrasHint')}</p>
                             </div>
                             {cook.offerAddons.length === 0 ? (
                                 <p className="text-sm text-muted-foreground">
-                                    {
-                                        {
-                                            de: 'Noch keine Zusatzleistungen in deiner Bibliothek.',
-                                            en: 'No offer extras in your library yet.',
-                                        }[locale]
-                                    }{' '}
+                                    {t(locale, 'profileCook', 'offerCreate.noExtras')}{' '}
                                     <Link to="/{-$locale}/profile/offer-addons" className="underline">
-                                        {{ de: 'Bibliothek öffnen', en: 'Open library' }[locale]}
+                                        {t(locale, 'profileCook', 'offerCreate.openLibrary')}
                                     </Link>
                                 </p>
                             ) : (
@@ -954,17 +883,10 @@ export function ProfileCookBookingRequestOfferCreatePage({
                 >
                     <div className="grid gap-2">
                         <label htmlFor={messageFieldId} className="sr-only">
-                            {{ de: 'Nachricht an den Gast (optional)', en: 'Message to the guest (optional)' }[locale]}
+                            {t(locale, 'profileCook', 'offerCreate.messageToGuest')}
                         </label>
                         {messageContainsPhoneNumber ? (
-                            <StatusAlert tone="warning">
-                                {
-                                    {
-                                        de: 'Das Teilen von Telefonnummern ist nicht erlaubt. Bitte bleibe für Absprachen hier im Chat.',
-                                        en: 'Sharing phone numbers is not allowed. Please keep arrangements in this chat.',
-                                    }[locale]
-                                }
-                            </StatusAlert>
+                            <StatusAlert tone="warning">{t(locale, 'profileCook', 'offerCreate.phoneSharingChat')}</StatusAlert>
                         ) : null}
                         <Textarea
                             id={messageFieldId}
@@ -973,31 +895,19 @@ export function ProfileCookBookingRequestOfferCreatePage({
                             disabled={busy}
                             maxLength={OFFER_CREATE_MESSAGE_MAX_LENGTH}
                             onChange={(event) => setMessage(event.target.value)}
-                            placeholder={
-                                {
-                                    de: 'z. B. Freue mich auf euer Event…',
-                                    en: 'e.g. Looking forward to your event…',
-                                }[locale]
-                            }
+                            placeholder={t(locale, 'profileCook', 'offerCreate.messagePlaceholder')}
                             aria-invalid={messageContainsPhoneNumber || undefined}
                         />
                     </div>
 
                     {!stripeReady || !hasTravelOrigin ? (
-                        <StatusAlert tone="warning" title={{ de: 'Voraussetzungen fehlen', en: 'Requirements missing' }[locale]}>
-                            {
-                                {
-                                    de: 'Wallet und Reise-Startort müssen eingerichtet sein.',
-                                    en: 'Wallet and travel origin must be set up.',
-                                }[locale]
-                            }
+                        <StatusAlert tone="warning" title={t(locale, 'profileCook', 'offerCreate.requirementsMissing')}>
+                            {t(locale, 'profileCook', 'offerCreate.requirementsBody')}
                         </StatusAlert>
                     ) : null}
 
                     <div className="grid gap-2">
-                        <p className="text-sm font-medium text-foreground">
-                            {{ de: 'So sieht der Gast dein Angebot', en: 'How the guest sees your offer' }[locale]}
-                        </p>
+                        <p className="text-sm font-medium text-foreground">{t(locale, 'profileCook', 'offerCreate.guestPreview')}</p>
                         <CustomerBookingRequestOfferCard
                             interactive={false}
                             bookingRequestId={bookingRequestId}

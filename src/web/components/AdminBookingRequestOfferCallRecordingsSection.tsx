@@ -1,7 +1,9 @@
 import { Link } from '@tanstack/react-router';
 import { ChevronRightIcon } from 'lucide-react';
 
+import { t } from '../../i18n/t';
 import { useLocale } from '../hooks/useLocale';
+import type { Locale } from '../utils/locale';
 import { Badge } from './base/badge';
 
 export type AdminBookingRequestOfferCallRecording = {
@@ -26,33 +28,28 @@ export type AdminBookingRequestOfferCallRecording = {
     completedAt: string | null;
 };
 
-function statusLabel(status: AdminBookingRequestOfferCallRecording['status'], locale: 'de' | 'en'): string {
-    return {
-        PENDING: { de: 'Aufnahme läuft', en: 'Recording in progress' },
-        EGRESS_COMPLETE: { de: 'Audio gespeichert', en: 'Audio saved' },
-        TRANSCRIBING: { de: 'Transkription…', en: 'Transcribing…' },
-        COMPLETED: { de: 'Fertig', en: 'Completed' },
-        FAILED: { de: 'Fehlgeschlagen', en: 'Failed' },
-    }[status][locale];
+function statusLabel(status: AdminBookingRequestOfferCallRecording['status'], locale: Locale): string {
+    const key = {
+        PENDING: 'copy.recordingInProgress',
+        EGRESS_COMPLETE: 'copy.audioSaved',
+        TRANSCRIBING: 'copy.transcribing',
+        COMPLETED: 'copy.completed3',
+        FAILED: 'copy.failed',
+    }[status];
+    return t(locale, 'admin', key);
 }
 
-function cardSnippet(recording: AdminBookingRequestOfferCallRecording, locale: 'de' | 'en'): string {
+function cardSnippet(recording: AdminBookingRequestOfferCallRecording, locale: Locale): string {
     if (recording.status === 'FAILED') {
-        return recording.errorMessage?.trim() || { de: 'Aufnahme fehlgeschlagen.', en: 'Recording failed.' }[locale];
+        return recording.errorMessage?.trim() || t(locale, 'admin', 'copy.recordingFailed');
     }
     if (recording.summaryText?.trim()) {
         return recording.summaryText.trim();
     }
     if (recording.status === 'PENDING' || recording.status === 'EGRESS_COMPLETE' || recording.status === 'TRANSCRIBING') {
-        return {
-            de: 'Verarbeitung läuft. Zusammenfassung folgt nach dem Anruf.',
-            en: 'Processing. Summary appears after the call.',
-        }[locale];
+        return t(locale, 'admin', 'copy.processingSummaryAppearsAfterTheCall');
     }
-    return {
-        de: 'Aufnahme bereit. Öffnen für Zusammenfassung und Transkript.',
-        en: 'Recording ready. Open for summary and transcript.',
-    }[locale];
+    return t(locale, 'admin', 'copy.recordingReadyOpenForSummaryAndTranscript');
 }
 
 export function AdminBookingRequestOfferCallRecordingsSection({
@@ -63,21 +60,12 @@ export function AdminBookingRequestOfferCallRecordingsSection({
     const locale = useLocale();
 
     if (recordings.length === 0) {
-        return (
-            <p className="text-sm text-muted-foreground">
-                {
-                    {
-                        de: 'Noch keine Anrufaufnahmen für dieses Angebot.',
-                        en: 'No call recordings for this offer yet.',
-                    }[locale]
-                }
-            </p>
-        );
+        return <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noCallRecordingsForThisOfferYet')}</p>;
     }
 
     return (
         <div className="grid gap-3">
-            <h2 className="text-sm font-medium text-foreground">{{ de: 'Aufnahmen', en: 'Recordings' }[locale]}</h2>
+            <h2 className="text-sm font-medium text-foreground">{t(locale, 'admin', 'copy.recordings')}</h2>
             <ul className="grid gap-2">
                 {recordings.map((recording) => (
                     <li key={recording.bookingRequestOfferCallRecordingId}>
@@ -96,9 +84,7 @@ export function AdminBookingRequestOfferCallRecordingsSection({
                                     </span>
                                 </div>
                                 <p className="line-clamp-2 text-sm text-muted-foreground">{cardSnippet(recording, locale)}</p>
-                                <span className="text-xs font-medium text-foreground">
-                                    {{ de: 'Anruf öffnen', en: 'Open call' }[locale]}
-                                </span>
+                                <span className="text-xs font-medium text-foreground">{t(locale, 'admin', 'copy.openCall')}</span>
                             </div>
                             <ChevronRightIcon className="mt-1 size-4 shrink-0 text-muted-foreground" aria-hidden />
                         </Link>

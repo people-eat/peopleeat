@@ -1,8 +1,9 @@
-export const profileCustomerSupportRequestPageTitle = {
-    de: 'Support-Anfrage',
-    en: 'Support request',
-} as const;
-export const profileCustomerSupportRequestPageDescription = {
-    de: 'Chat mit dem peopleeat Support.',
-    en: 'Chat with peopleeat support.',
-} as const;
+import { t } from '../../../i18n/t';
+import type { Locale } from '../../../shared/locale';
+
+export function profileCustomerSupportRequestPageTitle(locale: Locale): string {
+    return t(locale, 'profileCustomer', 'supportRequest.title');
+}
+export function profileCustomerSupportRequestPageDescription(locale: Locale): string {
+    return t(locale, 'profileCustomer', 'supportRequest.description');
+}

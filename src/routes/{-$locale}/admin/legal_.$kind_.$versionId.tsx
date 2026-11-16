@@ -43,10 +43,10 @@ export const Route = createFileRoute('/{-$locale}/admin/legal_/$kind_/$versionId
             return {};
         }
         const kind = params.kind;
-        const title = adminLegalVersionPageTitle(kind);
+        const title = adminLegalVersionPageTitle(kind, locale);
         return seoMeta({
-            title: title[locale],
-            description: adminLegalVersionPageDescription[locale],
+            title,
+            description: adminLegalVersionPageDescription(locale),
             path: adminLegalVersionPath(kind, params.versionId),
             locale,
             webPageUrl: webPageUrlGet(),

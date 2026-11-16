@@ -1,0 +1,469 @@
+{
+    "searching": "Searching…",
+    "noMatches": "No matches.",
+    "addressPlaceholder": "123 Main Street, 12345 Springfield",
+    "pickFullAddress": "Please choose a full address.",
+    "popular": "Popular",
+    "startingAt": "starting at",
+    "fromAmount": "from {amount}",
+    "perPerson": "per person",
+    "fromAmountPerPerson": "from {amount} per person",
+    "selected": "Selected",
+    "select": "Select",
+    "date": "Date",
+    "address": "Address",
+    "priceClass": "Price class",
+    "created": "Booking request created.",
+    "createFailed": "Could not create the booking request.",
+    "requiredFields": "Please complete all required fields.",
+    "none": "None",
+    "back": "Back",
+    "next": "Next",
+    "marketClosed": {
+        "title": "peopleeat is coming {comingTo} in early 2027",
+        "body": "We cannot accept a booking request for this address yet. Chefs can join now.",
+        "toast": "peopleeat is coming {comingTo} in early 2027. We cannot accept a request for this address yet.",
+        "learnMore": "Learn more"
+    },
+    "index": {
+        "title": "Booking request",
+        "chat": "Chat",
+        "form": "Form"
+    },
+    "chat": {
+        "title": "Booking request: chat",
+        "back": "Back to booking request"
+    },
+    "form": {
+        "leftoverCook": "This request goes to chefs nearby, not only to one chef.",
+        "leftoverMenu": "This menu is not available right now. The request still goes only to {cookName}.",
+        "direct": {
+            "title": "Request for {cookName}",
+            "body": "Only this chef sees your request first. You can open it to others later.",
+            "bodyWithMenu": "Only this chef sees your request first, for the menu “{menuTitle}”. You can open it to others later.",
+            "farVenue": "This chef can still come if the venue is a bit farther than usual."
+        },
+        "redeemFirst": "Please redeem the discount code first.",
+        "included": {
+            "heading": "What is included in the price?",
+            "ingredients": "Ingredients",
+            "workTime": "Work Time",
+            "serving": "Serving",
+            "cleanKitchen": "Clean Kitchen"
+        },
+        "send": "Send request",
+        "sendToCook": "Send {cookName} a request",
+        "createAccount": "Create account",
+        "steps": {
+            "occasion": {
+                "sideBarTitle": "Occasion",
+                "title": "For which occasion are you looking for a private chef?",
+                "hint": "Please state your occasion or choose from the suggested options.",
+                "placeholder": "e.g. Birthday, company dinner"
+            },
+            "participants": {
+                "sideBarTitle": "Persons",
+                "title": "Number of Guests",
+                "adults": "Number of adults",
+                "adultsHint": "The final number of people can be adjusted later.",
+                "children": "Number of children",
+                "childrenHint": "Children up to 10 years old are generally counted as half a person."
+            },
+            "location": {
+                "sideBarTitle": "Where",
+                "title": "Where will the event take place?",
+                "hint": "Enter your full address including street and house number:",
+                "previousAddresses": "Previous addresses",
+                "selectedAddress": "Selected address: "
+            },
+            "dateTime": {
+                "sideBarTitle": "When",
+                "title": "On which date will the event take place?",
+                "subTitle": "If you don't know the exact date yet, simply choose one in the correct month. It can be adjusted later.",
+                "pickDate": "Pick a date",
+                "earlyBooking": "Perfect! You've hit the nail on the head! Over 60% of our bookings are made more than 3 weeks in advance.",
+                "time": "Time",
+                "timeLater": "You can discuss the final time with the chef later."
+            },
+            "priceClass": {
+                "sideBarTitle": "Price Class",
+                "title": "How would you like to spend the event?",
+                "subTitleCook": "The price class helps {cookName} put together a fitting offer.",
+                "frequentlyBooked": "Frequently booked for"
+            },
+            "preferences": {
+                "sideBarTitle": "Preferences",
+                "title": "How would you like your menu to be?",
+                "subTitle": "Share your wishes and preferences with the chefs.",
+                "subTitleCook": "Share your wishes and preferences with {cookName}.",
+                "searchPlaceholder": "Select from the options below or add your own one here",
+                "addCustom": "Add custom",
+                "maxReached": "You have reached the limit of 4 selected preferences."
+            },
+            "restrictions": {
+                "sideBarTitle": "Restrictions",
+                "title": "Are there any restrictions such as allergies?",
+                "subTitle": "Select the applicable restrictions."
+            },
+            "message": {
+                "sideBarTitle": "Message",
+                "title": "Would you like to share a few more details?",
+                "subTitle": "Please tell us more about your event.",
+                "subTitleCook": "Tell {cookName} more about your event.",
+                "placeholder": "Message for the chefs",
+                "placeholderCook": "Message for {cookName}",
+                "redeemLabel": "Redeem voucher or promo code",
+                "redeemPlaceholder": "Enter code",
+                "checking": "Checking…",
+                "redeem": "Redeem",
+                "invalid": "This code is invalid.",
+                "discountSecured": "Discount secured",
+                "discountLead": "Your benefit of",
+                "discountTrail": "is secured and will be automatically deducted from your offer prices."
+            },
+            "auth": {
+                "title": "Log on or create an account",
+                "subTitle": "Confirm with an email code, finish your profile, then we submit your request."
+            }
+        }
+    },
+    "plan": {
+        "seo": {
+            "title": "Plan your dinner · PeopleEat",
+            "description": "Plan your private three-course dinner in two steps. Non-binding and with no payment yet."
+        },
+        "cuisine": {
+            "mediterranean": {
+                "label": "Mediterranean",
+                "subtitle": "Sun, herbs & light flavors"
+            },
+            "regional": {
+                "label": "Regional & seasonal",
+                "subtitle": "Familiar ingredients, newly interpreted"
+            },
+            "asian": {
+                "label": "Asian inspired",
+                "subtitle": "Fresh herbs & exciting flavors"
+            },
+            "chef": {
+                "label": "Chef's recommendation",
+                "subtitle": "We find your direction together"
+            }
+        },
+        "createMessage": "Cuisine direction: {cuisine}.\n\n{notes}",
+        "defaultOccasion": "Family Party",
+        "chefArrivalHint": "Your chef usually arrives 1.5 hours before the menu starts.",
+        "foretaste": {
+            "title": "A taste of your evening",
+            "subtitle": "Freshly cooked. Served with care. Enjoyed together.",
+            "previous": "Previous images",
+            "next": "Next images",
+            "item1": "A delicious opening.",
+            "item2": "Three courses. Just for you.",
+            "item3": "A sweet finish.",
+            "item4": "With love for detail.",
+            "item5": "Your table at the loft."
+        },
+        "care": {
+            "title": "You enjoy. We take care.",
+            "subtitle": "More time for the family. Shopping, preparation, and cleaning are included.",
+            "prepared": {
+                "title": "Everything prepared.",
+                "body": "Your chef gets the ingredients. You have time for yourselves and the children."
+            },
+            "cooked": {
+                "title": "Cooked for you.",
+                "body": "Three courses, freshly prepared in the loft and served at your table."
+            },
+            "clean": {
+                "title": "Left clean.",
+                "body": "Your chef cleans up the kitchen. You let the evening wind down."
+            }
+        },
+        "faq": {
+            "included": {
+                "question": "What is included in the service?",
+                "answer": "Personal menu coordination, grocery shopping, fresh on-site cooking, serving three courses, and a clean kitchen afterward."
+            },
+            "after": {
+                "question": "What happens after the request?",
+                "answer": "We check availability and align the menu with you. You then get the final booking confirmation once chef and date are confirmed."
+            },
+            "wishes": {
+                "question": "Allergies, children, and special wishes",
+                "answer": "In the next step you share your wishes and allergies. We clarify allergies with the chef again before confirmation. Children portions are usually priced lower."
+            },
+            "cost": {
+                "question": "What does your dinner cost?",
+                "answer": "Shown amounts are example prices starting from the Signature menu. Your chef sets the final offer. No payment is taken with the request."
+            }
+        },
+        "sampleMenu": {
+            "description": "A sample menu for “{cuisine}”. Your chef personally coordinates dishes, children portions, and dietary needs with you.",
+            "back": "Back to dinner planning",
+            "discover": "Discover sample menu",
+            "link": "Sample menu",
+            "course": {
+                "starter": "Starter",
+                "main": "Main",
+                "dessert": "Dessert"
+            },
+            "mediterranean": {
+                "title": "A Mediterranean evening.",
+                "starter": {
+                    "title": "Burrata, tomatoes & basil",
+                    "description": "With toasted sourdough and olive oil"
+                },
+                "main": {
+                    "title": "Sea bream, summer vegetables & lemon potatoes",
+                    "description": "Vegetarian alternative: creamy saffron risotto"
+                },
+                "dessert": {
+                    "title": "Lemon cream & summer berries",
+                    "description": "Fruity and light to finish"
+                }
+            },
+            "regional": {
+                "title": "Seasonal enjoyment. At your loft.",
+                "starter": {
+                    "title": "Peas, leaf salad & goat cheese",
+                    "description": "With herb vinaigrette and crusty bread"
+                },
+                "main": {
+                    "title": "Chicken breast, roasted vegetables & mashed potatoes",
+                    "description": "Vegetarian alternative: pan-fried celeriac"
+                },
+                "dessert": {
+                    "title": "Apple fritters & vanilla",
+                    "description": "With a warm apple component and vanilla ice cream"
+                }
+            },
+            "asian": {
+                "title": "An evening full of new flavors.",
+                "starter": {
+                    "title": "Cucumber salad, sesame & fresh herbs",
+                    "description": "With lime dressing and crispy accents"
+                },
+                "main": {
+                    "title": "Miso salmon, greens & jasmine rice",
+                    "description": "Vegetarian alternative: crispy tofu"
+                },
+                "dessert": {
+                    "title": "Coconut cream, mango & lime",
+                    "description": "A fresh finish with tropical notes"
+                }
+            },
+            "chef": {
+                "title": "A menu for your family evening.",
+                "starter": {
+                    "title": "Burrata, sun-ripened tomatoes & basil",
+                    "description": "Toasted sourdough and extra virgin olive oil"
+                },
+                "main": {
+                    "title": "Sea bream, summer vegetables & lemon potatoes",
+                    "description": "Vegetarian alternative: creamy saffron risotto"
+                },
+                "dessert": {
+                    "title": "Apple fritters & vanilla",
+                    "description": "With a warm apple component and vanilla ice cream"
+                }
+            }
+        },
+        "summary": {
+            "aria": "Your selection",
+            "title": "Your selection",
+            "guests": "Guests",
+            "adults": "{count, plural, one {# adult} other {# adults}}",
+            "children": "{count, plural, one {# child} other {# children}}",
+            "cuisine": "Cuisine",
+            "menuStart": "Menu start",
+            "menuStartValue": "{time}",
+            "editDetails": "Edit details",
+            "continue": "Continue to request",
+            "nonBinding": "Non-binding. No payment yet.",
+            "talkToUs": "Still questions? Talk to us"
+        },
+        "editor": {
+            "title": "Your evening in detail.",
+            "description": "Guests, start time, cuisine, and price class",
+            "adults": "Adults",
+            "children": "Children",
+            "childrenHint": "Ages 4–12 · children portions cost less",
+            "apply": "Apply",
+            "venueAddressHint": "Venue address. This is where your dinner takes place."
+        },
+        "hero": {
+            "welcome": "Welcome, {name}.",
+            "evening": "Your evening.",
+            "experience": "Your experience.",
+            "subtitle": "Your private three-course dinner with a private chef. Shopping, cooking, and cleanup included.",
+            "subtitleVenue": "Your private three-course dinner as an optional upgrade. Shopping, cooking, and cleanup included.",
+            "subtitleVenueCity": "Your private three-course dinner in {city} as an optional upgrade. Shopping, cooking, and cleanup included.",
+            "exclusiveFor": "Exclusive for guests at",
+            "alt": "Set table for your dinner",
+            "stars": "5.0 out of 5 stars",
+            "reviews": "{count, plural, one {View # review} other {View # reviews}}",
+            "placeTitle": "Your place becomes your favorite restaurant.",
+            "placeBody1": "Your private chef serves courses, freshly prepared at your place and tailored to your wishes.",
+            "placeBody2": "Shopping, cooking, and a clean kitchen included."
+        },
+        "dateSection": {
+            "title": "Choose your dinner evening",
+            "pickDate": "Choose a date",
+            "arrival": "Arrival",
+            "departure": "Departure"
+        },
+        "price": {
+            "title": "Choose your price range",
+            "subtitle": "As a guide for your chef's menu proposal."
+        },
+        "cuisineSection": {
+            "title": "Which cuisine makes your evening special?",
+            "subtitle": "As inspiration for your chef. You receive your menu proposal after the request."
+        },
+        "testimonials": {
+            "title": "Evenings that stay with you."
+        },
+        "faqSection": {
+            "title": "Good to know."
+        },
+        "contact": {
+            "editSelection": "Edit selection",
+            "title": "One step closer to your dinner.",
+            "subtitle": "We check your preferred date and align the menu with you.",
+            "subtitleVenue": "Your evening at {venue}. We check your preferred date and align the menu with you.",
+            "wishes": "Wishes & allergies",
+            "wishesPlaceholder": "Diet, allergies, or a special occasion",
+            "contactDetails": "Your contact details",
+            "send": "Send booking request",
+            "sending": "Sending request…",
+            "nonBinding": "Non-binding. No payment is made yet.",
+            "messageRequired": "Message is required.",
+            "completeDetails": "Please complete date, guests, and address."
+        },
+        "bar": {
+            "guests": "{count, plural, one {# guest} other {# guests}}",
+            "edit": "Edit"
+        }
+    },
+    "submitted": {
+        "seo": {
+            "title": "Request submitted",
+            "description": "Your booking request was submitted. Here is what happens next."
+        },
+        "heading": "What happens next?",
+        "viewRequest": "View request",
+        "kitchen": {
+            "saved": "Kitchen details saved.",
+            "saveFailed": "Could not save kitchen details."
+        },
+        "steps": {
+            "menu": {
+                "title": "You receive an individual menu proposal",
+                "body": "Suitable chefs in your area will create individual menu proposals for your event.",
+                "bodyCook": "{cookName} is reviewing your request and will send an offer with menu and price."
+            },
+            "details": {
+                "title": "Finalize the last details",
+                "body": "We will notify you by email and, when we have your number, by WhatsApp once new proposals are ready. You can compare menus and chef profiles directly in your request."
+            },
+            "confirm": {
+                "title": "Confirm your menu experience",
+                "body": "Once you've found the right offer, you accept it and the chef reserves their calendar for your event."
+            }
+        },
+        "images": {
+            "1": "Salmon crudo with kumquat and herb oil, plated for an event",
+            "2": "Stuffed chicken breast with potato puree and roasted vegetables",
+            "3": "Flower-shaped dessert with mint, green sauce, and yellow coulis"
+        },
+        "status": {
+            "exclusiveWithMenu": "{cookName} received your request for “{menuTitle}”. You can open it to other chefs any time.",
+            "exclusive": "{cookName} received your request. You can open it to other chefs any time.",
+            "pool": "Suitable chefs in your area received your request. You will be notified once you get an offer."
+        }
+    },
+    "paymentDocument": {
+        "receiptTitle": "Payment receipt",
+        "statementTitle": "Payout statement",
+        "amountPaid": "Amount paid",
+        "payout": "Payout",
+        "receiptFooter": "Payment receipt for a peopleeat booking. Not an invoice. The cook invoices you directly for the catering.",
+        "statementFooter": "Statement for your records. Not an invoice. Please invoice the guest for the menu and travel. The peopleeat fee is withheld from the payout.",
+        "date": "Date",
+        "occasion": "Occasion",
+        "event": "Event",
+        "cook": "Cook",
+        "guest": "Guest",
+        "bookingNumber": "Booking number",
+        "billingAddress": "Billing address",
+        "guestBillingAddress": "Guest billing address",
+        "menu": "Menu",
+        "travel": "Travel",
+        "serviceFee": "Service fee",
+        "paymentProcessing": "Payment processing",
+        "giftCard": "Gift card",
+        "promoCode": "Promo code",
+        "invoiceGuest": "Amount to invoice the guest",
+        "peopleeatFee": "peopleeat fee"
+    },
+    "formDefaults": {
+        "occasions": ["Birthday", "Romantic Dinner", "Wedding", "Family Party", "Meet with Friends", "Team Event"],
+        "preferences": [
+            "Italian",
+            "French",
+            "Asian",
+            "Vegetarian",
+            "Vegan",
+            "Mediterranean",
+            "BBQ",
+            "Seafood",
+            "Fish",
+            "Meat",
+            "Sharing Plates"
+        ],
+        "restrictions": [
+            "Gluten / Wheat",
+            "Nuts",
+            "Peanuts",
+            "Milk / Lactose",
+            "Eggs",
+            "Soy",
+            "Fish",
+            "Crustaceans",
+            "Molluscs",
+            "Sesame",
+            "Celery",
+            "Mustard",
+            "Lupin",
+            "Fructose",
+            "Histamine",
+            "Sorbitol",
+            "Vegetarian",
+            "Vegan",
+            "Halal",
+            "Kosher",
+            "No pork",
+            "No alcohol"
+        ],
+        "priceClasses": {
+            "LOW": {
+                "title": "Casual Dining",
+                "description": "For evenings where it's simply about being together.",
+                "commonOccasions": ["Bachelor parties", "Wedding celebrations", "Team Events", "Cooking classes"]
+            },
+            "MEDIUM": {
+                "title": "Signature Menu",
+                "description": "If you, as a host, want more than just a good meal.",
+                "commonOccasions": ["Family gatherings", "Evenings with friends", "Dinners in holiday apartments"]
+            },
+            "HIGH": {
+                "title": "Prestige Experience",
+                "description": "For occasions that create special memories.",
+                "commonOccasions": ["Anniversaries", "Candlelight Dinners", "Special Occasions"]
+            }
+        },
+        "priceClassLabel": "{title} (from {minimum} p.p.)",
+        "priceClassCustom": "Custom"
+    }
+}

@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { t } from '../../../i18n/t';
 import type { CityCountryCode } from '../../../shared';
 import { cityCountryCodeLabel, cityCountryCodes, formatDate } from '../../../shared';
 import { AdminCityCenterField } from '../../components/AdminCityCenterField';
@@ -24,13 +25,15 @@ import {
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
+import type { Locale } from '../../utils/locale';
 import { AdminOverviewListCardLink } from './AdminOverviewListCard';
 
-export const adminCitiesPageTitle = { de: 'Städte', en: 'Cities' } as const;
-export const adminCitiesPageDescription = {
-    de: 'Stadtseiten für SEO verwalten.',
-    en: 'Manage city landing pages for SEO.',
-} as const;
+export function adminCitiesPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'nav.cities.title');
+}
+export function adminCitiesPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.cities.description');
+}
 
 export type AdminCitiesSearch = {
     q?: string;
@@ -100,12 +103,12 @@ export function AdminCitiesPage({ data, search }: { data: GqlCAdminCitiesPageQue
 
     async function createCity() {
         if (!center) {
-            toast.error({ de: 'Bitte ein Stadtzentrum wählen.', en: 'Please choose a city center.' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.pleaseChooseACityCenter'));
             return;
         }
         const trimmedName = nameDe.trim();
         if (!trimmedName) {
-            toast.error({ de: 'Bitte einen Stadtnamen eingeben.', en: 'Please enter a city name.' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.pleaseEnterACityName'));
             return;
         }
         setBusy(true);
@@ -142,7 +145,7 @@ export function AdminCitiesPage({ data, search }: { data: GqlCAdminCitiesPageQue
             setCountryCode('DE');
             await navigate({ to: '/{-$locale}/admin/cities/$cityId', params: { cityId: id } });
         } catch {
-            toast.error({ de: 'Anlegen fehlgeschlagen.', en: 'Could not create.' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.couldNotCreate'));
         } finally {
             setBusy(false);
         }
@@ -155,27 +158,27 @@ export function AdminCitiesPage({ data, search }: { data: GqlCAdminCitiesPageQue
                     <div className="grid gap-2">
                         <h1 className="flex items-center gap-3 font-serif text-4xl/tight text-foreground">
                             <Building2Icon className="size-8 text-muted-foreground" aria-hidden />
-                            {adminCitiesPageTitle[locale]}
+                            {adminCitiesPageTitle(locale)}
                         </h1>
-                        <p className="text-muted-foreground">{adminCitiesPageDescription[locale]}</p>
+                        <p className="text-muted-foreground">{adminCitiesPageDescription(locale)}</p>
                     </div>
                     <Button type="button" disabled={busy} onClick={() => setCreateOpen(true)}>
                         <PlusIcon className="size-4" />
-                        {{ de: 'Neue Stadt', en: 'New city' }[locale]}
+                        {t(locale, 'admin', 'copy.newCity')}
                     </Button>
                 </div>
                 <Input
                     type="search"
                     value={draftQ}
                     onChange={(event) => setDraftQ(event.target.value)}
-                    placeholder={{ de: 'Name oder Pfad suchen…', en: 'Search name or path…' }[locale]}
-                    aria-label={{ de: 'Städte suchen', en: 'Search cities' }[locale]}
+                    placeholder={t(locale, 'admin', 'copy.searchNameOrPath')}
+                    aria-label={t(locale, 'admin', 'copy.searchCities')}
                     className="max-w-sm"
                 />
                 {cities.length === 0 ? (
-                    <p className="text-muted-foreground">{{ de: 'Noch keine Städte.', en: 'No cities yet.' }[locale]}</p>
+                    <p className="text-muted-foreground">{t(locale, 'admin', 'copy.noCitiesYet')}</p>
                 ) : filteredCities.length === 0 ? (
-                    <p className="text-muted-foreground">{{ de: 'Keine Treffer.', en: 'No matches.' }[locale]}</p>
+                    <p className="text-muted-foreground">{t(locale, 'admin', 'copy.noMatches')}</p>
                 ) : (
                     <ul className="grid gap-2">
                         {filteredCities.map((city) => (
@@ -189,8 +192,8 @@ export function AdminCitiesPage({ data, search }: { data: GqlCAdminCitiesPageQue
                                             <Badge variant="outline">{cityCountryCodeLabel(city.countryCode, locale)}</Badge>
                                             <Badge variant="outline">
                                                 {city.publishedAt
-                                                    ? { de: 'Veröffentlicht', en: 'Published' }[locale]
-                                                    : { de: 'Entwurf', en: 'Draft' }[locale]}
+                                                    ? t(locale, 'admin', 'copy.published2')
+                                                    : t(locale, 'admin', 'copy.draft')}
                                             </Badge>
                                         </>
                                     }
@@ -206,25 +209,20 @@ export function AdminCitiesPage({ data, search }: { data: GqlCAdminCitiesPageQue
             <Dialog open={createOpen} onOpenChange={setCreateOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>{{ de: 'Neue Stadt', en: 'New city' }[locale]}</DialogTitle>
+                        <DialogTitle>{t(locale, 'admin', 'copy.newCity')}</DialogTitle>
                         <DialogDescription>
-                            {
-                                {
-                                    de: 'Name und Stadtzentrum festlegen. Weitere Inhalte kannst du danach bearbeiten.',
-                                    en: 'Set the name and city center. You can edit the rest afterwards.',
-                                }[locale]
-                            }
+                            {t(locale, 'admin', 'copy.setTheNameAndCityCenterYouCanEditTheRestAfterwards')}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="flex flex-col gap-3">
                         <label className="flex flex-col gap-1.5 text-sm">
-                            <span className="font-medium">{{ de: 'Name (DE)', en: 'Name (DE)' }[locale]}</span>
+                            <span className="font-medium">{t(locale, 'admin', 'copy.nameDe')}</span>
                             <Input value={nameDe} onChange={(event) => setNameDe(event.target.value)} disabled={busy} />
                         </label>
                         <label className="flex flex-col gap-1.5 text-sm">
-                            <span className="font-medium">{{ de: 'Land', en: 'Country' }[locale]}</span>
+                            <span className="font-medium">{t(locale, 'admin', 'copy.country')}</span>
                             <Select value={countryCode} onValueChange={(value) => setCountryCode(value as CityCountryCode)} disabled={busy}>
-                                <SelectTrigger aria-label={{ de: 'Land', en: 'Country' }[locale]}>
+                                <SelectTrigger aria-label={t(locale, 'admin', 'copy.country')}>
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -246,10 +244,10 @@ export function AdminCitiesPage({ data, search }: { data: GqlCAdminCitiesPageQue
                     </div>
                     <DialogFooter>
                         <Button type="button" variant="ghost" disabled={busy} onClick={() => setCreateOpen(false)}>
-                            {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                            {t(locale, 'admin', 'copy.cancel')}
                         </Button>
                         <Button type="button" disabled={busy} onClick={() => void createCity()}>
-                            {{ de: 'Anlegen', en: 'Create' }[locale]}
+                            {t(locale, 'admin', 'copy.create')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

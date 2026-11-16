@@ -2,6 +2,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { GiftIcon, ListIcon } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
 
+import { t } from '../../../i18n/t';
 import { formatCurrency, formatIsoDate, formatMonthYear } from '../../../shared';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { DateRangePicker } from '../../components/base/date-range-picker';
@@ -9,6 +10,7 @@ import type { GqlCAdminGiftCardCriterion, GqlCAdminGiftCardsOverviewPageQuery, G
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { DATE_FNS_LOCALE } from '../../utils/dateFnsLocale';
+import type { Locale } from '../../utils/locale';
 import { adminGiftCardOccasionLabel, adminGiftCardsSectionTo } from './adminGiftCards';
 import { adminGiftCardPaymentStatusLabel } from './adminGiftCardsColumns';
 import { AdminOverviewBarChart } from './AdminOverviewBarChart';
@@ -18,11 +20,12 @@ import { adminOverviewRangeResolve, adminOverviewRangeToGraphQlVariables } from 
 import type { AdminOverviewRangeSearch } from './adminOverviewRange';
 import { AdminOverviewStatCard } from './AdminOverviewStatCard';
 
-export const adminGiftCardsOverviewPageTitle = { de: 'Gutscheinverkäufe', en: 'Voucher Purchases' } as const;
-export const adminGiftCardsOverviewPageDescription = {
-    de: 'Verteilung, Käufe über die Zeit, Anlässe und stärkste Verkaufsmonate.',
-    en: 'Distribution, purchases over time, occasions, and top sales months.',
-} as const;
+export function adminGiftCardsOverviewPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'nav.giftCards.title');
+}
+export function adminGiftCardsOverviewPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.giftCardsOverview.description');
+}
 
 /** Order matches `giftCardsCounts` indices on the overview query. */
 const ADMIN_GIFT_CARD_COUNT_CRITERIA: GqlCAdminGiftCardCriterion[] = [
@@ -78,7 +81,7 @@ export function AdminGiftCardsOverviewPage({
     }[] = [
         {
             key: 'total',
-            label: { de: 'Gesamt', en: 'Total' }[locale],
+            label: t(locale, 'admin', 'copy.total'),
             value: total,
             status: undefined,
         },
@@ -117,13 +120,13 @@ export function AdminGiftCardsOverviewPage({
                 <div className="grid gap-2">
                     <h1 className="flex items-center gap-3 font-serif text-4xl/tight text-foreground">
                         <GiftIcon className="size-8 text-muted-foreground" aria-hidden />
-                        {adminGiftCardsOverviewPageTitle[locale]}
+                        {adminGiftCardsOverviewPageTitle(locale)}
                     </h1>
-                    <p className="text-muted-foreground">{adminGiftCardsOverviewPageDescription[locale]}</p>
+                    <p className="text-muted-foreground">{adminGiftCardsOverviewPageDescription(locale)}</p>
                 </div>
 
                 <section className="grid gap-3">
-                    <h2 className="text-lg font-medium">{{ de: 'Bereiche', en: 'Sections' }[locale]}</h2>
+                    <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.sections')}</h2>
                     <ul className="grid gap-2 sm:grid-cols-2">
                         <li>
                             <AdminOverviewNavCard
@@ -131,14 +134,14 @@ export function AdminGiftCardsOverviewPage({
                                 search={adminGiftCardsListSearch(undefined)}
                                 icon={ListIcon}
                             >
-                                {{ de: 'Liste', en: 'List' }[locale]}
+                                {t(locale, 'admin', 'copy.list')}
                             </AdminOverviewNavCard>
                         </li>
                     </ul>
                 </section>
 
                 <section className="grid gap-3">
-                    <h2 className="text-lg font-medium">{{ de: 'Verteilung', en: 'Distribution' }[locale]}</h2>
+                    <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.distribution')}</h2>
                     <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                         {distribution.map((entry) => (
                             <AdminOverviewStatCard
@@ -150,7 +153,7 @@ export function AdminGiftCardsOverviewPage({
                             />
                         ))}
                         <AdminOverviewStatCard
-                            label={{ de: 'Ø Kaufwert', en: 'Avg. purchase' }[locale]}
+                            label={t(locale, 'admin', 'copy.avgPurchase')}
                             value={averageCents}
                             displayValue={formatCurrency(averageCents, { locale, maximumFractionDigits: 0 })}
                         />
@@ -159,45 +162,33 @@ export function AdminGiftCardsOverviewPage({
 
                 <section className="grid gap-3">
                     <div className="flex flex-wrap items-end justify-between gap-3">
-                        <h2 className="text-lg font-medium">{{ de: 'Käufe', en: 'Purchases' }[locale]}</h2>
+                        <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.purchases')}</h2>
                         <DateRangePicker
                             value={pickerValue}
                             onValueChange={onRangeChange}
                             locale={DATE_FNS_LOCALE[locale]}
-                            placeholder={{ de: 'Zeitraum wählen', en: 'Pick a date range' }[locale]}
+                            placeholder={t(locale, 'admin', 'copy.pickADateRange')}
                             className="w-auto"
-                            aria-label={{ de: 'Zeitraum für Gutscheinkäufe', en: 'Date range for gift card purchases' }[locale]}
+                            aria-label={t(locale, 'admin', 'copy.dateRangeForGiftCardPurchases')}
                         />
                     </div>
                     <AdminOverviewBarChart
                         data={buckets.map((bucket) => ({ bucketStart: bucket.bucketStart, count: bucket.count }))}
                         locale={locale}
                         timeZone={timeZone}
-                        ariaLabel={
-                            {
-                                de: 'Balkendiagramm der bezahlten Gutscheinkäufe im gewählten Zeitraum',
-                                en: 'Bar chart of paid gift card purchases in the selected range',
-                            }[locale]
-                        }
+                        ariaLabel={t(locale, 'admin', 'copy.barChartOfPaidGiftCardPurchasesInTheSelectedRange')}
                     />
                 </section>
 
                 <section className="grid gap-3">
                     <p className="text-sm text-muted-foreground">
-                        {
-                            {
-                                de: 'Top 3 über alle bezahlten Käufe (unabhängig vom Diagrammzeitraum).',
-                                en: 'Top 3 across all paid purchases (independent of the chart range).',
-                            }[locale]
-                        }
+                        {t(locale, 'admin', 'copy.top3AcrossAllPaidPurchasesIndependentOfTheChartRange')}
                     </p>
                     <div className="grid gap-3 sm:grid-cols-2 sm:items-start">
                         <div className="grid gap-3">
-                            <h2 className="text-lg font-medium">{{ de: 'Top-3-Anlässe', en: 'Top 3 occasions' }[locale]}</h2>
+                            <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.top3Occasions')}</h2>
                             {occasionStats.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">
-                                    {{ de: 'Keine bezahlten Käufe.', en: 'No paid purchases.' }[locale]}
-                                </p>
+                                <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noPaidPurchases')}</p>
                             ) : (
                                 <ul className="grid gap-2">
                                     {occasionStats.map((stat) => (
@@ -221,11 +212,9 @@ export function AdminGiftCardsOverviewPage({
                         </div>
 
                         <div className="grid gap-3">
-                            <h2 className="text-lg font-medium">{{ de: 'Top-3-Verkaufsmonate', en: 'Top 3 sales months' }[locale]}</h2>
+                            <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.top3SalesMonths')}</h2>
                             {salesMonthStats.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">
-                                    {{ de: 'Keine bezahlten Käufe.', en: 'No paid purchases.' }[locale]}
-                                </p>
+                                <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noPaidPurchases')}</p>
                             ) : (
                                 <ul className="grid gap-2">
                                     {salesMonthStats.map((stat) => (

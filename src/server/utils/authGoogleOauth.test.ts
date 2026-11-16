@@ -47,9 +47,11 @@ describe('authGoogleRedirectUri', () => {
 });
 
 describe('authGoogleLocaleFromReturnTo', () => {
-    it('reads /en prefixes', () => {
+    it('reads locale prefixes', () => {
         expect(authGoogleLocaleFromReturnTo('/log-on')).toBe('de');
         expect(authGoogleLocaleFromReturnTo('/en/log-on')).toBe('en');
+        expect(authGoogleLocaleFromReturnTo('/fr/log-on')).toBe('fr');
+        expect(authGoogleLocaleFromReturnTo('/it/log-on')).toBe('it');
     });
 });
 

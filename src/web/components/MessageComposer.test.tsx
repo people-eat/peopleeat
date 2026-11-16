@@ -1,5 +1,9 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { I18nextProvider, initReactI18next } from 'react-i18next';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+
+import { i18nResourcesLoad } from '../../i18n/catalogCache';
+import { i18nCreateSync } from '../../i18n/i18nCreate';
 import { TooltipProvider } from './base/tooltip';
 import { MessageComposer } from './MessageComposer';
 
@@ -8,24 +12,34 @@ const mocks = vi.hoisted(() => ({ isMobile: false }));
 vi.mock('../hooks/use-mobile', () => ({ useIsMobile: () => mocks.isMobile }));
 vi.mock('../hooks/useLocale', () => ({ useLocale: () => 'en' as const }));
 
+let i18n: ReturnType<typeof i18nCreateSync>;
+
+beforeAll(async () => {
+    await i18nResourcesLoad('en', ['common']);
+    i18n = i18nCreateSync('en', ['common']);
+    void i18n.use(initReactI18next);
+});
+
 afterEach(() => {
     mocks.isMobile = false;
 });
 
 const composer = (busy: boolean, submitting: boolean, onSubmit = vi.fn(), autoFocus = false) => (
-    <TooltipProvider>
-        <button type="button">Other control</button>
-        <MessageComposer
-            value="A message"
-            onValueChange={vi.fn()}
-            onSubmit={onSubmit}
-            busy={busy}
-            submitting={submitting}
-            ariaLabel="Message"
-            autoFocus={autoFocus}
-            showDisclaimer={false}
-        />
-    </TooltipProvider>
+    <I18nextProvider i18n={i18n}>
+        <TooltipProvider>
+            <button type="button">Other control</button>
+            <MessageComposer
+                value="A message"
+                onValueChange={vi.fn()}
+                onSubmit={onSubmit}
+                busy={busy}
+                submitting={submitting}
+                ariaLabel="Message"
+                autoFocus={autoFocus}
+                showDisclaimer={false}
+            />
+        </TooltipProvider>
+    </I18nextProvider>
 );
 
 describe('MessageComposer', () => {

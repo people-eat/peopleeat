@@ -1,7 +1,7 @@
 import { FileIcon, XIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { formatBytes } from '../../shared';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import {
     Attachment,
     AttachmentAction,
@@ -41,14 +41,14 @@ export function MessageComposerAttachment({
     disabled?: boolean;
     onRemove: () => void;
 }>) {
-    const locale = useLocale();
+    const { t } = useT('common');
     const { file, status, error } = attachment;
     const isImage = isImageFile(file);
     // Create + revoke in the same effect. `useMemo` + Strict Mode remount
     // revokes the memoized URL and leaves a dead blob: reference in the img.
     const [objectUrl, setObjectUrl] = useState<string | null>(null);
-    const removeLabel = { de: `${file.name} entfernen`, en: `Remove ${file.name}` }[locale];
-    const failedLabel = { de: 'Upload fehlgeschlagen', en: 'Upload failed' }[locale];
+    const removeLabel = t('composerAttachment.remove', { name: file.name });
+    const failedLabel = t('composerAttachment.uploadFailed');
 
     useEffect(() => {
         if (!isImage) {

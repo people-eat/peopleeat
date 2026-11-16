@@ -5,7 +5,7 @@ import { AppImage } from '../components/AppImage';
 import { AutoplayVideo } from '../components/AutoplayVideo';
 import { Button } from '../components/base/button';
 import { Reveal } from '../components/Reveal';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { SITE_WHATSAPP_URL } from '../seo/seoConstants';
 import { cn } from '../utils/cn';
 
@@ -17,7 +17,7 @@ export function SectionHowItWorks({
     hideCta = false,
     useAlternativeMedia = false,
 }: { hideCta?: boolean; useAlternativeMedia?: boolean } = {}) {
-    const locale = useLocale();
+    const { t } = useT('public');
     const [activeIndex, setActiveIndex] = useState(0);
 
     function handleScroll(event: UIEvent<HTMLDivElement>) {
@@ -29,84 +29,48 @@ export function SectionHowItWorks({
     const steps: Step[] = [
         {
             id: 1,
-            title: { de: 'Das Menü wird vorbereitet', en: 'The menu is being prepared' }[locale],
-            description: {
-                de: 'Die Zutaten für das abgestimmte Menü werden sorgfältig ausgewählt und bei regionalen Händlern eingekauft.',
-                en: 'The ingredients for the coordinated menu are carefully selected and purchased from regional suppliers.',
-            }[locale],
+            title: t('home.howItWorks.step1Title'),
+            description: t('home.howItWorks.step1Body'),
             video: useAlternativeMedia
                 ? '/home/how-it-works-section/ingredient-purchase.alternative.mp4'
                 : '/home/how-it-works-section/ingredient-purchase.mp4',
-            alternativeText: {
-                de: 'Ein Privatkoch wählt frische Zutaten auf dem Markt aus.',
-                en: 'A private chef selects fresh ingredients at the market.',
-            }[locale],
+            alternativeText: t('home.howItWorks.step1Alt'),
         },
         {
             id: 2,
-            title: { de: 'In deiner Küche', en: 'In your kitchen' }[locale],
-            description: {
-                de: 'Du verbringst die Zeit mit deinen Gästen, während das Menü von deinem Chefkoch zubereitet wird.',
-                en: 'You spend time with your guests while your chef prepares the menu.',
-            }[locale],
+            title: t('home.howItWorks.step2Title'),
+            description: t('home.howItWorks.step2Body'),
             image: '/home/how-it-works-section/preparing-dinner.webp',
-            alternativeText: {
-                de: 'Ein Privatkoch zaubert Lachstatar als Vorspeise beim Kunden zu Hause.',
-                en: "A private chef prepares salmon tartare as a starter at the customer's home.",
-            }[locale],
+            alternativeText: t('home.howItWorks.step2Alt'),
         },
         {
             id: 3,
-            title: { de: 'Lehn dich zurück', en: 'Sit back and relax' }[locale],
-            description: {
-                de: 'Genieße das Menü, lass dich Gang für Gang kulinarisch verwöhnen und kreiere unvergessliche Momente.',
-                en: 'Enjoy the menu, let yourself be pampered with culinary delights course after course, and create unforgettable moments.',
-            }[locale],
+            title: t('home.howItWorks.step3Title'),
+            description: t('home.howItWorks.step3Body'),
             ...(useAlternativeMedia
                 ? { image: '/home/how-it-works-section/enjoying-dinner.alternative.webp' }
                 : { video: '/home/how-it-works-section/enjoying-dinner.mp4' }),
-            alternativeText: {
-                de: 'Familie sitzt am dekorierten Tisch und genießt ein Menü vom Privatkoch zu Hause.',
-                en: 'A family sits at a decorated table and enjoys a private chef menu at home.',
-            }[locale],
+            alternativeText: t('home.howItWorks.step3Alt'),
         },
         {
             id: 4,
-            title: { de: 'Eine saubere Küche danach', en: 'A clean kitchen afterwards' }[locale],
-            description: {
-                de: 'Du lässt den Abend ausklingen, während dein Koch die letzten Handgriffe in der Küche erledigt.',
-                en: 'You let the evening wind down while your cook finishes up the last tasks in the kitchen.',
-            }[locale],
+            title: t('home.howItWorks.step4Title'),
+            description: t('home.howItWorks.step4Body'),
             image: '/home/how-it-works-section/clean-kitchen.webp',
-            alternativeText: {
-                de: 'Ein Tisch wird mit einem gelben Schwamm gereinigt.',
-                en: 'A table is cleaned with a yellow sponge.',
-            }[locale],
+            alternativeText: t('home.howItWorks.step4Alt'),
         },
     ];
 
-    const headline = {
-        de: useAlternativeMedia ? 'Dein Erlebnis in vier Schritten' : 'Deine Experience in vier Schritten',
-        en: 'Your experience in 4 steps',
-    }[locale];
-    const subheadline = { de: 'Ohne dass du in der Küche stehen musst', en: 'Without having to stand in the kitchen' }[locale];
-    const ctaHeadline = {
-        de: (
-            <>
-                Das nächste Dinner bei dir?
-                <br />
-                Bereits in über 100 Städten verfügbar
-            </>
-        ),
-        en: (
-            <>
-                How about dinner at your place next time?
-                <br />
-                Already available in over 100 cities
-            </>
-        ),
-    }[locale];
-    const ctaLabel = { de: 'Kontaktiere uns', en: 'Contact us' }[locale];
+    const headline = useAlternativeMedia ? t('home.howItWorks.headlineAlt') : t('home.howItWorks.headline');
+    const subheadline = t('home.howItWorks.subheadline');
+    const ctaHeadline = (
+        <>
+            {t('home.howItWorks.ctaHeadline')}
+            <br />
+            {t('home.howItWorks.ctaCities')}
+        </>
+    );
+    const ctaLabel = t('home.support.cta');
 
     return (
         <section className="px-4 py-16 @lg:px-6">

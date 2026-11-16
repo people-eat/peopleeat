@@ -1,4 +1,5 @@
 export {
+    bookingRequestPriceClassCustomLabel,
     bookingRequestPriceClassInfo,
     bookingRequestPriceClassLabel,
     bookingRequestPriceClassTypes,
@@ -7,6 +8,7 @@ export {
     defaultBookingRequestPreferences,
     defaultBookingRequestRestrictions,
 } from './bookingRequestFormDefaults';
+export { sessionDeviceLabel } from './sessionDeviceLabel';
 export type { BookingRequestFormPriceClassType, BookingRequestPriceClassInfo } from './bookingRequestFormDefaults';
 export { capitalizeFirstLetter } from './capitalizeFirstLetter';
 export { containsPhoneNumber } from './containsPhoneNumber';
@@ -128,9 +130,9 @@ export {
 export { cookMenuDefaultCourseTitles, cookMenuDraftTitle } from './cookMenuDraftDefaults';
 export { cookMenuCoursesAreComplete, cookMenuIsPublicCatalogEligible } from './cookMenuCompleteness';
 export { COOK_MENU_SUGGESTION_FILE_MAX } from './cookMenuSuggestion';
-export { DEFAULT_LOCALE, languageTagFromLocale, LOCALES } from './locale';
+export { CATALOG_LOCALES, DEFAULT_LOCALE, inlineCopy, isLocale, languageTagFromLocale } from './locale';
 export { DEFAULT_TIME_ZONE, formatTimeZonePlaceLabel, timeZoneFromCountry, timeZoneOffsetAt, timeZonesDifferAt } from './timeZone';
-export type { Locale } from './locale';
+export type { CatalogLocale, InlineCopy, Locale } from './locale';
 export {
     cityCountryCitiesHeading,
     cityCountryCodeAssert,

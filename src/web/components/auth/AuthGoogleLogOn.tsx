@@ -1,7 +1,7 @@
 import { useRouter } from '@tanstack/react-router';
 
 import { featureToggleIsActive } from '../../../shared/featureToggle';
-import { useLocale } from '../../hooks/useLocale';
+import { useT } from '../../hooks/useT';
 import { returnToFromLocation } from '../../utils/returnTo';
 import { Button } from '../base/button';
 import type { AuthSession } from './AuthIdentityGate';
@@ -30,7 +30,7 @@ function GoogleMark() {
 }
 
 export function AuthGoogleLogOn({ session }: { session: AuthSession }) {
-    const locale = useLocale();
+    const { t } = useT('public');
     const router = useRouter();
 
     if (!featureToggleIsActive(session.activeFeatureToggleKeys, 'SIGN_IN_GOOGLE')) {
@@ -45,7 +45,7 @@ export function AuthGoogleLogOn({ session }: { session: AuthSession }) {
     return (
         <Button type="button" variant="outline" onClick={onGoogleLogOn}>
             <GoogleMark />
-            {{ de: 'Mit Google anmelden', en: 'Continue with Google' }[locale]}
+            {t('auth.continueGoogle')}
         </Button>
     );
 }

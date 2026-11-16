@@ -1,3 +1,4 @@
+import { t } from '../../i18n/t';
 import type { Locale } from '../../shared/locale';
 
 export type CostLineItem = {
@@ -49,7 +50,7 @@ export function bookingRequestOfferCostBreakdownBuild(input: BookingRequestOffer
 
     const lineItems: CostLineItem[] = [
         {
-            title: { de: 'Menüpreis', en: 'Menu price' }[input.locale],
+            title: t(input.locale, 'common', 'costBreakdown.menuPrice'),
             amountCents: input.menuPriceCents + input.travelExpensesCents,
         },
     ];
@@ -62,7 +63,7 @@ export function bookingRequestOfferCostBreakdownBuild(input: BookingRequestOffer
         });
     } else if (selectedAddons.length > 1) {
         lineItems.push({
-            title: { de: 'Zusatzleistungen', en: 'Extras' }[input.locale],
+            title: t(input.locale, 'common', 'costBreakdown.extras'),
             amountCents: selectedAddons.reduce((sum, addon) => sum + addon.amountCents, 0),
             subLineItems: selectedAddons.map((addon) => ({
                 title: addon.title,
@@ -72,20 +73,20 @@ export function bookingRequestOfferCostBreakdownBuild(input: BookingRequestOffer
     }
 
     lineItems.push({
-        title: { de: 'Servicegebühren', en: 'Service fees' }[input.locale],
+        title: t(input.locale, 'common', 'costBreakdown.serviceFees'),
         amountCents: input.platformFeeCentsCustomer + input.paymentProviderFeeCents,
     });
 
     if (input.promoCode && promoCents > 0) {
         lineItems.push({
-            title: `${{ de: 'Promocode', en: 'Promo code' }[input.locale]} ${input.promoCode.redeemCode}`,
+            title: t(input.locale, 'common', 'costBreakdown.promoCode', { code: input.promoCode.redeemCode }),
             amountCents: -promoCents,
         });
     }
 
     if (input.giftCard && giftCents > 0) {
         lineItems.push({
-            title: `${{ de: 'Gutschein', en: 'Voucher' }[input.locale]} ${input.giftCard.redeemCode}`,
+            title: t(input.locale, 'common', 'costBreakdown.voucher', { code: input.giftCard.redeemCode }),
             amountCents: -giftCents,
         });
     }
@@ -94,7 +95,7 @@ export function bookingRequestOfferCostBreakdownBuild(input: BookingRequestOffer
     const totalPerPerson =
         participantCount != null && participantCount > 0
             ? {
-                  title: { de: 'Pro Person', en: 'Per person' }[input.locale],
+                  title: t(input.locale, 'common', 'costBreakdown.perPerson'),
                   amountCents: Math.round(totalCents / participantCount),
               }
             : null;
@@ -104,12 +105,12 @@ export function bookingRequestOfferCostBreakdownBuild(input: BookingRequestOffer
         totalBeforeDiscount:
             discountCents > 0
                 ? {
-                      title: { de: 'Vorher', en: 'Before' }[input.locale],
+                      title: t(input.locale, 'common', 'costBreakdown.before'),
                       amountCents: input.totalWithoutDiscountsCentsCustomer,
                   }
                 : null,
         total: {
-            title: { de: 'Gesamtpreis', en: 'Total price' }[input.locale],
+            title: t(input.locale, 'common', 'costBreakdown.totalPrice'),
             amountCents: totalCents,
         },
         totalPerPerson,

@@ -1,3 +1,4 @@
+import { t } from '../../i18n/t';
 import type { Locale } from '../../shared';
 import type { PublicCookCardCook } from '../components/PublicCookCard';
 import { PublicCookCard } from '../components/PublicCookCard';
@@ -15,7 +16,7 @@ export function SectionLastVisitedCooks({
 
     return (
         <section className="mx-auto w-full max-w-7xl px-4 py-16 @lg:px-6">
-            <h2 className="font-serif text-3xl font-light @md:text-4xl">{{ de: 'Zuletzt angesehen', en: 'Recently viewed' }[locale]}</h2>
+            <h2 className="font-serif text-3xl font-light @md:text-4xl">{t(locale, 'public', 'chefs.recentlyViewed')}</h2>
             <ul className="mt-10 grid grid-cols-1 gap-4 @md:grid-cols-2 @lg:grid-cols-3 @xl:grid-cols-4">
                 {cooks.map((cook) => (
                     <li key={cook.cookId}>

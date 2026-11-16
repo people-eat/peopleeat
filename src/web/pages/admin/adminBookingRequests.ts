@@ -1,3 +1,4 @@
+import { t } from '../../../i18n/t';
 import type { Locale } from '../../utils/locale';
 
 export type AdminBookingRequestsSection = 'list' | 'create';
@@ -7,12 +8,7 @@ export const ADMIN_BOOKING_REQUESTS_SECTIONS: AdminBookingRequestsSection[] = ['
 export type AdminBookingRequestsSectionTo = '/{-$locale}/admin/booking-requests/list' | '/{-$locale}/admin/booking-requests/create';
 
 export function adminBookingRequestsSectionLabel(section: AdminBookingRequestsSection, locale: Locale): string {
-    return (
-        {
-            list: { de: 'Liste', en: 'List' },
-            create: { de: 'Anlegen', en: 'Create' },
-        } as const
-    )[section][locale];
+    return t(locale, 'admin', `section.${section}`);
 }
 
 export function adminBookingRequestsSectionPath(

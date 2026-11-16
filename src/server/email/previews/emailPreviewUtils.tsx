@@ -2,6 +2,7 @@ import type { PropsWithChildren } from 'react';
 import { Body, Head, Html } from 'react-email';
 
 import type { Locale } from '../../../shared/locale';
+import { serverI18nBootstrap } from '../../i18nBootstrap';
 import { EmailNarrowLayoutStyle, EmailShell } from '../components/EmailShell';
 import { EMAIL_PREVIEW_WEB_PAGE_URL, emailStyles } from '../components/emailStyles';
 
@@ -11,6 +12,8 @@ import { EMAIL_PREVIEW_WEB_PAGE_URL, emailStyles } from '../components/emailStyl
  */
 // eslint-disable-next-line no-restricted-syntax -- preview-only bake-in; not app boot env
 const emailPreviewWebPageUrl = process.env.EMAIL_PREVIEW_WEB_PAGE_URL ?? EMAIL_PREVIEW_WEB_PAGE_URL;
+
+serverI18nBootstrap();
 
 /** Shared sample props for React Email previews (`npm run email:dev`). */
 export const emailPreviewFixtures = {

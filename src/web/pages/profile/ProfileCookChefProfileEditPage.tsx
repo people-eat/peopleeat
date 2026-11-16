@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation, useQuery } from 'urql';
 
+import { t } from '../../../i18n/t';
 import { containsPhoneNumber, cookPathNameTryNormalize, userDisplayName } from '../../../shared';
 import { cookDefaultOfferMessageFormFrom, cookDefaultOfferMessageUpdateFrom } from '../../../shared/cookDefaultOfferMessage';
 import {
@@ -15,6 +16,7 @@ import {
     cookPresenceLinksNormalize,
 } from '../../../shared/cookPresenceLinks';
 import { COOKING_PHILOSOPHIES, CUISINE_STYLES } from '../../../shared/cookProfile';
+import type { Locale } from '../../../shared/locale';
 import { Button } from '../../components/base/button';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '../../components/base/combobox';
 import { Skeleton } from '../../components/base/skeleton';
@@ -42,10 +44,9 @@ import { useUserUpdatesSeed } from '../../hooks/useUserUpdatesSeed';
 import { cookNavRouteBySlug } from './cookCatalog';
 
 const route = cookNavRouteBySlug('chef-profile');
-export const profileCookChefProfileEditPageTitle = {
-    de: 'Kochprofil bearbeiten',
-    en: 'Edit chef profile',
-} as const;
+export function profileCookChefProfileEditPageTitle(locale: Locale): string {
+    return t(locale, 'profileCook', 'chefProfileEdit.title');
+}
 export const profileCookChefProfileEditPageDescription = route.description;
 
 const CUISINE_STYLE_ITEMS = [...CUISINE_STYLES];
@@ -106,12 +107,7 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
             const nextPhilosophy = value.cookingPhilosophy.trim();
             const biographyChanged = value.biography !== cook.biography;
             if (value.defaultOfferMessageMode === 'custom' && containsPhoneNumber(value.defaultOfferMessageText)) {
-                toast.error(
-                    {
-                        de: 'Das Teilen von Telefonnummern ist nicht erlaubt.',
-                        en: 'Sharing phone numbers is not allowed.',
-                    }[locale],
-                );
+                toast.error(t(locale, 'profileCook', 'actions.phoneSharingBlocked'));
                 return;
             }
             const defaultOfferMessage = cookDefaultOfferMessageUpdateFrom({
@@ -132,7 +128,7 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
                         input: cookPresenceLinksInputFrom(value.presenceLinks),
                     });
                     if (presenceResult.error || !presenceResult.data?.user.cook.presenceLinksReplace.success) {
-                        toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+                        toast.error(t(locale, 'common', 'saveFailed'));
                         return;
                     }
                 }
@@ -148,7 +144,7 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
                 },
             });
             if (result.error || !result.data?.user.cook.update.success) {
-                toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+                toast.error(t(locale, 'common', 'saveFailed'));
                 return;
             }
 
@@ -165,20 +161,15 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
             if (biographyChanged) {
                 if (value.biography.trim()) {
                     setSummaryRefreshPending(true);
-                    toast.success(
-                        {
-                            de: 'Gespeichert. Kurzfassung wird aktualisiert…',
-                            en: 'Saved. Updating summary…',
-                        }[locale],
-                    );
+                    toast.success(t(locale, 'profileCook', 'chefProfileEdit.savedUpdating'));
                 } else {
                     setSummaryRefreshPending(false);
-                    toast.success({ de: 'Gespeichert.', en: 'Saved.' }[locale]);
+                    toast.success(t(locale, 'profileCook', 'actions.saved'));
                 }
                 return;
             }
 
-            toast.success({ de: 'Gespeichert.', en: 'Saved.' }[locale]);
+            toast.success(t(locale, 'profileCook', 'actions.saved'));
             await navigate({ to: '/{-$locale}/profile/chef-profile' });
         },
     });
@@ -244,12 +235,7 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
         const result = await biographySuggest({ currentBiography });
         const suggestion = result.data?.user.cook.biographySuggest;
         if (result.error || !suggestion) {
-            toast.error(
-                {
-                    de: 'Biografie konnte nicht erzeugt werden.',
-                    en: 'Could not generate the biography.',
-                }[locale],
-            );
+            toast.error(t(locale, 'profileCook', 'chefProfileEdit.bioGenerateFailed'));
             return;
         }
         setBiographySuggestion(suggestion);
@@ -268,27 +254,27 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
                 isDirty ? (
                     <>
                         <Button type="button" variant="outline" disabled={formBusy} asChild>
-                            <Link to="/{-$locale}/profile/chef-profile">{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</Link>
+                            <Link to="/{-$locale}/profile/chef-profile">{t(locale, 'common', 'cancel')}</Link>
                         </Button>
                         <Button type="submit" form="chef-profile-form" disabled={formBusy || reviewingSuggestion || pathNameBlocked}>
-                            {isSubmitting ? { de: 'Speichern…', en: 'Saving…' }[locale] : { de: 'Speichern', en: 'Save' }[locale]}
+                            {isSubmitting ? t(locale, 'profileCook', 'actions.saving') : t(locale, 'common', 'save')}
                         </Button>
                     </>
                 ) : (
                     <Button type="button" disabled={formBusy} asChild>
-                        <Link to="/{-$locale}/profile/chef-profile">{{ de: 'Zur Profilansicht', en: 'Back to profile' }[locale]}</Link>
+                        <Link to="/{-$locale}/profile/chef-profile">{t(locale, 'profileCook', 'chefProfileEdit.backToProfile')}</Link>
                     </Button>
                 )
             }
         >
             <div className="grid gap-2">
-                <h1 className="font-serif text-3xl/tight text-foreground">{profileCookChefProfileEditPageTitle[locale]}</h1>
-                <p className="text-muted-foreground">{profileCookChefProfileEditPageDescription[locale]}</p>
+                <h1 className="font-serif text-3xl/tight text-foreground">{profileCookChefProfileEditPageTitle(locale)}</h1>
+                <p className="text-muted-foreground">{profileCookChefProfileEditPageDescription(locale)}</p>
             </div>
 
             <section className="grid min-w-0 gap-3">
                 <h2 className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
-                    {{ de: 'Profilbild', en: 'Profile picture' }[locale]}
+                    {t(locale, 'profileCook', 'chefProfileEdit.picture')}
                 </h2>
                 <ProfilePictureEditor
                     profilePictureUrl={user.profilePicture?.url ?? null}
@@ -315,7 +301,7 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
                             <div className="grid min-w-0 gap-2">
                                 <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
                                     <label htmlFor="chef-biography" className="text-sm font-medium">
-                                        {{ de: 'Biografie', en: 'Biography' }[locale]}
+                                        {t(locale, 'profileCook', 'chefProfileEdit.biography')}
                                     </label>
                                     {reviewingSuggestion || !biographyAiWriteEnabled ? null : (
                                         <Button
@@ -331,10 +317,10 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
                                                 <SparklesIcon className="size-4" aria-hidden />
                                             )}
                                             {biographySuggestFetching
-                                                ? { de: 'Wird erzeugt…', en: 'Generating…' }[locale]
+                                                ? t(locale, 'profileCook', 'chefProfileEdit.generating')
                                                 : field.state.value.trim()
-                                                  ? { de: 'Mit KI verbessern', en: 'Improve with AI' }[locale]
-                                                  : { de: 'Mit KI schreiben', en: 'Write with AI' }[locale]}
+                                                  ? t(locale, 'profileCook', 'chefProfileEdit.improveWithAi')
+                                                  : t(locale, 'profileCook', 'chefProfileEdit.writeWithAi')}
                                         </Button>
                                     )}
                                 </div>
@@ -361,28 +347,17 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
                         )}
                     </form.Field>
                     <div className="grid min-w-0 gap-2">
-                        <span className="text-sm font-medium">{{ de: 'Biografie-Kurzfassung', en: 'Biography summary' }[locale]}</span>
-                        <p className="text-sm text-muted-foreground">
-                            {
-                                {
-                                    de: 'Wird automatisch aktualisiert, wenn du deine Biografie speicherst. Für die öffentliche Ansicht.',
-                                    en: 'Updates automatically when you save your biography. Used on the public profile.',
-                                }[locale]
-                            }
-                        </p>
+                        <span className="text-sm font-medium">{t(locale, 'profileCook', 'chefProfileEdit.summary')}</span>
+                        <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'chefProfileEdit.summaryHint')}</p>
                         {summaryGenerating ? (
                             <div className="grid gap-2 rounded-lg border border-border bg-muted/40 p-3" aria-busy="true">
                                 <Skeleton className="h-4 w-full" />
                                 <Skeleton className="h-4 w-3/4" />
-                                <p className="text-sm text-muted-foreground">
-                                    {{ de: 'Kurzfassung wird aktualisiert…', en: 'Updating summary…' }[locale]}
-                                </p>
+                                <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'chefProfile.summaryUpdating')}</p>
                             </div>
                         ) : (
                             <p className="rounded-lg border border-border bg-muted/40 p-3 text-sm whitespace-pre-wrap">
-                                {cook.biographySummary.trim()
-                                    ? cook.biographySummary
-                                    : { de: 'Noch keine Kurzfassung vorhanden.', en: 'No summary yet.' }[locale]}
+                                {cook.biographySummary.trim() ? cook.biographySummary : t(locale, 'profileCook', 'chefProfile.noSummary')}
                             </p>
                         )}
                     </div>
@@ -391,15 +366,15 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
                             {(field) => (
                                 <div className="grid min-w-0 gap-2">
                                     <label htmlFor="chef-cuisine" className="text-sm font-medium">
-                                        {{ de: 'Küchenstil', en: 'Cuisine style' }[locale]}
+                                        {t(locale, 'profileCook', 'chefProfileEdit.cuisine')}
                                     </label>
                                     <CatalogCombobox
                                         id="chef-cuisine"
                                         items={CUISINE_STYLE_ITEMS}
                                         value={field.state.value}
                                         onChange={(next) => field.handleChange(next)}
-                                        placeholder={{ de: 'Küchenstil wählen…', en: 'Select cuisine style…' }[locale]}
-                                        emptyLabel={{ de: 'Keine Treffer.', en: 'No matches.' }[locale]}
+                                        placeholder={t(locale, 'profileCook', 'chefProfileEdit.cuisinePlaceholder')}
+                                        emptyLabel={t(locale, 'profileCook', 'actions.noMatches')}
                                     />
                                 </div>
                             )}
@@ -408,15 +383,15 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
                             {(field) => (
                                 <div className="grid min-w-0 gap-2">
                                     <label htmlFor="chef-philosophy" className="text-sm font-medium">
-                                        {{ de: 'Kochphilosophie', en: 'Cooking philosophy' }[locale]}
+                                        {t(locale, 'profileCook', 'chefProfileEdit.philosophy')}
                                     </label>
                                     <CatalogCombobox
                                         id="chef-philosophy"
                                         items={COOKING_PHILOSOPHY_ITEMS}
                                         value={field.state.value}
                                         onChange={(next) => field.handleChange(next)}
-                                        placeholder={{ de: 'Philosophie wählen…', en: 'Select philosophy…' }[locale]}
-                                        emptyLabel={{ de: 'Keine Treffer.', en: 'No matches.' }[locale]}
+                                        placeholder={t(locale, 'profileCook', 'chefProfileEdit.philosophyPlaceholder')}
+                                        emptyLabel={t(locale, 'profileCook', 'actions.noMatches')}
                                     />
                                 </div>
                             )}
@@ -473,16 +448,9 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
                     <section className="grid min-w-0 gap-4">
                         <div className="grid gap-1">
                             <h2 className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
-                                {{ de: 'Weitere Profile', en: 'Other profiles' }[locale]}
+                                {t(locale, 'profileCook', 'chefProfile.otherProfiles')}
                             </h2>
-                            <p className="text-sm text-muted-foreground">
-                                {
-                                    {
-                                        de: 'Nur das peopleeat-Team sieht diese Links, um dein Profil zu prüfen. Kunden sehen sie nicht.',
-                                        en: 'Only the peopleeat team sees these links, to review your profile. Customers do not see them.',
-                                    }[locale]
-                                }
-                            </p>
+                            <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'chefProfile.otherProfilesHint')}</p>
                         </div>
                         <form.Field name="presenceLinks">
                             {(field) => (

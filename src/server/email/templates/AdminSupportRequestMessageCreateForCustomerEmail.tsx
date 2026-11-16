@@ -1,3 +1,4 @@
+import { tEmail } from '../../../i18n/tEmail';
 import type { Locale } from '../../../shared/locale';
 import { EmailButton, EmailLayout, EmailText } from '../components';
 
@@ -16,36 +17,21 @@ export function AdminSupportRequestMessageCreateForCustomerEmail({
     subject,
     supportRequestUrl,
 }: AdminSupportRequestMessageCreateForCustomerEmailProps) {
-    const emailSubject = adminSupportRequestMessageCreateForCustomerEmailSubject(locale);
-    const preview = {
-        de: 'Neue Antwort auf deine Support-Anfrage. Jetzt im Chat lesen',
-        en: 'New reply on your support request. Read it in chat',
-    }[locale];
-    const intro = {
-        de: 'Unser Team hat auf deine Support-Anfrage geantwortet. Öffne den Chat, um die Nachricht zu lesen.',
-        en: 'Our team replied to your support request. Open the chat to read the message.',
-    }[locale];
-    const subjectLine = {
-        de: `Betreff: ${subject}`,
-        en: `Subject: ${subject}`,
-    }[locale];
-    const cta = { de: 'Antwort lesen', en: 'Read reply' }[locale];
-
     return (
         <EmailLayout
             locale={locale}
             webPageUrl={webPageUrl}
-            preview={preview}
-            subject={emailSubject}
+            preview={tEmail(locale, 'support.reply.preview')}
+            subject={adminSupportRequestMessageCreateForCustomerEmailSubject(locale)}
             recipientFirstName={recipientFirstName}
         >
-            <EmailText>{intro}</EmailText>
-            <EmailText>{subjectLine}</EmailText>
-            <EmailButton href={supportRequestUrl}>{cta}</EmailButton>
+            <EmailText>{tEmail(locale, 'support.reply.intro')}</EmailText>
+            <EmailText>{tEmail(locale, 'common.subjectLine', { subject })}</EmailText>
+            <EmailButton href={supportRequestUrl}>{tEmail(locale, 'support.reply.cta')}</EmailButton>
         </EmailLayout>
     );
 }
 
 export function adminSupportRequestMessageCreateForCustomerEmailSubject(locale: Locale): string {
-    return { de: 'Neue Support-Antwort', en: 'New support reply' }[locale];
+    return tEmail(locale, 'support.reply.subject');
 }

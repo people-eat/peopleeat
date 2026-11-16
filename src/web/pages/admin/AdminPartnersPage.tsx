@@ -5,7 +5,8 @@ import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
-import { formatDate } from '../../../shared';
+import { t } from '../../../i18n/t';
+import { formatDate, inlineCopy } from '../../../shared';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import {
     AlertDialog,
@@ -32,13 +33,15 @@ import {
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
+import type { Locale } from '../../utils/locale';
 import { AdminOverviewListCardLink } from './AdminOverviewListCard';
 
-export const adminPartnersPageTitle = { de: 'Partner', en: 'Partners' } as const;
-export const adminPartnersPageDescription = {
-    de: 'Partnerunternehmen und ihre Locations verwalten.',
-    en: 'Manage partner companies and their venues.',
-} as const;
+export function adminPartnersPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'nav.partners.title');
+}
+export function adminPartnersPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.partners.description');
+}
 
 function draftVenueInput(partnerId: string) {
     return {
@@ -105,10 +108,7 @@ export function AdminPartnersPage({ data }: { data: GqlCAdminPartnersPageQuery }
           )
         : partners;
     const partnerToDelete = partners.find((partner) => partner.partnerId === partnerIdToDelete) ?? null;
-    const deleteBlockedHint = {
-        de: 'Partner mit Locations können nicht gelöscht werden.',
-        en: 'Partners with venues cannot be deleted.',
-    }[locale];
+    const deleteBlockedHint = t(locale, 'admin', 'copy.partnersWithVenuesCannotBeDeleted');
 
     async function createPartnerWithVenue() {
         setBusy(true);
@@ -124,7 +124,7 @@ export function AdminPartnersPage({ data }: { data: GqlCAdminPartnersPageQuery }
                 params: { partnerVenueId },
             });
         } catch {
-            toast.error({ de: 'Anlegen fehlgeschlagen.', en: 'Could not create.' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.couldNotCreate'));
         } finally {
             setBusy(false);
         }
@@ -141,7 +141,7 @@ export function AdminPartnersPage({ data }: { data: GqlCAdminPartnersPageQuery }
                 params: { partnerVenueId },
             });
         } catch {
-            toast.error({ de: 'Anlegen fehlgeschlagen.', en: 'Could not create.' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.couldNotCreate'));
         } finally {
             setBusy(false);
         }
@@ -151,7 +151,7 @@ export function AdminPartnersPage({ data }: { data: GqlCAdminPartnersPageQuery }
         if (!renamingPartnerId) return;
         const trimmed = renameDraft.trim();
         if (!trimmed) {
-            toast.error({ de: 'Name darf nicht leer sein.', en: 'Name must not be empty.' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.nameMustNotBeEmpty'));
             return;
         }
         setBusy(true);
@@ -159,9 +159,9 @@ export function AdminPartnersPage({ data }: { data: GqlCAdminPartnersPageQuery }
             const result = await upsertPartner({ input: { partnerId: renamingPartnerId, name: trimmed } });
             if (result.error || !result.data?.admin.partnerUpsert.success) throw new Error('rename failed');
             setRenamingPartnerId(null);
-            toast.success({ de: 'Partner umbenannt.', en: 'Partner renamed.' }[locale]);
+            toast.success(t(locale, 'admin', 'copy.partnerRenamed'));
         } catch {
-            toast.error({ de: 'Umbenennen fehlgeschlagen.', en: 'Could not rename.' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.couldNotRename'));
         } finally {
             setBusy(false);
         }
@@ -174,14 +174,9 @@ export function AdminPartnersPage({ data }: { data: GqlCAdminPartnersPageQuery }
             const result = await deletePartner({ partnerId: partnerIdToDelete });
             if (result.error || !result.data?.admin.partnerDelete.success) throw new Error('delete failed');
             setPartnerIdToDelete(null);
-            toast.success({ de: 'Partner gelöscht.', en: 'Partner deleted.' }[locale]);
+            toast.success(t(locale, 'admin', 'copy.partnerDeleted'));
         } catch {
-            toast.error(
-                {
-                    de: 'Löschen fehlgeschlagen. Partner mit Locations können nicht gelöscht werden.',
-                    en: 'Could not delete. Partners with venues cannot be deleted.',
-                }[locale],
-            );
+            toast.error(t(locale, 'admin', 'copy.couldNotDeletePartnersWithVenuesCannotBeDeleted'));
         } finally {
             setBusy(false);
         }
@@ -194,33 +189,33 @@ export function AdminPartnersPage({ data }: { data: GqlCAdminPartnersPageQuery }
                     <div className="grid gap-2">
                         <h1 className="flex items-center gap-3 font-serif text-4xl/tight text-foreground">
                             <HandshakeIcon className="size-8 text-muted-foreground" aria-hidden />
-                            {adminPartnersPageTitle[locale]}
+                            {adminPartnersPageTitle(locale)}
                         </h1>
-                        <p className="text-muted-foreground">{adminPartnersPageDescription[locale]}</p>
+                        <p className="text-muted-foreground">{adminPartnersPageDescription(locale)}</p>
                     </div>
                     <Button type="button" disabled={busy} onClick={() => void createPartnerWithVenue()}>
                         <PlusIcon className="size-4" />
-                        {{ de: 'Neuer Partner', en: 'New partner' }[locale]}
+                        {t(locale, 'admin', 'copy.newPartner')}
                     </Button>
                 </div>
                 <Input
                     type="search"
                     value={draftQ}
                     onChange={(event) => setDraftQ(event.target.value)}
-                    placeholder={{ de: 'Partner, Location oder Pfad suchen…', en: 'Search partner, venue, or path…' }[locale]}
-                    aria-label={{ de: 'Partner und Locations suchen', en: 'Search partners and venues' }[locale]}
+                    placeholder={t(locale, 'admin', 'copy.searchPartnerVenueOrPath')}
+                    aria-label={t(locale, 'admin', 'copy.searchPartnersAndVenues')}
                     className="max-w-sm"
                 />
                 {partners.length === 0 ? (
                     <div className="grid gap-4 justify-items-start">
-                        <p className="text-muted-foreground">{{ de: 'Noch keine Partner.', en: 'No partners yet.' }[locale]}</p>
+                        <p className="text-muted-foreground">{t(locale, 'admin', 'copy.noPartnersYet')}</p>
                         <Button type="button" disabled={busy} onClick={() => void createPartnerWithVenue()}>
                             <PlusIcon className="size-4" />
-                            {{ de: 'Neuer Partner', en: 'New partner' }[locale]}
+                            {t(locale, 'admin', 'copy.newPartner')}
                         </Button>
                     </div>
                 ) : filteredPartners.length === 0 ? (
-                    <p className="text-muted-foreground">{{ de: 'Keine Treffer.', en: 'No matches.' }[locale]}</p>
+                    <p className="text-muted-foreground">{t(locale, 'admin', 'copy.noMatches')}</p>
                 ) : (
                     <ul className="grid gap-6">
                         {filteredPartners.map((partner) => {
@@ -231,7 +226,7 @@ export function AdminPartnersPage({ data }: { data: GqlCAdminPartnersPageQuery }
                                     variant="ghost"
                                     size="icon"
                                     disabled={busy || deleteBlocked}
-                                    aria-label={{ de: 'Partner löschen', en: 'Delete partner' }[locale]}
+                                    aria-label={t(locale, 'admin', 'copy.deletePartner')}
                                     onClick={() => setPartnerIdToDelete(partner.partnerId)}
                                 >
                                     <Trash2Icon className="size-4" />
@@ -246,7 +241,7 @@ export function AdminPartnersPage({ data }: { data: GqlCAdminPartnersPageQuery }
                                             variant="ghost"
                                             size="icon"
                                             disabled={busy}
-                                            aria-label={{ de: 'Partner umbenennen', en: 'Rename partner' }[locale]}
+                                            aria-label={t(locale, 'admin', 'copy.renamePartner')}
                                             onClick={() => {
                                                 setRenamingPartnerId(partner.partnerId);
                                                 setRenameDraft(partner.name);
@@ -272,13 +267,11 @@ export function AdminPartnersPage({ data }: { data: GqlCAdminPartnersPageQuery }
                                             onClick={() => void addVenue(partner.partnerId)}
                                         >
                                             <PlusIcon className="size-4" />
-                                            {{ de: 'Venue hinzufügen', en: 'Add venue' }[locale]}
+                                            {t(locale, 'admin', 'copy.addVenue')}
                                         </Button>
                                     </div>
                                     {partner.venues.length === 0 ? (
-                                        <p className="text-muted-foreground">
-                                            {{ de: 'Noch keine Locations.', en: 'No venues yet.' }[locale]}
-                                        </p>
+                                        <p className="text-muted-foreground">{t(locale, 'admin', 'copy.noVenuesYet')}</p>
                                     ) : (
                                         <ul className="grid gap-2">
                                             {partner.venues.map((venue) => (
@@ -291,8 +284,8 @@ export function AdminPartnersPage({ data }: { data: GqlCAdminPartnersPageQuery }
                                                                 {venue.name}
                                                                 <Badge variant="outline">
                                                                     {venue.publishedAt
-                                                                        ? { de: 'Veröffentlicht', en: 'Published' }[locale]
-                                                                        : { de: 'Entwurf', en: 'Draft' }[locale]}
+                                                                        ? t(locale, 'admin', 'copy.published2')
+                                                                        : t(locale, 'admin', 'copy.draft')}
                                                                 </Badge>
                                                             </>
                                                         }
@@ -318,12 +311,12 @@ export function AdminPartnersPage({ data }: { data: GqlCAdminPartnersPageQuery }
             >
                 <DialogContent showCloseButton className="sm:max-w-md">
                     <DialogHeader>
-                        <DialogTitle>{{ de: 'Partner umbenennen', en: 'Rename partner' }[locale]}</DialogTitle>
+                        <DialogTitle>{t(locale, 'admin', 'copy.renamePartner')}</DialogTitle>
                     </DialogHeader>
                     <Input
                         value={renameDraft}
                         onChange={(event) => setRenameDraft(event.target.value)}
-                        aria-label={{ de: 'Partnername', en: 'Partner name' }[locale]}
+                        aria-label={t(locale, 'admin', 'copy.partnerName')}
                         autoFocus
                         disabled={busy}
                         onKeyDown={(event) => {
@@ -335,10 +328,10 @@ export function AdminPartnersPage({ data }: { data: GqlCAdminPartnersPageQuery }
                     />
                     <DialogFooter>
                         <Button type="button" variant="outline" disabled={busy} onClick={() => setRenamingPartnerId(null)}>
-                            {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                            {t(locale, 'admin', 'copy.cancel')}
                         </Button>
                         <Button type="button" disabled={busy || !renameDraft.trim()} onClick={() => void savePartnerName()}>
-                            {{ de: 'Speichern', en: 'Save' }[locale]}
+                            {t(locale, 'admin', 'copy.save')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -352,23 +345,23 @@ export function AdminPartnersPage({ data }: { data: GqlCAdminPartnersPageQuery }
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>{{ de: 'Partner löschen?', en: 'Delete this partner?' }[locale]}</AlertDialogTitle>
+                        <AlertDialogTitle>{t(locale, 'admin', 'copy.deleteThisPartner')}</AlertDialogTitle>
                         <AlertDialogDescription>
                             {partnerToDelete
-                                ? {
-                                      de: `„${partnerToDelete.name}“ wird dauerhaft gelöscht.`,
-                                      en: `“${partnerToDelete.name}” will be permanently deleted.`,
-                                  }[locale]
-                                : {
-                                      de: 'Dieser Partner wird dauerhaft gelöscht.',
-                                      en: 'This partner will be permanently deleted.',
-                                  }[locale]}
+                                ? inlineCopy(
+                                      {
+                                          de: `„${partnerToDelete.name}“ wird dauerhaft gelöscht.`,
+                                          en: `“${partnerToDelete.name}” will be permanently deleted.`,
+                                      },
+                                      locale,
+                                  )
+                                : t(locale, 'admin', 'copy.thisPartnerWillBePermanentlyDeleted')}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel disabled={busy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogCancel disabled={busy}>{t(locale, 'admin', 'copy.cancel')}</AlertDialogCancel>
                         <AlertDialogAction variant="destructive" disabled={busy} onClick={() => void confirmDeletePartner()}>
-                            {{ de: 'Löschen', en: 'Delete' }[locale]}
+                            {t(locale, 'admin', 'copy.delete')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

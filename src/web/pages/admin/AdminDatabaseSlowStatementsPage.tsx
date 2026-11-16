@@ -1,17 +1,22 @@
 import { useRouter } from '@tanstack/react-router';
 import { RefreshCwIcon } from 'lucide-react';
 
+import { t } from '../../../i18n/t';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { Button } from '../../components/base/button';
 import type { GqlCAdminDatabaseSlowStatementsPageQuery } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import type { Locale } from '../../utils/locale';
-import { adminStubRouteBySlug } from './adminCatalog';
+import { adminStubRouteBySlug, adminStubRouteDescription, adminStubRouteTitle } from './adminCatalog';
 
 const route = adminStubRouteBySlug('database-slow-statements');
 
-export const adminDatabaseSlowStatementsPageTitle = route.title;
-export const adminDatabaseSlowStatementsPageDescription = route.description;
+export function adminDatabaseSlowStatementsPageTitle(locale: Locale): string {
+    return adminStubRouteTitle(route.slug, locale);
+}
+export function adminDatabaseSlowStatementsPageDescription(locale: Locale): string {
+    return adminStubRouteDescription(route.slug, locale);
+}
 
 export function adminDatabaseSlowStatementsPageVariables() {
     return { limit: 50 };
@@ -38,34 +43,29 @@ export function AdminDatabaseSlowStatementsPage({ data }: { data: GqlCAdminDatab
             <main id="main-content" className="grid w-full content-start gap-6">
                 <div className="flex flex-wrap items-end justify-between gap-3">
                     <div>
-                        <h1 className="text-2xl font-medium">{adminDatabaseSlowStatementsPageTitle[locale]}</h1>
-                        <p className="text-sm text-muted-foreground">{adminDatabaseSlowStatementsPageDescription[locale]}</p>
+                        <h1 className="text-2xl font-medium">{adminDatabaseSlowStatementsPageTitle(locale)}</h1>
+                        <p className="text-sm text-muted-foreground">{adminDatabaseSlowStatementsPageDescription(locale)}</p>
                     </div>
                     <Button type="button" variant="outline" size="sm" onClick={() => void router.invalidate()}>
                         <RefreshCwIcon className="size-4" aria-hidden />
-                        {{ de: 'Aktualisieren', en: 'Refresh' }[locale]}
+                        {t(locale, 'admin', 'copy.refresh')}
                     </Button>
                 </div>
 
                 {statements.length === 0 ? (
                     <p className="text-sm text-muted-foreground">
-                        {
-                            {
-                                de: 'Keine Statements. Entweder ist die Extension pg_stat_statements nicht aktiviert, oder es liegen noch keine Statistiken vor.',
-                                en: 'No statements. Either the pg_stat_statements extension is not enabled, or there are no stats yet.',
-                            }[locale]
-                        }
+                        {t(locale, 'admin', 'copy.noStatementsEitherThePgStatStatementsExtensionIsNotEnabledOr')}
                     </p>
                 ) : (
                     <div className="overflow-x-auto border border-border">
                         <table className="w-full min-w-200 text-left text-sm">
                             <thead className="border-b border-border bg-muted/40 text-muted-foreground">
                                 <tr>
-                                    <th className="px-4 py-2 font-medium">{{ de: 'Gesamt', en: 'Total' }[locale]}</th>
-                                    <th className="px-4 py-2 font-medium">{{ de: 'Mittel', en: 'Mean' }[locale]}</th>
-                                    <th className="px-4 py-2 font-medium">{{ de: 'Aufrufe', en: 'Calls' }[locale]}</th>
-                                    <th className="px-4 py-2 font-medium">{{ de: 'Zeilen', en: 'Rows' }[locale]}</th>
-                                    <th className="px-4 py-2 font-medium">{{ de: 'Query', en: 'Query' }[locale]}</th>
+                                    <th className="px-4 py-2 font-medium">{t(locale, 'admin', 'copy.total')}</th>
+                                    <th className="px-4 py-2 font-medium">{t(locale, 'admin', 'copy.mean')}</th>
+                                    <th className="px-4 py-2 font-medium">{t(locale, 'admin', 'copy.calls')}</th>
+                                    <th className="px-4 py-2 font-medium">{t(locale, 'admin', 'copy.rows')}</th>
+                                    <th className="px-4 py-2 font-medium">{t(locale, 'admin', 'copy.query')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border">

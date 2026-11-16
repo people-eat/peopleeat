@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
+import { t } from '../../i18n/t';
 import { fileUploadPublicUrl, isTestimonialRating } from '../../shared';
 import {
     AdminCookTestimonialDeleteDocument,
@@ -83,14 +84,14 @@ function fieldErrorText(errors: unknown[]): string | undefined {
 
 function requiredBody(value: string, locale: Locale): string | undefined {
     if (value.trim().length === 0) {
-        return { de: 'Bitte gib einen Text ein.', en: 'Please enter a review text.' }[locale];
+        return t(locale, 'admin', 'copy.pleaseEnterAReviewText');
     }
     return undefined;
 }
 
 function requiredRating(value: number | null, locale: Locale): string | undefined {
     if (!isTestimonialRating(value)) {
-        return { de: 'Bitte wähle eine Sternebewertung.', en: 'Please choose a star rating.' }[locale];
+        return t(locale, 'admin', 'copy.pleaseChooseAStarRating');
     }
     return undefined;
 }
@@ -125,7 +126,7 @@ export function AdminBookingRequestOfferTestimonialsSection({
     return (
         <section className="grid gap-4 lg:grid-cols-2 lg:items-start">
             <TestimonialSide
-                title={{ de: 'Kunde → Koch', en: 'Customer → cook' }[locale]}
+                title={t(locale, 'admin', 'copy.customerCook')}
                 kind="customer"
                 party={customerParty}
                 existing={customerTestimonial}
@@ -144,7 +145,7 @@ export function AdminBookingRequestOfferTestimonialsSection({
                         },
                     });
                     if (result.error || !result.data?.admin.customerTestimonialUpsert.success) {
-                        toast.error({ de: 'Anlegen fehlgeschlagen.', en: 'Could not create the review.' }[locale]);
+                        toast.error(t(locale, 'admin', 'copy.couldNotCreateTheReview'));
                         return false;
                     }
                     return true;
@@ -179,7 +180,7 @@ export function AdminBookingRequestOfferTestimonialsSection({
             />
 
             <TestimonialSide
-                title={{ de: 'Koch → Gast', en: 'Cook → guest' }[locale]}
+                title={t(locale, 'admin', 'copy.cookGuest')}
                 kind="cook"
                 party={cookParty}
                 existing={cookTestimonial}
@@ -198,7 +199,7 @@ export function AdminBookingRequestOfferTestimonialsSection({
                         },
                     });
                     if (result.error || !result.data?.admin.cookTestimonialUpsert.success) {
-                        toast.error({ de: 'Anlegen fehlgeschlagen.', en: 'Could not create the review.' }[locale]);
+                        toast.error(t(locale, 'admin', 'copy.couldNotCreateTheReview'));
                         return false;
                     }
                     return true;
@@ -288,10 +289,10 @@ function TestimonialSide({
             };
             const success = existing ? await onUpdate(existing.id, input) : await onCreate({ ...input, imageFileUploadIds: draftImageIds });
             if (!success) {
-                toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+                toast.error(t(locale, 'admin', 'copy.couldNotSave'));
                 return;
             }
-            toast.success({ de: 'Gespeichert.', en: 'Saved.' }[locale]);
+            toast.success(t(locale, 'admin', 'copy.saved'));
             setDraftImageIds([]);
             setEditing(false);
         },
@@ -315,13 +316,9 @@ function TestimonialSide({
         try {
             if (!(await onPublish(existing.id, next))) throw new Error('publish failed');
             setConfirm(null);
-            toast.success(
-                next === 'PUBLISHED'
-                    ? { de: 'Veröffentlicht.', en: 'Published.' }[locale]
-                    : { de: 'Zurückgezogen.', en: 'Unpublished.' }[locale],
-            );
+            toast.success(next === 'PUBLISHED' ? t(locale, 'admin', 'copy.published') : t(locale, 'admin', 'copy.unpublished'));
         } catch {
-            toast.error({ de: 'Status konnte nicht geändert werden.', en: 'Could not update the status.' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.couldNotUpdateTheStatus'));
         } finally {
             setBusy(false);
         }
@@ -335,7 +332,7 @@ function TestimonialSide({
             setConfirm(null);
             setEditing(false);
         } catch {
-            toast.error({ de: 'Löschen fehlgeschlagen.', en: 'Could not delete the testimonial.' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.couldNotDeleteTheTestimonial'));
         } finally {
             setBusy(false);
         }
@@ -345,8 +342,8 @@ function TestimonialSide({
     const partyPictureUrl = party?.profilePictureUrl ?? null;
     const showForm = existing == null || editing;
     const publicationTone = existing?.publicationStatus === 'PUBLISHED' ? 'success' : 'warning';
-    const optionalHint = { de: 'optional', en: 'optional' }[locale];
-    const bodyHint = bodyRequired ? { de: 'erforderlich', en: 'required' }[locale] : optionalHint;
+    const optionalHint = t(locale, 'admin', 'copy.optional');
+    const bodyHint = bodyRequired ? t(locale, 'admin', 'copy.required') : optionalHint;
 
     return (
         <div className="grid gap-4 rounded-lg border border-border/60 bg-card p-4 text-card-foreground">
@@ -378,7 +375,7 @@ function TestimonialSide({
                             className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground hover:underline"
                         >
                             <ExternalLinkIcon className="size-3.5" aria-hidden />
-                            {{ de: 'Bewertungsseite', en: 'Review page' }[locale]}
+                            {t(locale, 'admin', 'copy.reviewPage')}
                         </Link>
                     </div>
                 ) : null}
@@ -391,23 +388,23 @@ function TestimonialSide({
                             authorName: existing.displayAuthorName,
                             location: existing.displayLocation,
                             occasion: existing.displayOccasion,
-                            body: existing.body.trim() || { de: '(ohne Text)', en: '(no body)' }[locale],
+                            body: existing.body.trim() || t(locale, 'admin', 'copy.noBody'),
                             rating: existing.rating,
                             imageUrls: [],
                         }}
                     />
                     {existing.lowRatingAnswers?.whatWentWrong ? (
-                        <StatusAlert tone="warning" title={{ de: 'Niedrige Bewertung', en: 'Low rating' }[locale]}>
+                        <StatusAlert tone="warning" title={t(locale, 'admin', 'copy.lowRating')}>
                             {existing.lowRatingAnswers.whatWentWrong}
                         </StatusAlert>
                     ) : null}
                     <div className="grid gap-1.5">
-                        <span className="text-sm font-medium text-foreground">{{ de: 'Fotos', en: 'Photos' }[locale]}</span>
+                        <span className="text-sm font-medium text-foreground">{t(locale, 'admin', 'copy.photos')}</span>
                         <AdminTestimonialImageManager imageUrls={existing.imageUrls} onSave={(ids) => onSaveImages(existing.id, ids)} />
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                         <Button type="button" size="sm" variant="outline" disabled={busy} onClick={startEditing}>
-                            {{ de: 'Bearbeiten', en: 'Edit' }[locale]}
+                            {t(locale, 'admin', 'copy.edit')}
                         </Button>
                         <Button
                             type="button"
@@ -417,8 +414,8 @@ function TestimonialSide({
                             onClick={() => setConfirm(existing.publicationStatus === 'PUBLISHED' ? 'unpublish' : 'publish')}
                         >
                             {existing.publicationStatus === 'PUBLISHED'
-                                ? { de: 'Zurückziehen', en: 'Unpublish' }[locale]
-                                : { de: 'Veröffentlichen', en: 'Publish' }[locale]}
+                                ? t(locale, 'admin', 'copy.unpublish')
+                                : t(locale, 'admin', 'copy.publish')}
                         </Button>
                         <Button
                             type="button"
@@ -428,7 +425,7 @@ function TestimonialSide({
                             disabled={busy}
                             onClick={() => setConfirm('delete')}
                         >
-                            {{ de: 'Löschen', en: 'Delete' }[locale]}
+                            {t(locale, 'admin', 'copy.delete')}
                         </Button>
                     </div>
                 </>
@@ -455,11 +452,8 @@ function TestimonialSide({
                             return (
                                 <div className="grid gap-1.5">
                                     <span className="text-sm font-medium text-foreground">
-                                        {{ de: 'Bewertung', en: 'Rating' }[locale]}
-                                        <span className="font-normal text-muted-foreground">
-                                            {' '}
-                                            ({{ de: 'erforderlich', en: 'required' }[locale]})
-                                        </span>
+                                        {t(locale, 'admin', 'copy.rating')}
+                                        <span className="font-normal text-muted-foreground"> ({t(locale, 'admin', 'copy.required')})</span>
                                     </span>
                                     <div aria-invalid={showError} aria-describedby={showError ? errorId : undefined}>
                                         <TestimonialRatingInput
@@ -482,7 +476,7 @@ function TestimonialSide({
                             {(field) => (
                                 <div className="grid gap-1.5">
                                     <label htmlFor={`${title}-authorName`} className="text-sm font-medium text-foreground">
-                                        {{ de: 'Name', en: 'Name' }[locale]}
+                                        {t(locale, 'admin', 'copy.name')}
                                         <span className="font-normal text-muted-foreground"> ({optionalHint})</span>
                                     </label>
                                     <Input
@@ -498,7 +492,7 @@ function TestimonialSide({
                             {(field) => (
                                 <div className="grid gap-1.5">
                                     <label htmlFor={`${title}-location`} className="text-sm font-medium text-foreground">
-                                        {{ de: 'Ort', en: 'Location' }[locale]}
+                                        {t(locale, 'admin', 'copy.location2')}
                                         <span className="font-normal text-muted-foreground"> ({optionalHint})</span>
                                     </label>
                                     <Input
@@ -515,7 +509,7 @@ function TestimonialSide({
                         {(field) => (
                             <div className="grid gap-1.5">
                                 <label htmlFor={`${title}-occasion`} className="text-sm font-medium text-foreground">
-                                    {{ de: 'Anlass', en: 'Occasion' }[locale]}
+                                    {t(locale, 'admin', 'copy.occasion')}
                                     <span className="font-normal text-muted-foreground"> ({optionalHint})</span>
                                 </label>
                                 <Input
@@ -540,7 +534,7 @@ function TestimonialSide({
                             return (
                                 <div className="grid gap-1.5">
                                     <label htmlFor={`${title}-body`} className="text-sm font-medium text-foreground">
-                                        {{ de: 'Text', en: 'Body' }[locale]}
+                                        {t(locale, 'admin', 'copy.body')}
                                         <span className="font-normal text-muted-foreground"> ({bodyHint})</span>
                                     </label>
                                     <Textarea
@@ -563,7 +557,7 @@ function TestimonialSide({
                     </form.Field>
 
                     <div className="grid gap-1.5">
-                        <span className="text-sm font-medium text-foreground">{{ de: 'Fotos', en: 'Photos' }[locale]}</span>
+                        <span className="text-sm font-medium text-foreground">{t(locale, 'admin', 'copy.photos')}</span>
                         {existing ? (
                             <AdminTestimonialImageManager imageUrls={existing.imageUrls} onSave={(ids) => onSaveImages(existing.id, ids)} />
                         ) : (
@@ -579,11 +573,11 @@ function TestimonialSide({
 
                     <div className={existing ? 'flex flex-wrap gap-2 pt-1' : 'flex flex-wrap gap-2'}>
                         <Button type="submit" size="sm" disabled={isSubmitting}>
-                            {existing ? { de: 'Speichern', en: 'Save' }[locale] : { de: 'Anlegen', en: 'Create' }[locale]}
+                            {existing ? t(locale, 'admin', 'copy.save') : t(locale, 'admin', 'copy.create')}
                         </Button>
                         {existing ? (
                             <Button type="button" size="sm" variant="outline" disabled={isSubmitting} onClick={cancelEditing}>
-                                {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                {t(locale, 'admin', 'copy.cancel')}
                             </Button>
                         ) : null}
                     </div>
@@ -593,20 +587,15 @@ function TestimonialSide({
             <AlertDialog open={confirm === 'publish'} onOpenChange={(open) => !open && setConfirm(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>{{ de: 'Jetzt veröffentlichen?', en: 'Publish now?' }[locale]}</AlertDialogTitle>
+                        <AlertDialogTitle>{t(locale, 'admin', 'copy.publishNow')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            {
-                                {
-                                    de: 'Die Bewertung wird auf öffentlichen Seiten sichtbar, sofern sie kuratiert oder dem Koch zugeordnet ist.',
-                                    en: 'The review becomes visible on public pages where it is curated or linked to the cook.',
-                                }[locale]
-                            }
+                            {t(locale, 'admin', 'copy.theReviewBecomesVisibleOnPublicPagesWhereItIsCuratedOrLinked')}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel disabled={busy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogCancel disabled={busy}>{t(locale, 'admin', 'copy.cancel')}</AlertDialogCancel>
                         <AlertDialogAction disabled={busy} onClick={() => void onConfirmPublish('PUBLISHED')}>
-                            {{ de: 'Veröffentlichen', en: 'Publish' }[locale]}
+                            {t(locale, 'admin', 'copy.publish')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -615,22 +604,15 @@ function TestimonialSide({
             <AlertDialog open={confirm === 'unpublish'} onOpenChange={(open) => !open && setConfirm(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>
-                            {{ de: 'Veröffentlichung zurückziehen?', en: 'Unpublish this review?' }[locale]}
-                        </AlertDialogTitle>
+                        <AlertDialogTitle>{t(locale, 'admin', 'copy.unpublishThisReview')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            {
-                                {
-                                    de: 'Die Bewertung verschwindet von öffentlichen Seiten, bis sie erneut veröffentlicht wird.',
-                                    en: 'The review will disappear from public pages until it is published again.',
-                                }[locale]
-                            }
+                            {t(locale, 'admin', 'copy.theReviewWillDisappearFromPublicPagesUntilItIsPublishedAgain')}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel disabled={busy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogCancel disabled={busy}>{t(locale, 'admin', 'copy.cancel')}</AlertDialogCancel>
                         <AlertDialogAction disabled={busy} onClick={() => void onConfirmPublish('PENDING_REVIEW')}>
-                            {{ de: 'Zurückziehen', en: 'Unpublish' }[locale]}
+                            {t(locale, 'admin', 'copy.unpublish')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -639,20 +621,15 @@ function TestimonialSide({
             <AlertDialog open={confirm === 'delete'} onOpenChange={(open) => !open && setConfirm(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>{{ de: 'Bewertung löschen?', en: 'Delete this testimonial?' }[locale]}</AlertDialogTitle>
+                        <AlertDialogTitle>{t(locale, 'admin', 'copy.deleteThisTestimonial')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            {
-                                {
-                                    de: 'Dies entfernt die Bewertung dauerhaft und aus allen Kurationslisten.',
-                                    en: 'This permanently removes the testimonial and any curation entries.',
-                                }[locale]
-                            }
+                            {t(locale, 'admin', 'copy.thisPermanentlyRemovesTheTestimonialAndAnyCurationEntries')}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel disabled={busy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogCancel disabled={busy}>{t(locale, 'admin', 'copy.cancel')}</AlertDialogCancel>
                         <AlertDialogAction variant="destructive" disabled={busy} onClick={() => void onConfirmDelete()}>
-                            {{ de: 'Löschen', en: 'Delete' }[locale]}
+                            {t(locale, 'admin', 'copy.delete')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

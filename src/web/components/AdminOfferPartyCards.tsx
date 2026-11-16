@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { ExternalLinkIcon } from 'lucide-react';
 
+import { t } from '../../i18n/t';
 import type { Locale } from '../utils/locale';
 import { Avatar, AvatarFallback, AvatarImage } from './base/avatar';
 import { Badge } from './base/badge';
@@ -73,13 +74,13 @@ export function AdminOfferPartyCards({
     customer: AdminOfferPartyCardPerson | null;
     locale: Locale;
 }) {
-    const openUserLabel = { de: 'Nutzer öffnen', en: 'Open user' }[locale];
+    const openUserLabel = t(locale, 'admin', 'copy.openUser');
 
     return (
         <div className="grid items-start gap-4 @2xl:grid-cols-2">
-            <AdminOfferPartyCard person={cook} roleLabel={{ de: 'Koch', en: 'Cook' }[locale]} openUserLabel={openUserLabel} />
+            <AdminOfferPartyCard person={cook} roleLabel={t(locale, 'admin', 'copy.cook')} openUserLabel={openUserLabel} />
             {customer ? (
-                <AdminOfferPartyCard person={customer} roleLabel={{ de: 'Kunde', en: 'Customer' }[locale]} openUserLabel={openUserLabel} />
+                <AdminOfferPartyCard person={customer} roleLabel={t(locale, 'admin', 'copy.customer')} openUserLabel={openUserLabel} />
             ) : null}
         </div>
     );

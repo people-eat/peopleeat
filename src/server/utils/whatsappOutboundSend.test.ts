@@ -46,13 +46,19 @@ describe('whatsappTemplateOutboundSend', () => {
         );
     });
 
-    it.each(['de', 'en'] as const)('persists the exact %s rendering and opaque URL sent to Meta', async (locale) => {
+    it.each([
+        { locale: 'de' as const, languageCode: 'de' as const, bodySnippet: 'danke für deine Buchungsanfrage' },
+        { locale: 'en' as const, languageCode: 'en' as const, bodySnippet: 'thanks for your booking request' },
+        { locale: 'fr' as const, languageCode: 'en' as const, bodySnippet: 'thanks for your booking request' },
+        { locale: 'it' as const, languageCode: 'en' as const, bodySnippet: 'thanks for your booking request' },
+    ])('persists the exact $locale→$languageCode rendering and opaque URL sent to Meta', async ({ locale, languageCode, bodySnippet }) => {
         // Arrange
         const phone = phoneNumberCreate();
-        const { serverRuntime, user } = await commandSetup.withUser({ phoneNumber: phone, locale });
+        const profileLocale = locale === 'de' || locale === 'en' ? locale : 'en';
+        const { serverRuntime, user } = await commandSetup.withUser({ phoneNumber: phone, locale: profileLocale });
         const provider = providerCreate();
         const requestId = idCreate();
-        const linkPath = `${locale === 'en' ? '/en' : ''}/profile/booking-requests/${requestId}`;
+        const linkPath = `${locale === 'de' ? '' : '/en'}/profile/booking-requests/${requestId}`;
         // Act
         const result = await whatsappTemplateOutboundSend(serverRuntime, provider, {
             purpose: 'BOOKING_REQUEST_CREATED',
@@ -67,7 +73,7 @@ describe('whatsappTemplateOutboundSend', () => {
         expect(provider.sendTemplate).toHaveBeenCalledWith({
             toPhoneNumber: phone,
             templateName: 'booking_request_received_customer_v2',
-            languageCode: locale,
+            languageCode,
             bodyParameters: ['Anna', '2026-12-12', '18:00'],
             buttonUrlParameter: result!.outboundWhatsAppMessageId,
         });
@@ -79,10 +85,8 @@ describe('whatsappTemplateOutboundSend', () => {
             .select()
             .from(whatsAppMessages)
             .where(eq(whatsAppMessages.outboundWhatsAppMessageId, result!.outboundWhatsAppMessageId));
-        expect(audit?.templateSnapshot?.languageCode).toBe(locale);
-        expect(audit?.templateSnapshot?.body).toContain(
-            locale === 'de' ? 'danke für deine Buchungsanfrage' : 'thanks for your booking request',
-        );
+        expect(audit?.templateSnapshot?.languageCode).toBe(languageCode);
+        expect(audit?.templateSnapshot?.body).toContain(bodySnippet);
         expect(audit?.templateSnapshot?.body).toContain('🙌');
         expect(audit?.templateSnapshot?.body).not.toContain('{{');
         expect(audit?.templateSnapshot?.buttons[0]?.url).toContain(`/api/whatsapp/links/${result!.outboundWhatsAppMessageId}`);

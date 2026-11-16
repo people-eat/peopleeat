@@ -2,6 +2,7 @@ import { CheckIcon, PlusIcon } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
+import { inlineCopy } from '../../shared';
 
 import type { GqlCOfferAddonInclusion, GqlCOfferAddonPricingUnit } from '../graphql/generated';
 import { ProfileCustomerBookingRequestOfferAddonSelectionUpdateDocument } from '../graphql/generated';
@@ -56,7 +57,7 @@ export function BookingRequestOfferAddonSelectionList({
                     const priceLabel = offerAddonPriceLabel(addon.priceCents, addon.pricingUnit, locale);
                     const detailParts = [addon.description.trim(), priceLabel].filter((part) => part.length > 0);
                     if (required) {
-                        detailParts.push({ de: 'enthalten', en: 'included' }[locale]);
+                        detailParts.push(inlineCopy({ de: 'enthalten', en: 'included' }, locale));
                     }
 
                     return (
@@ -67,7 +68,7 @@ export function BookingRequestOfferAddonSelectionList({
                                 imageUrl={addon.imageUrl}
                                 selected={selected}
                                 disabled={disabled && !selected}
-                                dialogTitle={{ de: 'Zusatzleistung', en: 'Extra' }[locale]}
+                                dialogTitle={inlineCopy({ de: 'Zusatzleistung', en: 'Extra' }, locale)}
                                 action={
                                     <Button
                                         type="button"
@@ -77,8 +78,8 @@ export function BookingRequestOfferAddonSelectionList({
                                         aria-pressed={selected}
                                         aria-label={
                                             selected
-                                                ? { de: 'Auswahl entfernen', en: 'Remove selection' }[locale]
-                                                : { de: 'Zusatzleistung wählen', en: 'Select extra' }[locale]
+                                                ? inlineCopy({ de: 'Auswahl entfernen', en: 'Remove selection' }, locale)
+                                                : inlineCopy({ de: 'Zusatzleistung wählen', en: 'Select extra' }, locale)
                                         }
                                         onClick={() => {
                                             if (required) return;
@@ -90,10 +91,13 @@ export function BookingRequestOfferAddonSelectionList({
                                                 setPendingAddonId(null);
                                                 if (result.error || !result.data?.user.bookingRequestOfferAddonSelectionUpdate.success) {
                                                     toast.error(
-                                                        {
-                                                            de: 'Die Auswahl konnte nicht gespeichert werden.',
-                                                            en: 'Could not save that choice.',
-                                                        }[locale],
+                                                        inlineCopy(
+                                                            {
+                                                                de: 'Die Auswahl konnte nicht gespeichert werden.',
+                                                                en: 'Could not save that choice.',
+                                                            },
+                                                            locale,
+                                                        ),
                                                     );
                                                 }
                                             });

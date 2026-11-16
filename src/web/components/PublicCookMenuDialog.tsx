@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router';
 
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { Button } from './base/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './base/dialog';
 import { CookMenuCardMedia } from './CookMenuCard';
@@ -32,17 +32,16 @@ export function PublicCookMenuDialog({
     courses: ReadonlyArray<PublicCookMenuDialogCourse>;
     bookCta?: { cookId: string; menuId: string; onClick?: () => void };
 }) {
-    const locale = useLocale();
+    const { t } = useT('public');
     const courseCount = courses.length;
-    const courseLabel =
-        courseCount === 1 ? { de: '1 Gang', en: '1 course' }[locale] : { de: `${courseCount} Gänge`, en: `${courseCount} courses` }[locale];
+    const courseLabel = t('chef.courseCount', { count: courseCount });
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-3xl">
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
-                    <DialogDescription className="sr-only">{{ de: 'Details zum Menü', en: 'Menu details' }[locale]}</DialogDescription>
+                    <DialogDescription className="sr-only">{t('chef.menuDetails')}</DialogDescription>
                 </DialogHeader>
                 <div className="flex flex-col justify-start gap-8 lg:flex-row">
                     <CookMenuCardMedia images={images} className="size-56 rounded-2xl lg:size-80" />
@@ -72,7 +71,7 @@ export function PublicCookMenuDialog({
                                     search={{ cookId: bookCta.cookId, menuId: bookCta.menuId }}
                                     onClick={bookCta.onClick}
                                 >
-                                    {{ de: 'Dieses Menü anfragen', en: 'Request this menu' }[locale]}
+                                    {t('chef.requestMenu')}
                                 </Link>
                             </Button>
                         ) : null}

@@ -9,6 +9,7 @@ import {
     timeZoneFromCountry,
 } from '../../shared';
 import type { BookingRequestSetting } from '../../shared';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 import type { Locale } from '../utils/locale';
 import { Avatar, AvatarFallback, AvatarImage } from './base/avatar';
@@ -102,6 +103,7 @@ export function CookBookingRequestSummaryCard({
     venueCountry?: string | null;
     venueCity?: string | null;
 }) {
+    const { t } = useT('profileCook');
     const hasMessage = message != null && message.text.trim().length > 0;
     const participantsWithRestrictions = participants.filter((participant) => participant.restrictions.length > 0);
     const venueTimeZone = timeZoneFromCountry(venueCountry);
@@ -132,14 +134,11 @@ export function CookBookingRequestSummaryCard({
             )}
         >
             <dl className={cn('grid gap-4 @md:grid-cols-2', hasMessage && '@xl:col-span-2')}>
-                <DetailField label={{ de: 'Anlass', en: 'Occasion' }[locale]} value={occasion} />
-                <DetailField
-                    label={{ de: 'Teilnehmer', en: 'Participants' }[locale]}
-                    value={formatParticipants(participants, { locale })}
-                />
+                <DetailField label={t('m.occasion')} value={occasion} />
+                <DetailField label={t('m.participants')} value={formatParticipants(participants, { locale })} />
                 {participantsWithRestrictions.length > 0 ? (
                     <DetailField
-                        label={{ de: 'Einschränkungen', en: 'Restrictions' }[locale]}
+                        label={t('m.restrictions')}
                         value={
                             <ul className="grid gap-1">
                                 {participantsWithRestrictions.map((participant) => (
@@ -151,40 +150,28 @@ export function CookBookingRequestSummaryCard({
                         }
                     />
                 ) : null}
-                <DetailField label={{ de: 'Datum & Uhrzeit', en: 'Date & time' }[locale]} value={whenValue} />
-                <DetailField
-                    label={{ de: 'Präferenzen', en: 'Preferences' }[locale]}
-                    value={preferences.length > 0 ? preferences.join(', ') : { de: 'Keine Präferenzen', en: 'No preferences' }[locale]}
-                />
-                <DetailField
-                    label={{ de: 'Veranstaltungsort', en: 'Event location' }[locale]}
-                    value={eventLocation}
-                    hint={eventLocationHint}
-                />
+                <DetailField label={t('m.dateTime')} value={whenValue} />
+                <DetailField label={t('m.preferences')} value={preferences.length > 0 ? preferences.join(', ') : t('m.noPreferences')} />
+                <DetailField label={t('m.eventLocation')} value={eventLocation} hint={eventLocationHint} />
                 {kitchenHasFacts ? (
                     <DetailField
                         className={(kitchenDetails?.photos?.length ?? 0) > 0 ? '@md:col-span-2' : undefined}
-                        label={{ de: 'Über die Küche', en: 'About the kitchen' }[locale]}
+                        label={t('m.aboutTheKitchen')}
                         value={<BookingRequestKitchenDetailsFactContent details={kitchenDetails} locale={locale} />}
                     />
                 ) : null}
-                {setting != null ? (
-                    <DetailField
-                        label={{ de: 'Wo sitzt ihr', en: 'Where you dine' }[locale]}
-                        value={bookingRequestSettingLabel(setting, locale)}
-                    />
-                ) : null}
+                {setting != null ? <DetailField label={t('m.whereYouDine')} value={bookingRequestSettingLabel(setting, locale)} /> : null}
                 <DetailField
-                    label={{ de: 'Geschätzte Reiseentfernung', en: 'Estimated travel distance' }[locale]}
+                    label={t('m.estimatedTravelDistance')}
                     value={estimatedTravelDistanceKm != null ? `${estimatedTravelDistanceKm.toFixed(1)} km` : '—'}
                 />
                 <DetailField
-                    label={{ de: 'Geschätzte Reisekosten', en: 'Estimated travel expenses' }[locale]}
+                    label={t('m.estimatedTravelExpenses')}
                     value={formatCurrency(estimatedTravelExpensesCents, { locale, nullAs: 'emDash' })}
                 />
                 {invoiceAddress != null ? (
                     <DetailField
-                        label={{ de: 'Rechnungsadresse', en: 'Invoice address' }[locale]}
+                        label={t('m.invoiceAddress')}
                         value={
                             <div className="grid gap-0.5">
                                 {invoiceAddress.companyName?.trim() ? <span>{invoiceAddress.companyName.trim()}</span> : null}

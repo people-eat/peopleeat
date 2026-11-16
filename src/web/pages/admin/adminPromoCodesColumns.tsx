@@ -1,5 +1,6 @@
 import { createColumnHelper } from '@tanstack/react-table';
 
+import { t } from '../../../i18n/t';
 import { formatCurrency, formatDate } from '../../../shared';
 import type { Locale } from '../../../shared/locale';
 import { AdminDataTableSortHeader } from './AdminDataTableSortHeader';
@@ -22,25 +23,23 @@ const columnHelper = createColumnHelper<AdminPromoCodesDataTableFeatures, AdminP
 export function adminPromoCodesColumns(locale: Locale, timeZone: string) {
     return columnHelper.columns([
         columnHelper.accessor('redeemCode', {
-            header: ({ column }) => (
-                <AdminDataTableSortHeader column={column}>{{ de: 'Code', en: 'Code' }[locale]}</AdminDataTableSortHeader>
-            ),
+            header: ({ column }) => <AdminDataTableSortHeader column={column}>{t(locale, 'admin', 'copy.code')}</AdminDataTableSortHeader>,
             cell: ({ row }) => <span className="font-mono text-sm tracking-wide">{row.original.redeemCode}</span>,
         }),
         columnHelper.accessor('amountCents', {
             header: ({ column }) => (
-                <AdminDataTableSortHeader column={column}>{{ de: 'Wert', en: 'Amount' }[locale]}</AdminDataTableSortHeader>
+                <AdminDataTableSortHeader column={column}>{t(locale, 'admin', 'copy.amount')}</AdminDataTableSortHeader>
             ),
             cell: ({ row }) => (
                 <span className="tabular-nums">{formatCurrency(row.original.amountCents, { locale, maximumFractionDigits: 0 })}</span>
             ),
         }),
         columnHelper.accessor('minimumTotalAmountCustomerCents', {
-            header: () => ({ de: 'Mindestpreis', en: 'Minimum' })[locale],
+            header: () => t(locale, 'admin', 'copy.minimum'),
             cell: ({ row }) => (
                 <span className="tabular-nums text-muted-foreground">
                     {row.original.minimumTotalAmountCustomerCents == null
-                        ? { de: 'Keiner', en: 'None' }[locale]
+                        ? t(locale, 'admin', 'copy.none')
                         : formatCurrency(row.original.minimumTotalAmountCustomerCents, { locale, maximumFractionDigits: 0 })}
                 </span>
             ),
@@ -48,7 +47,7 @@ export function adminPromoCodesColumns(locale: Locale, timeZone: string) {
         }),
         columnHelper.accessor('expiresAt', {
             header: ({ column }) => (
-                <AdminDataTableSortHeader column={column}>{{ de: 'Ablauf', en: 'Expires' }[locale]}</AdminDataTableSortHeader>
+                <AdminDataTableSortHeader column={column}>{t(locale, 'admin', 'copy.expires3')}</AdminDataTableSortHeader>
             ),
             cell: ({ row }) => (
                 <span className="text-muted-foreground tabular-nums">
@@ -58,7 +57,7 @@ export function adminPromoCodesColumns(locale: Locale, timeZone: string) {
         }),
         columnHelper.accessor('createdAt', {
             header: ({ column }) => (
-                <AdminDataTableSortHeader column={column}>{{ de: 'Erstellt', en: 'Created' }[locale]}</AdminDataTableSortHeader>
+                <AdminDataTableSortHeader column={column}>{t(locale, 'admin', 'copy.created')}</AdminDataTableSortHeader>
             ),
             cell: ({ row }) => (
                 <span className="text-muted-foreground tabular-nums">

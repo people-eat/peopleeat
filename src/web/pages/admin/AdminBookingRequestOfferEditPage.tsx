@@ -3,6 +3,7 @@ import { Link, notFound, useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
+import { t } from '../../../i18n/t';
 import { userDisplayName } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
@@ -11,17 +12,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import type { GqlCAdminBookingRequestOfferEditPageOfferFragment, GqlCAdminBookingRequestOfferEditPageQuery } from '../../graphql/generated';
 import { AdminBookingRequestOfferUpdateDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
-import { acceptTriadFromBool, acceptTriadToBool, ADMIN_OFFER_ACCEPT_OPTIONS } from './adminBookingRequestOfferFeeForm';
+import type { Locale } from '../../utils/locale';
+import {
+    acceptTriadFromBool,
+    acceptTriadToBool,
+    ADMIN_OFFER_ACCEPT_OPTIONS,
+    adminOfferAcceptOptionLabel,
+} from './adminBookingRequestOfferFeeForm';
 import type { AdminOfferAcceptTriad } from './adminBookingRequestOfferFeeForm';
-import { adminStubRouteBySlug } from './adminCatalog';
+import { adminStubRouteBySlug, adminStubRouteTitle } from './adminCatalog';
 
 const listRoute = adminStubRouteBySlug('booking-requests');
 
-export const adminBookingRequestOfferEditPageTitle = { de: 'Angebot bearbeiten', en: 'Edit offer' } as const;
-export const adminBookingRequestOfferEditPageDescription = {
-    de: 'Annahme-Flags von Kunde und Koch anpassen.',
-    en: 'Edit customer and cook accept flags.',
-} as const;
+export function adminBookingRequestOfferEditPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.bookingRequestOfferEdit.title');
+}
+export function adminBookingRequestOfferEditPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.bookingRequestOfferEdit.description');
+}
 
 export function adminBookingRequestOfferEditPageVariables(bookingRequestId: string, bookingRequestOfferId: string) {
     return { bookingRequestId, bookingRequestOfferId };
@@ -74,14 +82,14 @@ export function AdminBookingRequestOfferEditPage({
                 if (!result.data?.admin.bookingRequestOfferUpdate.success) {
                     throw new Error('update failed');
                 }
-                toast.success({ de: 'Angebot aktualisiert.', en: 'Offer updated.' }[locale]);
+                toast.success(t(locale, 'admin', 'copy.offerUpdated'));
                 await navigate({
                     to: '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId',
                     params: { bookingRequestId, bookingRequestOfferId },
                     search: { tab: 'offer' },
                 });
             } catch {
-                toast.error({ de: 'Aktualisierung fehlgeschlagen.', en: 'Update failed.' }[locale]);
+                toast.error(t(locale, 'admin', 'copy.updateFailed'));
             }
         },
     });
@@ -91,13 +99,13 @@ export function AdminBookingRequestOfferEditPage({
     return (
         <AdminPageChrome
             crumbs={[
-                { label: listRoute.title[locale], to: '/{-$locale}/admin/booking-requests' },
+                { label: adminStubRouteTitle(listRoute.slug, locale), to: '/{-$locale}/admin/booking-requests' },
                 {
-                    label: seedRequest.occasion.trim() || { de: 'Anfrage', en: 'Request' }[locale],
+                    label: seedRequest.occasion.trim() || t(locale, 'admin', 'copy.request'),
                     to: '/{-$locale}/admin/booking-requests/$bookingRequestId',
                     params: { bookingRequestId },
                 },
-                { label: adminBookingRequestOfferEditPageTitle[locale] },
+                { label: adminBookingRequestOfferEditPageTitle(locale) },
             ]}
         >
             <AdminPinnedFooterLayout
@@ -110,19 +118,19 @@ export function AdminBookingRequestOfferEditPage({
                                 params={{ bookingRequestId, bookingRequestOfferId }}
                                 search={{ tab: 'offer' }}
                             >
-                                {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                {t(locale, 'admin', 'copy.cancel')}
                             </Link>
                         </Button>
                         <Button type="submit" form="admin-booking-request-offer-edit-form" disabled={isSubmitting}>
-                            {isSubmitting ? { de: 'Speichern…', en: 'Saving…' }[locale] : { de: 'Speichern', en: 'Save' }[locale]}
+                            {isSubmitting ? t(locale, 'admin', 'copy.saving2') : t(locale, 'admin', 'copy.save')}
                         </Button>
                     </>
                 }
             >
                 <div className="grid gap-2">
-                    <h1 className="font-serif text-3xl/tight text-foreground">{adminBookingRequestOfferEditPageTitle[locale]}</h1>
+                    <h1 className="font-serif text-3xl/tight text-foreground">{adminBookingRequestOfferEditPageTitle(locale)}</h1>
                     <p className="text-sm text-muted-foreground">
-                        {userDisplayName(seedOffer.cook.user)} · {adminBookingRequestOfferEditPageDescription[locale]}
+                        {userDisplayName(seedOffer.cook.user)} · {adminBookingRequestOfferEditPageDescription(locale)}
                     </p>
                 </div>
 
@@ -139,7 +147,7 @@ export function AdminBookingRequestOfferEditPage({
                         <form.Field name="cookAccepted">
                             {(field) => (
                                 <div className="grid gap-1.5">
-                                    <span className="text-sm font-medium">{{ de: 'Koch akzeptiert', en: 'Cook accepted' }[locale]}</span>
+                                    <span className="text-sm font-medium">{t(locale, 'admin', 'copy.cookAccepted')}</span>
                                     <Select
                                         value={field.state.value}
                                         onValueChange={(next) => next && field.handleChange(next as AdminOfferAcceptTriad)}
@@ -149,8 +157,8 @@ export function AdminBookingRequestOfferEditPage({
                                         </SelectTrigger>
                                         <SelectContent>
                                             {ADMIN_OFFER_ACCEPT_OPTIONS.map((option) => (
-                                                <SelectItem key={option.value} value={option.value}>
-                                                    {option[locale]}
+                                                <SelectItem key={option} value={option}>
+                                                    {adminOfferAcceptOptionLabel(option, locale)}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
@@ -161,9 +169,7 @@ export function AdminBookingRequestOfferEditPage({
                         <form.Field name="userAccepted">
                             {(field) => (
                                 <div className="grid gap-1.5">
-                                    <span className="text-sm font-medium">
-                                        {{ de: 'Kunde akzeptiert', en: 'Customer accepted' }[locale]}
-                                    </span>
+                                    <span className="text-sm font-medium">{t(locale, 'admin', 'copy.customerAccepted')}</span>
                                     <Select
                                         value={field.state.value}
                                         onValueChange={(next) => next && field.handleChange(next as AdminOfferAcceptTriad)}
@@ -173,8 +179,8 @@ export function AdminBookingRequestOfferEditPage({
                                         </SelectTrigger>
                                         <SelectContent>
                                             {ADMIN_OFFER_ACCEPT_OPTIONS.map((option) => (
-                                                <SelectItem key={option.value} value={option.value}>
-                                                    {option[locale]}
+                                                <SelectItem key={option} value={option}>
+                                                    {adminOfferAcceptOptionLabel(option, locale)}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>

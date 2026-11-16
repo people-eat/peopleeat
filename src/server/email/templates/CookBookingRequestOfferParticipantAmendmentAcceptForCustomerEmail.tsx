@@ -1,3 +1,4 @@
+import { tEmail } from '../../../i18n/tEmail';
 import type { Locale } from '../../../shared/locale';
 import { EmailButton, EmailLayout, EmailText } from '../components';
 
@@ -29,72 +30,44 @@ export function CookBookingRequestOfferParticipantAmendmentAcceptForCustomerEmai
     venueDisplayText,
 }: Props) {
     const subject = cookBookingRequestOfferParticipantAmendmentAcceptForCustomerEmailSubject(locale);
-    const preview = {
-        de: `${cookFirstName} hat die Änderung angenommen`,
-        en: `${cookFirstName} accepted the change`,
-    }[locale];
 
     let moneyNote = '';
     if (giftCardDeltaCents < 0) {
-        moneyNote += {
-            de: ' Ungenutztes Guthaben wurde auf deine Geschenkkarte zurückgebucht.',
-            en: ' Unused credit was restored to your gift card.',
-        }[locale];
+        moneyNote += tEmail(locale, 'offer.amendmentAccept.giftCardCredit');
     }
     if (pendingDeltaPaymentDue) {
-        moneyNote += {
-            de: ' Bitte schließe die Differenzzahlung im Checkout ab.',
-            en: ' Please complete the difference payment in checkout.',
-        }[locale];
+        moneyNote += tEmail(locale, 'offer.amendmentAccept.payDifference');
     } else if (paymentStatus === 'EMPTY' && customerDeltaCents !== 0) {
-        moneyNote += {
-            de: ' Dein Checkout wurde aktualisiert. Bitte schließe die Zahlung ab.',
-            en: ' Your checkout was updated. Please complete payment.',
-        }[locale];
+        moneyNote += tEmail(locale, 'offer.amendmentAccept.checkoutUpdated');
     } else if (paymentStatus === 'SETUP' && customerDeltaCents !== 0) {
-        moneyNote += {
-            de: ' Der Betrag für die spätere Kartenzahlung wurde angepasst.',
-            en: ' The amount for the later card charge was updated.',
-        }[locale];
+        moneyNote += tEmail(locale, 'offer.amendmentAccept.laterChargeUpdated');
     } else if (customerDeltaCents < 0) {
-        moneyNote += {
-            de: ' Die Differenz wird dir erstattet.',
-            en: ' The difference will be refunded to you.',
-        }[locale];
+        moneyNote += tEmail(locale, 'offer.amendmentAccept.refund');
     } else if (customerDeltaCents > 0) {
-        moneyNote += {
-            de: ' Die Differenz wird über deine hinterlegte Zahlungsmethode nachträglich belastet.',
-            en: ' The difference will be charged to your saved payment method.',
-        }[locale];
+        moneyNote += tEmail(locale, 'offer.amendmentAccept.chargeSavedMethod');
     }
 
-    const body = {
-        de: `${cookFirstName} hat deine Buchungsänderung angenommen.${moneyNote} Du findest die aktualisierten Details in deinem Angebot.`,
-        en: `${cookFirstName} accepted your booking change.${moneyNote} You can see the updated details on your offer.`,
-    }[locale];
-    const ctaOffer = { de: 'Angebot ansehen', en: 'View offer' }[locale];
-    const ctaPay = { de: 'Jetzt zahlen', en: 'Pay now' }[locale];
     const venue = venueDisplayText?.trim();
-    const venueNote = venue
-        ? {
-              de: `Die Adresse hat sich geändert: ${venue}. Bitte aktualisiere sie in deinem Kalender.`,
-              en: `The address has changed: ${venue}. Please update it in your calendar.`,
-          }[locale]
-        : null;
 
     return (
-        <EmailLayout locale={locale} webPageUrl={webPageUrl} preview={preview} subject={subject} recipientFirstName={recipientFirstName}>
-            <EmailText>{body}</EmailText>
-            {venueNote ? <EmailText>{venueNote}</EmailText> : null}
+        <EmailLayout
+            locale={locale}
+            webPageUrl={webPageUrl}
+            preview={tEmail(locale, 'offer.amendmentAccept.preview', { cookFirstName })}
+            subject={subject}
+            recipientFirstName={recipientFirstName}
+        >
+            <EmailText>{tEmail(locale, 'offer.amendmentAccept.body', { cookFirstName, moneyNote })}</EmailText>
+            {venue ? <EmailText>{tEmail(locale, 'offer.amendmentAccept.venueNote', { venue })}</EmailText> : null}
             {checkoutUrl && (pendingDeltaPaymentDue || paymentStatus === 'EMPTY') ? (
-                <EmailButton href={checkoutUrl}>{ctaPay}</EmailButton>
+                <EmailButton href={checkoutUrl}>{tEmail(locale, 'offer.amendmentAccept.ctaPay')}</EmailButton>
             ) : (
-                <EmailButton href={offerUrl}>{ctaOffer}</EmailButton>
+                <EmailButton href={offerUrl}>{tEmail(locale, 'common.ctaViewOffer')}</EmailButton>
             )}
         </EmailLayout>
     );
 }
 
 export function cookBookingRequestOfferParticipantAmendmentAcceptForCustomerEmailSubject(locale: Locale): string {
-    return { de: 'Buchungsänderung angenommen', en: 'Booking change accepted' }[locale];
+    return tEmail(locale, 'offer.amendmentAccept.subject');
 }

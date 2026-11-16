@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { t } from '../../../i18n/t';
 import { isTestimonialRating } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
@@ -39,18 +40,19 @@ import {
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import type { Locale } from '../../utils/locale';
-import { adminStubRouteBySlug } from './adminCatalog';
+import { adminStubRouteBySlug, adminStubRouteTitle } from './adminCatalog';
 import { AdminTestimonialImageManager } from './AdminTestimonialImageManager';
 import { testimonialPublicationStatusLabel } from './adminTestimonialsShared';
 
 const listRoute = adminStubRouteBySlug('testimonials');
 const FORM_ID = 'admin-customer-testimonial-form';
 
-export const adminCustomerTestimonialPageTitle = { de: 'Kundenbewertung', en: 'Customer testimonial' } as const;
-export const adminCustomerTestimonialPageDescription = {
-    de: 'Kundenbewertung ansehen, bearbeiten, veröffentlichen oder löschen.',
-    en: 'View, edit, publish, or delete a customer testimonial.',
-} as const;
+export function adminCustomerTestimonialPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.customerTestimonial.title');
+}
+export function adminCustomerTestimonialPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.customerTestimonial.description');
+}
 
 type AdminCustomerTestimonialDetail = NonNullable<
     NonNullable<NonNullable<GqlCAdminCustomerTestimonialPageQuery['currentSession']['user']>['admin']>['customerTestimonial']
@@ -81,7 +83,7 @@ function fieldErrorText(errors: unknown[]): string | undefined {
 
 function requiredRating(value: number | null, locale: Locale): string | undefined {
     if (!isTestimonialRating(value)) {
-        return { de: 'Bitte wähle eine Sternebewertung.', en: 'Please choose a star rating.' }[locale];
+        return t(locale, 'admin', 'copy.pleaseChooseAStarRating');
     }
     return undefined;
 }
@@ -127,10 +129,10 @@ export function AdminCustomerTestimonialPage({
                 },
             });
             if (result.error || !result.data?.admin.customerTestimonialUpsert.success) {
-                toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+                toast.error(t(locale, 'admin', 'copy.couldNotSave'));
                 return;
             }
-            toast.success({ de: 'Gespeichert.', en: 'Saved.' }[locale]);
+            toast.success(t(locale, 'admin', 'copy.saved'));
             setEditing(false);
         },
     });
@@ -179,13 +181,9 @@ export function AdminCustomerTestimonialPage({
                 throw new Error('publish failed');
             }
             setConfirm(null);
-            toast.success(
-                next === 'PUBLISHED'
-                    ? { de: 'Veröffentlicht.', en: 'Published.' }[locale]
-                    : { de: 'Zurückgezogen.', en: 'Unpublished.' }[locale],
-            );
+            toast.success(next === 'PUBLISHED' ? t(locale, 'admin', 'copy.published') : t(locale, 'admin', 'copy.unpublished'));
         } catch {
-            toast.error({ de: 'Status konnte nicht geändert werden.', en: 'Could not update the status.' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.couldNotUpdateTheStatus'));
         } finally {
             setPublishBusy(false);
         }
@@ -201,7 +199,7 @@ export function AdminCustomerTestimonialPage({
             setConfirm(null);
             await navigate({ to: listRoute.to });
         } catch {
-            toast.error({ de: 'Löschen fehlgeschlagen.', en: 'Could not delete the testimonial.' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.couldNotDeleteTheTestimonial'));
             setDeleteBusy(false);
         }
     }
@@ -211,13 +209,13 @@ export function AdminCustomerTestimonialPage({
         return Boolean(result.data?.admin.customerTestimonialImageUpdate.success) && !result.error;
     }
 
-    const crumbLabel = testimonial?.displayAuthorName || adminCustomerTestimonialPageTitle[locale];
+    const crumbLabel = testimonial?.displayAuthorName || adminCustomerTestimonialPageTitle(locale);
     const formBusy = isSubmitting || publishBusy || deleteBusy;
     const publicationTone = testimonial?.publicationStatus === 'PUBLISHED' ? 'success' : 'warning';
 
     return (
         <AdminPageChrome
-            crumbs={[{ label: listRoute.title[locale], to: '/{-$locale}/admin/testimonials' }, { label: crumbLabel }]}
+            crumbs={[{ label: adminStubRouteTitle(listRoute.slug, locale), to: '/{-$locale}/admin/testimonials' }, { label: crumbLabel }]}
             contentClassName="min-h-0 overflow-hidden gap-0"
         >
             {testimonial ? (
@@ -228,12 +226,10 @@ export function AdminCustomerTestimonialPage({
                             editing ? (
                                 <>
                                     <Button type="button" variant="outline" disabled={formBusy} onClick={onCancelEdit}>
-                                        {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                        {t(locale, 'admin', 'copy.cancel')}
                                     </Button>
                                     <Button type="submit" form={FORM_ID} disabled={formBusy || !isDirty}>
-                                        {isSubmitting
-                                            ? { de: 'Speichern…', en: 'Saving…' }[locale]
-                                            : { de: 'Speichern', en: 'Save' }[locale]}
+                                        {isSubmitting ? t(locale, 'admin', 'copy.saving2') : t(locale, 'admin', 'copy.save')}
                                     </Button>
                                 </>
                             ) : (
@@ -245,7 +241,7 @@ export function AdminCustomerTestimonialPage({
                                                 variant="outline"
                                                 size="icon"
                                                 disabled={formBusy}
-                                                aria-label={{ de: 'Weitere Aktionen', en: 'More actions' }[locale]}
+                                                aria-label={t(locale, 'admin', 'copy.moreActions')}
                                             >
                                                 <MoreHorizontalIcon className="size-4" />
                                             </Button>
@@ -253,7 +249,7 @@ export function AdminCustomerTestimonialPage({
                                         <DropdownMenuContent align="end">
                                             {testimonial.publicationStatus === 'PUBLISHED' ? (
                                                 <DropdownMenuItem disabled={publishBusy} onSelect={() => setConfirm('unpublish')}>
-                                                    {{ de: 'Zurückziehen', en: 'Unpublish' }[locale]}
+                                                    {t(locale, 'admin', 'copy.unpublish')}
                                                 </DropdownMenuItem>
                                             ) : null}
                                             <DropdownMenuItem
@@ -261,12 +257,12 @@ export function AdminCustomerTestimonialPage({
                                                 disabled={deleteBusy}
                                                 onSelect={() => setConfirm('delete')}
                                             >
-                                                {{ de: 'Löschen', en: 'Delete' }[locale]}
+                                                {t(locale, 'admin', 'copy.delete')}
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                     <Button type="button" variant="outline" onClick={() => setPreviewOpen(true)}>
-                                        {{ de: 'Öffentliche Ansicht', en: 'Public view' }[locale]}
+                                        {t(locale, 'admin', 'copy.publicView')}
                                     </Button>
                                     {testimonial.publicationStatus !== 'PUBLISHED' ? (
                                         <Button
@@ -275,18 +271,18 @@ export function AdminCustomerTestimonialPage({
                                             disabled={publishBusy}
                                             onClick={() => setConfirm('publish')}
                                         >
-                                            {{ de: 'Veröffentlichen', en: 'Publish' }[locale]}
+                                            {t(locale, 'admin', 'copy.publish')}
                                         </Button>
                                     ) : null}
                                     <Button type="button" disabled={formBusy} onClick={onStartEdit}>
-                                        {{ de: 'Bearbeiten', en: 'Edit' }[locale]}
+                                        {t(locale, 'admin', 'copy.edit')}
                                     </Button>
                                 </>
                             )
                         }
                     >
                         <div className="flex flex-wrap items-center gap-2">
-                            <h1 className="font-serif text-3xl/tight text-foreground">{adminCustomerTestimonialPageTitle[locale]}</h1>
+                            <h1 className="font-serif text-3xl/tight text-foreground">{adminCustomerTestimonialPageTitle(locale)}</h1>
                             <StatusBadge tone={publicationTone}>
                                 {testimonialPublicationStatusLabel(testimonial.publicationStatus, locale)}
                             </StatusBadge>
@@ -302,12 +298,12 @@ export function AdminCustomerTestimonialPage({
                                         void form.handleSubmit();
                                     }}
                                 >
-                                    <h2 className="text-sm font-medium text-foreground">{{ de: 'Inhalt', en: 'Content' }[locale]}</h2>
+                                    <h2 className="text-sm font-medium text-foreground">{t(locale, 'admin', 'copy.content')}</h2>
                                     <form.Field name="authorName">
                                         {(field) => (
                                             <div className="grid gap-1.5">
                                                 <label htmlFor={field.name} className="text-sm font-medium">
-                                                    {{ de: 'Name (Override)', en: 'Name (override)' }[locale]}
+                                                    {t(locale, 'admin', 'copy.nameOverride')}
                                                 </label>
                                                 <Input
                                                     id={field.name}
@@ -323,7 +319,7 @@ export function AdminCustomerTestimonialPage({
                                         {(field) => (
                                             <div className="grid gap-1.5">
                                                 <label htmlFor={field.name} className="text-sm font-medium">
-                                                    {{ de: 'Ort (Override)', en: 'Location (override)' }[locale]}
+                                                    {t(locale, 'admin', 'copy.locationOverride')}
                                                 </label>
                                                 <Input
                                                     id={field.name}
@@ -339,7 +335,7 @@ export function AdminCustomerTestimonialPage({
                                         {(field) => (
                                             <div className="grid gap-1.5">
                                                 <label htmlFor={field.name} className="text-sm font-medium">
-                                                    {{ de: 'Anlass (Override)', en: 'Occasion (override)' }[locale]}
+                                                    {t(locale, 'admin', 'copy.occasionOverride')}
                                                 </label>
                                                 <Input
                                                     id={field.name}
@@ -355,7 +351,7 @@ export function AdminCustomerTestimonialPage({
                                         {(field) => (
                                             <div className="grid gap-1.5">
                                                 <label htmlFor={field.name} className="text-sm font-medium">
-                                                    {{ de: 'Text', en: 'Body' }[locale]}
+                                                    {t(locale, 'admin', 'copy.body')}
                                                 </label>
                                                 <Textarea
                                                     id={field.name}
@@ -379,7 +375,7 @@ export function AdminCustomerTestimonialPage({
                                             const errorId = `${field.name}-error`;
                                             return (
                                                 <div className="grid gap-1.5">
-                                                    <span className="text-sm font-medium">{{ de: 'Bewertung', en: 'Rating' }[locale]}</span>
+                                                    <span className="text-sm font-medium">{t(locale, 'admin', 'copy.rating')}</span>
                                                     <div aria-invalid={showError} aria-describedby={showError ? errorId : undefined}>
                                                         <TestimonialRatingInput
                                                             value={field.state.value}
@@ -398,7 +394,7 @@ export function AdminCustomerTestimonialPage({
                                 </form>
 
                                 <div className="grid gap-3">
-                                    <h2 className="text-sm font-medium text-foreground">{{ de: 'Bilder', en: 'Images' }[locale]}</h2>
+                                    <h2 className="text-sm font-medium text-foreground">{t(locale, 'admin', 'copy.images')}</h2>
                                     <AdminTestimonialImageManager imageUrls={testimonial.imageUrls} onSave={onSaveImages} />
                                 </div>
                             </>
@@ -443,20 +439,15 @@ export function AdminCustomerTestimonialPage({
                     <AlertDialog open={confirm === 'publish'} onOpenChange={(open) => !open && setConfirm(null)}>
                         <AlertDialogContent>
                             <AlertDialogHeader>
-                                <AlertDialogTitle>{{ de: 'Jetzt veröffentlichen?', en: 'Publish now?' }[locale]}</AlertDialogTitle>
+                                <AlertDialogTitle>{t(locale, 'admin', 'copy.publishNow')}</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    {
-                                        {
-                                            de: 'Die Bewertung wird auf öffentlichen Seiten sichtbar, sofern sie kuratiert oder dem Koch zugeordnet ist.',
-                                            en: 'The review becomes visible on public pages where it is curated or linked to the cook.',
-                                        }[locale]
-                                    }
+                                    {t(locale, 'admin', 'copy.theReviewBecomesVisibleOnPublicPagesWhereItIsCuratedOrLinked')}
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                                <AlertDialogCancel disabled={publishBusy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                                <AlertDialogCancel disabled={publishBusy}>{t(locale, 'admin', 'copy.cancel')}</AlertDialogCancel>
                                 <AlertDialogAction disabled={publishBusy} onClick={() => void onConfirmPublish('PUBLISHED')}>
-                                    {{ de: 'Veröffentlichen', en: 'Publish' }[locale]}
+                                    {t(locale, 'admin', 'copy.publish')}
                                 </AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
@@ -465,22 +456,15 @@ export function AdminCustomerTestimonialPage({
                     <AlertDialog open={confirm === 'unpublish'} onOpenChange={(open) => !open && setConfirm(null)}>
                         <AlertDialogContent>
                             <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                    {{ de: 'Veröffentlichung zurückziehen?', en: 'Unpublish this review?' }[locale]}
-                                </AlertDialogTitle>
+                                <AlertDialogTitle>{t(locale, 'admin', 'copy.unpublishThisReview')}</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    {
-                                        {
-                                            de: 'Die Bewertung verschwindet von öffentlichen Seiten, bis sie erneut veröffentlicht wird.',
-                                            en: 'The review will disappear from public pages until it is published again.',
-                                        }[locale]
-                                    }
+                                    {t(locale, 'admin', 'copy.theReviewWillDisappearFromPublicPagesUntilItIsPublishedAgain')}
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                                <AlertDialogCancel disabled={publishBusy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                                <AlertDialogCancel disabled={publishBusy}>{t(locale, 'admin', 'copy.cancel')}</AlertDialogCancel>
                                 <AlertDialogAction disabled={publishBusy} onClick={() => void onConfirmPublish('PENDING_REVIEW')}>
-                                    {{ de: 'Zurückziehen', en: 'Unpublish' }[locale]}
+                                    {t(locale, 'admin', 'copy.unpublish')}
                                 </AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
@@ -489,20 +473,15 @@ export function AdminCustomerTestimonialPage({
                     <AlertDialog open={confirm === 'delete'} onOpenChange={(open) => !open && setConfirm(null)}>
                         <AlertDialogContent>
                             <AlertDialogHeader>
-                                <AlertDialogTitle>{{ de: 'Bewertung löschen?', en: 'Delete this testimonial?' }[locale]}</AlertDialogTitle>
+                                <AlertDialogTitle>{t(locale, 'admin', 'copy.deleteThisTestimonial')}</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    {
-                                        {
-                                            de: 'Dies entfernt die Bewertung dauerhaft und aus allen Kurationslisten.',
-                                            en: 'This permanently removes the testimonial and any curation entries.',
-                                        }[locale]
-                                    }
+                                    {t(locale, 'admin', 'copy.thisPermanentlyRemovesTheTestimonialAndAnyCurationEntries')}
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                                <AlertDialogCancel disabled={deleteBusy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                                <AlertDialogCancel disabled={deleteBusy}>{t(locale, 'admin', 'copy.cancel')}</AlertDialogCancel>
                                 <AlertDialogAction variant="destructive" disabled={deleteBusy} onClick={() => void onDelete()}>
-                                    {{ de: 'Löschen', en: 'Delete' }[locale]}
+                                    {t(locale, 'admin', 'copy.delete')}
                                 </AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
@@ -510,9 +489,7 @@ export function AdminCustomerTestimonialPage({
                 </>
             ) : (
                 <main id="main-content" className="grid w-full content-start gap-8">
-                    <p className="text-sm text-muted-foreground">
-                        {{ de: 'Bewertung nicht gefunden.', en: 'Testimonial not found.' }[locale]}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.testimonialNotFound')}</p>
                 </main>
             )}
         </AdminPageChrome>

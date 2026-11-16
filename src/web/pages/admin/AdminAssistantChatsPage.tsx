@@ -1,6 +1,8 @@
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 
+import { t } from '../../../i18n/t';
+import { inlineCopy } from '../../../shared';
 import { AdminListPaginationBar } from '../../components/AdminListPaginationBar';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
@@ -9,6 +11,7 @@ import { Tabs, TabsList, TabsTrigger } from '../../components/base/tabs';
 import type { GqlCAdminAssistantChatsPageQuery, GqlCChatSurface } from '../../graphql/generated';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useLocale } from '../../hooks/useLocale';
+import type { Locale } from '../../utils/locale';
 import { adminChatSurfaceLabel } from './adminAssistantChats';
 import { AdminAssistantChatsDataTable } from './AdminAssistantChatsDataTable';
 import {
@@ -21,11 +24,12 @@ import {
 } from './adminListPaginationSearch';
 import type { AdminListPageSize } from './adminListPaginationSearch';
 
-export const adminAssistantChatsPageTitle = { de: 'Assistent-Chat-Liste', en: 'Assistant chat list' } as const;
-export const adminAssistantChatsPageDescription = {
-    de: 'Assistent-Chats durchsuchen und einsehen.',
-    en: 'Browse and inspect assistant chats.',
-} as const;
+export function adminAssistantChatsPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.assistantChats.title');
+}
+export function adminAssistantChatsPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.assistantChats.description');
+}
 
 const ADMIN_ASSISTANT_CHAT_SURFACES: GqlCChatSurface[] = ['admin', 'customer', 'cook'];
 
@@ -99,7 +103,7 @@ export function AdminAssistantChatsPage({ data, search }: { data: GqlCAdminAssis
     }
 
     const surfaceTabs: { value: GqlCChatSurface | undefined; label: string }[] = [
-        { value: undefined, label: { de: 'Alle', en: 'All' }[locale] },
+        { value: undefined, label: t(locale, 'admin', 'copy.all') },
         ...ADMIN_ASSISTANT_CHAT_SURFACES.map((surface) => ({
             value: surface,
             label: adminChatSurfaceLabel(surface, locale),
@@ -128,7 +132,7 @@ export function AdminAssistantChatsPage({ data, search }: { data: GqlCAdminAssis
                 }
             >
                 <Tabs value={search.surface ?? 'all'}>
-                    <TabsList variant="line" aria-label={{ de: 'Chat-Oberfläche', en: 'Chat surface' }[locale]}>
+                    <TabsList variant="line" aria-label={t(locale, 'admin', 'copy.chatSurface')}>
                         {surfaceTabs.map((tab) => (
                             <TabsTrigger key={tab.value ?? 'all'} value={tab.value ?? 'all'} asChild>
                                 <Link
@@ -152,21 +156,17 @@ export function AdminAssistantChatsPage({ data, search }: { data: GqlCAdminAssis
                         type="search"
                         value={draftQ}
                         onChange={(event) => setDraftQ(event.target.value)}
-                        placeholder={
-                            {
-                                de: 'Titel, Chat-ID oder Nutzer suchen…',
-                                en: 'Search title, chat id, or user…',
-                            }[locale]
-                        }
-                        aria-label={{ de: 'Assistent-Chats suchen', en: 'Search assistant chats' }[locale]}
+                        placeholder={t(locale, 'admin', 'copy.searchTitleChatIdOrUser')}
+                        aria-label={t(locale, 'admin', 'copy.searchAssistantChats')}
                     />
                     <p className="text-sm text-muted-foreground tabular-nums">
-                        {
+                        {inlineCopy(
                             {
                                 de: `${total} ${total === 1 ? 'Chat' : 'Chats'}`,
                                 en: `${total} ${total === 1 ? 'chat' : 'chats'}`,
-                            }[locale]
-                        }
+                            },
+                            locale,
+                        )}
                     </p>
                 </div>
 

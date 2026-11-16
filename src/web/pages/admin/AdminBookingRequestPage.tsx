@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { t } from '../../../i18n/t';
 import {
     bookingRequestSettingLabel,
     DEFAULT_TIME_ZONE,
@@ -14,6 +15,7 @@ import {
     formatCurrency,
     formatDate,
     formatParticipants,
+    inlineCopy,
     userDisplayName,
 } from '../../../shared';
 import type { BookingRequestOfferStatus } from '../../../shared/bookingRequestOfferStatus';
@@ -60,18 +62,19 @@ import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import type { Locale } from '../../utils/locale';
 import { adminBookingRequestCustomerLabel, adminBookingRequestPublicationStatusLabel } from './adminBookingRequestsColumns';
-import { adminStubRouteBySlug } from './adminCatalog';
+import { adminStubRouteBySlug, adminStubRouteTitle } from './adminCatalog';
 
 const CANCELABLE_STATUSES = new Set(['WAITING_FOR_OFFERS', 'OFFERS_WAITING_FOR_REVIEW', 'EXPIRED']);
 const DISCOUNT_EDITABLE_STATUSES = new Set(['WAITING_FOR_OFFERS', 'OFFERS_WAITING_FOR_REVIEW']);
 
 const listRoute = adminStubRouteBySlug('booking-requests');
 
-export const adminBookingRequestPageTitle = { de: 'Buchungsanfrage', en: 'Booking request' } as const;
-export const adminBookingRequestPageDescription = {
-    de: 'Details einer Buchungsanfrage.',
-    en: 'Details for a booking request.',
-} as const;
+export function adminBookingRequestPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.bookingRequest.title');
+}
+export function adminBookingRequestPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.bookingRequest.description');
+}
 
 const BOOKING_REQUEST_TABS = ['overview', 'offers', 'discount'] as const;
 
@@ -105,14 +108,14 @@ type AdminBookingRequestCookInRadius = AdminBookingRequestDetail['cooksInTravelR
 
 type AdminBookingRequestTabDef = {
     id: AdminBookingRequestTab;
-    label: Record<Locale, string>;
+    labelKey: string;
     Icon: LucideIcon;
 };
 
 const ADMIN_BOOKING_REQUEST_TABS: readonly AdminBookingRequestTabDef[] = [
-    { id: 'overview', label: { de: 'Übersicht', en: 'Overview' }, Icon: FileInputIcon },
-    { id: 'offers', label: { de: 'Angebote', en: 'Offers' }, Icon: FileTextIcon },
-    { id: 'discount', label: { de: 'Rabatt', en: 'Discount' }, Icon: BadgePercentIcon },
+    { id: 'overview', labelKey: 'bookingRequest.tabs.overview', Icon: FileInputIcon },
+    { id: 'offers', labelKey: 'bookingRequest.tabs.offers', Icon: FileTextIcon },
+    { id: 'discount', labelKey: 'bookingRequest.tabs.discount', Icon: BadgePercentIcon },
 ];
 
 const ACCEPTED_PATH_OFFER_STATUSES = new Set<BookingRequestOfferStatus>([
@@ -195,7 +198,7 @@ export function AdminBookingRequestPage({
     const [cancelReason, setCancelReason] = useState('');
     const [cancelBusy, setCancelBusy] = useState(false);
 
-    const crumbLabel = bookingRequest?.occasion.trim() || adminBookingRequestPageTitle[locale];
+    const crumbLabel = bookingRequest?.occasion.trim() || adminBookingRequestPageTitle(locale);
     const tab = resolveAdminBookingRequestTab(search.tab);
     const cooksInRadius = bookingRequest?.cooksInTravelRadius ?? [];
     const canApprove = bookingRequest != null && canApprovePublication(bookingRequest);
@@ -226,7 +229,7 @@ export function AdminBookingRequestPage({
     async function onApprovePublication() {
         if (approveBusy || !bookingRequest) return;
         if (cooksInRadius.length > 0 && selectedCookIds.length === 0) {
-            toast.error({ de: 'Bitte mindestens einen Koch auswählen.', en: 'Select at least one cook.' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.selectAtLeastOneCook'));
             return;
         }
         setApproveBusy(true);
@@ -239,9 +242,9 @@ export function AdminBookingRequestPage({
                 throw new Error('approve failed');
             }
             setApproveDialogOpen(false);
-            toast.success({ de: 'Anfrage freigegeben.', en: 'Request approved.' }[locale]);
+            toast.success(t(locale, 'admin', 'copy.requestApproved'));
         } catch {
-            toast.error({ de: 'Freigabe fehlgeschlagen.', en: 'Could not approve the request.' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.couldNotApproveTheRequest'));
         } finally {
             setApproveBusy(false);
         }
@@ -259,16 +262,21 @@ export function AdminBookingRequestPage({
             }
             setCancelDialogOpen(false);
             setCancelReason('');
-            toast.success({ de: 'Anfrage storniert.', en: 'Request cancelled.' }[locale]);
+            toast.success(t(locale, 'admin', 'copy.requestCancelled'));
         } catch {
-            toast.error({ de: 'Stornierung fehlgeschlagen.', en: 'Cancellation failed.' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.cancellationFailed'));
         } finally {
             setCancelBusy(false);
         }
     }
 
     return (
-        <AdminPageChrome crumbs={[{ label: listRoute.title[locale], to: '/{-$locale}/admin/booking-requests' }, { label: crumbLabel }]}>
+        <AdminPageChrome
+            crumbs={[
+                { label: adminStubRouteTitle(listRoute.slug, locale), to: '/{-$locale}/admin/booking-requests' },
+                { label: crumbLabel },
+            ]}
+        >
             {bookingRequest ? (
                 <>
                     <AdminPinnedFooterLayout
@@ -286,14 +294,12 @@ export function AdminBookingRequestPage({
                                             setCancelDialogOpen(true);
                                         }}
                                     >
-                                        {{ de: 'Anfrage stornieren', en: 'Cancel request' }[locale]}
+                                        {t(locale, 'admin', 'copy.cancelRequest')}
                                     </Button>
                                 ) : null}
                                 {tab === 'overview' && canApprove ? (
                                     <Button type="button" variant="outline" disabled={approveBusy} onClick={openApproveDialog}>
-                                        {approveBusy
-                                            ? { de: 'Freigeben…', en: 'Approving…' }[locale]
-                                            : { de: 'Veröffentlichen', en: 'Approve publication' }[locale]}
+                                        {approveBusy ? t(locale, 'admin', 'copy.approving') : t(locale, 'admin', 'copy.approvePublication')}
                                     </Button>
                                 ) : null}
                                 {tab === 'offers' ? (
@@ -303,7 +309,7 @@ export function AdminBookingRequestPage({
                                                 to="/{-$locale}/admin/booking-requests/$bookingRequestId/edit"
                                                 params={{ bookingRequestId }}
                                             >
-                                                {{ de: 'Bearbeiten', en: 'Edit' }[locale]}
+                                                {t(locale, 'admin', 'copy.edit')}
                                             </Link>
                                         </Button>
                                         <Button type="button" asChild>
@@ -311,14 +317,14 @@ export function AdminBookingRequestPage({
                                                 to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/create"
                                                 params={{ bookingRequestId }}
                                             >
-                                                {{ de: 'Angebot anlegen', en: 'Create offer' }[locale]}
+                                                {t(locale, 'admin', 'copy.createOffer2')}
                                             </Link>
                                         </Button>
                                     </>
                                 ) : (
                                     <Button type="button" asChild>
                                         <Link to="/{-$locale}/admin/booking-requests/$bookingRequestId/edit" params={{ bookingRequestId }}>
-                                            {{ de: 'Bearbeiten', en: 'Edit' }[locale]}
+                                            {t(locale, 'admin', 'copy.edit')}
                                         </Link>
                                     </Button>
                                 )}
@@ -326,11 +332,8 @@ export function AdminBookingRequestPage({
                         }
                     >
                         <Tabs value={tab}>
-                            <TabsList
-                                variant="line"
-                                aria-label={{ de: 'Buchungsanfrage-Bereiche', en: 'Booking request sections' }[locale]}
-                            >
-                                {ADMIN_BOOKING_REQUEST_TABS.map(({ id, label, Icon }) => (
+                            <TabsList variant="line" aria-label={t(locale, 'admin', 'copy.bookingRequestSections')}>
+                                {ADMIN_BOOKING_REQUEST_TABS.map(({ id, labelKey, Icon }) => (
                                     <TabsTrigger key={id} value={id} asChild>
                                         <Link
                                             to="/{-$locale}/admin/booking-requests/$bookingRequestId"
@@ -339,7 +342,7 @@ export function AdminBookingRequestPage({
                                             replace
                                         >
                                             <Icon aria-hidden />
-                                            {label[locale]}
+                                            {t(locale, 'admin', labelKey)}
                                         </Link>
                                     </TabsTrigger>
                                 ))}
@@ -362,26 +365,19 @@ export function AdminBookingRequestPage({
                     <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
                         <AlertDialogContent>
                             <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                    {{ de: 'Anfrage wirklich stornieren?', en: 'Really cancel this request?' }[locale]}
-                                </AlertDialogTitle>
+                                <AlertDialogTitle>{t(locale, 'admin', 'copy.reallyCancelThisRequest')}</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    {
-                                        {
-                                            de: 'Kunde und Köche erhalten die übliche E-Mail zur Stornierung. Bitte gib einen Grund an.',
-                                            en: 'The customer and cooks receive the usual cancellation email. Please provide a reason.',
-                                        }[locale]
-                                    }
+                                    {t(locale, 'admin', 'copy.theCustomerAndCooksReceiveTheUsualCancellationEmailPleasePro')}
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <Textarea
                                 value={cancelReason}
                                 onChange={(event) => setCancelReason(event.target.value)}
-                                placeholder={{ de: 'Grund…', en: 'Reason…' }[locale]}
+                                placeholder={t(locale, 'admin', 'copy.reason')}
                                 rows={3}
                             />
                             <AlertDialogFooter>
-                                <AlertDialogCancel disabled={cancelBusy}>{{ de: 'Abbrechen', en: 'Back' }[locale]}</AlertDialogCancel>
+                                <AlertDialogCancel disabled={cancelBusy}>{t(locale, 'admin', 'copy.back')}</AlertDialogCancel>
                                 <AlertDialogAction
                                     disabled={cancelBusy || cancelReason.trim().length === 0}
                                     onClick={(event) => {
@@ -389,9 +385,7 @@ export function AdminBookingRequestPage({
                                         void onCancelRequest();
                                     }}
                                 >
-                                    {cancelBusy
-                                        ? { de: 'Stornieren…', en: 'Cancelling…' }[locale]
-                                        : { de: 'Stornieren', en: 'Cancel request' }[locale]}
+                                    {cancelBusy ? t(locale, 'admin', 'copy.cancelling') : t(locale, 'admin', 'copy.cancelRequest2')}
                                 </AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
@@ -399,9 +393,7 @@ export function AdminBookingRequestPage({
                 </>
             ) : (
                 <main id="main-content" className="@container grid w-full content-start gap-6">
-                    <p className="text-sm text-muted-foreground">
-                        {{ de: 'Buchungsanfrage nicht gefunden.', en: 'Booking request not found.' }[locale]}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.bookingRequestNotFound')}</p>
                 </main>
             )}
         </AdminPageChrome>
@@ -441,25 +433,13 @@ function AdminBookingRequestPublicationApproveDialog({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
                 <DialogHeader>
-                    <DialogTitle>{{ de: 'Veröffentlichung freigeben', en: 'Approve publication' }[locale]}</DialogTitle>
-                    <DialogDescription>
-                        {
-                            {
-                                de: 'Wähle die Köche im Anfahrtsradius, die benachrichtigt werden sollen.',
-                                en: 'Choose which cooks in travel radius should be notified.',
-                            }[locale]
-                        }
-                    </DialogDescription>
+                    <DialogTitle>{t(locale, 'admin', 'copy.approvePublication2')}</DialogTitle>
+                    <DialogDescription>{t(locale, 'admin', 'copy.chooseWhichCooksInTravelRadiusShouldBeNotified')}</DialogDescription>
                 </DialogHeader>
 
                 {cooks.length === 0 ? (
                     <p className="text-sm text-muted-foreground">
-                        {
-                            {
-                                de: 'Keine Köche im Anfahrtsradius gefunden. Die Anfrage wird freigegeben, ohne jemanden zu benachrichtigen.',
-                                en: 'No cooks found in travel radius. The request will be approved without notifying anyone.',
-                            }[locale]
-                        }
+                        {t(locale, 'admin', 'copy.noCooksFoundInTravelRadiusTheRequestWillBeApprovedWithoutNot')}
                     </p>
                 ) : (
                     <div className="grid gap-3">
@@ -471,7 +451,7 @@ function AdminBookingRequestPublicationApproveDialog({
                                 disabled={busy || allSelected}
                                 onClick={() => onSelectedCookIdsChange(cooks.map((row) => row.cook.cookId))}
                             >
-                                {{ de: 'Alle auswählen', en: 'Select all' }[locale]}
+                                {t(locale, 'admin', 'copy.selectAll')}
                             </Button>
                             <Button
                                 type="button"
@@ -480,7 +460,7 @@ function AdminBookingRequestPublicationApproveDialog({
                                 disabled={busy || selectedCookIds.length === 0}
                                 onClick={() => onSelectedCookIdsChange([])}
                             >
-                                {{ de: 'Keine', en: 'Clear' }[locale]}
+                                {t(locale, 'admin', 'copy.clear')}
                             </Button>
                         </div>
                         <ul className="divide-y divide-border rounded-md border border-border">
@@ -501,9 +481,7 @@ function AdminBookingRequestPublicationApproveDialog({
                                             <div className="flex flex-wrap items-center gap-2">
                                                 <span className="truncate text-sm font-medium">{userDisplayName(row.cook.user)}</span>
                                                 {row.notifiedAt ? (
-                                                    <Badge variant="secondary">
-                                                        {{ de: 'Bereits benachrichtigt', en: 'Already notified' }[locale]}
-                                                    </Badge>
+                                                    <Badge variant="secondary">{t(locale, 'admin', 'copy.alreadyNotified')}</Badge>
                                                 ) : null}
                                             </div>
                                             <p className="text-xs text-muted-foreground">
@@ -511,14 +489,20 @@ function AdminBookingRequestPublicationApproveDialog({
                                                     city,
                                                     row.cook.cuisineStyle,
                                                     `${formatTravelDistanceKm(row.estimatedTravelDistanceKm, locale)} km`,
-                                                    {
-                                                        de: `Reise ca. ${formatCurrency(row.estimatedTravelExpensesCents, { locale, maximumFractionDigits: 0 })}`,
-                                                        en: `Travel ~${formatCurrency(row.estimatedTravelExpensesCents, { locale, maximumFractionDigits: 0 })}`,
-                                                    }[locale],
-                                                    {
-                                                        de: `Menü ~${formatCurrency(row.suggestedMenuPriceCents, { locale, maximumFractionDigits: 0 })}`,
-                                                        en: `Menu ~${formatCurrency(row.suggestedMenuPriceCents, { locale, maximumFractionDigits: 0 })}`,
-                                                    }[locale],
+                                                    inlineCopy(
+                                                        {
+                                                            de: `Reise ca. ${formatCurrency(row.estimatedTravelExpensesCents, { locale, maximumFractionDigits: 0 })}`,
+                                                            en: `Travel ~${formatCurrency(row.estimatedTravelExpensesCents, { locale, maximumFractionDigits: 0 })}`,
+                                                        },
+                                                        locale,
+                                                    ),
+                                                    inlineCopy(
+                                                        {
+                                                            de: `Menü ~${formatCurrency(row.suggestedMenuPriceCents, { locale, maximumFractionDigits: 0 })}`,
+                                                            en: `Menu ~${formatCurrency(row.suggestedMenuPriceCents, { locale, maximumFractionDigits: 0 })}`,
+                                                        },
+                                                        locale,
+                                                    ),
                                                 ]
                                                     .filter(Boolean)
                                                     .join(' · ')}
@@ -534,12 +518,15 @@ function AdminBookingRequestPublicationApproveDialog({
 
                 <DialogFooter>
                     <Button type="button" variant="outline" disabled={busy} onClick={() => onOpenChange(false)}>
-                        {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                        {t(locale, 'admin', 'copy.cancel')}
                     </Button>
                     <Button type="button" disabled={busy || (cooks.length > 0 && selectedCookIds.length === 0)} onClick={onConfirm}>
                         {busy
-                            ? { de: 'Freigeben…', en: 'Approving…' }[locale]
-                            : { de: `Freigeben (${selectedCookIds.length})`, en: `Approve (${selectedCookIds.length})` }[locale]}
+                            ? t(locale, 'admin', 'copy.approving')
+                            : inlineCopy(
+                                  { de: `Freigeben (${selectedCookIds.length})`, en: `Approve (${selectedCookIds.length})` },
+                                  locale,
+                              )}
                     </Button>
                 </DialogFooter>
             </DialogContent>
@@ -580,7 +567,7 @@ function AdminBookingRequestDiscountSection({
 
     return (
         <div className="grid max-w-xl gap-4">
-            <h2 className="font-serif text-2xl/tight text-foreground">{{ de: 'Rabatt', en: 'Discount' }[locale]}</h2>
+            <h2 className="font-serif text-2xl/tight text-foreground">{t(locale, 'admin', 'copy.discount')}</h2>
             <BookingRequestDiscountEditor
                 bookingRequestId={bookingRequestId}
                 locale={locale}
@@ -599,18 +586,18 @@ function AdminBookingRequestDiscountSection({
 function AdminBookingRequestDetailFields({ bookingRequest }: { bookingRequest: AdminBookingRequestDetail }) {
     const locale = useLocale();
     const timeZone = useTimeZone();
-    const empty = { de: '—', en: '—' }[locale];
+    const empty = t(locale, 'admin', 'copy.empty');
     const address = bookingRequest.exactEventAddress;
     const invoice = bookingRequest.invoiceAddress;
 
     return (
         <div className="grid gap-4">
             <dl className="grid gap-4">
-                <DetailField label={{ de: 'Anfrage-ID', en: 'Request ID' }[locale]} value={bookingRequest.bookingRequestId} mono />
+                <DetailField label={t(locale, 'admin', 'copy.requestId')} value={bookingRequest.bookingRequestId} mono />
                 <Separator />
                 <div className="grid gap-2">
                     <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                        {{ de: 'Status', en: 'Status' }[locale]}
+                        {t(locale, 'admin', 'copy.status')}
                     </dt>
                     <dd className="flex flex-wrap items-center gap-2">
                         <BookingStatusPill hue={bookingRequestStatusHue(bookingRequest.status)}>
@@ -625,7 +612,7 @@ function AdminBookingRequestDetailFields({ bookingRequest }: { bookingRequest: A
                 {bookingRequest.requestedCook ? (
                     <>
                         <DetailField
-                            label={{ de: 'Angefragter Koch', en: 'Requested cook' }[locale]}
+                            label={t(locale, 'admin', 'copy.requestedCook')}
                             value={userDisplayName(bookingRequest.requestedCook.user)}
                         />
                         <Separator />
@@ -633,17 +620,14 @@ function AdminBookingRequestDetailFields({ bookingRequest }: { bookingRequest: A
                 ) : null}
                 {bookingRequest.requestedMenu ? (
                     <>
-                        <DetailField
-                            label={{ de: 'Angefragtes Menü', en: 'Requested menu' }[locale]}
-                            value={bookingRequest.requestedMenu.title}
-                        />
+                        <DetailField label={t(locale, 'admin', 'copy.requestedMenu')} value={bookingRequest.requestedMenu.title} />
                         <Separator />
                     </>
                 ) : null}
-                <DetailField label={{ de: 'Anlass', en: 'Occasion' }[locale]} value={bookingRequest.occasion} />
+                <DetailField label={t(locale, 'admin', 'copy.occasion')} value={bookingRequest.occasion} />
                 <Separator />
                 <DetailField
-                    label={{ de: 'Termin', en: 'Event' }[locale]}
+                    label={t(locale, 'admin', 'copy.event')}
                     value={
                         <BookingWhenLabel
                             {...formatBookingEventWhenAdminFromCountry({
@@ -660,13 +644,13 @@ function AdminBookingRequestDetailFields({ bookingRequest }: { bookingRequest: A
                 />
                 <Separator />
                 <DetailField
-                    label={{ de: 'Teilnehmer', en: 'Participants' }[locale]}
+                    label={t(locale, 'admin', 'copy.participants')}
                     value={formatParticipants(bookingRequest.participants, { locale })}
                 />
                 <Separator />
                 <div className="grid gap-1">
                     <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                        {{ de: 'Kunde', en: 'Customer' }[locale]}
+                        {t(locale, 'admin', 'copy.customer')}
                     </dt>
                     <dd className="text-sm text-foreground">
                         <div className="grid gap-0.5">
@@ -684,7 +668,7 @@ function AdminBookingRequestDetailFields({ bookingRequest }: { bookingRequest: A
                 <Separator />
                 <div className="grid gap-1">
                     <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                        {{ de: 'Angenommener Koch', en: 'Accepted cook' }[locale]}
+                        {t(locale, 'admin', 'copy.acceptedCook')}
                     </dt>
                     <dd className="text-sm text-foreground">
                         {bookingRequest.cook?.user ? (
@@ -705,12 +689,12 @@ function AdminBookingRequestDetailFields({ bookingRequest }: { bookingRequest: A
                 </div>
                 <Separator />
                 <DetailField
-                    label={{ de: 'Ort', en: 'Location' }[locale]}
+                    label={t(locale, 'admin', 'copy.location2')}
                     value={[address.displayText, address.city, address.postCode, address.country].filter(Boolean).join(' · ') || empty}
                 />
                 <Separator />
                 <DetailField
-                    label={{ de: 'Über die Küche', en: 'About the kitchen' }[locale]}
+                    label={t(locale, 'admin', 'copy.aboutTheKitchen')}
                     value={
                         bookingRequestKitchenDetailsHasFacts(bookingRequest.kitchenDetails, locale) ? (
                             <BookingRequestKitchenDetailsFactContent details={bookingRequest.kitchenDetails} locale={locale} />
@@ -721,25 +705,25 @@ function AdminBookingRequestDetailFields({ bookingRequest }: { bookingRequest: A
                 />
                 <Separator />
                 <DetailField
-                    label={{ de: 'Wo sitzt ihr', en: 'Where you dine' }[locale]}
+                    label={t(locale, 'admin', 'copy.whereYouDine')}
                     value={bookingRequest.setting != null ? bookingRequestSettingLabel(bookingRequest.setting, locale) : empty}
                 />
                 <Separator />
                 <DetailField
-                    label={{ de: 'Nachricht', en: 'Message' }[locale]}
+                    label={t(locale, 'admin', 'copy.message')}
                     value={bookingRequest.adjustedMessage?.trim() || bookingRequest.originalMessage || empty}
                 />
                 <Separator />
                 <DetailField
-                    label={{ de: 'Präferenzen', en: 'Preferences' }[locale]}
+                    label={t(locale, 'admin', 'copy.preferences')}
                     value={bookingRequest.preferences.length > 0 ? bookingRequest.preferences.join(', ') : empty}
                 />
                 <Separator />
-                <DetailField label={{ de: 'Preisklasse', en: 'Price class' }[locale]} value={bookingRequest.priceClassType ?? empty} />
+                <DetailField label={t(locale, 'admin', 'copy.priceClass')} value={bookingRequest.priceClassType ?? empty} />
                 <Separator />
                 <div className="grid gap-1">
                     <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                        {{ de: 'Teilnehmer', en: 'Participants' }[locale]}
+                        {t(locale, 'admin', 'copy.participants')}
                     </dt>
                     <dd className="text-sm text-foreground">
                         {bookingRequest.participants.length === 0 ? (
@@ -762,7 +746,7 @@ function AdminBookingRequestDetailFields({ bookingRequest }: { bookingRequest: A
                 </div>
                 <Separator />
                 <DetailField
-                    label={{ de: 'Rechnungsadresse', en: 'Invoice address' }[locale]}
+                    label={t(locale, 'admin', 'copy.invoiceAddress')}
                     value={
                         invoice
                             ? [
@@ -780,19 +764,19 @@ function AdminBookingRequestDetailFields({ bookingRequest }: { bookingRequest: A
                 />
                 <Separator />
                 <DetailField
-                    label={{ de: 'Erstellt', en: 'Created' }[locale]}
+                    label={t(locale, 'admin', 'copy.created')}
                     value={formatDate(bookingRequest.createdAt, { locale, timeZone, dateStyle: 'medium' })}
                 />
                 <Separator />
                 <DetailField
-                    label={{ de: 'Läuft ab', en: 'Expires' }[locale]}
+                    label={t(locale, 'admin', 'copy.expires')}
                     value={
                         bookingRequest.expiresAt ? formatDate(bookingRequest.expiresAt, { locale, timeZone, dateStyle: 'medium' }) : empty
                     }
                 />
                 <Separator />
                 <DetailField
-                    label={{ de: 'Storniert', en: 'Canceled' }[locale]}
+                    label={t(locale, 'admin', 'copy.canceled')}
                     value={
                         bookingRequest.canceledAt
                             ? `${formatDate(bookingRequest.canceledAt, { locale, timeZone, dateStyle: 'medium' })}${
@@ -819,7 +803,7 @@ function AdminBookingRequestDetailFields({ bookingRequest }: { bookingRequest: A
                             }}
                             className="font-medium text-foreground hover:underline"
                         >
-                            {{ de: 'Zum Angebot', en: 'View offer' }[locale]}
+                            {t(locale, 'admin', 'copy.viewOffer')}
                         </Link>
                     )}
                 />
@@ -873,46 +857,28 @@ function AdminBookingRequestOffersSection({
 
     const emptyOffersMessage = (() => {
         if (acceptedOffer) {
-            return {
-                de: 'Keine weiteren Angebote.',
-                en: 'No other offers.',
-            }[locale];
+            return t(locale, 'admin', 'copy.noOtherOffers');
         }
         if (!publicationApproved) {
-            return {
-                de: 'Noch keine Angebote. Angebote erscheinen, nachdem die Anfrage freigegeben und Köche benachrichtigt wurden.',
-                en: 'No offers yet. Offers appear after the request is approved and chefs are notified.',
-            }[locale];
+            return t(locale, 'admin', 'copy.noOffersYetOffersAppearAfterTheRequestIsApprovedAndChefsAreN');
         }
         if (cooksWithoutOffer.length > 0) {
-            return {
-                de: 'Noch keine Angebote. Benachrichtige Köche unten oder erstelle ein Angebot manuell.',
-                en: 'No offers yet. Notify chefs below or create an offer manually.',
-            }[locale];
+            return t(locale, 'admin', 'copy.noOffersYetNotifyChefsBelowOrCreateAnOfferManually');
         }
         if (bookingRequest.cooksInTravelRadius.length === 0) {
-            return {
-                de: 'Noch keine Angebote und keine Köche im Anfahrtsradius.',
-                en: 'No offers yet and no chefs in travel radius.',
-            }[locale];
+            return t(locale, 'admin', 'copy.noOffersYetAndNoChefsInTravelRadius');
         }
-        return { de: 'Noch keine Angebote.', en: 'No offers yet.' }[locale];
+        return t(locale, 'admin', 'copy.noOffersYet');
     })();
 
     const emptyNotifiedCooksMessage = hasNotifiedCooksInTravelRadius
-        ? {
-              de: 'Alle benachrichtigten Köche haben ein Angebot erstellt.',
-              en: 'All notified chefs have created an offer.',
-          }[locale]
-        : { de: 'Noch keine Köche benachrichtigt.', en: 'No chefs notified yet.' }[locale];
+        ? t(locale, 'admin', 'copy.allNotifiedChefsHaveCreatedAnOffer')
+        : t(locale, 'admin', 'copy.noChefsNotifiedYet');
 
     const emptyNotNotifiedCooksMessage =
         bookingRequest.cooksInTravelRadius.length === 0
-            ? { de: 'Keine Köche im Anfahrtsradius.', en: 'No chefs in travel radius.' }[locale]
-            : {
-                  de: 'Alle Köche im Anfahrtsradius wurden benachrichtigt.',
-                  en: 'All chefs in travel radius have been notified.',
-              }[locale];
+            ? t(locale, 'admin', 'copy.noChefsInTravelRadius')
+            : t(locale, 'admin', 'copy.allChefsInTravelRadiusHaveBeenNotified');
 
     async function onConfirmNotifyCook() {
         if (pendingNotifyCookId == null) {
@@ -923,20 +889,10 @@ function AdminBookingRequestOffersSection({
         try {
             const result = await notifyCooks({ bookingRequestId, cookIds: [cookId] });
             if (result.error || !result.data?.admin.bookingRequestCooksNotify.success) {
-                toast.error(
-                    {
-                        de: 'Benachrichtigung fehlgeschlagen. Bitte erneut versuchen.',
-                        en: 'Notification failed. Please try again.',
-                    }[locale],
-                );
+                toast.error(t(locale, 'admin', 'copy.notificationFailedPleaseTryAgain'));
                 return;
             }
-            toast.success(
-                {
-                    de: 'Koch benachrichtigt.',
-                    en: 'Chef notified.',
-                }[locale],
-            );
+            toast.success(t(locale, 'admin', 'copy.chefNotified'));
             setPendingNotifyCookId(null);
         } finally {
             setNotifyBusyCookId(null);
@@ -947,7 +903,7 @@ function AdminBookingRequestOffersSection({
         <div className="grid gap-8">
             {acceptedOffer ? (
                 <section className="grid gap-3">
-                    <h2 className="text-base font-semibold">{{ de: 'Angenommenes Angebot', en: 'Accepted offer' }[locale]}</h2>
+                    <h2 className="text-base font-semibold">{t(locale, 'admin', 'copy.acceptedOffer')}</h2>
                     {acceptedOffer.participantAmendment != null ? (
                         <BookingRequestOfferParticipantAmendmentAdminPendingAlert
                             locale={locale}
@@ -962,7 +918,7 @@ function AdminBookingRequestOffersSection({
                                         }}
                                         search={{ tab: 'costs' }}
                                     >
-                                        {{ de: 'Zum Angebot', en: 'View offer' }[locale]}
+                                        {t(locale, 'admin', 'copy.viewOffer')}
                                     </Link>
                                 </Button>
                             }
@@ -975,9 +931,7 @@ function AdminBookingRequestOffersSection({
             ) : null}
 
             <section className="grid gap-3">
-                <h2 className="text-base font-semibold">
-                    {{ de: 'Köche die Angebote erstellt haben', en: 'Chefs who created offers' }[locale]}
-                </h2>
+                <h2 className="text-base font-semibold">{t(locale, 'admin', 'copy.chefsWhoCreatedOffers')}</h2>
                 {openOffers.length === 0 ? (
                     <p className="text-sm text-muted-foreground">{emptyOffersMessage}</p>
                 ) : (
@@ -992,9 +946,7 @@ function AdminBookingRequestOffersSection({
             </section>
 
             <section className="grid gap-3">
-                <h2 className="text-base font-semibold">
-                    {{ de: 'Benachrichtigte Köche ohne Angebot', en: 'Notified chefs without an offer' }[locale]}
-                </h2>
+                <h2 className="text-base font-semibold">{t(locale, 'admin', 'copy.notifiedChefsWithoutAnOffer')}</h2>
                 {notifiedCooksWithoutOffer.length === 0 ? (
                     <p className="text-sm text-muted-foreground">{emptyNotifiedCooksMessage}</p>
                 ) : (
@@ -1016,14 +968,7 @@ function AdminBookingRequestOffersSection({
             </section>
 
             <section className="grid gap-3">
-                <h2 className="text-base font-semibold">
-                    {
-                        {
-                            de: 'Köche im Anfahrtsradius (noch nicht benachrichtigt)',
-                            en: 'Chefs in travel radius (not yet notified)',
-                        }[locale]
-                    }
-                </h2>
+                <h2 className="text-base font-semibold">{t(locale, 'admin', 'copy.chefsInTravelRadiusNotYetNotified')}</h2>
                 {notNotifiedCooksInTravelRadius.length === 0 ? (
                     <p className="text-sm text-muted-foreground">{emptyNotNotifiedCooksMessage}</p>
                 ) : (
@@ -1056,29 +1001,29 @@ function AdminBookingRequestOffersSection({
                     <AlertDialogHeader>
                         <AlertDialogTitle>
                             {pendingNotifyAlreadyNotified
-                                ? {
-                                      de: `${pendingNotifyCookName} erneut benachrichtigen?`,
-                                      en: `Notify ${pendingNotifyCookName} again?`,
-                                  }[locale]
-                                : {
-                                      de: `${pendingNotifyCookName} diese Anfrage vorschlagen?`,
-                                      en: `Suggest this request to ${pendingNotifyCookName}?`,
-                                  }[locale]}
+                                ? inlineCopy(
+                                      {
+                                          de: `${pendingNotifyCookName} erneut benachrichtigen?`,
+                                          en: `Notify ${pendingNotifyCookName} again?`,
+                                      },
+                                      locale,
+                                  )
+                                : inlineCopy(
+                                      {
+                                          de: `${pendingNotifyCookName} diese Anfrage vorschlagen?`,
+                                          en: `Suggest this request to ${pendingNotifyCookName}?`,
+                                      },
+                                      locale,
+                                  )}
                         </AlertDialogTitle>
                         <AlertDialogDescription>
                             {pendingNotifyAlreadyNotified
-                                ? {
-                                      de: 'Der Koch erhält eine weitere E-Mail und einen Live-Hinweis zu dieser Anfrage. Er kann weiterhin ein Angebot erstellen.',
-                                      en: 'The chef receives another email and a live update about this request. They can still create an offer.',
-                                  }[locale]
-                                : {
-                                      de: 'Der Koch erhält eine E-Mail und sieht die Anfrage in seinem Buchungsanfragen-Pool. Er kann dann ein Angebot erstellen.',
-                                      en: 'The chef receives an email and sees the request in their booking request pool. They can then create an offer.',
-                                  }[locale]}
+                                ? t(locale, 'admin', 'copy.theChefReceivesAnotherEmailAndALiveUpdateAboutThisRequestThe')
+                                : t(locale, 'admin', 'copy.theChefReceivesAnEmailAndSeesTheRequestInTheirBookingRequest')}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel disabled={notifyBusy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogCancel disabled={notifyBusy}>{t(locale, 'admin', 'copy.cancel')}</AlertDialogCancel>
                         <AlertDialogAction
                             disabled={notifyBusy}
                             onClick={(event) => {
@@ -1087,10 +1032,10 @@ function AdminBookingRequestOffersSection({
                             }}
                         >
                             {notifyBusy
-                                ? { de: 'Senden…', en: 'Sending…' }[locale]
+                                ? t(locale, 'admin', 'copy.sending')
                                 : pendingNotifyAlreadyNotified
-                                  ? { de: 'Erneut benachrichtigen', en: 'Send again' }[locale]
-                                  : { de: 'Vorschlagen', en: 'Suggest' }[locale]}
+                                  ? t(locale, 'admin', 'copy.sendAgain')
+                                  : t(locale, 'admin', 'copy.suggest')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

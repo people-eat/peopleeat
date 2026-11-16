@@ -1,15 +1,14 @@
 import { Link } from '@tanstack/react-router';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 
-const bookingRequestChatPageTitle = { de: 'Buchungsanfrage: Chat', en: 'Booking request: chat' } as const;
 export function BookingRequestChatPage() {
-    const locale = useLocale();
+    const { t } = useT('publicBooking');
 
     return (
         <main id="main-content" className="mx-auto max-w-3xl p-8">
-            <h1>{bookingRequestChatPageTitle[locale]}</h1>
+            <h1>{t('chat.title')}</h1>
             <Link to="/{-$locale}/booking-request" className="mt-4 inline-block text-sm underline-offset-4 hover:underline">
-                {{ de: 'Zur Buchungsanfrage', en: 'Back to booking request' }[locale]}
+                {t('chat.back')}
             </Link>
         </main>
     );

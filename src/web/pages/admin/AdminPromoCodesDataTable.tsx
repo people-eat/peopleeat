@@ -1,5 +1,6 @@
 import type { OnChangeFn, SortingState } from '@tanstack/react-table';
 
+import { t } from '../../../i18n/t';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { AdminDataTable } from './AdminDataTable';
@@ -29,7 +30,7 @@ export function AdminPromoCodesDataTable({ data, sorting, onSortingChange }: Adm
                 to: '/{-$locale}/admin/promo-codes/$promoCodeId',
                 params: { promoCodeId: row.promoCodeId },
             })}
-            emptyMessage={{ de: 'Keine Promo-Codes gefunden.', en: 'No promo codes found.' }[locale]}
+            emptyMessage={t(locale, 'admin', 'copy.noPromoCodesFound')}
         />
     );
 }

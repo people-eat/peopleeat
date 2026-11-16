@@ -2,7 +2,7 @@ import { XIcon } from 'lucide-react';
 import { Dialog as DialogPrimitive } from 'radix-ui';
 import { useState } from 'react';
 import type { ComponentProps } from 'react';
-import { useLocale } from '../../hooks/useLocale';
+import { useT } from '../../hooks/useT';
 import { cn } from '../../utils/cn';
 import { Button } from './button';
 import { PortalContainerProvider } from './portal-container';
@@ -44,8 +44,8 @@ function DialogContent({
 }: ComponentProps<typeof DialogPrimitive.Content> & {
     showCloseButton?: boolean;
 }) {
-    const locale = useLocale();
-    const closeLabel = { de: 'Schließen', en: 'Close' }[locale];
+    const { t } = useT('common');
+    const closeLabel = t('close');
     // Absolute + zero size so the host does not take a grid track (`gap-4`).
     const [portalContainer, setPortalContainer] = useState<HTMLDivElement | null>(null);
     return (
@@ -93,8 +93,8 @@ function DialogFooter({
 }: ComponentProps<'div'> & {
     showCloseButton?: boolean;
 }) {
-    const locale = useLocale();
-    const closeLabel = { de: 'Schließen', en: 'Close' }[locale];
+    const { t } = useT('common');
+    const closeLabel = t('close');
     return (
         <div data-slot="dialog-footer" className={cn('flex flex-col-reverse gap-2 sm:flex-row sm:justify-end', className)} {...props}>
             {children}

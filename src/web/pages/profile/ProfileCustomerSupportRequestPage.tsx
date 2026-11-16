@@ -2,6 +2,7 @@ import { Link, notFound, useNavigate } from '@tanstack/react-router';
 import { useEffect, useRef } from 'react';
 import { useMutation } from 'urql';
 
+import { t } from '../../../i18n/t';
 import { StatusBadge } from '../../components/base/status-badge';
 import { SupportRequestChat } from '../../components/SupportRequestChat';
 import type { GqlCProfileCustomerSupportRequestPageQuery } from '../../graphql/generated';
@@ -65,7 +66,9 @@ export function ProfileCustomerSupportRequestPage({
     }
 
     const statusLabel =
-        supportRequest.status === 'RESOLVED' ? { de: 'Erledigt', en: 'Resolved' }[locale] : { de: 'Offen', en: 'Open' }[locale];
+        supportRequest.status === 'RESOLVED'
+            ? t(locale, 'profileCustomer', 'support.resolved')
+            : t(locale, 'profileCustomer', 'support.open');
 
     return (
         <main id="main-content" data-workspace-fill="" className="flex min-h-0 w-full min-w-0 flex-1 flex-col gap-4 overflow-hidden">
@@ -84,7 +87,7 @@ export function ProfileCustomerSupportRequestPage({
                             {supportRequest.bookingRequest.occasion}
                         </Link>
                     ) : (
-                        <p className="text-sm text-muted-foreground">{{ de: 'Allgemeine Anfrage', en: 'General request' }[locale]}</p>
+                        <p className="text-sm text-muted-foreground">{t(locale, 'profileCustomer', 'support.general')}</p>
                     )}
                 </div>
             </div>
@@ -93,7 +96,7 @@ export function ProfileCustomerSupportRequestPage({
                 className="-mx-4 min-h-0 flex-1 overflow-hidden border-t px-4 pt-4"
                 messages={supportRequest.messages}
                 canSend
-                peerDisplay={{ de: 'peopleeat Support', en: 'peopleeat Support' }[locale]}
+                peerDisplay={t(locale, 'profileCustomer', 'support.peopleeat')}
                 onSend={async (message, fileUploadIds) => {
                     const result = await sendMessage({ supportRequestId, message, fileUploadIds });
                     return Boolean(result.data?.user.supportRequestMessageCreate.success);

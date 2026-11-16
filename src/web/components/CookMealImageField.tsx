@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { inlineCopy } from '../../shared';
 
 import { uploadErrorMessage, uploadFile } from '../chat/fileUpload';
 import { useLocale } from '../hooks/useLocale';
@@ -65,10 +66,13 @@ export function CookMealImageField({
         setError(null);
         if (!file.type.startsWith('image/')) {
             setError(
-                {
-                    de: 'Bitte ein Bild (JPEG, PNG, WebP oder GIF) wählen.',
-                    en: 'Please choose an image (JPEG, PNG, WebP, or GIF).',
-                }[locale],
+                inlineCopy(
+                    {
+                        de: 'Bitte ein Bild (JPEG, PNG, WebP oder GIF) wählen.',
+                        en: 'Please choose an image (JPEG, PNG, WebP, or GIF).',
+                    },
+                    locale,
+                ),
             );
             if (inputRef.current) inputRef.current.value = '';
             return;
@@ -114,7 +118,7 @@ export function CookMealImageField({
     return (
         <>
             <div className="grid gap-2">
-                <p className="text-sm font-medium">{{ de: 'Bild', en: 'Image' }[locale]}</p>
+                <p className="text-sm font-medium">{inlineCopy({ de: 'Bild', en: 'Image' }, locale)}</p>
                 {value.imageUrl ? (
                     <img
                         src={value.imageUrl}
@@ -127,14 +131,19 @@ export function CookMealImageField({
                     />
                 ) : (
                     <div className="grid gap-1">
-                        <p className="text-sm text-muted-foreground">{{ de: 'Noch kein Bild.', en: 'No image yet.' }[locale]}</p>
+                        <p className="text-sm text-muted-foreground">
+                            {inlineCopy({ de: 'Noch kein Bild.', en: 'No image yet.' }, locale)}
+                        </p>
                         {emptyDetail !== null ? (
                             <p className="text-sm text-muted-foreground">
                                 {emptyDetail ??
-                                    {
-                                        de: 'Ohne Bild erscheint das Gericht nicht auf deiner öffentlichen Kochseite.',
-                                        en: 'Without a picture, the meal does not appear on your public cook page.',
-                                    }[locale]}
+                                    inlineCopy(
+                                        {
+                                            de: 'Ohne Bild erscheint das Gericht nicht auf deiner öffentlichen Kochseite.',
+                                            en: 'Without a picture, the meal does not appear on your public cook page.',
+                                        },
+                                        locale,
+                                    )}
                             </p>
                         ) : null}
                     </div>
@@ -148,35 +157,41 @@ export function CookMealImageField({
                 />
                 <div className="flex flex-wrap gap-2">
                     <Button type="button" variant="outline" disabled={actionBusy} onClick={() => inputRef.current?.click()}>
-                        {
+                        {inlineCopy(
                             {
                                 de: busy ? 'Lädt…' : 'Bild auswählen',
                                 en: busy ? 'Uploading…' : 'Select image',
-                            }[locale]
-                        }
+                            },
+                            locale,
+                        )}
                     </Button>
                     {value.imageFileUploadId != null ? (
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
                                 <Button type="button" variant="ghost" disabled={actionBusy}>
-                                    {{ de: 'Bild entfernen', en: 'Remove image' }[locale]}
+                                    {inlineCopy({ de: 'Bild entfernen', en: 'Remove image' }, locale)}
                                 </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                                 <AlertDialogHeader>
-                                    <AlertDialogTitle>{{ de: 'Bild entfernen?', en: 'Remove this image?' }[locale]}</AlertDialogTitle>
+                                    <AlertDialogTitle>
+                                        {inlineCopy({ de: 'Bild entfernen?', en: 'Remove this image?' }, locale)}
+                                    </AlertDialogTitle>
                                     <AlertDialogDescription>
                                         {removeDescription ??
-                                            {
-                                                de: 'Das Bild wird vom Gericht entfernt. Speichere danach, um die Änderung zu übernehmen. Ohne Bild erscheint das Gericht nicht auf deiner öffentlichen Kochseite.',
-                                                en: 'The image will be removed from this meal. Save afterwards to apply the change. Without a picture, the meal does not appear on your public cook page.',
-                                            }[locale]}
+                                            inlineCopy(
+                                                {
+                                                    de: 'Das Bild wird vom Gericht entfernt. Speichere danach, um die Änderung zu übernehmen. Ohne Bild erscheint das Gericht nicht auf deiner öffentlichen Kochseite.',
+                                                    en: 'The image will be removed from this meal. Save afterwards to apply the change. Without a picture, the meal does not appear on your public cook page.',
+                                                },
+                                                locale,
+                                            )}
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                    <AlertDialogCancel>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                                    <AlertDialogCancel>{inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, locale)}</AlertDialogCancel>
                                     <AlertDialogAction variant="destructive" onClick={onRemove}>
-                                        {{ de: 'Entfernen', en: 'Remove' }[locale]}
+                                        {inlineCopy({ de: 'Entfernen', en: 'Remove' }, locale)}
                                     </AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>

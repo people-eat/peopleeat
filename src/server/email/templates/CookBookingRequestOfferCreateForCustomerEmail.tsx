@@ -1,3 +1,4 @@
+import { tEmail } from '../../../i18n/tEmail';
 import type { Locale } from '../../../shared/locale';
 import {
     BookingRequestEmailBookingNumber,
@@ -38,20 +39,17 @@ export function CookBookingRequestOfferCreateForCustomerEmail({
     offerUrl,
 }: CookBookingRequestOfferCreateForCustomerEmailProps) {
     const subject = cookBookingRequestOfferCreateForCustomerEmailSubject(locale);
-    const preview = {
-        de: `Chef ${cookFirstName} hat dir einen Menüvorschlag geschickt. Jetzt ansehen`,
-        en: `Chef ${cookFirstName} sent you a menu proposal. Take a look`,
-    }[locale];
-    const intro = {
-        de: `Gute Neuigkeiten: Chef ${cookFirstName} hat dir ein Angebot mit einem Menüvorschlag geschickt.`,
-        en: `Good news: Chef ${cookFirstName} sent you an offer with a menu proposal.`,
-    }[locale];
-    const cta = { de: 'Menüvorschlag ansehen', en: 'View menu proposal' }[locale];
 
     return (
-        <EmailLayout locale={locale} webPageUrl={webPageUrl} preview={preview} subject={subject} recipientFirstName={recipientFirstName}>
-            <EmailText>{intro}</EmailText>
-            <EmailButton href={offerUrl}>{cta}</EmailButton>
+        <EmailLayout
+            locale={locale}
+            webPageUrl={webPageUrl}
+            preview={tEmail(locale, 'offer.create.preview', { cookFirstName })}
+            subject={subject}
+            recipientFirstName={recipientFirstName}
+        >
+            <EmailText>{tEmail(locale, 'offer.create.intro', { cookFirstName })}</EmailText>
+            <EmailButton href={offerUrl}>{tEmail(locale, 'offer.create.cta')}</EmailButton>
             <BookingRequestEmailDetails
                 locale={locale}
                 timeZone={timeZone}
@@ -68,5 +66,5 @@ export function CookBookingRequestOfferCreateForCustomerEmail({
 }
 
 export function cookBookingRequestOfferCreateForCustomerEmailSubject(locale: Locale): string {
-    return { de: 'Angebot erhalten', en: 'You received an offer' }[locale];
+    return tEmail(locale, 'offer.create.subject');
 }

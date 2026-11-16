@@ -1,5 +1,7 @@
 import { Link } from '@tanstack/react-router';
 
+import { t } from '../../i18n/t';
+import type { Locale } from '../../shared';
 import type { GqlCTestimonialPublicationStatus } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
 import { cn } from '../utils/cn';
@@ -25,16 +27,16 @@ export type AdminTestimonialListCardTestimonial = {
     publicPagePlacements?: ReadonlyArray<AdminTestimonialPublicPagePlacement>;
 };
 
-function publicationLabel(status: string, locale: 'de' | 'en'): string {
-    if (status === 'PUBLISHED') return { de: 'Veröffentlicht', en: 'Published' }[locale];
-    return { de: 'Zur Prüfung', en: 'Pending review' }[locale];
+function publicationLabel(status: string, locale: Locale): string {
+    if (status === 'PUBLISHED') return t(locale, 'admin', 'copy.published2');
+    return t(locale, 'admin', 'copy.pendingReview2');
 }
 
 export function AdminTestimonialListCard({ testimonial }: { testimonial: AdminTestimonialListCardTestimonial }) {
     const locale = useLocale();
-    const kindLabel = testimonial.kind === 'customer' ? { de: 'Kunde', en: 'Customer' }[locale] : { de: 'Koch', en: 'Cook' }[locale];
-    const editLabel = { de: 'Bearbeiten', en: 'Edit' }[locale];
-    const body = testimonial.body?.trim() || { de: '(ohne Text)', en: '(no body)' }[locale];
+    const kindLabel = testimonial.kind === 'customer' ? t(locale, 'admin', 'copy.customer') : t(locale, 'admin', 'copy.cook');
+    const editLabel = t(locale, 'admin', 'copy.edit');
+    const body = testimonial.body?.trim() || t(locale, 'admin', 'copy.noBody');
     const publicationTone = testimonial.publicationStatus === 'PUBLISHED' ? 'success' : 'warning';
     const to =
         testimonial.kind === 'customer'

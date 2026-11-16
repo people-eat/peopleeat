@@ -1,3 +1,4 @@
+import { t } from '../i18n/t';
 import { calendarEventIcs } from './calendarEventIcs';
 import type { CalendarEventIcsInput } from './calendarEventIcs';
 import { formatTime } from './formatDate';
@@ -26,11 +27,10 @@ export function callCalendarEventIcsInput(input: {
     cookCallSlotBookingId: string;
     stampedAt?: Date;
 }): CalendarEventIcsInput {
-    const peer = input.peerName.trim() || { de: 'Gast', en: 'Guest' }[input.locale];
-    const title = { de: `Gespräch mit ${peer}`, en: `Call with ${peer}` }[input.locale];
+    const peer = input.peerName.trim() || t(input.locale, 'common', 'calendarEvent.guestFallback');
+    const title = t(input.locale, 'common', 'calendarEvent.callTitle', { peer });
     const occasion = input.occasion?.trim() ?? '';
-    const intro =
-        occasion.length > 0 ? { de: `Kennenlerngespräch zu ${occasion}.`, en: `Intro call about ${occasion}.` }[input.locale] : '';
+    const intro = occasion.length > 0 ? t(input.locale, 'common', 'calendarEvent.callIntro', { occasion }) : '';
     const description = intro.length > 0 ? `${intro}\n${input.offerUrl}` : input.offerUrl;
     return {
         start: input.start,
@@ -61,19 +61,20 @@ export function bookingEventCalendarIcsInput(input: {
     bookingRequestId: string;
     stampedAt?: Date;
 }): CalendarEventIcsInput {
-    const peer = input.peerName.trim() || { de: 'Gast', en: 'Guest' }[input.locale];
-    const occasion = input.occasion.trim() || { de: 'Abendessen', en: 'Dinner' }[input.locale];
+    const peer = input.peerName.trim() || t(input.locale, 'common', 'calendarEvent.guestFallback');
+    const occasion = input.occasion.trim() || t(input.locale, 'common', 'calendarEvent.dinnerFallback');
     const time = formatTime(input.start, { locale: input.locale, timeZone: input.timeZone, timeStyle: 'short' });
     const place = input.venueCity?.trim() || formatTimeZonePlaceLabel(input.timeZone);
-    const timeWithPlace = place.length > 0 ? { de: `${time} in ${place}`, en: `${time} in ${place}` }[input.locale] : time;
-    const description = {
-        de: `Beginn um ${timeWithPlace}. Die Dauer stimmt ihr im Chat ab. Gäste: ${input.guestCount}.\n${input.bookingUrl}`,
-        en: `Starts at ${timeWithPlace}. You agree the length in chat. Guests: ${input.guestCount}.\n${input.bookingUrl}`,
-    }[input.locale];
+    const timeWithPlace = place.length > 0 ? t(input.locale, 'common', 'calendarEvent.timeInPlace', { time, place }) : time;
+    const description = t(input.locale, 'common', 'calendarEvent.eventDescription', {
+        timeWithPlace,
+        guestCount: input.guestCount,
+        bookingUrl: input.bookingUrl,
+    });
     return {
         start: input.start,
         end: new Date(input.start.getTime() + BOOKING_EVENT_DURATION_MS),
-        title: { de: `${occasion} mit ${peer}`, en: `${occasion} with ${peer}` }[input.locale],
+        title: t(input.locale, 'common', 'calendarEvent.eventTitle', { occasion, peer }),
         description,
         uid: bookingEventCalendarUid(input.bookingRequestId),
         location: input.location ?? undefined,

@@ -1,5 +1,6 @@
 import type { OnChangeFn, SortingState } from '@tanstack/react-table';
 
+import { t } from '../../../i18n/t';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { AdminDataTable } from './AdminDataTable';
@@ -29,7 +30,7 @@ export function AdminGiftCardsDataTable({ data, sorting, onSortingChange }: Admi
                 to: '/{-$locale}/admin/gift-cards/$giftCardId',
                 params: { giftCardId: row.giftCardId },
             })}
-            emptyMessage={{ de: 'Keine Gutscheine gefunden.', en: 'No gift cards found.' }[locale]}
+            emptyMessage={t(locale, 'admin', 'copy.noGiftCardsFound')}
         />
     );
 }

@@ -11,6 +11,7 @@ import {
     bookingRequestKitchenDetailsGuestTablewareValues,
     bookingRequestKitchenDetailsSpaceLabel,
     bookingRequestKitchenDetailsSpaces,
+    inlineCopy,
 } from '../../shared';
 import type { BookingRequestKitchenDetailsDraft } from '../../shared';
 import { uploadErrorMessage, uploadFile } from '../chat/fileUpload';
@@ -91,10 +92,13 @@ export function BookingRequestKitchenDetailsFields({
             for (const file of files) {
                 if (!file.type.startsWith('image/')) {
                     setUploadError(
-                        {
-                            de: 'Bitte ein Bild (JPEG, PNG, WebP oder GIF) wählen.',
-                            en: 'Please choose an image (JPEG, PNG, WebP, or GIF).',
-                        }[locale],
+                        inlineCopy(
+                            {
+                                de: 'Bitte ein Bild (JPEG, PNG, WebP oder GIF) wählen.',
+                                en: 'Please choose an image (JPEG, PNG, WebP, or GIF).',
+                            },
+                            locale,
+                        ),
                     );
                     continue;
                 }
@@ -117,7 +121,7 @@ export function BookingRequestKitchenDetailsFields({
     return (
         <div className="grid gap-6">
             <ChipRow
-                label={{ de: 'Küche für den Koch', en: 'Kitchen for the chef' }[locale]}
+                label={inlineCopy({ de: 'Küche für den Koch', en: 'Kitchen for the chef' }, locale)}
                 values={bookingRequestKitchenDetailsAvailabilities}
                 selected={value.availability}
                 disabled={disabled || uploading}
@@ -125,7 +129,7 @@ export function BookingRequestKitchenDetailsFields({
                 onChange={(availability) => onChange({ ...value, availability })}
             />
             <ChipRow
-                label={{ de: 'Platz im Kühlschrank', en: 'Fridge space' }[locale]}
+                label={inlineCopy({ de: 'Platz im Kühlschrank', en: 'Fridge space' }, locale)}
                 values={bookingRequestKitchenDetailsSpaces}
                 selected={value.fridgeSpace}
                 disabled={disabled || uploading}
@@ -133,7 +137,7 @@ export function BookingRequestKitchenDetailsFields({
                 onChange={(fridgeSpace) => onChange({ ...value, fridgeSpace })}
             />
             <ChipRow
-                label={{ de: 'Platz zum Anrichten', en: 'Plating space' }[locale]}
+                label={inlineCopy({ de: 'Platz zum Anrichten', en: 'Plating space' }, locale)}
                 values={bookingRequestKitchenDetailsSpaces}
                 selected={value.platingSpace}
                 disabled={disabled || uploading}
@@ -141,7 +145,7 @@ export function BookingRequestKitchenDetailsFields({
                 onChange={(platingSpace) => onChange({ ...value, platingSpace })}
             />
             <ChipRow
-                label={{ de: 'Geschirr und Besteck für die Gäste', en: 'Dishes and cutlery for the guests' }[locale]}
+                label={inlineCopy({ de: 'Geschirr und Besteck für die Gäste', en: 'Dishes and cutlery for the guests' }, locale)}
                 values={bookingRequestKitchenDetailsGuestTablewareValues}
                 selected={value.guestTableware}
                 disabled={disabled || uploading}
@@ -149,18 +153,19 @@ export function BookingRequestKitchenDetailsFields({
                 onChange={(guestTableware) => onChange({ ...value, guestTableware })}
             />
             <div className="grid gap-2">
-                <p className="text-sm">{{ de: 'Hinweise an den Koch', en: 'Notes for the chef' }[locale]}</p>
+                <p className="text-sm">{inlineCopy({ de: 'Hinweise an den Koch', en: 'Notes for the chef' }, locale)}</p>
                 <Textarea
                     value={value.notes}
                     disabled={disabled || uploading}
                     rows={3}
                     onChange={(event) => onChange({ ...value, notes: event.target.value })}
-                    placeholder={
+                    placeholder={inlineCopy(
                         {
                             de: 'Zum Beispiel den Herd oder besondere Einschränkungen.',
                             en: 'For example cooktop type or special constraints.',
-                        }[locale]
-                    }
+                        },
+                        locale,
+                    )}
                 />
             </div>
             <KitchenDetailsPhotoPicker
@@ -199,14 +204,15 @@ function KitchenDetailsPhotoPicker({
     const canAdd = photos.length < BOOKING_REQUEST_KITCHEN_DETAILS_PHOTO_MAX;
     return (
         <div className="grid gap-2">
-            <p className="text-sm">{{ de: 'Fotos der Küche', en: 'Kitchen photos' }[locale]}</p>
+            <p className="text-sm">{inlineCopy({ de: 'Fotos der Küche', en: 'Kitchen photos' }, locale)}</p>
             <p className="text-sm text-muted-foreground">
-                {
+                {inlineCopy(
                     {
                         de: `Optional, höchstens ${BOOKING_REQUEST_KITCHEN_DETAILS_PHOTO_MAX} Bilder.`,
                         en: `Optional, at most ${BOOKING_REQUEST_KITCHEN_DETAILS_PHOTO_MAX} photos.`,
-                    }[locale]
-                }
+                    },
+                    locale,
+                )}
             </p>
             <input
                 ref={inputRef}
@@ -228,7 +234,7 @@ function KitchenDetailsPhotoPicker({
                                 variant="secondary"
                                 className="absolute top-1 right-1"
                                 disabled={disabled}
-                                aria-label={{ de: 'Foto entfernen', en: 'Remove photo' }[locale]}
+                                aria-label={inlineCopy({ de: 'Foto entfernen', en: 'Remove photo' }, locale)}
                                 onClick={() => onRemove(photo.fileUploadId)}
                             >
                                 <XIcon />
@@ -239,7 +245,7 @@ function KitchenDetailsPhotoPicker({
             ) : null}
             {canAdd ? (
                 <Button type="button" variant="outline" disabled={disabled} onClick={onPick}>
-                    {{ de: 'Foto hinzufügen', en: 'Add photo' }[locale]}
+                    {inlineCopy({ de: 'Foto hinzufügen', en: 'Add photo' }, locale)}
                 </Button>
             ) : null}
             {error ? <p className="text-sm text-destructive">{error}</p> : null}
@@ -316,14 +322,15 @@ export function BookingRequestKitchenDetailsSaveCard({
     return (
         <Card>
             <CardHeader>
-                <CardTitle>{{ de: 'Über die Küche', en: 'About the kitchen' }[locale]}</CardTitle>
+                <CardTitle>{inlineCopy({ de: 'Über die Küche', en: 'About the kitchen' }, locale)}</CardTitle>
                 <p className="text-sm text-muted-foreground">
-                    {
+                    {inlineCopy(
                         {
                             de: 'Optional. Du kannst das auch später in der Anfrage ergänzen. Wo ihr sitzt und wo der Koch kocht, kann sich unterscheiden.',
                             en: 'Optional. You can also finish this later on the request. Where you dine and where the chef cooks can differ.',
-                        }[locale]
-                    }
+                        },
+                        locale,
+                    )}
                 </p>
             </CardHeader>
             <CardContent>
@@ -339,7 +346,7 @@ export function BookingRequestKitchenDetailsSaveCard({
             </CardContent>
             <CardFooter>
                 <Button type="button" disabled={disabled || busy || empty} onClick={onSave}>
-                    {{ de: 'Küchendetails speichern', en: 'Save kitchen details' }[locale]}
+                    {inlineCopy({ de: 'Küchendetails speichern', en: 'Save kitchen details' }, locale)}
                 </Button>
             </CardFooter>
         </Card>

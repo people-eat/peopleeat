@@ -8,7 +8,7 @@ import { Slot } from 'radix-ui';
 import type { ComponentProps, CSSProperties } from 'react';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useIsMobile } from '../../hooks/use-mobile';
-import { useLocale } from '../../hooks/useLocale';
+import { useT } from '../../hooks/useT';
 import { cn } from '../../utils/cn';
 import { Button } from './button';
 import { Input } from './input';
@@ -164,7 +164,7 @@ function Sidebar({
     mobileFullScreen?: boolean;
 }) {
     const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
-    const locale = useLocale();
+    const { t } = useT('common');
 
     if (collapsible === 'none') {
         return (
@@ -199,10 +199,8 @@ function Sidebar({
                     side={side}
                 >
                     <SheetHeader className="sr-only">
-                        <SheetTitle>{{ de: 'Seitenleiste', en: 'Sidebar' }[locale]}</SheetTitle>
-                        <SheetDescription>
-                            {{ de: 'Zeigt die mobile Seitenleiste an.', en: 'Displays the mobile sidebar.' }[locale]}
-                        </SheetDescription>
+                        <SheetTitle>{t('sidebar.title')}</SheetTitle>
+                        <SheetDescription>{t('sidebar.description')}</SheetDescription>
                     </SheetHeader>
                     <div className="flex size-full flex-col">{children}</div>
                 </SheetContent>
@@ -269,8 +267,8 @@ function SidebarTrigger({
     label?: string;
 }) {
     const { toggleSidebar } = useSidebar();
-    const locale = useLocale();
-    const triggerLabel = label ?? { de: 'Seitenleiste umschalten', en: 'Toggle Sidebar' }[locale];
+    const { t } = useT('common');
+    const triggerLabel = label ?? t('sidebar.toggle');
 
     return (
         <Tooltip>
@@ -299,8 +297,8 @@ function SidebarTrigger({
 
 function SidebarRail({ className, ...props }: ComponentProps<'button'>) {
     const { toggleSidebar } = useSidebar();
-    const locale = useLocale();
-    const toggleLabel = { de: 'Seitenleiste umschalten', en: 'Toggle Sidebar' }[locale];
+    const { t } = useT('common');
+    const toggleLabel = t('sidebar.toggle');
 
     return (
         <button

@@ -1,4 +1,5 @@
 import { idCreate } from '../../shared/idCreate';
+import type { Locale } from '../../shared/locale';
 import type { ChatMessage, ChatMessageCreate, ChatTurn, ChatTurnCreate } from '../db/schema';
 import { chatMessageBodyEmpty } from './chatMessageBody';
 import type { ChatMessageBody, ChatTurnUsage } from './chatMessageBody';
@@ -44,7 +45,7 @@ export function chatTurnAggregateBuild({
 }: {
     chatId: string;
     clientRequestId: string;
-    locale?: 'de' | 'en';
+    locale?: Locale;
     message: string;
 }): ChatTurnAggregateCreate {
     const chatTurnId = idCreate();

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
+import { t } from '../../../i18n/t';
 import { userDisplayName } from '../../../shared';
 import { Button } from '../../components/base/button';
 import { Checkbox } from '../../components/base/checkbox';
@@ -54,12 +55,7 @@ export function AdminBookingRequestOfferHandoverDialog({
     async function onConfirm() {
         if (busy || blockedTransferred || cookId.length === 0) return;
         if (needsOutOfSystemConfirm && !confirmOutOfSystem) {
-            toast.error(
-                {
-                    de: 'Bitte bestätigen, dass die Zahlung außerhalb von Stripe geklärt ist.',
-                    en: 'Please confirm that out-of-system money has been handled.',
-                }[locale],
-            );
+            toast.error(t(locale, 'admin', 'copy.pleaseConfirmThatOutOfSystemMoneyHasBeenHandled'));
             return;
         }
         setBusy(true);
@@ -80,15 +76,10 @@ export function AdminBookingRequestOfferHandoverDialog({
                 throw new Error('handover failed');
             }
             onOpenChange(false);
-            toast.success({ de: 'Angebot übergeben.', en: 'Offer handed over.' }[locale]);
+            toast.success(t(locale, 'admin', 'copy.offerHandedOver'));
             onSuccess(newOfferId);
         } catch {
-            toast.error(
-                {
-                    de: 'Übergabe fehlgeschlagen. Prüfe Zahlung und Koch-Stripe-Status.',
-                    en: 'Handover failed. Check payment status and cook Stripe readiness.',
-                }[locale],
-            );
+            toast.error(t(locale, 'admin', 'copy.handoverFailedCheckPaymentStatusAndCookStripeReadiness'));
         } finally {
             setBusy(false);
         }
@@ -113,33 +104,23 @@ export function AdminBookingRequestOfferHandoverDialog({
         >
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle>{{ de: 'Angebot übergeben', en: 'Hand over offer' }[locale]}</DialogTitle>
+                    <DialogTitle>{t(locale, 'admin', 'copy.handOverOffer')}</DialogTitle>
                     <DialogDescription>
-                        {
-                            {
-                                de: 'Schließt das aktuelle akzeptierte Angebot und legt ein neues akzeptiertes Angebot für einen anderen Koch an.',
-                                en: 'Closes the current accepted offer and creates a new accepted offer for another cook.',
-                            }[locale]
-                        }
+                        {t(locale, 'admin', 'copy.closesTheCurrentAcceptedOfferAndCreatesANewAcceptedOfferForA')}
                     </DialogDescription>
                 </DialogHeader>
 
                 {blockedTransferred ? (
                     <p className="text-sm text-destructive" role="alert">
-                        {
-                            {
-                                de: 'Nach einer Bank-Auszahlung (TRANSFERRED) ist die automatische Übergabe gesperrt. Bitte zuerst in Stripe zurückbuchen.',
-                                en: 'After a bank payout (TRANSFERRED), automatic handover is blocked. Reverse the payout in Stripe first.',
-                            }[locale]
-                        }
+                        {t(locale, 'admin', 'copy.afterABankPayoutTransferredAutomaticHandoverIsBlockedReverse')}
                     </p>
                 ) : (
                     <div className="grid gap-4">
                         <div className="grid gap-1.5">
-                            <span className="text-sm font-medium">{{ de: 'Neuer Koch', en: 'New cook' }[locale]}</span>
+                            <span className="text-sm font-medium">{t(locale, 'admin', 'copy.newCook')}</span>
                             <Select value={cookId.length > 0 ? cookId : undefined} onValueChange={(next) => next && setCookId(next)}>
                                 <SelectTrigger className="w-full">
-                                    <SelectValue placeholder={{ de: 'Koch wählen…', en: 'Choose cook…' }[locale]} />
+                                    <SelectValue placeholder={t(locale, 'admin', 'copy.chooseCook')} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {eligibleCooks.map((cook) => {
@@ -158,7 +139,7 @@ export function AdminBookingRequestOfferHandoverDialog({
 
                         <label className="flex items-start gap-2 text-sm">
                             <Checkbox checked={copyPrice} onCheckedChange={(checked) => setCopyPrice(checked === true)} />
-                            <span>{{ de: 'Preis übernehmen (Menü + Anreise)', en: 'Copy price (menu + travel)' }[locale]}</span>
+                            <span>{t(locale, 'admin', 'copy.copyPriceMenuTravel')}</span>
                         </label>
                         {hasConfiguredMenu ? (
                             <label className="flex items-start gap-2 text-sm">
@@ -166,7 +147,7 @@ export function AdminBookingRequestOfferHandoverDialog({
                                     checked={copyConfiguredMenu}
                                     onCheckedChange={(checked) => setCopyConfiguredMenu(checked === true)}
                                 />
-                                <span>{{ de: 'Konfiguriertes Menü übernehmen', en: 'Copy configured menu' }[locale]}</span>
+                                <span>{t(locale, 'admin', 'copy.copyConfiguredMenu')}</span>
                             </label>
                         ) : null}
                         <label className="flex items-start gap-2 text-sm">
@@ -174,25 +155,11 @@ export function AdminBookingRequestOfferHandoverDialog({
                                 checked={copyScheduleTimestamps}
                                 onCheckedChange={(checked) => setCopyScheduleTimestamps(checked === true)}
                             />
-                            <span>
-                                {
-                                    {
-                                        de: 'Zahlungs- und Auszahlungstermine übernehmen',
-                                        en: 'Copy payment and payout dates',
-                                    }[locale]
-                                }
-                            </span>
+                            <span>{t(locale, 'admin', 'copy.copyPaymentAndPayoutDates')}</span>
                         </label>
                         <label className="flex items-start gap-2 text-sm">
                             <Checkbox checked={copyChatMessages} onCheckedChange={(checked) => setCopyChatMessages(checked === true)} />
-                            <span>
-                                {
-                                    {
-                                        de: 'Chat-Nachrichten übernehmen (ohne Systemereignisse)',
-                                        en: 'Copy chat messages (not system events)',
-                                    }[locale]
-                                }
-                            </span>
+                            <span>{t(locale, 'admin', 'copy.copyChatMessagesNotSystemEvents')}</span>
                         </label>
                         {needsOutOfSystemConfirm ? (
                             <label className="flex items-start gap-2 text-sm">
@@ -200,14 +167,7 @@ export function AdminBookingRequestOfferHandoverDialog({
                                     checked={confirmOutOfSystem}
                                     onCheckedChange={(checked) => setConfirmOutOfSystem(checked === true)}
                                 />
-                                <span>
-                                    {
-                                        {
-                                            de: 'Zahlung außerhalb von Stripe ist geklärt',
-                                            en: 'Out-of-system money has been handled',
-                                        }[locale]
-                                    }
-                                </span>
+                                <span>{t(locale, 'admin', 'copy.outOfSystemMoneyHasBeenHandled')}</span>
                             </label>
                         ) : null}
                     </div>
@@ -215,10 +175,10 @@ export function AdminBookingRequestOfferHandoverDialog({
 
                 <DialogFooter>
                     <Button type="button" variant="outline" disabled={busy} onClick={() => onOpenChange(false)}>
-                        {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                        {t(locale, 'admin', 'copy.cancel')}
                     </Button>
                     <Button type="button" disabled={busy || blockedTransferred || cookId.length === 0} onClick={() => void onConfirm()}>
-                        {busy ? { de: 'Übergeben…', en: 'Handing over…' }[locale] : { de: 'Übergeben', en: 'Hand over' }[locale]}
+                        {busy ? t(locale, 'admin', 'copy.handingOver') : t(locale, 'admin', 'copy.handOver')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

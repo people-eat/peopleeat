@@ -1,6 +1,6 @@
 import { ChevronLeftIcon, ChevronRightIcon, DownloadIcon, ExternalLinkIcon, FileIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { formatBytes } from '../../../shared';
+import { formatBytes, inlineCopy } from '../../../shared';
 import { previewKindFor } from '../../chat/chatAttachmentPreview';
 import type { GqlCFileUpload } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
@@ -90,7 +90,7 @@ export function ChatAttachmentPreviewDialog({ open, onOpenChange, attachments, i
                 const message =
                     error instanceof Error
                         ? error.message
-                        : { de: 'Vorschau konnte nicht geladen werden', en: 'Failed to load preview' }[locale];
+                        : inlineCopy({ de: 'Vorschau konnte nicht geladen werden', en: 'Failed to load preview' }, locale);
                 setTextState({ status: 'error', text: '', error: message });
             });
         return () => controller.abort();
@@ -118,7 +118,7 @@ export function ChatAttachmentPreviewDialog({ open, onOpenChange, attachments, i
 
     const goPrev = () => onIndexChange((safeIndex - 1 + total) % total);
     const goNext = () => onIndexChange((safeIndex + 1) % total);
-    const ofLabel = { de: `${safeIndex + 1} von ${total}`, en: `${safeIndex + 1} of ${total}` }[locale];
+    const ofLabel = inlineCopy({ de: `${safeIndex + 1} von ${total}`, en: `${safeIndex + 1} of ${total}` }, locale);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -141,7 +141,7 @@ export function ChatAttachmentPreviewDialog({ open, onOpenChange, attachments, i
                                 type="button"
                                 variant="secondary"
                                 size="icon"
-                                aria-label={{ de: 'Vorheriger Anhang', en: 'Previous attachment' }[locale]}
+                                aria-label={inlineCopy({ de: 'Vorheriger Anhang', en: 'Previous attachment' }, locale)}
                                 onClick={goPrev}
                                 className="absolute top-1/2 left-2 -translate-y-1/2 shadow-md"
                             >
@@ -151,7 +151,7 @@ export function ChatAttachmentPreviewDialog({ open, onOpenChange, attachments, i
                                 type="button"
                                 variant="secondary"
                                 size="icon"
-                                aria-label={{ de: 'Nächster Anhang', en: 'Next attachment' }[locale]}
+                                aria-label={inlineCopy({ de: 'Nächster Anhang', en: 'Next attachment' }, locale)}
                                 onClick={goNext}
                                 className="absolute top-1/2 right-2 -translate-y-1/2 shadow-md"
                             >
@@ -165,7 +165,7 @@ export function ChatAttachmentPreviewDialog({ open, onOpenChange, attachments, i
                     <Button asChild variant="outline" size="sm">
                         <a href={current.url} target="_blank" rel="noreferrer">
                             <ExternalLinkIcon />
-                            {{ de: 'In neuem Tab öffnen', en: 'Open in new tab' }[locale]}
+                            {inlineCopy({ de: 'In neuem Tab öffnen', en: 'Open in new tab' }, locale)}
                         </a>
                     </Button>
                     <Button asChild variant="default" size="sm">
@@ -174,7 +174,7 @@ export function ChatAttachmentPreviewDialog({ open, onOpenChange, attachments, i
                             `Content-Disposition: attachment`. */}
                         <a href={current.url} download={current.filename}>
                             <DownloadIcon />
-                            {{ de: 'Herunterladen', en: 'Download' }[locale]}
+                            {inlineCopy({ de: 'Herunterladen', en: 'Download' }, locale)}
                         </a>
                     </Button>
                 </div>
@@ -213,12 +213,13 @@ function PreviewBody({
         if (textState.status === 'error') {
             return (
                 <div className="text-sm text-destructive">
-                    {
+                    {inlineCopy(
                         {
                             de: `Vorschau konnte nicht geladen werden: ${textState.error ?? 'unbekannter Fehler'}`,
                             en: `Could not load preview: ${textState.error ?? 'unknown error'}`,
-                        }[locale]
-                    }
+                        },
+                        locale,
+                    )}
                 </div>
             );
         }
@@ -252,12 +253,13 @@ function PreviewBody({
                     {attachment.mediaType} · {formatBytes(attachment.size)}
                 </div>
                 <div className="mt-2 max-w-sm text-xs text-muted-foreground">
-                    {
+                    {inlineCopy(
                         {
                             de: 'Für diesen Dateityp ist keine Inline-Vorschau verfügbar. Nutze „In neuem Tab öffnen“ oder „Herunterladen“.',
                             en: 'No inline preview available for this file type. Use Open in new tab or Download to view it.',
-                        }[locale]
-                    }
+                        },
+                        locale,
+                    )}
                 </div>
             </div>
         </div>

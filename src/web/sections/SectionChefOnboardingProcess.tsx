@@ -1,63 +1,40 @@
 import type { ExpansionMarket } from '../../shared/expansionMarkets';
 import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 
 export function SectionChefOnboardingProcess({ market }: { market?: ExpansionMarket }) {
     const locale = useLocale();
+    const { t } = useT('public');
+    const inCountry = market ? (locale === 'de' ? market.inCountryDe : market.inCountryEn) : '';
 
     const timeline = [
         {
-            name: { de: 'Registrierung', en: 'Registration' }[locale],
-            description: {
-                de: 'Gib deine Daten im Registrierungsformular ein und fange direkt an, dein Profil zu vervollständigen.',
-                en: 'Enter your details in the registration form and start completing your profile right away.',
-            }[locale],
-            date: { de: 'Schritt 1', en: 'Step 1' }[locale],
+            name: t('howToBecome.step1Name'),
+            description: t('howToBecome.step1Body'),
+            date: t('howToBecome.step', { n: 1 }),
         },
         {
-            name: { de: 'Wir melden uns bei dir', en: "We'll get back to you" }[locale],
-            description: {
-                de: 'Wir nehmen Kontakt mit dir auf, um alle Details zu besprechen, damit du starten kannst.',
-                en: 'We will contact you to discuss all the details so you can get started.',
-            }[locale],
-            date: { de: 'Schritt 2', en: 'Step 2' }[locale],
+            name: t('howToBecome.step2Name'),
+            description: t('howToBecome.step2Body'),
+            date: t('howToBecome.step', { n: 2 }),
         },
         {
-            name: { de: 'Freischaltung', en: 'Activation' }[locale],
-            description: {
-                de: 'Sobald du dein Profil und ein erstes Menü fertiggestellt hast, wird dein Profil freigeschaltet.',
-                en: 'Once you have completed your profile and an initial menu, your profile will be activated.',
-            }[locale],
-            date: { de: 'Schritt 3', en: 'Step 3' }[locale],
+            name: t('howToBecome.step3Name'),
+            description: t('howToBecome.step3Body'),
+            date: t('howToBecome.step', { n: 3 }),
         },
         {
-            name: { de: 'Startklar', en: 'Ready' }[locale],
-            description: market
-                ? {
-                      de: `Profil und erstes Menü jetzt fertigstellen. Gastanfragen ${market.inCountryDe} starten Anfang 2027.`,
-                      en: `Finish your profile and first menu now. Guest requests ${market.inCountryEn} start in early 2027.`,
-                  }[locale]
-                : {
-                      de: 'Erhalte Buchungsanfragen; gleichzeitig unterstützen wir dich jederzeit bei jeglichen Anliegen und Kundenanfragen.',
-                      en: 'Receive booking requests, and we will support you at any time with any concerns and customer inquiries.',
-                  }[locale],
-            date: { de: 'Startklar', en: 'Ready' }[locale],
+            name: t('howToBecome.readyName'),
+            description: market ? t('howToBecome.readyBodyMarket', { inCountry }) : t('howToBecome.readyBody'),
+            date: t('howToBecome.readyName'),
         },
     ];
 
     return (
         <section className="mx-auto flex w-full max-w-7xl flex-col gap-16 px-4 @lg:px-6">
             <div className="mx-auto max-w-2xl @lg:mx-0">
-                <h2 className="font-serif text-3xl font-light tracking-tight @md:text-5xl">
-                    {{ de: 'Beginne in nur wenigen Schritten', en: 'Get started in just a few steps' }[locale]}
-                </h2>
-                <p className="mt-6 text-lg/8 text-muted-foreground">
-                    {
-                        {
-                            de: 'Egal ob Mietkoch, Privatkoch oder angestellter Koch: wir unterstützen dich im Onboarding, damit du erfolgreich starten kannst.',
-                            en: "Whether you're a freelance chef, private chef, or employed chef: we support you in your onboarding so you can start successfully.",
-                        }[locale]
-                    }
-                </p>
+                <h2 className="font-serif text-3xl font-light tracking-tight @md:text-5xl">{t('howToBecome.onboardingTitle')}</h2>
+                <p className="mt-6 text-lg/8 text-muted-foreground">{t('howToBecome.onboardingIntro')}</p>
             </div>
             <div className="mx-auto grid max-w-2xl grid-cols-1 gap-8 overflow-hidden @lg:mx-0 @lg:max-w-none @lg:grid-cols-4">
                 {timeline.map((item) => (

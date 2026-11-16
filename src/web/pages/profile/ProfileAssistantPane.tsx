@@ -3,13 +3,14 @@ import { PanelLeftIcon } from 'lucide-react';
 import { createContext, useContext } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 
+import { t } from '../../../i18n/t';
 import { ASSISTANT_SIDEBAR_WIDTH_DEFAULT_REM } from '../../chat/assistantSidebarWidth';
 import { isAssistantFullscreenPath } from '../../chat/isAssistantFullscreenPath';
 import { AssistantTriggerButton } from '../../components/AssistantTriggerButton';
 import { Button } from '../../components/base/button';
 import { SidebarInset, SidebarProvider, useSidebar } from '../../components/base/sidebar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/base/tooltip';
-import { ProfileAssistantSidebar, profileAssistantTitle } from '../../components/ProfileAssistantSidebar';
+import { ProfileAssistantSidebar } from '../../components/ProfileAssistantSidebar';
 import { useLocale } from '../../hooks/useLocale';
 import { DEFAULT_LOCALE } from '../../utils/locale';
 import type { Locale } from '../../utils/locale';
@@ -60,11 +61,9 @@ export function ProfileAssistantPane({
     const pathname = useRouterState({ select: (state) => state.location.pathname });
     const path = pathWithoutLocale(pathname, locale);
     const fullscreen = isAssistantFullscreenPath(path);
-    const navToggleLabel = { de: 'Seitenleiste umschalten', en: 'Toggle Sidebar' }[locale];
-    const assistantToggleLabel = {
-        de: `${profileAssistantTitle.de} umschalten`,
-        en: `Toggle ${profileAssistantTitle.en}`,
-    }[locale];
+    const navToggleLabel = t(locale, 'common', 'sidebar.toggle');
+    const assistantTitle = t(locale, 'profile', 'assistant.title');
+    const assistantToggleLabel = t(locale, 'profile', 'assistant.toggle', { title: assistantTitle });
     const showAssistant = assistantEnabled && !fullscreen;
 
     return (
@@ -98,9 +97,7 @@ export function ProfileAssistantPane({
                                 <TooltipContent side="bottom">{navToggleLabel}</TooltipContent>
                             </Tooltip>
                             <div className="min-w-0 flex-1">{breadcrumbs}</div>
-                            {assistantEnabled ? (
-                                <AssistantTriggerButton label={assistantToggleLabel} title={profileAssistantTitle[locale]} />
-                            ) : null}
+                            {assistantEnabled ? <AssistantTriggerButton label={assistantToggleLabel} title={assistantTitle} /> : null}
                         </header>
                     )}
                     <div

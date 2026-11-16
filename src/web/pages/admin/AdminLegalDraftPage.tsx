@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { t } from '../../../i18n/t';
 import { legalBodyDeNormalize } from '../../../shared/legalBodyDeNormalize';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import {
@@ -30,6 +31,7 @@ import {
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { cn } from '../../utils/cn';
+import type { Locale } from '../../utils/locale';
 import type { AdminLegalKind } from './adminLegal';
 import {
     adminLegalDocumentKind,
@@ -42,30 +44,12 @@ import {
 } from './adminLegal';
 import { AdminLegalDraftDiff } from './AdminLegalDraftDiff';
 
-export function adminLegalDraftPageTitle(kind: AdminLegalKind) {
-    return {
-        de: `${adminLegalKindLabel(kind, 'de')} · Entwurf`,
-        en: `${adminLegalKindLabel(kind, 'en')} · Draft`,
-    } as const;
+export function adminLegalDraftPageTitle(kind: AdminLegalKind, locale: Locale): string {
+    return t(locale, 'admin', 'legal.draftTitle', { kind: adminLegalKindLabel(kind, locale) });
 }
 
-export function adminLegalDraftPageDescription(kind: AdminLegalKind) {
-    return (
-        {
-            privacy: {
-                de: 'Datenschutz-Entwurf speichern und veröffentlichen.',
-                en: 'Save and publish the privacy policy draft.',
-            },
-            terms: {
-                de: 'AGB-Entwurf speichern und veröffentlichen.',
-                en: 'Save and publish the terms draft.',
-            },
-            imprint: {
-                de: 'Impressum-Entwurf speichern und veröffentlichen.',
-                en: 'Save and publish the imprint draft.',
-            },
-        } as const
-    )[kind];
+export function adminLegalDraftPageDescription(kind: AdminLegalKind, locale: Locale): string {
+    return t(locale, 'admin', `legal.${kind}DraftDescription`);
 }
 
 export function AdminLegalDraftPage({ data, kind }: { data: GqlCAdminLegalDocumentPageQuery; kind: AdminLegalKind }) {
@@ -141,12 +125,12 @@ export function AdminLegalDraftPage({ data, kind }: { data: GqlCAdminLegalDocume
                 input: { bodyDe, changeSummaryDe },
             });
             if (result.error || !result.data?.admin.legalDocumentDraftUpsert.success) {
-                toast.error({ de: 'Entwurf konnte nicht gespeichert werden.', en: 'Could not save draft.' }[locale]);
+                toast.error(t(locale, 'admin', 'copy.couldNotSaveDraft'));
                 return;
             }
             setBodyDe(legalBodyDeNormalize(bodyDe));
             setChangeSummaryDe(changeSummaryDe.trim());
-            toast.success({ de: 'Entwurf gespeichert.', en: 'Draft saved.' }[locale]);
+            toast.success(t(locale, 'admin', 'copy.draftSaved'));
         } finally {
             setBusy(false);
         }
@@ -175,10 +159,10 @@ export function AdminLegalDraftPage({ data, kind }: { data: GqlCAdminLegalDocume
                 documentId: draft.id,
             });
             if (result.error || !result.data?.admin.legalDocumentPublish.success) {
-                toast.error({ de: 'Veröffentlichung fehlgeschlagen.', en: 'Publish failed.' }[locale]);
+                toast.error(t(locale, 'admin', 'copy.publishFailed'));
                 return;
             }
-            toast.success({ de: 'Veröffentlicht.', en: 'Published.' }[locale]);
+            toast.success(t(locale, 'admin', 'copy.published'));
             setPublishOpen(false);
             void navigate({
                 to: adminLegalVersionTo(kind, draft.id),
@@ -189,7 +173,7 @@ export function AdminLegalDraftPage({ data, kind }: { data: GqlCAdminLegalDocume
         }
     }
 
-    const title = adminLegalDraftPageTitle(kind);
+    const title = adminLegalDraftPageTitle(kind, locale);
 
     return (
         <AdminPathPageChrome>
@@ -199,29 +183,29 @@ export function AdminLegalDraftPage({ data, kind }: { data: GqlCAdminLegalDocume
                         <div className="flex flex-wrap items-center gap-3">
                             <h1 className="flex items-center gap-3 font-serif text-4xl/tight text-foreground">
                                 <ScaleIcon className="size-8 shrink-0 text-muted-foreground" aria-hidden />
-                                {title[locale]}
+                                {title}
                             </h1>
                             {dirty ? (
-                                <Badge variant="outline">{{ de: 'Nicht gespeichert', en: 'Unsaved' }[locale]}</Badge>
+                                <Badge variant="outline">{t(locale, 'admin', 'copy.unsaved')}</Badge>
                             ) : (
-                                <Badge variant="secondary">{{ de: 'Entwurf', en: 'Draft' }[locale]}</Badge>
+                                <Badge variant="secondary">{t(locale, 'admin', 'copy.draft')}</Badge>
                             )}
                         </div>
-                        <p className="text-muted-foreground">{adminLegalDraftPageDescription(kind)[locale]}</p>
+                        <p className="text-muted-foreground">{adminLegalDraftPageDescription(kind, locale)}</p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                         <Button type="button" disabled={busy || !canSave} onClick={() => void onSaveDraft()}>
-                            {{ de: 'Entwurf speichern', en: 'Save draft' }[locale]}
+                            {t(locale, 'admin', 'copy.saveDraft')}
                         </Button>
                         <Button type="button" variant="secondary" disabled={busy || !canPublish} onClick={() => setPublishOpen(true)}>
-                            {{ de: 'Veröffentlichen', en: 'Publish' }[locale]}
+                            {t(locale, 'admin', 'copy.publish')}
                         </Button>
                     </div>
                 </div>
 
                 <div className="grid gap-2">
                     <label htmlFor="legal-summary" className="text-sm font-medium">
-                        {{ de: 'Änderungszusammenfassung (DE)', en: 'Change summary (DE)' }[locale]}
+                        {t(locale, 'admin', 'copy.changeSummaryDe')}
                     </label>
                     <Textarea
                         id="legal-summary"
@@ -238,14 +222,12 @@ export function AdminLegalDraftPage({ data, kind }: { data: GqlCAdminLegalDocume
                         onValueChange={(value) => setMobileSurface(value as 'edit' | 'preview')}
                         className="lg:hidden"
                     >
-                        <TabsList aria-label={{ de: 'Editor-Ansicht', en: 'Editor view' }[locale]}>
-                            <TabsTrigger value="edit">{{ de: 'Bearbeiten', en: 'Edit' }[locale]}</TabsTrigger>
-                            <TabsTrigger value="preview">{{ de: 'Vorschau', en: 'Preview' }[locale]}</TabsTrigger>
+                        <TabsList aria-label={t(locale, 'admin', 'copy.editorView')}>
+                            <TabsTrigger value="edit">{t(locale, 'admin', 'copy.edit')}</TabsTrigger>
+                            <TabsTrigger value="preview">{t(locale, 'admin', 'copy.preview')}</TabsTrigger>
                         </TabsList>
                     </Tabs>
-                    <p className="hidden text-xs text-muted-foreground sm:block">
-                        {{ de: 'Markdown (DE) · ⌘/Ctrl+S speichert', en: 'Markdown (DE) · ⌘/Ctrl+S to save' }[locale]}
-                    </p>
+                    <p className="hidden text-xs text-muted-foreground sm:block">{t(locale, 'admin', 'copy.markdownDeCtrlSToSave')}</p>
                 </div>
 
                 <section className="grid min-h-[min(70vh,44rem)] overflow-hidden rounded-lg border border-border/60 lg:grid-cols-2">
@@ -256,11 +238,11 @@ export function AdminLegalDraftPage({ data, kind }: { data: GqlCAdminLegalDocume
                         )}
                     >
                         <div className="flex h-11 items-center border-b border-border/60 px-4 text-sm font-medium text-muted-foreground">
-                            {{ de: 'Markdown', en: 'Markdown' }[locale]}
+                            {t(locale, 'admin', 'copy.markdown')}
                         </div>
                         <Textarea
                             id="legal-body"
-                            aria-label={{ de: 'Markdown (DE)', en: 'Markdown (DE)' }[locale]}
+                            aria-label={t(locale, 'admin', 'copy.markdownDe')}
                             value={bodyDe}
                             onChange={(event) => setBodyDe(event.target.value)}
                             className="h-full min-h-80 field-sizing-fixed resize-none rounded-none border-0 bg-transparent font-mono text-sm shadow-none focus-visible:ring-0"
@@ -269,12 +251,12 @@ export function AdminLegalDraftPage({ data, kind }: { data: GqlCAdminLegalDocume
                     <div className={cn('grid min-h-0 grid-rows-[auto_1fr]', mobileSurface !== 'preview' && 'max-lg:hidden')}>
                         <div className="flex h-11 items-center border-b border-border/60 px-4">
                             <Tabs value={previewMode} onValueChange={(value) => setPreviewMode(value as 'preview' | 'changes')}>
-                                <TabsList className="h-8" aria-label={{ de: 'Vorschau-Modus', en: 'Preview mode' }[locale]}>
+                                <TabsList className="h-8" aria-label={t(locale, 'admin', 'copy.previewMode')}>
                                     <TabsTrigger value="preview" className="px-2.5 text-sm">
-                                        {{ de: 'Vorschau', en: 'Preview' }[locale]}
+                                        {t(locale, 'admin', 'copy.preview')}
                                     </TabsTrigger>
                                     <TabsTrigger value="changes" className="px-2.5 text-sm">
-                                        {{ de: 'Änderungen', en: 'Changes' }[locale]}
+                                        {t(locale, 'admin', 'copy.changes')}
                                     </TabsTrigger>
                                 </TabsList>
                             </Tabs>
@@ -285,12 +267,7 @@ export function AdminLegalDraftPage({ data, kind }: { data: GqlCAdminLegalDocume
                                     <MarkdownBody text={bodyDe} />
                                 ) : (
                                     <p className="text-sm text-muted-foreground">
-                                        {
-                                            {
-                                                de: 'Noch kein Text. Vorschau erscheint beim Tippen.',
-                                                en: 'No text yet. Preview appears as you type.',
-                                            }[locale]
-                                        }
+                                        {t(locale, 'admin', 'copy.noTextYetPreviewAppearsAsYouType')}
                                     </p>
                                 )
                             ) : (
@@ -303,20 +280,15 @@ export function AdminLegalDraftPage({ data, kind }: { data: GqlCAdminLegalDocume
                 <AlertDialog open={publishOpen} onOpenChange={setPublishOpen}>
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>{{ de: 'Version veröffentlichen?', en: 'Publish this version?' }[locale]}</AlertDialogTitle>
+                            <AlertDialogTitle>{t(locale, 'admin', 'copy.publishThisVersion')}</AlertDialogTitle>
                             <AlertDialogDescription>
-                                {
-                                    {
-                                        de: 'Nach der Veröffentlichung ist diese Version unveränderlich. Nutzer müssen Datenschutz und AGB erneut bestätigen, wenn sich diese Dokumente geändert haben.',
-                                        en: 'After publishing, this version is immutable. Users must re-confirm privacy and terms when those documents change.',
-                                    }[locale]
-                                }
+                                {t(locale, 'admin', 'copy.afterPublishingThisVersionIsImmutableUsersMustReConfirmPriva')}
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                            <AlertDialogCancel>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                            <AlertDialogCancel>{t(locale, 'admin', 'copy.cancel')}</AlertDialogCancel>
                             <AlertDialogAction disabled={busy} onClick={() => void onPublish()}>
-                                {{ de: 'Veröffentlichen', en: 'Publish' }[locale]}
+                                {t(locale, 'admin', 'copy.publish')}
                             </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>

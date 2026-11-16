@@ -1,23 +1,22 @@
 import { Link } from '@tanstack/react-router';
 import { Header } from '../components/Header';
 import type { GqlCBookingRequestPageQuery } from '../graphql/generated';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 
-const bookingRequestPageTitle = { de: 'Buchungsanfrage', en: 'Booking request' } as const;
 export function BookingRequestPage({ data }: { data: GqlCBookingRequestPageQuery }) {
-    const locale = useLocale();
+    const { t } = useT('publicBooking');
 
     return (
         <>
             <Header user={data.currentSession.user} />
             <main id="main-content" className="mx-auto max-w-3xl p-8">
-                <h1>{bookingRequestPageTitle[locale]}</h1>
+                <h1>{t('index.title')}</h1>
                 <nav className="mt-6 flex gap-6 text-sm">
                     <Link to="/{-$locale}/booking-request/chat" className="underline-offset-4 hover:underline">
-                        {{ de: 'Chat', en: 'Chat' }[locale]}
+                        {t('index.chat')}
                     </Link>
                     <Link to="/{-$locale}/booking-request/form" className="underline-offset-4 hover:underline">
-                        {{ de: 'Formular', en: 'Form' }[locale]}
+                        {t('index.form')}
                     </Link>
                 </nav>
             </main>

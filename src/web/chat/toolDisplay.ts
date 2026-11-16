@@ -1,7 +1,7 @@
 // Friendly display for tool-call rows in the transcript. The raw tool id
 // (`promptUserForInput`, `toolItemsUpsert`) is an internal name; showing it in
-// the conversation reads as technical noise. This maps curated ids to a human,
-// bilingual label + icon. Everything else falls back to a mechanical label
+// the conversation reads as technical noise. This maps curated ids to a human
+// catalog label + icon. Everything else falls back to a mechanical label
 // derived from the tool name.
 
 import {
@@ -17,61 +17,63 @@ import {
     UsersIcon,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+
+import { t } from '../../i18n/t';
 import type { Locale } from '../utils/locale';
 
 interface ToolDisplayEntry {
     Icon: LucideIcon;
-    label: { de: string; en: string };
+    labelKey: string;
 }
 
 const TOOL_DISPLAY: Record<string, ToolDisplayEntry> = {
     promptUserForInput: {
         Icon: MessageSquareIcon,
-        label: { de: 'Fragt nach den Zutaten…', en: 'Asking for a few details…' },
+        labelKey: 'toolDisplay.promptUserForInput',
     },
     cookMealUpsert: {
         Icon: SoupIcon,
-        label: { de: 'Gericht speichern…', en: 'Saving a dish…' },
+        labelKey: 'toolDisplay.cookMealUpsert',
     },
     cookMenuUpsert: {
         Icon: BookOpenIcon,
-        label: { de: 'Menü speichern…', en: 'Saving a menu…' },
+        labelKey: 'toolDisplay.cookMenuUpsert',
     },
     cookUpdate: {
         Icon: HammerIcon,
-        label: { de: 'Profil aktualisieren…', en: 'Updating your chef profile…' },
+        labelKey: 'toolDisplay.cookUpdate',
     },
     productDocsRead: {
         Icon: FileTextIcon,
-        label: { de: 'Lese Produktdokumentation…', en: 'Reading product docs…' },
+        labelKey: 'toolDisplay.productDocsRead',
     },
     adminBookingRequestsFindMany: {
         Icon: ClipboardListIcon,
-        label: { de: 'Lade Buchungsanfragen…', en: 'Loading booking requests…' },
+        labelKey: 'toolDisplay.adminBookingRequestsFindMany',
     },
     adminUsersFindMany: {
         Icon: UsersIcon,
-        label: { de: 'Lade Benutzer…', en: 'Loading users…' },
+        labelKey: 'toolDisplay.adminUsersFindMany',
     },
     adminCookMealsFindMany: {
         Icon: SoupIcon,
-        label: { de: 'Lade Gerichte…', en: 'Loading meals…' },
+        labelKey: 'toolDisplay.adminCookMealsFindMany',
     },
     adminCookMenusFindMany: {
         Icon: BookOpenIcon,
-        label: { de: 'Lade Menüs…', en: 'Loading menus…' },
+        labelKey: 'toolDisplay.adminCookMenusFindMany',
     },
     adminSupportRequestsFindMany: {
         Icon: LifeBuoyIcon,
-        label: { de: 'Lade Support-Anfragen…', en: 'Loading support requests…' },
+        labelKey: 'toolDisplay.adminSupportRequestsFindMany',
     },
     adminGiftCardsFindMany: {
         Icon: GiftIcon,
-        label: { de: 'Lade Geschenkkarten…', en: 'Loading gift cards…' },
+        labelKey: 'toolDisplay.adminGiftCardsFindMany',
     },
     adminTestimonialsFindMany: {
         Icon: StarIcon,
-        label: { de: 'Lade Bewertungen…', en: 'Loading testimonials…' },
+        labelKey: 'toolDisplay.adminTestimonialsFindMany',
     },
 };
 
@@ -144,7 +146,7 @@ const TOOL_WORD_DE: Record<string, string> = {
 
 export function toolDisplay(toolName: string, locale: Locale): { Icon: LucideIcon; label: string } {
     const known = TOOL_DISPLAY[toolName];
-    if (known) return { Icon: known.Icon, label: known.label[locale] };
+    if (known) return { Icon: known.Icon, label: t(locale, 'common', known.labelKey) };
     return {
         Icon: HammerIcon,
         label: humanizeToolName(toolName, locale),

@@ -1,37 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { sessionDeviceLabel } from './sessionDeviceLabel';
+import { sessionDeviceLabel } from '../../shared/sessionDeviceLabel';
 
-describe('sessionDeviceLabel', () => {
-    it('names Chrome on a Mac from a desktop user agent', () => {
-        const userAgent =
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
-        expect(sessionDeviceLabel(userAgent, 'de')).toBe('Chrome auf dem Mac');
-        expect(sessionDeviceLabel(userAgent, 'en')).toBe('Chrome on Mac');
-    });
-
-    it('prefers Safari when the agent is not Chrome', () => {
-        const userAgent =
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15';
-        expect(sessionDeviceLabel(userAgent, 'en')).toBe('Safari on Mac');
-    });
-
-    it('names Chrome on an iPhone ahead of the Mac token in the agent', () => {
-        const userAgent =
-            'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/120.0.6099.119 Mobile/15E148 Safari/604.1';
-        expect(sessionDeviceLabel(userAgent, 'de')).toBe('Chrome auf dem iPhone');
-    });
-
-    it('names Edge on Windows ahead of the Chrome token', () => {
-        const userAgent =
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0';
-        expect(sessionDeviceLabel(userAgent, 'en')).toBe('Edge on Windows');
-        expect(sessionDeviceLabel(userAgent, 'de')).toBe('Edge unter Windows');
-    });
-
-    it('falls back when the agent is missing or unrecognized', () => {
-        expect(sessionDeviceLabel(null, 'de')).toBe('Unbekanntes Gerät');
-        expect(sessionDeviceLabel('  ', 'en')).toBe('Unknown device');
-        expect(sessionDeviceLabel('curl/8.0', 'en')).toBe('Unknown device');
+describe('sessionDeviceLabel (web re-export)', () => {
+    it('still resolves through the shared helper', () => {
+        expect(sessionDeviceLabel(null, 'en')).toBe('Unknown device');
     });
 });

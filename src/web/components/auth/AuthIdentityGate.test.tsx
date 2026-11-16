@@ -1,10 +1,14 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
+import { I18nextProvider, initReactI18next } from 'react-i18next';
 import { toast } from 'sonner';
 import type { Client, OperationResult } from 'urql';
 import { Provider } from 'urql';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { fromValue, never } from 'wonka';
+
+import { i18nResourcesLoad } from '../../../i18n/catalogCache';
+import { i18nCreateSync } from '../../../i18n/i18nCreate';
 
 import type { AuthSession } from './AuthIdentityGate';
 import { AuthIdentityGate } from './AuthIdentityGate';
@@ -88,11 +92,21 @@ function clientWithDeadSubscription(verifyResult: Partial<OperationResult>, sess
     } as unknown as Client;
 }
 
+let i18n: ReturnType<typeof i18nCreateSync>;
+
+beforeAll(async () => {
+    await i18nResourcesLoad('en', ['common', 'public']);
+    i18n = i18nCreateSync('en', ['common', 'public']);
+    void i18n.use(initReactI18next);
+});
+
 function gateRender(client: Client, onReady: (session: AuthSession) => void) {
     render(
-        <Provider value={client}>
-            <AuthIdentityGate initialSession={otpPendingSession} onReady={onReady} />
-        </Provider>,
+        <I18nextProvider i18n={i18n}>
+            <Provider value={client}>
+                <AuthIdentityGate initialSession={otpPendingSession} onReady={onReady} />
+            </Provider>
+        </I18nextProvider>,
     );
 }
 

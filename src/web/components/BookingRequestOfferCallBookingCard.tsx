@@ -1,4 +1,4 @@
-import { formatBookingCallWhen, formatDate, formatTime } from '../../shared';
+import { formatBookingCallWhen, formatDate, formatTime, inlineCopy } from '../../shared';
 import type { BookingWhenPeer } from '../../shared';
 import { callCalendarEventIcsInput } from '../../shared/calendarEventContent';
 import type {
@@ -112,7 +112,7 @@ export function BookingOfferCallWhen({
 function describeReason(reason: string | null | undefined, locale: Locale): string | null {
     if (!reason) return null;
     if (reason === 'ANOTHER_SLOT_CONFIRMED') {
-        return { de: 'Ein anderer Termin wurde bestätigt.', en: 'Another slot was confirmed.' }[locale];
+        return inlineCopy({ de: 'Ein anderer Termin wurde bestätigt.', en: 'Another slot was confirmed.' }, locale);
     }
     return reason;
 }
@@ -159,8 +159,8 @@ export function BookingRequestOfferCallBookingCard({
     const canWithdrawAsCook = role === 'cook' && isPending && fromCook;
     const canCancelConfirmed = (role === 'user' || role === 'cook') && isConfirmed;
     const adminDeclineLabel = fromCook
-        ? { de: 'Als Kunde ablehnen', en: 'Decline as customer' }[locale]
-        : { de: 'Als Koch ablehnen', en: 'Decline as chef' }[locale];
+        ? inlineCopy({ de: 'Als Kunde ablehnen', en: 'Decline as customer' }, locale)
+        : inlineCopy({ de: 'Als Koch ablehnen', en: 'Decline as chef' }, locale);
 
     const showCalendar = isConfirmed && role !== 'admin' && Boolean(calendarOfferUrl);
     const hasBody =
@@ -188,12 +188,13 @@ export function BookingRequestOfferCallBookingCard({
                         </CardTitle>
                     )}
                     <CardDescription className="text-xs">
-                        {
+                        {inlineCopy(
                             {
                                 de: `${callDurationMinutes}-Minuten-Gespräch`,
                                 en: `${callDurationMinutes}-minute call`,
-                            }[locale]
-                        }
+                            },
+                            locale,
+                        )}
                     </CardDescription>
                 </div>
                 <CardAction>
@@ -208,7 +209,7 @@ export function BookingRequestOfferCallBookingCard({
                     {booking.customerMessage ? (
                         <div className="grid gap-1">
                             <span className="text-xs tracking-wide text-muted-foreground uppercase">
-                                {{ de: 'Nachricht des Kunden', en: 'Customer message' }[locale]}
+                                {inlineCopy({ de: 'Nachricht des Kunden', en: 'Customer message' }, locale)}
                             </span>
                             <p className="text-sm text-muted-foreground italic">{booking.customerMessage}</p>
                         </div>
@@ -216,7 +217,7 @@ export function BookingRequestOfferCallBookingCard({
                     {booking.cookMessage ? (
                         <div className="grid gap-1">
                             <span className="text-xs tracking-wide text-muted-foreground uppercase">
-                                {{ de: 'Nachricht des Kochs', en: 'Chef message' }[locale]}
+                                {inlineCopy({ de: 'Nachricht des Kochs', en: 'Chef message' }, locale)}
                             </span>
                             <p className="text-sm text-muted-foreground italic">{booking.cookMessage}</p>
                         </div>
@@ -224,7 +225,7 @@ export function BookingRequestOfferCallBookingCard({
                     {reasonText ? (
                         <div className="grid gap-1">
                             <span className="text-xs tracking-wide text-muted-foreground uppercase">
-                                {{ de: 'Begründung', en: 'Reason' }[locale]}
+                                {inlineCopy({ de: 'Begründung', en: 'Reason' }, locale)}
                             </span>
                             <p className="text-sm text-muted-foreground italic">{reasonText}</p>
                         </div>
@@ -233,7 +234,7 @@ export function BookingRequestOfferCallBookingCard({
                     {!readOnly && (canRespondAsUser || canRespondAsCook) && !isDeclining ? (
                         <div className="flex flex-row-reverse flex-wrap justify-items-end gap-2">
                             <Button type="button" size="sm" disabled={busy} onClick={() => void onConfirm(booking.cookCallSlotBookingId)}>
-                                {{ de: 'Bestätigen', en: 'Confirm' }[locale]}
+                                {inlineCopy({ de: 'Bestätigen', en: 'Confirm' }, locale)}
                             </Button>
                             <Button
                                 type="button"
@@ -245,7 +246,7 @@ export function BookingRequestOfferCallBookingCard({
                                     setDeclineReason('');
                                 }}
                             >
-                                {{ de: 'Ablehnen', en: 'Decline' }[locale]}
+                                {inlineCopy({ de: 'Ablehnen', en: 'Decline' }, locale)}
                             </Button>
                         </div>
                     ) : null}
@@ -272,12 +273,12 @@ export function BookingRequestOfferCallBookingCard({
                             <Textarea
                                 value={declineReason}
                                 onChange={(event) => setDeclineReason(event.target.value)}
-                                placeholder={{ de: 'Optionaler Grund', en: 'Optional reason' }[locale]}
+                                placeholder={inlineCopy({ de: 'Optionaler Grund', en: 'Optional reason' }, locale)}
                                 rows={3}
                             />
                             <div className="flex flex-wrap justify-end gap-2">
                                 <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => setDecliningId(null)}>
-                                    {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                    {inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, locale)}
                                 </Button>
                                 <Button
                                     type="button"
@@ -286,7 +287,7 @@ export function BookingRequestOfferCallBookingCard({
                                     disabled={busy}
                                     onClick={() => void onDecline(booking.cookCallSlotBookingId)}
                                 >
-                                    {{ de: 'Absage senden', en: 'Send decline' }[locale]}
+                                    {inlineCopy({ de: 'Absage senden', en: 'Send decline' }, locale)}
                                 </Button>
                             </div>
                         </div>
@@ -306,7 +307,7 @@ export function BookingRequestOfferCallBookingCard({
                                         setCancelReason('');
                                     }}
                                 >
-                                    {{ de: 'Termin absagen', en: 'Cancel appointment' }[locale]}
+                                    {inlineCopy({ de: 'Termin absagen', en: 'Cancel appointment' }, locale)}
                                 </Button>
                             ) : null}
                             {showCalendar && calendarOfferUrl ? (
@@ -319,7 +320,7 @@ export function BookingRequestOfferCallBookingCard({
                                             filename: 'peopleeat-call.ics',
                                             ...callCalendarEventIcsInput({
                                                 locale,
-                                                peerName: peerDisplayName?.trim() || { de: 'Gast', en: 'Guest' }[locale],
+                                                peerName: peerDisplayName?.trim() || inlineCopy({ de: 'Gast', en: 'Guest' }, locale),
                                                 occasion,
                                                 offerUrl: calendarOfferUrl,
                                                 start,
@@ -345,7 +346,7 @@ export function BookingRequestOfferCallBookingCard({
                                     setCancelReason('');
                                 }}
                             >
-                                {{ de: 'Vorschlag zurückziehen', en: 'Withdraw suggestion' }[locale]}
+                                {inlineCopy({ de: 'Vorschlag zurückziehen', en: 'Withdraw suggestion' }, locale)}
                             </Button>
                         </div>
                     ) : null}
@@ -353,22 +354,23 @@ export function BookingRequestOfferCallBookingCard({
                     {!readOnly && isCanceling ? (
                         <div className="grid gap-2 rounded-md bg-secondary/40">
                             <p className="text-sm font-medium">
-                                {
+                                {inlineCopy(
                                     {
                                         de: isConfirmed ? 'Termin wirklich absagen?' : 'Vorschlag wirklich zurückziehen?',
                                         en: isConfirmed ? 'Cancel this appointment?' : 'Withdraw this suggestion?',
-                                    }[locale]
-                                }
+                                    },
+                                    locale,
+                                )}
                             </p>
                             <Textarea
                                 value={cancelReason}
                                 onChange={(event) => setCancelReason(event.target.value)}
-                                placeholder={{ de: 'Optionaler Grund', en: 'Optional reason' }[locale]}
+                                placeholder={inlineCopy({ de: 'Optionaler Grund', en: 'Optional reason' }, locale)}
                                 rows={3}
                             />
                             <div className="flex flex-wrap justify-end gap-2">
                                 <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => setCancelingId(null)}>
-                                    {{ de: 'Zurück', en: 'Back' }[locale]}
+                                    {inlineCopy({ de: 'Zurück', en: 'Back' }, locale)}
                                 </Button>
                                 <Button
                                     type="button"
@@ -377,12 +379,13 @@ export function BookingRequestOfferCallBookingCard({
                                     disabled={busy}
                                     onClick={() => void onCancel(booking.cookCallSlotBookingId)}
                                 >
-                                    {
+                                    {inlineCopy(
                                         {
                                             de: isConfirmed ? 'Termin absagen' : 'Vorschlag zurückziehen',
                                             en: isConfirmed ? 'Cancel appointment' : 'Withdraw suggestion',
-                                        }[locale]
-                                    }
+                                        },
+                                        locale,
+                                    )}
                                 </Button>
                             </div>
                         </div>

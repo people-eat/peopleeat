@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { createRequest, useClient } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { t } from '../../../i18n/t';
 import { formatDate } from '../../../shared';
 import { contentLocaleText } from '../../../shared/contentSection';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
@@ -13,14 +14,16 @@ import { AdminWebPagesPageUpdatesDocument } from '../../graphql/generated';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
+import type { Locale } from '../../utils/locale';
 import { AdminOverviewListCardLink } from './AdminOverviewListCard';
 import { adminWebPageLabel } from './adminWebPages';
 
-export const adminWebPagesPageTitle = { de: 'Webseiten', en: 'Websites' } as const;
-export const adminWebPagesPageDescription = {
-    de: 'SEO-Titel und -Beschreibungen der festen Seiten bearbeiten. Fehlende Einträge nutzen Standardwerte.',
-    en: 'Edit SEO titles and descriptions for fixed pages. Missing entries use defaults.',
-} as const;
+export function adminWebPagesPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'nav.webPages.title');
+}
+export function adminWebPagesPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.webPages.description');
+}
 
 export function AdminWebPagesPage({ data }: { data: GqlCAdminWebPagesPageQuery }) {
     const locale = useLocale();
@@ -63,20 +66,20 @@ export function AdminWebPagesPage({ data }: { data: GqlCAdminWebPagesPageQuery }
                 <div className="grid gap-2">
                     <h1 className="flex items-center gap-3 font-serif text-4xl/tight text-foreground">
                         <MonitorIcon className="size-8 text-muted-foreground" aria-hidden />
-                        {adminWebPagesPageTitle[locale]}
+                        {adminWebPagesPageTitle(locale)}
                     </h1>
-                    <p className="text-muted-foreground">{adminWebPagesPageDescription[locale]}</p>
+                    <p className="text-muted-foreground">{adminWebPagesPageDescription(locale)}</p>
                 </div>
                 <Input
                     type="search"
                     value={draftQ}
                     onChange={(event) => setDraftQ(event.target.value)}
-                    placeholder={{ de: 'Seite oder Titel suchen…', en: 'Search page or title…' }[locale]}
-                    aria-label={{ de: 'Webseiten suchen', en: 'Search websites' }[locale]}
+                    placeholder={t(locale, 'admin', 'copy.searchPageOrTitle')}
+                    aria-label={t(locale, 'admin', 'copy.searchWebsites')}
                     className="max-w-sm"
                 />
                 {filteredWebPages.length === 0 ? (
-                    <p className="text-muted-foreground">{{ de: 'Keine Treffer.', en: 'No matches.' }[locale]}</p>
+                    <p className="text-muted-foreground">{t(locale, 'admin', 'copy.noMatches')}</p>
                 ) : (
                     <ul className="grid gap-2">
                         {filteredWebPages.map((webPage) => (
@@ -88,9 +91,7 @@ export function AdminWebPagesPage({ data }: { data: GqlCAdminWebPagesPageQuery }
                                         <>
                                             {adminWebPageLabel(webPage.webPageKey, locale)}
                                             {!webPage.persisted ? (
-                                                <StatusBadge tone="info">
-                                                    {{ de: 'Nicht konfiguriert', en: 'Not configured' }[locale]}
-                                                </StatusBadge>
+                                                <StatusBadge tone="info">{t(locale, 'admin', 'copy.notConfigured')}</StatusBadge>
                                             ) : null}
                                         </>
                                     }

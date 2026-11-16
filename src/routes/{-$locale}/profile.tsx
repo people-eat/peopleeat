@@ -1,5 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
 
+import { i18nResourcesLoad } from '../../i18n/catalogCache';
 import { contentLocaleText } from '../../shared/contentSection';
 import { ProfilePageDocument } from '../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../web/graphql/routeLoaderGraphqlClient';
@@ -23,7 +24,12 @@ export const Route = createFileRoute('/{-$locale}/profile')({
         }
         // Keep the role-shell chunk inside the router loading window so
         // NavigationProgress covers home → profile (no blank Suspense gap).
-        await profileShellPreload(Boolean(user.cook));
+        const isCook = Boolean(user.cook);
+        const locale = localeFromParam(params);
+        await Promise.all([
+            profileShellPreload(isCook),
+            i18nResourcesLoad(locale, ['common', 'profile', isCook ? 'profileCook' : 'profileCustomer']),
+        ]);
         return data;
     },
     staleTime: 0,

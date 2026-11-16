@@ -1,3 +1,4 @@
+import { tEmail } from '../../../i18n/tEmail';
 import type { Locale } from '../../../shared/locale';
 import { EmailButton, EmailLayout, EmailText } from '../components';
 
@@ -17,24 +18,21 @@ export function CookBookingRequestOfferParticipantAmendmentDeclineForCustomerEma
     offerUrl,
 }: Props) {
     const subject = cookBookingRequestOfferParticipantAmendmentDeclineForCustomerEmailSubject(locale);
-    const preview = {
-        de: `${cookFirstName} hat die Teilnehmeränderung abgelehnt`,
-        en: `${cookFirstName} declined the participant change`,
-    }[locale];
-    const body = {
-        de: `${cookFirstName} hat deine vorgeschlagene Änderung der Teilnehmerzahl abgelehnt. Die Buchung bleibt unverändert. Du kannst dich über den Chat melden, falls du etwas klären möchtest.`,
-        en: `${cookFirstName} declined your proposed participant change. The booking stays unchanged. You can reach out in chat if you want to discuss it.`,
-    }[locale];
-    const cta = { de: 'Angebot ansehen', en: 'View offer' }[locale];
 
     return (
-        <EmailLayout locale={locale} webPageUrl={webPageUrl} preview={preview} subject={subject} recipientFirstName={recipientFirstName}>
-            <EmailText>{body}</EmailText>
-            <EmailButton href={offerUrl}>{cta}</EmailButton>
+        <EmailLayout
+            locale={locale}
+            webPageUrl={webPageUrl}
+            preview={tEmail(locale, 'offer.amendmentDecline.preview', { cookFirstName })}
+            subject={subject}
+            recipientFirstName={recipientFirstName}
+        >
+            <EmailText>{tEmail(locale, 'offer.amendmentDecline.body', { cookFirstName })}</EmailText>
+            <EmailButton href={offerUrl}>{tEmail(locale, 'common.ctaViewOffer')}</EmailButton>
         </EmailLayout>
     );
 }
 
 export function cookBookingRequestOfferParticipantAmendmentDeclineForCustomerEmailSubject(locale: Locale): string {
-    return { de: 'Teilnehmeränderung abgelehnt', en: 'Participant change declined' }[locale];
+    return tEmail(locale, 'offer.amendmentDecline.subject');
 }

@@ -22,12 +22,14 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useClient, useMutation, useQuery } from 'urql';
 
+import { t } from '../../i18n/t';
 import type {
     BookingRequestFormFunnelStep,
     BookingRequestFormLocationSettingChoice,
     BookingRequestFormPriceClassType,
     BookingRequestParticipantDraft,
     BookingRequestSettingChoice,
+    ExpansionMarket,
     Locale,
 } from '../../shared';
 import {
@@ -82,6 +84,7 @@ import {
 } from '../graphql/generated';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { useTimeZone } from '../hooks/useTimeZone';
 import { SITE_LOGO, SITE_LOGO_DISPLAY, SITE_LOGO_SRC_SET, SITE_NAME } from '../seo/seoConstants';
 import { DATE_FNS_LOCALE } from '../utils/dateFnsLocale';
@@ -175,96 +178,74 @@ function exactEventAddressEqual(a: GqlCUserBookingRequestExactEventAddressInput,
     );
 }
 
+function marketComingTo(market: ExpansionMarket, locale: Locale): string {
+    return locale === 'de' ? market.comingToPhraseDe : market.comingToPhraseEn;
+}
+
 function stepCopy(
     step: ContentStep | 'auth',
     locale: Locale,
     cookFirstName?: string | null,
 ): { sideBarTitle: string; title: string; subTitle?: string } {
     const cookName = cookFirstName?.trim() || null;
-    const copy = {
-        occasion: {
-            sideBarTitle: { de: 'Anlass', en: 'Occasion' }[locale],
-            title: {
-                de: 'Für welchen Anlass suchst du nach einem Privatkoch?',
-                en: 'For which occasion are you looking for a private chef?',
-            }[locale],
-        },
-        participants: {
-            sideBarTitle: { de: 'Personen', en: 'Persons' }[locale],
-            title: { de: 'Personenanzahl', en: 'Number of Guests' }[locale],
-        },
-        location: {
-            sideBarTitle: { de: 'Wo', en: 'Where' }[locale],
-            title: { de: 'Wo findet der Anlass statt?', en: 'Where will the event take place?' }[locale],
-        },
-        dateTime: {
-            sideBarTitle: { de: 'Wann', en: 'When' }[locale],
-            title: { de: 'An welchem Datum findet der Anlass statt?', en: 'On which date will the event take place?' }[locale],
-            subTitle: {
-                de: 'Wenn du das konkrete Datum noch nicht weißt, wähle einfach eines im richtigen Monat aus. Es kann später angepasst werden.',
-                en: "If you don't know the exact date yet, simply choose one in the correct month. It can be adjusted later.",
-            }[locale],
-        },
-        priceClass: {
-            sideBarTitle: { de: 'Preisklasse', en: 'Price Class' }[locale],
-            title: { de: 'Wie möchtest du den Anlass verbringen?', en: 'How would you like to spend the event?' }[locale],
-            subTitle: cookName
-                ? {
-                      de: `Die Preisklasse hilft ${cookName}, ein passendes Angebot zusammenzustellen.`,
-                      en: `The price class helps ${cookName} put together a fitting offer.`,
-                  }[locale]
-                : undefined,
-        },
-        preferences: {
-            sideBarTitle: { de: 'Präferenzen', en: 'Preferences' }[locale],
-            title: { de: 'Wie möchtest du das Menü gerne haben?', en: 'How would you like your menu to be?' }[locale],
-            subTitle: cookName
-                ? {
-                      de: `Teile deine Wünsche und Vorlieben mit ${cookName}.`,
-                      en: `Share your wishes and preferences with ${cookName}.`,
-                  }[locale]
-                : {
-                      de: 'Teile deine Wünsche und Vorlieben mit den Köchen.',
-                      en: 'Share your wishes and preferences with the chefs.',
-                  }[locale],
-        },
-        restrictions: {
-            sideBarTitle: { de: 'Einschränkungen', en: 'Restrictions' }[locale],
-            title: {
-                de: 'Gibt es Einschränkungen, Allergien oder Ähnliches?',
-                en: 'Are there any restrictions such as allergies?',
-            }[locale],
-            subTitle: {
-                de: 'Wähle die zutreffenden Einschränkungen.',
-                en: 'Select the applicable restrictions.',
-            }[locale],
-        },
-        message: {
-            sideBarTitle: { de: 'Nachricht', en: 'Message' }[locale],
-            title: {
-                de: 'Möchtest du uns noch ein paar Einzelheiten mitteilen?',
-                en: 'Would you like to share a few more details?',
-            }[locale],
-            subTitle: cookName
-                ? {
-                      de: `Teile ${cookName} gerne mehr über deinen Anlass mit.`,
-                      en: `Tell ${cookName} more about your event.`,
-                  }[locale]
-                : {
-                      de: 'Teile uns gerne mehr über deinen Anlass mit.',
-                      en: 'Please tell us more about your event.',
-                  }[locale],
-        },
-        auth: {
-            sideBarTitle: '',
-            title: { de: 'Anmelden oder Konto erstellen', en: 'Log on or create an account' }[locale],
-            subTitle: {
-                de: 'Mit E-Mail-Code bestätigen, dann Profil vervollständigen. Danach senden wir deine Anfrage.',
-                en: 'Confirm with an email code, finish your profile, then we submit your request.',
-            }[locale],
-        },
-    } as const;
-    return copy[step];
+    const ns = 'publicBooking' as const;
+    switch (step) {
+        case 'occasion':
+            return {
+                sideBarTitle: t(locale, ns, 'form.steps.occasion.sideBarTitle'),
+                title: t(locale, ns, 'form.steps.occasion.title'),
+            };
+        case 'participants':
+            return {
+                sideBarTitle: t(locale, ns, 'form.steps.participants.sideBarTitle'),
+                title: t(locale, ns, 'form.steps.participants.title'),
+            };
+        case 'location':
+            return {
+                sideBarTitle: t(locale, ns, 'form.steps.location.sideBarTitle'),
+                title: t(locale, ns, 'form.steps.location.title'),
+            };
+        case 'dateTime':
+            return {
+                sideBarTitle: t(locale, ns, 'form.steps.dateTime.sideBarTitle'),
+                title: t(locale, ns, 'form.steps.dateTime.title'),
+                subTitle: t(locale, ns, 'form.steps.dateTime.subTitle'),
+            };
+        case 'priceClass':
+            return {
+                sideBarTitle: t(locale, ns, 'form.steps.priceClass.sideBarTitle'),
+                title: t(locale, ns, 'form.steps.priceClass.title'),
+                subTitle: cookName ? t(locale, ns, 'form.steps.priceClass.subTitleCook', { cookName }) : undefined,
+            };
+        case 'preferences':
+            return {
+                sideBarTitle: t(locale, ns, 'form.steps.preferences.sideBarTitle'),
+                title: t(locale, ns, 'form.steps.preferences.title'),
+                subTitle: cookName
+                    ? t(locale, ns, 'form.steps.preferences.subTitleCook', { cookName })
+                    : t(locale, ns, 'form.steps.preferences.subTitle'),
+            };
+        case 'restrictions':
+            return {
+                sideBarTitle: t(locale, ns, 'form.steps.restrictions.sideBarTitle'),
+                title: t(locale, ns, 'form.steps.restrictions.title'),
+                subTitle: t(locale, ns, 'form.steps.restrictions.subTitle'),
+            };
+        case 'message':
+            return {
+                sideBarTitle: t(locale, ns, 'form.steps.message.sideBarTitle'),
+                title: t(locale, ns, 'form.steps.message.title'),
+                subTitle: cookName
+                    ? t(locale, ns, 'form.steps.message.subTitleCook', { cookName })
+                    : t(locale, ns, 'form.steps.message.subTitle'),
+            };
+        case 'auth':
+            return {
+                sideBarTitle: '',
+                title: t(locale, ns, 'form.steps.auth.title'),
+                subTitle: t(locale, ns, 'form.steps.auth.subTitle'),
+            };
+    }
 }
 
 type ConfirmedDiscount = {
@@ -328,6 +309,8 @@ export function BookingRequestFormPage({
     search: BookingRequestFormSearch;
 }) {
     const locale = useLocale();
+    const { t: tBooking } = useT('publicBooking');
+    const { t: tCommon } = useT('common');
     const timeZone = useTimeZone();
     const navigate = useNavigate({ from: '/{-$locale}/booking-request/form' });
     const [session, setSession] = useState<GqlCAuthSessionFieldsFragment>(loaderData.currentSession);
@@ -513,15 +496,12 @@ export function BookingRequestFormPage({
                 const closedMarket = bookingRequestMarketClosedFromMessage(result.error?.message);
                 toast.error(
                     closedMarket
-                        ? {
-                              de: `peopleeat kommt ${closedMarket.comingToPhraseDe} Anfang 2027. Für diese Adresse können wir noch keine Anfrage annehmen.`,
-                              en: `peopleeat is coming ${closedMarket.comingToPhraseEn} in early 2027. We cannot accept a request for this address yet.`,
-                          }[locale]
-                        : { de: 'Anfrage konnte nicht erstellt werden.', en: 'Could not create the booking request.' }[locale],
+                        ? tBooking('marketClosed.toast', { comingTo: marketComingTo(closedMarket, locale) })
+                        : tBooking('createFailed'),
                 );
                 return;
             }
-            toast.success({ de: 'Buchungsanfrage erstellt.', en: 'Booking request created.' }[locale]);
+            toast.success(tBooking('created'));
             trackFunnelStep('step_completed', 'created');
             await navigate({
                 to: '/{-$locale}/booking-request/$bookingRequestId/submitted',
@@ -535,21 +515,11 @@ export function BookingRequestFormPage({
     function trySubmit() {
         const selectedClosedMarket = values.exactEventAddress ? expansionMarketFromCountry(values.exactEventAddress.country) : null;
         if (selectedClosedMarket) {
-            toast.error(
-                {
-                    de: `peopleeat kommt ${selectedClosedMarket.comingToPhraseDe} Anfang 2027. Für diese Adresse können wir noch keine Anfrage annehmen.`,
-                    en: `peopleeat is coming ${selectedClosedMarket.comingToPhraseEn} in early 2027. We cannot accept a request for this address yet.`,
-                }[locale],
-            );
+            toast.error(tBooking('marketClosed.toast', { comingTo: marketComingTo(selectedClosedMarket, locale) }));
             return;
         }
         if (values.redeemCode.trim().length > 0 && confirmedDiscount?.redeemCode !== values.redeemCode.trim()) {
-            toast.error(
-                {
-                    de: 'Bitte löse den Rabattcode zuerst ein.',
-                    en: 'Please redeem the discount code first.',
-                }[locale],
-            );
+            toast.error(tBooking('form.redeemFirst'));
             return;
         }
         const input = createInputFromValues(
@@ -561,12 +531,7 @@ export function BookingRequestFormPage({
             requestedMenu?.menuId ?? null,
         );
         if (!input) {
-            toast.error(
-                {
-                    de: 'Bitte alle Pflichtfelder ausfüllen.',
-                    en: 'Please complete all required fields.',
-                }[locale],
-            );
+            toast.error(tBooking('requiredFields'));
             return;
         }
         if (step === 'auth') {
@@ -676,10 +641,10 @@ export function BookingRequestFormPage({
     );
 
     const includedInPrice: { title: string; icon: ReactNode }[] = [
-        { title: { de: 'Zutaten', en: 'Ingredients' }[locale], icon: <CarrotIcon className="size-8" strokeWidth={1.5} /> },
-        { title: { de: 'Arbeitszeit', en: 'Work Time' }[locale], icon: <ClockIcon className="size-8" strokeWidth={1.5} /> },
-        { title: { de: 'Servieren', en: 'Serving' }[locale], icon: <HandPlatterIcon className="size-8" strokeWidth={1.5} /> },
-        { title: { de: 'Saubere Küche', en: 'Clean Kitchen' }[locale], icon: <DropletIcon className="size-8" strokeWidth={1.5} /> },
+        { title: tBooking('form.included.ingredients'), icon: <CarrotIcon className="size-8" strokeWidth={1.5} /> },
+        { title: tBooking('form.included.workTime'), icon: <ClockIcon className="size-8" strokeWidth={1.5} /> },
+        { title: tBooking('form.included.serving'), icon: <HandPlatterIcon className="size-8" strokeWidth={1.5} /> },
+        { title: tBooking('form.included.cleanKitchen'), icon: <DropletIcon className="size-8" strokeWidth={1.5} /> },
     ];
 
     const closedMarket = values.exactEventAddress ? expansionMarketFromCountry(values.exactEventAddress.country) : null;
@@ -709,7 +674,7 @@ export function BookingRequestFormPage({
                         className="h-7 w-auto"
                     />
                 </Link>
-                <Button type="button" variant="ghost" size="icon" asChild aria-label={{ de: 'Schließen', en: 'Close' }[locale]}>
+                <Button type="button" variant="ghost" size="icon" asChild aria-label={tCommon('close')}>
                     <Link to="/{-$locale}">
                         <XIcon />
                     </Link>
@@ -721,48 +686,22 @@ export function BookingRequestFormPage({
                     <div className="mx-auto w-full max-w-7xl lg:mt-20">
                         {leftoverCookId ? (
                             <div className="px-4 pt-4">
-                                <StatusAlert tone="info">
-                                    {
-                                        {
-                                            de: 'Diese Anfrage geht an Köche in deiner Nähe, nicht nur an einen bestimmten Koch.',
-                                            en: 'This request goes to chefs nearby, not only to one chef.',
-                                        }[locale]
-                                    }
-                                </StatusAlert>
+                                <StatusAlert tone="info">{tBooking('form.leftoverCook')}</StatusAlert>
                             </div>
                         ) : null}
                         {honorDirect && requestedCook ? (
                             <div className="px-4 pt-4">
-                                <StatusAlert
-                                    tone="info"
-                                    title={
-                                        {
-                                            de: `Anfrage an ${requestedCook.user.display}`,
-                                            en: `Request for ${requestedCook.user.display}`,
-                                        }[locale]
-                                    }
-                                >
+                                <StatusAlert tone="info" title={tBooking('form.direct.title', { cookName: requestedCook.user.display })}>
                                     {requestedMenu
-                                        ? {
-                                              de: `Nur dieser Koch sieht deine Anfrage zuerst, für das Menü „${requestedMenu.title}“. Du kannst sie später auch für andere öffnen.`,
-                                              en: `Only this chef sees your request first, for the menu “${requestedMenu.title}”. You can open it to others later.`,
-                                          }[locale]
-                                        : {
-                                              de: 'Nur dieser Koch sieht deine Anfrage zuerst. Du kannst sie später auch für andere öffnen.',
-                                              en: 'Only this chef sees your request first. You can open it to others later.',
-                                          }[locale]}
+                                        ? tBooking('form.direct.bodyWithMenu', { menuTitle: requestedMenu.title })
+                                        : tBooking('form.direct.body')}
                                 </StatusAlert>
                             </div>
                         ) : null}
                         {leftoverMenuId && requestedCook ? (
                             <div className="px-4 pt-4">
                                 <StatusAlert tone="info">
-                                    {
-                                        {
-                                            de: `Dieses Menü ist gerade nicht verfügbar. Die Anfrage geht trotzdem nur an ${requestedCook.user.display}.`,
-                                            en: `This menu is not available right now. The request still goes only to ${requestedCook.user.display}.`,
-                                        }[locale]
-                                    }
+                                    {tBooking('form.leftoverMenu', { cookName: requestedCook.user.display })}
                                 </StatusAlert>
                             </div>
                         ) : null}
@@ -783,22 +722,12 @@ export function BookingRequestFormPage({
                                         <div className="grid gap-4">
                                             <div className="grid gap-2">
                                                 <span id="booking-request-occasion-label" className="text-sm font-medium">
-                                                    {
-                                                        {
-                                                            de: 'Bitte gib deinen Anlass an oder wähle aus den vorgeschlagenen Optionen.',
-                                                            en: 'Please state your occasion or choose from the suggested options.',
-                                                        }[locale]
-                                                    }
+                                                    {tBooking('form.steps.occasion.hint')}
                                                 </span>
                                                 <Input
                                                     value={field.state.value}
                                                     onChange={(event) => field.handleChange(event.target.value)}
-                                                    placeholder={
-                                                        {
-                                                            de: 'z. B. Geburtstag, Firmenfeier',
-                                                            en: 'e.g. Birthday, company dinner',
-                                                        }[locale]
-                                                    }
+                                                    placeholder={tBooking('form.steps.occasion.placeholder')}
                                                     aria-labelledby="booking-request-occasion-label"
                                                     disabled={busy}
                                                 />
@@ -825,13 +754,8 @@ export function BookingRequestFormPage({
                                     <form.Field name="adultCount">
                                         {(field) => (
                                             <ParticipantCountField
-                                                label={{ de: 'Anzahl Erwachsene', en: 'Number of adults' }[locale]}
-                                                subtitle={
-                                                    {
-                                                        de: 'Die finale Personenanzahl kann im Nachgang noch angepasst werden.',
-                                                        en: 'The final number of people can be adjusted later.',
-                                                    }[locale]
-                                                }
+                                                label={tBooking('form.steps.participants.adults')}
+                                                subtitle={tBooking('form.steps.participants.adultsHint')}
                                                 value={field.state.value}
                                                 min={1}
                                                 disabled={busy}
@@ -842,13 +766,8 @@ export function BookingRequestFormPage({
                                     <form.Field name="discountedCount">
                                         {(field) => (
                                             <ParticipantCountField
-                                                label={{ de: 'Anzahl Kinder', en: 'Number of children' }[locale]}
-                                                subtitle={
-                                                    {
-                                                        de: 'Kinder bis 10 Jahre zählen in der Regel als halbe Person.',
-                                                        en: 'Children up to 10 years old are generally counted as half a person.',
-                                                    }[locale]
-                                                }
+                                                label={tBooking('form.steps.participants.children')}
+                                                subtitle={tBooking('form.steps.participants.childrenHint')}
                                                 value={field.state.value}
                                                 min={0}
                                                 disabled={busy}
@@ -865,14 +784,7 @@ export function BookingRequestFormPage({
                                         const previousEventAddresses = loaderData.currentSession.user?.previousEventAddresses ?? [];
                                         return (
                                             <div className="grid gap-3">
-                                                <p className="text-sm font-medium">
-                                                    {
-                                                        {
-                                                            de: 'Gib deine vollständige Adresse mit Straße und Hausnummer an:',
-                                                            en: 'Enter your full address including street and house number:',
-                                                        }[locale]
-                                                    }
-                                                </p>
+                                                <p className="text-sm font-medium">{tBooking('form.steps.location.hint')}</p>
                                                 <Combobox
                                                     filter={null}
                                                     items={suggestions.map((suggestion) => suggestion.displayText)}
@@ -884,12 +796,7 @@ export function BookingRequestFormPage({
                                                         if (!match) return;
                                                         const address = addressFromSuggestion(match);
                                                         if (!address) {
-                                                            toast.error(
-                                                                {
-                                                                    de: 'Bitte eine vollständige Adresse wählen.',
-                                                                    en: 'Please choose a full address.',
-                                                                }[locale],
-                                                            );
+                                                            toast.error(tBooking('pickFullAddress'));
                                                             return;
                                                         }
                                                         form.setFieldValue('exactEventAddress', address);
@@ -905,21 +812,14 @@ export function BookingRequestFormPage({
                                                 >
                                                     <ComboboxInput
                                                         className="w-full"
-                                                        placeholder={
-                                                            {
-                                                                de: 'Musterstraße 1, 80331 München',
-                                                                en: '123 Main Street, 12345 Springfield',
-                                                            }[locale]
-                                                        }
+                                                        placeholder={tBooking('addressPlaceholder')}
                                                         showClear={false}
                                                         disabled={busy}
                                                         required={!values.exactEventAddress}
                                                     />
                                                     <ComboboxContent>
                                                         <ComboboxEmpty>
-                                                            {suggestionsFetching
-                                                                ? { de: 'Suche…', en: 'Searching…' }[locale]
-                                                                : { de: 'Keine Treffer.', en: 'No matches.' }[locale]}
+                                                            {suggestionsFetching ? tBooking('searching') : tBooking('noMatches')}
                                                         </ComboboxEmpty>
                                                         <ComboboxList>
                                                             {(item: string) => (
@@ -933,7 +833,7 @@ export function BookingRequestFormPage({
                                                 {previousEventAddresses.length > 0 ? (
                                                     <div className="grid gap-2">
                                                         <p className="text-sm font-medium">
-                                                            {{ de: 'Frühere Adressen', en: 'Previous addresses' }[locale]}
+                                                            {tBooking('form.steps.location.previousAddresses')}
                                                         </p>
                                                         <div className="flex flex-wrap gap-2">
                                                             {previousEventAddresses.map((address) => (
@@ -966,12 +866,7 @@ export function BookingRequestFormPage({
                                                         <BookingRequestMarketClosedNotice market={closedMarket} />
                                                     ) : (
                                                         <StatusAlert tone="success">
-                                                            {
-                                                                {
-                                                                    de: 'Ausgewählte Adresse: ',
-                                                                    en: 'Selected address: ',
-                                                                }[locale]
-                                                            }
+                                                            {tBooking('form.steps.location.selectedAddress')}
                                                             <span className="font-semibold text-foreground">
                                                                 {values.exactEventAddress.displayText}
                                                             </span>
@@ -991,14 +886,7 @@ export function BookingRequestFormPage({
                                                     </form.Field>
                                                 ) : null}
                                                 {honorDirect && values.exactEventAddress ? (
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {
-                                                            {
-                                                                de: 'Dieser Koch kann auch anreisen, wenn der Ort etwas weiter weg ist.',
-                                                                en: 'This chef can still come if the venue is a bit farther than usual.',
-                                                            }[locale]
-                                                        }
-                                                    </p>
+                                                    <p className="text-sm text-muted-foreground">{tBooking('form.direct.farVenue')}</p>
                                                 ) : null}
                                             </div>
                                         );
@@ -1023,7 +911,7 @@ export function BookingRequestFormPage({
                                             <div className="grid max-w-md gap-4">
                                                 <div className="grid gap-2">
                                                     <span id="booking-request-date-label" className="text-sm font-medium">
-                                                        {{ de: 'Datum', en: 'Date' }[locale]}
+                                                        {tBooking('date')}
                                                     </span>
                                                     <DatePicker
                                                         value={field.state.value}
@@ -1038,7 +926,7 @@ export function BookingRequestFormPage({
                                                             );
                                                             field.handleChange(bookingRequestFormClampDateTime(next, dateTimeBounds));
                                                         }}
-                                                        placeholder={{ de: 'Datum wählen', en: 'Pick a date' }[locale]}
+                                                        placeholder={tBooking('form.steps.dateTime.pickDate')}
                                                         locale={DATE_FNS_LOCALE[locale]}
                                                         className="w-full"
                                                         aria-labelledby="booking-request-date-label"
@@ -1049,18 +937,11 @@ export function BookingRequestFormPage({
                                                     />
                                                 </div>
                                                 {dateDistanceInDaysToToday(field.state.value, 'Europe/Berlin') > 21 ? (
-                                                    <StatusAlert tone="success">
-                                                        {
-                                                            {
-                                                                de: 'Perfekt! Du bist genau richtig in der Zeit! Über 60% unserer Buchungen erfolgen mehr als 3 Wochen im Voraus.',
-                                                                en: "Perfect! You've hit the nail on the head! Over 60% of our bookings are made more than 3 weeks in advance.",
-                                                            }[locale]
-                                                        }
-                                                    </StatusAlert>
+                                                    <StatusAlert tone="success">{tBooking('form.steps.dateTime.earlyBooking')}</StatusAlert>
                                                 ) : null}
                                                 <div className="grid gap-2">
                                                     <span id="booking-request-time-label" className="text-sm font-medium">
-                                                        {{ de: 'Uhrzeit', en: 'Time' }[locale]}
+                                                        {tBooking('form.steps.dateTime.time')}
                                                     </span>
                                                     <TimePicker
                                                         value={format(field.state.value, 'HH:mm')}
@@ -1075,22 +956,15 @@ export function BookingRequestFormPage({
                                                         }}
                                                         hourOptions={hourOptions}
                                                         minuteOptions={minuteOptions}
-                                                        hourAriaLabel={{ de: 'Stunde', en: 'Hour' }[locale]}
-                                                        minuteAriaLabel={{ de: 'Minute', en: 'Minute' }[locale]}
+                                                        hourAriaLabel={tCommon('dateTime.hour')}
+                                                        minuteAriaLabel={tCommon('dateTime.minute')}
                                                         className="w-full"
                                                         aria-labelledby="booking-request-time-label"
                                                         aria-required
                                                         disabled={busy}
                                                     />
                                                 </div>
-                                                <StatusAlert tone="success">
-                                                    {
-                                                        {
-                                                            de: 'Die finale Uhrzeit kannst du mit dem Koch später kommunizieren.',
-                                                            en: 'You can discuss the final time with the chef later.',
-                                                        }[locale]
-                                                    }
-                                                </StatusAlert>
+                                                <StatusAlert tone="success">{tBooking('form.steps.dateTime.timeLater')}</StatusAlert>
                                             </div>
                                         );
                                     }}
@@ -1120,7 +994,7 @@ export function BookingRequestFormPage({
                                                                         <CardTitle className="text-xl">{info.title}</CardTitle>
                                                                         {info.isPopular ? (
                                                                             <Badge className="border-green-300 bg-green-100 text-foreground">
-                                                                                {{ de: 'Populär', en: 'Popular' }[locale]}
+                                                                                {tBooking('popular')}
                                                                             </Badge>
                                                                         ) : null}
                                                                     </div>
@@ -1128,12 +1002,7 @@ export function BookingRequestFormPage({
                                                                 </CardHeader>
                                                                 <CardContent className="grid flex-1 content-start gap-2">
                                                                     <p className="text-sm text-muted-foreground">
-                                                                        {
-                                                                            {
-                                                                                de: 'Häufig gebucht für',
-                                                                                en: 'Frequently booked for',
-                                                                            }[locale]
-                                                                        }
+                                                                        {tBooking('form.steps.priceClass.frequentlyBooked')}
                                                                     </p>
                                                                     <div className="flex flex-wrap items-start gap-2">
                                                                         {info.commonOccasions.map((occasion) => (
@@ -1146,11 +1015,11 @@ export function BookingRequestFormPage({
                                                                 <CardFooter className="mt-auto flex flex-col items-stretch gap-4">
                                                                     <p className="text-center">
                                                                         <span className="text-2xl font-semibold">
-                                                                            {{ de: 'ab', en: 'starting at' }[locale]}{' '}
+                                                                            {tBooking('startingAt')}{' '}
                                                                             {formatCurrency(info.minimumAmountPerPersonCents, { locale })}
                                                                         </span>{' '}
                                                                         <span className="text-sm text-muted-foreground">
-                                                                            {{ de: 'pro Person', en: 'per person' }[locale]}
+                                                                            {tBooking('perPerson')}
                                                                         </span>
                                                                     </p>
                                                                     <Button
@@ -1159,9 +1028,7 @@ export function BookingRequestFormPage({
                                                                         disabled={busy}
                                                                         onClick={() => field.handleChange(priceClass)}
                                                                     >
-                                                                        {selected
-                                                                            ? { de: 'Ausgewählt', en: 'Selected' }[locale]
-                                                                            : { de: 'Auswählen', en: 'Select' }[locale]}
+                                                                        {selected ? tBooking('selected') : tBooking('select')}
                                                                     </Button>
                                                                 </CardFooter>
                                                             </Card>
@@ -1172,9 +1039,7 @@ export function BookingRequestFormPage({
                                         )}
                                     </form.Field>
                                     <div className="grid gap-4">
-                                        <p className="text-2xl">
-                                            {{ de: 'Was ist im Preis inklusive?', en: 'What is included in the price?' }[locale]}
-                                        </p>
+                                        <p className="text-2xl">{tBooking('form.included.heading')}</p>
                                         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
                                             {includedInPrice.map((option) => (
                                                 <p key={option.title} className="flex items-center gap-4 text-lg">
@@ -1193,12 +1058,7 @@ export function BookingRequestFormPage({
                                         <Input
                                             value={customPreferenceText}
                                             onChange={(event) => setCustomPreferenceText(event.target.value)}
-                                            placeholder={
-                                                {
-                                                    de: 'Präferenz (suchen oder hier eigene eingeben)',
-                                                    en: 'Select from the options below or add your own one here',
-                                                }[locale]
-                                            }
+                                            placeholder={tBooking('form.steps.preferences.searchPlaceholder')}
                                             disabled={busy || values.preferences.length >= 4}
                                         />
                                         <Button
@@ -1213,7 +1073,7 @@ export function BookingRequestFormPage({
                                                 setCustomPreferenceText('');
                                             }}
                                         >
-                                            {{ de: 'Eigene hinzufügen', en: 'Add custom' }[locale]}
+                                            {tBooking('form.steps.preferences.addCustom')}
                                         </Button>
                                     </div>
                                     <form.Field name="preferences">
@@ -1244,14 +1104,7 @@ export function BookingRequestFormPage({
                                                     })}
                                                 </div>
                                                 {field.state.value.length >= 4 ? (
-                                                    <StatusAlert tone="info">
-                                                        {
-                                                            {
-                                                                de: 'Du hast die maximale Anzahl ausgewählter Präferenzen erreicht.',
-                                                                en: 'You have reached the limit of 4 selected preferences.',
-                                                            }[locale]
-                                                        }
-                                                    </StatusAlert>
+                                                    <StatusAlert tone="info">{tBooking('form.steps.preferences.maxReached')}</StatusAlert>
                                                 ) : null}
                                             </div>
                                         )}
@@ -1277,11 +1130,8 @@ export function BookingRequestFormPage({
                                                 onChange={(event) => field.handleChange(event.target.value)}
                                                 placeholder={
                                                     cookFirstName
-                                                        ? {
-                                                              de: `Nachricht an ${cookFirstName}`,
-                                                              en: `Message for ${cookFirstName}`,
-                                                          }[locale]
-                                                        : { de: 'Nachricht an die Köche', en: 'Message for the chefs' }[locale]
+                                                        ? tBooking('form.steps.message.placeholderCook', { cookName: cookFirstName })
+                                                        : tBooking('form.steps.message.placeholder')
                                                 }
                                                 disabled={busy}
                                                 rows={8}
@@ -1293,12 +1143,7 @@ export function BookingRequestFormPage({
                                             {(field) => (
                                                 <label className="grid gap-1.5">
                                                     <span className="text-sm font-medium">
-                                                        {
-                                                            {
-                                                                de: 'Gutschein oder Promocode einlösen',
-                                                                en: 'Redeem voucher or promo code',
-                                                            }[locale]
-                                                        }
+                                                        {tBooking('form.steps.message.redeemLabel')}
                                                     </span>
                                                     <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
                                                         <Input
@@ -1311,7 +1156,7 @@ export function BookingRequestFormPage({
                                                                     setConfirmedDiscount(null);
                                                                 }
                                                             }}
-                                                            placeholder={{ de: 'Code eingeben', en: 'Enter code' }[locale]}
+                                                            placeholder={tBooking('form.steps.message.redeemPlaceholder')}
                                                             disabled={busy || redeemBusy}
                                                             autoComplete="off"
                                                             spellCheck={false}
@@ -1331,43 +1176,25 @@ export function BookingRequestFormPage({
                                                             onClick={() => void redeemDiscount(field.state.value)}
                                                         >
                                                             {redeemBusy
-                                                                ? { de: 'Prüfen…', en: 'Checking…' }[locale]
-                                                                : { de: 'Einlösen', en: 'Redeem' }[locale]}
+                                                                ? tBooking('form.steps.message.checking')
+                                                                : tBooking('form.steps.message.redeem')}
                                                         </Button>
                                                     </div>
                                                 </label>
                                             )}
                                         </form.Field>
                                         {redeemInvalid ? (
-                                            <StatusAlert tone="error">
-                                                {{ de: 'Rabattcode ungültig.', en: 'This code is invalid.' }[locale]}
-                                            </StatusAlert>
+                                            <StatusAlert tone="error">{tBooking('form.steps.message.invalid')}</StatusAlert>
                                         ) : null}
                                         {confirmedDiscount ? (
-                                            <StatusAlert tone="success" title={{ de: 'Rabatt gesichert', en: 'Discount secured' }[locale]}>
-                                                {
-                                                    {
-                                                        de: (
-                                                            <p>
-                                                                Dein Vorteil in Höhe von{' '}
-                                                                <span className="font-semibold text-foreground">
-                                                                    {formatCurrency(confirmedDiscount.amountCents, { locale })}
-                                                                </span>{' '}
-                                                                ist gesichert und wird automatisch von den Preisen deiner Angebote
-                                                                abgezogen.
-                                                            </p>
-                                                        ),
-                                                        en: (
-                                                            <p>
-                                                                Your benefit of{' '}
-                                                                <span className="font-semibold text-foreground">
-                                                                    {formatCurrency(confirmedDiscount.amountCents, { locale })}
-                                                                </span>{' '}
-                                                                is secured and will be automatically deducted from your offer prices.
-                                                            </p>
-                                                        ),
-                                                    }[locale]
-                                                }
+                                            <StatusAlert tone="success" title={tBooking('form.steps.message.discountSecured')}>
+                                                <p>
+                                                    {tBooking('form.steps.message.discountLead')}{' '}
+                                                    <span className="font-semibold text-foreground">
+                                                        {formatCurrency(confirmedDiscount.amountCents, { locale })}
+                                                    </span>{' '}
+                                                    {tBooking('form.steps.message.discountTrail')}
+                                                </p>
                                             </StatusAlert>
                                         ) : null}
                                     </div>
@@ -1400,7 +1227,7 @@ export function BookingRequestFormPage({
                             step === 'occasion'
                                 ? undefined
                                 : {
-                                      label: { de: 'Zurück', en: 'Back' }[locale],
+                                      label: tBooking('back'),
                                       onClick: goBack,
                                       disabled: busy,
                                   }
@@ -1409,12 +1236,9 @@ export function BookingRequestFormPage({
                             label:
                                 step === 'message' && signedIn
                                     ? honorDirect && requestedCook
-                                        ? {
-                                              de: `Anfrage an ${requestedCook.user.display} senden`,
-                                              en: `Send ${requestedCook.user.display} a request`,
-                                          }[locale]
-                                        : { de: 'Anfrage senden', en: 'Send request' }[locale]
-                                    : { de: 'Weiter', en: 'Next' }[locale],
+                                        ? tBooking('form.sendToCook', { cookName: requestedCook.user.display })
+                                        : tBooking('form.send')
+                                    : tBooking('next'),
                             onClick: goNext,
                             disabled: nextDisabled,
                             showArrow: !(step === 'message' && signedIn),
@@ -1425,7 +1249,7 @@ export function BookingRequestFormPage({
                 {step === 'auth' ? (
                     <BookingRequestFormBackNext
                         back={{
-                            label: { de: 'Zurück', en: 'Back' }[locale],
+                            label: tBooking('back'),
                             onClick: goBack,
                             disabled: busy || authBusy,
                         }}
@@ -1434,7 +1258,7 @@ export function BookingRequestFormPage({
                                 ? {
                                       type: 'submit',
                                       form: AUTH_USER_PROFILE_FORM_ID,
-                                      label: { de: 'Konto erstellen', en: 'Create account' }[locale],
+                                      label: tBooking('form.createAccount'),
                                       disabled: busy || authBusy,
                                       showArrow: false,
                                   }
@@ -1484,13 +1308,13 @@ function completedStepSummary(
         case 'preferences':
             return {
                 title: sideBarTitle,
-                summary: values.preferences.length > 0 ? values.preferences.join(', ') : { de: 'Keine', en: 'None' }[locale],
+                summary: values.preferences.length > 0 ? values.preferences.join(', ') : t(locale, 'publicBooking', 'none'),
             };
         case 'restrictions': {
             const selected = participants.flatMap((participant) => participant.restrictions);
             return {
                 title: sideBarTitle,
-                summary: selected.length > 0 ? selected.join(', ') : { de: 'Keine', en: 'None' }[locale],
+                summary: selected.length > 0 ? selected.join(', ') : t(locale, 'publicBooking', 'none'),
             };
         }
         case 'message':

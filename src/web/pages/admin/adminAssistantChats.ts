@@ -1,3 +1,4 @@
+import { t } from '../../../i18n/t';
 import type { GqlCChatSurface } from '../../graphql/generated';
 import type { Locale } from '../../utils/locale';
 
@@ -8,11 +9,7 @@ export const ADMIN_ASSISTANT_CHATS_SECTIONS: AdminAssistantChatsSection[] = ['li
 export type AdminAssistantChatsSectionTo = '/{-$locale}/admin/assistant-chats/list';
 
 export function adminAssistantChatsSectionLabel(section: AdminAssistantChatsSection, locale: Locale): string {
-    return (
-        {
-            list: { de: 'Liste', en: 'List' },
-        } as const
-    )[section][locale];
+    return t(locale, 'admin', `section.${section}`);
 }
 
 export function adminAssistantChatsSectionPath(
@@ -35,17 +32,11 @@ export function parseAdminAssistantChatsSectionFromPath(path: string): AdminAssi
 }
 
 export function adminChatSurfaceLabel(surface: GqlCChatSurface, locale: Locale): string {
-    return (
-        {
-            admin: { de: 'Admin', en: 'Admin' },
-            customer: { de: 'Kunde', en: 'Customer' },
-            cook: { de: 'Koch', en: 'Cook' },
-        } as const
-    )[surface][locale];
+    return t(locale, 'admin', `assistantChats.surfaces.${surface}`);
 }
 
 export function adminAssistantChatTitle(title: string, locale: Locale): string {
     const trimmed = title.trim();
     if (trimmed.length > 0) return trimmed;
-    return { de: 'Unbenannter Chat', en: 'Untitled chat' }[locale];
+    return t(locale, 'admin', 'copy.untitledChat');
 }

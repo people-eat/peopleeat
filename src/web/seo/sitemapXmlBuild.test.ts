@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { maxLastModified, sitemapIndexBuild, sitemapUrlsetBuild, toIsoDate } from './sitemapXmlBuild';
 
 describe('sitemapXmlBuild', () => {
-    it('builds a bilingual urlset with hreflang alternates and lastmod', () => {
+    it('builds a urlset with hreflang alternates for every locale and lastmod', () => {
         const xml = sitemapUrlsetBuild('https://example.com', [
             { path: '/about-us', changefreq: 'monthly', priority: 0.3, lastmod: '2026-05-20T00:00:00.000Z' },
         ]);
@@ -11,8 +11,12 @@ describe('sitemapXmlBuild', () => {
         expect(xml).toContain('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">');
         expect(xml).toContain('<loc>https://example.com/about-us</loc>');
         expect(xml).toContain('<loc>https://example.com/en/about-us</loc>');
+        expect(xml).toContain('<loc>https://example.com/fr/about-us</loc>');
+        expect(xml).toContain('<loc>https://example.com/it/about-us</loc>');
         expect(xml).toContain('<xhtml:link rel="alternate" hreflang="de" href="https://example.com/about-us" />');
         expect(xml).toContain('<xhtml:link rel="alternate" hreflang="en" href="https://example.com/en/about-us" />');
+        expect(xml).toContain('<xhtml:link rel="alternate" hreflang="fr" href="https://example.com/fr/about-us" />');
+        expect(xml).toContain('<xhtml:link rel="alternate" hreflang="it" href="https://example.com/it/about-us" />');
         expect(xml).toContain('<xhtml:link rel="alternate" hreflang="x-default" href="https://example.com/about-us" />');
         expect(xml).toContain('<lastmod>2026-05-20T00:00:00.000Z</lastmod>');
         expect(xml).toContain('<changefreq>monthly</changefreq>');
@@ -24,6 +28,8 @@ describe('sitemapXmlBuild', () => {
 
         expect(xml).toContain('<loc>https://example.com</loc>');
         expect(xml).toContain('<loc>https://example.com/en</loc>');
+        expect(xml).toContain('<loc>https://example.com/fr</loc>');
+        expect(xml).toContain('<loc>https://example.com/it</loc>');
         expect(xml).not.toContain('https://example.com/</loc>');
     });
 

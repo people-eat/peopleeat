@@ -46,7 +46,7 @@ pick.
 | Email-only interest form instead of chef sign-up  | Rejected: founding chefs should complete profile and menu now                                   |
 | Two city chef pages per country, no country hub   | Rejected: would miss “peopleeat Netherlands / Switzerland” queries                              |
 | Reserve `/netherlands` as the coming-to URL       | Rejected: keep short country URLs for the 2027 customer hub                                     |
-| Add Dutch or French as locales                    | Deferred: stay on DE + EN; CH pages use German as the default locale                            |
+| Add Dutch as a locale                             | Deferred: UI locales are DE / EN / FR / IT; CH pages still use German CMS copy as the default   |
 | Countries CMS table like cities                   | Rejected: country hubs stay in expansion config; cities carry `countryCode` only                |
 | Geo-filter `/cities` or homepage by IP / language | Rejected: unstable HTML per URL; crawlers would index the DE view                               |
 | Invent a founding-chef fee discount               | Rejected until a commercial term is confirmed                                                   |

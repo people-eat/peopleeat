@@ -1,5 +1,6 @@
 import { createColumnHelper } from '@tanstack/react-table';
 
+import { t } from '../../../i18n/t';
 import { formatDate } from '../../../shared';
 import type { Locale } from '../../../shared/locale';
 import { Badge } from '../../components/base/badge';
@@ -28,21 +29,18 @@ export type AdminCallsSortField = (typeof ADMIN_CALLS_SORT_FIELDS)[number];
 const columnHelper = createColumnHelper<AdminCallsDataTableFeatures, AdminCallsTableRow>();
 
 export function adminCallInitiatorLabel(initiator: GqlCCookCallSlotBookingActor, locale: Locale): string {
-    return {
-        CUSTOMER: { de: 'Kunde', en: 'Customer' },
-        COOK: { de: 'Koch', en: 'Cook' },
-    }[initiator][locale];
+    return t(locale, 'admin', `calls.parties.${initiator}`);
 }
 
 export function adminCallsColumns(locale: Locale, timeZone: string) {
     return columnHelper.columns([
         columnHelper.accessor('occasion', {
-            header: () => ({ de: 'Anlass', en: 'Occasion' })[locale],
+            header: () => t(locale, 'admin', 'copy.occasion'),
             cell: ({ row }) => <span className="font-medium text-foreground">{row.original.occasion || '—'}</span>,
             enableSorting: false,
         }),
         columnHelper.accessor('kind', {
-            header: () => ({ de: 'Status', en: 'Status' })[locale],
+            header: () => t(locale, 'admin', 'copy.status'),
             cell: ({ row }) => (
                 <Badge variant={row.original.kind === 'LIVE' || row.original.kind === 'PENDING' ? 'default' : 'outline'}>
                     {adminCallKindLabel(row.original.kind, locale)}
@@ -51,17 +49,17 @@ export function adminCallsColumns(locale: Locale, timeZone: string) {
             enableSorting: false,
         }),
         columnHelper.accessor('cookDisplayName', {
-            header: () => ({ de: 'Koch', en: 'Cook' })[locale],
+            header: () => t(locale, 'admin', 'copy.cook'),
             cell: ({ row }) => <span className="text-muted-foreground">{row.original.cookDisplayName}</span>,
             enableSorting: false,
         }),
         columnHelper.accessor('customerDisplayName', {
-            header: () => ({ de: 'Kunde', en: 'Customer' })[locale],
+            header: () => t(locale, 'admin', 'copy.customer'),
             cell: ({ row }) => <span className="text-muted-foreground">{row.original.customerDisplayName}</span>,
             enableSorting: false,
         }),
         columnHelper.accessor('initiator', {
-            header: () => ({ de: 'Initiator', en: 'Initiator' })[locale],
+            header: () => t(locale, 'admin', 'copy.initiator'),
             cell: ({ row }) => (
                 <span className="text-muted-foreground">
                     {row.original.initiator ? adminCallInitiatorLabel(row.original.initiator, locale) : '—'}
@@ -70,9 +68,7 @@ export function adminCallsColumns(locale: Locale, timeZone: string) {
             enableSorting: false,
         }),
         columnHelper.accessor('occurredAt', {
-            header: ({ column }) => (
-                <AdminDataTableSortHeader column={column}>{{ de: 'Zeitpunkt', en: 'When' }[locale]}</AdminDataTableSortHeader>
-            ),
+            header: ({ column }) => <AdminDataTableSortHeader column={column}>{t(locale, 'admin', 'copy.when')}</AdminDataTableSortHeader>,
             cell: ({ row }) => (
                 <span className="text-muted-foreground tabular-nums">
                     {formatDate(row.original.occurredAt, { locale, timeZone, dateStyle: 'medium' })}
@@ -80,7 +76,7 @@ export function adminCallsColumns(locale: Locale, timeZone: string) {
             ),
         }),
         columnHelper.accessor('reason', {
-            header: () => ({ de: 'Grund', en: 'Reason' })[locale],
+            header: () => t(locale, 'admin', 'copy.reason2'),
             cell: ({ row }) => (
                 <span className="max-w-[16rem] truncate text-muted-foreground" title={row.original.reason ?? undefined}>
                     {row.original.reason || '—'}

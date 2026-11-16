@@ -1,4 +1,5 @@
 import { sql } from 'drizzle-orm';
+import { t } from '../../i18n/t';
 
 import { cookBookingRequestOfferFunnelArea, cookBookingRequestOfferFunnelSteps } from '../../shared/cookBookingRequestOfferFunnel';
 import type { CookBookingRequestOfferFunnelStep } from '../../shared/cookBookingRequestOfferFunnel';
@@ -6,16 +7,12 @@ import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminAnalyticsCookBookingRequestOfferFlow, GqlSDateTimeRange, GqlSSession } from '../graphql/generated';
 import { dateTimeRangeNormalize } from '../utils/dateTimeRangeNormalize';
 
-const FUNNEL_LABELS: Record<CookBookingRequestOfferFunnelStep, { de: string; en: string }> = {
-    notified: { de: 'Benachrichtigt', en: 'Notified' },
-    opened: { de: 'Geöffnet', en: 'Opened' },
-    declined: { de: 'Abgelehnt', en: 'Declined' },
-    offer_create: { de: 'Angebot starten', en: 'Start offer' },
-    menus: { de: 'Menüs', en: 'Menus' },
-    price: { de: 'Preis', en: 'Price' },
-    message: { de: 'Nachricht', en: 'Message' },
-    created: { de: 'Angebot erstellt', en: 'Offer created' },
-};
+function funnelLabel(step: CookBookingRequestOfferFunnelStep): { de: string; en: string } {
+    return {
+        de: t('de', 'admin', `analytics.funnels.cookOffer.${step}`),
+        en: t('en', 'admin', `analytics.funnels.cookOffer.${step}`),
+    };
+}
 
 type CohortRow = {
     cook_id: string;
@@ -216,8 +213,8 @@ export async function adminAnalyticsCookBookingRequestOfferFlow(
             .filter((step) => nodeIds.has(step))
             .map((step) => ({
                 id: step,
-                labelDe: FUNNEL_LABELS[step].de,
-                labelEn: FUNNEL_LABELS[step].en,
+                labelDe: funnelLabel(step).de,
+                labelEn: funnelLabel(step).en,
             }));
 
         const links = [...edgeCounts.entries()].map(([key, value]) => {
@@ -227,8 +224,8 @@ export async function adminAnalyticsCookBookingRequestOfferFlow(
 
         const steps = cookBookingRequestOfferFunnelSteps.map((step) => ({
             id: step,
-            labelDe: FUNNEL_LABELS[step].de,
-            labelEn: FUNNEL_LABELS[step].en,
+            labelDe: funnelLabel(step).de,
+            labelEn: funnelLabel(step).en,
             enteredCount: enteredByStep.get(step)?.size ?? 0,
             completedCount: completedByStep.get(step)?.size ?? 0,
         }));

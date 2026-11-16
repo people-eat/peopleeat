@@ -1,8 +1,8 @@
-import { DEFAULT_LOCALE, LOCALES } from '../../shared/locale';
-import type { Locale } from '../../shared/locale';
+import { DEFAULT_LOCALE, isLocale } from '../../shared/locale';
+import type { CatalogLocale, Locale } from '../../shared/locale';
 
-export { DEFAULT_LOCALE, LOCALES } from '../../shared/locale';
-export type { Locale } from '../../shared/locale';
+export { CATALOG_LOCALES, DEFAULT_LOCALE, isLocale } from '../../shared/locale';
+export type { CatalogLocale, Locale } from '../../shared/locale';
 
 export function localeFromAcceptLanguage(header: string | null | undefined): Locale {
     if (!header) return DEFAULT_LOCALE;
@@ -14,7 +14,7 @@ export function localeFromAcceptLanguage(header: string | null | undefined): Loc
         })
         .sort((a, b) => b.q - a.q);
     for (const { lang } of preferred) {
-        if (LOCALES.includes(lang as Locale)) return lang as Locale;
+        if (isLocale(lang)) return lang;
     }
     return DEFAULT_LOCALE;
 }
@@ -23,13 +23,13 @@ export function localeFromAcceptLanguage(header: string | null | undefined): Loc
 // TanStack Router's `head()` callback, which runs without React hooks).
 export function localeFromParam(params: { locale?: string | undefined } | undefined): Locale {
     const locale = params?.locale;
-    if (locale && LOCALES.includes(locale as Locale)) return locale as Locale;
+    if (isLocale(locale)) return locale;
     return DEFAULT_LOCALE;
 }
 
 /** True when the first path segment is a non-default locale prefix (`en`, …). */
-function isLocalePrefixSegment(segment: string | undefined): segment is Locale {
-    return !!segment && LOCALES.includes(segment as Locale) && segment !== DEFAULT_LOCALE;
+function isLocalePrefixSegment(segment: string | undefined): segment is CatalogLocale {
+    return isLocale(segment) && segment !== DEFAULT_LOCALE;
 }
 
 /**
@@ -48,7 +48,7 @@ export function pathWithoutLocale(pathname: string, _locale?: Locale): string {
 }
 
 /** Locale-prefixed absolute path (`/log-on` → `/en/log-on`). Default locale stays unprefixed. */
-export function localePath(locale: Locale, path: `/${string}`): string {
+export function localePath(locale: CatalogLocale, path: `/${string}`): string {
     const unprefixed = pathWithoutLocale(path);
     if (locale === DEFAULT_LOCALE) return unprefixed;
     return unprefixed === '/' ? `/${locale}` : `/${locale}${unprefixed}`;
@@ -75,7 +75,7 @@ export function isWorkspaceNoDocumentScrollPath(path: string): boolean {
  * Strips any existing locale prefix from the path (not from `currentLocale`)
  * so detection / switcher never build `/en/en/…`.
  */
-export function buildLocalePath(pathname: string, _currentLocale: Locale, targetLocale: Locale): string {
+export function buildLocalePath(pathname: string, _currentLocale: CatalogLocale, targetLocale: CatalogLocale): string {
     return localePath(targetLocale, pathWithoutLocale(pathname) as `/${string}`);
 }
 
@@ -85,8 +85,8 @@ export function buildLocalePath(pathname: string, _currentLocale: Locale, target
  */
 export function buildLocaleHref(
     location: { pathname: string; searchStr?: string; hash?: string },
-    currentLocale: Locale,
-    targetLocale: Locale,
+    currentLocale: CatalogLocale,
+    targetLocale: CatalogLocale,
 ): string {
     return `${buildLocalePath(location.pathname, currentLocale, targetLocale)}${location.searchStr ?? ''}${location.hash ?? ''}`;
 }

@@ -5,8 +5,9 @@ import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { t } from '../../../i18n/t';
 import type { Locale } from '../../../shared';
-import { formatDateTime } from '../../../shared';
+import { formatDateTime, inlineCopy } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import {
@@ -28,14 +29,12 @@ import { AdminMealDeleteDocument, AdminMealPageUpdatesDocument, AdminMealUpsertD
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 
-export const adminMealPageTitle = {
-    de: 'Gericht ansehen, veröffentlichen oder löschen',
-    en: 'View, publish, or delete a meal',
-} as const;
-export const adminMealPageDescription = {
-    de: 'Gericht eines Kochs verwalten (inkl. gelöschter).',
-    en: 'Manage a cook meal (including deleted).',
-} as const;
+export function adminMealPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.meal.title');
+}
+export function adminMealPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.meal.description');
+}
 
 type AdminMeal = NonNullable<NonNullable<NonNullable<GqlCAdminMealPageQuery['currentSession']['user']>['admin']>['cookMeal']>;
 type MealRelationships = AdminMeal['relationships'];
@@ -60,7 +59,7 @@ function MealRelationshipMenuCard({ relationship, locale }: { relationship: Menu
                             params={{ menuId: relationship.menuId }}
                             className="text-accent underline-offset-4 hover:underline"
                         >
-                            {{ de: 'Menü ansehen', en: 'View menu' }[locale]}
+                            {t(locale, 'admin', 'copy.viewMenu')}
                         </Link>
                     </p>
                 </div>
@@ -68,12 +67,7 @@ function MealRelationshipMenuCard({ relationship, locale }: { relationship: Menu
             </div>
             {relationship.blocksDeletion ? (
                 <StatusAlert tone="warning">
-                    {
-                        {
-                            de: 'Um dieses Gericht zu entfernen, bearbeite das Menü und ersetze es durch ein anderes Gericht.',
-                            en: 'To remove this dish, edit the menu and replace it with another dish.',
-                        }[locale]
-                    }
+                    {t(locale, 'admin', 'copy.toRemoveThisDishEditTheMenuAndReplaceItWithAnotherDish')}
                 </StatusAlert>
             ) : null}
         </div>
@@ -97,12 +91,13 @@ function MealRelationshipOfferCard({
                     <p className="text-sm text-muted-foreground">
                         {relationship.courseTitle}
                         {' · '}
-                        {
+                        {inlineCopy(
                             {
                                 de: `Angebot für ${relationship.bookingRequestUserName}`,
                                 en: `Offer for ${relationship.bookingRequestUserName}`,
-                            }[locale]
-                        }
+                            },
+                            locale,
+                        )}
                         {' · '}
                         {formatBookingDateTime(relationship.bookingRequestDateTime, locale, timeZone)}
                     </p>
@@ -112,14 +107,7 @@ function MealRelationshipOfferCard({
             {relationship.blocksDeletion ? (
                 <div className="flex gap-2 text-sm text-muted-foreground">
                     <CircleAlertIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
-                    <p>
-                        {
-                            {
-                                de: 'Dieses Gericht ist in diesem Angebotsmenü die einzige Option im Gang und blockiert das Löschen.',
-                                en: 'This dish is the only option on that course in the offer menu and blocks deletion.',
-                            }[locale]
-                        }
-                    </p>
+                    <p>{t(locale, 'admin', 'copy.thisDishIsTheOnlyOptionOnThatCourseInTheOfferMenuAndBlocksDe')}</p>
                 </div>
             ) : null}
         </div>
@@ -172,11 +160,9 @@ export function AdminMealPage({ data, mealId }: { data: GqlCAdminMealPageQuery; 
             if (result.error || !result.data?.admin.cookMealUpsert.success) {
                 throw new Error('publish failed');
             }
-            toast.success(
-                next ? { de: 'Veröffentlicht.', en: 'Published.' }[locale] : { de: 'Zurückgezogen.', en: 'Unpublished.' }[locale],
-            );
+            toast.success(next ? t(locale, 'admin', 'copy.published') : t(locale, 'admin', 'copy.unpublished'));
         } catch {
-            toast.error({ de: 'Aktion fehlgeschlagen.', en: 'Action failed.' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.actionFailed'));
         } finally {
             setBusy(false);
         }
@@ -189,10 +175,10 @@ export function AdminMealPage({ data, mealId }: { data: GqlCAdminMealPageQuery; 
             if (result.error || !result.data?.admin.cookMealDelete.success) {
                 throw new Error('delete failed');
             }
-            toast.success({ de: 'Gelöscht.', en: 'Deleted.' }[locale]);
+            toast.success(t(locale, 'admin', 'copy.deleted2'));
             await navigate({ to: '/{-$locale}/admin/meals' });
         } catch {
-            toast.error({ de: 'Löschen fehlgeschlagen.', en: 'Could not delete.' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.couldNotDelete'));
         } finally {
             setBusy(false);
         }
@@ -201,7 +187,7 @@ export function AdminMealPage({ data, mealId }: { data: GqlCAdminMealPageQuery; 
     return (
         <>
             <AdminPageChrome
-                crumbs={[{ label: { de: 'Gerichte', en: 'Meals' }[locale], to: '/{-$locale}/admin/meals' }, { label: meal.title }]}
+                crumbs={[{ label: t(locale, 'admin', 'copy.meals'), to: '/{-$locale}/admin/meals' }, { label: meal.title }]}
                 contentClassName="min-h-0 overflow-hidden gap-0"
             >
                 <AdminPinnedFooterLayout
@@ -209,7 +195,7 @@ export function AdminMealPage({ data, mealId }: { data: GqlCAdminMealPageQuery; 
                     footer={
                         isDeleted ? (
                             <Button type="button" variant="outline" asChild>
-                                <Link to="/{-$locale}/admin/meals">{{ de: 'Zur Liste', en: 'Back to list' }[locale]}</Link>
+                                <Link to="/{-$locale}/admin/meals">{t(locale, 'admin', 'copy.backToList')}</Link>
                             </Button>
                         ) : (
                             <>
@@ -220,7 +206,7 @@ export function AdminMealPage({ data, mealId }: { data: GqlCAdminMealPageQuery; 
                                             variant="outline"
                                             size="icon"
                                             disabled={busy}
-                                            aria-label={{ de: 'Weitere Aktionen', en: 'More actions' }[locale]}
+                                            aria-label={t(locale, 'admin', 'copy.moreActions')}
                                         >
                                             <MoreHorizontalIcon className="size-4" />
                                         </Button>
@@ -228,7 +214,7 @@ export function AdminMealPage({ data, mealId }: { data: GqlCAdminMealPageQuery; 
                                     <DropdownMenuContent align="end">
                                         {meal.publishedAt != null ? (
                                             <DropdownMenuItem disabled={busy} onSelect={() => void setPublished(null)}>
-                                                {{ de: 'Zurückziehen', en: 'Unpublish' }[locale]}
+                                                {t(locale, 'admin', 'copy.unpublish')}
                                             </DropdownMenuItem>
                                         ) : null}
                                         <DropdownMenuItem
@@ -238,20 +224,20 @@ export function AdminMealPage({ data, mealId }: { data: GqlCAdminMealPageQuery; 
                                                 setConfirm(relationships.deletionBlockedByRelationships ? 'delete-blocked' : 'delete')
                                             }
                                         >
-                                            {{ de: 'Löschen', en: 'Delete' }[locale]}
+                                            {t(locale, 'admin', 'copy.delete')}
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
 
                                 {meal.publishedAt == null ? (
                                     <Button type="button" variant="outline" disabled={busy} onClick={() => setConfirm('publish')}>
-                                        {{ de: 'Veröffentlichen', en: 'Publish' }[locale]}
+                                        {t(locale, 'admin', 'copy.publish')}
                                     </Button>
                                 ) : null}
 
                                 <Button asChild>
                                     <Link to="/{-$locale}/admin/meals/$mealId/edit" params={{ mealId }}>
-                                        {{ de: 'Bearbeiten', en: 'Edit' }[locale]}
+                                        {t(locale, 'admin', 'copy.edit')}
                                     </Link>
                                 </Button>
                             </>
@@ -261,18 +247,16 @@ export function AdminMealPage({ data, mealId }: { data: GqlCAdminMealPageQuery; 
                     <div className="flex flex-wrap items-center gap-2">
                         {isDeleted ? (
                             <Badge variant="destructive" className="w-fit">
-                                {{ de: 'Gelöscht', en: 'Deleted' }[locale]}
+                                {t(locale, 'admin', 'copy.deleted')}
                             </Badge>
                         ) : (
                             <Badge variant="outline" className="w-fit">
-                                {meal.publishedAt
-                                    ? { de: 'Veröffentlicht', en: 'Published' }[locale]
-                                    : { de: 'Entwurf', en: 'Draft' }[locale]}
+                                {meal.publishedAt ? t(locale, 'admin', 'copy.published2') : t(locale, 'admin', 'copy.draft')}
                             </Badge>
                         )}
                         {meal.generatedAt != null ? (
                             <Badge variant="outline" className="w-fit">
-                                {{ de: 'Generiert', en: 'Generated' }[locale]}
+                                {t(locale, 'admin', 'copy.generated')}
                             </Badge>
                         ) : null}
                         <Link
@@ -290,26 +274,20 @@ export function AdminMealPage({ data, mealId }: { data: GqlCAdminMealPageQuery; 
                             tone="warning"
                             title={
                                 meal.publishedAt != null
-                                    ? { de: 'Nicht auf der öffentlichen Seite', en: 'Not on the public page' }[locale]
-                                    : { de: 'Bild fehlt', en: 'Picture missing' }[locale]
+                                    ? t(locale, 'admin', 'copy.notOnThePublicPage')
+                                    : t(locale, 'admin', 'copy.pictureMissing')
                             }
                             action={
                                 <Button asChild size="sm" variant="outline">
                                     <Link to="/{-$locale}/admin/meals/$mealId/edit" params={{ mealId }}>
-                                        {{ de: 'Bild hinzufügen', en: 'Add picture' }[locale]}
+                                        {t(locale, 'admin', 'copy.addPicture')}
                                     </Link>
                                 </Button>
                             }
                         >
                             {meal.publishedAt != null
-                                ? {
-                                      de: 'Ohne Bild erscheint dieses Gericht nicht auf der öffentlichen Kochseite, auch wenn es veröffentlicht ist.',
-                                      en: 'Without a picture, this meal does not appear on the public cook page, even when published.',
-                                  }[locale]
-                                : {
-                                      de: 'Ohne Bild erscheint dieses Gericht nicht auf der öffentlichen Kochseite, sobald es veröffentlicht ist.',
-                                      en: 'Without a picture, this meal will not appear on the public cook page once published.',
-                                  }[locale]}
+                                ? t(locale, 'admin', 'copy.withoutAPictureThisMealDoesNotAppearOnThePublicCookPageEvenW')
+                                : t(locale, 'admin', 'copy.withoutAPictureThisMealWillNotAppearOnThePublicCookPageOnceP')}
                         </StatusAlert>
                     ) : null}
 
@@ -318,31 +296,32 @@ export function AdminMealPage({ data, mealId }: { data: GqlCAdminMealPageQuery; 
                             <h1 className="font-serif text-3xl/tight text-foreground">{meal.title}</h1>
                             {meal.generatedAt != null ? (
                                 <p className="text-sm text-muted-foreground">
-                                    {
+                                    {inlineCopy(
                                         {
                                             de: `Generiert am ${formatDateTime(meal.generatedAt, { locale, timeZone, dateStyle: 'medium', timeStyle: 'short' })}`,
                                             en: `Generated on ${formatDateTime(meal.generatedAt, { locale, timeZone, dateStyle: 'medium', timeStyle: 'short' })}`,
-                                        }[locale]
-                                    }
+                                        },
+                                        locale,
+                                    )}
                                 </p>
                             ) : null}
                             <p className="text-muted-foreground whitespace-pre-wrap">
-                                {meal.description.trim() ? meal.description : { de: 'Keine Beschreibung.', en: 'No description.' }[locale]}
+                                {meal.description.trim() ? meal.description : t(locale, 'admin', 'copy.noDescription')}
                             </p>
                         </div>
                         <div className="grid gap-2">
-                            <p className="text-sm font-medium">{{ de: 'Bild', en: 'Image' }[locale]}</p>
+                            <p className="text-sm font-medium">{t(locale, 'admin', 'copy.image')}</p>
                             {meal.imageUrl ? (
                                 <img src={meal.imageUrl} alt="" className="aspect-square h-auto w-full max-w-sm object-cover" />
                             ) : (
-                                <p className="text-sm text-muted-foreground">{{ de: 'Noch kein Bild.', en: 'No image yet.' }[locale]}</p>
+                                <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noImageYet')}</p>
                             )}
                         </div>
                     </div>
 
                     {relationships.menus.length > 0 ? (
                         <section className="grid gap-3">
-                            <h2 className="text-base font-semibold">{{ de: 'Verwendung in Menüs', en: 'Usage in menus' }[locale]}</h2>
+                            <h2 className="text-base font-semibold">{t(locale, 'admin', 'copy.usageInMenus')}</h2>
                             <div className="grid gap-3">
                                 {menuRelationshipsNonBlocking.map((relationship) => (
                                     <MealRelationshipMenuCard
@@ -364,7 +343,7 @@ export function AdminMealPage({ data, mealId }: { data: GqlCAdminMealPageQuery; 
 
                     {relationships.offers.length > 0 ? (
                         <section className="grid gap-3">
-                            <h2 className="text-base font-semibold">{{ de: 'Verwendung in Angeboten', en: 'Usage in offers' }[locale]}</h2>
+                            <h2 className="text-base font-semibold">{t(locale, 'admin', 'copy.usageInOffers')}</h2>
                             <div className="grid gap-3">
                                 {offerRelationshipsNonBlocking.map((relationship) => (
                                     <MealRelationshipOfferCard
@@ -391,20 +370,15 @@ export function AdminMealPage({ data, mealId }: { data: GqlCAdminMealPageQuery; 
             <AlertDialog open={confirm === 'delete'} onOpenChange={(open) => !open && setConfirm(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>{{ de: 'Gericht löschen?', en: 'Delete this meal?' }[locale]}</AlertDialogTitle>
+                        <AlertDialogTitle>{t(locale, 'admin', 'copy.deleteThisMeal')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            {
-                                {
-                                    de: 'Das Gericht verschwindet aus der Kochliste. Admins können es weiterhin einsehen.',
-                                    en: 'The meal disappears from the cook list. Admins can still inspect it.',
-                                }[locale]
-                            }
+                            {t(locale, 'admin', 'copy.theMealDisappearsFromTheCookListAdminsCanStillInspectIt')}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogCancel>{t(locale, 'admin', 'copy.cancel')}</AlertDialogCancel>
                         <AlertDialogAction variant="destructive" onClick={() => void onDelete()}>
-                            {{ de: 'Löschen', en: 'Delete' }[locale]}
+                            {t(locale, 'admin', 'copy.delete')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -413,20 +387,13 @@ export function AdminMealPage({ data, mealId }: { data: GqlCAdminMealPageQuery; 
             <AlertDialog open={confirm === 'delete-blocked'} onOpenChange={(open) => !open && setConfirm(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>
-                            {{ de: 'Gericht kann nicht gelöscht werden', en: 'Meal can not be deleted' }[locale]}
-                        </AlertDialogTitle>
+                        <AlertDialogTitle>{t(locale, 'admin', 'copy.mealCanNotBeDeleted')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            {
-                                {
-                                    de: 'Dieses Gericht ist in mindestens einem Menü das einzige Gericht in einem Gang und kann darum nicht gelöscht werden. Aktualisiere die betroffenen Menüs, indem du den Gang löschst, ihm andere Gerichte hinzufügst oder das Gericht dort ersetzt.',
-                                    en: 'This dish is the only dish in its course in at least one menu and therefore cannot be deleted. Update the affected menus by deleting the course, adding other dish options to it, or replacing the dish there.',
-                                }[locale]
-                            }
+                            {t(locale, 'admin', 'copy.thisDishIsTheOnlyDishInItsCourseInAtLeastOneMenuAndTherefore')}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogAction onClick={() => setConfirm(null)}>{{ de: 'Fertig', en: 'Done' }[locale]}</AlertDialogAction>
+                        <AlertDialogAction onClick={() => setConfirm(null)}>{t(locale, 'admin', 'copy.done')}</AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
@@ -434,23 +401,17 @@ export function AdminMealPage({ data, mealId }: { data: GqlCAdminMealPageQuery; 
             <AlertDialog open={confirm === 'publish'} onOpenChange={(open) => !open && setConfirm(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>{{ de: 'Gericht veröffentlichen?', en: 'Publish this meal?' }[locale]}</AlertDialogTitle>
+                        <AlertDialogTitle>{t(locale, 'admin', 'copy.publishThisMeal')}</AlertDialogTitle>
                         <AlertDialogDescription>
                             {meal.imageUrl == null || meal.imageUrl.length === 0
-                                ? {
-                                      de: 'Das Gericht wird als veröffentlicht markiert. Ohne Bild erscheint es trotzdem nicht auf der öffentlichen Kochseite.',
-                                      en: 'The meal will be marked published. Without a picture, it still will not appear on the public cook page.',
-                                  }[locale]
-                                : {
-                                      de: 'Das Gericht wird als veröffentlicht markiert und erscheint auf der öffentlichen Kochseite.',
-                                      en: 'The meal will be marked published and appear on the public cook page.',
-                                  }[locale]}
+                                ? t(locale, 'admin', 'copy.theMealWillBeMarkedPublishedWithoutAPictureItStillWillNotApp')
+                                : t(locale, 'admin', 'copy.theMealWillBeMarkedPublishedAndAppearOnThePublicCookPage')}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogCancel>{t(locale, 'admin', 'copy.cancel')}</AlertDialogCancel>
                         <AlertDialogAction onClick={() => void setPublished(new Date().toISOString())}>
-                            {{ de: 'Veröffentlichen', en: 'Publish' }[locale]}
+                            {t(locale, 'admin', 'copy.publish')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

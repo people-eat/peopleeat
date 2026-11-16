@@ -1,5 +1,7 @@
 import { Link } from '@tanstack/react-router';
 
+import { t } from '../../i18n/t';
+import type { Locale } from '../../shared';
 import { userAttentionKindBadgeLabel } from '../../shared/attentionCopy';
 import { Button } from '../components/base/button';
 import { StatusAlert } from '../components/base/status-alert';
@@ -70,7 +72,7 @@ function GettingStartedAction({ step }: { step: CustomerOverviewGettingStartedSt
     );
 }
 
-function cardAttentionFromOverview(item: CustomerOverviewAttentionItem, locale: 'de' | 'en'): CustomerBookingRequestCardAttention | null {
+function cardAttentionFromOverview(item: CustomerOverviewAttentionItem, locale: Locale): CustomerBookingRequestCardAttention | null {
     const badgeLabel = userAttentionKindBadgeLabel(item.kind, locale);
     if (item.target.kind === 'requests') return null;
     if (item.target.kind === 'request') {
@@ -129,16 +131,14 @@ export function ProfilePageCustomer({ name, user }: { name: string; user: GqlCPr
     return (
         <main id="main-content" className="mx-auto grid min-h-0 w-full max-w-3xl flex-1 content-start gap-8">
             <div className="grid gap-2">
-                <h1 className="font-serif text-2xl/tight text-foreground">{{ de: `Hallo ${name},`, en: `Hello ${name},` }[locale]}</h1>
-                <p className="text-muted-foreground">
-                    {{ de: 'Hier siehst du, was als Nächstes ansteht.', en: 'Here is what to do next.' }[locale]}
-                </p>
+                <h1 className="font-serif text-2xl/tight text-foreground">{t(locale, 'profile', 'overview.hello', { name })}</h1>
+                <p className="text-muted-foreground">{t(locale, 'profile', 'overview.subtitle')}</p>
             </div>
 
             {overview.attention.length > 0 ? (
                 <section className="grid gap-3" aria-labelledby="customer-overview-attention">
                     <h2 id="customer-overview-attention" className="text-sm font-medium text-foreground">
-                        {{ de: 'Aufmerksamkeit', en: 'Attention' }[locale]}
+                        {t(locale, 'profile', 'overview.attention')}
                     </h2>
                     <div className="grid gap-3">
                         {overview.attention.map((item) => (
@@ -153,43 +153,25 @@ export function ProfilePageCustomer({ name, user }: { name: string; user: GqlCPr
             {overview.createMode === 'primary' ? (
                 <StatusAlert
                     tone="info"
-                    title={{ de: 'Dein erstes Dinner bei dir?', en: 'Your first dinner at home?' }[locale]}
+                    title={t(locale, 'profileCustomer', 'bookingRequests.emptyTitle')}
                     action={
                         <Button asChild size="sm">
-                            <Link to="/{-$locale}/booking-request/form">
-                                {{ de: 'Buchungsanfrage starten', en: 'Start a booking request' }[locale]}
-                            </Link>
+                            <Link to="/{-$locale}/booking-request/form">{t(locale, 'profileCustomer', 'overview.startRequest')}</Link>
                         </Button>
                     }
                 >
-                    {
-                        {
-                            de: 'Erzähl uns von Anlass, Termin und Gästen. Wir finden den passenden Koch.',
-                            en: 'Tell us the occasion, date, and guests. We’ll find the right chef.',
-                        }[locale]
-                    }
+                    {t(locale, 'profileCustomer', 'overview.startRequestBody')}
                 </StatusAlert>
             ) : null}
 
             {overview.createMode === 'secondary' ? (
                 <div className="flex flex-col gap-3 rounded-xl border border-border bg-background p-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="grid gap-1">
-                        <p className="font-medium text-foreground">
-                            {{ de: 'Schon den nächsten Anlass im Blick?', en: 'Already eyeing the next occasion?' }[locale]}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                            {
-                                {
-                                    de: 'Geburtstag, Abend mit Freunden oder Team-Event: starte eine neue Anfrage, sobald der Termin feststeht.',
-                                    en: 'Birthday, friends’ night, or team event: start a new request as soon as the date is set.',
-                                }[locale]
-                            }
-                        </p>
+                        <p className="font-medium text-foreground">{t(locale, 'profileCustomer', 'overview.nextOccasionTitle')}</p>
+                        <p className="text-sm text-muted-foreground">{t(locale, 'profileCustomer', 'overview.nextOccasionBody')}</p>
                     </div>
                     <Button asChild variant="outline" size="sm" className="sm:shrink-0">
-                        <Link to="/{-$locale}/booking-request/form">
-                            {{ de: 'Neue Buchungsanfrage', en: 'New booking request' }[locale]}
-                        </Link>
+                        <Link to="/{-$locale}/booking-request/form">{t(locale, 'profileCustomer', 'overview.newRequest')}</Link>
                     </Button>
                 </div>
             ) : null}
@@ -198,11 +180,11 @@ export function ProfilePageCustomer({ name, user }: { name: string; user: GqlCPr
                 <section className="grid gap-3" aria-labelledby="customer-overview-next-dinner">
                     <div className="flex items-center justify-between gap-3">
                         <h2 id="customer-overview-next-dinner" className="text-sm font-medium text-foreground">
-                            {{ de: 'Nächstes Dinner', en: 'Next dinner' }[locale]}
+                            {t(locale, 'profileCustomer', 'overview.nextDinner')}
                         </h2>
                         {nextDinner.activeRequestCount > 1 ? (
                             <Button asChild variant="ghost" size="sm">
-                                <Link to="/{-$locale}/profile/booking-requests">{{ de: 'Alle ansehen', en: 'View all' }[locale]}</Link>
+                                <Link to="/{-$locale}/profile/booking-requests">{t(locale, 'profileCustomer', 'overview.viewAll')}</Link>
                             </Button>
                         ) : null}
                     </div>
@@ -213,7 +195,7 @@ export function ProfilePageCustomer({ name, user }: { name: string; user: GqlCPr
             {showGettingStarted ? (
                 <section className="grid gap-3" aria-labelledby="customer-overview-getting-started">
                     <h2 id="customer-overview-getting-started" className="text-sm font-medium text-foreground">
-                        {{ de: 'Erste Schritte', en: 'Getting started' }[locale]}
+                        {t(locale, 'profile', 'overview.gettingStarted')}
                     </h2>
                     <ul className="grid gap-3">
                         {overview.gettingStarted.map((step) => (
@@ -233,13 +215,8 @@ export function ProfilePageCustomer({ name, user }: { name: string; user: GqlCPr
             ) : null}
 
             {overview.allClear ? (
-                <StatusAlert tone="info" title={{ de: 'Alles erledigt', en: "You're all set" }[locale]}>
-                    {
-                        {
-                            de: 'Gerade brauchst du nichts zu tun. Nutze die Seitenleiste für Anfragen und Support.',
-                            en: 'Nothing needs you right now. Use the sidebar for requests and support.',
-                        }[locale]
-                    }
+                <StatusAlert tone="info" title={t(locale, 'profile', 'overview.allSet')}>
+                    {t(locale, 'profileCustomer', 'overview.allSetBody')}
                 </StatusAlert>
             ) : null}
         </main>

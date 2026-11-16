@@ -18,8 +18,8 @@ export const Route = createFileRoute('/{-$locale}/profile/calls')({
     head: ({ params }) => {
         const locale = localeFromParam(params);
         return seoMeta({
-            title: profileCookCallsPageTitle[locale],
-            description: profileCookCallsPageDescription[locale],
+            title: profileCookCallsPageTitle(locale),
+            description: profileCookCallsPageDescription(locale),
             path: '/profile/calls',
             locale,
             webPageUrl: webPageUrlGet(),

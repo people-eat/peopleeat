@@ -1,16 +1,34 @@
+import { t } from '../../i18n/t';
 import { giftCardFunnelArea, giftCardFunnelSteps } from '../../shared/giftCardFunnel';
 import type { GiftCardFunnelStep } from '../../shared/giftCardFunnel';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminAnalyticsSessionFunnelFlow, GqlSDateTimeRange, GqlSSession } from '../graphql/generated';
 import { adminAnalyticsSessionFunnelFlow } from './adminAnalyticsSessionFunnelFlow';
 
-const FUNNEL_LABELS: Record<GiftCardFunnelStep, { de: string; en: string }> = {
-    configure: { de: 'Konfiguration', en: 'Configure' },
-    auth: { de: 'Anmeldung', en: 'Sign-in' },
-    created: { de: 'Geschenkkarte erstellt', en: 'Gift card created' },
-    checkout: { de: 'Checkout', en: 'Checkout' },
-    paid: { de: 'Bezahlt', en: 'Paid' },
-};
+function funnelLabels(): Record<GiftCardFunnelStep, { de: string; en: string }> {
+    return {
+        configure: {
+            de: t('de', 'admin', 'analytics.funnels.giftCard.configure'),
+            en: t('en', 'admin', 'analytics.funnels.giftCard.configure'),
+        },
+        auth: {
+            de: t('de', 'admin', 'analytics.funnels.giftCard.auth'),
+            en: t('en', 'admin', 'analytics.funnels.giftCard.auth'),
+        },
+        created: {
+            de: t('de', 'admin', 'analytics.funnels.giftCard.created'),
+            en: t('en', 'admin', 'analytics.funnels.giftCard.created'),
+        },
+        checkout: {
+            de: t('de', 'admin', 'analytics.funnels.giftCard.checkout'),
+            en: t('en', 'admin', 'analytics.funnels.giftCard.checkout'),
+        },
+        paid: {
+            de: t('de', 'admin', 'analytics.funnels.giftCard.paid'),
+            en: t('en', 'admin', 'analytics.funnels.giftCard.paid'),
+        },
+    };
+}
 
 export async function adminAnalyticsGiftCardFlow(
     range: GqlSDateTimeRange,
@@ -20,7 +38,7 @@ export async function adminAnalyticsGiftCardFlow(
     return adminAnalyticsSessionFunnelFlow(range, requestingSession, serverRuntime, {
         area: giftCardFunnelArea,
         steps: giftCardFunnelSteps,
-        labels: FUNNEL_LABELS,
+        labels: funnelLabels(),
         lifecycleTypes: [
             { type: 'GIFT_CARD_CREATED', step: 'created' },
             { type: 'GIFT_CARD_PAYED', step: 'paid' },

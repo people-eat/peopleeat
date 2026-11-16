@@ -3,9 +3,10 @@ import { createContext, useContext, useState } from 'react';
 import type { ComponentProps, PropsWithChildren } from 'react';
 import type { Components } from 'streamdown';
 import { Streamdown } from 'streamdown';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 import type { Locale } from '../utils/locale';
-import { DEFAULT_LOCALE, LOCALES } from '../utils/locale';
+import { DEFAULT_LOCALE, isLocale } from '../utils/locale';
 import { AssistantPendingStatus } from './AssistantPendingStatus';
 import {
     AlertDialog,
@@ -50,13 +51,13 @@ export function isInternalHref(href: string | undefined): href is string {
 export function localizeInternalHref(href: string, locale: Locale): string {
     if (locale === DEFAULT_LOCALE) return href;
     const firstSegment = href.split('/')[1];
-    if (LOCALES.includes(firstSegment as Locale)) return href;
+    if (isLocale(firstSegment)) return href;
     return href === '/' ? `/${locale}` : `/${locale}${href}`;
 }
 
 export function localeFromPathname(pathname: string | undefined): Locale {
     const segment = pathname?.split('/')[1];
-    return LOCALES.includes(segment as Locale) ? (segment as Locale) : DEFAULT_LOCALE;
+    return isLocale(segment) ? segment : DEFAULT_LOCALE;
 }
 
 // Custom anchor for assistant markdown. Replaces Streamdown's built-in link
@@ -91,6 +92,7 @@ function MarkdownAnchor({
     // keep the fallback guards honest.
     const router = useRouter({ warn: false }) as ReturnType<typeof useRouter> | undefined;
     const [confirmOpen, setConfirmOpen] = useState(false);
+    const { t } = useT('common');
     const locale = localeFromPathname(router?.state.location.pathname);
 
     const linkClassName = cn('wrap-anywhere font-medium text-primary underline', className);
@@ -147,19 +149,19 @@ function MarkdownAnchor({
             <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>{{ de: 'Externen Link öffnen?', en: 'Open external link?' }[locale]}</AlertDialogTitle>
+                        <AlertDialogTitle>{t('assistant.openExternalTitle')}</AlertDialogTitle>
                         <AlertDialogDescription>
                             <span className="break-all font-mono text-xs">{href}</span>
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={() => {
                                 window.open(href, '_blank', 'noreferrer');
                             }}
                         >
-                            {{ de: 'Öffnen', en: 'Open' }[locale]}
+                            {t('assistant.open')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

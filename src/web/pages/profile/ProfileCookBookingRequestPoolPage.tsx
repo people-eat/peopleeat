@@ -1,5 +1,6 @@
 import { useNavigate } from '@tanstack/react-router';
 
+import { t } from '../../../i18n/t';
 import { Badge } from '../../components/base/badge';
 import { Tabs, TabsList, TabsTrigger } from '../../components/base/tabs';
 import { CookBookingRequestCard } from '../../components/CookBookingRequestCard';
@@ -48,7 +49,7 @@ export function ProfileCookBookingRequestPoolPage({
 
     return (
         <main id="main-content" className="@container grid w-full min-w-0 content-start gap-6">
-            <p className="text-sm text-muted-foreground">{route.description[locale]}</p>
+            <p className="text-sm text-muted-foreground">{route.description(locale)}</p>
 
             <Tabs
                 value={view}
@@ -56,15 +57,15 @@ export function ProfileCookBookingRequestPoolPage({
                     void navigate({ search: poolSearchForUrl(value as PoolView) });
                 }}
             >
-                <TabsList variant="line" aria-label={{ de: 'Anfragen-Status', en: 'Request status' }[locale]}>
+                <TabsList variant="line" aria-label={t(locale, 'profileCook', 'pool.status')}>
                     <TabsTrigger value="open">
-                        {{ de: 'Offen', en: 'Open' }[locale]}
+                        {t(locale, 'profileCook', 'pool.open')}
                         <Badge variant="outline" className="bg-muted">
                             {openRequests.length}
                         </Badge>
                     </TabsTrigger>
                     <TabsTrigger value="declined">
-                        {{ de: 'Ausgeblendet', en: 'Declined' }[locale]}
+                        {t(locale, 'profileCook', 'pool.declined')}
                         <Badge variant="outline" className="bg-muted">
                             {declinedRequests.length}
                         </Badge>
@@ -74,18 +75,7 @@ export function ProfileCookBookingRequestPoolPage({
 
             {requests.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                    {
-                        {
-                            open: {
-                                de: 'Keine offenen Anfragen im Pool.',
-                                en: 'No open requests in the pool.',
-                            },
-                            declined: {
-                                de: 'Keine ausgeblendeten Anfragen.',
-                                en: 'No declined requests.',
-                            },
-                        }[view][locale]
-                    }
+                    {t(locale, 'profileCook', view === 'open' ? 'pool.emptyOpen' : 'pool.emptyDeclined')}
                 </p>
             ) : (
                 (() => {
@@ -94,9 +84,9 @@ export function ProfileCookBookingRequestPoolPage({
                     const sections =
                         view === 'open' && requested.length > 0
                             ? [
-                                  { key: 'requested', title: { de: 'Hat dich angefragt', en: 'Requested you' }[locale], items: requested },
+                                  { key: 'requested', title: t(locale, 'profileCook', 'pool.requestedYou'), items: requested },
                                   ...(others.length > 0
-                                      ? [{ key: 'nearby', title: { de: 'In deiner Nähe', en: 'Nearby' }[locale], items: others }]
+                                      ? [{ key: 'nearby', title: t(locale, 'profileCook', 'pool.nearby'), items: others }]
                                       : []),
                               ]
                             : [{ key: 'all', title: null, items: requests }];

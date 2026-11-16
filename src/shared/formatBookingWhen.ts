@@ -1,3 +1,4 @@
+import { t } from '../i18n/t';
 import { cookCallSlotBookingWhenFormat } from './cookCallSlotBookingStatus';
 import { formatDate, formatDateTime, formatTime } from './formatDate';
 import type { Locale } from './locale';
@@ -21,7 +22,7 @@ function placeLabel(venueCity: string | null | undefined, timeZone: string): str
 
 function callRangeLabel(start: string | Date, end: string | Date, locale: Locale, timeZone: string): string {
     const range = `${formatTime(start, { locale, timeZone })}–${formatTime(end, { locale, timeZone })}`;
-    return locale === 'de' ? `${range} Uhr` : range;
+    return t(locale, 'common', 'bookingWhen.callRange', { range });
 }
 
 function durationParts(deltaMinutes: number): { hours: number; minutes: number } {
@@ -31,27 +32,23 @@ function durationParts(deltaMinutes: number): { hours: number; minutes: number }
 
 function formatOffsetDuration(deltaMinutes: number, locale: Locale): string {
     const { hours, minutes } = durationParts(deltaMinutes);
-    if (locale === 'de') {
-        const hourPart = hours === 0 ? '' : hours === 1 ? '1 Stunde' : `${hours} Stunden`;
-        const minutePart = minutes === 0 ? '' : minutes === 1 ? '1 Minute' : `${minutes} Minuten`;
-        return [hourPart, minutePart].filter((part) => part.length > 0).join(' ');
-    }
-    const hourPart = hours === 0 ? '' : hours === 1 ? '1 hour' : `${hours} hours`;
-    const minutePart = minutes === 0 ? '' : minutes === 1 ? '1 minute' : `${minutes} minutes`;
-    return [hourPart, minutePart].filter((part) => part.length > 0).join(' ');
+    const parts: string[] = [];
+    if (hours > 0) parts.push(t(locale, 'common', 'bookingWhen.hours', { count: hours }));
+    if (minutes > 0) parts.push(t(locale, 'common', 'bookingWhen.minutes', { count: minutes }));
+    return parts.join(' ');
 }
 
 function formatOffsetRelative(deltaMinutes: number, locale: Locale): string {
     const duration = formatOffsetDuration(deltaMinutes, locale);
     if (deltaMinutes < 0) {
-        return { de: `${duration} hinter dir`, en: `${duration} behind you` }[locale];
+        return t(locale, 'common', 'bookingWhen.behind', { duration });
     }
-    return { de: `${duration} voraus`, en: `${duration} ahead of you` }[locale];
+    return t(locale, 'common', 'bookingWhen.ahead', { duration });
 }
 
 function viewerTimeSecondary(instant: string | Date, locale: Locale, viewerTimeZone: string): string {
     const time = formatTime(instant, { locale, timeZone: viewerTimeZone, timeStyle: 'short' });
-    return { de: `${time} in deiner Zeitzone`, en: `${time} in your time zone` }[locale];
+    return t(locale, 'common', 'bookingWhen.viewerTime', { time });
 }
 
 /** Join primary + optional secondary for emails, WhatsApp, and compact pills. */
@@ -111,11 +108,11 @@ export function formatBookingEventWhenAdmin(input: {
     const lines: string[] = [];
     if (customerDiffers) {
         const time = formatTime(instant, { locale, timeZone: customerTimeZone, timeStyle: 'short' });
-        lines.push({ de: `Kunde ${time} ${customerTimeZone}`, en: `Customer ${time} ${customerTimeZone}` }[locale]);
+        lines.push(t(locale, 'common', 'bookingWhen.customerLine', { time, timeZone: customerTimeZone }));
     }
     if (cookDiffers) {
         const time = formatTime(instant, { locale, timeZone: cookTimeZone, timeStyle: 'short' });
-        lines.push({ de: `Koch ${time} ${cookTimeZone}`, en: `Chef ${time} ${cookTimeZone}` }[locale]);
+        lines.push(t(locale, 'common', 'bookingWhen.cookLine', { time, timeZone: cookTimeZone }));
     }
     if (viewerDiffers) {
         lines.push(viewerTimeSecondary(instant, locale, viewerTimeZone));
@@ -143,7 +140,7 @@ export function formatBookingCallWhen(input: {
         if (!timeZonesDifferAt(startAt, viewerTimeZone, peer.timeZone)) continue;
         const range = callRangeLabel(startAt, endAt, locale, peer.timeZone);
         const place = formatTimeZonePlaceLabel(peer.timeZone);
-        lines.push({ de: `${range} für ${name} (${place})`, en: `${range} for ${name} (${place})` }[locale]);
+        lines.push(t(locale, 'common', 'bookingWhen.peerRange', { range, name, place }));
     }
     if (lines.length === 0) return { primary };
     return { primary, secondary: lines.join('\n') };
@@ -169,10 +166,10 @@ export function formatBookingCallScheduleCaption(input: {
         const delta = timeZoneOffsetAt(instant, peer.timeZone) - timeZoneOffsetAt(instant, viewerTimeZone);
         const place = formatTimeZonePlaceLabel(peer.timeZone);
         const relative = formatOffsetRelative(delta, locale);
-        clauses.push({ de: `${name} ist in ${place} (${relative})`, en: `${name} is in ${place} (${relative})` }[locale]);
+        clauses.push(t(locale, 'common', 'bookingWhen.peerClause', { name, place, relative }));
     }
     if (clauses.length === 0) return null;
-    const intro = { de: 'Zeiten in deiner Zeitzone.', en: 'Times are in your time zone.' }[locale];
+    const intro = t(locale, 'common', 'bookingWhen.scheduleIntro');
     return `${intro} ${clauses.join(' ')}`;
 }
 

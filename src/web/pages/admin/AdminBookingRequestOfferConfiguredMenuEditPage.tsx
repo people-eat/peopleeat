@@ -4,7 +4,8 @@ import { useId, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
-import { userDisplayName } from '../../../shared';
+import { t } from '../../../i18n/t';
+import { inlineCopy, userDisplayName } from '../../../shared';
 import { idCreate } from '../../../shared/idCreate';
 import {
     AdminConfiguredMenuCoursesEditor,
@@ -24,7 +25,8 @@ import type {
 } from '../../graphql/generated';
 import { AdminBookingRequestOfferConfiguredMenuUpdateDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
-import { adminStubRouteBySlug } from './adminCatalog';
+import type { Locale } from '../../utils/locale';
+import { adminStubRouteBySlug, adminStubRouteTitle } from './adminCatalog';
 
 const listRoute = adminStubRouteBySlug('booking-requests');
 
@@ -36,14 +38,12 @@ type FormValues = {
 
 const EMPTY_FORM_VALUES: FormValues = { title: '', description: '', courses: [] };
 
-export const adminBookingRequestOfferConfiguredMenuEditPageTitle = {
-    de: 'Konfiguriertes Menü bearbeiten',
-    en: 'Edit configured menu',
-} as const;
-export const adminBookingRequestOfferConfiguredMenuEditPageDescription = {
-    de: 'Titel, Beschreibung und Gänge des eingefrorenen Angebotsmenüs anpassen.',
-    en: 'Edit the title, description, and courses of the frozen offer menu.',
-} as const;
+export function adminBookingRequestOfferConfiguredMenuEditPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.bookingRequestOfferConfiguredMenuEdit.title');
+}
+export function adminBookingRequestOfferConfiguredMenuEditPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.bookingRequestOfferConfiguredMenuEdit.description');
+}
 
 export function adminBookingRequestOfferConfiguredMenuEditPageVariables(bookingRequestId: string, bookingRequestOfferId: string) {
     return { bookingRequestId, bookingRequestOfferId };
@@ -106,12 +106,12 @@ export function AdminBookingRequestOfferConfiguredMenuEditPage({
         onSubmit: async ({ value }) => {
             setShowValidation(true);
             if (value.title.trim() === '') {
-                toast.error({ de: 'Bitte einen Menütitel angeben.', en: 'Please enter a menu title.' }[locale]);
+                toast.error(t(locale, 'admin', 'copy.pleaseEnterAMenuTitle'));
                 return;
             }
             const coursesError = adminConfiguredMenuDraftValidate(value.courses);
             if (coursesError) {
-                toast.error(coursesError[locale]);
+                toast.error(inlineCopy(coursesError, locale));
                 return;
             }
 
@@ -134,14 +134,14 @@ export function AdminBookingRequestOfferConfiguredMenuEditPage({
                 if (!result.data?.admin.bookingRequestOfferConfiguredMenuUpdate.success) {
                     throw new Error('update failed');
                 }
-                toast.success({ de: 'Konfiguriertes Menü aktualisiert.', en: 'Configured menu updated.' }[locale]);
+                toast.success(t(locale, 'admin', 'copy.configuredMenuUpdated'));
                 await navigate({
                     to: '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId',
                     params: { bookingRequestId, bookingRequestOfferId },
                     search: { tab: 'menu' },
                 });
             } catch {
-                toast.error({ de: 'Aktualisierung fehlgeschlagen.', en: 'Update failed.' }[locale]);
+                toast.error(t(locale, 'admin', 'copy.updateFailed'));
             }
         },
     });
@@ -160,13 +160,13 @@ export function AdminBookingRequestOfferConfiguredMenuEditPage({
     return (
         <AdminPageChrome
             crumbs={[
-                { label: listRoute.title[locale], to: '/{-$locale}/admin/booking-requests' },
+                { label: adminStubRouteTitle(listRoute.slug, locale), to: '/{-$locale}/admin/booking-requests' },
                 {
-                    label: seedRequest.occasion.trim() || { de: 'Anfrage', en: 'Request' }[locale],
+                    label: seedRequest.occasion.trim() || t(locale, 'admin', 'copy.request'),
                     to: '/{-$locale}/admin/booking-requests/$bookingRequestId',
                     params: { bookingRequestId },
                 },
-                { label: adminBookingRequestOfferConfiguredMenuEditPageTitle[locale] },
+                { label: adminBookingRequestOfferConfiguredMenuEditPageTitle(locale) },
             ]}
         >
             <AdminPinnedFooterLayout
@@ -176,17 +176,17 @@ export function AdminBookingRequestOfferConfiguredMenuEditPage({
                         <>
                             <Button type="button" variant="outline" disabled={isSubmitting} asChild>
                                 <Link to={offerHref.to} params={offerHref.params} search={offerHref.search}>
-                                    {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                    {t(locale, 'admin', 'copy.cancel')}
                                 </Link>
                             </Button>
                             <Button type="submit" form="admin-configured-menu-edit-form" disabled={isSubmitting}>
-                                {isSubmitting ? { de: 'Speichern…', en: 'Saving…' }[locale] : { de: 'Speichern', en: 'Save' }[locale]}
+                                {isSubmitting ? t(locale, 'admin', 'copy.saving2') : t(locale, 'admin', 'copy.save')}
                             </Button>
                         </>
                     ) : (
                         <Button type="button" variant="outline" asChild>
                             <Link to={offerHref.to} params={offerHref.params} search={offerHref.search}>
-                                {{ de: 'Zurück zum Angebot', en: 'Back to offer' }[locale]}
+                                {t(locale, 'admin', 'copy.backToOffer')}
                             </Link>
                         </Button>
                     )
@@ -194,21 +194,16 @@ export function AdminBookingRequestOfferConfiguredMenuEditPage({
             >
                 <div className="grid gap-2">
                     <h1 className="font-serif text-3xl/tight text-foreground">
-                        {adminBookingRequestOfferConfiguredMenuEditPageTitle[locale]}
+                        {adminBookingRequestOfferConfiguredMenuEditPageTitle(locale)}
                     </h1>
                     <p className="text-sm text-muted-foreground">
-                        {userDisplayName(seedOffer.cook.user)} · {adminBookingRequestOfferConfiguredMenuEditPageDescription[locale]}
+                        {userDisplayName(seedOffer.cook.user)} · {adminBookingRequestOfferConfiguredMenuEditPageDescription(locale)}
                     </p>
                 </div>
 
                 {configuredMenu == null ? (
-                    <StatusAlert tone="info" title={{ de: 'Kein konfiguriertes Menü', en: 'No configured menu' }[locale]}>
-                        {
-                            {
-                                de: 'Dieses Angebot hat noch kein eingefrorenes Menü. Sobald der Kunde Gerichte gewählt hat, kannst du es hier bearbeiten.',
-                                en: 'This offer has no frozen menu yet. Once the customer selects meals, you can edit it here.',
-                            }[locale]
-                        }
+                    <StatusAlert tone="info" title={t(locale, 'admin', 'copy.noConfiguredMenu')}>
+                        {t(locale, 'admin', 'copy.thisOfferHasNoFrozenMenuYetOnceTheCustomerSelectsMealsYouCan')}
                     </StatusAlert>
                 ) : (
                     <form
@@ -226,7 +221,7 @@ export function AdminBookingRequestOfferConfiguredMenuEditPage({
                                 return (
                                     <div className="grid gap-1.5">
                                         <label htmlFor={`${formId}-title`} className="text-sm font-medium">
-                                            {{ de: 'Menütitel', en: 'Menu title' }[locale]}
+                                            {t(locale, 'admin', 'copy.menuTitle')}
                                         </label>
                                         <Input
                                             id={`${formId}-title`}
@@ -237,9 +232,7 @@ export function AdminBookingRequestOfferConfiguredMenuEditPage({
                                             onChange={(event) => field.handleChange(event.target.value)}
                                         />
                                         {titleError ? (
-                                            <p className="text-sm text-destructive">
-                                                {{ de: 'Bitte einen Menütitel angeben.', en: 'Please enter a menu title.' }[locale]}
-                                            </p>
+                                            <p className="text-sm text-destructive">{t(locale, 'admin', 'copy.pleaseEnterAMenuTitle')}</p>
                                         ) : null}
                                     </div>
                                 );
@@ -250,7 +243,7 @@ export function AdminBookingRequestOfferConfiguredMenuEditPage({
                             {(field) => (
                                 <div className="grid gap-1.5">
                                     <label htmlFor={`${formId}-description`} className="text-sm font-medium">
-                                        {{ de: 'Beschreibung', en: 'Description' }[locale]}
+                                        {t(locale, 'admin', 'copy.description')}
                                     </label>
                                     <Textarea
                                         id={`${formId}-description`}
@@ -264,14 +257,14 @@ export function AdminBookingRequestOfferConfiguredMenuEditPage({
                         </form.Field>
 
                         {showValidation && titleValue.trim() !== '' && coursesValidationError ? (
-                            <StatusAlert tone="error" title={{ de: 'Bitte Eingaben prüfen', en: 'Please check your inputs' }[locale]}>
-                                {coursesValidationError[locale]}
+                            <StatusAlert tone="error" title={t(locale, 'admin', 'copy.pleaseCheckYourInputs')}>
+                                {inlineCopy(coursesValidationError, locale)}
                             </StatusAlert>
                         ) : null}
 
                         <div className="grid gap-2">
                             <h2 className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
-                                {{ de: 'Gänge', en: 'Courses' }[locale]}
+                                {t(locale, 'admin', 'copy.courses')}
                             </h2>
                             <form.Field name="courses">
                                 {(field) => (

@@ -12,6 +12,7 @@ import { Header } from '../components/Header';
 import type { GqlCGiftCardCheckoutPageQuery, GqlCInvoiceAddressInput } from '../graphql/generated';
 import { GiftCardCheckoutPayDocument, GiftCardCheckoutSessionUpdatesDocument, GiftCardFunnelTrackDocument } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { useTimeZone } from '../hooks/useTimeZone';
 
 const StripePaymentPanel = lazy(async () => {
@@ -42,6 +43,7 @@ export function GiftCardCheckoutPage({
     giftCardId: string;
 }) {
     const locale = useLocale();
+    const { t } = useT('public');
     const timeZone = useTimeZone();
     const client = useClient();
     const navigate = useNavigate();
@@ -111,12 +113,7 @@ export function GiftCardCheckoutPage({
                 },
             });
             if (result.error || !result.data?.user.giftCardPay.success) {
-                toast.error(
-                    {
-                        de: 'Zahlung konnte nicht abgeschlossen werden.',
-                        en: 'Could not complete payment.',
-                    }[locale],
-                );
+                toast.error(t('giftCard.checkout.completeFailed'));
                 setConfirmPayment(false);
                 setBusy(false);
                 return;
@@ -129,12 +126,7 @@ export function GiftCardCheckoutPage({
                 },
             });
         } catch {
-            toast.error(
-                {
-                    de: 'Zahlung konnte nicht abgeschlossen werden.',
-                    en: 'Could not complete payment.',
-                }[locale],
-            );
+            toast.error(t('giftCard.checkout.completeFailed'));
             setConfirmPayment(false);
             setBusy(false);
         }
@@ -143,7 +135,7 @@ export function GiftCardCheckoutPage({
     function onStripeFailure(errorMessage?: string) {
         setConfirmPayment(false);
         setBusy(false);
-        toast.error(errorMessage ?? { de: 'Zahlung fehlgeschlagen.', en: 'Payment failed.' }[locale]);
+        toast.error(errorMessage ?? t('giftCard.checkout.paymentFailed'));
     }
 
     if (!giftCard) {
@@ -156,50 +148,34 @@ export function GiftCardCheckoutPage({
 
             <div className="mx-auto grid w-full max-w-xl flex-1 content-start gap-8 p-6 sm:p-8">
                 <div className="grid gap-2">
-                    <h1 className="font-serif text-3xl tracking-tight">{{ de: 'Zahlung', en: 'Checkout' }[locale]}</h1>
+                    <h1 className="font-serif text-3xl tracking-tight">{t('giftCard.checkout.title')}</h1>
                     <p className="text-muted-foreground">
-                        {
-                            {
-                                de: `Gutschein über ${formatCurrency(giftCard.originalBalanceCents, { locale })} für ${giftCard.recipientName}`,
-                                en: `Gift card for ${formatCurrency(giftCard.originalBalanceCents, { locale })} for ${giftCard.recipientName}`,
-                            }[locale]
-                        }
+                        {t('giftCard.checkout.summary', {
+                            amount: formatCurrency(giftCard.originalBalanceCents, { locale }),
+                            name: giftCard.recipientName,
+                        })}
                     </p>
                 </div>
 
                 {paid && giftCard.redeemCode ? (
                     <div className="grid gap-4 rounded-xl border border-border bg-secondary p-6">
-                        <p className="font-serif text-2xl tracking-tight">
-                            {{ de: 'Gutschein gekauft', en: 'Gift card purchased' }[locale]}
-                        </p>
-                        <p className="text-muted-foreground">
-                            {
-                                {
-                                    de: `Wir haben den Code und die PDFs an ${giftCard.buyerEmail} gesendet.`,
-                                    en: `We sent the code and PDFs to ${giftCard.buyerEmail}.`,
-                                }[locale]
-                            }
-                        </p>
+                        <p className="font-serif text-2xl tracking-tight">{t('giftCard.checkout.purchased')}</p>
+                        <p className="text-muted-foreground">{t('giftCard.checkout.sentTo', { email: giftCard.buyerEmail })}</p>
                         <div className="grid gap-1">
-                            <p className="text-sm text-muted-foreground">{{ de: 'Einlöscode', en: 'Redeem code' }[locale]}</p>
+                            <p className="text-sm text-muted-foreground">{t('giftCard.checkout.redeemCode')}</p>
                             <p className="font-mono text-xl tracking-wider">{giftCard.redeemCode}</p>
                         </div>
                         <p className="text-sm text-muted-foreground">
-                            {
-                                {
-                                    de: `Gültig bis ${formatDate(giftCard.expiresAt, { locale, timeZone, dateStyle: 'long' })}`,
-                                    en: `Valid until ${formatDate(giftCard.expiresAt, { locale, timeZone, dateStyle: 'long' })}`,
-                                }[locale]
-                            }
+                            {t('giftCard.checkout.validUntil', {
+                                date: formatDate(giftCard.expiresAt, { locale, timeZone, dateStyle: 'long' }),
+                            })}
                         </p>
                         <div className="flex flex-row-reverse flex-wrap items-end gap-2">
                             <Button asChild>
-                                <Link to="/{-$locale}/profile/gift-cards">
-                                    {{ de: 'Zu meinen Gutscheinen', en: 'My gift cards' }[locale]}
-                                </Link>
+                                <Link to="/{-$locale}/profile/gift-cards">{t('giftCard.checkout.myGiftCards')}</Link>
                             </Button>
                             <Button asChild variant="outline">
-                                <Link to="/{-$locale}/gift-card">{{ de: 'Weiteren kaufen', en: 'Buy another' }[locale]}</Link>
+                                <Link to="/{-$locale}/gift-card">{t('giftCard.checkout.buyAnother')}</Link>
                             </Button>
                         </div>
                     </div>
@@ -231,19 +207,14 @@ export function GiftCardCheckoutPage({
                             }}
                             disabled={busy || confirmPayment}
                         >
-                            {
-                                {
-                                    de: busy || confirmPayment ? 'Wird bestätigt…' : 'Jetzt bezahlen',
-                                    en: busy || confirmPayment ? 'Confirming…' : 'Pay now',
-                                }[locale]
-                            }
+                            {busy || confirmPayment ? t('giftCard.checkout.confirming') : t('giftCard.checkout.payNow')}
                         </Button>
                         <Button asChild variant="ghost">
-                            <Link to="/{-$locale}/gift-card">{{ de: 'Zurück', en: 'Back' }[locale]}</Link>
+                            <Link to="/{-$locale}/gift-card">{t('giftCard.back')}</Link>
                         </Button>
                     </div>
                 ) : (
-                    <p className="text-muted-foreground">{{ de: 'Zahlung wird geladen…', en: 'Loading payment…' }[locale]}</p>
+                    <p className="text-muted-foreground">{t('giftCard.checkout.loading')}</p>
                 )}
             </div>
 

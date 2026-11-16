@@ -8,7 +8,7 @@ import { Button } from '../components/base/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../components/base/dialog';
 import { Reveal } from '../components/Reveal';
 import { useIsMobile } from '../hooks/use-mobile';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 
 const ASSET_BASE = '/home/booking-how-it-works';
@@ -24,7 +24,7 @@ type BookingStep = {
 };
 
 export function SectionBookingHowItWorks() {
-    const locale = useLocale();
+    const { t } = useT('public');
     const isMobile = useIsMobile();
     const [viewportReady, setViewportReady] = useState(false);
     const [filmOpen, setFilmOpen] = useState(false);
@@ -80,100 +80,51 @@ export function SectionBookingHowItWorks() {
         {
             id: 'a',
             number: '01',
-            title: { de: 'Anfrage senden', en: 'Send a request' }[locale],
-            description: {
-                de: 'Beschreibe Anlass, Gäste, Ort und Wünsche. In wenigen Schritten sind die Köche informiert.',
-                en: 'Describe the occasion, guests, place, and wishes. In a few steps, chefs nearby are notified.',
-            }[locale],
+            title: t('home.booking.step1Title'),
+            description: t('home.booking.step1Body'),
             videoSrc: `${assetFolder}/clip-a-anfrage.mp4`,
             posterSrc: `${assetFolder}/poster-a.webp`,
-            alternativeText: {
-                de: isMobile
-                    ? 'Mobile Bildschirmaufnahme: Buchungsanfrage für einen Geburtstag in München wird ausgefüllt.'
-                    : 'Bildschirmaufnahme: Buchungsanfrage für einen Geburtstag in München wird ausgefüllt.',
-                en: isMobile
-                    ? 'Mobile screen recording: a booking request for a birthday in Munich is filled in.'
-                    : 'Screen recording: a booking request for a birthday in Munich is filled in.',
-            }[locale],
+            alternativeText: t(isMobile ? 'home.booking.step1AltMobile' : 'home.booking.step1Alt'),
         },
         {
             id: 'b',
             number: '02',
-            title: { de: 'Angebote vergleichen', en: 'Compare offers' }[locale],
-            description: {
-                de: 'Köche schicken individuelle Menüs mit einem klaren Gesamtpreis. Du vergleichst in Ruhe.',
-                en: 'Chefs send individual menus with one clear total price. Compare them at your pace.',
-            }[locale],
+            title: t('home.booking.step2Title'),
+            description: t('home.booking.step2Body'),
             videoSrc: `${assetFolder}/clip-b-angebote.mp4`,
             posterSrc: `${assetFolder}/poster-b.webp`,
-            alternativeText: {
-                de: isMobile
-                    ? 'Mobile Bildschirmaufnahme: drei Koch-Angebote mit Menüs und Preisen werden verglichen.'
-                    : 'Bildschirmaufnahme: drei Koch-Angebote mit Menüs und Preisen werden verglichen.',
-                en: isMobile
-                    ? 'Mobile screen recording: three chef offers with menus and prices are compared.'
-                    : 'Screen recording: three chef offers with menus and prices are compared.',
-            }[locale],
+            alternativeText: t(isMobile ? 'home.booking.step2AltMobile' : 'home.booking.step2Alt'),
         },
         {
             id: 'c',
             number: '03',
-            title: { de: 'Kennenlernen', en: 'Meet your chef' }[locale],
-            description: {
-                de: 'Schreib im Chat, ruf per Video an und kläre Details. Unsere Concierge ist mit dabei.',
-                en: 'Chat, join a video call, and settle the details. Our concierge is there with you.',
-            }[locale],
+            title: t('home.booking.step3Title'),
+            description: t('home.booking.step3Body'),
             videoSrc: `${assetFolder}/clip-c-kennenlernen.mp4`,
             posterSrc: `${assetFolder}/poster-c.webp`,
-            alternativeText: {
-                de: isMobile
-                    ? 'Mobile Bildschirmaufnahme: Chat mit Koch und Concierge sowie bestätigter Videoanruf-Termin.'
-                    : 'Bildschirmaufnahme: Chat mit Koch und Concierge sowie bestätigter Videoanruf-Termin.',
-                en: isMobile
-                    ? 'Mobile screen recording: chat with chef and concierge, plus a confirmed video-call slot.'
-                    : 'Screen recording: chat with chef and concierge, plus a confirmed video-call slot.',
-            }[locale],
+            alternativeText: t(isMobile ? 'home.booking.step3AltMobile' : 'home.booking.step3Alt'),
         },
         {
             id: 'd',
             number: '04',
-            title: { de: 'Bestätigen und bezahlen', en: 'Confirm and pay' }[locale],
-            description: {
-                de: 'Nimm dein Wunschmenü an und bezahle sicher. Danach hält der Koch den Termin für dich frei.',
-                en: 'Accept your preferred menu and pay securely. The chef then holds the date for you.',
-            }[locale],
+            title: t('home.booking.step4Title'),
+            description: t('home.booking.step4Body'),
             videoSrc: `${assetFolder}/clip-d-bestaetigen.mp4`,
             posterSrc: `${assetFolder}/poster-d.webp`,
-            alternativeText: {
-                de: isMobile
-                    ? 'Mobile Bildschirmaufnahme: Angebot annehmen und zur sicheren Zahlung weiterleiten.'
-                    : 'Bildschirmaufnahme: Angebot annehmen und zur sicheren Zahlung weiterleiten.',
-                en: isMobile
-                    ? 'Mobile screen recording: accepting an offer and continuing to secure checkout.'
-                    : 'Screen recording: accepting an offer and continuing to secure checkout.',
-            }[locale],
+            alternativeText: t(isMobile ? 'home.booking.step4AltMobile' : 'home.booking.step4Alt'),
         },
     ];
 
-    const headline = { de: 'So buchst du deinen Privatkoch', en: 'How you book your private chef' }[locale];
-    const subheadline = {
-        de: 'Von der Anfrage bis zur Zusage: klar, transparent und ohne Umwege.',
-        en: 'From request to confirmation: clear, transparent, and without detours.',
-    }[locale];
-    const filmButtonLabel = { de: '60 Sekunden ansehen', en: 'Watch 60 seconds' }[locale];
-    const filmTitle = { de: 'peopleeat in 60 Sekunden', en: 'peopleeat in 60 seconds' }[locale];
-    const filmDescription = {
-        de: 'Kurzer Überblick: Anfrage, Angebote, Kennenlernen und Buchung. Mit deutscher Erzählung und Untertiteln.',
-        en: 'A short overview: request, offers, meeting your chef, and booking. German narration and captions.',
-    }[locale];
-    const playFilmLabel = { de: 'Film abspielen', en: 'Play film' }[locale];
-    const replayFilmLabel = { de: 'Nochmal ansehen', en: 'Watch again' }[locale];
-    const endedPrompt = {
-        de: 'Bereit für deinen Abend?',
-        en: 'Ready for your evening?',
-    }[locale];
-    const filmCtaLabel = { de: 'Unverbindlich anfragen', en: 'Request without obligation' }[locale];
-    const ctaLabel = { de: 'Anfrage senden', en: 'Send request' }[locale];
+    const headline = t('home.booking.headline');
+    const subheadline = t('home.booking.subheadline');
+    const filmButtonLabel = t('home.booking.watchFilm');
+    const filmTitle = t('home.booking.filmTitle');
+    const filmDescription = t('home.booking.filmDescription');
+    const playFilmLabel = t('home.booking.playFilm');
+    const replayFilmLabel = t('home.booking.replayFilm');
+    const endedPrompt = t('home.booking.endedPrompt');
+    const filmCtaLabel = t('home.comparison.cta');
+    const ctaLabel = t('nav.sendRequest');
     const showFilmPreview = !filmPlaying || filmEnded;
     const loopFrameClassName = cn(
         'w-full shrink-0 overflow-hidden rounded-lg bg-muted',

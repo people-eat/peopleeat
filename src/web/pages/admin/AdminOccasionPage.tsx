@@ -3,8 +3,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createRequest, useClient, useMutation, useQuery } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { t } from '../../../i18n/t';
 import type { OccasionFormatsSection } from '../../../shared';
-import { fileUploadPublicUrl, formatCurrency, occasionFormatsSectionEmpty, userDisplayName } from '../../../shared';
+import { fileUploadPublicUrl, formatCurrency, inlineCopy, occasionFormatsSectionEmpty, userDisplayName } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/base/card';
 import { Input } from '../../components/base/input';
@@ -34,14 +35,16 @@ import {
 } from '../../graphql/generated';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useLocale } from '../../hooks/useLocale';
+import type { Locale } from '../../utils/locale';
 
 export { parseContentPageEditorSearch as parseAdminOccasionPageSearch } from '../../components/ContentPageEditor';
 
-export const adminOccasionPageTitle = { de: 'Anlass bearbeiten', en: 'Edit occasion' } as const;
-export const adminOccasionPageDescription = {
-    de: 'Anlassseite bearbeiten.',
-    en: 'Edit occasion landing page.',
-} as const;
+export function adminOccasionPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.occasion.title');
+}
+export function adminOccasionPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.occasion.description');
+}
 
 type OccasionRow = NonNullable<NonNullable<NonNullable<GqlCAdminOccasionPageQuery['currentSession']['user']>['admin']>['occasion']>;
 
@@ -335,8 +338,8 @@ export function AdminOccasionPage({
     return (
         <AdminPageChrome
             crumbs={[
-                { label: { de: 'Anlässe', en: 'Occasions' }[locale], to: '/{-$locale}/admin/occasions' },
-                { label: values.name.trim() || { de: 'Anlass', en: 'Occasion' }[locale] },
+                { label: t(locale, 'admin', 'copy.occasions'), to: '/{-$locale}/admin/occasions' },
+                { label: values.name.trim() || t(locale, 'admin', 'copy.occasion') },
             ]}
         >
             <ContentPageEditor
@@ -351,7 +354,7 @@ export function AdminOccasionPage({
                 featuredCooks={previewCooks}
                 testimonials={contentPageTestimonialsForPreview(assignedTestimonials)}
                 chefForAnyOccasion={{
-                    displayName: values.name.trim() || { de: 'Anlass', en: 'Occasion' }[locale],
+                    displayName: values.name.trim() || t(locale, 'admin', 'copy.occasion'),
                     headlineDe: values.firstSectionHeadlineDe,
                     headlineEn: values.firstSectionHeadlineEn,
                     bodyDe: values.firstSectionBodyDe,
@@ -363,11 +366,11 @@ export function AdminOccasionPage({
                 identityFields={
                     <Card className="gap-4 py-4" data-content-editor-anchor="top">
                         <CardHeader className="px-4">
-                            <CardTitle>{{ de: 'Anlassname', en: 'Occasion name' }[locale]}</CardTitle>
+                            <CardTitle>{t(locale, 'admin', 'copy.occasionName')}</CardTitle>
                         </CardHeader>
                         <CardContent className="flex flex-col gap-3 px-4">
                             <label className="flex flex-col gap-1.5 text-sm">
-                                <span className="font-medium">{{ de: 'Name', en: 'Name' }[locale]}</span>
+                                <span className="font-medium">{t(locale, 'admin', 'copy.name')}</span>
                                 <Input value={values.name} onChange={(e) => patchOccasionValues({ name: e.target.value })} />
                             </label>
                         </CardContent>
@@ -377,33 +380,28 @@ export function AdminOccasionPage({
                     <>
                         <Card className="gap-4 py-4" data-content-editor-anchor="first-section">
                             <CardHeader className="px-4">
-                                <CardTitle>{{ de: 'Erster Abschnitt', en: 'First section' }[locale]}</CardTitle>
+                                <CardTitle>{t(locale, 'admin', 'copy.firstSection')}</CardTitle>
                                 <CardDescription>
-                                    {
-                                        {
-                                            de: 'Headline, Text und Bild neben der CTA-Karte auf der Anlassseite.',
-                                            en: 'Headline, body, and image beside the CTA card on the occasion page.',
-                                        }[locale]
-                                    }
+                                    {t(locale, 'admin', 'copy.headlineBodyAndImageBesideTheCtaCardOnTheOccasionPage')}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="flex flex-col gap-3 px-4">
                                 <label className="flex flex-col gap-1.5 text-sm">
-                                    <span className="font-medium">{{ de: 'Headline (DE)', en: 'Headline (DE)' }[locale]}</span>
+                                    <span className="font-medium">{t(locale, 'admin', 'copy.headlineDe')}</span>
                                     <Input
                                         value={values.firstSectionHeadlineDe}
                                         onChange={(e) => patchOccasionValues({ firstSectionHeadlineDe: e.target.value })}
                                     />
                                 </label>
                                 <label className="flex flex-col gap-1.5 text-sm">
-                                    <span className="font-medium">{{ de: 'Headline (EN)', en: 'Headline (EN)' }[locale]}</span>
+                                    <span className="font-medium">{t(locale, 'admin', 'copy.headlineEn')}</span>
                                     <Input
                                         value={values.firstSectionHeadlineEn}
                                         onChange={(e) => patchOccasionValues({ firstSectionHeadlineEn: e.target.value })}
                                     />
                                 </label>
                                 <label className="flex flex-col gap-1.5 text-sm">
-                                    <span className="font-medium">{{ de: 'Text (DE)', en: 'Body (DE)' }[locale]}</span>
+                                    <span className="font-medium">{t(locale, 'admin', 'copy.bodyDe')}</span>
                                     <Textarea
                                         value={values.firstSectionBodyDe}
                                         onChange={(e) => patchOccasionValues({ firstSectionBodyDe: e.target.value })}
@@ -411,7 +409,7 @@ export function AdminOccasionPage({
                                     />
                                 </label>
                                 <label className="flex flex-col gap-1.5 text-sm">
-                                    <span className="font-medium">{{ de: 'Text (EN)', en: 'Body (EN)' }[locale]}</span>
+                                    <span className="font-medium">{t(locale, 'admin', 'copy.bodyEn')}</span>
                                     <Textarea
                                         value={values.firstSectionBodyEn}
                                         onChange={(e) => patchOccasionValues({ firstSectionBodyEn: e.target.value })}
@@ -423,35 +421,27 @@ export function AdminOccasionPage({
                                     uiLocale={locale}
                                     onUploadStart={markPageDirty}
                                     onChange={(firstSectionImageFileUploadId) => patchOccasionValues({ firstSectionImageFileUploadId })}
-                                    label={{ de: 'Abschnittsbild', en: 'Section image' }[locale]}
-                                    removeTitle={{ de: 'Abschnittsbild entfernen?', en: 'Remove section image?' }[locale]}
-                                    removeDescription={
-                                        {
-                                            de: 'Das Abschnittsbild wird aus dem Entwurf entfernt. Speichern übernimmt die Änderung.',
-                                            en: 'The section image is removed from the draft. Saving applies the change.',
-                                        }[locale]
-                                    }
+                                    label={t(locale, 'admin', 'copy.sectionImage')}
+                                    removeTitle={t(locale, 'admin', 'copy.removeSectionImage')}
+                                    removeDescription={t(
+                                        locale,
+                                        'admin',
+                                        'copy.theSectionImageIsRemovedFromTheDraftSavingAppliesTheChange',
+                                    )}
                                 />
                             </CardContent>
                         </Card>
 
                         <Card className="gap-4 py-4" data-content-editor-anchor="first-section">
                             <CardHeader className="px-4">
-                                <CardTitle>{{ de: 'Promo-Code', en: 'Promo code' }[locale]}</CardTitle>
+                                <CardTitle>{t(locale, 'admin', 'copy.promoCode')}</CardTitle>
                                 <CardDescription>
-                                    {
-                                        {
-                                            de: 'Optionaler Rabatt auf der CTA-Karte. Abgelaufene Codes werden öffentlich ausgeblendet.',
-                                            en: 'Optional discount on the CTA card. Expired codes are hidden on the public page.',
-                                        }[locale]
-                                    }
+                                    {t(locale, 'admin', 'copy.optionalDiscountOnTheCtaCardExpiredCodesAreHiddenOnThePublic')}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="flex flex-col gap-3 px-4">
                                 <label className="flex flex-col gap-1.5 text-sm">
-                                    <span className="font-medium">
-                                        {{ de: 'Zugewiesener Promo-Code', en: 'Assigned promo code' }[locale]}
-                                    </span>
+                                    <span className="font-medium">{t(locale, 'admin', 'copy.assignedPromoCode')}</span>
                                     <Select
                                         value={values.promoCodeId ?? '__none__'}
                                         onValueChange={(value) => patchOccasionValues({ promoCodeId: value === '__none__' ? null : value })}
@@ -460,16 +450,14 @@ export function AdminOccasionPage({
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="__none__">
-                                                {{ de: 'Kein Promo-Code', en: 'No promo code' }[locale]}
-                                            </SelectItem>
+                                            <SelectItem value="__none__">{t(locale, 'admin', 'copy.noPromoCode')}</SelectItem>
                                             {promoCodes.map((promoCode) => {
                                                 const expired = new Date(promoCode.expiresAt) <= new Date();
                                                 const amount = formatCurrency(promoCode.amountCents, {
                                                     locale,
                                                     maximumFractionDigits: 0,
                                                 });
-                                                const expiredLabel = expired ? { de: 'abgelaufen', en: 'expired' }[locale] : undefined;
+                                                const expiredLabel = expired ? t(locale, 'admin', 'copy.expired') : undefined;
                                                 return (
                                                     <SelectItem key={promoCode.promoCodeId} value={promoCode.promoCodeId}>
                                                         {promoCode.redeemCode} · {amount}
@@ -485,33 +473,28 @@ export function AdminOccasionPage({
 
                         <Card className="gap-4 py-4" data-content-editor-anchor="formats">
                             <CardHeader className="px-4">
-                                <CardTitle>{{ de: 'Formate', en: 'Formats' }[locale]}</CardTitle>
+                                <CardTitle>{t(locale, 'admin', 'copy.formats')}</CardTitle>
                                 <CardDescription>
-                                    {
-                                        {
-                                            de: 'Drei feste Format-Karten unter dem CTA-Abschnitt (Titel, Text, Bild und drei Details).',
-                                            en: 'Three fixed format cards below the CTA section (title, body, image, and three details).',
-                                        }[locale]
-                                    }
+                                    {t(locale, 'admin', 'copy.threeFixedFormatCardsBelowTheCtaSectionTitleBodyImageAndThre')}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="flex flex-col gap-6 px-4">
                                 <label className="flex flex-col gap-1.5 text-sm">
-                                    <span className="font-medium">{{ de: 'Titel (DE)', en: 'Title (DE)' }[locale]}</span>
+                                    <span className="font-medium">{t(locale, 'admin', 'copy.titleDe')}</span>
                                     <Input
                                         value={values.formatsSection.titleDe}
                                         onChange={(e) => patchFormatsSection({ titleDe: e.target.value })}
                                     />
                                 </label>
                                 <label className="flex flex-col gap-1.5 text-sm">
-                                    <span className="font-medium">{{ de: 'Titel (EN)', en: 'Title (EN)' }[locale]}</span>
+                                    <span className="font-medium">{t(locale, 'admin', 'copy.titleEn')}</span>
                                     <Input
                                         value={values.formatsSection.titleEn}
                                         onChange={(e) => patchFormatsSection({ titleEn: e.target.value })}
                                     />
                                 </label>
                                 <label className="flex flex-col gap-1.5 text-sm">
-                                    <span className="font-medium">{{ de: 'Untertitel (DE)', en: 'Subtitle (DE)' }[locale]}</span>
+                                    <span className="font-medium">{t(locale, 'admin', 'copy.subtitleDe')}</span>
                                     <Textarea
                                         value={values.formatsSection.subtitleDe}
                                         onChange={(e) => patchFormatsSection({ subtitleDe: e.target.value })}
@@ -519,7 +502,7 @@ export function AdminOccasionPage({
                                     />
                                 </label>
                                 <label className="flex flex-col gap-1.5 text-sm">
-                                    <span className="font-medium">{{ de: 'Untertitel (EN)', en: 'Subtitle (EN)' }[locale]}</span>
+                                    <span className="font-medium">{t(locale, 'admin', 'copy.subtitleEn')}</span>
                                     <Textarea
                                         value={values.formatsSection.subtitleEn}
                                         onChange={(e) => patchFormatsSection({ subtitleEn: e.target.value })}
@@ -532,29 +515,29 @@ export function AdminOccasionPage({
                                     return (
                                         <div key={index} className="flex flex-col gap-3 rounded-lg border p-4">
                                             <p className="text-sm font-medium">
-                                                {
+                                                {inlineCopy(
                                                     {
                                                         de: `Karte ${index + 1}`,
                                                         en: `Card ${index + 1}`,
-                                                    }[locale]
-                                                }
+                                                    },
+                                                    locale,
+                                                )}
                                             </p>
                                             <ContentImageField
                                                 fileUploadId={card.imageFileUploadId}
                                                 uiLocale={locale}
                                                 onUploadStart={markPageDirty}
                                                 onChange={(imageFileUploadId) => patchFormatsCardAt(index, { imageFileUploadId })}
-                                                label={{ de: 'Kartenbild', en: 'Card image' }[locale]}
-                                                removeTitle={{ de: 'Kartenbild entfernen?', en: 'Remove card image?' }[locale]}
-                                                removeDescription={
-                                                    {
-                                                        de: 'Das Kartenbild wird aus dem Entwurf entfernt. Speichern übernimmt die Änderung.',
-                                                        en: 'The card image is removed from the draft. Saving applies the change.',
-                                                    }[locale]
-                                                }
+                                                label={t(locale, 'admin', 'copy.cardImage')}
+                                                removeTitle={t(locale, 'admin', 'copy.removeCardImage')}
+                                                removeDescription={t(
+                                                    locale,
+                                                    'admin',
+                                                    'copy.theCardImageIsRemovedFromTheDraftSavingAppliesTheChange',
+                                                )}
                                             />
                                             <label className="flex flex-col gap-1.5 text-sm">
-                                                <span className="font-medium">{{ de: 'Titel (DE)', en: 'Title (DE)' }[locale]}</span>
+                                                <span className="font-medium">{t(locale, 'admin', 'copy.titleDe')}</span>
                                                 <Input
                                                     value={card.titleDe}
                                                     onChange={(e) =>
@@ -565,7 +548,7 @@ export function AdminOccasionPage({
                                                 />
                                             </label>
                                             <label className="flex flex-col gap-1.5 text-sm">
-                                                <span className="font-medium">{{ de: 'Titel (EN)', en: 'Title (EN)' }[locale]}</span>
+                                                <span className="font-medium">{t(locale, 'admin', 'copy.titleEn')}</span>
                                                 <Input
                                                     value={card.titleEn}
                                                     onChange={(e) =>
@@ -576,7 +559,7 @@ export function AdminOccasionPage({
                                                 />
                                             </label>
                                             <label className="flex flex-col gap-1.5 text-sm">
-                                                <span className="font-medium">{{ de: 'Text (DE)', en: 'Body (DE)' }[locale]}</span>
+                                                <span className="font-medium">{t(locale, 'admin', 'copy.bodyDe')}</span>
                                                 <Textarea
                                                     value={card.bodyDe}
                                                     onChange={(e) =>
@@ -588,7 +571,7 @@ export function AdminOccasionPage({
                                                 />
                                             </label>
                                             <label className="flex flex-col gap-1.5 text-sm">
-                                                <span className="font-medium">{{ de: 'Text (EN)', en: 'Body (EN)' }[locale]}</span>
+                                                <span className="font-medium">{t(locale, 'admin', 'copy.bodyEn')}</span>
                                                 <Textarea
                                                     value={card.bodyEn}
                                                     onChange={(e) =>
@@ -610,12 +593,13 @@ export function AdminOccasionPage({
                                                     <div key={deKey} className="flex flex-col gap-3">
                                                         <label className="flex flex-col gap-1.5 text-sm">
                                                             <span className="font-medium">
-                                                                {
+                                                                {inlineCopy(
                                                                     {
                                                                         de: `Detail ${factIndex + 1} (DE)`,
                                                                         en: `Detail ${factIndex + 1} (DE)`,
-                                                                    }[locale]
-                                                                }
+                                                                    },
+                                                                    locale,
+                                                                )}
                                                             </span>
                                                             <Input
                                                                 value={card[deKey]}
@@ -628,12 +612,13 @@ export function AdminOccasionPage({
                                                         </label>
                                                         <label className="flex flex-col gap-1.5 text-sm">
                                                             <span className="font-medium">
-                                                                {
+                                                                {inlineCopy(
                                                                     {
                                                                         de: `Detail ${factIndex + 1} (EN)`,
                                                                         en: `Detail ${factIndex + 1} (EN)`,
-                                                                    }[locale]
-                                                                }
+                                                                    },
+                                                                    locale,
+                                                                )}
                                                             </span>
                                                             <Input
                                                                 value={card[enKey]}
@@ -660,12 +645,7 @@ export function AdminOccasionPage({
                             busy={busy}
                             candidateSearch={cookSearch}
                             onCandidateSearchChange={setCookSearch}
-                            emptyHint={
-                                {
-                                    de: 'Leer lassen: auf der Anlassseite werden keine Köche gezeigt.',
-                                    en: 'Leave empty: the occasion page shows no chefs.',
-                                }[locale]
-                            }
+                            emptyHint={t(locale, 'admin', 'copy.leaveEmptyTheOccasionPageShowsNoChefs')}
                             onSave={async (cookIds) => {
                                 const result = await updateCooks({ occasionId, cookIds });
                                 if (result.error || !result.data?.admin.occasionCooksUpdate.success) {
@@ -717,12 +697,7 @@ export function AdminOccasionPage({
                             assignedEntries={assignedTestimonials.map(testimonialEntryFromAdminAssignment)}
                             candidates={testimonialCandidates}
                             busy={busy}
-                            emptyHint={
-                                {
-                                    de: 'Leer lassen: auf der Anlassseite werden keine Bewertungen gezeigt.',
-                                    en: 'Leave empty: the occasion page shows no testimonials.',
-                                }[locale]
-                            }
+                            emptyHint={t(locale, 'admin', 'copy.leaveEmptyTheOccasionPageShowsNoTestimonials')}
                             onSave={async (entries) => {
                                 const result = await updateTestimonials({ occasionId, entries });
                                 if (result.error || !result.data?.admin.occasionTestimonialsUpdate.success) {

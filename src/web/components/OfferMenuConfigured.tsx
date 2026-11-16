@@ -1,3 +1,4 @@
+import { inlineCopy } from '../../shared';
 import { useLocale } from '../hooks/useLocale';
 import { cn } from '../utils/cn';
 import { CustomerMealCard } from './CustomerMealCard';
@@ -48,7 +49,7 @@ export function OfferMenuConfigured({ menu, className }: { menu: OfferMenuConfig
                     </ul>
                     {course.meals.length === 0 ? (
                         <p className="text-sm text-muted-foreground">
-                            {{ de: 'Keine Gerichte gewählt.', en: 'No meals selected.' }[locale]}
+                            {inlineCopy({ de: 'Keine Gerichte gewählt.', en: 'No meals selected.' }, locale)}
                         </p>
                     ) : null}
                 </section>

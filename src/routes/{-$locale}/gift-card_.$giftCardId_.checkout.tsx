@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 
+import { t } from '../../i18n/t';
 import { GiftCardCheckoutPageDocument } from '../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../web/graphql/routeLoaderGraphqlClient';
 import { GiftCardCheckoutPage } from '../../web/pages/GiftCardCheckoutPage';
@@ -16,11 +17,8 @@ export const Route = createFileRoute('/{-$locale}/gift-card_/$giftCardId_/checko
     head: ({ params }) => {
         const locale = localeFromParam(params);
         return seoMeta({
-            title: { de: 'Gutschein bezahlen', en: 'Pay for gift card' }[locale],
-            description: {
-                de: 'Schließe die Zahlung für deinen peopleeat-Gutschein ab.',
-                en: 'Complete payment for your peopleeat gift card.',
-            }[locale],
+            title: t(locale, 'public', 'giftCard.checkout.seoTitle'),
+            description: t(locale, 'public', 'giftCard.checkout.seoDescription'),
             path: `/gift-card/${params.giftCardId}/checkout`,
             locale,
             webPageUrl: webPageUrlGet(),

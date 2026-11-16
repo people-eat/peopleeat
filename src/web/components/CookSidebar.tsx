@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { createRequest, useClient } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { t } from '../../i18n/t';
 import { CookSidebarNavBadgesUpdatesDocument } from '../graphql/generated';
 import { useFeatureToggleActive } from '../hooks/useFeatureToggleActive';
 import { useLocale } from '../hooks/useLocale';
@@ -96,7 +97,7 @@ export function CookSidebar({
         return unsubscribe;
     }, [client]);
 
-    const walletAttentionLabel = { de: 'Wallet-Einrichtung unvollständig', en: 'Wallet setup incomplete' }[locale];
+    const walletAttentionLabel = t(locale, 'profileCook', 'chrome.walletIncomplete');
 
     const navItems: {
         title: string;
@@ -108,7 +109,7 @@ export function CookSidebar({
         countLabel?: string;
     }[] = [
         {
-            title: { de: 'Übersicht', en: 'Overview' }[locale],
+            title: t(locale, 'profile', 'chrome.overview'),
             to: '/{-$locale}/profile',
             icon: <SummaryIcon />,
             isActive: path === '/profile',
@@ -124,7 +125,7 @@ export function CookSidebar({
             const offersCount = route.slug === 'booking-request-offers' ? offersUnreadCount : undefined;
             const count = poolCount ?? offersCount;
             return {
-                title: route.title[locale],
+                title: route.title(locale),
                 to: route.to,
                 icon: <Icon />,
                 isActive: path === route.path || path.startsWith(`${route.path}/`),
@@ -132,15 +133,12 @@ export function CookSidebar({
                 count: count != null && count > 0 ? count : undefined,
                 countLabel:
                     count != null && count > 0
-                        ? route.slug === 'booking-request-pool'
-                            ? {
-                                  de: `${count} Anfragen zur Prüfung`,
-                                  en: `${count} requests to review`,
-                              }[locale]
-                            : {
-                                  de: `${count} ungelesene Benachrichtigungen`,
-                                  en: `${count} unread notifications`,
-                              }[locale]
+                        ? t(
+                              locale,
+                              'profileCook',
+                              route.slug === 'booking-request-pool' ? 'chrome.poolReviewCount' : 'chrome.offersUnreadCount',
+                              { count },
+                          )
                         : undefined,
             };
         }),
@@ -196,7 +194,7 @@ export function CookSidebar({
                             <SidebarMenuButton asChild size="sm">
                                 <Link to="/{-$locale}/admin">
                                     <UserStarIcon />
-                                    <span>{adminPageTitle[locale]}</span>
+                                    <span>{adminPageTitle(locale)}</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
@@ -205,7 +203,7 @@ export function CookSidebar({
                         <SidebarMenuButton asChild size="sm" isActive={path === '/profile/account'}>
                             <Link to="/{-$locale}/profile/account">
                                 <UserCogIcon />
-                                <span>{accountPageTitle[locale]}</span>
+                                <span>{accountPageTitle(locale)}</span>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

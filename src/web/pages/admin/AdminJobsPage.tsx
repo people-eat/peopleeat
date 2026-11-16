@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
+import { t } from '../../../i18n/t';
 import { formatDateTime } from '../../../shared';
 import { AdminListPaginationBar } from '../../components/AdminListPaginationBar';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
@@ -28,7 +29,7 @@ import { AdminQueuedJobCancelDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import type { Locale } from '../../utils/locale';
-import { adminStubRouteBySlug } from './adminCatalog';
+import { adminStubRouteBySlug, adminStubRouteDescription, adminStubRouteTitle } from './adminCatalog';
 import {
     adminListPageCount,
     adminListPageSize,
@@ -47,8 +48,12 @@ import {
 
 const route = adminStubRouteBySlug('jobs');
 
-export const adminJobsPageTitle = route.title;
-export const adminJobsPageDescription = route.description;
+export function adminJobsPageTitle(locale: Locale): string {
+    return adminStubRouteTitle(route.slug, locale);
+}
+export function adminJobsPageDescription(locale: Locale): string {
+    return adminStubRouteDescription(route.slug, locale);
+}
 
 export type AdminJobsSearch = {
     page?: number;
@@ -87,7 +92,7 @@ function jobRelatedLinks(job: AdminJobsRow, locale: Locale): { key: string; node
                     }}
                     className="font-medium text-foreground hover:underline"
                 >
-                    {{ de: 'Zum Angebot', en: 'View offer' }[locale]}
+                    {t(locale, 'admin', 'copy.viewOffer')}
                 </Link>
             ),
         });
@@ -100,7 +105,7 @@ function jobRelatedLinks(job: AdminJobsRow, locale: Locale): { key: string; node
                     params={{ bookingRequestId: job.bookingRequestId }}
                     className="font-medium text-foreground hover:underline"
                 >
-                    {{ de: 'Zur Anfrage', en: 'View request' }[locale]}
+                    {t(locale, 'admin', 'copy.viewRequest')}
                 </Link>
             ),
         });
@@ -115,7 +120,7 @@ function jobRelatedLinks(job: AdminJobsRow, locale: Locale): { key: string; node
                     params={{ giftCardId: job.giftCardId }}
                     className="font-medium text-foreground hover:underline"
                 >
-                    {{ de: 'Zum Gutschein', en: 'View gift card' }[locale]}
+                    {t(locale, 'admin', 'copy.viewGiftCard')}
                 </Link>
             ),
         });
@@ -130,7 +135,7 @@ function jobRelatedLinks(job: AdminJobsRow, locale: Locale): { key: string; node
                     params={{ supportRequestId: job.supportRequestId }}
                     className="font-medium text-foreground hover:underline"
                 >
-                    {{ de: 'Zum Support', en: 'View support' }[locale]}
+                    {t(locale, 'admin', 'copy.viewSupport')}
                 </Link>
             ),
         });
@@ -145,7 +150,7 @@ function jobRelatedLinks(job: AdminJobsRow, locale: Locale): { key: string; node
                     params={{ chatId: job.chatId }}
                     className="font-medium text-foreground hover:underline"
                 >
-                    {{ de: 'Zum Chat', en: 'View chat' }[locale]}
+                    {t(locale, 'admin', 'copy.viewChat')}
                 </Link>
             ),
         });
@@ -157,7 +162,7 @@ function jobRelatedLinks(job: AdminJobsRow, locale: Locale): { key: string; node
             key: 'user',
             node: (
                 <Link to="/{-$locale}/admin/users/$userId" params={{ userId }} className="font-medium text-foreground hover:underline">
-                    {{ de: 'Zum Benutzer', en: 'View user' }[locale]}
+                    {t(locale, 'admin', 'copy.viewUser')}
                 </Link>
             ),
         });
@@ -181,7 +186,7 @@ export function AdminJobsPage({ data, search }: { data: GqlCAdminJobsPageQuery; 
             adminQueuedJobNameLabel(a, locale).localeCompare(adminQueuedJobNameLabel(b, locale), locale),
         );
         return [
-            { value: undefined as string | undefined, label: { de: 'Alle', en: 'All' }[locale] },
+            { value: undefined as string | undefined, label: t(locale, 'admin', 'copy.all') },
             ...names.map((name) => ({ value: name, label: adminQueuedJobNameLabel(name, locale) })),
         ];
     }, [jobs, locale]);
@@ -209,10 +214,10 @@ export function AdminJobsPage({ data, search }: { data: GqlCAdminJobsPageQuery; 
         try {
             const result = await queuedJobCancel({ jobId: job.jobId, name: job.name });
             if (result.error || !result.data?.admin.queuedJobCancel.success) {
-                toast.error({ de: 'Job konnte nicht abgebrochen werden.', en: 'Could not cancel the job.' }[locale]);
+                toast.error(t(locale, 'admin', 'copy.couldNotCancelTheJob'));
                 return;
             }
-            toast.success({ de: 'Job abgebrochen.', en: 'Job cancelled.' }[locale]);
+            toast.success(t(locale, 'admin', 'copy.jobCancelled'));
             await router.invalidate();
         } finally {
             setCancellingJobId(null);
@@ -241,13 +246,13 @@ export function AdminJobsPage({ data, search }: { data: GqlCAdminJobsPageQuery; 
                 }
             >
                 <div>
-                    <h1 className="text-2xl font-medium">{adminJobsPageTitle[locale]}</h1>
-                    <p className="text-sm text-muted-foreground">{adminJobsPageDescription[locale]}</p>
+                    <h1 className="text-2xl font-medium">{adminJobsPageTitle(locale)}</h1>
+                    <p className="text-sm text-muted-foreground">{adminJobsPageDescription(locale)}</p>
                 </div>
 
                 {jobs.length > 0 ? (
                     <Tabs value={nameFilter ?? 'all'} onValueChange={onNameFilterChange}>
-                        <TabsList variant="line" aria-label={{ de: 'Job-Typ filtern', en: 'Filter by job type' }[locale]}>
+                        <TabsList variant="line" aria-label={t(locale, 'admin', 'copy.filterByJobType')}>
                             {nameTabs.map((tab) => (
                                 <TabsTrigger key={tab.value ?? 'all'} value={tab.value ?? 'all'}>
                                     {tab.label}
@@ -258,14 +263,7 @@ export function AdminJobsPage({ data, search }: { data: GqlCAdminJobsPageQuery; 
                 ) : null}
 
                 {pageJobs.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                        {
-                            {
-                                de: 'Keine ausstehenden geplanten Jobs.',
-                                en: 'No pending scheduled jobs.',
-                            }[locale]
-                        }
-                    </p>
+                    <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noPendingScheduledJobs')}</p>
                 ) : (
                     <div>
                         <div className="overflow-hidden rounded-xl border border-border bg-secondary">
@@ -307,7 +305,7 @@ export function AdminJobsPage({ data, search }: { data: GqlCAdminJobsPageQuery; 
                                             </div>
                                             <div className="flex flex-wrap items-center gap-3 sm:flex-col sm:items-end sm:gap-2">
                                                 <p className="text-xs text-muted-foreground sm:text-right">
-                                                    <span className="block sm:mb-0.5">{{ de: 'Fällig', en: 'Due' }[locale]}</span>
+                                                    <span className="block sm:mb-0.5">{t(locale, 'admin', 'copy.due')}</span>
                                                     <span className="tabular-nums text-sm text-foreground">
                                                         {formatJobDue(job.startAfter, locale, timeZone)}
                                                     </span>
@@ -315,33 +313,30 @@ export function AdminJobsPage({ data, search }: { data: GqlCAdminJobsPageQuery; 
                                                 <AlertDialog>
                                                     <AlertDialogTrigger asChild>
                                                         <Button type="button" variant="outline" size="sm" disabled={busy}>
-                                                            {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                                            {t(locale, 'admin', 'copy.cancel')}
                                                         </Button>
                                                     </AlertDialogTrigger>
                                                     <AlertDialogContent>
                                                         <AlertDialogHeader>
-                                                            <AlertDialogTitle>
-                                                                {{ de: 'Job abbrechen?', en: 'Cancel this job?' }[locale]}
-                                                            </AlertDialogTitle>
+                                                            <AlertDialogTitle>{t(locale, 'admin', 'copy.cancelThisJob')}</AlertDialogTitle>
                                                             <AlertDialogDescription>
-                                                                {
-                                                                    {
-                                                                        de: 'Der geplante Job wird nicht mehr ausgeführt. Bereits laufende Arbeit kann nicht zurückgenommen werden.',
-                                                                        en: 'The scheduled job will not run. Work that already started cannot be undone.',
-                                                                    }[locale]
-                                                                }
+                                                                {t(
+                                                                    locale,
+                                                                    'admin',
+                                                                    'copy.theScheduledJobWillNotRunWorkThatAlreadyStartedCannotBeUndon',
+                                                                )}
                                                             </AlertDialogDescription>
                                                         </AlertDialogHeader>
                                                         <AlertDialogFooter>
                                                             <AlertDialogCancel disabled={busy}>
-                                                                {{ de: 'Zurück', en: 'Back' }[locale]}
+                                                                {t(locale, 'admin', 'copy.back2')}
                                                             </AlertDialogCancel>
                                                             <AlertDialogAction
                                                                 variant="destructive"
                                                                 disabled={busy}
                                                                 onClick={() => void onCancelJob(job)}
                                                             >
-                                                                {{ de: 'Job abbrechen', en: 'Cancel job' }[locale]}
+                                                                {t(locale, 'admin', 'copy.cancelJob')}
                                                             </AlertDialogAction>
                                                         </AlertDialogFooter>
                                                     </AlertDialogContent>

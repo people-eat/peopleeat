@@ -1,3 +1,4 @@
+import { tEmail } from '../../../i18n/tEmail';
 import type { Locale } from '../../../shared/locale';
 import { EmailButton, EmailLayout, EmailText } from './index';
 
@@ -19,43 +20,20 @@ export function BookingRequestOfferCallSlotDeclineBody({
     offerUrl,
 }: BookingRequestOfferCallSlotDeclineBodyProps) {
     const trimmedReason = reason?.trim() || undefined;
-    const preview = {
-        de: `${declinerFirstName} kann den Termin nicht. Gerne einen neuen vorschlagen`,
-        en: `${declinerFirstName} can't make that time. Feel free to propose another`,
-    }[locale];
+    const preview = tEmail(locale, 'callSlot.decline.preview', { declinerFirstName });
     const subject = bookingRequestOfferCallSlotDeclineEmailSubject(locale);
-    const intro = {
-        de: `${declinerFirstName} kann den gewünschten Termin leider nicht wahrnehmen.`,
-        en: `${declinerFirstName} cannot take the proposed time.`,
-    }[locale];
-    const reasonLine = trimmedReason
-        ? {
-              de: `Grund: ${trimmedReason}`,
-              en: `Reason: ${trimmedReason}`,
-          }[locale]
-        : undefined;
-    const nextStep = {
-        de: 'Du kannst gerne einen neuen Termin anfragen.',
-        en: 'Feel free to request a new time.',
-    }[locale];
-    const linkLabel = {
-        de: 'Zum Angebot',
-        en: 'Open the offer',
-    }[locale];
+    const reasonLine = trimmedReason ? tEmail(locale, 'common.reasonLine', { reason: trimmedReason }) : undefined;
 
     return (
         <EmailLayout locale={locale} webPageUrl={webPageUrl} preview={preview} subject={subject} recipientFirstName={recipientFirstName}>
-            <EmailText>{intro}</EmailText>
+            <EmailText>{tEmail(locale, 'callSlot.decline.intro', { declinerFirstName })}</EmailText>
             {reasonLine ? <EmailText>{reasonLine}</EmailText> : null}
-            <EmailText>{nextStep}</EmailText>
-            <EmailButton href={offerUrl}>{linkLabel}</EmailButton>
+            <EmailText>{tEmail(locale, 'callSlot.decline.nextStep')}</EmailText>
+            <EmailButton href={offerUrl}>{tEmail(locale, 'common.ctaOffer')}</EmailButton>
         </EmailLayout>
     );
 }
 
 export function bookingRequestOfferCallSlotDeclineEmailSubject(locale: Locale): string {
-    return {
-        de: 'Dein Video-Call konnte leider nicht bestätigt werden',
-        en: 'Your video call could not be confirmed',
-    }[locale];
+    return tEmail(locale, 'callSlot.decline.subject');
 }

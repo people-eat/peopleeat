@@ -1,3 +1,4 @@
+import { t } from '../../i18n/t';
 import { DEFAULT_TIME_ZONE, formatCountryName, formatCurrency, formatDate } from '../../shared';
 import type { Locale } from '../../shared/locale';
 import { GIFT_CARD_RECEIPT_ISSUER_LINES } from '../../shared/siteBranding';
@@ -31,7 +32,7 @@ export function GiftCardReceiptPage({ giftCard, invoiceAddress }: GiftCardReceip
             <header className="grid gap-4 border-b border-neutral-200 pb-6">
                 <div className="grid gap-2">
                     <p className="font-serif text-3xl tracking-tight">peopleeat</p>
-                    <h1 className="text-lg font-medium">{{ de: 'Kaufbeleg: Gutschein', en: 'Purchase receipt: Gift card' }[locale]}</h1>
+                    <h1 className="text-lg font-medium">{t(locale, 'public', 'giftCard.receipt.title')}</h1>
                 </div>
                 <address className="grid gap-0.5 text-sm/relaxed text-neutral-700 not-italic">
                     {GIFT_CARD_RECEIPT_ISSUER_LINES.map((line) => (
@@ -42,15 +43,15 @@ export function GiftCardReceiptPage({ giftCard, invoiceAddress }: GiftCardReceip
 
             <section className="grid gap-6 py-8">
                 <dl className="grid gap-6">
-                    <ReceiptRow label={{ de: 'Datum', en: 'Date' }[locale]} value={purchasedAt} />
-                    <ReceiptRow label={{ de: 'Betrag', en: 'Amount' }[locale]} value={amount} />
-                    <ReceiptRow label={{ de: 'Gutschein-ID', en: 'Gift card ID' }[locale]} value={giftCard.giftCardId} mono />
+                    <ReceiptRow label={t(locale, 'public', 'giftCard.receipt.date')} value={purchasedAt} />
+                    <ReceiptRow label={t(locale, 'public', 'giftCard.receipt.amount')} value={amount} />
+                    <ReceiptRow label={t(locale, 'public', 'giftCard.receipt.id')} value={giftCard.giftCardId} mono />
                 </dl>
             </section>
 
             <section className="grid gap-3 border-t border-neutral-200 pt-8">
                 <h2 className="text-sm font-medium tracking-wide text-neutral-500 uppercase">
-                    {{ de: 'Rechnungsadresse', en: 'Billing address' }[locale]}
+                    {t(locale, 'public', 'giftCard.receipt.billingAddress')}
                 </h2>
                 <div className="grid gap-0.5 text-sm/relaxed">
                     {invoiceAddress.companyName ? <span>{invoiceAddress.companyName}</span> : null}
@@ -67,12 +68,7 @@ export function GiftCardReceiptPage({ giftCard, invoiceAddress }: GiftCardReceip
             </section>
 
             <footer className="mt-12 border-t border-neutral-200 pt-6 text-xs text-neutral-500">
-                {
-                    {
-                        de: 'Kaufbeleg für einen peopleeat-Mehrzweck-Gutschein. Keine Rechnung. Umsatzsteuer entsteht bei der Einlösung. Der Einlöscode steht auf dem Gutschein und in der Kauf-E-Mail.',
-                        en: 'Purchase receipt for a peopleeat multi-purpose gift card. Not an invoice. VAT is due when the gift card is redeemed. The redeem code is on the gift card and in the purchase email.',
-                    }[locale]
-                }
+                {t(locale, 'public', 'giftCard.receipt.footer')}
             </footer>
         </main>
     );

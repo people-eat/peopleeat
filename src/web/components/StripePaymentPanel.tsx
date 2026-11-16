@@ -5,6 +5,7 @@ import { loadStripe } from '@stripe/stripe-js/pure';
 import type { ReactNode } from 'react';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 
+import { t } from '../../i18n/t';
 import type { Locale } from '../../shared';
 import type { GqlCInvoiceAddressInput } from '../graphql/generated';
 import { Input } from './base/input';
@@ -71,24 +72,16 @@ function nameSplit(fullName: string): { firstName: string; lastName: string } {
 /** Map Stripe decline/code to bilingual copy — never surface raw English `error.message`. */
 function stripeConfirmErrorMessage(error: { code?: string; decline_code?: string } | undefined, locale: Locale): string {
     const code = error?.decline_code ?? error?.code;
-    const byCode: Record<string, { de: string; en: string }> = {
-        card_declined: {
-            de: 'Karte abgelehnt. Bitte andere Zahlungsart versuchen.',
-            en: 'Card declined. Please try another payment method.',
-        },
-        expired_card: { de: 'Karte abgelaufen.', en: 'Card expired.' },
-        incorrect_cvc: { de: 'Ungültiger Sicherheitscode.', en: 'Invalid security code.' },
-        insufficient_funds: { de: 'Nicht genügend Guthaben.', en: 'Insufficient funds.' },
-        processing_error: {
-            de: 'Zahlungsabwicklung fehlgeschlagen. Bitte erneut versuchen.',
-            en: 'Payment processing failed. Please try again.',
-        },
-        authentication_required: {
-            de: 'Zusätzliche Authentifizierung erforderlich.',
-            en: 'Additional authentication required.',
-        },
+    const byCode: Record<string, string> = {
+        card_declined: 'stripePayment.cardDeclined',
+        expired_card: 'stripePayment.expiredCard',
+        incorrect_cvc: 'stripePayment.incorrectCvc',
+        insufficient_funds: 'stripePayment.insufficientFunds',
+        processing_error: 'stripePayment.processingError',
+        authentication_required: 'stripePayment.authenticationRequired',
     };
-    return (code && byCode[code] ? byCode[code] : { de: 'Zahlung fehlgeschlagen.', en: 'Payment failed.' })[locale];
+    const key = code && byCode[code] ? byCode[code] : 'stripePayment.failed';
+    return t(locale, 'common', key);
 }
 
 function StripePaymentPanelForm({
@@ -124,7 +117,7 @@ function StripePaymentPanelForm({
         if (confirmingRef.current) return;
         if (!stripe || !elements) return;
         if (!addressComplete) {
-            reportFailure({ de: 'Bitte vollständige Rechnungsadresse angeben.', en: 'Please enter a complete billing address.' }[locale]);
+            reportFailure(t(locale, 'common', 'stripePayment.billingIncomplete'));
             return;
         }
 
@@ -216,7 +209,7 @@ function StripePaymentPanelForm({
 
             <div className="grid gap-1.5">
                 <label htmlFor="stripe-company-name" className="text-sm font-medium">
-                    {{ de: 'Firma (optional)', en: 'Company (optional)' }[locale]}
+                    {t(locale, 'common', 'stripePayment.companyOptional')}
                 </label>
                 <Input
                     id="stripe-company-name"
@@ -229,7 +222,7 @@ function StripePaymentPanelForm({
                             companyName: event.target.value,
                         })
                     }
-                    placeholder={{ de: 'Firmenname', en: 'Company name' }[locale]}
+                    placeholder={t(locale, 'common', 'stripePayment.companyName')}
                 />
             </div>
         </div>

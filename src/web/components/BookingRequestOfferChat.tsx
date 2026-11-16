@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { Fragment, useState } from 'react';
 
-import { containsPhoneNumber } from '../../shared';
+import { containsPhoneNumber, inlineCopy } from '../../shared';
 import type { BookingWhenPeer } from '../../shared';
 import { groupMessagesByDate, peerUserMessageStreak } from '../chat/chatTranscript';
 import { useComposerFileAttachments } from '../chat/useComposerFileAttachments';
@@ -46,7 +46,7 @@ function ConciergePresenceBanner({
     className?: string;
 }) {
     const locale = useLocale();
-    const openUserLabel = { de: 'Nutzer öffnen', en: 'Open user' }[locale];
+    const openUserLabel = inlineCopy({ de: 'Nutzer öffnen', en: 'Open user' }, locale);
 
     return (
         <div className={cn('mb-2 flex shrink-0 items-center gap-3 p-1 sm:px-2', className)}>
@@ -127,16 +127,19 @@ export function BookingRequestOfferChat({
     const presenceBody =
         viewerRole === 'admin'
             ? null
-            : {
-                  customer: {
-                      de: 'Ihr seid direkt mit eurem Koch im Chat. Juliana unterstützt euch zusätzlich bei besonderen Anliegen oder Fragen.',
-                      en: 'You’re chatting directly with your chef. Juliana also supports you with special requests or questions.',
-                  },
-                  cook: {
-                      de: 'Ihr seid direkt mit eurem Gast im Chat. Juliana unterstützt euch zusätzlich bei besonderen Anliegen oder Fragen.',
-                      en: 'You’re chatting directly with your guest. Juliana also supports you with special requests or questions.',
-                  },
-              }[viewerRole][locale];
+            : inlineCopy(
+                  {
+                      customer: {
+                          de: 'Ihr seid direkt mit eurem Koch im Chat. Juliana unterstützt euch zusätzlich bei besonderen Anliegen oder Fragen.',
+                          en: 'You’re chatting directly with your chef. Juliana also supports you with special requests or questions.',
+                      },
+                      cook: {
+                          de: 'Ihr seid direkt mit eurem Gast im Chat. Juliana unterstützt euch zusätzlich bei besonderen Anliegen oder Fragen.',
+                          en: 'You’re chatting directly with your guest. Juliana also supports you with special requests or questions.',
+                      },
+                  }[viewerRole],
+                  locale,
+              );
 
     return (
         <BookingOfferTimeProvider callPeers={callTimePeers ?? []}>
@@ -144,7 +147,7 @@ export function BookingRequestOfferChat({
                 <ConciergePresenceBanner peers={peers} title={presenceTitle} body={presenceBody} className="hidden md:flex" />
                 <ChatTranscriptShell
                     mode="human"
-                    jumpToLatestLabel={{ de: 'Zum neuesten springen', en: 'Jump to latest' }[locale]}
+                    jumpToLatestLabel={inlineCopy({ de: 'Zum neuesten springen', en: 'Jump to latest' }, locale)}
                     contentClassName="w-full gap-3"
                     className="min-h-0 min-w-0"
                     viewportClassName="px-1 sm:px-2"
@@ -155,8 +158,8 @@ export function BookingRequestOfferChat({
                     {messages.length === 0 ? (
                         <MessageScrollerItem>
                             <p className="flex min-h-48 flex-1 items-center justify-center px-4 text-center text-sm text-muted-foreground">
-                                {
-                                    (canSend
+                                {inlineCopy(
+                                    canSend
                                         ? {
                                               de: 'Noch keine Nachrichten. Schreibe die erste Nachricht.',
                                               en: 'No messages yet. Send the first message.',
@@ -164,8 +167,9 @@ export function BookingRequestOfferChat({
                                         : {
                                               de: 'Noch keine Nachrichten.',
                                               en: 'No messages yet.',
-                                          })[locale]
-                                }
+                                          },
+                                    locale,
+                                )}
                             </p>
                         </MessageScrollerItem>
                     ) : (
@@ -200,12 +204,13 @@ export function BookingRequestOfferChat({
                     <div className="flex flex-col gap-2 px-1 pt-3 pb-(--chat-composer-pb) sm:px-2">
                         {draftContainsPhoneNumber ? (
                             <StatusAlert tone="warning">
-                                {
+                                {inlineCopy(
                                     {
                                         de: 'Das Teilen von Telefonnummern ist nicht erlaubt. Bitte bleibe für Absprachen hier im Chat.',
                                         en: 'Sharing phone numbers is not allowed. Please keep arrangements in this chat.',
-                                    }[locale]
-                                }
+                                    },
+                                    locale,
+                                )}
                             </StatusAlert>
                         ) : null}
                         <MessageComposer
@@ -214,7 +219,7 @@ export function BookingRequestOfferChat({
                             busy={busy}
                             sendDisabled={draftContainsPhoneNumber}
                             showDisclaimer={false}
-                            ariaLabel={{ de: 'Nachricht an Angebot', en: 'Offer message' }[locale]}
+                            ariaLabel={inlineCopy({ de: 'Nachricht an Angebot', en: 'Offer message' }, locale)}
                             attachments={attachments}
                             onAttachmentsAdd={onAttachmentsAdd}
                             onAttachmentRemove={onAttachmentRemove}

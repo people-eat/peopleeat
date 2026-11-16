@@ -2,6 +2,7 @@ import { useForm, useSelector } from '@tanstack/react-form';
 import { useEffect, useId, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
+import { inlineCopy } from '../../shared';
 
 import { CookMealEditorMealUpsertDocument } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
@@ -74,7 +75,7 @@ export function CookMealEditorDialog({
         onSubmit: async ({ value }) => {
             const title = value.title.trim();
             if (title.length === 0) {
-                toast.error({ de: 'Bitte gib einen Titel ein.', en: 'Please enter a title.' }[locale]);
+                toast.error(inlineCopy({ de: 'Bitte gib einen Titel ein.', en: 'Please enter a title.' }, locale));
                 return;
             }
             const description = value.description.trim();
@@ -118,16 +119,16 @@ export function CookMealEditorDialog({
                 };
                 toast.success(
                     isCreate
-                        ? { de: 'Gericht erstellt.', en: 'Meal created.' }[locale]
-                        : { de: 'Gericht gespeichert.', en: 'Meal saved.' }[locale],
+                        ? inlineCopy({ de: 'Gericht erstellt.', en: 'Meal created.' }, locale)
+                        : inlineCopy({ de: 'Gericht gespeichert.', en: 'Meal saved.' }, locale),
                 );
                 onSaved(saved);
                 onOpenChange(false);
             } catch {
                 toast.error(
                     isCreate
-                        ? { de: 'Gericht konnte nicht erstellt werden.', en: 'Could not create the meal.' }[locale]
-                        : { de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale],
+                        ? inlineCopy({ de: 'Gericht konnte nicht erstellt werden.', en: 'Could not create the meal.' }, locale)
+                        : inlineCopy({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }, locale),
                 );
             }
         },
@@ -148,15 +149,18 @@ export function CookMealEditorDialog({
             <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
                     <DialogTitle>
-                        {isCreate ? { de: 'Neues Gericht', en: 'New meal' }[locale] : { de: 'Gericht bearbeiten', en: 'Edit meal' }[locale]}
+                        {isCreate
+                            ? inlineCopy({ de: 'Neues Gericht', en: 'New meal' }, locale)
+                            : inlineCopy({ de: 'Gericht bearbeiten', en: 'Edit meal' }, locale)}
                     </DialogTitle>
                     <DialogDescription>
-                        {
+                        {inlineCopy(
                             {
                                 de: 'Titel, Beschreibung und Bild. Änderungen gelten für alle Menüs mit diesem Gericht.',
                                 en: 'Title, description, and image. Changes apply to every menu that uses this meal.',
-                            }[locale]
-                        }
+                            },
+                            locale,
+                        )}
                     </DialogDescription>
                 </DialogHeader>
                 <form
@@ -171,7 +175,7 @@ export function CookMealEditorDialog({
                     <form.Field name="title">
                         {(field) => (
                             <label className="grid gap-2 text-sm">
-                                <span className="font-medium">{{ de: 'Titel', en: 'Title' }[locale]}</span>
+                                <span className="font-medium">{inlineCopy({ de: 'Titel', en: 'Title' }, locale)}</span>
                                 <Input
                                     name={field.name}
                                     value={field.state.value}
@@ -187,7 +191,7 @@ export function CookMealEditorDialog({
                     <form.Field name="description">
                         {(field) => (
                             <label className="grid gap-2 text-sm">
-                                <span className="font-medium">{{ de: 'Beschreibung', en: 'Description' }[locale]}</span>
+                                <span className="font-medium">{inlineCopy({ de: 'Beschreibung', en: 'Description' }, locale)}</span>
                                 <Textarea
                                     name={field.name}
                                     rows={3}
@@ -212,15 +216,16 @@ export function CookMealEditorDialog({
                 </form>
                 <DialogFooter>
                     <Button type="button" variant="outline" disabled={isSubmitting || imageBusy} onClick={() => onOpenChange(false)}>
-                        {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                        {inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, locale)}
                     </Button>
                     <Button type="submit" form={formId} disabled={isSubmitting || imageBusy}>
-                        {
+                        {inlineCopy(
                             {
                                 de: isSubmitting ? 'Speichern…' : isCreate ? 'Gericht speichern' : 'Speichern',
                                 en: isSubmitting ? 'Saving…' : isCreate ? 'Save meal' : 'Save',
-                            }[locale]
-                        }
+                            },
+                            locale,
+                        )}
                     </Button>
                 </DialogFooter>
             </DialogContent>

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { createRequest, useClient } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { t } from '../../../i18n/t';
 import { formatDate, formatTime } from '../../../shared';
 import { Badge } from '../../components/base/badge';
 import { Button } from '../../components/base/button';
@@ -29,24 +30,11 @@ function formatSlotWhen(startAt: string, endAt: string, locale: Locale, timeZone
 }
 
 export function adminCallKindLabel(kind: GqlCAdminCallListItemKind, locale: Locale): string {
-    return {
-        LIVE: { de: 'Live', en: 'Live' },
-        PENDING: { de: 'Ausstehend', en: 'Pending' },
-        UPCOMING: { de: 'Bevorstehend', en: 'Upcoming' },
-        RECENT_ROOM: { de: 'Raum beendet', en: 'Room ended' },
-        RECENT_SLOT: { de: 'Termin erledigt', en: 'Slot completed' },
-        DECLINED: { de: 'Abgelehnt', en: 'Declined' },
-        CANCELED: { de: 'Storniert', en: 'Canceled' },
-    }[kind][locale];
+    return t(locale, 'admin', `calls.attention.${kind}`);
 }
 
 function sectionLabel(kind: 'live' | 'pending' | 'upcoming' | 'recent', locale: Locale): string {
-    return {
-        live: { de: 'Live', en: 'Live' },
-        pending: { de: 'Ausstehend', en: 'Pending' },
-        upcoming: { de: 'Bevorstehend', en: 'Upcoming' },
-        recent: { de: 'Kürzlich', en: 'Recent' },
-    }[kind][locale];
+    return t(locale, 'admin', `calls.attention.${kind}`);
 }
 
 function offerDeepLink(item: AdminCallsAttentionRow) {
@@ -90,8 +78,8 @@ function CallRow({ item, locale, timeZone, now }: { item: AdminCallsAttentionRow
     const awaitingLabel =
         isPending && slot != null
             ? slot.initiator === 'CUSTOMER'
-                ? { de: 'Wartet auf Koch', en: 'Awaiting chef' }[locale]
-                : { de: 'Wartet auf Kunden', en: 'Awaiting customer' }[locale]
+                ? t(locale, 'admin', 'copy.awaitingChef')
+                : t(locale, 'admin', 'copy.awaitingCustomer')
             : null;
     const stale = isStalePending(item, now);
     const callLink = callDeepLink(item);
@@ -111,23 +99,23 @@ function CallRow({ item, locale, timeZone, now }: { item: AdminCallsAttentionRow
                         <div className="flex flex-wrap justify-end gap-2">
                             <Badge variant={isLive || isPending ? 'default' : 'outline'}>{adminCallKindLabel(item.kind, locale)}</Badge>
                             {awaitingLabel ? <Badge variant="secondary">{awaitingLabel}</Badge> : null}
-                            {stale ? <Badge variant="destructive">{{ de: '> 24 Std.', en: '> 24h' }[locale]}</Badge> : null}
+                            {stale ? <Badge variant="destructive">{t(locale, 'admin', 'copy.n24h')}</Badge> : null}
                         </div>
                     </CardAction>
                 </CardHeader>
                 <CardFooter className={cn('flex-wrap justify-end gap-2', bookingOfferCallCardSectionClassName)}>
                     {isLive ? (
                         <Button type="button" size="sm" asChild>
-                            <Link {...offerDeepLink(item)}>{{ de: 'Beitreten', en: 'Join' }[locale]}</Link>
+                            <Link {...offerDeepLink(item)}>{t(locale, 'admin', 'copy.join')}</Link>
                         </Button>
                     ) : null}
                     {callLink != null ? (
                         <Button type="button" size="sm" variant="outline" asChild>
-                            <Link {...callLink}>{{ de: 'Anruf öffnen', en: 'Open call' }[locale]}</Link>
+                            <Link {...callLink}>{t(locale, 'admin', 'copy.openCall')}</Link>
                         </Button>
                     ) : null}
                     <Button type="button" size="sm" variant="outline" asChild>
-                        <Link {...offerDeepLink(item)}>{{ de: 'Angebot öffnen', en: 'Open offer' }[locale]}</Link>
+                        <Link {...offerDeepLink(item)}>{t(locale, 'admin', 'copy.openOffer2')}</Link>
                     </Button>
                 </CardFooter>
             </Card>
@@ -210,14 +198,7 @@ export function AdminCallsAttentionBoard({ seedCalls }: { seedCalls: AdminCallsA
         <div className="grid gap-6">
             <div className="flex items-center gap-2 text-muted-foreground">
                 <VideoIcon className="size-5" aria-hidden />
-                <p className="text-sm">
-                    {
-                        {
-                            de: 'Aktuelle Live-Anrufe, ausstehende Terminanfragen und bevorstehende Termine.',
-                            en: 'Live calls, pending slot requests, and upcoming appointments.',
-                        }[locale]
-                    }
-                </p>
+                <p className="text-sm">{t(locale, 'admin', 'copy.liveCallsPendingSlotRequestsAndUpcomingAppointments')}</p>
             </div>
 
             <CallSection
@@ -225,7 +206,7 @@ export function AdminCallsAttentionBoard({ seedCalls }: { seedCalls: AdminCallsA
                 items={live}
                 locale={locale}
                 timeZone={timeZone}
-                empty={{ de: 'Keine aktiven Anrufe.', en: 'No live calls.' }[locale]}
+                empty={t(locale, 'admin', 'copy.noLiveCalls')}
                 now={now}
             />
             <CallSection
@@ -233,7 +214,7 @@ export function AdminCallsAttentionBoard({ seedCalls }: { seedCalls: AdminCallsA
                 items={pending}
                 locale={locale}
                 timeZone={timeZone}
-                empty={{ de: 'Keine ausstehenden Terminanfragen.', en: 'No pending call requests.' }[locale]}
+                empty={t(locale, 'admin', 'copy.noPendingCallRequests')}
                 now={now}
             />
             <CallSection
@@ -241,7 +222,7 @@ export function AdminCallsAttentionBoard({ seedCalls }: { seedCalls: AdminCallsA
                 items={upcoming}
                 locale={locale}
                 timeZone={timeZone}
-                empty={{ de: 'Keine bevorstehenden Termine.', en: 'No upcoming appointments.' }[locale]}
+                empty={t(locale, 'admin', 'copy.noUpcomingAppointments')}
                 now={now}
             />
             <CallSection
@@ -249,7 +230,7 @@ export function AdminCallsAttentionBoard({ seedCalls }: { seedCalls: AdminCallsA
                 items={recent}
                 locale={locale}
                 timeZone={timeZone}
-                empty={{ de: 'Keine kürzlichen Anrufe.', en: 'No recent calls.' }[locale]}
+                empty={t(locale, 'admin', 'copy.noRecentCalls')}
                 now={now}
             />
         </div>

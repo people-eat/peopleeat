@@ -71,6 +71,8 @@ Per-locale canonicals follow the routing setup:
 | -------------- | --------------------------------- | ----------------------------------------------------------------------- |
 | `de` (default) | `/`, `/terms-and-conditions`      | `https://example.com`, `https://example.com/terms-and-conditions`       |
 | `en`           | `/en`, `/en/terms-and-conditions` | `https://example.com/en`, `https://example.com/en/terms-and-conditions` |
+| `fr`           | `/fr`, `/fr/terms-and-conditions` | `https://example.com/fr`, `https://example.com/fr/terms-and-conditions` |
+| `it`           | `/it`, `/it/terms-and-conditions` | `https://example.com/it`, `https://example.com/it/terms-and-conditions` |
 
 For each page `seoMeta()` emits one `<link rel="canonical">` and one `<link rel="alternate" hreflang="…">` per configured locale plus
 `hreflang="x-default"` pointing at the default-locale URL.

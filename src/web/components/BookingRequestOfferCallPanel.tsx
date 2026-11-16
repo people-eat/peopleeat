@@ -22,6 +22,8 @@ import {
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 
+import { inlineCopy } from '../../shared';
+
 import { useLocale } from '../hooks/useLocale';
 import { cn } from '../utils/cn';
 import { Button } from './base/button';
@@ -155,27 +157,28 @@ export function BookingRequestOfferCallControls() {
                 deviceKind="audioinput"
                 disabledIcon={<MicOffIcon className="size-4" aria-hidden />}
                 enabledIcon={<MicIcon className="size-4" aria-hidden />}
-                emptyDevicesLabel={{ de: 'Kein Mikrofon gefunden', en: 'No microphone found' }[locale]}
-                label={{ de: 'Mikrofon', en: 'Microphone' }[locale]}
+                emptyDevicesLabel={inlineCopy({ de: 'Kein Mikrofon gefunden', en: 'No microphone found' }, locale)}
+                label={inlineCopy({ de: 'Mikrofon', en: 'Microphone' }, locale)}
                 source={Track.Source.Microphone}
             />
             <DeviceToggle
                 deviceKind="videoinput"
                 disabledIcon={<CameraOffIcon className="size-4" aria-hidden />}
                 enabledIcon={<CameraIcon className="size-4" aria-hidden />}
-                emptyDevicesLabel={{ de: 'Keine Kamera gefunden', en: 'No camera found' }[locale]}
-                label={{ de: 'Kamera', en: 'Camera' }[locale]}
+                emptyDevicesLabel={inlineCopy({ de: 'Keine Kamera gefunden', en: 'No camera found' }, locale)}
+                label={inlineCopy({ de: 'Kamera', en: 'Camera' }, locale)}
                 source={Track.Source.Camera}
             />
             <ScreenShareToggle
-                label={
+                label={inlineCopy(
                     {
                         de: 'Bildschirm teilen',
                         en: 'Share screen',
-                    }[locale]
-                }
+                    },
+                    locale,
+                )}
             />
-            <LeaveButton label={{ de: 'Verlassen', en: 'Leave' }[locale]} />
+            <LeaveButton label={inlineCopy({ de: 'Verlassen', en: 'Leave' }, locale)} />
         </div>
     );
 }

@@ -1,4 +1,4 @@
-import { DEFAULT_LOCALE, LOCALES } from '../utils/locale';
+import { CATALOG_LOCALES, DEFAULT_LOCALE } from '../utils/locale';
 import type { Locale } from '../utils/locale';
 import { DEFAULT_SHARE_IMAGE, DEFAULT_SHARE_IMAGE_DIMENSIONS, OG_LOCALE, SITE_NAME } from './seoConstants';
 
@@ -77,7 +77,7 @@ export function seoMeta(input: SeoInput): SeoOutput {
         );
     }
 
-    for (const otherLocale of LOCALES) {
+    for (const otherLocale of CATALOG_LOCALES) {
         if (otherLocale === input.locale) continue;
         meta.push({
             property: 'og:locale:alternate',
@@ -86,7 +86,7 @@ export function seoMeta(input: SeoInput): SeoOutput {
     }
 
     const links: LinkTag[] = [{ rel: 'canonical', href: canonical }];
-    for (const otherLocale of LOCALES) {
+    for (const otherLocale of CATALOG_LOCALES) {
         links.push({
             rel: 'alternate',
             hrefLang: otherLocale,

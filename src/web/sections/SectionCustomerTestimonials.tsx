@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router';
 import { AppImage } from '../components/AppImage';
 import { Button } from '../components/base/button';
 import { TestimonialCard } from '../components/TestimonialCard';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 
 type Testimonial = {
     id: string;
@@ -15,7 +15,7 @@ type Testimonial = {
 };
 
 function MarqueeQuoteCard({ testimonial, peopleLabel }: { testimonial: Testimonial; peopleLabel: string }) {
-    const locale = useLocale();
+    const { t } = useT('public');
 
     return (
         <div className="flex w-full flex-col gap-4 rounded-xl bg-secondary p-6 shadow-xs transition hover:shadow-md">
@@ -23,12 +23,7 @@ function MarqueeQuoteCard({ testimonial, peopleLabel }: { testimonial: Testimoni
 
             {testimonial.imageUrl ? (
                 <AppImage
-                    alt={
-                        {
-                            de: `Foto zum Testimonial von ${testimonial.name}`,
-                            en: `Photo for testimonial by ${testimonial.name}`,
-                        }[locale]
-                    }
+                    alt={t('home.testimonials.photoAlt', { name: testimonial.name })}
                     className="w-full rounded-lg object-cover"
                     height={200}
                     src={testimonial.imageUrl}
@@ -50,7 +45,7 @@ function MarqueeQuoteCard({ testimonial, peopleLabel }: { testimonial: Testimoni
 }
 
 export function SectionCustomerTestimonials({ variant = 'marquee' }: { variant?: 'marquee' | 'cards' }) {
-    const locale = useLocale();
+    const { t } = useT('public');
 
     const testimonials: Testimonial[] = [
         {
@@ -58,10 +53,7 @@ export function SectionCustomerTestimonials({ variant = 'marquee' }: { variant?:
             name: 'Thomas K.',
             location: 'Frankfurt am Main',
             people: 5,
-            text: {
-                de: 'Ein unvergesslicher Abend dank einer perfekt organisierten Köchin! Das Engagement und die kleinen Extras haben unsere Gäste begeistert. Anfangs skeptisch, aber letztlich eine die beste Entscheidung.',
-                en: 'An unforgettable evening thanks to a perfectly organized chef! The dedication and little extras delighted our guests. Skeptical at first, but ultimately one of the best decisions.',
-            }[locale],
+            text: t('home.testimonials.t1'),
             imageUrl: '/home/testimonials-section/dinner-table-with-menu-card.webp',
         },
         {
@@ -69,33 +61,25 @@ export function SectionCustomerTestimonials({ variant = 'marquee' }: { variant?:
             name: 'Lydia G.',
             location: 'Bayern',
             people: 6,
-            text: {
-                de: 'Perfekter Ablauf von Anfang bis Ende! Unsere Wünsche wurden schon beim ersten Anruf erfragt, und die vielfältigen Menüvorschläge waren sehr hilfreich. Die Köchin hat bei unserer Feier voll abgeliefert.',
-                en: 'A perfect process from start to finish! Our wishes were already asked about on the first call, and the varied menu suggestions were very helpful. The chef delivered fully at our celebration.',
-            }[locale],
+            text: t('home.testimonials.t2'),
         },
         {
             id: '3',
             name: 'Anna P.',
             location: 'München',
             people: 8,
-            text: {
-                de: 'Super schönes, privates Event bei uns zu Hause. Das Essen war hervorragend! Gerne wieder.',
-                en: 'A wonderful private event at our home. The food was outstanding! Happy to do it again.',
-            }[locale],
+            text: t('home.testimonials.t3'),
             imageUrl: '/home/testimonials-section/rounded-dessert.webp',
         },
     ];
 
     const duplicatedTestimonials = [...testimonials, ...testimonials, ...testimonials];
-    const peopleLabel = { de: 'Personen', en: 'people' }[locale];
+    const peopleLabel = t('home.testimonials.people');
 
     if (variant === 'cards') {
         return (
             <section className="mx-auto w-full max-w-7xl px-4 py-16 @lg:px-6">
-                <h2 className="font-serif text-3xl font-light @md:text-4xl">
-                    {{ de: 'Was sagen unsere Kunden', en: 'What do our customers say?' }[locale]}
-                </h2>
+                <h2 className="font-serif text-3xl font-light @md:text-4xl">{t('home.testimonials.heading')}</h2>
                 <ul className="mt-10 grid grid-cols-1 gap-10 @md:grid-cols-2 @lg:grid-cols-3">
                     {testimonials.map((testimonial) => {
                         const people = testimonial.people != null ? `${testimonial.people} ${peopleLabel}` : null;
@@ -124,20 +108,11 @@ export function SectionCustomerTestimonials({ variant = 'marquee' }: { variant?:
     return (
         <section className="mx-auto flex h-[1200px] w-full max-w-7xl flex-col @lg:h-[700px] @lg:flex-row">
             <div className="flex flex-col justify-center p-8 @lg:flex-1 @lg:p-16">
-                <h2 className="mb-6 font-serif text-3xl font-light @md:text-4xl">
-                    {{ de: 'Was sagen unsere Kunden', en: 'What do our customers say?' }[locale]}
-                </h2>
-                <p className="mb-8 text-lg text-muted-foreground">
-                    {
-                        {
-                            de: 'Du musst nicht warten und kannst direkt aus einem unserer Top-Menüs auswählen, die speziell für jede Saison zusammengestellt wurden.',
-                            en: "You don't have to wait and can choose directly from one of our top menus, which have been specially put together for each season.",
-                        }[locale]
-                    }
-                </p>
+                <h2 className="mb-6 font-serif text-3xl font-light @md:text-4xl">{t('home.testimonials.heading')}</h2>
+                <p className="mb-8 text-lg text-muted-foreground">{t('home.testimonials.intro')}</p>
                 <div className="flex gap-4">
                     <Button asChild>
-                        <Link to="/{-$locale}/booking-request/form">{{ de: 'Anfrage senden', en: 'Send request' }[locale]}</Link>
+                        <Link to="/{-$locale}/booking-request/form">{t('nav.sendRequest')}</Link>
                     </Button>
                 </div>
             </div>

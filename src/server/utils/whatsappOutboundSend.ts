@@ -1,14 +1,19 @@
 import { eq, inArray } from 'drizzle-orm';
 
 import { idCreate } from '../../shared/idCreate';
-import type { Locale } from '../../shared/locale';
+import type { CatalogLocale, Locale } from '../../shared/locale';
 import { textNormalizeSingleLine } from '../../shared/textNormalize';
 import type { Database, DatabaseTransaction } from '../db';
 import { outboundWhatsAppMessages, users, whatsAppConversations, whatsAppMessages } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { OutboundWhatsAppPurpose, OutboundWhatsAppRelatedEntityType } from '../domain/whatsapp';
 import { whatsappPhoneNumberNormalize, whatsappPhoneNumberUserMatchValues, whatsappTemplateNameByPurpose } from '../domain/whatsapp';
-import { whatsappTemplateDefinitionFind, whatsappTemplateSnapshotCreate, whatsappTemplateSnapshotText } from '../domain/whatsappTemplates';
+import {
+    whatsappTemplateDefinitionFind,
+    whatsappTemplateLocale,
+    whatsappTemplateSnapshotCreate,
+    whatsappTemplateSnapshotText,
+} from '../domain/whatsappTemplates';
 import { environmentVariables } from '../env/environmentVariablesCreate';
 import type { WhatsApp } from '../whatsapp/WhatsApp';
 import { whatsappLinkPathAssert, whatsappLinkPathFind } from './whatsappLink';
@@ -18,7 +23,8 @@ type RelatedEntity = { type: OutboundWhatsAppRelatedEntityType; id: string };
 export type WhatsAppTemplateOutboundArgs = {
     purpose: Exclude<OutboundWhatsAppPurpose, 'CONCIERGE_SESSION_REPLY'>;
     toPhoneNumber: string | null | undefined;
-    locale: Locale;
+    /** Recipient catalog locale; Meta send uses `whatsappTemplateLocale` (`de` or `en`). */
+    locale: CatalogLocale;
     bodyParameters: ReadonlyArray<string>;
     linkPath?: string;
     userId?: string | null;
@@ -106,7 +112,8 @@ export async function whatsappTemplateOutboundSend(
     const outboundWhatsAppMessageId = idCreate();
     const whatsAppMessageId = idCreate();
     const now = new Date();
-    const linkPath = definition[args.locale].buttonLabel
+    const templateLanguage = whatsappTemplateLocale(args.locale);
+    const linkPath = definition[templateLanguage].buttonLabel
         ? whatsappLinkPathAssert(args.linkPath ?? (await whatsappLinkPathFind(serverRuntime, args)))
         : null;
     const buttonUrl = linkPath
@@ -136,7 +143,7 @@ export async function whatsappTemplateOutboundSend(
         const result = await provider.sendTemplate({
             toPhoneNumber,
             templateName,
-            languageCode: args.locale,
+            languageCode: snapshot.languageCode,
             bodyParameters,
             buttonUrlParameter: linkPath ? outboundWhatsAppMessageId : undefined,
         });

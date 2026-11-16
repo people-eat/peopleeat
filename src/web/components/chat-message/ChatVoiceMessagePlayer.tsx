@@ -1,5 +1,6 @@
 import { MicIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { inlineCopy } from '../../../shared';
 import type { GqlCFileUpload, GqlCPublicUser } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { cn } from '../../utils/cn';
@@ -35,10 +36,10 @@ export function ChatVoiceMessagePlayer({
             className="max-w-xs"
             meta={meta}
             labels={{
-                group: { de: 'Sprachnachricht', en: 'Voice message' }[locale],
-                play: { de: 'Sprachnachricht abspielen', en: 'Play voice message' }[locale],
-                pause: { de: 'Sprachnachricht pausieren', en: 'Pause voice message' }[locale],
-                position: { de: 'Wiedergabeposition', en: 'Playback position' }[locale],
+                group: inlineCopy({ de: 'Sprachnachricht', en: 'Voice message' }, locale),
+                play: inlineCopy({ de: 'Sprachnachricht abspielen', en: 'Play voice message' }, locale),
+                pause: inlineCopy({ de: 'Sprachnachricht pausieren', en: 'Pause voice message' }, locale),
+                position: inlineCopy({ de: 'Wiedergabeposition', en: 'Playback position' }, locale),
             }}
             leading={
                 <div className="relative size-12">

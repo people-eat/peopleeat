@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
+import { t } from '../../../i18n/t';
 import {
     bookingRequestKitchenDetailsDraftIsEmpty,
     bookingRequestPriceClassLabel,
@@ -64,14 +65,12 @@ import { useTimeZone } from '../../hooks/useTimeZone';
 import { useUserUpdatesSeed } from '../../hooks/useUserUpdatesSeed';
 import { cn } from '../../utils/cn';
 
-export const profileCustomerBookingRequestPageTitle = {
-    de: 'Buchungsanfrage',
-    en: 'Booking request',
-} as const;
-export const profileCustomerBookingRequestPageDescription = {
-    de: 'Details zu deiner Buchungsanfrage.',
-    en: 'Details for your booking request.',
-} as const;
+export function profileCustomerBookingRequestPageTitle(locale: Locale): string {
+    return t(locale, 'profileCustomer', 'chrome.bookingRequest');
+}
+export function profileCustomerBookingRequestPageDescription(locale: Locale): string {
+    return t(locale, 'profileCustomer', 'bookingRequest.description');
+}
 
 const CANCELABLE_STATUSES = new Set(['WAITING_FOR_OFFERS', 'OFFERS_WAITING_FOR_REVIEW', 'EXPIRED']);
 const UPDATABLE_STATUSES = new Set(['WAITING_FOR_OFFERS', 'OFFERS_WAITING_FOR_REVIEW']);
@@ -86,11 +85,8 @@ function requestedCookIdentity(
     locale: Locale,
 ) {
     const subtitle = isExclusive
-        ? { de: 'Nur dieser Koch sieht die Anfrage.', en: 'Only this chef can see the request.' }[locale]
-        : {
-              de: `${cook.user.display} bleibt auf der Anfrage. Andere Köche in der Nähe können ebenfalls Angebote senden.`,
-              en: `${cook.user.display} stays on the request. Nearby chefs can send offers too.`,
-          }[locale];
+        ? t(locale, 'profileCustomer', 'bookingRequest.exclusiveCook')
+        : t(locale, 'profileCustomer', 'bookingRequest.cookStaysOpen', { cook: cook.user.display });
     const body = (
         <>
             <Avatar>
@@ -215,7 +211,7 @@ export function ProfileCustomerBookingRequestPage({
             }
             setCancelConfirmOpen(false);
             setChurnOpen(false);
-            toast.success({ de: 'Anfrage storniert.', en: 'Request cancelled.' }[locale]);
+            toast.success(t(locale, 'profileCustomer', 'bookingRequest.cancelled'));
         } catch {
             setCancelError(true);
         } finally {
@@ -238,14 +234,14 @@ export function ProfileCustomerBookingRequestPage({
                                             type="button"
                                             variant="outline"
                                             size="icon"
-                                            aria-label={{ de: 'Weitere Aktionen', en: 'More actions' }[locale]}
+                                            aria-label={t(locale, 'profileCustomer', 'actions.moreActions')}
                                         >
                                             <MoreHorizontalIcon className="size-4" />
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
                                         <DropdownMenuItem variant="destructive" onSelect={() => setChurnOpen(true)}>
-                                            {{ de: 'Anfrage stornieren', en: 'Cancel request' }[locale]}
+                                            {t(locale, 'profileCustomer', 'bookingRequest.cancelRequest')}
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
@@ -254,8 +250,8 @@ export function ProfileCustomerBookingRequestPage({
                                 <Button type="button" asChild>
                                     <Link to="/{-$locale}/profile/booking-requests/$bookingRequestId/edit" params={{ bookingRequestId }}>
                                         {canUpdate
-                                            ? { de: 'Bearbeiten', en: 'Edit' }[locale]
-                                            : { de: 'Buchung ändern', en: 'Change booking' }[locale]}
+                                            ? t(locale, 'profileCustomer', 'actions.edit')
+                                            : t(locale, 'profileCustomer', 'bookingRequest.changeBooking')}
                                     </Link>
                                 </Button>
                             ) : null}
@@ -271,7 +267,7 @@ export function ProfileCustomerBookingRequestPage({
                                 params={{ supportRequestId: supportRequest.supportRequestId }}
                             >
                                 <HeadsetIcon className="size-4" />
-                                {{ de: 'Support öffnen', en: 'Open support' }[locale]}
+                                {t(locale, 'profileCustomer', 'bookingRequest.openSupport')}
                                 {supportUnread > 0 ? (
                                     <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px] font-medium">
                                         {supportUnread}
@@ -281,7 +277,7 @@ export function ProfileCustomerBookingRequestPage({
                         ) : (
                             <Link to="/{-$locale}/profile/support-requests/create" search={{ bookingRequestId }}>
                                 <HeadsetIcon className="size-4" />
-                                {{ de: 'Support', en: 'Support' }[locale]}
+                                {t(locale, 'profileCustomer', 'nav.supportRequests.title')}
                             </Link>
                         )}
                     </Button>
@@ -296,12 +292,7 @@ export function ProfileCustomerBookingRequestPage({
                             {requestedCookIdentity(request.requestedCook, request.isExclusive, locale)}
                             {request.requestedMenu ? (
                                 <p className="text-sm text-muted-foreground">
-                                    {
-                                        {
-                                            de: `Angefragtes Menü: ${request.requestedMenu.title}`,
-                                            en: `Requested menu: ${request.requestedMenu.title}`,
-                                        }[locale]
-                                    }
+                                    {t(locale, 'profileCustomer', 'bookingRequest.requestedMenu', { title: request.requestedMenu.title })}
                                 </p>
                             ) : null}
                         </div>
@@ -309,12 +300,9 @@ export function ProfileCustomerBookingRequestPage({
                             <div className="flex min-w-0 flex-col items-stretch gap-2 sm:items-end">
                                 {request.directRequestNeedsExpansion ? (
                                     <StatusAlert tone="warning">
-                                        {
-                                            {
-                                                de: `${request.requestedCook.user.display} kann diesmal nicht.`,
-                                                en: `${request.requestedCook.user.display} can't make it this time.`,
-                                            }[locale]
-                                        }
+                                        {t(locale, 'profileCustomer', 'bookingRequest.requestedCookUnavailable', {
+                                            cook: request.requestedCook.user.display,
+                                        })}
                                     </StatusAlert>
                                 ) : null}
                                 <BookingRequestOpenToOtherCooksButton
@@ -339,52 +327,23 @@ export function ProfileCustomerBookingRequestPage({
                         onCancelAmendment={async () => {
                             const result = await cancelAmendment({ bookingRequestOfferId: pendingAmendmentOfferId });
                             if (result.error || !result.data?.user.bookingRequestOfferParticipantAmendmentCancel.success) {
-                                toast.error(
-                                    {
-                                        de: 'Vorschlag konnte nicht zurückgezogen werden.',
-                                        en: 'Could not withdraw the proposal.',
-                                    }[locale],
-                                );
+                                toast.error(t(locale, 'profileCustomer', 'offer.proposalWithdrawFailed'));
                                 return;
                             }
-                            toast.success(
-                                {
-                                    de: 'Vorschlag zurückgezogen.',
-                                    en: 'Proposal withdrawn.',
-                                }[locale],
-                            );
+                            toast.success(t(locale, 'profileCustomer', 'offer.proposalWithdrawn'));
                         }}
                     />
                 ) : null}
 
                 <section className="grid gap-4">
-                    <h2 className="font-serif text-2xl/tight text-foreground">{{ de: 'Angebote', en: 'Offers' }[locale]}</h2>
+                    <h2 className="font-serif text-2xl/tight text-foreground">{t(locale, 'profileCustomer', 'bookingRequest.offers')}</h2>
                     {request.status === 'OFFERS_WAITING_FOR_REVIEW' && offers.length > 0 ? (
-                        <StatusAlert
-                            tone="info"
-                            title={
-                                {
-                                    de: 'Prüfe deine Angebote und teile den Köchen deine Entscheidung mit.',
-                                    en: 'Review your offers and let the chefs know your decision.',
-                                }[locale]
-                            }
-                        >
-                            {
-                                {
-                                    de:
-                                        offers.length === 1
-                                            ? 'Du hast 1 Angebot erhalten. Du kannst Menüs vergleichen, mit den Köchen chatten oder sie anrufen, bevor du dich entscheidest.'
-                                            : `Du hast ${offers.length} Angebote erhalten. Du kannst Menüs vergleichen, mit den Köchen chatten oder sie anrufen, bevor du dich entscheidest.`,
-                                    en:
-                                        offers.length === 1
-                                            ? "You've received 1 offer. You can compare menus, chat with the chefs or call them before you decide."
-                                            : `You've received ${offers.length} offers. You can compare menus, chat with the chefs or call them before you decide.`,
-                                }[locale]
-                            }
+                        <StatusAlert tone="info" title={t(locale, 'profileCustomer', 'bookingRequest.offersHint')}>
+                            {t(locale, 'profileCustomer', 'bookingRequest.offersReceived', { count: offers.length })}
                         </StatusAlert>
                     ) : null}
                     {offers.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">{{ de: 'Noch keine Angebote.', en: 'No offers yet.' }[locale]}</p>
+                        <p className="text-sm text-muted-foreground">{t(locale, 'profileCustomer', 'bookingRequest.noOffers')}</p>
                     ) : (
                         <ul className="grid grid-cols-1 gap-4 @md:grid-cols-2 @2xl:grid-cols-3 @4xl:grid-cols-4">
                             {offers.map((offer) => (
@@ -403,14 +362,14 @@ export function ProfileCustomerBookingRequestPage({
                     )}
                 >
                     <dl className={cn('grid gap-4 @md:grid-cols-2', hasOriginalMessage && '@xl:col-span-2')}>
-                        <DetailField label={{ de: 'Anlass', en: 'Occasion' }[locale]} value={request.occasion} />
+                        <DetailField label={t(locale, 'profileCustomer', 'bookingRequestEdit.occasion')} value={request.occasion} />
                         <DetailField
-                            label={{ de: 'Teilnehmer', en: 'Participants' }[locale]}
+                            label={t(locale, 'profileCustomer', 'bookingRequest.participants')}
                             value={formatParticipants(request.participants, { locale })}
                         />
                         {request.participants.some((participant) => participant.restrictions.length > 0) ? (
                             <DetailField
-                                label={{ de: 'Einschränkungen', en: 'Restrictions' }[locale]}
+                                label={t(locale, 'profileCustomer', 'bookingRequestEdit.restrictions')}
                                 value={
                                     <ul className="grid gap-1">
                                         {request.participants
@@ -426,7 +385,7 @@ export function ProfileCustomerBookingRequestPage({
                             />
                         ) : null}
                         <DetailField
-                            label={{ de: 'Datum & Uhrzeit', en: 'Date & time' }[locale]}
+                            label={t(locale, 'profileCustomer', 'bookingRequestEdit.dateTime')}
                             value={
                                 <BookingWhenLabel
                                     {...formatBookingEventWhenFromCountry({
@@ -440,29 +399,22 @@ export function ProfileCustomerBookingRequestPage({
                             }
                         />
                         <DetailField
-                            label={{ de: 'Präferenzen', en: 'Preferences' }[locale]}
+                            label={t(locale, 'profileCustomer', 'bookingRequestEdit.preferences')}
                             value={
                                 request.preferences.length > 0
                                     ? request.preferences.join(', ')
-                                    : { de: 'Keine Präferenzen', en: 'No preferences' }[locale]
+                                    : t(locale, 'profileCustomer', 'bookingRequest.noPreferences')
                             }
                         />
                         {priceClassLabel != null ? (
-                            <DetailField label={{ de: 'Preisklasse', en: 'Price class' }[locale]} value={priceClassLabel} />
+                            <DetailField label={t(locale, 'profileCustomer', 'bookingRequest.priceClass')} value={priceClassLabel} />
                         ) : null}
                         <DetailField
-                            label={{ de: 'Veranstaltungsort', en: 'Event location' }[locale]}
+                            label={t(locale, 'profileCustomer', 'bookingRequestEdit.venue')}
                             value={exactAddress}
                             hint={
                                 <p className="flex items-center gap-1">
-                                    <span>
-                                        {
-                                            {
-                                                de: `Köche sehen nur: ${cookVisibleAddress}`,
-                                                en: `Cooks only see: ${cookVisibleAddress}`,
-                                            }[locale]
-                                        }
-                                    </span>
+                                    <span>{t(locale, 'profileCustomer', 'bookingRequest.cooksSee', { address: cookVisibleAddress })}</span>
                                     <Popover>
                                         <PopoverTrigger asChild>
                                             <Button
@@ -470,23 +422,13 @@ export function ProfileCustomerBookingRequestPage({
                                                 variant="ghost"
                                                 size="icon-xs"
                                                 className="text-muted-foreground"
-                                                aria-label={
-                                                    {
-                                                        de: 'Mehr zur Adresssichtbarkeit',
-                                                        en: 'More about address visibility',
-                                                    }[locale]
-                                                }
+                                                aria-label={t(locale, 'profileCustomer', 'bookingRequest.addressVisibilityMore')}
                                             >
                                                 <CircleHelpIcon />
                                             </Button>
                                         </PopoverTrigger>
                                         <PopoverContent align="start" className="w-72 text-sm text-muted-foreground">
-                                            {
-                                                {
-                                                    de: 'Köche sehen vor einer gemeinsamen Zusage nur die Stadt. Die vollständige Adresse nutzen wir im Hintergrund für die genaue Reisekostenberechnung und geben sie erst danach frei.',
-                                                    en: 'Cooks only see the city until both sides accept. We still use your full address in the background for exact travel expense calculations, and share it only after that.',
-                                                }[locale]
-                                            }
+                                            {t(locale, 'profileCustomer', 'bookingRequest.addressVisibilityBody')}
                                         </PopoverContent>
                                     </Popover>
                                 </p>
@@ -495,20 +437,20 @@ export function ProfileCustomerBookingRequestPage({
                         {bookingRequestKitchenDetailsHasFacts(request.kitchenDetails, locale) ? (
                             <DetailField
                                 className={(request.kitchenDetails?.photos.length ?? 0) > 0 ? '@md:col-span-2' : undefined}
-                                label={{ de: 'Über die Küche', en: 'About the kitchen' }[locale]}
+                                label={t(locale, 'profileCustomer', 'bookingRequestEdit.aboutKitchen')}
                                 value={<BookingRequestKitchenDetailsFactContent details={request.kitchenDetails} locale={locale} />}
                             />
                         ) : null}
                         {request.setting != null ? (
                             <DetailField
-                                label={{ de: 'Wo sitzt ihr', en: 'Where you dine' }[locale]}
+                                label={t(locale, 'profileCustomer', 'bookingRequest.whereYouDine')}
                                 value={bookingRequestSettingLabel(request.setting, locale)}
                             />
                         ) : null}
                         {request.canceledAt && request.cancellationReason ? (
                             <DetailField
                                 className="@md:col-span-2"
-                                label={{ de: 'Grund', en: 'Reason' }[locale]}
+                                label={t(locale, 'profileCustomer', 'bookingRequest.reason')}
                                 value={request.cancellationReason}
                             />
                         ) : null}
@@ -557,19 +499,9 @@ export function ProfileCustomerBookingRequestPage({
                                 if (result.error || !result.data?.user.bookingRequestKitchenDetailsUpdate.success) {
                                     throw new Error('kitchen details update failed');
                                 }
-                                toast.success(
-                                    {
-                                        de: 'Küchendetails gespeichert.',
-                                        en: 'Kitchen details saved.',
-                                    }[locale],
-                                );
+                                toast.success(t(locale, 'profileCustomer', 'bookingRequest.kitchenSaved'));
                             } catch {
-                                setKitchenError(
-                                    {
-                                        de: 'Küchendetails konnten nicht gespeichert werden.',
-                                        en: 'Could not save kitchen details.',
-                                    }[locale],
-                                );
+                                setKitchenError(t(locale, 'profileCustomer', 'bookingRequest.kitchenSaveFailed'));
                             } finally {
                                 setKitchenBusy(false);
                             }
@@ -579,7 +511,9 @@ export function ProfileCustomerBookingRequestPage({
 
                 {canEditDiscount || request.promoCode != null || request.giftCard != null ? (
                     <section className="grid max-w-xl gap-4">
-                        <h2 className="font-serif text-2xl/tight text-foreground">{{ de: 'Rabatt', en: 'Discount' }[locale]}</h2>
+                        <h2 className="font-serif text-2xl/tight text-foreground">
+                            {t(locale, 'profileCustomer', 'bookingRequest.discount')}
+                        </h2>
                         <BookingRequestDiscountEditor
                             bookingRequestId={bookingRequestId}
                             locale={locale}
@@ -606,51 +540,34 @@ export function ProfileCustomerBookingRequestPage({
                     setCancelConfirmOpen(true);
                 }}
                 onDiscountApplied={() => {
-                    toast.success(
-                        {
-                            de: 'Dein Rabatt von 50 € wurde erfolgreich auf diese Buchung angewendet.',
-                            en: 'Your 50 € discount has been successfully applied to this booking.',
-                        }[locale],
-                    );
+                    toast.success(t(locale, 'profileCustomer', 'bookingRequest.discountApplied'));
                 }}
                 onRecallRequested={() => {
-                    toast.success(
-                        {
-                            de: 'Wir haben deine Anfrage erhalten und rufen dich so schnell wie möglich zurück.',
-                            en: 'We have received your request and will call you back as soon as possible.',
-                        }[locale],
-                    );
+                    toast.success(t(locale, 'profileCustomer', 'bookingRequest.callbackReceived'));
                 }}
             />
 
             <AlertDialog open={cancelConfirmOpen} onOpenChange={setCancelConfirmOpen}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>
-                            {{ de: 'Anfrage wirklich stornieren?', en: 'Really cancel this request?' }[locale]}
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {
-                                {
-                                    de: 'Bitte gib kurz an, warum du die Anfrage stornierst.',
-                                    en: 'Please briefly tell us why you are cancelling.',
-                                }[locale]
-                            }
-                        </AlertDialogDescription>
+                        <AlertDialogTitle>{t(locale, 'profileCustomer', 'bookingRequest.cancelTitle')}</AlertDialogTitle>
+                        <AlertDialogDescription>{t(locale, 'profileCustomer', 'bookingRequest.cancelBody')}</AlertDialogDescription>
                     </AlertDialogHeader>
                     <Textarea
                         value={cancelReason}
                         onChange={(event) => setCancelReason(event.target.value)}
-                        placeholder={{ de: 'Grund…', en: 'Reason…' }[locale]}
+                        placeholder={t(locale, 'profileCustomer', 'bookingRequest.reasonPlaceholder')}
                         rows={3}
                     />
                     {cancelError ? (
                         <p className="text-sm text-destructive" role="alert">
-                            {{ de: 'Stornierung fehlgeschlagen.', en: 'Cancellation failed.' }[locale]}
+                            {t(locale, 'profileCustomer', 'bookingRequest.cancelFailed')}
                         </p>
                     ) : null}
                     <AlertDialogFooter>
-                        <AlertDialogCancel disabled={cancelBusy}>{{ de: 'Abbrechen', en: 'Back' }[locale]}</AlertDialogCancel>
+                        <AlertDialogCancel disabled={cancelBusy}>
+                            {t(locale, 'profileCustomer', 'bookingRequest.cancelBack')}
+                        </AlertDialogCancel>
                         <AlertDialogAction
                             disabled={cancelBusy || cancelReason.trim().length === 0}
                             onClick={(event) => {
@@ -658,7 +575,7 @@ export function ProfileCustomerBookingRequestPage({
                                 void confirmCancel();
                             }}
                         >
-                            {{ de: 'Endgültig stornieren', en: 'Cancel permanently' }[locale]}
+                            {t(locale, 'profileCustomer', 'bookingRequest.cancelPermanently')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

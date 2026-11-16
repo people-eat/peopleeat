@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { createRequest, useClient } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
-import { userDisplayName } from '../../../shared';
+import { t } from '../../../i18n/t';
+import { inlineCopy, userDisplayName } from '../../../shared';
 import { formatInboxListTimestamp } from '../../chat/formatInboxListTimestamp';
 import { AdminListPaginationBar } from '../../components/AdminListPaginationBar';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
@@ -19,7 +20,8 @@ import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { cn } from '../../utils/cn';
-import { adminStubRouteBySlug } from './adminCatalog';
+import type { Locale } from '../../utils/locale';
+import { adminStubRouteBySlug, adminStubRouteDescription, adminStubRouteTitle } from './adminCatalog';
 import {
     adminListPageCount,
     adminListPageSize,
@@ -33,8 +35,12 @@ import { adminOverviewLinkCardClassName } from './adminOverviewLinkCard';
 
 const route = adminStubRouteBySlug('whats-app-chats');
 
-export const adminWhatsAppChatsPageTitle = route.title;
-export const adminWhatsAppChatsPageDescription = route.description;
+export function adminWhatsAppChatsPageTitle(locale: Locale): string {
+    return adminStubRouteTitle(route.slug, locale);
+}
+export function adminWhatsAppChatsPageDescription(locale: Locale): string {
+    return adminStubRouteDescription(route.slug, locale);
+}
 
 export type AdminWhatsAppChatsSearch = {
     q?: string;
@@ -168,9 +174,9 @@ export function AdminWhatsAppChatsPage({ data, search }: { data: GqlCAdminWhatsA
                 <div className="grid gap-2">
                     <h1 className="flex items-center gap-3 font-serif text-4xl/tight text-foreground">
                         <MessageSquareIcon className="size-8 text-muted-foreground" aria-hidden />
-                        {adminWhatsAppChatsPageTitle[locale]}
+                        {adminWhatsAppChatsPageTitle(locale)}
                     </h1>
-                    <p className="text-muted-foreground">{adminWhatsAppChatsPageDescription[locale]}</p>
+                    <p className="text-muted-foreground">{adminWhatsAppChatsPageDescription(locale)}</p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
@@ -178,19 +184,9 @@ export function AdminWhatsAppChatsPage({ data, search }: { data: GqlCAdminWhatsA
                         type="search"
                         value={draftQ}
                         onChange={(event) => setDraftQ(event.target.value)}
-                        placeholder={
-                            {
-                                de: 'Telefon, Name oder Nutzer suchen…',
-                                en: 'Search phone, name, or user…',
-                            }[locale]
-                        }
+                        placeholder={t(locale, 'admin', 'copy.searchPhoneNameOrUser')}
                         className="w-full min-w-0 basis-full @5xl:max-w-sm @5xl:flex-1 @5xl:basis-56"
-                        aria-label={
-                            {
-                                de: 'WhatsApp-Chats suchen',
-                                en: 'Search WhatsApp chats',
-                            }[locale]
-                        }
+                        aria-label={t(locale, 'admin', 'copy.searchWhatsappChats')}
                     />
                     <div className="flex w-full min-w-0 flex-wrap items-center gap-3 @5xl:w-auto @5xl:flex-1">
                         <Tabs
@@ -201,30 +197,31 @@ export function AdminWhatsAppChatsPage({ data, search }: { data: GqlCAdminWhatsA
                             }}
                         >
                             <TabsList>
-                                <TabsTrigger value="all">{{ de: 'Alle', en: 'All' }[locale]}</TabsTrigger>
-                                <TabsTrigger value="unread">{{ de: 'Ungelesen', en: 'Unread' }[locale]}</TabsTrigger>
+                                <TabsTrigger value="all">{t(locale, 'admin', 'copy.all')}</TabsTrigger>
+                                <TabsTrigger value="unread">{t(locale, 'admin', 'copy.unread')}</TabsTrigger>
                             </TabsList>
                         </Tabs>
                         <p className="text-sm text-muted-foreground tabular-nums xl:ml-auto">
-                            {
+                            {inlineCopy(
                                 {
                                     de: `${total} ${total === 1 ? 'Chat' : 'Chats'}`,
                                     en: `${total} ${total === 1 ? 'chat' : 'chats'}`,
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                         </p>
                     </div>
                 </div>
 
                 {conversations.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">{{ de: 'Keine WhatsApp-Chats.', en: 'No WhatsApp chats.' }[locale]}</p>
+                    <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noWhatsappChats')}</p>
                 ) : (
                     <ul className="grid auto-rows-fr grid-cols-1 gap-2 @2xl:grid-cols-2 @5xl:grid-cols-3">
                         {conversations.map((conversation) => {
                             const title = conversation.customer
                                 ? userDisplayName(conversation.customer)
                                 : conversation.displayName?.trim() || conversation.phoneNumber;
-                            const preview = conversation.lastMessagePreview.trim() || { de: 'Medien', en: 'Media' }[locale];
+                            const preview = conversation.lastMessagePreview.trim() || t(locale, 'admin', 'copy.media');
                             const profilePictureUrl = conversation.customer?.profilePicture?.url ?? null;
                             const unread = conversation.adminUnreadCount > 0;
                             return (
@@ -267,12 +264,13 @@ export function AdminWhatsAppChatsPage({ data, search }: { data: GqlCAdminWhatsA
                                                 </span>
                                                 <NotificationBadge
                                                     count={conversation.adminUnreadCount}
-                                                    label={
+                                                    label={inlineCopy(
                                                         {
                                                             de: `${conversation.adminUnreadCount} ungelesene Nachrichten`,
                                                             en: `${conversation.adminUnreadCount} unread messages`,
-                                                        }[locale]
-                                                    }
+                                                        },
+                                                        locale,
+                                                    )}
                                                     placement="inline"
                                                     className="size-5 bg-green-500 text-[11px] shadow-none"
                                                 />

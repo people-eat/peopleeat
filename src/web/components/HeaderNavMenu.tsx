@@ -1,19 +1,17 @@
 import { Link } from '@tanstack/react-router';
 import { LogInIcon, MenuIcon, UserIcon, UserStarIcon } from 'lucide-react';
-import type { Locale } from '../../shared/locale';
-import { useLocale } from '../hooks/useLocale';
 import { useSessionImpersonation } from '../hooks/useSessionImpersonation';
+import { useT } from '../hooks/useT';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from './base/dropdown-menu';
 import type { PublicHeaderUser } from './Header';
 import { HeaderButton } from './HeaderButton';
 import { HEADER_NAV_ITEMS } from './HeaderNav';
 import { SessionImpersonationReturnMenuItem } from './SessionImpersonationReturnButton';
 
-export function HeaderNavMenu({ user, locale: localeProp }: { user: PublicHeaderUser; locale?: Locale }) {
-    const routeLocale = useLocale();
-    const locale = localeProp ?? routeLocale;
+export function HeaderNavMenu({ user }: { user: PublicHeaderUser; locale?: string }) {
+    const { t } = useT('public');
     const { active: impersonating } = useSessionImpersonation();
-    const menuLabel = { de: 'Menü', en: 'Menu' }[locale];
+    const menuLabel = t('nav.menu');
 
     return (
         <DropdownMenu>
@@ -27,7 +25,7 @@ export function HeaderNavMenu({ user, locale: localeProp }: { user: PublicHeader
                     <DropdownMenuItem key={item.to} asChild>
                         <Link to={item.to}>
                             <item.icon aria-hidden />
-                            {item.label[locale]}
+                            {t(item.labelKey)}
                         </Link>
                     </DropdownMenuItem>
                 ))}
@@ -36,7 +34,7 @@ export function HeaderNavMenu({ user, locale: localeProp }: { user: PublicHeader
                     <DropdownMenuItem asChild>
                         <Link to="/{-$locale}/log-on">
                             <LogInIcon aria-hidden />
-                            {{ de: 'Anmelden', en: 'Log on' }[locale]}
+                            {t('nav.logOn')}
                         </Link>
                     </DropdownMenuItem>
                 ) : (
@@ -44,7 +42,7 @@ export function HeaderNavMenu({ user, locale: localeProp }: { user: PublicHeader
                         <DropdownMenuItem asChild>
                             <Link to="/{-$locale}/profile">
                                 <UserIcon aria-hidden />
-                                {{ de: 'Profil', en: 'Profile' }[locale]}
+                                {t('nav.profile')}
                             </Link>
                         </DropdownMenuItem>
                         {impersonating ? (
@@ -53,7 +51,7 @@ export function HeaderNavMenu({ user, locale: localeProp }: { user: PublicHeader
                             <DropdownMenuItem asChild>
                                 <Link to="/{-$locale}/admin">
                                     <UserStarIcon aria-hidden />
-                                    {{ de: 'Administration', en: 'Administration' }[locale]}
+                                    {t('nav.administration')}
                                 </Link>
                             </DropdownMenuItem>
                         ) : null}

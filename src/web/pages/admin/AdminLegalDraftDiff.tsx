@@ -1,5 +1,6 @@
 import { diffLines } from 'diff';
 
+import { t } from '../../../i18n/t';
 import { legalBodyDeNormalize } from '../../../shared/legalBodyDeNormalize';
 import { useLocale } from '../../hooks/useLocale';
 import { cn } from '../../utils/cn';
@@ -33,36 +34,18 @@ export function AdminLegalDraftDiff({ baseline, next }: { baseline: string | nul
     const locale = useLocale();
 
     if (baseline === null) {
-        return (
-            <p className="text-sm text-muted-foreground">
-                {
-                    {
-                        de: 'Keine veröffentlichte Version zum Vergleich.',
-                        en: 'No published version to compare.',
-                    }[locale]
-                }
-            </p>
-        );
+        return <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noPublishedVersionToCompare')}</p>;
     }
 
     if (legalBodyDeNormalize(baseline) === legalBodyDeNormalize(next)) {
-        return (
-            <p className="text-sm text-muted-foreground">
-                {
-                    {
-                        de: 'Keine Änderungen gegenüber der aktuellen Version.',
-                        en: 'No changes from the current published version.',
-                    }[locale]
-                }
-            </p>
-        );
+        return <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noChangesFromTheCurrentPublishedVersion')}</p>;
     }
 
     const lines = adminLegalDiffLines(baseline, next);
 
     return (
         <pre
-            aria-label={{ de: 'Änderungen gegenüber der aktuellen Version', en: 'Changes from the current published version' }[locale]}
+            aria-label={t(locale, 'admin', 'copy.changesFromTheCurrentPublishedVersion')}
             className="overflow-x-auto font-mono text-sm/relaxed whitespace-pre-wrap"
         >
             {lines.map((line) => {

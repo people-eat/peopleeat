@@ -1,6 +1,7 @@
 import type { ContentSection } from '../../shared/contentSection';
 import { contentLocaleText } from '../../shared/contentSection';
 import type { Locale } from '../../shared/locale';
+import { useT } from '../hooks/useT';
 import { SectionBlogHero } from '../sections/SectionBlogHero';
 import { SectionChefForAnyOccasion } from '../sections/SectionChefForAnyOccasion';
 import type { SectionChefForAnyOccasionPromo } from '../sections/SectionChefForAnyOccasion';
@@ -94,13 +95,14 @@ export function ContentPageView({
     onLocaleChange?: (locale: Locale) => void;
     user: PublicHeaderUser;
 }) {
+    const { t } = useT('common');
     const heroVariant = page.heroVariant ?? 'fullBleed';
     const headline = contentLocaleText(page.headlineDe, page.headlineEn, locale).trim();
     const subheadline = contentLocaleText(page.subHeadlineDe, page.subHeadlineEn, locale).trim();
     const heroSrc = page.heroImageUrl ?? page.heroImageFallbackUrl ?? null;
     const fullBleedMedia =
         heroVariant === 'fullBleed' && heroSrc ? { src: heroSrc, type: 'image' as const, alt: headline || heroSrc } : null;
-    const noMediaLabel = { de: 'Kein Hero-Bild', en: 'No hero image' }[locale];
+    const noMediaLabel = t('m.noHeroImage');
 
     return (
         // Wrapper owns `@container` so Header / Footer / SectionHero / sections

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
+import { t } from '../../../i18n/t';
 import { parseMinuteOfDay } from '../../../shared/cookCallAvailability';
 import { Button } from '../../components/base/button';
 import { Checkbox } from '../../components/base/checkbox';
@@ -66,27 +67,27 @@ export function ProfileCookCallsExceptionDialog({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>{{ de: 'Ausnahme', en: 'Exception' }[locale]}</DialogTitle>
+                    <DialogTitle>{t(locale, 'profileCook', 'calls.exception')}</DialogTitle>
                 </DialogHeader>
                 <div className="grid gap-4">
                     <div className="grid gap-2">
-                        <span className="text-sm font-medium">{{ de: 'Art', en: 'Type' }[locale]}</span>
+                        <span className="text-sm font-medium">{t(locale, 'profileCook', 'calls.exceptionType')}</span>
                         <Select value={type} onValueChange={(value) => setType(value as 'BLOCK' | 'OPEN')}>
                             <SelectTrigger className="w-full">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="BLOCK">{{ de: 'Geblockt', en: 'Blocked' }[locale]}</SelectItem>
-                                <SelectItem value="OPEN">{{ de: 'Zusätzlich verfügbar', en: 'Extra availability' }[locale]}</SelectItem>
+                                <SelectItem value="BLOCK">{t(locale, 'profileCook', 'calls.blocked')}</SelectItem>
+                                <SelectItem value="OPEN">{t(locale, 'profileCook', 'calls.extraAvailability')}</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
                     <div className="grid gap-2">
-                        <span className="text-sm font-medium">{{ de: 'Datum', en: 'Date' }[locale]}</span>
+                        <span className="text-sm font-medium">{t(locale, 'profileCook', 'actions.date')}</span>
                         <DatePicker
                             value={date}
                             onValueChange={(next) => next && setDate(next)}
-                            placeholder={{ de: 'Datum wählen', en: 'Pick a date' }[locale]}
+                            placeholder={t(locale, 'profileCook', 'calls.pickDate')}
                             locale={DATE_FNS_LOCALE[locale]}
                             disabled={{ before: minDate }}
                             className="w-full"
@@ -94,16 +95,16 @@ export function ProfileCookCallsExceptionDialog({
                     </div>
                     <label className="flex items-center gap-2 text-sm">
                         <Checkbox checked={allDay} onCheckedChange={(checked) => setAllDay(checked === true)} />
-                        {{ de: 'Ganztägig', en: 'All day' }[locale]}
+                        {t(locale, 'profileCook', 'calls.allDayLabel')}
                     </label>
                     {!allDay && (
                         <div className="grid gap-2 sm:grid-cols-2">
                             <div className="grid gap-2">
-                                <span className="text-sm font-medium">{{ de: 'Von', en: 'From' }[locale]}</span>
+                                <span className="text-sm font-medium">{t(locale, 'profileCook', 'actions.from')}</span>
                                 <Input type="time" step={900} value={startTime} onChange={(event) => setStartTime(event.target.value)} />
                             </div>
                             <div className="grid gap-2">
-                                <span className="text-sm font-medium">{{ de: 'Bis', en: 'To' }[locale]}</span>
+                                <span className="text-sm font-medium">{t(locale, 'profileCook', 'actions.to')}</span>
                                 <Input type="time" step={900} value={endTime} onChange={(event) => setEndTime(event.target.value)} />
                             </div>
                         </div>
@@ -122,7 +123,7 @@ export function ProfileCookCallsExceptionDialog({
                             });
                         }}
                     >
-                        {saving ? { de: 'Speichern…', en: 'Saving…' }[locale] : { de: 'Speichern', en: 'Save' }[locale]}
+                        {saving ? t(locale, 'profileCook', 'actions.saving') : t(locale, 'common', 'save')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

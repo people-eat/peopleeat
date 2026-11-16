@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { t } from '../../../i18n/t';
 import { userDisplayName } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
@@ -30,16 +31,15 @@ import {
     AdminSupportRequestUnreadNotificationCountResetDocument,
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
+import type { Locale } from '../../utils/locale';
 import { adminSupportRequestsPageTitle } from './AdminSupportRequestsPage';
 
-export const adminSupportRequestPageTitle = {
-    de: 'Support-Anfrage',
-    en: 'Support request',
-} as const;
-export const adminSupportRequestPageDescription = {
-    de: 'Support-Chat bearbeiten.',
-    en: 'Handle support chat.',
-} as const;
+export function adminSupportRequestPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.supportRequest.title');
+}
+export function adminSupportRequestPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.supportRequest.description');
+}
 
 export function adminSupportRequestPageVariables(supportRequestId: string) {
     return { supportRequestId };
@@ -84,9 +84,8 @@ export function AdminSupportRequestPage({ data, supportRequestId }: { data: GqlC
     }, [resetUnread, supportRequest.adminUnreadNotificationCount, supportRequestId]);
 
     const peerDisplay = userDisplayName(supportRequest.customer);
-    const statusLabel =
-        supportRequest.status === 'RESOLVED' ? { de: 'Erledigt', en: 'Resolved' }[locale] : { de: 'Offen', en: 'Open' }[locale];
-    const markResolvedLabel = { de: 'Als erledigt markieren', en: 'Mark resolved' }[locale];
+    const statusLabel = supportRequest.status === 'RESOLVED' ? t(locale, 'admin', 'copy.resolved') : t(locale, 'admin', 'copy.open');
+    const markResolvedLabel = t(locale, 'admin', 'copy.markResolved');
 
     async function onResolveConfirm() {
         setResolveBusy(true);
@@ -101,7 +100,7 @@ export function AdminSupportRequestPage({ data, supportRequestId }: { data: GqlC
     return (
         <AdminPageChrome
             crumbs={[
-                { label: adminSupportRequestsPageTitle[locale], to: '/{-$locale}/admin/support-requests' },
+                { label: adminSupportRequestsPageTitle(locale), to: '/{-$locale}/admin/support-requests' },
                 { label: supportRequest.subject },
             ]}
             contentClassName="min-h-0 overflow-hidden gap-0 pb-0"
@@ -120,9 +119,7 @@ export function AdminSupportRequestPage({ data, supportRequestId }: { data: GqlC
                             <span className="text-sm font-semibold text-foreground">{peerDisplay}</span>
                             <StatusBadge tone={supportRequest.status === 'RESOLVED' ? 'success' : 'warning'}>{statusLabel}</StatusBadge>
                             {supportRequest.bookingRequest ? null : (
-                                <span className="text-sm text-muted-foreground">
-                                    {{ de: 'Allgemeine Anfrage', en: 'General request' }[locale]}
-                                </span>
+                                <span className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.generalRequest')}</span>
                             )}
                         </>
                     }
@@ -176,16 +173,9 @@ export function AdminSupportRequestPage({ data, supportRequestId }: { data: GqlC
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>
-                            {{ de: 'Anfrage als erledigt markieren?', en: 'Mark this request as resolved?' }[locale]}
-                        </AlertDialogTitle>
+                        <AlertDialogTitle>{t(locale, 'admin', 'copy.markThisRequestAsResolved')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            {
-                                {
-                                    de: 'Die Anfrage verschwindet aus dem offenen Posteingang. Standardmäßig erhält der Kunde eine Abschluss-E-Mail und eine In-App-Benachrichtigung. Eine neue Nachricht vom Kunden öffnet sie wieder.',
-                                    en: 'The request leaves the open inbox. By default the customer gets a closed-case email and an in-app notification. A new message from the customer reopens it.',
-                                }[locale]
-                            }
+                            {t(locale, 'admin', 'copy.theRequestLeavesTheOpenInboxByDefaultTheCustomerGetsAClosedC')}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <label className="flex items-start gap-2 text-sm">
@@ -194,17 +184,10 @@ export function AdminSupportRequestPage({ data, supportRequestId }: { data: GqlC
                             disabled={resolveBusy}
                             onCheckedChange={(checked) => setResolveWithoutNotification(checked === true)}
                         />
-                        <span>
-                            {
-                                {
-                                    de: 'Ohne Benachrichtigung erledigen (keine E-Mail, kein ungelesenes Badge)',
-                                    en: 'Resolve without notification (no email, no unread badge)',
-                                }[locale]
-                            }
-                        </span>
+                        <span>{t(locale, 'admin', 'copy.resolveWithoutNotificationNoEmailNoUnreadBadge')}</span>
                     </label>
                     <AlertDialogFooter>
-                        <AlertDialogCancel disabled={resolveBusy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogCancel disabled={resolveBusy}>{t(locale, 'admin', 'copy.cancel')}</AlertDialogCancel>
                         <AlertDialogAction
                             disabled={resolveBusy}
                             onClick={(event) => {
@@ -212,9 +195,7 @@ export function AdminSupportRequestPage({ data, supportRequestId }: { data: GqlC
                                 void onResolveConfirm();
                             }}
                         >
-                            {resolveBusy
-                                ? { de: 'Wird erledigt…', en: 'Resolving…' }[locale]
-                                : { de: 'Als erledigt markieren', en: 'Mark resolved' }[locale]}
+                            {resolveBusy ? t(locale, 'admin', 'copy.resolving') : t(locale, 'admin', 'copy.markResolved')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

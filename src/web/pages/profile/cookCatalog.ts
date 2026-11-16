@@ -14,7 +14,8 @@ import {
     WalletIcon,
 } from 'lucide-react';
 
-import type { Locale } from '../../utils/locale';
+import { t } from '../../../i18n/t';
+import type { Locale } from '../../../shared/locale';
 
 export type CookNavSlug =
     | 'booking-request-pool'
@@ -34,133 +35,129 @@ export type CookNavRoute = {
     slug: CookNavSlug;
     path: `/profile/${CookNavSlug}`;
     to: `/{-$locale}/profile/${CookNavSlug}`;
-    title: Record<Locale, string>;
-    description: Record<Locale, string>;
+    title: (locale: Locale) => string;
+    description: (locale: Locale) => string;
     icon: LucideIcon;
 };
+
+const NAV_KEY: Record<CookNavSlug, string> = {
+    'booking-request-pool': 'bookingRequestPool',
+    'booking-request-offers': 'bookingRequestOffers',
+    analytics: 'analytics',
+    invite: 'invite',
+    'chef-profile': 'chefProfile',
+    travel: 'travel',
+    public: 'public',
+    meals: 'meals',
+    menus: 'menus',
+    'offer-addons': 'offerAddons',
+    wallet: 'wallet',
+    calls: 'calls',
+};
+
+function cookNavTitle(slug: CookNavSlug) {
+    return (locale: Locale) => t(locale, 'profileCook', `nav.${NAV_KEY[slug]}.title`);
+}
+
+function cookNavDescription(slug: CookNavSlug) {
+    return (locale: Locale) => t(locale, 'profileCook', `nav.${NAV_KEY[slug]}.description`);
+}
 
 export const COOK_NAV_ROUTES: readonly CookNavRoute[] = [
     {
         slug: 'booking-request-pool',
         path: '/profile/booking-request-pool',
         to: '/{-$locale}/profile/booking-request-pool',
-        title: { de: 'Anfragen-Pool', en: 'Booking request pool' },
-        description: {
-            de: 'Anfragen in deinem Reiseradius, plus Gäste, die dich direkt über dein Kochprofil angefragt haben.',
-            en: 'Requests in your travel radius, plus guests who requested you from your chef profile.',
-        },
+        title: cookNavTitle('booking-request-pool'),
+        description: cookNavDescription('booking-request-pool'),
         icon: RadarIcon,
     },
     {
         slug: 'booking-request-offers',
         path: '/profile/booking-request-offers',
         to: '/{-$locale}/profile/booking-request-offers',
-        title: { de: 'Angebote', en: 'Sent offers' },
-        description: { de: 'Deine Angebote auf Buchungsanfragen.', en: 'Your offers on booking requests.' },
+        title: cookNavTitle('booking-request-offers'),
+        description: cookNavDescription('booking-request-offers'),
         icon: FileOutputIcon,
     },
     {
         slug: 'analytics',
         path: '/profile/analytics',
         to: '/{-$locale}/profile/analytics',
-        title: { de: 'Analysen', en: 'Analytics' },
-        description: {
-            de: 'Profilbesuche, Reaktionszeiten, Angebote und Conversion.',
-            en: 'Profile views, response times, offers, and conversion.',
-        },
+        title: cookNavTitle('analytics'),
+        description: cookNavDescription('analytics'),
         icon: BarChart3Icon,
     },
     {
         slug: 'invite',
         path: '/profile/invite',
         to: '/{-$locale}/profile/invite',
-        title: { de: 'Köche einladen', en: 'Invite chefs' },
-        description: {
-            de: 'Lade Köche ein, die du kennst, und verfolge ihren Fortschritt.',
-            en: 'Invite chefs you know and track their progress.',
-        },
+        title: cookNavTitle('invite'),
+        description: cookNavDescription('invite'),
         icon: UserPlusIcon,
     },
     {
         slug: 'chef-profile',
         path: '/profile/chef-profile',
         to: '/{-$locale}/profile/chef-profile',
-        title: { de: 'Kochprofil', en: 'Chef profile' },
-        description: {
-            de: 'Biografie, Küchenstil und Kochphilosophie.',
-            en: 'Biography, cuisine style, and cooking philosophy.',
-        },
+        title: cookNavTitle('chef-profile'),
+        description: cookNavDescription('chef-profile'),
         icon: ChefHatIcon,
     },
     {
         slug: 'public',
         path: '/profile/public',
         to: '/{-$locale}/profile/public',
-        title: { de: 'Öffentliches Profil', en: 'Public profile' },
-        description: {
-            de: 'Sichtbarkeit, Vorschau und Link zu deinem öffentlichen Kochprofil.',
-            en: 'Visibility, preview, and link to your public chef profile.',
-        },
+        title: cookNavTitle('public'),
+        description: cookNavDescription('public'),
         icon: EyeIcon,
     },
     {
         slug: 'travel',
         path: '/profile/travel',
         to: '/{-$locale}/profile/travel',
-        title: { de: 'Reiseeinstellungen', en: 'Travel settings' },
-        description: {
-            de: 'Startadresse, Distanz und Reisekosten.',
-            en: 'Travel origin, distance, and expenses.',
-        },
+        title: cookNavTitle('travel'),
+        description: cookNavDescription('travel'),
         icon: MapPinIcon,
     },
     {
         slug: 'meals',
         path: '/profile/meals',
         to: '/{-$locale}/profile/meals',
-        title: { de: 'Gerichte', en: 'Meals' },
-        description: { de: 'Deine Gerichte verwalten.', en: 'Manage your meals.' },
+        title: cookNavTitle('meals'),
+        description: cookNavDescription('meals'),
         icon: UtensilsIcon,
     },
     {
         slug: 'menus',
         path: '/profile/menus',
         to: '/{-$locale}/profile/menus',
-        title: { de: 'Menüs', en: 'Menus' },
-        description: { de: 'Deine Menüs verwalten.', en: 'Manage your menus.' },
+        title: cookNavTitle('menus'),
+        description: cookNavDescription('menus'),
         icon: BookOpenIcon,
     },
     {
         slug: 'offer-addons',
         path: '/profile/offer-addons',
         to: '/{-$locale}/profile/offer-addons',
-        title: { de: 'Zusatzleistungen', en: 'Offer extras' },
-        description: {
-            de: 'Optionale Leistungen für deine Angebote, etwa Wein oder eine Torte.',
-            en: 'Optional extras for your offers, such as wine or cake.',
-        },
+        title: cookNavTitle('offer-addons'),
+        description: cookNavDescription('offer-addons'),
         icon: PackagePlusIcon,
     },
     {
         slug: 'wallet',
         path: '/profile/wallet',
         to: '/{-$locale}/profile/wallet',
-        title: { de: 'Wallet', en: 'Wallet' },
-        description: {
-            de: 'Stripe Connect Auszahlungen einrichten.',
-            en: 'Set up Stripe Connect payouts.',
-        },
+        title: cookNavTitle('wallet'),
+        description: cookNavDescription('wallet'),
         icon: WalletIcon,
     },
     {
         slug: 'calls',
         path: '/profile/calls',
         to: '/{-$locale}/profile/calls',
-        title: { de: 'Gesprächstermine', en: 'Call appointments' },
-        description: {
-            de: 'Anrufplanung für Kennenlerngespräche.',
-            en: 'Call scheduling for intro conversations.',
-        },
+        title: cookNavTitle('calls'),
+        description: cookNavDescription('calls'),
         icon: PhoneIcon,
     },
 ];

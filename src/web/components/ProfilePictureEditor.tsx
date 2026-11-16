@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { toast } from 'sonner';
+import { inlineCopy } from '../../shared';
 
 import { uploadErrorMessage, uploadFile } from '../chat/fileUpload';
 import { useLocale } from '../hooks/useLocale';
@@ -58,10 +59,13 @@ export function ProfilePictureEditor({
         setError(null);
         if (!file.type.startsWith('image/')) {
             setError(
-                {
-                    de: 'Bitte ein Bild (JPEG, PNG, WebP oder GIF) wählen.',
-                    en: 'Please choose an image (JPEG, PNG, WebP, or GIF).',
-                }[locale],
+                inlineCopy(
+                    {
+                        de: 'Bitte ein Bild (JPEG, PNG, WebP oder GIF) wählen.',
+                        en: 'Please choose an image (JPEG, PNG, WebP, or GIF).',
+                    },
+                    locale,
+                ),
             );
             if (inputRef.current) inputRef.current.value = '';
             return;
@@ -79,7 +83,7 @@ export function ProfilePictureEditor({
         try {
             const uploaded = await uploadFile(file);
             await onLink(uploaded.fileUploadId);
-            toast.success({ de: 'Profilbild gespeichert.', en: 'Profile picture saved.' }[locale]);
+            toast.success(inlineCopy({ de: 'Profilbild gespeichert.', en: 'Profile picture saved.' }, locale));
         } catch (uploadError) {
             setError(uploadErrorMessage(uploadError, locale));
             throw uploadError instanceof Error ? uploadError : new Error('Profile picture upload failed');
@@ -101,7 +105,7 @@ export function ProfilePictureEditor({
         setBusy(true);
         try {
             await onClear();
-            toast.success({ de: 'Profilbild entfernt.', en: 'Profile picture removed.' }[locale]);
+            toast.success(inlineCopy({ de: 'Profilbild entfernt.', en: 'Profile picture removed.' }, locale));
         } catch (clearError) {
             setError(uploadErrorMessage(clearError, locale));
         } finally {
@@ -135,16 +139,17 @@ export function ProfilePictureEditor({
                     />
                     <div className="flex flex-wrap gap-2">
                         <Button type="button" variant="outline" size="sm" disabled={actionBusy} onClick={() => inputRef.current?.click()}>
-                            {
+                            {inlineCopy(
                                 {
                                     de: busy ? 'Speichert…' : 'Bild auswählen',
                                     en: busy ? 'Saving…' : 'Select picture',
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                         </Button>
                         {profilePictureUrl != null ? (
                             <Button type="button" variant="outline" size="sm" disabled={actionBusy} onClick={() => void onClearClick()}>
-                                {{ de: 'Bild entfernen', en: 'Remove picture' }[locale]}
+                                {inlineCopy({ de: 'Bild entfernen', en: 'Remove picture' }, locale)}
                             </Button>
                         ) : null}
                     </div>

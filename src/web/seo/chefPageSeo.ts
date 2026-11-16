@@ -1,3 +1,4 @@
+import { t } from '../../i18n/t';
 import { contentLocaleText } from '../../shared/contentSection';
 import type { Locale } from '../utils/locale';
 
@@ -19,8 +20,8 @@ export function chefPageCityLabel(
 }
 
 export function chefPageTitle(locale: Locale, name: string, city: string | null): string {
-    const role = { de: `${name}, Privatkoch`, en: `${name}, private chef` }[locale];
-    const withCity = city ? { de: `${name}, Privatkoch in ${city}`, en: `${name}, private chef in ${city}` }[locale] : role;
+    const role = t(locale, 'public', 'chef.seoTitleRole', { name });
+    const withCity = city ? t(locale, 'public', 'chef.seoTitleWithCity', { name, city }) : role;
     if (withCity.length <= TITLE_MAX) return withCity;
     if (role.length <= TITLE_MAX) return role;
     if (name.length <= TITLE_MAX) return name;
@@ -46,16 +47,11 @@ export function chefPageDescription(
 ): string {
     const summary = collapse(input.biographySummary);
     if (summary.length >= DESCRIPTION_MIN) return clip(summary, DESCRIPTION_MAX);
-    const cityBit = input.city ? ` in ${input.city}` : '';
     const cuisine = input.cuisineStyle?.trim() ?? '';
-    const cuisineBit = cuisine.length > 0 ? { de: ` Küche: ${cuisine}.`, en: ` Cuisine: ${cuisine}.` }[locale] : '';
-    const base = {
-        de: `${input.name} kocht als Privatkoch${cityBit}.${cuisineBit}`,
-        en: `${input.name} cooks as a private chef${cityBit}.${cuisineBit}`,
-    }[locale];
-    const closer = {
-        de: ' Unverbindliche Anfrage über peopleeat.',
-        en: ' Send a no-obligation request on peopleeat.',
-    }[locale];
-    return clip(`${base}${closer}`, DESCRIPTION_MAX);
+    const cuisineBit = cuisine.length > 0 ? t(locale, 'public', 'chef.seoCuisine', { cuisine }) : '';
+    const base = input.city
+        ? t(locale, 'public', 'chef.seoBaseWithCity', { name: input.name, city: input.city })
+        : t(locale, 'public', 'chef.seoBase', { name: input.name });
+    const closer = t(locale, 'public', 'chef.seoCloser');
+    return clip(`${base}${cuisineBit}${closer}`, DESCRIPTION_MAX);
 }

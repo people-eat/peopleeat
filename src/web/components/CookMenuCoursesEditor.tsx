@@ -6,13 +6,14 @@ import { CSS } from '@dnd-kit/utilities';
 import { ArrowDownIcon, ArrowUpIcon, CheckIcon, ChevronDownIcon, GripVerticalIcon, PencilIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
+import { inlineCopy } from '../../shared';
 
+import type { InlineCopy } from '../../shared';
 import { idCreate } from '../../shared/idCreate';
 import { useLocale } from '../hooks/useLocale';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { animateListReorder } from '../utils/animateListReorder';
 import { cn } from '../utils/cn';
-import type { Locale } from '../utils/locale';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -50,7 +51,7 @@ export type CookMenuCourseMealOption = {
     publishedAt?: string | null;
 };
 
-const COURSE_TITLE_PRESETS: Record<Locale, string[]> = {
+const COURSE_TITLE_PRESETS: InlineCopy<string[]> = {
     de: ['Amuse Bouche', 'Vorspeise', 'Hauptspeise', 'Dessert', 'Zwischengang', 'Käsegang', 'Kindergang', 'Fingerfood', 'Weinbegleitung'],
     en: [
         'Amuse Bouche',
@@ -119,7 +120,7 @@ export function CookMenuCoursesEditor({
     const [editingMeal, setEditingMeal] = useState<CookMealEditorMeal | null>(null);
     const [mealEditorOpen, setMealEditorOpen] = useState(false);
     const mealsById = new Map(meals.map((meal) => [meal.mealId, meal]));
-    const titlePresets = COURSE_TITLE_PRESETS[locale];
+    const titlePresets = inlineCopy(COURSE_TITLE_PRESETS, locale);
     const pickerCourse = courses.find((course) => course.courseId === pickerCourseId) ?? null;
     const deleteCourse = courses.find((course) => course.courseId === deleteCourseId) ?? null;
     const deleteMeal = deleteMealTarget != null ? (mealsById.get(deleteMealTarget.mealId) ?? null) : null;
@@ -178,7 +179,7 @@ export function CookMenuCoursesEditor({
     function addCourse(afterIndex: number) {
         const next: CookMenuCourseDraft = {
             courseId: idCreate(),
-            title: titlePresets[1] ?? { de: 'Vorspeise', en: 'Starter' }[locale],
+            title: titlePresets[1] ?? inlineCopy({ de: 'Vorspeise', en: 'Starter' }, locale),
             mealIds: [],
             mealSelectionLimit: null,
         };
@@ -244,8 +245,8 @@ export function CookMenuCoursesEditor({
                             const ready = courseReady(course);
                             const mealCountLabel =
                                 course.mealIds.length === 1
-                                    ? { de: '1 Gericht', en: '1 meal' }[locale]
-                                    : { de: `${course.mealIds.length} Gerichte`, en: `${course.mealIds.length} meals` }[locale];
+                                    ? inlineCopy({ de: '1 Gericht', en: '1 meal' }, locale)
+                                    : inlineCopy({ de: `${course.mealIds.length} Gerichte`, en: `${course.mealIds.length} meals` }, locale);
 
                             return (
                                 <SortableCourseCard
@@ -253,7 +254,7 @@ export function CookMenuCoursesEditor({
                                     courseId={course.courseId}
                                     prefersReducedMotion={prefersReducedMotion}
                                     open={open}
-                                    dragHandleLabel={{ de: 'Gang verschieben', en: 'Drag to reorder course' }[locale]}
+                                    dragHandleLabel={inlineCopy({ de: 'Gang verschieben', en: 'Drag to reorder course' }, locale)}
                                     title={
                                         <CardTitle className="min-w-0 text-sm font-medium">
                                             <button
@@ -278,10 +279,12 @@ export function CookMenuCoursesEditor({
                                                 />
                                                 <span className="min-w-0 flex-1 truncate">
                                                     <span className="text-muted-foreground">
-                                                        {{ de: 'Gang', en: 'Course' }[locale]} {index + 1}
+                                                        {inlineCopy({ de: 'Gang', en: 'Course' }, locale)} {index + 1}
                                                     </span>
                                                     <span className="mx-1.5 text-muted-foreground/60">·</span>
-                                                    <span>{course.title.trim() || { de: 'Ohne Titel', en: 'Untitled' }[locale]}</span>
+                                                    <span>
+                                                        {course.title.trim() || inlineCopy({ de: 'Ohne Titel', en: 'Untitled' }, locale)}
+                                                    </span>
                                                 </span>
                                                 {ready ? (
                                                     <Badge variant="secondary" className="shrink-0 font-normal">
@@ -289,7 +292,7 @@ export function CookMenuCoursesEditor({
                                                     </Badge>
                                                 ) : (
                                                     <StatusBadge tone="warning" className="shrink-0 font-normal">
-                                                        {{ de: 'Unvollständig', en: 'Incomplete' }[locale]}
+                                                        {inlineCopy({ de: 'Unvollständig', en: 'Incomplete' }, locale)}
                                                     </StatusBadge>
                                                 )}
                                             </button>
@@ -303,7 +306,7 @@ export function CookMenuCoursesEditor({
                                                 size="icon-sm"
                                                 className="md:hidden"
                                                 disabled={index === 0}
-                                                aria-label={{ de: 'Gang nach oben', en: 'Move course up' }[locale]}
+                                                aria-label={inlineCopy({ de: 'Gang nach oben', en: 'Move course up' }, locale)}
                                                 onClick={() => moveCourse(index, -1)}
                                             >
                                                 <ArrowUpIcon className="size-4" />
@@ -314,7 +317,7 @@ export function CookMenuCoursesEditor({
                                                 size="icon-sm"
                                                 className="md:hidden"
                                                 disabled={index === courses.length - 1}
-                                                aria-label={{ de: 'Gang nach unten', en: 'Move course down' }[locale]}
+                                                aria-label={inlineCopy({ de: 'Gang nach unten', en: 'Move course down' }, locale)}
                                                 onClick={() => moveCourse(index, 1)}
                                             >
                                                 <ArrowDownIcon className="size-4" />
@@ -324,7 +327,7 @@ export function CookMenuCoursesEditor({
                                                 variant="ghost"
                                                 size="icon-sm"
                                                 disabled={courses.length <= 1}
-                                                aria-label={{ de: 'Gang entfernen', en: 'Remove course' }[locale]}
+                                                aria-label={inlineCopy({ de: 'Gang entfernen', en: 'Remove course' }, locale)}
                                                 onClick={() => requestRemoveCourse(course.courseId)}
                                             >
                                                 <Trash2Icon className="size-4" />
@@ -336,7 +339,7 @@ export function CookMenuCoursesEditor({
                                         <CardContent className="grid gap-4 px-4 pt-3 pb-4">
                                             <div className="grid gap-1.5">
                                                 <label htmlFor={`course-title-${course.courseId}`} className="text-sm font-medium">
-                                                    {{ de: 'Name', en: 'Name' }[locale]}
+                                                    {inlineCopy({ de: 'Name', en: 'Name' }, locale)}
                                                 </label>
                                                 <CourseTitleSelect
                                                     id={`course-title-${course.courseId}`}
@@ -348,16 +351,17 @@ export function CookMenuCoursesEditor({
 
                                             <div className="grid gap-2">
                                                 <p className="text-sm font-medium">
-                                                    {{ de: 'Gerichtsoptionen', en: 'Meal options' }[locale]}
+                                                    {inlineCopy({ de: 'Gerichtsoptionen', en: 'Meal options' }, locale)}
                                                 </p>
                                                 {course.mealIds.length === 0 ? (
                                                     <p className="text-sm text-muted-foreground">
-                                                        {
+                                                        {inlineCopy(
                                                             {
                                                                 de: 'Noch keine Gerichte in diesem Gang.',
                                                                 en: 'No meals in this course yet.',
-                                                            }[locale]
-                                                        }
+                                                            },
+                                                            locale,
+                                                        )}
                                                     </p>
                                                 ) : (
                                                     <CourseMealsSortableList
@@ -378,7 +382,7 @@ export function CookMenuCoursesEditor({
                                                 )}
                                                 <Button type="button" variant="outline" onClick={() => setPickerCourseId(course.courseId)}>
                                                     <PlusIcon className="size-4" />
-                                                    {{ de: 'Gerichte wählen', en: 'Choose meals' }[locale]}
+                                                    {inlineCopy({ de: 'Gerichte wählen', en: 'Choose meals' }, locale)}
                                                 </Button>
                                             </div>
 
@@ -394,12 +398,15 @@ export function CookMenuCoursesEditor({
                                                                 })
                                                             }
                                                         />
-                                                        {{ de: 'Mehrere Gerichte erlauben', en: 'Allow multiple dishes' }[locale]}
+                                                        {inlineCopy(
+                                                            { de: 'Mehrere Gerichte erlauben', en: 'Allow multiple dishes' },
+                                                            locale,
+                                                        )}
                                                     </label>
                                                     {course.mealSelectionLimit != null ? (
                                                         <div className="flex flex-wrap items-center gap-2 text-sm">
                                                             <span className="text-muted-foreground">
-                                                                {{ de: 'Auswahl bis zu', en: 'Select up to' }[locale]}
+                                                                {inlineCopy({ de: 'Auswahl bis zu', en: 'Select up to' }, locale)}
                                                             </span>
                                                             <Select
                                                                 value={String(course.mealSelectionLimit)}
@@ -414,7 +421,10 @@ export function CookMenuCoursesEditor({
                                                             >
                                                                 <SelectTrigger
                                                                     className="w-20"
-                                                                    aria-label={{ de: 'Auswahlgrenze', en: 'Selection limit' }[locale]}
+                                                                    aria-label={inlineCopy(
+                                                                        { de: 'Auswahlgrenze', en: 'Selection limit' },
+                                                                        locale,
+                                                                    )}
                                                                 >
                                                                     <SelectValue />
                                                                 </SelectTrigger>
@@ -436,11 +446,11 @@ export function CookMenuCoursesEditor({
                                             <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
                                                 <Button type="button" variant="ghost" size="sm" onClick={() => addCourse(index)}>
                                                     <PlusIcon className="size-4" />
-                                                    {{ de: 'Gang darunter einfügen', en: 'Insert course below' }[locale]}
+                                                    {inlineCopy({ de: 'Gang darunter einfügen', en: 'Insert course below' }, locale)}
                                                 </Button>
                                                 <Button type="button" size="sm" onClick={() => doneCourse(index)}>
                                                     <CheckIcon className="size-4" />
-                                                    {{ de: 'Fertig', en: 'Done' }[locale]}
+                                                    {inlineCopy({ de: 'Fertig', en: 'Done' }, locale)}
                                                 </Button>
                                             </div>
                                         </CardContent>
@@ -469,7 +479,7 @@ export function CookMenuCoursesEditor({
 
             <Button type="button" variant="outline" className="justify-self-start" onClick={() => addCourse(courses.length - 1)}>
                 <PlusIcon className="size-4" />
-                {{ de: 'Gang hinzufügen', en: 'Add course' }[locale]}
+                {inlineCopy({ de: 'Gang hinzufügen', en: 'Add course' }, locale)}
             </Button>
 
             <CookMenuMealsPickerDialog
@@ -507,25 +517,26 @@ export function CookMenuCoursesEditor({
             <AlertDialog open={deleteCourse != null} onOpenChange={(open) => !open && setDeleteCourseId(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>{{ de: 'Gang löschen?', en: 'Delete this course?' }[locale]}</AlertDialogTitle>
+                        <AlertDialogTitle>{inlineCopy({ de: 'Gang löschen?', en: 'Delete this course?' }, locale)}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            {
+                            {inlineCopy(
                                 {
                                     de: 'Die Gerichtsoptionen in diesem Gang gehen verloren.',
                                     en: 'Meal options in this course will be removed.',
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogCancel>{inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, locale)}</AlertDialogCancel>
                         <AlertDialogAction
                             variant="destructive"
                             onClick={() => {
                                 if (deleteCourseId != null) removeCourse(deleteCourseId);
                             }}
                         >
-                            {{ de: 'Löschen', en: 'Delete' }[locale]}
+                            {inlineCopy({ de: 'Löschen', en: 'Delete' }, locale)}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -534,9 +545,9 @@ export function CookMenuCoursesEditor({
             <AlertDialog open={deleteMealTarget != null} onOpenChange={(open) => !open && setDeleteMealTarget(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>{{ de: 'Gericht entfernen?', en: 'Remove this meal?' }[locale]}</AlertDialogTitle>
+                        <AlertDialogTitle>{inlineCopy({ de: 'Gericht entfernen?', en: 'Remove this meal?' }, locale)}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            {
+                            {inlineCopy(
                                 {
                                     de:
                                         deleteMeal != null
@@ -546,12 +557,13 @@ export function CookMenuCoursesEditor({
                                         deleteMeal != null
                                             ? `“${deleteMeal.title}” will be removed from this course.`
                                             : 'This meal will be removed from the course.',
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogCancel>{inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, locale)}</AlertDialogCancel>
                         <AlertDialogAction
                             variant="destructive"
                             onClick={() => {
@@ -560,7 +572,7 @@ export function CookMenuCoursesEditor({
                                 }
                             }}
                         >
-                            {{ de: 'Entfernen', en: 'Remove' }[locale]}
+                            {inlineCopy({ de: 'Entfernen', en: 'Remove' }, locale)}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -625,7 +637,9 @@ function SortableCourseCard({
 function CourseDragOverlayCard({ index, title, ready, mealCount }: { index: number; title: string; ready: boolean; mealCount: number }) {
     const locale = useLocale();
     const mealCountLabel =
-        mealCount === 1 ? { de: '1 Gericht', en: '1 meal' }[locale] : { de: `${mealCount} Gerichte`, en: `${mealCount} meals` }[locale];
+        mealCount === 1
+            ? inlineCopy({ de: '1 Gericht', en: '1 meal' }, locale)
+            : inlineCopy({ de: `${mealCount} Gerichte`, en: `${mealCount} meals` }, locale);
 
     return (
         <Card className="gap-0 py-0 shadow-lg ring-1 ring-border">
@@ -638,10 +652,10 @@ function CourseDragOverlayCard({ index, title, ready, mealCount }: { index: numb
                         <ChevronDownIcon className="size-4 shrink-0 -rotate-90 text-muted-foreground" aria-hidden />
                         <span className="min-w-0 flex-1 truncate">
                             <span className="text-muted-foreground">
-                                {{ de: 'Gang', en: 'Course' }[locale]} {index + 1}
+                                {inlineCopy({ de: 'Gang', en: 'Course' }, locale)} {index + 1}
                             </span>
                             <span className="mx-1.5 text-muted-foreground/60">·</span>
-                            <span>{title.trim() || { de: 'Ohne Titel', en: 'Untitled' }[locale]}</span>
+                            <span>{title.trim() || inlineCopy({ de: 'Ohne Titel', en: 'Untitled' }, locale)}</span>
                         </span>
                         {ready ? (
                             <Badge variant="secondary" className="shrink-0 font-normal">
@@ -649,7 +663,7 @@ function CourseDragOverlayCard({ index, title, ready, mealCount }: { index: numb
                             </Badge>
                         ) : (
                             <StatusBadge tone="warning" className="shrink-0 font-normal">
-                                {{ de: 'Unvollständig', en: 'Incomplete' }[locale]}
+                                {inlineCopy({ de: 'Unvollständig', en: 'Incomplete' }, locale)}
                             </StatusBadge>
                         )}
                     </CardTitle>
@@ -721,7 +735,7 @@ function CourseMealsSortableList({
                                 prefersReducedMotion={prefersReducedMotion}
                                 mealIndex={mealIndex}
                                 mealCount={mealIds.length}
-                                dragHandleLabel={{ de: 'Gericht verschieben', en: 'Drag to reorder meal' }[locale]}
+                                dragHandleLabel={inlineCopy({ de: 'Gericht verschieben', en: 'Drag to reorder meal' }, locale)}
                                 onMove={onMove}
                                 onEdit={onEdit}
                                 onRemove={onRemove}
@@ -802,7 +816,7 @@ function SortableMealOption({
                                 size="icon-sm"
                                 className="md:hidden"
                                 disabled={mealIndex === 0}
-                                aria-label={{ de: 'Gericht nach oben', en: 'Move meal up' }[locale]}
+                                aria-label={inlineCopy({ de: 'Gericht nach oben', en: 'Move meal up' }, locale)}
                                 onClick={() => onMove(mealIndex, -1)}
                             >
                                 <ArrowUpIcon className="size-4" />
@@ -813,7 +827,7 @@ function SortableMealOption({
                                 size="icon-sm"
                                 className="md:hidden"
                                 disabled={mealIndex === mealCount - 1}
-                                aria-label={{ de: 'Gericht nach unten', en: 'Move meal down' }[locale]}
+                                aria-label={inlineCopy({ de: 'Gericht nach unten', en: 'Move meal down' }, locale)}
                                 onClick={() => onMove(mealIndex, 1)}
                             >
                                 <ArrowDownIcon className="size-4" />
@@ -822,7 +836,7 @@ function SortableMealOption({
                                 type="button"
                                 variant="ghost"
                                 size="icon-sm"
-                                aria-label={{ de: 'Gericht bearbeiten', en: 'Edit meal' }[locale]}
+                                aria-label={inlineCopy({ de: 'Gericht bearbeiten', en: 'Edit meal' }, locale)}
                                 onClick={() => onEdit(meal)}
                             >
                                 <PencilIcon className="size-4" />
@@ -832,7 +846,7 @@ function SortableMealOption({
                                 variant="ghost"
                                 size="icon-sm"
                                 className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                                aria-label={{ de: 'Gericht entfernen', en: 'Remove meal' }[locale]}
+                                aria-label={inlineCopy({ de: 'Gericht entfernen', en: 'Remove meal' }, locale)}
                                 onClick={() => onRemove(mealId)}
                             >
                                 <Trash2Icon className="size-4" />
@@ -864,7 +878,7 @@ function CourseTitleSelect({
     return (
         <Select value={trimmed.length > 0 ? value : undefined} onValueChange={(next) => onChange(next.slice(0, 255))} required>
             <SelectTrigger id={id} className="w-full">
-                <SelectValue placeholder={{ de: 'z. B. Vorspeise', en: 'e.g. Starter' }[locale]} />
+                <SelectValue placeholder={inlineCopy({ de: 'z. B. Vorspeise', en: 'e.g. Starter' }, locale)} />
             </SelectTrigger>
             <SelectContent>
                 {items.map((item) => (
@@ -962,28 +976,30 @@ function CookMenuMealsPickerDialog({
             <Dialog open={open} onOpenChange={onOpenChange}>
                 <DialogContent className="sm:max-w-lg">
                     <DialogHeader>
-                        <DialogTitle>{{ de: 'Gerichte wählen', en: 'Choose meals' }[locale]}</DialogTitle>
+                        <DialogTitle>{inlineCopy({ de: 'Gerichte wählen', en: 'Choose meals' }, locale)}</DialogTitle>
                         <DialogDescription>
-                            {
+                            {inlineCopy(
                                 {
                                     de: 'Wähle die Gerichtsoptionen für diesen Gang oder erstelle ein neues Gericht.',
                                     en: 'Pick meal options for this course, or create a new meal.',
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                         </DialogDescription>
                     </DialogHeader>
                     <Button type="button" variant="outline" className="justify-self-start border-dashed" onClick={openCreateEditor}>
                         <PlusIcon className="size-4" />
-                        {{ de: 'Neues Gericht', en: 'New meal' }[locale]}
+                        {inlineCopy({ de: 'Neues Gericht', en: 'New meal' }, locale)}
                     </Button>
                     {visibleMeals.length === 0 ? (
                         <p className="text-sm text-muted-foreground">
-                            {
+                            {inlineCopy(
                                 {
                                     de: 'Noch keine Gerichte. Erstelle eines oben.',
                                     en: 'No meals yet. Create one above.',
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                         </p>
                     ) : (
                         <ul className="grid max-h-80 gap-2 overflow-y-auto">
@@ -1005,11 +1021,11 @@ function CookMenuMealsPickerDialog({
                                                         onClick={() => toggle(meal.mealId)}
                                                     >
                                                         {checked
-                                                            ? { de: 'Ausgewählt', en: 'Selected' }[locale]
-                                                            : { de: 'Auswählen', en: 'Select' }[locale]}
+                                                            ? inlineCopy({ de: 'Ausgewählt', en: 'Selected' }, locale)
+                                                            : inlineCopy({ de: 'Auswählen', en: 'Select' }, locale)}
                                                     </Button>
                                                     <Button type="button" size="sm" variant="ghost" onClick={() => openEditEditor(meal)}>
-                                                        {{ de: 'Bearbeiten', en: 'Edit' }[locale]}
+                                                        {inlineCopy({ de: 'Bearbeiten', en: 'Edit' }, locale)}
                                                     </Button>
                                                 </div>
                                             }
@@ -1021,14 +1037,14 @@ function CookMenuMealsPickerDialog({
                     )}
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                            {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                            {inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, locale)}
                         </Button>
                         <Button
                             type="button"
                             onClick={() => onConfirm(draftIds)}
                             disabled={draftIds.length === 0 && visibleMeals.length === 0}
                         >
-                            {{ de: 'Übernehmen', en: 'Apply' }[locale]}
+                            {inlineCopy({ de: 'Übernehmen', en: 'Apply' }, locale)}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

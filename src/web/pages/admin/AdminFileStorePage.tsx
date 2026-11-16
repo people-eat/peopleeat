@@ -1,7 +1,7 @@
 import { useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 
-import { formatBytes, formatDateTime } from '../../../shared';
+import { formatBytes, formatDateTime, inlineCopy } from '../../../shared';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { Button } from '../../components/base/button';
 import { Input } from '../../components/base/input';
@@ -9,12 +9,17 @@ import type { GqlCAdminFileStorePageQuery } from '../../graphql/generated';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
-import { adminStubRouteBySlug } from './adminCatalog';
+import type { Locale } from '../../utils/locale';
+import { adminStubRouteBySlug, adminStubRouteDescription, adminStubRouteTitle } from './adminCatalog';
 
 const route = adminStubRouteBySlug('file-store');
 
-export const adminFileStorePageTitle = route.title;
-export const adminFileStorePageDescription = route.description;
+export function adminFileStorePageTitle(locale: Locale): string {
+    return adminStubRouteTitle(route.slug, locale);
+}
+export function adminFileStorePageDescription(locale: Locale): string {
+    return adminStubRouteDescription(route.slug, locale);
+}
 
 const ADMIN_FILE_STORE_PAGE_SIZE = 25;
 
@@ -39,7 +44,7 @@ export function adminFileStorePageVariables(search: AdminFileStoreSearch) {
     };
 }
 
-function formatObjectLastModified(value: string | null | undefined, locale: 'de' | 'en', timeZone: string) {
+function formatObjectLastModified(value: string | null | undefined, locale: Locale, timeZone: string) {
     return formatDateTime(value, { locale, timeZone, dateStyle: 'medium', timeStyle: 'short' });
 }
 
@@ -84,14 +89,17 @@ export function AdminFileStorePage({ data, search }: { data: GqlCAdminFileStoreP
             <main id="main-content" className="grid w-full content-start gap-6">
                 <div className="flex flex-wrap items-end justify-between gap-3">
                     <div>
-                        <h1 className="text-2xl font-medium">{adminFileStorePageTitle[locale]}</h1>
+                        <h1 className="text-2xl font-medium">{adminFileStorePageTitle(locale)}</h1>
                         <p className="text-sm text-muted-foreground">
-                            {adminFileStorePageDescription[locale]}
+                            {adminFileStorePageDescription(locale)}
                             {configured && bucket
-                                ? {
-                                      de: ` Bucket: ${bucket}.`,
-                                      en: ` Bucket: ${bucket}.`,
-                                  }[locale]
+                                ? inlineCopy(
+                                      {
+                                          de: ` Bucket: ${bucket}.`,
+                                          en: ` Bucket: ${bucket}.`,
+                                      },
+                                      locale,
+                                  )
                                 : null}
                         </p>
                     </div>
@@ -99,39 +107,41 @@ export function AdminFileStorePage({ data, search }: { data: GqlCAdminFileStoreP
                         <Input
                             value={draftPrefix}
                             onChange={(event) => setDraftPrefix(event.target.value)}
-                            placeholder={{ de: 'Prefix filtern…', en: 'Filter by prefix…' }[locale]}
+                            placeholder={inlineCopy({ de: 'Prefix filtern…', en: 'Filter by prefix…' }, locale)}
                             className="max-w-xs font-mono text-sm"
-                            aria-label={{ de: 'Objekt-Prefix', en: 'Object key prefix' }[locale]}
+                            aria-label={inlineCopy({ de: 'Objekt-Prefix', en: 'Object key prefix' }, locale)}
                         />
                     ) : null}
                 </div>
 
                 {!configured ? (
                     <p className="text-sm text-muted-foreground">
-                        {
+                        {inlineCopy(
                             {
                                 de: 'Objekt-Speicher ist nicht konfiguriert (OBJECT_STORAGE_S3_*).',
                                 en: 'Object storage is not configured (OBJECT_STORAGE_S3_*).',
-                            }[locale]
-                        }
+                            },
+                            locale,
+                        )}
                     </p>
                 ) : objects.length === 0 ? (
                     <p className="text-sm text-muted-foreground">
-                        {
+                        {inlineCopy(
                             {
                                 de: 'Keine Objekte gefunden.',
                                 en: 'No objects found.',
-                            }[locale]
-                        }
+                            },
+                            locale,
+                        )}
                     </p>
                 ) : (
                     <div className="overflow-x-auto border border-border">
                         <table className="w-full min-w-160 text-left text-sm">
                             <thead className="border-b border-border bg-muted/40 text-muted-foreground">
                                 <tr>
-                                    <th className="px-4 py-2 font-medium">{{ de: 'Schlüssel', en: 'Key' }[locale]}</th>
-                                    <th className="px-4 py-2 font-medium">{{ de: 'Größe', en: 'Size' }[locale]}</th>
-                                    <th className="px-4 py-2 font-medium">{{ de: 'Geändert', en: 'Last modified' }[locale]}</th>
+                                    <th className="px-4 py-2 font-medium">{inlineCopy({ de: 'Schlüssel', en: 'Key' }, locale)}</th>
+                                    <th className="px-4 py-2 font-medium">{inlineCopy({ de: 'Größe', en: 'Size' }, locale)}</th>
+                                    <th className="px-4 py-2 font-medium">{inlineCopy({ de: 'Geändert', en: 'Last modified' }, locale)}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border">
@@ -152,12 +162,13 @@ export function AdminFileStorePage({ data, search }: { data: GqlCAdminFileStoreP
                 {configured && (search.cursor || isTruncated) ? (
                     <div className="flex items-center justify-between gap-3">
                         <p className="text-sm text-muted-foreground">
-                            {
+                            {inlineCopy(
                                 {
                                     de: `${objects.length} Objekt${objects.length === 1 ? '' : 'e'}`,
                                     en: `${objects.length} object${objects.length === 1 ? '' : 's'}`,
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                         </p>
                         <div className="flex gap-2">
                             {search.cursor ? (
@@ -166,7 +177,7 @@ export function AdminFileStorePage({ data, search }: { data: GqlCAdminFileStoreP
                                     variant="outline"
                                     onClick={() => updateSearch({ prefix: search.prefix, cursor: undefined })}
                                 >
-                                    {{ de: 'Erste Seite', en: 'First page' }[locale]}
+                                    {inlineCopy({ de: 'Erste Seite', en: 'First page' }, locale)}
                                 </Button>
                             ) : null}
                             {isTruncated && nextCursor ? (
@@ -175,7 +186,7 @@ export function AdminFileStorePage({ data, search }: { data: GqlCAdminFileStoreP
                                     variant="outline"
                                     onClick={() => updateSearch({ prefix: search.prefix, cursor: nextCursor })}
                                 >
-                                    {{ de: 'Weiter', en: 'Next' }[locale]}
+                                    {inlineCopy({ de: 'Weiter', en: 'Next' }, locale)}
                                 </Button>
                             ) : null}
                         </div>

@@ -1,7 +1,7 @@
 # Copy (voice)
 
-Voice and wording rules for peopleeat UI and transactional email. Mechanics of bilingual strings (inline `{ de, en }[locale]`, no page-level
-`COPY`, no raw `error.message`) live in [conventions.md](../conventions.md#bilingual-copy). Locale routing and profile language live in
+Voice and wording rules for peopleeat UI and transactional email. Mechanics of catalog keys (`t()` / `useT()`, no page-level `COPY`, no raw
+`error.message`) live in [conventions.md](../conventions.md#bilingual-copy). Locale routing and profile language live in
 [architecture/i18n.md](../architecture/i18n.md).
 
 ## Principle
@@ -34,16 +34,16 @@ When the same concept appears in both admin and end-user UI, keep two labels. Ex
 - **Say what happens next.** Prefer “Gerät abmelden” / “Sign out” over “Beenden” / “Revoke” when the action ends a sign-in.
 - **No mid-sentence em or en dashes (`—` / `–`)** in user-facing copy (ranges and empty placeholders are fine); see
   [conventions.md](../conventions.md#bilingual-copy).
-- **Both locales are real copy.** Do not leave English loanwords in DE when a clear German word exists (`Geräte`, not “Devices” as a section
-  title).
-- **Never surface transport errors.** Map failures to a short bilingual outcome (“Gerät konnte nicht abgemeldet werden.”).
+- **Every enabled locale is real copy.** Do not leave English loanwords in DE when a clear German word exists (`Geräte`, not “Devices” as a
+  section title).
+- **Never surface transport errors.** Map failures to a short catalog outcome (`t('deviceSignOutFailed')`).
 
 ## Anti-patterns
 
 - Shipping schema or API vocabulary on customer / cook screens (`Sitzung`, `Session`, `revoke`, `terminate`, `OTP` as a naked acronym in a
   heading when “code” is clearer).
 - One shared label string reused for admin and self-serve when the audiences differ.
-- Page-level `COPY` bags or i18n libraries — keep strings at the call site per conventions.
+- Page-level `COPY` bags or inline `{ de, en }` objects for new copy — put strings in the matching `src/i18n` namespace.
 
 ## Related
 

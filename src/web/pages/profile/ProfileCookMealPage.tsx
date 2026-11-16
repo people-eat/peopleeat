@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
+import { t } from '../../../i18n/t';
 import type { Locale } from '../../../shared';
 import { formatDateTime } from '../../../shared';
 import {
@@ -31,14 +32,12 @@ import { cookStubRouteBySlug } from './cookCatalog';
 
 const mealsRoute = cookStubRouteBySlug('meals');
 
-export const profileCookMealPageTitle = {
-    de: 'Gericht ansehen, veröffentlichen oder löschen',
-    en: 'View, publish, or delete a meal',
-} as const;
-export const profileCookMealPageDescription = {
-    de: 'Titel, Beschreibung, Bild und Veröffentlichung verwalten.',
-    en: 'Manage title, description, image, and publication.',
-} as const;
+export function profileCookMealPageTitle(locale: Locale): string {
+    return t(locale, 'profileCook', 'meal.seoTitle');
+}
+export function profileCookMealPageDescription(locale: Locale): string {
+    return t(locale, 'profileCook', 'meal.seoDescription');
+}
 
 type MealRow = NonNullable<NonNullable<NonNullable<GqlCProfileCookMealPageQuery['currentSession']['user']>['cook']>['meal']>;
 type MealRelationships = MealRow['relationships'];
@@ -63,21 +62,14 @@ function MealRelationshipMenuCard({ relationship, locale }: { relationship: Menu
                             params={{ menuId: relationship.menuId }}
                             className="text-accent underline-offset-4 hover:underline"
                         >
-                            {{ de: 'Menü ansehen', en: 'View menu' }[locale]}
+                            {t(locale, 'profileCook', 'meal.viewMenu')}
                         </Link>
                     </p>
                 </div>
                 {relationship.blocksDeletion ? <LockIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden /> : null}
             </div>
             {relationship.blocksDeletion ? (
-                <StatusAlert tone="warning">
-                    {
-                        {
-                            de: 'Um dieses Gericht zu entfernen, bearbeite das Menü und ersetze es durch ein anderes Gericht.',
-                            en: 'To remove this dish, edit the menu and replace it with another dish.',
-                        }[locale]
-                    }
-                </StatusAlert>
+                <StatusAlert tone="warning">{t(locale, 'profileCook', 'meal.removeFromMenuHint')}</StatusAlert>
             ) : null}
         </div>
     );
@@ -100,12 +92,7 @@ function MealRelationshipOfferCard({
                     <p className="text-sm text-muted-foreground">
                         {relationship.courseTitle}
                         {' · '}
-                        {
-                            {
-                                de: `Angebot für ${relationship.bookingRequestUserName}`,
-                                en: `Offer for ${relationship.bookingRequestUserName}`,
-                            }[locale]
-                        }
+                        {t(locale, 'profileCook', 'meal.offerFor', { name: relationship.bookingRequestUserName })}
                         {' · '}
                         {formatBookingDateTime(relationship.bookingRequestDateTime, locale, timeZone)}
                     </p>
@@ -115,14 +102,7 @@ function MealRelationshipOfferCard({
             {relationship.blocksDeletion ? (
                 <div className="flex gap-2 text-sm text-muted-foreground">
                     <CircleAlertIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
-                    <p>
-                        {
-                            {
-                                de: 'Dieses Gericht ist in diesem Angebotsmenü die einzige Option im Gang und blockiert das Löschen.',
-                                en: 'This dish is the only option on that course in the offer menu and blocks deletion.',
-                            }[locale]
-                        }
-                    </p>
+                    <p>{t(locale, 'profileCook', 'meal.onlyCourseOption')}</p>
                 </div>
             ) : null}
         </div>
@@ -170,11 +150,9 @@ export function ProfileCookMealPage({ data, mealId }: { data: GqlCProfileCookMea
             if (result.error || !result.data?.user.cook.mealUpsert.success) {
                 throw new Error('publish failed');
             }
-            toast.success(
-                next ? { de: 'Veröffentlicht.', en: 'Published.' }[locale] : { de: 'Zurückgezogen.', en: 'Unpublished.' }[locale],
-            );
+            toast.success(next ? t(locale, 'profileCook', 'actions.publishedToast') : t(locale, 'profileCook', 'actions.unpublished'));
         } catch {
-            toast.error({ de: 'Aktion fehlgeschlagen.', en: 'Action failed.' }[locale]);
+            toast.error(t(locale, 'profileCook', 'actions.actionFailed'));
         } finally {
             setBusy(false);
         }
@@ -187,10 +165,10 @@ export function ProfileCookMealPage({ data, mealId }: { data: GqlCProfileCookMea
             if (result.error || !result.data?.user.cook.mealDelete.success) {
                 throw new Error('delete failed');
             }
-            toast.success({ de: 'Gelöscht.', en: 'Deleted.' }[locale]);
+            toast.success(t(locale, 'profileCook', 'actions.deleted'));
             await navigate({ to: mealsRoute.to });
         } catch {
-            toast.error({ de: 'Löschen fehlgeschlagen.', en: 'Could not delete.' }[locale]);
+            toast.error(t(locale, 'profileCook', 'actions.deleteFailed'));
         } finally {
             setBusy(false);
         }
@@ -209,7 +187,7 @@ export function ProfileCookMealPage({ data, mealId }: { data: GqlCProfileCookMea
                                     variant="outline"
                                     size="icon"
                                     disabled={busy}
-                                    aria-label={{ de: 'Weitere Aktionen', en: 'More actions' }[locale]}
+                                    aria-label={t(locale, 'profileCook', 'actions.moreActions')}
                                 >
                                     <MoreHorizontalIcon className="size-4" />
                                 </Button>
@@ -217,7 +195,7 @@ export function ProfileCookMealPage({ data, mealId }: { data: GqlCProfileCookMea
                             <DropdownMenuContent align="end">
                                 {publicationEnabled && meal.publishedAt != null ? (
                                     <DropdownMenuItem disabled={busy} onSelect={() => void setPublished(null)}>
-                                        {{ de: 'Zurückziehen', en: 'Unpublish' }[locale]}
+                                        {t(locale, 'profileCook', 'actions.unpublish')}
                                     </DropdownMenuItem>
                                 ) : null}
                                 <DropdownMenuItem
@@ -225,20 +203,20 @@ export function ProfileCookMealPage({ data, mealId }: { data: GqlCProfileCookMea
                                     disabled={busy}
                                     onSelect={() => setConfirm(relationships.deletionBlockedByRelationships ? 'delete-blocked' : 'delete')}
                                 >
-                                    {{ de: 'Löschen', en: 'Delete' }[locale]}
+                                    {t(locale, 'profileCook', 'actions.delete')}
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
 
                         {publicationEnabled && meal.publishedAt == null ? (
                             <Button type="button" variant="outline" disabled={busy} onClick={() => setConfirm('publish')}>
-                                {{ de: 'Veröffentlichen', en: 'Publish' }[locale]}
+                                {t(locale, 'profileCook', 'actions.publish')}
                             </Button>
                         ) : null}
 
                         <Button asChild>
                             <Link to="/{-$locale}/profile/meals/$mealId/edit" params={{ mealId }}>
-                                {{ de: 'Bearbeiten', en: 'Edit' }[locale]}
+                                {t(locale, 'profileCook', 'actions.edit')}
                             </Link>
                         </Button>
                     </>
@@ -248,14 +226,12 @@ export function ProfileCookMealPage({ data, mealId }: { data: GqlCProfileCookMea
                     <div className="flex flex-wrap items-center gap-2">
                         {publicationEnabled ? (
                             <Badge variant="outline" className="w-fit">
-                                {meal.publishedAt
-                                    ? { de: 'Veröffentlicht', en: 'Published' }[locale]
-                                    : { de: 'Entwurf', en: 'Draft' }[locale]}
+                                {meal.publishedAt ? t(locale, 'profileCook', 'meals.published') : t(locale, 'profileCook', 'meals.draft')}
                             </Badge>
                         ) : null}
                         {meal.generatedAt != null ? (
                             <Badge variant="outline" className="w-fit">
-                                {{ de: 'Generiert', en: 'Generated' }[locale]}
+                                {t(locale, 'profileCook', 'actions.generated')}
                             </Badge>
                         ) : null}
                     </div>
@@ -266,26 +242,20 @@ export function ProfileCookMealPage({ data, mealId }: { data: GqlCProfileCookMea
                         tone="warning"
                         title={
                             meal.publishedAt != null
-                                ? { de: 'Nicht auf deiner öffentlichen Seite', en: 'Not on your public page' }[locale]
-                                : { de: 'Bild fehlt', en: 'Picture missing' }[locale]
+                                ? t(locale, 'profileCook', 'meal.notOnPublicPage')
+                                : t(locale, 'profileCook', 'meal.pictureMissing')
                         }
                         action={
                             <Button asChild size="sm" variant="outline">
                                 <Link to="/{-$locale}/profile/meals/$mealId/edit" params={{ mealId }}>
-                                    {{ de: 'Bild hinzufügen', en: 'Add picture' }[locale]}
+                                    {t(locale, 'profileCook', 'meal.addPicture')}
                                 </Link>
                             </Button>
                         }
                     >
                         {meal.publishedAt != null
-                            ? {
-                                  de: 'Ohne Bild erscheint dieses Gericht nicht auf deiner öffentlichen Kochseite, auch wenn es veröffentlicht ist.',
-                                  en: 'Without a picture, this meal does not appear on your public cook page, even when published.',
-                              }[locale]
-                            : {
-                                  de: 'Ohne Bild erscheint dieses Gericht nicht auf deiner öffentlichen Kochseite, sobald es veröffentlicht ist.',
-                                  en: 'Without a picture, this meal will not appear on your public cook page once published.',
-                              }[locale]}
+                            ? t(locale, 'profileCook', 'meal.noPicturePublished')
+                            : t(locale, 'profileCook', 'meal.noPictureWillHide')}
                     </StatusAlert>
                 ) : null}
 
@@ -293,22 +263,22 @@ export function ProfileCookMealPage({ data, mealId }: { data: GqlCProfileCookMea
                     <div className="grid gap-1">
                         <h1 className="font-serif text-3xl/tight text-foreground">{meal.title}</h1>
                         <p className="text-muted-foreground whitespace-pre-wrap">
-                            {meal.description.trim() ? meal.description : { de: 'Keine Beschreibung.', en: 'No description.' }[locale]}
+                            {meal.description.trim() ? meal.description : t(locale, 'profileCook', 'actions.noDescription')}
                         </p>
                     </div>
                     <div className="grid gap-2">
-                        <p className="text-sm font-medium">{{ de: 'Bild', en: 'Image' }[locale]}</p>
+                        <p className="text-sm font-medium">{t(locale, 'profileCook', 'actions.image')}</p>
                         {meal.imageUrl ? (
                             <img src={meal.imageUrl} alt="" className="aspect-square h-auto w-full max-w-sm object-cover" />
                         ) : (
-                            <p className="text-sm text-muted-foreground">{{ de: 'Noch kein Bild.', en: 'No image yet.' }[locale]}</p>
+                            <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'actions.noImage')}</p>
                         )}
                     </div>
                 </div>
 
                 {relationships.menus.length > 0 ? (
                     <section className="grid gap-3">
-                        <h2 className="text-base font-semibold">{{ de: 'Verwendung in Menüs', en: 'Usage in menus' }[locale]}</h2>
+                        <h2 className="text-base font-semibold">{t(locale, 'profileCook', 'meal.usageInMenus')}</h2>
                         <div className="grid gap-3">
                             {menuRelationshipsNonBlocking.map((relationship) => (
                                 <MealRelationshipMenuCard
@@ -330,7 +300,7 @@ export function ProfileCookMealPage({ data, mealId }: { data: GqlCProfileCookMea
 
                 {relationships.offers.length > 0 ? (
                     <section className="grid gap-3">
-                        <h2 className="text-base font-semibold">{{ de: 'Verwendung in Angeboten', en: 'Usage in offers' }[locale]}</h2>
+                        <h2 className="text-base font-semibold">{t(locale, 'profileCook', 'meal.usageInOffers')}</h2>
                         <div className="grid gap-3">
                             {offerRelationshipsNonBlocking.map((relationship) => (
                                 <MealRelationshipOfferCard
@@ -356,20 +326,13 @@ export function ProfileCookMealPage({ data, mealId }: { data: GqlCProfileCookMea
             <AlertDialog open={confirm === 'delete'} onOpenChange={(open) => !open && setConfirm(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>{{ de: 'Gericht löschen?', en: 'Delete this meal?' }[locale]}</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {
-                                {
-                                    de: 'Das Gericht verschwindet aus deiner Liste. Admins können es weiterhin einsehen.',
-                                    en: 'The meal disappears from your list. Admins can still inspect it.',
-                                }[locale]
-                            }
-                        </AlertDialogDescription>
+                        <AlertDialogTitle>{t(locale, 'profileCook', 'meal.deleteTitle')}</AlertDialogTitle>
+                        <AlertDialogDescription>{t(locale, 'profileCook', 'meal.deleteBody')}</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogCancel>{t(locale, 'common', 'cancel')}</AlertDialogCancel>
                         <AlertDialogAction variant="destructive" onClick={() => void onDelete()}>
-                            {{ de: 'Löschen', en: 'Delete' }[locale]}
+                            {t(locale, 'profileCook', 'actions.delete')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -378,20 +341,11 @@ export function ProfileCookMealPage({ data, mealId }: { data: GqlCProfileCookMea
             <AlertDialog open={confirm === 'delete-blocked'} onOpenChange={(open) => !open && setConfirm(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>
-                            {{ de: 'Gericht kann nicht gelöscht werden', en: 'Meal can not be deleted' }[locale]}
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {
-                                {
-                                    de: 'Dieses Gericht ist in mindestens einem Menü das einzige Gericht in einem Gang und kann darum nicht gelöscht werden. Aktualisiere die betroffenen Menüs, indem du den Gang löschst, ihm andere Gerichte hinzufügst oder das Gericht dort ersetzt.',
-                                    en: 'This dish is the only dish in its course in at least one menu and therefore cannot be deleted. Update the affected menus by deleting the course, adding other dish options to it, or replacing the dish there.',
-                                }[locale]
-                            }
-                        </AlertDialogDescription>
+                        <AlertDialogTitle>{t(locale, 'profileCook', 'meal.cannotDeleteTitle')}</AlertDialogTitle>
+                        <AlertDialogDescription>{t(locale, 'profileCook', 'meal.cannotDeleteBody')}</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogAction onClick={() => setConfirm(null)}>{{ de: 'Fertig', en: 'Done' }[locale]}</AlertDialogAction>
+                        <AlertDialogAction onClick={() => setConfirm(null)}>{t(locale, 'profileCook', 'actions.done')}</AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
@@ -399,23 +353,17 @@ export function ProfileCookMealPage({ data, mealId }: { data: GqlCProfileCookMea
             <AlertDialog open={confirm === 'publish'} onOpenChange={(open) => !open && setConfirm(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>{{ de: 'Gericht veröffentlichen?', en: 'Publish this meal?' }[locale]}</AlertDialogTitle>
+                        <AlertDialogTitle>{t(locale, 'profileCook', 'meal.publishTitle')}</AlertDialogTitle>
                         <AlertDialogDescription>
                             {meal.imageUrl == null || meal.imageUrl.length === 0
-                                ? {
-                                      de: 'Das Gericht wird als veröffentlicht markiert. Ohne Bild erscheint es trotzdem nicht auf deiner öffentlichen Kochseite.',
-                                      en: 'The meal will be marked published. Without a picture, it still will not appear on your public cook page.',
-                                  }[locale]
-                                : {
-                                      de: 'Das Gericht wird als veröffentlicht markiert und erscheint auf deiner öffentlichen Kochseite.',
-                                      en: 'The meal will be marked published and appear on your public cook page.',
-                                  }[locale]}
+                                ? t(locale, 'profileCook', 'meal.publishNoPicture')
+                                : t(locale, 'profileCook', 'meal.publishWithPicture')}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogCancel>{t(locale, 'common', 'cancel')}</AlertDialogCancel>
                         <AlertDialogAction onClick={() => void setPublished(new Date().toISOString())}>
-                            {{ de: 'Veröffentlichen', en: 'Publish' }[locale]}
+                            {t(locale, 'profileCook', 'actions.publish')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

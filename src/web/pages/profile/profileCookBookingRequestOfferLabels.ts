@@ -1,35 +1,30 @@
-export const profileCookBookingRequestOfferCreatePageTitle = {
-    de: 'Angebot erstellen',
-    en: 'Create offer',
-} as const;
-export const profileCookBookingRequestOfferCreatePageDescription = {
-    de: 'Menüs vorschlagen, Preis wählen und optional eine Nachricht hinzufügen.',
-    en: 'Suggest menus, choose your price, and optionally add a personal note.',
-} as const;
+import { t } from '../../../i18n/t';
+import type { Locale } from '../../../shared/locale';
 
-export const profileCookBookingRequestOfferPageTitle = {
-    de: 'Angebot',
-    en: 'Offer',
-} as const;
-export const profileCookBookingRequestOfferPageDescription = {
-    de: 'Angebot prüfen, Preis anpassen oder bestätigen.',
-    en: 'Review the offer, update the price, or confirm.',
-} as const;
+export function profileCookBookingRequestOfferCreatePageTitle(locale: Locale): string {
+    return t(locale, 'profileCook', 'bookingRequestOffer.create.title');
+}
+export function profileCookBookingRequestOfferCreatePageDescription(locale: Locale): string {
+    return t(locale, 'profileCook', 'bookingRequestOffer.create.description');
+}
 
-export const profileCookBookingRequestOfferPriceEditPageTitle = {
-    de: 'Preis ändern',
-    en: 'Edit price',
-} as const;
-export const profileCookBookingRequestOfferPriceEditPageDescription = {
-    de: 'Menüpreis pro Person anpassen.',
-    en: 'Update the menu price per person.',
-} as const;
+export function profileCookBookingRequestOfferPageTitle(locale: Locale): string {
+    return t(locale, 'profileCook', 'bookingRequestOffer.detail.title');
+}
+export function profileCookBookingRequestOfferPageDescription(locale: Locale): string {
+    return t(locale, 'profileCook', 'bookingRequestOffer.detail.description');
+}
 
-export const profileCookBookingRequestOfferMenusEditPageTitle = {
-    de: 'Menüs ändern',
-    en: 'Edit menus',
-} as const;
-export const profileCookBookingRequestOfferMenusEditPageDescription = {
-    de: 'Vorgeschlagene Menüs aus dem Inventar wählen.',
-    en: 'Pick suggested menus from your inventory.',
-} as const;
+export function profileCookBookingRequestOfferPriceEditPageTitle(locale: Locale): string {
+    return t(locale, 'profileCook', 'bookingRequestOffer.priceEdit.title');
+}
+export function profileCookBookingRequestOfferPriceEditPageDescription(locale: Locale): string {
+    return t(locale, 'profileCook', 'bookingRequestOffer.priceEdit.description');
+}
+
+export function profileCookBookingRequestOfferMenusEditPageTitle(locale: Locale): string {
+    return t(locale, 'profileCook', 'bookingRequestOffer.menusEdit.title');
+}
+export function profileCookBookingRequestOfferMenusEditPageDescription(locale: Locale): string {
+    return t(locale, 'profileCook', 'bookingRequestOffer.menusEdit.description');
+}

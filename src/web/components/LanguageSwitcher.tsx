@@ -2,21 +2,21 @@ import { useLocation, useNavigate } from '@tanstack/react-router';
 import { Fragment } from 'react';
 import type { Locale } from '../../shared/locale';
 import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
-import { buildLocaleHref, LOCALES, setLocaleCookie } from '../utils/locale';
-
-const LOCALE_LABEL = { de: 'Deutsch', en: 'English' } as const;
+import { buildLocaleHref, CATALOG_LOCALES, setLocaleCookie } from '../utils/locale';
 
 export function LanguageSwitcher({ locale: localeProp, onLocaleChange }: { locale?: Locale; onLocaleChange?: (locale: Locale) => void }) {
     const routeLocale = useLocale();
     const currentLocale = localeProp ?? routeLocale;
     const location = useLocation();
     const navigate = useNavigate();
-    const groupLabel = { de: 'Sprache wählen', en: 'Choose language' }[currentLocale];
+    const { t } = useT('common');
+    const groupLabel = t('languageSwitcher.groupLabel');
 
     return (
         <div className="flex items-center gap-2" role="group" aria-label={groupLabel}>
-            {LOCALES.map((locale, index) => (
+            {CATALOG_LOCALES.map((locale, index) => (
                 <Fragment key={locale}>
                     {index > 0 ? (
                         <span className="text-muted-foreground/40" aria-hidden>
@@ -39,7 +39,7 @@ export function LanguageSwitcher({ locale: localeProp, onLocaleChange }: { local
                             locale === currentLocale ? 'text-foreground' : 'text-muted-foreground',
                         )}
                     >
-                        {LOCALE_LABEL[locale]}
+                        {t(`language.${locale}`)}
                     </button>
                 </Fragment>
             ))}

@@ -1,3 +1,4 @@
+import { t } from '../i18n/t';
 import type { Locale } from './locale';
 
 export const bookingRequestSettings = ['INDOOR', 'OUTDOOR'] as const;
@@ -24,5 +25,5 @@ export function bookingRequestSettingChoiceFromStored(setting: BookingRequestSet
 }
 
 export function bookingRequestSettingLabel(setting: BookingRequestSetting, locale: Locale): string {
-    return { INDOOR: { de: 'Drinnen', en: 'Indoor' }, OUTDOOR: { de: 'Draußen', en: 'Outdoor' } }[setting][locale];
+    return t(locale, 'common', `bookingRequestSetting.${setting}`);
 }

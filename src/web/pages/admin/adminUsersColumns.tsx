@@ -1,5 +1,6 @@
 import { createColumnHelper } from '@tanstack/react-table';
 
+import { t } from '../../../i18n/t';
 import { formatDate } from '../../../shared';
 import type { Locale } from '../../../shared/locale';
 import { Badge } from '../../components/base/badge';
@@ -23,43 +24,33 @@ export type AdminUsersSortField = (typeof ADMIN_USERS_SORT_FIELDS)[number];
 const columnHelper = createColumnHelper<AdminUsersDataTableFeatures, AdminUsersTableRow>();
 
 export function adminUserTypeLabel(type: GqlCAdminUserType, locale: Locale) {
-    return {
-        customer: { de: 'Kunde', en: 'Customer' },
-        cook: { de: 'Koch', en: 'Cook' },
-        admin: { de: 'Admin', en: 'Admin' },
-    }[type][locale];
+    return t(locale, 'admin', `users.roles.${type}`);
 }
 
 export function adminUserStatusLabel(status: GqlCUserStatus, locale: Locale) {
-    return {
-        ACTIVE: { de: 'Aktiv', en: 'Active' },
-        BANNED: { de: 'Gesperrt', en: 'Banned' },
-        ANONYMIZED: { de: 'Anonymisiert', en: 'Anonymized' },
-    }[status][locale];
+    return t(locale, 'admin', `users.roles.${status}`);
 }
 
 export function adminUsersColumns(locale: Locale, timeZone: string) {
     return columnHelper.columns([
         columnHelper.accessor('firstName', {
             header: ({ column }) => (
-                <AdminDataTableSortHeader column={column}>{{ de: 'Vorname', en: 'First name' }[locale]}</AdminDataTableSortHeader>
+                <AdminDataTableSortHeader column={column}>{t(locale, 'admin', 'copy.firstName')}</AdminDataTableSortHeader>
             ),
             cell: ({ row }) => <span className="font-medium text-foreground">{row.original.firstName}</span>,
         }),
         columnHelper.accessor('lastName', {
             header: ({ column }) => (
-                <AdminDataTableSortHeader column={column}>{{ de: 'Nachname', en: 'Last name' }[locale]}</AdminDataTableSortHeader>
+                <AdminDataTableSortHeader column={column}>{t(locale, 'admin', 'copy.lastName')}</AdminDataTableSortHeader>
             ),
             cell: ({ row }) => <span className="font-medium text-foreground">{row.original.lastName}</span>,
         }),
         columnHelper.accessor('emailAddress', {
-            header: ({ column }) => (
-                <AdminDataTableSortHeader column={column}>{{ de: 'E-Mail', en: 'Email' }[locale]}</AdminDataTableSortHeader>
-            ),
+            header: ({ column }) => <AdminDataTableSortHeader column={column}>{t(locale, 'admin', 'copy.email')}</AdminDataTableSortHeader>,
             cell: ({ row }) => <span className="text-muted-foreground">{row.original.emailAddress ?? '—'}</span>,
         }),
         columnHelper.accessor('status', {
-            header: () => ({ de: 'Status', en: 'Status' })[locale],
+            header: () => t(locale, 'admin', 'copy.status'),
             cell: ({ row }) => (
                 <Badge variant={row.original.status === 'ACTIVE' ? 'secondary' : 'destructive'}>
                     {adminUserStatusLabel(row.original.status, locale)}
@@ -68,7 +59,7 @@ export function adminUsersColumns(locale: Locale, timeZone: string) {
             enableSorting: false,
         }),
         columnHelper.accessor('types', {
-            header: () => ({ de: 'Typ', en: 'Type' })[locale],
+            header: () => t(locale, 'admin', 'copy.type'),
             cell: ({ row }) => (
                 <div className="flex flex-wrap gap-1">
                     {row.original.types.map((type) => (
@@ -82,7 +73,7 @@ export function adminUsersColumns(locale: Locale, timeZone: string) {
         }),
         columnHelper.accessor('createdAt', {
             header: ({ column }) => (
-                <AdminDataTableSortHeader column={column}>{{ de: 'Registriert', en: 'Registered' }[locale]}</AdminDataTableSortHeader>
+                <AdminDataTableSortHeader column={column}>{t(locale, 'admin', 'copy.registered')}</AdminDataTableSortHeader>
             ),
             cell: ({ row }) => (
                 <span className="text-muted-foreground tabular-nums">

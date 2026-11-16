@@ -18,8 +18,8 @@ export const Route = createFileRoute('/{-$locale}/admin/database-slow-statements
     head: ({ params }) => {
         const locale = localeFromParam(params);
         return seoMeta({
-            title: adminDatabaseSlowStatementsPageTitle[locale],
-            description: adminDatabaseSlowStatementsPageDescription[locale],
+            title: adminDatabaseSlowStatementsPageTitle(locale),
+            description: adminDatabaseSlowStatementsPageDescription(locale),
             path: '/admin/database-slow-statements',
             locale,
             webPageUrl: webPageUrlGet(),

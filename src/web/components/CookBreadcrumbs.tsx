@@ -1,6 +1,7 @@
 import { Link, useMatch, useRouterState } from '@tanstack/react-router';
 import { Fragment } from 'react';
 
+import { t } from '../../i18n/t';
 import { useLocale } from '../hooks/useLocale';
 import { accountPageTitle } from '../pages/accountLabels';
 import { cookNavRouteByPath, cookNavRouteBySlug } from '../pages/profile/cookCatalog';
@@ -91,80 +92,80 @@ export function CookBreadcrumbs() {
     const offerMatch = path.match(/^\/profile\/booking-request-offers\/([^/]+)$/);
 
     if (path === '/profile') {
-        crumbs.push({ label: { de: 'Übersicht', en: 'Overview' }[locale] });
+        crumbs.push({ label: t(locale, 'profile', 'chrome.overview') });
     } else if (path === '/profile/account') {
-        crumbs.push({ label: accountPageTitle[locale] });
+        crumbs.push({ label: accountPageTitle(locale) });
     } else if (path === '/profile/chef-profile/edit') {
-        crumbs.push({ label: chefProfileRoute.title[locale], to: '/{-$locale}/profile/chef-profile' });
-        crumbs.push({ label: { de: 'Bearbeiten', en: 'Edit' }[locale] });
+        crumbs.push({ label: chefProfileRoute.title(locale), to: '/{-$locale}/profile/chef-profile' });
+        crumbs.push({ label: t(locale, 'profileCook', 'actions.edit') });
     } else if (path === '/profile/travel/edit') {
-        crumbs.push({ label: travelRoute.title[locale], to: '/{-$locale}/profile/travel' });
-        crumbs.push({ label: { de: 'Bearbeiten', en: 'Edit' }[locale] });
+        crumbs.push({ label: travelRoute.title(locale), to: '/{-$locale}/profile/travel' });
+        crumbs.push({ label: t(locale, 'profileCook', 'actions.edit') });
     } else if (mealMatch) {
         const mealId = mealMatch[1]!;
         const isEdit = mealMatch[2] != null;
-        crumbs.push({ label: mealsRoute.title[locale], to: '/{-$locale}/profile/meals' });
+        crumbs.push({ label: mealsRoute.title(locale), to: '/{-$locale}/profile/meals' });
         if (isEdit) {
             crumbs.push({
-                label: { de: 'Gericht', en: 'Meal' }[locale],
+                label: t(locale, 'profileCook', 'chrome.meal'),
                 to: '/{-$locale}/profile/meals/$mealId',
                 params: { mealId },
             });
-            crumbs.push({ label: { de: 'Bearbeiten', en: 'Edit' }[locale] });
+            crumbs.push({ label: t(locale, 'profileCook', 'actions.edit') });
         } else {
-            crumbs.push({ label: { de: 'Gericht', en: 'Meal' }[locale] });
+            crumbs.push({ label: t(locale, 'profileCook', 'chrome.meal') });
         }
     } else if (menuMatch) {
         const menuId = menuMatch[1]!;
         const isEdit = menuMatch[2] != null;
-        crumbs.push({ label: menusRoute.title[locale], to: '/{-$locale}/profile/menus' });
+        crumbs.push({ label: menusRoute.title(locale), to: '/{-$locale}/profile/menus' });
         if (isEdit) {
             crumbs.push({
-                label: { de: 'Menü', en: 'Menu' }[locale],
+                label: t(locale, 'profileCook', 'chrome.menu'),
                 to: '/{-$locale}/profile/menus/$menuId',
                 params: { menuId },
             });
-            crumbs.push({ label: { de: 'Bearbeiten', en: 'Edit' }[locale] });
+            crumbs.push({ label: t(locale, 'profileCook', 'actions.edit') });
         } else {
-            crumbs.push({ label: { de: 'Menü', en: 'Menu' }[locale] });
+            crumbs.push({ label: t(locale, 'profileCook', 'chrome.menu') });
         }
     } else if (offerAddonEditMatch) {
-        crumbs.push({ label: offerAddonsRoute.title[locale], to: '/{-$locale}/profile/offer-addons' });
-        crumbs.push({ label: { de: 'Bearbeiten', en: 'Edit' }[locale] });
+        crumbs.push({ label: offerAddonsRoute.title(locale), to: '/{-$locale}/profile/offer-addons' });
+        crumbs.push({ label: t(locale, 'profileCook', 'actions.edit') });
     } else if (path.match(/^\/profile\/booking-request-pool\/[^/]+\/create$/)) {
         const bookingRequestId = path.split('/')[3]!;
-        crumbs.push({ label: poolRoute.title[locale], to: '/{-$locale}/profile/booking-request-pool' });
+        crumbs.push({ label: poolRoute.title(locale), to: '/{-$locale}/profile/booking-request-pool' });
         crumbs.push({
-            label: { de: 'Anfrage', en: 'Request' }[locale],
+            label: t(locale, 'profileCook', 'offer.tabs.request'),
             to: '/{-$locale}/profile/booking-request-pool/$bookingRequestId',
             params: { bookingRequestId },
         });
-        crumbs.push({ label: profileCookBookingRequestOfferCreatePageTitle[locale] });
+        crumbs.push({ label: profileCookBookingRequestOfferCreatePageTitle(locale) });
     } else if (path.startsWith('/profile/booking-request-pool/') && path !== '/profile/booking-request-pool') {
-        crumbs.push({ label: poolRoute.title[locale], to: '/{-$locale}/profile/booking-request-pool' });
-        crumbs.push({ label: { de: 'Anfrage', en: 'Request' }[locale] });
+        crumbs.push({ label: poolRoute.title(locale), to: '/{-$locale}/profile/booking-request-pool' });
+        crumbs.push({ label: t(locale, 'profileCook', 'offer.tabs.request') });
     } else if (offerEditMatch) {
         const bookingRequestOfferId = offerEditMatch[1]!;
         const editKind = offerEditMatch[2]!;
-        crumbs.push({ label: offersRoute.title[locale], to: '/{-$locale}/profile/booking-request-offers' });
+        crumbs.push({ label: offersRoute.title(locale), to: '/{-$locale}/profile/booking-request-offers' });
         crumbs.push({
-            label: offerCustomerDisplay ?? profileCookBookingRequestOfferPageTitle[locale],
+            label: offerCustomerDisplay ?? profileCookBookingRequestOfferPageTitle(locale),
             to: '/{-$locale}/profile/booking-request-offers/$bookingRequestOfferId',
             params: { bookingRequestOfferId },
         });
         crumbs.push({
             label:
                 editKind === 'edit-price'
-                    ? profileCookBookingRequestOfferPriceEditPageTitle[locale]
-                    : profileCookBookingRequestOfferMenusEditPageTitle[locale],
+                    ? profileCookBookingRequestOfferPriceEditPageTitle(locale)
+                    : profileCookBookingRequestOfferMenusEditPageTitle(locale),
         });
     } else if (offerMatch) {
-        crumbs.push({ label: offersRoute.title[locale], to: '/{-$locale}/profile/booking-request-offers' });
+        crumbs.push({ label: offersRoute.title(locale), to: '/{-$locale}/profile/booking-request-offers' });
         crumbs.push({
-            label: offerCustomerDisplay ?? profileCookBookingRequestOfferPageTitle[locale],
+            label: offerCustomerDisplay ?? profileCookBookingRequestOfferPageTitle(locale),
         });
     } else if (navRoute) {
-        crumbs.push({ label: navRoute.title[locale] });
+        crumbs.push({ label: navRoute.title(locale) });
     }
 
     if (crumbs.length === 0) {

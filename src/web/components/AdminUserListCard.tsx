@@ -1,7 +1,8 @@
 import { Link } from '@tanstack/react-router';
 import { MailIcon } from 'lucide-react';
 
-import { formatDate, userDisplayName } from '../../shared';
+import { t } from '../../i18n/t';
+import { formatDate, inlineCopy, userDisplayName } from '../../shared';
 import type { Locale } from '../../shared/locale';
 import type { GqlCAdminUserType, GqlCUserStatus } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
@@ -41,10 +42,13 @@ export function AdminUserListCard({ user }: { user: AdminUserListCardUser }) {
     const locale = useLocale();
     const timeZone = useTimeZone();
     const name = userDisplayName(user);
-    const createdLabel = {
-        de: `Registriert ${formatDate(user.createdAt, { locale, timeZone, dateStyle: 'medium' })}`,
-        en: `Joined ${formatDate(user.createdAt, { locale, timeZone, dateStyle: 'medium' })}`,
-    }[locale];
+    const createdLabel = inlineCopy(
+        {
+            de: `Registriert ${formatDate(user.createdAt, { locale, timeZone, dateStyle: 'medium' })}`,
+            en: `Joined ${formatDate(user.createdAt, { locale, timeZone, dateStyle: 'medium' })}`,
+        },
+        locale,
+    );
 
     return (
         <article
@@ -72,7 +76,7 @@ export function AdminUserListCard({ user }: { user: AdminUserListCardUser }) {
                     </div>
                     <p className="mt-1 flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground">
                         <MailIcon className="size-3.5 shrink-0 opacity-70" aria-hidden />
-                        <span className="truncate">{user.emailAddress ?? { de: 'Keine E-Mail', en: 'No email' }[locale]}</span>
+                        <span className="truncate">{user.emailAddress ?? t(locale, 'admin', 'copy.noEmail')}</span>
                     </p>
                 </div>
             </div>

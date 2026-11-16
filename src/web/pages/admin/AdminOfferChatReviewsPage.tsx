@@ -3,17 +3,23 @@ import { useEffect, useState } from 'react';
 import { createRequest, useClient } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { t } from '../../../i18n/t';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { StatusAlert } from '../../components/base/status-alert';
 import type { GqlCAdminOfferChatReviewsPageAdminFragment, GqlCAdminOfferChatReviewsPageQuery } from '../../graphql/generated';
 import { AdminOfferChatReviewsPageUpdatesDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
-import { adminStubRouteBySlug } from './adminCatalog';
+import type { Locale } from '../../utils/locale';
+import { adminStubRouteBySlug, adminStubRouteDescription, adminStubRouteTitle } from './adminCatalog';
 
 const route = adminStubRouteBySlug('offer-chat-reviews');
 
-export const adminOfferChatReviewsPageTitle = route.title;
-export const adminOfferChatReviewsPageDescription = route.description;
+export function adminOfferChatReviewsPageTitle(locale: Locale): string {
+    return adminStubRouteTitle(route.slug, locale);
+}
+export function adminOfferChatReviewsPageDescription(locale: Locale): string {
+    return adminStubRouteDescription(route.slug, locale);
+}
 
 export function adminOfferChatReviewsPageVariables() {
     return {
@@ -65,17 +71,12 @@ export function AdminOfferChatReviewsPage({ data }: { data: GqlCAdminOfferChatRe
         <AdminPathPageChrome>
             <main id="main-content" className="mx-auto grid w-full max-w-3xl content-start gap-6">
                 <div className="grid gap-2">
-                    <h1 className="font-serif text-4xl/tight text-foreground">{adminOfferChatReviewsPageTitle[locale]}</h1>
-                    <p className="text-muted-foreground">{adminOfferChatReviewsPageDescription[locale]}</p>
+                    <h1 className="font-serif text-4xl/tight text-foreground">{adminOfferChatReviewsPageTitle(locale)}</h1>
+                    <p className="text-muted-foreground">{adminOfferChatReviewsPageDescription(locale)}</p>
                 </div>
                 {pendingCount === 0 ? (
-                    <StatusAlert tone="success" title={{ de: 'Alles geprüft', en: 'All reviewed' }[locale]}>
-                        {
-                            {
-                                de: 'Keine Angebots-Chats warten auf Prüfung.',
-                                en: 'No offer chats are waiting for review.',
-                            }[locale]
-                        }
+                    <StatusAlert tone="success" title={t(locale, 'admin', 'copy.allReviewed')}>
+                        {t(locale, 'admin', 'copy.noOfferChatsAreWaitingForReview')}
                     </StatusAlert>
                 ) : null}
             </main>

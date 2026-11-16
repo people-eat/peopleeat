@@ -1,14 +1,17 @@
 import { HeadContent, Scripts, useLocation, useMatch } from '@tanstack/react-router';
 import type { PropsWithChildren } from 'react';
+import { Suspense } from 'react';
 import { Provider as GraphQLClientProvider } from 'urql';
 
 import { urqlClient } from '../graphql/client';
 import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 import { isWorkspaceNoDocumentScrollPath, pathWithoutLocale } from '../utils/locale';
 import type { Locale } from '../utils/locale';
 import { Toaster } from './base/sonner';
 import { TooltipProvider } from './base/tooltip';
+import { I18nProvider } from './I18nProvider';
 import { NavigationProgress } from './NavigationProgress';
 import { SessionStartupGates } from './SessionStartupGates';
 
@@ -75,22 +78,31 @@ export function RootDocument({ children }: PropsWithChildren) {
     );
 }
 
+function SkipToContent() {
+    const { t } = useT('common');
+    return (
+        <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-100 focus:rounded-md focus:border focus:border-border focus:bg-background focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:shadow-sm focus:ring-[3px] focus:ring-ring/50 focus:outline-none"
+        >
+            {t('skipToContent')}
+        </a>
+    );
+}
+
 function AppChrome({ children, locale }: PropsWithChildren<{ locale: Locale }>) {
     return (
-        <>
-            <a
-                href="#main-content"
-                className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-100 focus:rounded-md focus:border focus:border-border focus:bg-background focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:shadow-sm focus:ring-[3px] focus:ring-ring/50 focus:outline-none"
-            >
-                {{ de: 'Zum Inhalt springen', en: 'Skip to content' }[locale]}
-            </a>
-            <NavigationProgress />
-            <TooltipProvider>
-                <GraphQLClientProvider value={urqlClient}>
-                    <SessionStartupGates enableCookieShell>{children}</SessionStartupGates>
-                </GraphQLClientProvider>
-            </TooltipProvider>
-            <Toaster position="bottom-center" richColors />
-        </>
+        <Suspense fallback={null}>
+            <I18nProvider locale={locale} namespaces={['common']}>
+                <SkipToContent />
+                <NavigationProgress />
+                <TooltipProvider>
+                    <GraphQLClientProvider value={urqlClient}>
+                        <SessionStartupGates enableCookieShell>{children}</SessionStartupGates>
+                    </GraphQLClientProvider>
+                </TooltipProvider>
+                <Toaster position="bottom-center" richColors />
+            </I18nProvider>
+        </Suspense>
     );
 }

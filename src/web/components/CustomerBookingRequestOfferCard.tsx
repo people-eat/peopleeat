@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { MapPinIcon } from 'lucide-react';
 
-import { formatCurrency } from '../../shared';
+import { formatCurrency, inlineCopy } from '../../shared';
 import type { BookingRequestOfferStatus } from '../../shared/bookingRequestOfferStatus';
 import { bookingRequestOfferStatusHue, bookingRequestOfferStatusLabel } from '../../shared/bookingRequestOfferStatus';
 import { useLocale } from '../hooks/useLocale';
@@ -66,11 +66,14 @@ export function CustomerBookingRequestOfferCard({
     const badgeCount = unreadCount > 0 ? unreadCount : missingReviewCount;
     const badgeLabel =
         unreadCount > 0
-            ? {
-                  de: `${unreadCount} ungelesene Benachrichtigungen`,
-                  en: `${unreadCount} unread notifications`,
-              }[locale]
-            : { de: '1 Bewertung ausstehend', en: '1 review outstanding' }[locale];
+            ? inlineCopy(
+                  {
+                      de: `${unreadCount} ungelesene Benachrichtigungen`,
+                      en: `${unreadCount} unread notifications`,
+                  },
+                  locale,
+              )
+            : inlineCopy({ de: '1 Bewertung ausstehend', en: '1 review outstanding' }, locale);
     const priceCents = offer.totalCentsCustomer ?? offer.totalWithoutDiscountsCentsCustomer;
     const hasMenu = offer.configuredMenu != null || offer.suggestedMenus.length > 0;
     const menuHint = offer.configuredMenu?.title
@@ -90,10 +93,10 @@ export function CustomerBookingRequestOfferCard({
     const search = callHint?.openCall ? { tab: 'call' as const } : reviewMissing ? { tab: 'testimonial' as const } : undefined;
     const city = offer.cook.city?.trim() ?? '';
     const ctaLabel = reviewIsPrimaryAction
-        ? { de: 'Bewertung abgeben', en: 'Leave a review' }[locale]
+        ? inlineCopy({ de: 'Bewertung abgeben', en: 'Leave a review' }, locale)
         : hasMenu
-          ? { de: 'Menüvorschlag anzeigen', en: 'Show menu suggestion' }[locale]
-          : { de: 'Angebot anzeigen', en: 'View offer' }[locale];
+          ? inlineCopy({ de: 'Menüvorschlag anzeigen', en: 'Show menu suggestion' }, locale)
+          : inlineCopy({ de: 'Angebot anzeigen', en: 'View offer' }, locale);
 
     const cardClassName = cn(
         'relative flex h-full flex-col justify-between rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm',
@@ -134,7 +137,7 @@ export function CustomerBookingRequestOfferCard({
 
                 {menuHint ? <p className="line-clamp-2 text-sm text-foreground">{menuHint}</p> : null}
                 <p className="flex items-center justify-between gap-3 text-sm font-semibold">
-                    <span>{{ de: 'Gesamtpreis', en: 'Total' }[locale]}</span>
+                    <span>{inlineCopy({ de: 'Gesamtpreis', en: 'Total' }, locale)}</span>
                     <span className="shrink-0">{formatCurrency(priceCents, { locale })}</span>
                 </p>
             </div>

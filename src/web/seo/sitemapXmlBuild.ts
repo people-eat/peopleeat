@@ -1,4 +1,4 @@
-import { DEFAULT_LOCALE, LOCALES } from '../utils/locale';
+import { CATALOG_LOCALES, DEFAULT_LOCALE } from '../utils/locale';
 import type { Locale } from '../utils/locale';
 import type { SitemapPath } from './sitemapRoutes';
 
@@ -32,7 +32,7 @@ function sitemapUrl(webPageUrl: string, locale: Locale, path: string): string {
 }
 
 export function sitemapUrlsetBuild(webPageUrl: string, entries: ReadonlyArray<SitemapUrlEntry>): string {
-    const urls = entries.flatMap((entry) => LOCALES.map((locale) => sitemapUrlEntry(webPageUrl, entry, locale))).join('\n');
+    const urls = entries.flatMap((entry) => CATALOG_LOCALES.map((locale) => sitemapUrlEntry(webPageUrl, entry, locale))).join('\n');
     return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${urls}
@@ -59,7 +59,7 @@ ${entries}
 
 function sitemapUrlEntry(webPageUrl: string, entry: SitemapUrlEntry, locale: Locale): string {
     const loc = sitemapUrl(webPageUrl, locale, entry.path);
-    const alternates = LOCALES.map(
+    const alternates = CATALOG_LOCALES.map(
         (otherLocale) =>
             `    <xhtml:link rel="alternate" hreflang="${otherLocale}" href="${sitemapUrl(webPageUrl, otherLocale, entry.path)}" />`,
     ).join('\n');

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation, useQuery } from 'urql';
 
+import { t } from '../../../i18n/t';
 import {
     bookingRequestParticipantsFromCounts,
     bookingRequestSettingChoiceFromStored,
@@ -14,6 +15,7 @@ import {
     textNormalizeTitled,
 } from '../../../shared';
 import type { BookingRequestKitchenDetailsDraft, BookingRequestParticipantDraft, BookingRequestSettingChoice } from '../../../shared';
+import type { Locale } from '../../../shared/locale';
 import { Button } from '../../components/base/button';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '../../components/base/combobox';
 import { DateTimePicker } from '../../components/base/date-time-picker';
@@ -67,14 +69,12 @@ const occasionIcons = [
     <UsersIcon className="size-4" key="users" />,
 ];
 
-export const profileCustomerBookingRequestEditPageTitle = {
-    de: 'Anfrage bearbeiten',
-    en: 'Edit request',
-} as const;
-export const profileCustomerBookingRequestEditPageDescription = {
-    de: 'Anlass, Termin, Ort, Teilnehmer, Präferenzen und Einschränkungen bearbeiten. Nach Annahme nur noch Teilnehmerzahl und Ort.',
-    en: 'Edit occasion, date, location, participants, preferences, and restrictions. After accept, only guest count and venue.',
-} as const;
+export function profileCustomerBookingRequestEditPageTitle(locale: Locale): string {
+    return t(locale, 'profileCustomer', 'bookingRequestEdit.title');
+}
+export function profileCustomerBookingRequestEditPageDescription(locale: Locale): string {
+    return t(locale, 'profileCustomer', 'bookingRequestEdit.description');
+}
 
 export function profileCustomerBookingRequestEditPageVariables(bookingRequestId: string) {
     return { bookingRequestId };
@@ -255,21 +255,11 @@ export function ProfileCustomerBookingRequestEditPage({
                     value.adultCount !== (seedRequest.participants.filter((p) => p.type === 'ADULT').length || 1) ||
                     value.childCount !== seedRequest.participants.filter((p) => p.type === 'DISCOUNTED').length;
                 if (!locationChangedForAmendment && !headcountChangedForAmendment) {
-                    toast.error(
-                        {
-                            de: 'Bitte Teilnehmerzahl oder Ort ändern.',
-                            en: 'Please change the guest count or venue.',
-                        }[locale],
-                    );
+                    toast.error(t(locale, 'profileCustomer', 'bookingRequestEdit.changeRequired'));
                     return;
                 }
                 if (locationChangedForAmendment && !value.exactEventAddress.displayText.trim()) {
-                    toast.error(
-                        {
-                            de: 'Bitte eine vollständige Adresse wählen.',
-                            en: 'Please choose a full address.',
-                        }[locale],
-                    );
+                    toast.error(t(locale, 'profileCustomer', 'bookingRequestEdit.fullAddressRequired'));
                     return;
                 }
                 try {
@@ -289,35 +279,20 @@ export function ProfileCustomerBookingRequestEditPage({
                     if (result.error || !result.data?.user.bookingRequestOfferParticipantAmendmentCreate.success) {
                         throw new Error('amendment create failed');
                     }
-                    toast.success(
-                        {
-                            de: 'Vorschlag an den Koch gesendet.',
-                            en: 'Proposal sent to the chef.',
-                        }[locale],
-                    );
+                    toast.success(t(locale, 'profileCustomer', 'bookingRequestEdit.proposalSent'));
                     await navigate({
                         to: '/{-$locale}/profile/booking-requests/$bookingRequestId',
                         params: { bookingRequestId },
                     });
                 } catch {
-                    toast.error(
-                        {
-                            de: 'Die Buchungsänderung konnte nicht gesendet werden.',
-                            en: 'Could not send the booking change.',
-                        }[locale],
-                    );
+                    toast.error(t(locale, 'profileCustomer', 'bookingRequestEdit.changeFailed'));
                 }
                 return;
             }
 
             if (!bookingRequestCanUpdate(request)) return;
             if (!value.exactEventAddress.displayText.trim()) {
-                toast.error(
-                    {
-                        de: 'Bitte eine vollständige Adresse wählen.',
-                        en: 'Please choose a full address.',
-                    }[locale],
-                );
+                toast.error(t(locale, 'profileCustomer', 'bookingRequestEdit.fullAddressRequired'));
                 return;
             }
             try {
@@ -347,13 +322,13 @@ export function ProfileCustomerBookingRequestEditPage({
                         throw new Error('kitchen details update failed');
                     }
                 }
-                toast.success({ de: 'Anfrage aktualisiert.', en: 'Request updated.' }[locale]);
+                toast.success(t(locale, 'profileCustomer', 'bookingRequestEdit.updated'));
                 await navigate({
                     to: '/{-$locale}/profile/booking-requests/$bookingRequestId',
                     params: { bookingRequestId },
                 });
             } catch {
-                toast.error({ de: 'Aktualisierung fehlgeschlagen.', en: 'Update failed.' }[locale]);
+                toast.error(t(locale, 'profileCustomer', 'bookingRequestEdit.updateFailed'));
             }
         },
     });
@@ -461,7 +436,7 @@ export function ProfileCustomerBookingRequestEditPage({
                     <>
                         <Button type="button" variant="outline" disabled={isSubmitting} asChild>
                             <Link to="/{-$locale}/profile/booking-requests/$bookingRequestId" params={{ bookingRequestId }}>
-                                {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                {t(locale, 'common', 'cancel')}
                             </Link>
                         </Button>
                         {pendingAmendment == null ? (
@@ -471,17 +446,17 @@ export function ProfileCustomerBookingRequestEditPage({
                                 disabled={isParticipantAmendmentMode ? amendmentSubmitDisabled : fullSubmitDisabled}
                             >
                                 {isSubmitting
-                                    ? { de: 'Senden…', en: 'Sending…' }[locale]
+                                    ? t(locale, 'profileCustomer', 'actions.sending')
                                     : isParticipantAmendmentMode
-                                      ? { de: 'Änderungen anfragen', en: 'Request changes' }[locale]
-                                      : { de: 'Speichern', en: 'Save' }[locale]}
+                                      ? t(locale, 'profileCustomer', 'bookingRequestEdit.requestChanges')
+                                      : t(locale, 'common', 'save')}
                             </Button>
                         ) : null}
                     </>
                 ) : (
                     <Button type="button" disabled={isSubmitting} asChild>
                         <Link to="/{-$locale}/profile/booking-requests/$bookingRequestId" params={{ bookingRequestId }}>
-                            {{ de: 'Zur Anfrage', en: 'Back to request' }[locale]}
+                            {t(locale, 'profileCustomer', 'bookingRequestEdit.backToRequest')}
                         </Link>
                     </Button>
                 )
@@ -492,48 +467,23 @@ export function ProfileCustomerBookingRequestEditPage({
                     <StatusAlert
                         tone="info"
                         title={
-                            {
-                                de: pendingAmendment.claimedAt != null ? 'Änderung wird angewendet' : 'Änderung vorgeschlagen',
-                                en: pendingAmendment.claimedAt != null ? 'Change is being applied' : 'Change proposed',
-                            }[locale]
+                            pendingAmendment.claimedAt != null
+                                ? t(locale, 'profileCustomer', 'bookingRequestEdit.applying')
+                                : t(locale, 'profileCustomer', 'bookingRequestEdit.proposed')
                         }
                     >
                         {pendingAmendment.claimedAt != null
-                            ? {
-                                  de: 'Dein Koch hat den Vorschlag angenommen. Preis und Zahlung werden gerade aktualisiert. Die Buchung bleibt bestätigt.',
-                                  en: 'Your chef accepted the proposal. Price and payment are updating now. The booking stays confirmed.',
-                              }[locale]
-                            : {
-                                  de: 'Dein Vorschlag wartet auf die Bestätigung des Kochs. Die aktuelle Buchung bleibt unverändert, bis er annimmt oder ablehnt.',
-                                  en: 'Your proposal is waiting for the chef to confirm. The current booking stays unchanged until they accept or decline.',
-                              }[locale]}
+                            ? t(locale, 'profileCustomer', 'bookingRequestEdit.chefAccepted')
+                            : t(locale, 'profileCustomer', 'bookingRequestEdit.waitingChef')}
                     </StatusAlert>
                 ) : (
-                    <StatusAlert tone="warning" title={{ de: 'Änderung deiner Buchung', en: 'Change to your booking' }[locale]}>
-                        {
-                            {
-                                de: 'Du kannst hier die Teilnehmerzahl oder den Veranstaltungsort ändern. Dadurch kann sich auch der Preis ändern. Dein Koch muss die Änderungen bestätigen, bevor sie wirksam werden.',
-                                en: 'You can change the guest count or venue here. This may also change the price. Your chef must confirm the changes before they take effect.',
-                            }[locale]
-                        }
+                    <StatusAlert tone="warning" title={t(locale, 'profileCustomer', 'bookingRequestEdit.changeTitle')}>
+                        {t(locale, 'profileCustomer', 'bookingRequestEdit.changeBody')}
                     </StatusAlert>
                 )
             ) : (
-                <StatusAlert
-                    tone="warning"
-                    title={
-                        {
-                            de: 'Wesentliche Änderungen müssen vom Koch erneut bestätigt werden.',
-                            en: 'Material changes require the chef to confirm again.',
-                        }[locale]
-                    }
-                >
-                    {
-                        {
-                            de: 'Ändern sich Teilnehmerzahl oder Adresse, kann der Angebotspreis automatisch angepasst werden. Der Koch bestätigt danach erneut.',
-                            en: 'If the guest count or address changes, the offer price may adjust automatically. The chef confirms again afterwards.',
-                        }[locale]
-                    }
+                <StatusAlert tone="warning" title={t(locale, 'profileCustomer', 'bookingRequestEdit.materialChanges')}>
+                    {t(locale, 'profileCustomer', 'bookingRequestEdit.priceMayAdjust')}
                 </StatusAlert>
             )}
 
@@ -553,7 +503,7 @@ export function ProfileCustomerBookingRequestEditPage({
                                 <div className="grid gap-4">
                                     <div className="grid gap-1.5">
                                         <label htmlFor="booking-request-occasion" className="text-sm font-medium">
-                                            {{ de: 'Anlass', en: 'Occasion' }[locale]}
+                                            {t(locale, 'profileCustomer', 'bookingRequestEdit.occasion')}
                                         </label>
                                         <Input
                                             id="booking-request-occasion"
@@ -561,12 +511,7 @@ export function ProfileCustomerBookingRequestEditPage({
                                             value={field.state.value}
                                             onBlur={field.handleBlur}
                                             onChange={(event) => field.handleChange(event.target.value)}
-                                            placeholder={
-                                                {
-                                                    de: 'z. B. Geburtstag, Firmenfeier',
-                                                    en: 'e.g. Birthday, company dinner',
-                                                }[locale]
-                                            }
+                                            placeholder={t(locale, 'profileCustomer', 'bookingRequestEdit.occasionPlaceholder')}
                                             disabled={isSubmitting}
                                         />
                                     </div>
@@ -588,12 +533,14 @@ export function ProfileCustomerBookingRequestEditPage({
                         <form.Field name="dateTime">
                             {(field) => (
                                 <div className="grid gap-1.5">
-                                    <span className="text-sm font-medium">{{ de: 'Datum & Uhrzeit', en: 'Date & time' }[locale]}</span>
+                                    <span className="text-sm font-medium">
+                                        {t(locale, 'profileCustomer', 'bookingRequestEdit.dateTime')}
+                                    </span>
                                     <DateTimePicker
                                         value={new Date(field.state.value)}
                                         onValueChange={(date) => field.handleChange(date.toISOString())}
-                                        placeholder={{ de: 'Datum & Uhrzeit', en: 'Date & time' }[locale]}
-                                        timeAriaLabel={{ de: 'Uhrzeit', en: 'Time' }[locale]}
+                                        placeholder={t(locale, 'profileCustomer', 'bookingRequestEdit.dateTime')}
+                                        timeAriaLabel={t(locale, 'profileCustomer', 'bookingRequestEdit.time')}
                                         locale={DATE_FNS_LOCALE[locale]}
                                         className="w-full"
                                     />
@@ -605,7 +552,7 @@ export function ProfileCustomerBookingRequestEditPage({
                 <form.Field name="exactEventAddress">
                     {(field) => (
                         <div className="grid gap-1.5">
-                            <span className="text-sm font-medium">{{ de: 'Veranstaltungsort', en: 'Event location' }[locale]}</span>
+                            <span className="text-sm font-medium">{t(locale, 'profileCustomer', 'bookingRequestEdit.venue')}</span>
                             <Combobox
                                 filter={null}
                                 items={suggestions.map((suggestion) => suggestion.displayText)}
@@ -617,12 +564,7 @@ export function ProfileCustomerBookingRequestEditPage({
                                     if (!match) return;
                                     const address = addressFromSuggestion(match);
                                     if (!address) {
-                                        toast.error(
-                                            {
-                                                de: 'Bitte eine vollständige Adresse wählen.',
-                                                en: 'Please choose a full address.',
-                                            }[locale],
-                                        );
+                                        toast.error(t(locale, 'profileCustomer', 'bookingRequestEdit.fullAddressRequired'));
                                         return;
                                     }
                                     field.handleChange(address);
@@ -641,7 +583,7 @@ export function ProfileCustomerBookingRequestEditPage({
                             >
                                 <ComboboxInput
                                     className="w-full"
-                                    placeholder={{ de: 'Adresse suchen…', en: 'Search address…' }[locale]}
+                                    placeholder={t(locale, 'profileCustomer', 'actions.searchAddress')}
                                     showClear={false}
                                     disabled={isSubmitting || pendingAmendment != null}
                                     required={!field.state.value.displayText}
@@ -649,8 +591,8 @@ export function ProfileCustomerBookingRequestEditPage({
                                 <ComboboxContent>
                                     <ComboboxEmpty>
                                         {suggestionsFetching
-                                            ? { de: 'Suche…', en: 'Searching…' }[locale]
-                                            : { de: 'Keine Treffer.', en: 'No matches.' }[locale]}
+                                            ? t(locale, 'profileCustomer', 'actions.searching')
+                                            : t(locale, 'profileCustomer', 'actions.noMatches')}
                                     </ComboboxEmpty>
                                     <ComboboxList>
                                         {(item: string) => (
@@ -688,7 +630,7 @@ export function ProfileCustomerBookingRequestEditPage({
                         {(field) => (
                             <div className="grid gap-1.5">
                                 <label htmlFor="booking-request-adults" className="text-sm font-medium">
-                                    {{ de: 'Erwachsene', en: 'Adults' }[locale]}
+                                    {t(locale, 'profileCustomer', 'bookingRequestEdit.adults')}
                                 </label>
                                 <Input
                                     id="booking-request-adults"
@@ -707,7 +649,7 @@ export function ProfileCustomerBookingRequestEditPage({
                         {(field) => (
                             <div className="grid gap-1.5">
                                 <label htmlFor="booking-request-children" className="text-sm font-medium">
-                                    {{ de: 'Kinder', en: 'Children' }[locale]}
+                                    {t(locale, 'profileCustomer', 'bookingRequestEdit.children')}
                                 </label>
                                 <Input
                                     id="booking-request-children"
@@ -728,17 +670,12 @@ export function ProfileCustomerBookingRequestEditPage({
                 ) : null}
                 {!isParticipantAmendmentMode ? (
                     <div className="grid gap-3">
-                        <span className="text-sm font-medium">{{ de: 'Präferenzen', en: 'Preferences' }[locale]}</span>
+                        <span className="text-sm font-medium">{t(locale, 'profileCustomer', 'bookingRequestEdit.preferences')}</span>
                         <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
                             <Input
                                 value={customPreferenceText}
                                 onChange={(event) => setCustomPreferenceText(event.target.value)}
-                                placeholder={
-                                    {
-                                        de: 'Präferenz (suchen oder hier eigene eingeben)',
-                                        en: 'Select from the options below or add your own one here',
-                                    }[locale]
-                                }
+                                placeholder={t(locale, 'profileCustomer', 'bookingRequestEdit.preferencePlaceholder')}
                                 disabled={isSubmitting || preferences.length >= 4}
                             />
                             <Button
@@ -753,7 +690,7 @@ export function ProfileCustomerBookingRequestEditPage({
                                     setCustomPreferenceText('');
                                 }}
                             >
-                                {{ de: 'Eigene hinzufügen', en: 'Add custom' }[locale]}
+                                {t(locale, 'profileCustomer', 'bookingRequestEdit.addCustom')}
                             </Button>
                         </div>
                         <form.Field name="preferences">
@@ -783,12 +720,7 @@ export function ProfileCustomerBookingRequestEditPage({
                                     </div>
                                     {field.state.value.length >= 4 ? (
                                         <StatusAlert tone="info">
-                                            {
-                                                {
-                                                    de: 'Du hast die maximale Anzahl ausgewählter Präferenzen erreicht.',
-                                                    en: 'You have reached the limit of 4 selected preferences.',
-                                                }[locale]
-                                            }
+                                            {t(locale, 'profileCustomer', 'bookingRequestEdit.preferenceLimit')}
                                         </StatusAlert>
                                     ) : null}
                                 </div>
@@ -800,14 +732,9 @@ export function ProfileCustomerBookingRequestEditPage({
                 {restrictionsEnabled && pendingAmendment == null ? (
                     <div className="grid gap-3">
                         <div className="grid gap-1">
-                            <span className="text-sm font-medium">{{ de: 'Einschränkungen', en: 'Restrictions' }[locale]}</span>
+                            <span className="text-sm font-medium">{t(locale, 'profileCustomer', 'bookingRequestEdit.restrictions')}</span>
                             <p className="text-sm text-muted-foreground">
-                                {
-                                    {
-                                        de: 'Wähle die zutreffenden Einschränkungen pro Gast.',
-                                        en: 'Select the applicable restrictions per guest.',
-                                    }[locale]
-                                }
+                                {t(locale, 'profileCustomer', 'bookingRequestEdit.restrictionsHint')}
                             </p>
                         </div>
                         <BookingRequestParticipantsRestrictionsEditor
@@ -819,7 +746,7 @@ export function ProfileCustomerBookingRequestEditPage({
                 ) : null}
                 {kitchenEnabled && !isParticipantAmendmentMode ? (
                     <div className="grid gap-3">
-                        <span className="text-sm font-medium">{{ de: 'Über die Küche', en: 'About the kitchen' }[locale]}</span>
+                        <span className="text-sm font-medium">{t(locale, 'profileCustomer', 'bookingRequestEdit.aboutKitchen')}</span>
                         <BookingRequestKitchenDetailsFields
                             locale={locale}
                             value={kitchenDraft}

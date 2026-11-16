@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { Button } from '../components/base/button';
 import { CustomerMealCard } from '../components/CustomerMealCard';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 
 export type SectionCookMeal = {
     mealId: string;
@@ -14,7 +14,7 @@ export type SectionCookMeal = {
 const COLLAPSED_MEAL_COUNT = 5;
 
 export function SectionCookMeals({ meals }: { meals: ReadonlyArray<SectionCookMeal> }) {
-    const locale = useLocale();
+    const { t } = useT('public');
     const [expanded, setExpanded] = useState(false);
     const canExpand = meals.length > COLLAPSED_MEAL_COUNT;
     const visibleMeals = canExpand && !expanded ? meals.slice(0, COLLAPSED_MEAL_COUNT) : meals;
@@ -22,7 +22,7 @@ export function SectionCookMeals({ meals }: { meals: ReadonlyArray<SectionCookMe
     return (
         <section className="mx-auto w-full max-w-7xl px-4 @lg:px-6">
             <div className="flex items-baseline justify-between gap-4">
-                <h2 className="font-serif text-3xl font-light @3xl:text-4xl">{{ de: 'Gerichte', en: 'Meals' }[locale]}</h2>
+                <h2 className="font-serif text-3xl font-light @3xl:text-4xl">{t('chef.meals')}</h2>
                 {canExpand ? (
                     <Button
                         type="button"
@@ -31,19 +31,12 @@ export function SectionCookMeals({ meals }: { meals: ReadonlyArray<SectionCookMe
                         aria-expanded={expanded}
                         onClick={() => setExpanded((current) => !current)}
                     >
-                        {
-                            {
-                                de: expanded ? 'Weniger anzeigen' : 'Mehr anzeigen',
-                                en: expanded ? 'Show less' : 'Show more',
-                            }[locale]
-                        }
+                        {expanded ? t('chef.showLess') : t('chef.showMore')}
                     </Button>
                 ) : null}
             </div>
             {meals.length === 0 ? (
-                <p className="mt-4 text-muted-foreground">
-                    {{ de: 'Noch keine Gerichte veröffentlicht.', en: 'No meals published yet.' }[locale]}
-                </p>
+                <p className="mt-4 text-muted-foreground">{t('chef.mealsEmpty')}</p>
             ) : (
                 // Marketing meal tiles (square image on top) reflow with the chef profile
                 // `@container`, not the viewport — dense 5-up on desktop.

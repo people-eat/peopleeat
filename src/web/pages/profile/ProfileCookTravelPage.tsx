@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router';
 
+import { t } from '../../../i18n/t';
 import { formatCurrency } from '../../../shared';
 import { Button } from '../../components/base/button';
 import { ProfilePinnedFooterLayout } from '../../components/ProfilePinnedFooterLayout';
@@ -37,37 +38,37 @@ export function ProfileCookTravelPage({ data }: { data: GqlCProfileCookTravelPag
             contentClassName="grid min-w-0 content-start gap-8"
             footer={
                 <Button asChild>
-                    <Link to="/{-$locale}/profile/travel/edit">{{ de: 'Bearbeiten', en: 'Edit' }[locale]}</Link>
+                    <Link to="/{-$locale}/profile/travel/edit">{t(locale, 'profileCook', 'actions.edit')}</Link>
                 </Button>
             }
         >
             <div className="grid gap-2">
-                <h1 className="font-serif text-3xl/tight text-foreground">{route.title[locale]}</h1>
-                <p className="text-muted-foreground">{route.description[locale]}</p>
+                <h1 className="font-serif text-3xl/tight text-foreground">{route.title(locale)}</h1>
+                <p className="text-muted-foreground">{route.description(locale)}</p>
             </div>
 
             <section className="grid min-w-0 gap-4">
                 <dl className="grid min-w-0 gap-4">
                     <DetailField
-                        label={{ de: 'Startadresse für die Reisestrecke', en: 'Travel origin address' }[locale]}
+                        label={t(locale, 'profileCook', 'travelEdit.origin')}
                         value={
                             cook.exactTravelOriginAddress?.displayText.trim()
                                 ? cook.exactTravelOriginAddress.displayText
-                                : { de: 'Nicht angegeben', en: 'Not set' }[locale]
+                                : t(locale, 'profileCook', 'actions.notSet')
                         }
                     />
                     {cook.exactTravelOriginAddress?.city.trim() ? (
                         <DetailField
-                            label={{ de: 'Stadt für Kunden', en: 'City shown to customers' }[locale]}
+                            label={t(locale, 'profileCook', 'travel.cityForCustomers')}
                             value={cook.exactTravelOriginAddress.city}
                         />
                     ) : null}
                     <DetailField
-                        label={{ de: 'Maximale Reisestrecke', en: 'Maximum travel distance' }[locale]}
+                        label={t(locale, 'profileCook', 'travelEdit.maxDistance')}
                         value={`${cook.maximumTravelDistance ?? '—'} km`}
                     />
                     <DetailField
-                        label={{ de: 'Reisekosten je km', en: 'Travel expenses per km' }[locale]}
+                        label={t(locale, 'profileCook', 'travelEdit.expensesPerKm')}
                         value={formatCurrency(cook.travelExpensesAmount, { locale })}
                     />
                 </dl>

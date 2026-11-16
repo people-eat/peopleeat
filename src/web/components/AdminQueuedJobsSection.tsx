@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 
-import { formatDateTime } from '../../shared';
+import { t } from '../../i18n/t';
+import { formatDateTime, inlineCopy } from '../../shared';
+import type { InlineCopy } from '../../shared';
 import { useLocale } from '../hooks/useLocale';
 import { useTimeZone } from '../hooks/useTimeZone';
 import {
@@ -39,7 +41,7 @@ export function AdminQueuedJobsSection({
     offerLink,
 }: {
     readonly jobs: readonly AdminQueuedJobRow[];
-    readonly emptyMessage?: Record<Locale, string>;
+    readonly emptyMessage?: InlineCopy;
     /** When set, jobs with `bookingRequestOfferId` in data render an offer link. */
     readonly offerLink?: (bookingRequestOfferId: string) => ReactNode;
 }) {
@@ -49,19 +51,20 @@ export function AdminQueuedJobsSection({
     if (jobs.length === 0) {
         return (
             <p className="text-sm text-muted-foreground">
-                {
-                    (emptyMessage ?? {
+                {inlineCopy(
+                    emptyMessage ?? {
                         de: 'Keine ausstehenden Jobs für dieses Angebot.',
                         en: 'No pending jobs for this offer.',
-                    })[locale]
-                }
+                    },
+                    locale,
+                )}
             </p>
         );
     }
 
     return (
         <div className="grid gap-3">
-            <h2 className="text-sm font-medium text-foreground">{{ de: 'Geplante Jobs', en: 'Queued jobs' }[locale]}</h2>
+            <h2 className="text-sm font-medium text-foreground">{t(locale, 'admin', 'copy.queuedJobs')}</h2>
             <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-secondary">
                 {jobs.map((job) => {
                     const detail = adminQueuedJobDataDetail(job.data, locale);
@@ -85,7 +88,7 @@ export function AdminQueuedJobsSection({
                                 {offerLink && offerId ? <div className="text-xs">{offerLink(offerId)}</div> : null}
                             </div>
                             <p className="text-xs text-muted-foreground sm:text-right">
-                                <span className="block sm:mb-0.5">{{ de: 'Fällig', en: 'Due' }[locale]}</span>
+                                <span className="block sm:mb-0.5">{t(locale, 'admin', 'copy.due')}</span>
                                 <span className="tabular-nums text-sm text-foreground">
                                     {formatJobDue(job.startAfter, locale, timeZone)}
                                 </span>

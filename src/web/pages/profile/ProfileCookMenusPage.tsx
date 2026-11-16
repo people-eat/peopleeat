@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
+import { t } from '../../../i18n/t';
 import { formatDateTime } from '../../../shared';
 import { Badge } from '../../components/base/badge';
 import { Button } from '../../components/base/button';
@@ -136,8 +137,8 @@ export function ProfileCookMenusPage({ data, search }: { data: GqlCProfileCookMe
     const filteredMenus = scope === 'library' ? filteredLibraryMenus : filteredOfferMenus;
 
     const scopeTabs: { value: MenuScope; label: string; count: number }[] = [
-        { value: 'library', label: { de: 'Vorlagen', en: 'Library' }[locale], count: libraryMenus.length },
-        { value: 'offers', label: { de: 'In Angeboten', en: 'In offers' }[locale], count: offerMenus.length },
+        { value: 'library', label: t(locale, 'profileCook', 'menus.library'), count: libraryMenus.length },
+        { value: 'offers', label: t(locale, 'profileCook', 'menus.inOffers'), count: offerMenus.length },
     ];
 
     async function onCreate() {
@@ -146,10 +147,10 @@ export function ProfileCookMenusPage({ data, search }: { data: GqlCProfileCookMe
             const result = await upsertMenu({});
             const menuId = result.data?.user.cook.menuUpsert.referenceId;
             if (!menuId || result.error) throw new Error('create failed');
-            toast.success({ de: 'Menü angelegt.', en: 'Menu created.' }[locale]);
+            toast.success(t(locale, 'profileCook', 'offerMenusEdit.menuCreated'));
             await navigate({ to: '/{-$locale}/profile/menus/$menuId/edit', params: { menuId } });
         } catch {
-            toast.error({ de: 'Anlegen fehlgeschlagen.', en: 'Could not create.' }[locale]);
+            toast.error(t(locale, 'profileCook', 'actions.createFailed'));
         } finally {
             setCreating(false);
         }
@@ -168,7 +169,7 @@ export function ProfileCookMenusPage({ data, search }: { data: GqlCProfileCookMe
                     })
                 }
             >
-                <TabsList variant="line" aria-label={{ de: 'Menübereich', en: 'Menu scope' }[locale]}>
+                <TabsList variant="line" aria-label={t(locale, 'profileCook', 'menus.scope')}>
                     {scopeTabs.map((tab) => (
                         <TabsTrigger key={tab.value} value={tab.value}>
                             {tab.label}
@@ -180,23 +181,14 @@ export function ProfileCookMenusPage({ data, search }: { data: GqlCProfileCookMe
                 </TabsList>
             </Tabs>
 
-            {scope === 'offers' ? (
-                <p className="text-sm text-muted-foreground">
-                    {
-                        {
-                            de: 'Diese Menüs sind Kopien für einzelne Angebote. Änderungen an Vorlagen gelten nicht automatisch hier, und umgekehrt.',
-                            en: 'These menus are per-offer copies. Edits to library templates do not apply here automatically, and the reverse is also true.',
-                        }[locale]
-                    }
-                </p>
-            ) : null}
+            {scope === 'offers' ? <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'menus.copiesHint')}</p> : null}
 
             <div className="flex flex-wrap items-center gap-3">
                 <Input
                     value={draftQ}
                     onChange={(event) => setDraftQ(event.target.value)}
-                    placeholder={{ de: 'Menüs suchen…', en: 'Search menus…' }[locale]}
-                    aria-label={{ de: 'Menüs suchen', en: 'Search menus' }[locale]}
+                    placeholder={t(locale, 'profileCook', 'menus.searchPlaceholder')}
+                    aria-label={t(locale, 'profileCook', 'menus.searchAria')}
                     className="min-w-0 flex-1 @md:max-w-xs"
                 />
                 {publicationEnabled && scope === 'library' ? (
@@ -204,17 +196,17 @@ export function ProfileCookMenusPage({ data, search }: { data: GqlCProfileCookMe
                         value={statusFilter}
                         onValueChange={(value) => updateSearch({ q: search.q, scope, status: value as MenuStatusFilter, sort })}
                     >
-                        <SelectTrigger className="w-full @md:w-48" aria-label={{ de: 'Veröffentlichung', en: 'Publication' }[locale]}>
+                        <SelectTrigger className="w-full @md:w-48" aria-label={t(locale, 'profileCook', 'menus.publication')}>
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">
-                                {{ de: `Alle (${libraryMenus.length})`, en: `All (${libraryMenus.length})` }[locale]}
+                                {t(locale, 'profileCook', 'menus.allCount', { count: libraryMenus.length })}
                             </SelectItem>
                             <SelectItem value="published">
-                                {{ de: `Veröffentlicht (${publishedCount})`, en: `Published (${publishedCount})` }[locale]}
+                                {t(locale, 'profileCook', 'menus.publishedCount', { count: publishedCount })}
                             </SelectItem>
-                            <SelectItem value="draft">{{ de: `Entwurf (${draftCount})`, en: `Draft (${draftCount})` }[locale]}</SelectItem>
+                            <SelectItem value="draft">{t(locale, 'profileCook', 'menus.draftCount', { count: draftCount })}</SelectItem>
                         </SelectContent>
                     </Select>
                 ) : null}
@@ -222,13 +214,13 @@ export function ProfileCookMenusPage({ data, search }: { data: GqlCProfileCookMe
                     value={sort}
                     onValueChange={(value) => updateSearch({ q: search.q, scope, status: statusFilter, sort: value as MenuSort })}
                 >
-                    <SelectTrigger className="w-full @md:w-48" aria-label={{ de: 'Sortierung', en: 'Sort order' }[locale]}>
+                    <SelectTrigger className="w-full @md:w-48" aria-label={t(locale, 'profileCook', 'actions.sort')}>
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="updated-desc">{{ de: 'Zuletzt aktualisiert', en: 'Recently updated' }[locale]}</SelectItem>
-                        <SelectItem value="updated-asc">{{ de: 'Älteste zuerst', en: 'Oldest first' }[locale]}</SelectItem>
-                        <SelectItem value="title-asc">{{ de: 'Titel A–Z', en: 'Title A–Z' }[locale]}</SelectItem>
+                        <SelectItem value="updated-desc">{t(locale, 'profileCook', 'actions.sortRecent')}</SelectItem>
+                        <SelectItem value="updated-asc">{t(locale, 'profileCook', 'actions.sortOldest')}</SelectItem>
+                        <SelectItem value="title-asc">{t(locale, 'profileCook', 'actions.sortTitle')}</SelectItem>
                     </SelectContent>
                 </Select>
                 {scope === 'library' ? (
@@ -245,29 +237,17 @@ export function ProfileCookMenusPage({ data, search }: { data: GqlCProfileCookMe
                         }}
                     >
                         <PlusIcon className="size-4" />
-                        {
-                            {
-                                de: creating ? 'Wird angelegt…' : 'Neues Menü',
-                                en: creating ? 'Creating…' : 'New menu',
-                            }[locale]
-                        }
+                        {creating ? t(locale, 'profileCook', 'actions.creating') : t(locale, 'profileCook', 'menus.newMenu')}
                     </Button>
                 ) : null}
             </div>
 
             {sourceCount === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                    {
-                        (scope === 'library'
-                            ? { de: 'Noch keine Menüs.', en: 'No menus yet.' }
-                            : {
-                                  de: 'Noch keine Menüs in Angeboten. Wenn du ein Menü an ein Angebot hängst, erscheint die Kopie hier.',
-                                  en: 'No menus in offers yet. When you attach a menu to an offer, the copy shows up here.',
-                              })[locale]
-                    }
+                    {t(locale, 'profileCook', scope === 'library' ? 'menus.empty' : 'menus.emptyOffers')}
                 </p>
             ) : filteredMenus.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{{ de: 'Keine Menüs gefunden.', en: 'No menus found.' }[locale]}</p>
+                <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'menus.noneFound')}</p>
             ) : scope === 'library' ? (
                 <ul className="grid grid-cols-1 gap-4 @2xl:grid-cols-2 @6xl:grid-cols-3">
                     {filteredLibraryMenus.map((menu) => (
@@ -329,7 +309,7 @@ export function ProfileCookMenusPage({ data, search }: { data: GqlCProfileCookMe
                                         search={{ tab: 'offer' }}
                                         className="text-sm text-muted-foreground underline-offset-4 hover:underline"
                                     >
-                                        {{ de: 'Angebot öffnen', en: 'Open offer' }[locale]}
+                                        {t(locale, 'profileCook', 'menu.openOffer')}
                                     </Link>
                                 ) : null}
                             </li>
@@ -347,7 +327,7 @@ export function ProfileCookMenusPage({ data, search }: { data: GqlCProfileCookMe
                         void onCreate();
                     }}
                     onApplied={(menuId) => {
-                        toast.success({ de: 'Menü angelegt.', en: 'Menu created.' }[locale]);
+                        toast.success(t(locale, 'profileCook', 'offerMenusEdit.menuCreated'));
                         void navigate({ to: '/{-$locale}/profile/menus/$menuId', params: { menuId } });
                     }}
                 />

@@ -1,28 +1,26 @@
 import { Link } from '@tanstack/react-router';
 import { UserIcon, UserStarIcon } from 'lucide-react';
-import type { Locale } from '../../shared/locale';
-import { useLocale } from '../hooks/useLocale';
 import { useSessionImpersonation } from '../hooks/useSessionImpersonation';
+import { useT } from '../hooks/useT';
 import { Tooltip, TooltipContent, TooltipTrigger } from './base/tooltip';
 import type { PublicHeaderUser } from './Header';
 import { HeaderButton } from './HeaderButton';
 import { SessionImpersonationReturnHeaderButton } from './SessionImpersonationReturnButton';
 
-export function PublicSessionNav({ user, locale: localeProp }: { user: PublicHeaderUser; locale?: Locale }) {
-    const routeLocale = useLocale();
-    const locale = localeProp ?? routeLocale;
+export function PublicSessionNav({ user }: { user: PublicHeaderUser; locale?: string }) {
+    const { t } = useT('public');
     const { active: impersonating } = useSessionImpersonation();
 
     if (!user) {
         return (
             <HeaderButton asChild className="hidden @6xl:inline-flex">
-                <Link to="/{-$locale}/log-on">{{ de: 'Anmelden', en: 'Log on' }[locale]}</Link>
+                <Link to="/{-$locale}/log-on">{t('nav.logOn')}</Link>
             </HeaderButton>
         );
     }
 
-    const administrationLabel = { de: 'Administration', en: 'Administration' }[locale];
-    const profileLabel = { de: 'Profil', en: 'Profile' }[locale];
+    const administrationLabel = t('nav.administration');
+    const profileLabel = t('nav.profile');
 
     return (
         <div className="hidden items-center gap-4 @6xl:flex">

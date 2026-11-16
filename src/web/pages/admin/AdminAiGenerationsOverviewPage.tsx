@@ -2,6 +2,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { ListIcon, SparklesIcon } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
 
+import { t } from '../../../i18n/t';
 import { formatIsoDate } from '../../../shared';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { DateRangePicker } from '../../components/base/date-range-picker';
@@ -13,6 +14,7 @@ import type {
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { DATE_FNS_LOCALE } from '../../utils/dateFnsLocale';
+import type { Locale } from '../../utils/locale';
 import { adminAiGenerationsSectionTo } from './adminAiGenerations';
 import { ADMIN_AI_GENERATION_KINDS, adminAiGenerationKindLabel } from './adminAiGenerationsColumns';
 import { AdminOverviewBarChart } from './AdminOverviewBarChart';
@@ -21,11 +23,12 @@ import { adminOverviewRangeResolve, adminOverviewRangeToGraphQlVariables } from 
 import type { AdminOverviewRangeSearch } from './adminOverviewRange';
 import { AdminOverviewStatCard } from './AdminOverviewStatCard';
 
-export const adminAiGenerationsOverviewPageTitle = { de: 'AI-Generierungen', en: 'AI Generations' } as const;
-export const adminAiGenerationsOverviewPageDescription = {
-    de: 'Verteilung und Neuanlagen der One-Shot-AI-Aufrufe.',
-    en: 'One-shot AI call distribution and creations.',
-} as const;
+export function adminAiGenerationsOverviewPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'nav.aiGenerations.title');
+}
+export function adminAiGenerationsOverviewPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.aiGenerationsOverview.description');
+}
 
 /** Order matches `aiGenerationCounts` indices on the overview query. */
 const ADMIN_AI_GENERATION_COUNT_CRITERIA: GqlCAdminAiGenerationCriterion[] = [
@@ -74,7 +77,7 @@ export function AdminAiGenerationsOverviewPage({
     }[] = [
         {
             key: 'total',
-            label: { de: 'Gesamt', en: 'Total' }[locale],
+            label: t(locale, 'admin', 'copy.total'),
             value: total,
             kind: undefined,
         },
@@ -107,13 +110,13 @@ export function AdminAiGenerationsOverviewPage({
                 <div className="grid gap-2">
                     <h1 className="flex items-center gap-3 font-serif text-4xl/tight text-foreground">
                         <SparklesIcon className="size-8 text-muted-foreground" aria-hidden />
-                        {adminAiGenerationsOverviewPageTitle[locale]}
+                        {adminAiGenerationsOverviewPageTitle(locale)}
                     </h1>
-                    <p className="text-muted-foreground">{adminAiGenerationsOverviewPageDescription[locale]}</p>
+                    <p className="text-muted-foreground">{adminAiGenerationsOverviewPageDescription(locale)}</p>
                 </div>
 
                 <section className="grid gap-3">
-                    <h2 className="text-lg font-medium">{{ de: 'Bereiche', en: 'Sections' }[locale]}</h2>
+                    <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.sections')}</h2>
                     <ul className="grid gap-2 sm:grid-cols-2">
                         <li>
                             <AdminOverviewNavCard
@@ -121,14 +124,14 @@ export function AdminAiGenerationsOverviewPage({
                                 search={adminAiGenerationsListSearch(undefined)}
                                 icon={ListIcon}
                             >
-                                {{ de: 'Liste', en: 'List' }[locale]}
+                                {t(locale, 'admin', 'copy.list')}
                             </AdminOverviewNavCard>
                         </li>
                     </ul>
                 </section>
 
                 <section className="grid gap-3">
-                    <h2 className="text-lg font-medium">{{ de: 'Verteilung', en: 'Distribution' }[locale]}</h2>
+                    <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.distribution')}</h2>
                     <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                         {distribution.map((entry) => (
                             <AdminOverviewStatCard
@@ -144,26 +147,21 @@ export function AdminAiGenerationsOverviewPage({
 
                 <section className="grid gap-3">
                     <div className="flex flex-wrap items-end justify-between gap-3">
-                        <h2 className="text-lg font-medium">{{ de: 'Neuanlagen', en: 'Creations' }[locale]}</h2>
+                        <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.creations')}</h2>
                         <DateRangePicker
                             value={pickerValue}
                             onValueChange={onRangeChange}
                             locale={DATE_FNS_LOCALE[locale]}
-                            placeholder={{ de: 'Zeitraum wählen', en: 'Pick a date range' }[locale]}
+                            placeholder={t(locale, 'admin', 'copy.pickADateRange')}
                             className="w-auto"
-                            aria-label={{ de: 'Zeitraum für AI-Generierungen', en: 'Date range for AI generations' }[locale]}
+                            aria-label={t(locale, 'admin', 'copy.dateRangeForAiGenerations')}
                         />
                     </div>
                     <AdminOverviewBarChart
                         data={buckets.map((bucket) => ({ bucketStart: bucket.bucketStart, count: bucket.count }))}
                         locale={locale}
                         timeZone={timeZone}
-                        ariaLabel={
-                            {
-                                de: 'Balkendiagramm der AI-Generierungen im gewählten Zeitraum',
-                                en: 'Bar chart of AI generations in the selected range',
-                            }[locale]
-                        }
+                        ariaLabel={t(locale, 'admin', 'copy.barChartOfAiGenerationsInTheSelectedRange')}
                     />
                 </section>
             </main>

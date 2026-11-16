@@ -1,3 +1,4 @@
+import { tEmail } from '../../../i18n/tEmail';
 import type { Locale } from '../../../shared/locale';
 import { BookingRequestEmailBookingNumber, EmailButton, EmailLayout, EmailText } from '../components';
 import { bookingRequestEmailCookOfferUrl } from '../components/bookingRequestEmailUrls';
@@ -20,26 +21,23 @@ export function BookingRequestOfferPaymentStatementForCookEmail({
     occasion,
 }: BookingRequestOfferPaymentStatementForCookEmailProps) {
     const subject = bookingRequestOfferPaymentStatementForCookEmailSubject(locale);
-    const preview = {
-        de: 'Dein Auszahlungsbetrag und die einbehaltene peopleeat-Gebühr',
-        en: 'Your payout amount and the peopleeat fee we withheld',
-    }[locale];
-    const intro = {
-        de: `Die Buchung (${occasion}) ist bezahlt. Im Anhang ist deine Abrechnung mit Menü, Fahrtkosten, peopleeat-Gebühr und Auszahlungsbetrag. Das ist keine Rechnung. Bitte stelle deine Rechnung an den Gast über Menü und Fahrtkosten.`,
-        en: `The booking (${occasion}) is paid. Your statement is attached, with the menu, travel, the peopleeat fee, and the payout. It is not an invoice. Please invoice the guest for the menu and travel.`,
-    }[locale];
-    const cta = { de: 'Zum Angebot', en: 'Open the offer' }[locale];
     const offerUrl = bookingRequestEmailCookOfferUrl(webPageUrl, bookingRequestOfferId, 'offer');
 
     return (
-        <EmailLayout locale={locale} webPageUrl={webPageUrl} preview={preview} subject={subject} recipientFirstName={recipientFirstName}>
-            <EmailText>{intro}</EmailText>
-            <EmailButton href={offerUrl}>{cta}</EmailButton>
+        <EmailLayout
+            locale={locale}
+            webPageUrl={webPageUrl}
+            preview={tEmail(locale, 'payment.statement.preview')}
+            subject={subject}
+            recipientFirstName={recipientFirstName}
+        >
+            <EmailText>{tEmail(locale, 'payment.statement.body', { occasion })}</EmailText>
+            <EmailButton href={offerUrl}>{tEmail(locale, 'common.ctaOffer')}</EmailButton>
             <BookingRequestEmailBookingNumber locale={locale} bookingRequestId={bookingRequestId} />
         </EmailLayout>
     );
 }
 
 export function bookingRequestOfferPaymentStatementForCookEmailSubject(locale: Locale): string {
-    return { de: 'Abrechnung zu deiner Buchung', en: 'Statement for your booking' }[locale];
+    return tEmail(locale, 'payment.statement.subject');
 }

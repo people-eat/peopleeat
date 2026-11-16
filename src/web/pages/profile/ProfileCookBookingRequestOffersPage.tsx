@@ -1,5 +1,6 @@
 import { useNavigate } from '@tanstack/react-router';
 
+import { t } from '../../../i18n/t';
 import { Badge } from '../../components/base/badge';
 import { Tabs, TabsList, TabsTrigger } from '../../components/base/tabs';
 import { CookBookingRequestOfferCard } from '../../components/CookBookingRequestOfferCard';
@@ -58,21 +59,21 @@ export function ProfileCookBookingRequestOffersPage({
                     void navigate({ search: offersSearchForUrl(value as OfferView) });
                 }}
             >
-                <TabsList variant="line" aria-label={{ de: 'Angebots-Status', en: 'Offer status' }[locale]}>
+                <TabsList variant="line" aria-label={t(locale, 'profileCook', 'offers.status')}>
                     <TabsTrigger value="active">
-                        {{ de: 'Aktiv', en: 'Active' }[locale]}
+                        {t(locale, 'profileCook', 'offers.active')}
                         <Badge variant="outline" className="bg-muted">
                             {activeOffers.length}
                         </Badge>
                     </TabsTrigger>
                     <TabsTrigger value="completed">
-                        {{ de: 'Stattgefunden', en: 'Completed' }[locale]}
+                        {t(locale, 'profileCook', 'offers.completed')}
                         <Badge variant="outline" className="bg-muted">
                             {completedOffers.length}
                         </Badge>
                     </TabsTrigger>
                     <TabsTrigger value="archived">
-                        {{ de: 'Archiv', en: 'Archive' }[locale]}
+                        {t(locale, 'profileCook', 'offers.archive')}
                         <Badge variant="outline" className="bg-muted">
                             {archivedOffers.length}
                         </Badge>
@@ -82,22 +83,11 @@ export function ProfileCookBookingRequestOffersPage({
 
             {offers.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                    {
-                        {
-                            active: {
-                                de: 'Keine aktiven Angebote.',
-                                en: 'No active offers.',
-                            },
-                            completed: {
-                                de: 'Noch keine stattgefundenen Events.',
-                                en: 'No completed events yet.',
-                            },
-                            archived: {
-                                de: 'Keine archivierten Angebote.',
-                                en: 'No archived offers.',
-                            },
-                        }[view][locale]
-                    }
+                    {t(
+                        locale,
+                        'profileCook',
+                        view === 'active' ? 'offers.emptyActive' : view === 'completed' ? 'offers.emptyCompleted' : 'offers.emptyArchived',
+                    )}
                 </p>
             ) : (
                 <ul className="grid grid-cols-1 gap-4 @md:grid-cols-2 @2xl:grid-cols-3 @5xl:grid-cols-4 @7xl:grid-cols-5 @8xl:grid-cols-6">

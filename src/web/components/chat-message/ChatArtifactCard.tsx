@@ -1,3 +1,4 @@
+import { inlineCopy } from '../../../shared';
 import { useLocale } from '../../hooks/useLocale';
 import { cn } from '../../utils/cn';
 import { AppImage } from '../AppImage';
@@ -74,7 +75,9 @@ export function ChatArtifactCard({
                         <Button asChild size="sm" variant="secondary" className="w-full">
                             <a href={card.href!} target="_blank" rel="noopener noreferrer">
                                 {buttonLabel ?? card.href}
-                                <span className="sr-only">{{ de: ' (öffnet in neuem Tab)', en: ' (opens in new tab)' }[locale]}</span>
+                                <span className="sr-only">
+                                    {inlineCopy({ de: ' (öffnet in neuem Tab)', en: ' (opens in new tab)' }, locale)}
+                                </span>
                             </a>
                         </Button>
                     </div>

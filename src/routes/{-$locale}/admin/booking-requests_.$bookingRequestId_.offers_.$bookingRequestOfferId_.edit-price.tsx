@@ -22,8 +22,8 @@ export const Route = createFileRoute('/{-$locale}/admin/booking-requests_/$booki
     head: ({ params }) => {
         const locale = localeFromParam(params);
         return seoMeta({
-            title: adminBookingRequestOfferPriceEditPageTitle[locale],
-            description: adminBookingRequestOfferPriceEditPageDescription[locale],
+            title: adminBookingRequestOfferPriceEditPageTitle(locale),
+            description: adminBookingRequestOfferPriceEditPageDescription(locale),
             path: `/admin/booking-requests/${params.bookingRequestId}/offers/${params.bookingRequestOfferId}/edit-price`,
             locale,
             webPageUrl: webPageUrlGet(),

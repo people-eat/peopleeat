@@ -1,0 +1,136 @@
+{
+    "title": "Profilo",
+    "chrome": {
+        "overview": "Panoramica",
+        "edit": "Modifica"
+    },
+    "overview": {
+        "hello": "Ciao {name},",
+        "subtitle": "Ecco cosa fare adesso.",
+        "attention": "Attenzione",
+        "gettingStarted": "Primi passi",
+        "allSet": "Tutto a posto"
+    },
+    "assistant": {
+        "title": "Assistente",
+        "description": "Assistente a schermo intero per il tuo profilo.",
+        "toggle": "Attiva o disattiva {title}"
+    },
+    "ban": {
+        "title": "Il tuo profilo è limitato.",
+        "body": "Puoi accedere, ma prenotazioni e offerte sono bloccate. Contattaci se hai domande.",
+        "whatsapp": "Supporto WhatsApp"
+    },
+    "actions": {
+        "saving": "Salvataggio…",
+        "sending": "Invio…",
+        "sendCode": "Invia codice",
+        "verify": "Conferma"
+    },
+    "account": {
+        "title": "Account",
+        "description": "Impostazioni account, sicurezza e dispositivi connessi.",
+        "errors": {
+            "invalidEmail": "Inserisci un nuovo indirizzo e-mail valido.",
+            "emailTaken": "Questo indirizzo e-mail è già in uso.",
+            "invalidOrExpiredCode": "Codice non valido o scaduto.",
+            "phoneTaken": "Questo numero è già in uso.",
+            "invalidPhone": "Inserisci un numero con prefisso internazionale, ad esempio +49…",
+            "deleteFailed": "Impossibile eliminare l’account."
+        },
+        "toasts": {
+            "phoneSaved": "Numero di telefono salvato.",
+            "whatsappOn": "WhatsApp è attivo per i messaggi qui sotto. Puoi disattivarne alcuni singolarmente.",
+            "codeSent": "Codice inviato. Controlla la posta in arrivo e lo spam.",
+            "emailUpdated": "Indirizzo e-mail aggiornato.",
+            "changeDiscarded": "Modifica annullata.",
+            "timeZoneSaved": "Fuso orario salvato.",
+            "preferredCommunicationSaved": "Comunicazione preferita salvata.",
+            "passkeyCreateFailed": "Impossibile creare la passkey.",
+            "passkeySaveFailed": "Impossibile salvare la passkey.",
+            "passkeySaved": "Passkey salvata.",
+            "passkeyCancelled": "Registrazione della passkey annullata.",
+            "passkeyRemoveFailed": "Impossibile rimuovere la passkey.",
+            "passkeyRemoved": "Passkey rimossa.",
+            "signedOut": "Disconnesso.",
+            "deviceSignedOut": "Dispositivo disconnesso.",
+            "accountDeleted": "Account eliminato.",
+            "signOutFailed": "Disconnessione non riuscita.",
+            "deviceSignOutFailed": "Impossibile disconnettere quel dispositivo."
+        },
+        "noPhone": "Nessun numero registrato",
+        "notSet": "Non indicato",
+        "bornOn": "Nato/a il {date}",
+        "noBirthDate": "Nessuna data di nascita indicata",
+        "registeredOn": "Registrato/a il {date}",
+        "contact": {
+            "title": "Come ti contattiamo",
+            "description": "E-mail e telefono del tuo account. Questa scelta vale per la nostra concierge, non per i messaggi automatici.",
+            "email": "Indirizzo e-mail",
+            "changeEmail": "Cambia e-mail",
+            "codePending": "Codice in sospeso per {email}",
+            "enterEmailCode": "Inserisci il codice ricevuto via e-mail.",
+            "discardChange": "Annulla modifica",
+            "phone": "Numero di telefono",
+            "changeNumber": "Cambia numero",
+            "addNumber": "Aggiungi un numero",
+            "conciergeTitle": "Come deve contattarti la concierge?"
+        },
+        "language": {
+            "title": "Lingua",
+            "description": "Questa lingua vale per l’interfaccia, per le e-mail e per WhatsApp."
+        },
+        "notifications": {
+            "title": "Notifiche",
+            "description": "Scegli di cosa ti scriviamo. Nell’app resta tutto visibile. Codici di accesso, pagamenti e supporto vanno sempre alla tua e-mail."
+        },
+        "delete": {
+            "title": "Elimina account",
+            "description": "I dati personali verranno rimossi. Dopo non potrai più accedere.",
+            "action": "Elimina account",
+            "confirmTitle": "Eliminare davvero l’account?",
+            "confirmBody": "Questa azione non può essere annullata. I tuoi dati personali verranno rimossi e tutti i dispositivi disconnessi. Lo storico delle prenotazioni resta disponibile per cuochi e operazioni, ma non è più collegato alla tua identità. Inviamo un codice al tuo indirizzo e-mail."
+        },
+        "security": {
+            "title": "Accesso e sicurezza",
+            "passkeys": "Passkey",
+            "passkeysHint": "La prossima volta accedi con Face ID o impronta, senza codice.",
+            "passkeyFallback": "Passkey",
+            "backedUp": " · salvata",
+            "remove": "Rimuovi",
+            "removeTitle": "Rimuovere questa passkey?",
+            "removeBody": "Non potrai più accedere con questa passkey. Altre passkey e metodi di accesso restano invariati.",
+            "addPasskey": "Aggiungi una passkey",
+            "totp": "Autenticazione a due fattori",
+            "devices": "Dispositivi connessi",
+            "lastActive": "Ultima attività {date}",
+            "thisDevice": "Questo dispositivo",
+            "signOutDeviceTitle": "Disconnettere {device}?",
+            "signOutDeviceBody": "{device} verrà disconnesso. Questo dispositivo resta connesso.",
+            "signOut": "Esci",
+            "signOutEverywhereTitle": "Disconnettersi ovunque altrove?",
+            "signOutEverywhereBody": "Tutti gli altri dispositivi e browser verranno disconnessi. Questo dispositivo resta connesso.",
+            "signOutEverywhere": "Disconnetti ovunque altrove",
+            "signOutThisTitle": "Uscire da questo dispositivo?",
+            "signOutThisBody": "Verrai disconnesso da questo dispositivo e dovrai accedere di nuovo per usare il tuo account."
+        },
+        "legal": {
+            "privacy": "Informativa sulla privacy",
+            "terms": "Termini e condizioni",
+            "imprint": "Note legali"
+        },
+        "emailDialog": {
+            "title": "Cambia indirizzo e-mail",
+            "description": "Invieremo un codice di conferma al nuovo indirizzo.",
+            "placeholder": "nuova@email.it",
+            "enterCode": "Inserisci il codice",
+            "codeSentTo": "Abbiamo inviato un codice a {email}.",
+            "codeAria": "Codice di conferma"
+        },
+        "phoneDialog": {
+            "changeTitle": "Cambia numero di telefono",
+            "addTitle": "Aggiungi un numero di telefono",
+            "hint": "Con prefisso internazionale, ad esempio +49…"
+        }
+    }
+}

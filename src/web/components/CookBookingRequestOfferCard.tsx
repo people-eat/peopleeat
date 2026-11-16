@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { CalendarIcon, InfoIcon, MapPinIcon, UserIcon, UsersIcon } from 'lucide-react';
 
-import { formatBookingEventDateFromCountry, formatCurrency, formatParticipants } from '../../shared';
+import { formatBookingEventDateFromCountry, formatCurrency, formatParticipants, inlineCopy } from '../../shared';
 import type { BookingRequestOfferStatus } from '../../shared/bookingRequestOfferStatus';
 import { bookingRequestOfferStatusHue, bookingRequestOfferStatusLabel } from '../../shared/bookingRequestOfferStatus';
 import { useLocale } from '../hooks/useLocale';
@@ -53,8 +53,8 @@ export function CookBookingRequestOfferCard({ offer }: { offer: CookBookingReque
     const mutuallyAccepted = offer.cookAccepted && offer.userAccepted;
     const amountCents = mutuallyAccepted ? offer.payoutCentsCook : offer.totalWithoutDiscountsCentsCustomer;
     const amountLabel = mutuallyAccepted
-        ? { de: 'Auszahlungsbetrag', en: 'Payout amount' }[locale]
-        : { de: 'Auftragswert', en: 'Order value' }[locale];
+        ? inlineCopy({ de: 'Auszahlungsbetrag', en: 'Payout amount' }, locale)
+        : inlineCopy({ de: 'Auftragswert', en: 'Order value' }, locale);
 
     return (
         <Link
@@ -68,12 +68,13 @@ export function CookBookingRequestOfferCard({ offer }: { offer: CookBookingReque
         >
             <NotificationBadge
                 count={offer.cookUnreadNotificationCount}
-                label={
+                label={inlineCopy(
                     {
                         de: `${offer.cookUnreadNotificationCount} ungelesene Benachrichtigungen`,
                         en: `${offer.cookUnreadNotificationCount} unread notifications`,
-                    }[locale]
-                }
+                    },
+                    locale,
+                )}
             />
             {callHint ? (
                 <div
@@ -89,12 +90,13 @@ export function CookBookingRequestOfferCard({ offer }: { offer: CookBookingReque
                             <button
                                 type="button"
                                 className="inline-flex cursor-pointer rounded-full text-muted-foreground hover:text-foreground"
-                                aria-label={
+                                aria-label={inlineCopy(
                                     {
                                         de: 'Hinweis zum Gesprächstermin',
                                         en: 'Discovery call note',
-                                    }[locale]
-                                }
+                                    },
+                                    locale,
+                                )}
                             >
                                 <InfoIcon className="size-4" />
                             </button>
@@ -138,7 +140,7 @@ export function CookBookingRequestOfferCard({ offer }: { offer: CookBookingReque
                 </p>
             </div>
             <span className="mt-4 inline-flex h-9 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground">
-                {{ de: 'Zum Angebot', en: 'View offer' }[locale]}
+                {inlineCopy({ de: 'Zum Angebot', en: 'View offer' }, locale)}
             </span>
         </Link>
     );

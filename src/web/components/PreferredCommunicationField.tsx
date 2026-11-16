@@ -2,7 +2,7 @@ import { MailIcon, MessageCircleIcon, PhoneIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import type { GqlCUserPreferredCommunication } from '../graphql/generated';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 
 function WhatsAppIcon({ className }: { className?: string }) {
@@ -15,14 +15,12 @@ function WhatsAppIcon({ className }: { className?: string }) {
 
 const preferredCommunicationOptions: {
     value: GqlCUserPreferredCommunication;
-    de: string;
-    en: string;
     icon: ReactNode;
 }[] = [
-    { value: 'SMS', de: 'Nachricht', en: 'Message', icon: <MessageCircleIcon className="size-5 shrink-0" /> },
-    { value: 'WHATS_APP', de: 'WhatsApp', en: 'WhatsApp', icon: <WhatsAppIcon className="size-5 shrink-0" /> },
-    { value: 'CALL', de: 'Anruf', en: 'Call', icon: <PhoneIcon className="size-5 shrink-0" /> },
-    { value: 'E_MAIL', de: 'E-Mail', en: 'Email', icon: <MailIcon className="size-5 shrink-0" /> },
+    { value: 'SMS', icon: <MessageCircleIcon className="size-5 shrink-0" /> },
+    { value: 'WHATS_APP', icon: <WhatsAppIcon className="size-5 shrink-0" /> },
+    { value: 'CALL', icon: <PhoneIcon className="size-5 shrink-0" /> },
+    { value: 'E_MAIL', icon: <MailIcon className="size-5 shrink-0" /> },
 ];
 
 export function PreferredCommunicationField({
@@ -44,14 +42,16 @@ export function PreferredCommunicationField({
     required?: boolean;
     showTitle?: boolean;
     showSubtitle?: boolean;
-    title?: { de: string; en: string };
-    subtitle?: { de: string; en: string };
+    title?: string;
+    subtitle?: string;
     invalid?: boolean;
     errorMessage?: string;
     className?: string;
 }) {
-    const locale = useLocale();
+    const { t } = useT('common');
     const errorId = errorMessage ? 'preferred-communication-error' : undefined;
+    const heading = title ?? t('preferredCommunication.title');
+    const description = subtitle ?? t('preferredCommunication.subtitle');
 
     return (
         <div className={cn('grid gap-4', className)}>
@@ -59,20 +59,11 @@ export function PreferredCommunicationField({
                 <div className="grid gap-1.5">
                     {showTitle ? (
                         <p className="text-sm font-medium text-foreground">
-                            {(title ?? { de: 'Wie erreichen wir dich am liebsten?', en: 'How should we reach you?' })[locale]}
+                            {heading}
                             {required ? <span className="text-destructive"> *</span> : null}
                         </p>
                     ) : null}
-                    {showSubtitle ? (
-                        <p className="text-sm/relaxed text-muted-foreground">
-                            {
-                                (subtitle ?? {
-                                    de: 'So meldet sich unser Concierge, wenn wir dich persönlich erreichen.',
-                                    en: 'How our concierge gets in touch when we contact you personally.',
-                                })[locale]
-                            }
-                        </p>
-                    ) : null}
+                    {showSubtitle ? <p className="text-sm/relaxed text-muted-foreground">{description}</p> : null}
                 </div>
             ) : null}
 
@@ -85,13 +76,14 @@ export function PreferredCommunicationField({
             >
                 {preferredCommunicationOptions.map((option) => {
                     const selected = value === option.value;
+                    const label = t(`preferredCommunication.${option.value}`);
                     return (
                         <button
                             key={option.value}
                             type="button"
                             role="radio"
                             aria-checked={selected}
-                            aria-label={option[locale]}
+                            aria-label={label}
                             disabled={disabled}
                             onClick={() => onValueChange(option.value)}
                             className={cn(
@@ -106,7 +98,7 @@ export function PreferredCommunicationField({
                             )}
                         >
                             {option.icon}
-                            <span className="min-w-0 flex-1 text-sm font-medium">{option[locale]}</span>
+                            <span className="min-w-0 flex-1 text-sm font-medium">{label}</span>
                             <span
                                 aria-hidden
                                 className={cn(

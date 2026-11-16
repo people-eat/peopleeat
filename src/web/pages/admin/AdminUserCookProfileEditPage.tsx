@@ -5,7 +5,8 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation, useQuery } from 'urql';
 
-import { containsPhoneNumber, userDisplayName } from '../../../shared';
+import { t } from '../../../i18n/t';
+import { containsPhoneNumber, inlineCopy, userDisplayName } from '../../../shared';
 import { cookDefaultOfferMessageFormFrom, cookDefaultOfferMessageUpdateFrom } from '../../../shared/cookDefaultOfferMessage';
 import {
     cookPresenceLinksEqual,
@@ -40,15 +41,14 @@ import {
 } from '../../graphql/generated';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useLocale } from '../../hooks/useLocale';
+import type { Locale } from '../../utils/locale';
 
-export const adminUserCookProfileEditPageTitle = {
-    de: 'Kochprofil bearbeiten',
-    en: 'Edit cook profile',
-} as const;
-export const adminUserCookProfileEditPageDescription = {
-    de: 'Biografie, Künstlername, About-Bild, Tags, Begrüßungstext, Reiseeinstellungen und weitere Profile eines Kochs bearbeiten.',
-    en: 'Edit a cook biography, stage name, About picture, tags, default offer note, travel settings, and other profiles.',
-} as const;
+export function adminUserCookProfileEditPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.userCookProfileEdit.title');
+}
+export function adminUserCookProfileEditPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.userCookProfileEdit.description');
+}
 
 export function adminUserCookProfileEditPageVariables(userId: string) {
     return { userId };
@@ -190,20 +190,26 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
             const amount = euroTextToCents(value.travelExpensesText);
             if (amount == null || amount < 25) {
                 toast.error(
-                    {
-                        de: 'Reisekosten müssen mindestens 0,25 € betragen.',
-                        en: 'Travel expenses must be at least €0.25.',
-                    }[locale],
+                    inlineCopy(
+                        {
+                            de: 'Reisekosten müssen mindestens 0,25 € betragen.',
+                            en: 'Travel expenses must be at least €0.25.',
+                        },
+                        locale,
+                    ),
                 );
                 return;
             }
             const distance = Number(value.maximumTravelDistanceText);
             if (!Number.isInteger(distance) || distance < 5 || distance > 250) {
                 toast.error(
-                    {
-                        de: 'Die maximale Reisestrecke muss zwischen 5 und 250 km liegen.',
-                        en: 'Maximum travel distance must be between 5 and 250 km.',
-                    }[locale],
+                    inlineCopy(
+                        {
+                            de: 'Die maximale Reisestrecke muss zwischen 5 und 250 km liegen.',
+                            en: 'Maximum travel distance must be between 5 and 250 km.',
+                        },
+                        locale,
+                    ),
                 );
                 return;
             }
@@ -215,10 +221,13 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
             }
             if (value.defaultOfferMessageMode === 'custom' && containsPhoneNumber(value.defaultOfferMessageText)) {
                 toast.error(
-                    {
-                        de: 'Das Teilen von Telefonnummern ist nicht erlaubt.',
-                        en: 'Sharing phone numbers is not allowed.',
-                    }[locale],
+                    inlineCopy(
+                        {
+                            de: 'Das Teilen von Telefonnummern ist nicht erlaubt.',
+                            en: 'Sharing phone numbers is not allowed.',
+                        },
+                        locale,
+                    ),
                 );
                 return;
             }
@@ -234,7 +243,7 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
                     input: cookPresenceLinksInputFrom(value.presenceLinks),
                 });
                 if (presenceResult.error || !presenceResult.data?.admin.cookPresenceLinksReplace.success) {
-                    toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+                    toast.error(inlineCopy({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }, locale));
                     return;
                 }
             }
@@ -255,10 +264,10 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
                 },
             });
             if (result.error || !result.data?.admin.cookUpdate.success) {
-                toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+                toast.error(inlineCopy({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }, locale));
                 return;
             }
-            toast.success({ de: 'Kochprofil gespeichert.', en: 'Cook profile saved.' }[locale]);
+            toast.success(inlineCopy({ de: 'Kochprofil gespeichert.', en: 'Cook profile saved.' }, locale));
             await navigate({
                 to: '/{-$locale}/admin/users/$userId',
                 params: { userId },
@@ -298,10 +307,13 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
         const suggestion = result.data?.admin.cookBiographySuggest;
         if (result.error || !suggestion) {
             toast.error(
-                {
-                    de: 'Biografie konnte nicht erzeugt werden.',
-                    en: 'Could not generate the biography.',
-                }[locale],
+                inlineCopy(
+                    {
+                        de: 'Biografie konnte nicht erzeugt werden.',
+                        en: 'Could not generate the biography.',
+                    },
+                    locale,
+                ),
             );
             return;
         }
@@ -319,10 +331,13 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
         const suggestion = result.data?.admin.cookBiographySummarySuggest;
         if (result.error || !suggestion) {
             toast.error(
-                {
-                    de: 'Kurzfassung konnte nicht erzeugt werden.',
-                    en: 'Could not generate the summary.',
-                }[locale],
+                inlineCopy(
+                    {
+                        de: 'Kurzfassung konnte nicht erzeugt werden.',
+                        en: 'Could not generate the summary.',
+                    },
+                    locale,
+                ),
             );
             return;
         }
@@ -351,14 +366,14 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
     return (
         <AdminPageChrome
             crumbs={[
-                { label: { de: 'Benutzer', en: 'Users' }[locale], to: '/{-$locale}/admin/users' },
+                { label: inlineCopy({ de: 'Benutzer', en: 'Users' }, locale), to: '/{-$locale}/admin/users' },
                 {
                     label: displayName,
                     to: '/{-$locale}/admin/users/$userId',
                     params: { userId },
                     search: { tab: 'cook-profile' },
                 },
-                { label: adminUserCookProfileEditPageTitle[locale] },
+                { label: adminUserCookProfileEditPageTitle(locale) },
             ]}
             contentClassName="min-h-0 overflow-hidden gap-0"
         >
@@ -368,18 +383,20 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
                     <>
                         <Button type="button" variant="outline" asChild disabled={formBusy}>
                             <Link to="/{-$locale}/admin/users/$userId" params={{ userId }} search={{ tab: 'cook-profile' }}>
-                                {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                {inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, locale)}
                             </Link>
                         </Button>
                         <Button type="submit" form={COOK_PROFILE_EDIT_FORM_ID} disabled={formBusy || !isDirty || pathNameBlocked}>
-                            {isSubmitting ? { de: 'Speichern…', en: 'Saving…' }[locale] : { de: 'Speichern', en: 'Save' }[locale]}
+                            {isSubmitting
+                                ? inlineCopy({ de: 'Speichern…', en: 'Saving…' }, locale)
+                                : inlineCopy({ de: 'Speichern', en: 'Save' }, locale)}
                         </Button>
                     </>
                 }
             >
                 <div className="grid gap-2">
-                    <h1 className="font-serif text-3xl/tight text-foreground">{adminUserCookProfileEditPageTitle[locale]}</h1>
-                    <p className="text-muted-foreground">{adminUserCookProfileEditPageDescription[locale]}</p>
+                    <h1 className="font-serif text-3xl/tight text-foreground">{adminUserCookProfileEditPageTitle(locale)}</h1>
+                    <p className="text-muted-foreground">{adminUserCookProfileEditPageDescription(locale)}</p>
                 </div>
 
                 <form
@@ -395,15 +412,16 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
                         {(field) => (
                             <div className="grid gap-2">
                                 <label htmlFor="admin-cook-stage-name" className="text-sm font-medium">
-                                    {{ de: 'Künstlername', en: 'Stage name' }[locale]}
+                                    {inlineCopy({ de: 'Künstlername', en: 'Stage name' }, locale)}
                                 </label>
                                 <p className="text-sm text-muted-foreground">
-                                    {
+                                    {inlineCopy(
                                         {
                                             de: 'Optional. Wenn gesetzt, bevorzugen öffentliche Flächen diesen Namen statt des Vornamens.',
                                             en: 'Optional. When set, public surfaces prefer this name over the first name.',
-                                        }[locale]
-                                    }
+                                        },
+                                        locale,
+                                    )}
                                 </p>
                                 <Input
                                     id="admin-cook-stage-name"
@@ -437,12 +455,13 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
                                 />
                                 {cook.previousPathNames.length > 0 ? (
                                     <p className="text-sm text-muted-foreground">
-                                        {
+                                        {inlineCopy(
                                             {
                                                 de: `Frühere Pfade: ${cook.previousPathNames.map((name) => `/chefs/${name}`).join(', ')}`,
                                                 en: `Previous paths: ${cook.previousPathNames.map((name) => `/chefs/${name}`).join(', ')}`,
-                                            }[locale]
-                                        }
+                                            },
+                                            locale,
+                                        )}
                                     </p>
                                 ) : null}
                             </div>
@@ -451,15 +470,16 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
 
                     <div className="grid gap-2">
                         <p className="text-sm font-medium">
-                            {{ de: 'Zusätzliches Bild (About)', en: 'Additional picture (About)' }[locale]}
+                            {inlineCopy({ de: 'Zusätzliches Bild (About)', en: 'Additional picture (About)' }, locale)}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                            {
+                            {inlineCopy(
                                 {
                                     de: '16:9 Landschaftsbild für den öffentlichen About-Bereich. Speichert sofort.',
                                     en: '16:9 landscape image for the public About section. Saves immediately.',
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                         </p>
                         <CookLogoEditor
                             logoUrl={cook.logo?.url ?? null}
@@ -477,7 +497,7 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
                             <div className="grid gap-2">
                                 <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
                                     <label htmlFor="admin-cook-biography" className="text-sm font-medium">
-                                        {{ de: 'Biografie', en: 'Biography' }[locale]}
+                                        {inlineCopy({ de: 'Biografie', en: 'Biography' }, locale)}
                                     </label>
                                     {reviewingSuggestion ? null : (
                                         <Button
@@ -493,10 +513,10 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
                                                 <SparklesIcon className="size-4" aria-hidden />
                                             )}
                                             {biographySuggestFetching
-                                                ? { de: 'Wird erzeugt…', en: 'Generating…' }[locale]
+                                                ? inlineCopy({ de: 'Wird erzeugt…', en: 'Generating…' }, locale)
                                                 : field.state.value.trim()
-                                                  ? { de: 'Mit KI verbessern', en: 'Improve with AI' }[locale]
-                                                  : { de: 'Mit KI schreiben', en: 'Write with AI' }[locale]}
+                                                  ? inlineCopy({ de: 'Mit KI verbessern', en: 'Improve with AI' }, locale)
+                                                  : inlineCopy({ de: 'Mit KI schreiben', en: 'Write with AI' }, locale)}
                                         </Button>
                                     )}
                                 </div>
@@ -527,7 +547,7 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
                             <div className="grid gap-2">
                                 <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
                                     <label htmlFor="admin-cook-biography-summary" className="text-sm font-medium">
-                                        {{ de: 'Biografie-Kurzfassung', en: 'Biography summary' }[locale]}
+                                        {inlineCopy({ de: 'Biografie-Kurzfassung', en: 'Biography summary' }, locale)}
                                     </label>
                                     <Button
                                         type="button"
@@ -538,17 +558,18 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
                                     >
                                         <SparklesIcon className="size-4" aria-hidden />
                                         {summarySuggestFetching
-                                            ? { de: 'Wird erzeugt…', en: 'Generating…' }[locale]
-                                            : { de: 'Kurzfassung erzeugen', en: 'Generate summary' }[locale]}
+                                            ? inlineCopy({ de: 'Wird erzeugt…', en: 'Generating…' }, locale)
+                                            : inlineCopy({ de: 'Kurzfassung erzeugen', en: 'Generate summary' }, locale)}
                                     </Button>
                                 </div>
                                 <p className="text-sm text-muted-foreground">
-                                    {
+                                    {inlineCopy(
                                         {
                                             de: 'Manuell bearbeitbar. Speichern überschreibt die Kurzfassung nicht automatisch.',
                                             en: 'Editable manually. Saving does not auto-regenerate the summary.',
-                                        }[locale]
-                                    }
+                                        },
+                                        locale,
+                                    )}
                                 </p>
                                 <Textarea
                                     id="admin-cook-biography-summary"
@@ -567,15 +588,15 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
                             {(field) => (
                                 <div className="grid gap-2">
                                     <label htmlFor="admin-cook-cuisine" className="text-sm font-medium">
-                                        {{ de: 'Küchenstil', en: 'Cuisine style' }[locale]}
+                                        {inlineCopy({ de: 'Küchenstil', en: 'Cuisine style' }, locale)}
                                     </label>
                                     <CatalogCombobox
                                         id="admin-cook-cuisine"
                                         items={CUISINE_STYLE_ITEMS}
                                         value={field.state.value}
                                         onChange={(next) => field.handleChange(next)}
-                                        placeholder={{ de: 'Küchenstil wählen…', en: 'Select cuisine style…' }[locale]}
-                                        emptyLabel={{ de: 'Keine Treffer.', en: 'No matches.' }[locale]}
+                                        placeholder={inlineCopy({ de: 'Küchenstil wählen…', en: 'Select cuisine style…' }, locale)}
+                                        emptyLabel={inlineCopy({ de: 'Keine Treffer.', en: 'No matches.' }, locale)}
                                     />
                                 </div>
                             )}
@@ -584,15 +605,15 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
                             {(field) => (
                                 <div className="grid gap-2">
                                     <label htmlFor="admin-cook-philosophy" className="text-sm font-medium">
-                                        {{ de: 'Kochphilosophie', en: 'Cooking philosophy' }[locale]}
+                                        {inlineCopy({ de: 'Kochphilosophie', en: 'Cooking philosophy' }, locale)}
                                     </label>
                                     <CatalogCombobox
                                         id="admin-cook-philosophy"
                                         items={COOKING_PHILOSOPHY_ITEMS}
                                         value={field.state.value}
                                         onChange={(next) => field.handleChange(next)}
-                                        placeholder={{ de: 'Philosophie wählen…', en: 'Select philosophy…' }[locale]}
-                                        emptyLabel={{ de: 'Keine Treffer.', en: 'No matches.' }[locale]}
+                                        placeholder={inlineCopy({ de: 'Philosophie wählen…', en: 'Select philosophy…' }, locale)}
+                                        emptyLabel={inlineCopy({ de: 'Keine Treffer.', en: 'No matches.' }, locale)}
                                     />
                                 </div>
                             )}
@@ -623,14 +644,15 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
 
                     <section className="grid gap-4">
                         <div className="grid gap-1">
-                            <h2 className="text-sm font-medium">{{ de: 'Weitere Profile', en: 'Other profiles' }[locale]}</h2>
+                            <h2 className="text-sm font-medium">{inlineCopy({ de: 'Weitere Profile', en: 'Other profiles' }, locale)}</h2>
                             <p className="text-sm text-muted-foreground">
-                                {
+                                {inlineCopy(
                                     {
                                         de: 'Nur für die Prüfung. Kunden sehen diese Links nicht.',
                                         en: 'For review only. Customers do not see these links.',
-                                    }[locale]
-                                }
+                                    },
+                                    locale,
+                                )}
                             </p>
                         </div>
                         <form.Field name="presenceLinks">
@@ -649,7 +671,7 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
 
                     <div className="grid gap-2">
                         <label htmlFor="admin-cook-travel-origin" className="text-sm font-medium">
-                            {{ de: 'Reiseadresse', en: 'Travel origin' }[locale]}
+                            {inlineCopy({ de: 'Reiseadresse', en: 'Travel origin' }, locale)}
                         </label>
                         <Combobox
                             filter={null}
@@ -675,11 +697,11 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
                             <ComboboxInput
                                 id="admin-cook-travel-origin"
                                 className="w-full min-w-0"
-                                placeholder={{ de: 'Adresse suchen…', en: 'Search address…' }[locale]}
+                                placeholder={inlineCopy({ de: 'Adresse suchen…', en: 'Search address…' }, locale)}
                                 showClear={false}
                             />
                             <ComboboxContent>
-                                <ComboboxEmpty>{{ de: 'Keine Treffer.', en: 'No matches.' }[locale]}</ComboboxEmpty>
+                                <ComboboxEmpty>{inlineCopy({ de: 'Keine Treffer.', en: 'No matches.' }, locale)}</ComboboxEmpty>
                                 <ComboboxList>
                                     {(item: string) => (
                                         <ComboboxItem key={item} value={item}>
@@ -696,7 +718,7 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
                             {(field) => (
                                 <div className="grid gap-2">
                                     <label htmlFor="admin-cook-travel-expenses" className="text-sm font-medium">
-                                        {{ de: 'Reisekosten / km (€)', en: 'Travel expenses / km (€)' }[locale]}
+                                        {inlineCopy({ de: 'Reisekosten / km (€)', en: 'Travel expenses / km (€)' }, locale)}
                                     </label>
                                     <Input
                                         id="admin-cook-travel-expenses"
@@ -712,7 +734,7 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
                             {(field) => (
                                 <div className="grid gap-2">
                                     <label htmlFor="admin-cook-max-distance" className="text-sm font-medium">
-                                        {{ de: 'Max. Distanz', en: 'Max distance' }[locale]}
+                                        {inlineCopy({ de: 'Max. Distanz', en: 'Max distance' }, locale)}
                                     </label>
                                     <Select
                                         value={field.state.value}

@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router';
 
+import { t } from '../../../i18n/t';
 import { Button } from '../../components/base/button';
 import { StatusAlert } from '../../components/base/status-alert';
 import { SupportRequestSummaryCard } from '../../components/SupportRequestSummaryCard';
@@ -24,12 +25,7 @@ export function ProfileCustomerSupportRequestsPage({ data }: { data: GqlCProfile
     const startAction = (
         <Button type="button" variant="outline" size="sm" asChild>
             <Link to="/{-$locale}/profile/support-requests/create">
-                {
-                    {
-                        de: supportRequests.length === 0 ? 'Support-Anfrage starten' : 'Neue Support-Anfrage',
-                        en: supportRequests.length === 0 ? 'Start a support request' : 'New support request',
-                    }[locale]
-                }
+                {supportRequests.length === 0 ? t(locale, 'profileCustomer', 'support.start') : t(locale, 'profileCustomer', 'support.new')}
             </Link>
         </Button>
     );
@@ -37,23 +33,13 @@ export function ProfileCustomerSupportRequestsPage({ data }: { data: GqlCProfile
     return (
         <main id="main-content" className="@container grid w-full min-w-0 content-start gap-6">
             {supportRequests.length === 0 ? (
-                <StatusAlert tone="info" title={{ de: 'Brauchst du Hilfe?', en: 'Need help?' }[locale]} action={startAction}>
-                    {
-                        {
-                            de: 'Stelle eine Frage zu Buchung, Zahlung oder deinem Event. Unser Team antwortet im Chat.',
-                            en: 'Ask about booking, payment, or your event. Our team replies in chat.',
-                        }[locale]
-                    }
+                <StatusAlert tone="info" title={t(locale, 'profileCustomer', 'support.needHelp')} action={startAction}>
+                    {t(locale, 'profileCustomer', 'support.needHelpBody')}
                 </StatusAlert>
             ) : (
                 <>
-                    <StatusAlert tone="info" title={{ de: 'Noch eine Frage?', en: 'Another question?' }[locale]} action={startAction}>
-                        {
-                            {
-                                de: 'Stelle eine neue Anfrage zu Buchung, Zahlung oder deinem Event. Unser Team antwortet im Chat.',
-                                en: 'Start a new request about booking, payment, or your event. Our team replies in chat.',
-                            }[locale]
-                        }
+                    <StatusAlert tone="info" title={t(locale, 'profileCustomer', 'support.anotherQuestion')} action={startAction}>
+                        {t(locale, 'profileCustomer', 'support.anotherQuestionBody')}
                     </StatusAlert>
                     <ul className="grid auto-rows-fr grid-cols-1 gap-2 @2xl:grid-cols-2 @5xl:grid-cols-3">
                         {supportRequests.map((request) => (

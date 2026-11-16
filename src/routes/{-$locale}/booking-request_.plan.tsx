@@ -1,5 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
 
+import { t } from '../../i18n/t';
 import { BookingRequestPlanPageDocument } from '../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../web/graphql/routeLoaderGraphqlClient';
 import { BookingRequestPlanPage, parseBookingRequestPlanSearch } from '../../web/pages/BookingRequestPlanPage';
@@ -29,14 +30,8 @@ export const Route = createFileRoute('/{-$locale}/booking-request_/plan')({
     head: ({ params }) => {
         const locale = localeFromParam(params);
         return seoMeta({
-            title: {
-                de: 'Dinner planen · PeopleEat',
-                en: 'Plan your dinner · PeopleEat',
-            }[locale],
-            description: {
-                de: 'Plant euer privates 3-Gänge-Dinner in zwei Schritten. Unverbindlich und ohne Zahlung.',
-                en: 'Plan your private three-course dinner in two steps. Non-binding and with no payment yet.',
-            }[locale],
+            title: t(locale, 'publicBooking', 'plan.seo.title'),
+            description: t(locale, 'publicBooking', 'plan.seo.description'),
             path: '/booking-request/plan',
             locale,
             webPageUrl: webPageUrlGet(),

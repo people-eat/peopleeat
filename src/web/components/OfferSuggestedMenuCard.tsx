@@ -1,3 +1,4 @@
+import { inlineCopy } from '../../shared';
 import { useLocale } from '../hooks/useLocale';
 import { cn } from '../utils/cn';
 import { Card, CardDescription, CardHeader, CardTitle } from './base/card';
@@ -25,8 +26,8 @@ export function OfferSuggestedMenuCard({
     const locale = useLocale();
     const courseLabel =
         menu.courseCount === 1
-            ? { de: '1 Gang', en: '1 course' }[locale]
-            : { de: `${menu.courseCount} Gänge`, en: `${menu.courseCount} courses` }[locale];
+            ? inlineCopy({ de: '1 Gang', en: '1 course' }, locale)
+            : inlineCopy({ de: `${menu.courseCount} Gänge`, en: `${menu.courseCount} courses` }, locale);
 
     return (
         <li className="min-w-0">

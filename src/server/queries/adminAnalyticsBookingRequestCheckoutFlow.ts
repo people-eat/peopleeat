@@ -1,13 +1,22 @@
+import { t } from '../../i18n/t';
 import { bookingRequestCheckoutFunnelArea, bookingRequestCheckoutFunnelSteps } from '../../shared/bookingRequestCheckoutFunnel';
 import type { BookingRequestCheckoutFunnelStep } from '../../shared/bookingRequestCheckoutFunnel';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminAnalyticsSessionFunnelFlow, GqlSDateTimeRange, GqlSSession } from '../graphql/generated';
 import { adminAnalyticsSessionFunnelFlow } from './adminAnalyticsSessionFunnelFlow';
 
-const FUNNEL_LABELS: Record<BookingRequestCheckoutFunnelStep, { de: string; en: string }> = {
-    checkout: { de: 'Checkout', en: 'Checkout' },
-    paid: { de: 'Bezahlt', en: 'Paid' },
-};
+function funnelLabels(): Record<BookingRequestCheckoutFunnelStep, { de: string; en: string }> {
+    return {
+        checkout: {
+            de: t('de', 'admin', 'analytics.funnels.checkout.checkout'),
+            en: t('en', 'admin', 'analytics.funnels.checkout.checkout'),
+        },
+        paid: {
+            de: t('de', 'admin', 'analytics.funnels.checkout.paid'),
+            en: t('en', 'admin', 'analytics.funnels.checkout.paid'),
+        },
+    };
+}
 
 export async function adminAnalyticsBookingRequestCheckoutFlow(
     range: GqlSDateTimeRange,
@@ -17,7 +26,7 @@ export async function adminAnalyticsBookingRequestCheckoutFlow(
     return adminAnalyticsSessionFunnelFlow(range, requestingSession, serverRuntime, {
         area: bookingRequestCheckoutFunnelArea,
         steps: bookingRequestCheckoutFunnelSteps,
-        labels: FUNNEL_LABELS,
+        labels: funnelLabels(),
         lifecycleTypes: [{ type: 'BOOKING_REQUEST_OFFER_PAYMENT_SUCCEEDED', step: 'paid' }],
         excludeCooks: true,
     });

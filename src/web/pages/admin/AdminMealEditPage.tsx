@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { t } from '../../../i18n/t';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import { Button } from '../../components/base/button';
@@ -14,15 +15,14 @@ import { CookMealImageField } from '../../components/CookMealImageField';
 import type { GqlCAdminMealPageQuery } from '../../graphql/generated';
 import { AdminMealPageUpdatesDocument, AdminMealUpsertDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
+import type { Locale } from '../../utils/locale';
 
-export const adminMealEditPageTitle = {
-    de: 'Gericht bearbeiten',
-    en: 'Edit meal',
-} as const;
-export const adminMealEditPageDescription = {
-    de: 'Titel, Beschreibung und Bild bearbeiten.',
-    en: 'Edit title, description, and image.',
-} as const;
+export function adminMealEditPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.mealEdit.title');
+}
+export function adminMealEditPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.mealEdit.description');
+}
 
 type AdminMeal = NonNullable<NonNullable<NonNullable<GqlCAdminMealPageQuery['currentSession']['user']>['admin']>['cookMeal']>;
 
@@ -69,10 +69,10 @@ export function AdminMealEditPage({ data, mealId }: { data: GqlCAdminMealPageQue
                 },
             });
             if (result.error || !result.data?.admin.cookMealUpsert.success) {
-                toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+                toast.error(t(locale, 'admin', 'copy.couldNotSave'));
                 return;
             }
-            toast.success({ de: 'Gespeichert.', en: 'Saved.' }[locale]);
+            toast.success(t(locale, 'admin', 'copy.saved'));
             await navigate({ to: '/{-$locale}/admin/meals/$mealId', params: { mealId } });
         },
     });
@@ -113,9 +113,9 @@ export function AdminMealEditPage({ data, mealId }: { data: GqlCAdminMealPageQue
     return (
         <AdminPageChrome
             crumbs={[
-                { label: { de: 'Gerichte', en: 'Meals' }[locale], to: '/{-$locale}/admin/meals' },
+                { label: t(locale, 'admin', 'copy.meals'), to: '/{-$locale}/admin/meals' },
                 { label: meal.title, to: '/{-$locale}/admin/meals/$mealId', params: { mealId } },
-                { label: { de: 'Bearbeiten', en: 'Edit' }[locale] },
+                { label: t(locale, 'admin', 'copy.edit') },
             ]}
             contentClassName="min-h-0 overflow-hidden gap-0"
         >
@@ -126,17 +126,17 @@ export function AdminMealEditPage({ data, mealId }: { data: GqlCAdminMealPageQue
                         <>
                             <Button type="button" variant="outline" disabled={isSubmitting || imageBusy} asChild>
                                 <Link to="/{-$locale}/admin/meals/$mealId" params={{ mealId }}>
-                                    {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                    {t(locale, 'admin', 'copy.cancel')}
                                 </Link>
                             </Button>
                             <Button type="submit" form="admin-meal-form" disabled={isSubmitting || imageBusy}>
-                                {isSubmitting ? { de: 'Speichern…', en: 'Saving…' }[locale] : { de: 'Speichern', en: 'Save' }[locale]}
+                                {isSubmitting ? t(locale, 'admin', 'copy.saving2') : t(locale, 'admin', 'copy.save')}
                             </Button>
                         </>
                     ) : (
                         <Button type="button" disabled={isSubmitting || imageBusy} asChild>
                             <Link to="/{-$locale}/admin/meals/$mealId" params={{ mealId }}>
-                                {{ de: 'Zur Gerichtansicht', en: 'Back to meal' }[locale]}
+                                {t(locale, 'admin', 'copy.backToMeal')}
                             </Link>
                         </Button>
                     )
@@ -155,7 +155,7 @@ export function AdminMealEditPage({ data, mealId }: { data: GqlCAdminMealPageQue
                         {(field) => (
                             <div className="grid gap-1.5">
                                 <label htmlFor="admin-meal-title" className="text-sm font-medium">
-                                    {{ de: 'Titel', en: 'Title' }[locale]}
+                                    {t(locale, 'admin', 'copy.title')}
                                 </label>
                                 <Input
                                     id="admin-meal-title"
@@ -173,7 +173,7 @@ export function AdminMealEditPage({ data, mealId }: { data: GqlCAdminMealPageQue
                         {(field) => (
                             <div className="grid gap-1.5">
                                 <label htmlFor="admin-meal-description" className="text-sm font-medium">
-                                    {{ de: 'Beschreibung', en: 'Description' }[locale]}
+                                    {t(locale, 'admin', 'copy.description')}
                                 </label>
                                 <Textarea
                                     id="admin-meal-description"

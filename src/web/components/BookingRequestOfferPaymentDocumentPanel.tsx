@@ -1,4 +1,5 @@
 import { FileTextIcon } from 'lucide-react';
+import { t } from '../../i18n/t';
 
 import type { Locale } from '../../shared/locale';
 import { Button } from './base/button';
@@ -41,11 +42,11 @@ export function BookingRequestOfferPaymentDocumentPanel({
                     </a>
                 ) : null}
                 <Button type="button" variant="outline" size="sm" disabled={busy} onClick={onRegenerate}>
-                    {
-                        (file
-                            ? { de: busy ? 'Wird erstellt…' : 'PDF erneuern', en: busy ? 'Generating…' : 'Regenerate PDF' }
-                            : { de: busy ? 'Wird erstellt…' : 'PDF erstellen', en: busy ? 'Generating…' : 'Generate PDF' })[locale]
-                    }
+                    {busy
+                        ? t(locale, 'common', 'paymentDocument.generating')
+                        : file
+                          ? t(locale, 'common', 'paymentDocument.regeneratePdf')
+                          : t(locale, 'common', 'paymentDocument.generatePdf')}
                 </Button>
             </div>
         </section>

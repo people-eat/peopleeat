@@ -23,15 +23,18 @@ inbox must show what was actually sent, and template categorization must not sil
    `WHATSAPP_BUSINESS_ACCOUNT_ID` is not the WhatsApp Business Account (`asset_id` in the WhatsApp Manager URL; `business_id` there is the
    portfolio, and the phone number id is a third node), or the token lacks template-read access. Meta remains the approval/category
    authority; requested category alone does not mean approval.
-4. **Exact language and snapshots.** Send the recipient locale, never silently substitute German for English. Render plain text once at send
-   time using the same definition and normalized parameter values sent to Meta. Persist an immutable `templateSnapshot` on both
-   `OutboundWhatsAppMessages` and `WhatsAppMessages`, including effective language, header, rendered body, parameters, and rendered buttons.
-   Audit `bodySnapshot` and transcript `body` retain the complete text projection. Transcript and inbox reads use stored `body` directly;
-   they never render the current catalog or reformat the structured snapshot. Incoming webhook messages store their received text, and
-   delivery-status webhooks only update lifecycle metadata. Later catalog or formatter changes cannot rewrite history. After the provider
-   succeeds, conversation/transcript/audit persistence is transactional. Provider failures leave a failed audit, not a fictitious sent
-   message. An audit/transcript persistence failure after provider acceptance retains acceptance evidence when possible and needs
-   operational reconciliation before retrying; an admin refresh failure does not mark delivery failed.
+4. **Exact language and snapshots.** Meta templates are registered DE/EN only (`WhatsAppTemplateDefinition` stays `{ de, en }`). Map the
+   recipient catalog locale with `whatsappTemplateLocale`: German sends `de`; English, French, Italian, and any other non-`de` catalog
+   locale send the **English** variant. Never silently substitute German for English. Store `templateSnapshot.languageCode` as the effective
+   Meta language actually sent (`de` or `en`), not a raw `fr`/`it` code. Render plain text once at send time using the same definition and
+   normalized parameter values sent to Meta. Persist an immutable `templateSnapshot` on both `OutboundWhatsAppMessages` and
+   `WhatsAppMessages`, including effective language, header, rendered body, parameters, and rendered buttons. Audit `bodySnapshot` and
+   transcript `body` retain the complete text projection. Transcript and inbox reads use stored `body` directly; they never render the
+   current catalog or reformat the structured snapshot. Incoming webhook messages store their received text, and delivery-status webhooks
+   only update lifecycle metadata. Later catalog or formatter changes cannot rewrite history. After the provider succeeds,
+   conversation/transcript/audit persistence is transactional. Provider failures leave a failed audit, not a fictitious sent message. An
+   audit/transcript persistence failure after provider acceptance retains acceptance evidence when possible and needs operational
+   reconciliation before retrying; an admin refresh failure does not mark delivery failed.
 5. **Historical text.** Preserve and display existing stored bodies even when `templateSnapshot` is null. Do not replace them with a generic
    warning. Earlier senders sometimes saved abbreviated summaries, so a stored legacy body may not contain the complete sent wording.
    Recovering exact text requires original send parameters with the corresponding template revision, or an original chat export. Any
@@ -87,7 +90,7 @@ approval.
 | Reconstruct old messages from current entity values | Dates, names, and copy may have changed                             |
 | A reversible URL hash                               | Unnecessary; the audit already stores the destination               |
 | Arbitrary destination query parameters              | Open-redirect risk and incompatible with the single suffix contract |
-| German fallback for English recipients              | Makes rendered history and recipient language inconsistent          |
+| German fallback for English / FR / IT recipients    | Makes rendered history and recipient language inconsistent; use EN  |
 | Marketing fallback while approval is pending        | Changes pricing and violates the intended send policy               |
 
 See [features/whatsapp.md](../features/whatsapp.md), [testimonials.md](./testimonials.md), and [infrastructure.md](../infrastructure.md).

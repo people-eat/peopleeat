@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router';
 
+import { t } from '../../i18n/t';
 import { formatDateTime } from '../../shared';
 import { useLocale } from '../hooks/useLocale';
 import { useTimeZone } from '../hooks/useTimeZone';
@@ -24,7 +25,7 @@ function EventDeepLink({ link }: { link: string }) {
     return (
         <Button type="button" variant="ghost" size="sm" asChild>
             <Link to="/{-$locale}/admin/booking-requests/$bookingRequestId" params={{ bookingRequestId: bookingMatch[1] }}>
-                {{ de: 'Öffnen', en: 'Open' }[locale]}
+                {t(locale, 'admin', 'copy.open2')}
             </Link>
         </Button>
     );
@@ -41,8 +42,8 @@ export function AdminSessionEventTimeline({
 }) {
     const locale = useLocale();
     const timeZone = useTimeZone();
-    const sessionLabel = { de: 'Sitzung', en: 'Session' }[locale];
-    const impersonationLabel = { de: 'Impersonation', en: 'Impersonation' }[locale];
+    const sessionLabel = t(locale, 'admin', 'copy.session');
+    const impersonationLabel = t(locale, 'admin', 'copy.impersonation');
 
     if (events.length === 0) {
         return <p className="text-sm text-muted-foreground">{emptyLabel}</p>;

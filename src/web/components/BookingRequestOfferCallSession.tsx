@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { createContext, useContext, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
+import { t } from '../../i18n/t';
 
 import { useLocale } from '../hooks/useLocale';
 import { BookingRequestOfferCallRoom } from './BookingRequestOfferCallPanel';
@@ -113,12 +114,7 @@ export function BookingRequestOfferCallSessionProvider({
             participantIdRef.current = next.participantId;
             setSession(next);
         } catch {
-            toast.error(
-                {
-                    de: 'Anruf konnte nicht gestartet werden.',
-                    en: 'Could not start the call.',
-                }[locale],
-            );
+            toast.error(t(locale, 'common', 'm.couldNotStartTheCall'));
         } finally {
             setBusy(false);
         }
@@ -135,12 +131,7 @@ export function BookingRequestOfferCallSessionProvider({
                 throw new Error('leave failed');
             }
         } catch {
-            toast.error(
-                {
-                    de: 'Anruf konnte nicht korrekt beendet werden.',
-                    en: 'Could not leave the call cleanly.',
-                }[locale],
-            );
+            toast.error(t(locale, 'common', 'm.couldNotLeaveTheCallCleanly'));
         }
     }
 

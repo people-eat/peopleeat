@@ -99,10 +99,11 @@ JSONB `{ de, en }` blob:
 - `roleDe varchar`, `roleEn varchar` — both required if the field is required
 - `subjectDe varchar default ''`, `subjectEn varchar default ''` — both default if the field is optional
 
-The GraphQL schema mirrors the same pair as `roleDe: String!`, `roleEn: String!`. The client renders the locale-matching half, same as the
-inline `{ de, en }[locale]` copy pattern used in routes. JSONB for two-key bilingual data is Postgres-native overhead; the column-pair shape
-keeps `WHERE roleDe ILIKE …` queries trivial. See [`docs/architecture/content-model.md`](./architecture/content-model.md). One-language
-values (a chat title, a log line) stay a single column.
+The GraphQL schema mirrors the same pair as `roleDe: String!`, `roleEn: String!`. The client picks the locale-matching half via
+`contentLocaleText` (EN if non-empty, else DE; `fr` / `it` fall back to DE until CMS columns grow). JSONB for two-key bilingual data is
+Postgres-native overhead; the column-pair shape keeps `WHERE roleDe ILIKE …` queries trivial. **UI chrome is not CMS**: product strings live
+in `src/i18n/locales/` catalogs, not `*De` / `*En` columns. See [`docs/architecture/content-model.md`](./architecture/content-model.md).
+One-language values (a chat title, a log line) stay a single column.
 
 ## Icons
 
@@ -247,40 +248,47 @@ Physical table renames are hand-authored `ALTER TABLE … RENAME` migrations —
 
 ## Bilingual Copy
 
-The site ships in DE and EN with no i18n library. Prefer the inline `{ de: '…', en: '…' }[locale]` literal **at the call site** in JSX:
+UI chrome lives in JSON catalogs under `src/i18n/locales/{locale}/{namespace}.json` with type-safe keys. `de` is the completeness source of
+truth. Read copy with `useT(namespace)` in React and isomorphic `t(locale, namespace, key)` in `head()` and `src/shared`. Email templates
+use server-only `tEmail(locale, key)` from `src/i18n/tEmail.ts`.
 
 ```tsx
-<h1>{{ de: 'Über uns', en: 'About us' }[locale]}</h1>
+const { t } = useT('public');
+return <h1>{t('about.title')}</h1>;
 ```
 
-Colocating the strings with the elements that render them keeps context obvious, makes dead-code removal automatic, and avoids the naming
-tax of a centralised `COPY` object. Do **not** hoist a page-level `COPY` const.
+```ts
+// Route `head()`, shared helpers (no React)
+seoMeta({ title: t(locale, 'public', 'about.seo.title'), … });
+```
 
-Hoist a string to a small local `const` only when one of the following narrow exceptions applies:
+**Do not** add inline `{ de: '…', en: '…' }[locale]` objects for new copy. **Do not** hoist a page-level `COPY` const. Put the string in the
+namespace that matches the lazy-load boundary (`common`, `public`, `publicBooking`, `profile`, `profileCook`, `profileCustomer`, `admin`,
+`email`). Keys are stable English identifiers (`about.title`). ICU message format for plurals, selects, and interpolation (`{name}`, not
+`{{name}}`). Interpolate already-formatted dates and money from `src/shared`; do not format inside the message.
 
-- **Reused inside the same file.** A title that appears in both `seoMeta()` inside `head()` and an `<h1>` inside the component is the
-  canonical case. Give it a descriptive name (`title`, `intro`, `closeLabel`) — one const per string, not a god-object.
-- **Needed outside JSX.** `seoMeta()` titles/descriptions, `aria-label`, `title`, `alt`, JSON-LD answers, anything passed to a non-JSX API.
-- **Long enough to drown out the JSX.** A multi-line marketing paragraph may read better as a named const above the `return`. A single
-  sentence stays inline.
+Unmigrated leftovers use `inlineCopy({ de, en }, locale)` (`fr` / `it` fall back to German) until that file is touched. When you touch it,
+move the strings into the catalog. Spell check is English-only outside catalogs; leftover quoted `de:` / `*De` values are ignored, but new
+German in source still fails ([Spell check](#spell-check)).
 
 **Caller-facing string props are mandatory.** Shared components that accept user-visible copy (`DatePicker` / `DateField` `placeholder`,
 `MessageComposer` `ariaLabel` / `placeholder`, etc.) must require those props — never default to an English-only string. Callers pass
-`{ de, en }[locale]` at the call site so TypeScript catches omissions. Universal chrome inside base / chat primitives (`Dialog` / `Sheet`
-close, `Spinner` loading, pagination labels, breadcrumb landmark / ellipsis, message-scroller jump buttons, `MessageComposer` Send / Attach
-/ disclaimer, chat transcript messages region) may localize via `useLocale()` inside the primitive so every surface inherits it.
+`t('…')` at the call site so TypeScript catches omissions. Universal chrome inside base / chat primitives (`Dialog` / `Sheet` close,
+`Spinner` loading, pagination labels, breadcrumb landmark / ellipsis, message-scroller jump buttons, `MessageComposer` Send / Attach /
+disclaimer, chat transcript messages region) may call `useT('common')` inside the primitive so every surface inherits it.
 
-**Both sides of every pair must be real locale copy.** Identical `de` / `en` is fine when the word is the same in both languages (`Name`,
-`Status`, brand names). It is **not** fine when German has a clear equivalent — write `Fähigkeiten` not `Skills`, `Protokolle` not `Logs`.
-Prefer translating UI chrome even when the English loanword is common in German tech speech.
+**Every locale must be real copy.** Identical values are fine when the word is the same (`Name`, `Status`, brand names). It is **not** fine
+when German has a clear equivalent: write `Fähigkeiten` not `Skills`, `Protokolle` not `Logs`. Prefer translating UI chrome even when the
+English loanword is common in German tech speech. `en` / `fr` / `it` catalogs must match the `de` key tree (`npm run i18n:check`). Missing
+keys fall back to `de`, never a raw key.
 
 **No mid-sentence em or en dashes (`—` / `–`) in user-facing copy.** They read as AI-generated. Prefer commas, periods, colons, or
 parentheses. Empty-value placeholders that render a lone `—` for missing data are fine, as are en dashes in numeric or alphabetic ranges
 (`12:00–13:00`, `A–Z`). Document/comment prose is out of scope.
 
 **Never render raw `error.message` / GraphQL `result.error.message` in the UI.** API and transport errors are English by convention; map
-them through a bilingual helper (e.g. `uploadErrorMessage()` in `src/web/chat/fileUpload.ts` for uploads) or a generic `{ de, en }` fallback
-such as “Speichern fehlgeschlagen.” / “Could not save.”
+them through a catalog helper (e.g. `uploadErrorMessage()` in `src/web/chat/fileUpload.ts` for uploads) or
+`t(locale, 'common', 'saveFailed')`.
 
 **PWA manifest** (`public/manifest.json`, when present) is a single static file with no locale switch — keep `name` / `short_name`
 **brand-only** so install prompts are not locked to one language.
@@ -293,8 +301,8 @@ Voice and audience wording (plain language for end users vs operational admin la
 
 Isomorphic date, currency, file-size, duration, participants, and euro-amount helpers live in `src/shared` (`formatDate`, `formatTime`,
 `formatDateTime`, `formatDateRange`, `formatMonthYear`, `formatParticipants`, `formatCurrency`, `formatIsoDate`, `formatBytes`,
-`formatDuration`, `formatHms`, `centsToEuros`, `eurosToCents`). Display helpers that need a locale require `{ locale: 'de' | 'en' }` and map
-to `de-DE` / `en-US` via `languageTagFromLocale`. Date/time helpers accept an optional `timeZone`. In the UI pass the viewer zone from
+`formatDuration`, `formatHms`, `centsToEuros`, `eurosToCents`). Display helpers that need a locale require `{ locale: Locale }` and map to
+BCP-47 tags via `languageTagFromLocale`. Date/time helpers accept an optional `timeZone`. In the UI pass the viewer zone from
 `useTimeZone()`; in user-facing emails pass the recipient’s `Users.timeZone`; Slack ops may keep a fixed zone. Do **not** redefine local
 `formatDate` / `formatTime` / `formatDateTime` / `formatParticipants` / `formatCurrency` / `formatBytes` helpers in routes or components —
 import from `src/shared`. `formatCurrency` always shows **2 fraction digits** by default (e.g. `50,00 €` / `€50.00`); pass
@@ -926,6 +934,25 @@ npm run check
 `scripts/checkRun.ts` runs format, spell, types, usage (knip), and commitlint **in parallel** (same wave as CI), then lint after they all
 succeed. Each parallel tool buffers stdout/stderr so lines do not interleave; successes print one status line, failures dump their full log
 under a labeled section. Lint still waits on types (and the rest of the wave) so a long ESLint pass is not wasted on an already-broken tree.
+
+### Spell check
+
+`npm run spell:check` runs `cspell .`. **Source, comments, identifiers, and English catalogs are English-only.** German / French / Italian
+dictionaries apply only through `.cspell.json` `overrides`:
+
+| Path                                                                                                          | Language |
+| ------------------------------------------------------------------------------------------------------------- | -------- |
+| `src/i18n/locales/de/**`                                                                                      | `en,de`  |
+| `src/i18n/locales/en/**`                                                                                      | `en`     |
+| `src/i18n/locales/fr/**`                                                                                      | `en,fr`  |
+| `src/i18n/locales/it/**`                                                                                      | `en,it`  |
+| Slack ops, WhatsApp templates/webhooks, German-first LLM prompt files, tests, stories, docs, media, demo seed | `en,de`  |
+
+Do **not** put `de-de` / `fr-fr` / `it-it` in the root `dictionaries` list: that would accept German (etc.) in every TypeScript file. New UI
+copy belongs in catalogs. Unmigrated `{ de: '…', en: '…' }` values and CMS `*De` fields are ignored via `ignoreRegExpList`; German in a
+comment, identifier, or English string still fails. A shrinking file list in `.cspell.json` covers leftover German that is not a quoted
+`de:` / `*De` value; drop a path from that list when the file is migrated. Add English product/tech terms to the root `words` list. Do not
+add German words there to silence a source file.
 
 ## Browser Capture (Playwright)
 

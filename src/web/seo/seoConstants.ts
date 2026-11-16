@@ -1,4 +1,4 @@
-import type { Locale } from '../utils/locale';
+import type { CatalogLocale } from '../utils/locale';
 
 export {
     SITE_FACEBOOK_URL,
@@ -25,7 +25,9 @@ export const DEFAULT_SHARE_IMAGE_DIMENSIONS = { width: 1200, height: 630 } as co
 
 // Maps app locales to the IETF tags Open Graph expects. Add a new entry here
 // whenever you add a locale in `src/web/utils/locale.ts`.
-export const OG_LOCALE: Record<Locale, string> = {
+export const OG_LOCALE: Record<CatalogLocale, string> = {
     de: 'de_DE',
     en: 'en_US',
+    fr: 'fr_FR',
+    it: 'it_IT',
 };

@@ -1,6 +1,7 @@
 import { ArrowDownIcon, ArrowUpIcon, PlusIcon, XIcon } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { inlineCopy } from '../../shared';
 
 import type { Locale } from '../../shared';
 import { Button } from './base/button';
@@ -21,16 +22,22 @@ export type FeaturedCookOption = {
 
 function featuredCookListingWarning(cook: FeaturedCookOption, locale: Locale): string | null {
     if (cook.userStatus === 'BANNED') {
-        return {
-            de: 'Gesperrt: erscheint nicht öffentlich und kann keine Angebote erstellen.',
-            en: 'Banned: not shown publicly and cannot create offers.',
-        }[locale];
+        return inlineCopy(
+            {
+                de: 'Gesperrt: erscheint nicht öffentlich und kann keine Angebote erstellen.',
+                en: 'Banned: not shown publicly and cannot create offers.',
+            },
+            locale,
+        );
     }
     if (!cook.isPubliclyListed) {
-        return {
-            de: 'Erscheint nicht öffentlich (unsichtbar, nicht freigegeben oder ohne Gericht mit Bild).',
-            en: 'Not shown publicly (hidden, unapproved, or no published meal with a picture).',
-        }[locale];
+        return inlineCopy(
+            {
+                de: 'Erscheint nicht öffentlich (unsichtbar, nicht freigegeben oder ohne Gericht mit Bild).',
+                en: 'Not shown publicly (hidden, unapproved, or no published meal with a picture).',
+            },
+            locale,
+        );
     }
     return null;
 }
@@ -98,9 +105,9 @@ export function ContentPageFeaturedCooksEditor({
         setSaving(true);
         try {
             await onSave(draftIds);
-            toast.success({ de: 'Köche gespeichert', en: 'Chefs saved' }[locale]);
+            toast.success(inlineCopy({ de: 'Köche gespeichert', en: 'Chefs saved' }, locale));
         } catch {
-            toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+            toast.error(inlineCopy({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }, locale));
         } finally {
             setSaving(false);
         }
@@ -118,12 +125,14 @@ export function ContentPageFeaturedCooksEditor({
     return (
         <Card className="gap-4 py-4" data-content-editor-anchor="featured-cooks">
             <CardHeader className="px-4">
-                <CardTitle>{{ de: 'Köche auf der Seite', en: 'Chefs on this page' }[locale]}</CardTitle>
+                <CardTitle>{inlineCopy({ de: 'Köche auf der Seite', en: 'Chefs on this page' }, locale)}</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 px-4">
                 <p className="text-sm text-muted-foreground">{emptyHint}</p>
                 {draftCooks.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">{{ de: 'Keine Köche ausgewählt.', en: 'No chefs selected.' }[locale]}</p>
+                    <p className="text-sm text-muted-foreground">
+                        {inlineCopy({ de: 'Keine Köche ausgewählt.', en: 'No chefs selected.' }, locale)}
+                    </p>
                 ) : (
                     <ul className="divide-y divide-border border border-border">
                         {draftCooks.map((cook, index) => {
@@ -143,7 +152,7 @@ export function ContentPageFeaturedCooksEditor({
                                         size="icon-sm"
                                         disabled={index === 0 || saving || busy}
                                         onClick={() => move(index, -1)}
-                                        aria-label={{ de: 'Nach oben', en: 'Move up' }[locale]}
+                                        aria-label={inlineCopy({ de: 'Nach oben', en: 'Move up' }, locale)}
                                     >
                                         <ArrowUpIcon className="size-4" />
                                     </Button>
@@ -153,7 +162,7 @@ export function ContentPageFeaturedCooksEditor({
                                         size="icon-sm"
                                         disabled={index === draftCooks.length - 1 || saving || busy}
                                         onClick={() => move(index, 1)}
-                                        aria-label={{ de: 'Nach unten', en: 'Move down' }[locale]}
+                                        aria-label={inlineCopy({ de: 'Nach unten', en: 'Move down' }, locale)}
                                     >
                                         <ArrowDownIcon className="size-4" />
                                     </Button>
@@ -163,7 +172,7 @@ export function ContentPageFeaturedCooksEditor({
                                         size="icon-sm"
                                         disabled={saving || busy}
                                         onClick={() => setDraftIds(draftIds.filter((id) => id !== cook.cookId))}
-                                        aria-label={{ de: 'Entfernen', en: 'Remove' }[locale]}
+                                        aria-label={inlineCopy({ de: 'Entfernen', en: 'Remove' }, locale)}
                                     >
                                         <XIcon className="size-4" />
                                     </Button>
@@ -175,14 +184,14 @@ export function ContentPageFeaturedCooksEditor({
                 <div className="flex flex-wrap gap-2">
                     <Button type="button" variant="outline" size="sm" disabled={saving || busy} onClick={() => setPickerOpen(true)}>
                         <PlusIcon className="size-4" />
-                        {{ de: 'Köche wählen', en: 'Choose chefs' }[locale]}
+                        {inlineCopy({ de: 'Köche wählen', en: 'Choose chefs' }, locale)}
                     </Button>
                     <Button type="button" size="sm" disabled={!dirty || saving || busy} onClick={() => void save()}>
-                        {{ de: 'Köche speichern', en: 'Save chefs' }[locale]}
+                        {inlineCopy({ de: 'Köche speichern', en: 'Save chefs' }, locale)}
                     </Button>
                     {dirty ? (
                         <Button type="button" variant="ghost" size="sm" disabled={saving || busy} onClick={() => setDraftIds(assignedIds)}>
-                            {{ de: 'Zurücksetzen', en: 'Reset' }[locale]}
+                            {inlineCopy({ de: 'Zurücksetzen', en: 'Reset' }, locale)}
                         </Button>
                     ) : null}
                 </div>
@@ -191,14 +200,15 @@ export function ContentPageFeaturedCooksEditor({
             <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
                 <DialogContent className="max-w-lg">
                     <DialogHeader>
-                        <DialogTitle>{{ de: 'Köche auswählen', en: 'Select chefs' }[locale]}</DialogTitle>
+                        <DialogTitle>{inlineCopy({ de: 'Köche auswählen', en: 'Select chefs' }, locale)}</DialogTitle>
                         <DialogDescription>
-                            {
+                            {inlineCopy(
                                 {
                                     de: 'Ausgewählte Köche erscheinen in der gewählten Reihenfolge.',
                                     en: 'Selected chefs appear in the chosen order.',
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                         </DialogDescription>
                     </DialogHeader>
                     <Input
@@ -208,12 +218,12 @@ export function ContentPageFeaturedCooksEditor({
                             if (onCandidateSearchChange) onCandidateSearchChange(next);
                             else setLocalSearch(next);
                         }}
-                        placeholder={{ de: 'Köche suchen…', en: 'Search chefs…' }[locale]}
+                        placeholder={inlineCopy({ de: 'Köche suchen…', en: 'Search chefs…' }, locale)}
                     />
                     <ul className="max-h-72 divide-y divide-border overflow-y-auto border border-border">
                         {filteredCandidates.length === 0 ? (
                             <li className="px-3 py-4 text-sm text-muted-foreground">
-                                {{ de: 'Keine Kandidaten.', en: 'No candidates.' }[locale]}
+                                {inlineCopy({ de: 'Keine Kandidaten.', en: 'No candidates.' }, locale)}
                             </li>
                         ) : (
                             filteredCandidates.map((cook) => {
@@ -245,7 +255,7 @@ export function ContentPageFeaturedCooksEditor({
                     </ul>
                     <DialogFooter>
                         <Button type="button" onClick={() => setPickerOpen(false)}>
-                            {{ de: 'Fertig', en: 'Done' }[locale]}
+                            {inlineCopy({ de: 'Fertig', en: 'Done' }, locale)}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

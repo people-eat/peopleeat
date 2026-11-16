@@ -2,6 +2,8 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import type { SortingState, Updater } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
 
+import { t } from '../../../i18n/t';
+import { inlineCopy } from '../../../shared';
 import { AdminListPaginationBar } from '../../components/AdminListPaginationBar';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
@@ -10,6 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from '../../components/base/tabs';
 import type { GqlCAdminLogLevel, GqlCAdminLogsPageQuery } from '../../graphql/generated';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useLocale } from '../../hooks/useLocale';
+import type { Locale } from '../../utils/locale';
 import {
     adminListPageCount,
     adminListPageSize,
@@ -30,11 +33,12 @@ import { ADMIN_LOGS_SORT_FIELDS, adminLogLevelLabel } from './adminLogsColumns';
 import type { AdminLogsSortField } from './adminLogsColumns';
 import { AdminLogsDataTable } from './AdminLogsDataTable';
 
-export const adminLogsPageTitle = { de: 'Log-Liste', en: 'Log list' } as const;
-export const adminLogsPageDescription = {
-    de: 'Log-Nachrichten durchsuchen und einsehen.',
-    en: 'Browse and inspect log messages.',
-} as const;
+export function adminLogsPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.logs.title');
+}
+export function adminLogsPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'nav.logs.description');
+}
 
 const ADMIN_LOGS_ALL_LEVELS: GqlCAdminLogLevel[] = ['error', 'warn', 'info', 'debug'];
 
@@ -122,7 +126,7 @@ export function AdminLogsPage({ data, search }: { data: GqlCAdminLogsPageQuery; 
     }
 
     const levelTabs: { value: GqlCAdminLogLevel | undefined; label: string }[] = [
-        { value: undefined, label: { de: 'Alle', en: 'All' }[locale] },
+        { value: undefined, label: t(locale, 'admin', 'copy.all') },
         ...ADMIN_LOGS_ALL_LEVELS.map((level) => ({
             value: level,
             label: adminLogLevelLabel(level, locale),
@@ -151,7 +155,7 @@ export function AdminLogsPage({ data, search }: { data: GqlCAdminLogsPageQuery; 
                 }
             >
                 <Tabs value={search.level ?? 'all'}>
-                    <TabsList variant="line" aria-label={{ de: 'Log-Level', en: 'Log level' }[locale]}>
+                    <TabsList variant="line" aria-label={t(locale, 'admin', 'copy.logLevel')}>
                         {levelTabs.map((tab) => (
                             <TabsTrigger key={tab.value ?? 'all'} value={tab.value ?? 'all'} asChild>
                                 <Link
@@ -175,16 +179,17 @@ export function AdminLogsPage({ data, search }: { data: GqlCAdminLogsPageQuery; 
                         type="search"
                         value={draftQ}
                         onChange={(event) => setDraftQ(event.target.value)}
-                        placeholder={{ de: 'Nachricht suchen…', en: 'Search message…' }[locale]}
-                        aria-label={{ de: 'Log-Nachrichten suchen', en: 'Search log messages' }[locale]}
+                        placeholder={t(locale, 'admin', 'copy.searchMessage')}
+                        aria-label={t(locale, 'admin', 'copy.searchLogMessages')}
                     />
                     <p className="text-sm text-muted-foreground tabular-nums">
-                        {
+                        {inlineCopy(
                             {
                                 de: `${total} ${total === 1 ? 'Nachricht' : 'Nachrichten'}`,
                                 en: `${total} ${total === 1 ? 'message' : 'messages'}`,
-                            }[locale]
-                        }
+                            },
+                            locale,
+                        )}
                     </p>
                 </div>
 

@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { t } from '../../../i18n/t';
 import { formatDate } from '../../../shared';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { Badge } from '../../components/base/badge';
@@ -15,14 +16,16 @@ import { AdminOfferAddonTemplatesPageUpdatesDocument, AdminOfferAddonTemplatesPa
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
+import type { Locale } from '../../utils/locale';
 import { offerAddonPriceLabel } from '../../utils/offerAddonPriceLabel';
 import { AdminOverviewListCardLink } from './AdminOverviewListCard';
 
-export const adminOfferAddonTemplatesPageTitle = { de: 'Zusatzleistungen', en: 'Offer extras' } as const;
-export const adminOfferAddonTemplatesPageDescription = {
-    de: 'Vorlagen, die Köche in ihre Bibliothek übernehmen können.',
-    en: 'Templates cooks can add to their library.',
-} as const;
+export function adminOfferAddonTemplatesPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'nav.offerAddonTemplates.title');
+}
+export function adminOfferAddonTemplatesPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'nav.offerAddonTemplates.description');
+}
 
 export function AdminOfferAddonTemplatesPage({ data }: { data: GqlCAdminOfferAddonTemplatesPageQuery }) {
     const locale = useLocale();
@@ -84,7 +87,7 @@ export function AdminOfferAddonTemplatesPage({ data }: { data: GqlCAdminOfferAdd
                 params: { offerAddonTemplateId: id },
             });
         } catch {
-            toast.error({ de: 'Anlegen fehlgeschlagen.', en: 'Could not create.' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.couldNotCreate'));
         } finally {
             setBusy(false);
         }
@@ -97,27 +100,27 @@ export function AdminOfferAddonTemplatesPage({ data }: { data: GqlCAdminOfferAdd
                     <div className="grid gap-2">
                         <h1 className="flex items-center gap-3 font-serif text-4xl/tight text-foreground">
                             <PackagePlusIcon className="size-8 text-muted-foreground" aria-hidden />
-                            {adminOfferAddonTemplatesPageTitle[locale]}
+                            {adminOfferAddonTemplatesPageTitle(locale)}
                         </h1>
-                        <p className="text-muted-foreground">{adminOfferAddonTemplatesPageDescription[locale]}</p>
+                        <p className="text-muted-foreground">{adminOfferAddonTemplatesPageDescription(locale)}</p>
                     </div>
                     <Button type="button" disabled={busy} onClick={() => void createTemplate()}>
                         <PlusIcon className="size-4" />
-                        {{ de: 'Neue Vorlage', en: 'New template' }[locale]}
+                        {t(locale, 'admin', 'copy.newTemplate')}
                     </Button>
                 </div>
                 <Input
                     type="search"
                     value={draftQ}
                     onChange={(event) => setDraftQ(event.target.value)}
-                    placeholder={{ de: 'Titel suchen…', en: 'Search title…' }[locale]}
-                    aria-label={{ de: 'Zusatzleistungen suchen', en: 'Search offer extras' }[locale]}
+                    placeholder={t(locale, 'admin', 'copy.searchTitle')}
+                    aria-label={t(locale, 'admin', 'copy.searchOfferExtras')}
                     className="max-w-sm"
                 />
                 {templates.length === 0 ? (
-                    <p className="text-muted-foreground">{{ de: 'Noch keine Vorlagen.', en: 'No templates yet.' }[locale]}</p>
+                    <p className="text-muted-foreground">{t(locale, 'admin', 'copy.noTemplatesYet')}</p>
                 ) : filteredTemplates.length === 0 ? (
-                    <p className="text-muted-foreground">{{ de: 'Keine Treffer.', en: 'No matches.' }[locale]}</p>
+                    <p className="text-muted-foreground">{t(locale, 'admin', 'copy.noMatches')}</p>
                 ) : (
                     <ul className="grid gap-2">
                         {filteredTemplates.map((template) => (
@@ -130,8 +133,8 @@ export function AdminOfferAddonTemplatesPage({ data }: { data: GqlCAdminOfferAdd
                                             {template.titleDe}
                                             <Badge variant="outline">
                                                 {template.publishedAt
-                                                    ? { de: 'Veröffentlicht', en: 'Published' }[locale]
-                                                    : { de: 'Entwurf', en: 'Draft' }[locale]}
+                                                    ? t(locale, 'admin', 'copy.published2')
+                                                    : t(locale, 'admin', 'copy.draft')}
                                             </Badge>
                                         </>
                                     }

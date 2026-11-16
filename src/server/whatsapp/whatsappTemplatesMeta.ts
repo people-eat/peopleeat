@@ -1,5 +1,4 @@
-import type { Locale } from '../../shared/locale';
-import type { WhatsAppTemplateDefinition } from '../domain/whatsappTemplates';
+import type { WhatsAppTemplateDefinition, WhatsAppTemplateLanguage } from '../domain/whatsappTemplates';
 
 export type MetaTemplate = {
     id: string;
@@ -15,7 +14,11 @@ export type MetaTemplate = {
     }>;
 };
 
-export function whatsappTemplateMetaPayloadCreate(definition: WhatsAppTemplateDefinition, locale: Locale, webPageUrl: string) {
+export function whatsappTemplateMetaPayloadCreate(
+    definition: WhatsAppTemplateDefinition,
+    locale: WhatsAppTemplateLanguage,
+    webPageUrl: string,
+) {
     const copy = definition[locale];
     const exampleUrl = `${webPageUrl.replace(/\/$/u, '')}/api/whatsapp/links/ExampleWhatsAppLink01`;
     return {
@@ -105,7 +108,7 @@ function componentDifference(expected: ComparableComponent, actual: ComparableCo
 export function whatsappTemplateMetaMatches(
     template: MetaTemplate,
     definition: WhatsAppTemplateDefinition,
-    locale: Locale,
+    locale: WhatsAppTemplateLanguage,
     webPageUrl: string,
 ) {
     const expected = whatsappTemplateMetaPayloadCreate(definition, locale, webPageUrl);
@@ -120,7 +123,7 @@ export function whatsappTemplateMetaMatches(
 export function whatsappTemplateBlockReason(
     template: MetaTemplate,
     definition: WhatsAppTemplateDefinition,
-    locale: Locale,
+    locale: WhatsAppTemplateLanguage,
     webPageUrl: string,
 ): string | null {
     if (template.status.toUpperCase() !== 'APPROVED') return `status ${template.status}`;
@@ -192,7 +195,7 @@ export function whatsappTemplatesMetaCreate(options: { accessToken: string; busi
             }
             return templates;
         },
-        async create(definition: WhatsAppTemplateDefinition, locale: Locale, webPageUrl: string): Promise<void> {
+        async create(definition: WhatsAppTemplateDefinition, locale: WhatsAppTemplateLanguage, webPageUrl: string): Promise<void> {
             await request(base, whatsappTemplateMetaPayloadCreate(definition, locale, webPageUrl));
         },
     };

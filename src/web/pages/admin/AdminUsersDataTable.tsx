@@ -1,5 +1,6 @@
 import type { OnChangeFn, SortingState } from '@tanstack/react-table';
 
+import { t } from '../../../i18n/t';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { AdminDataTable } from './AdminDataTable';
@@ -29,7 +30,7 @@ export function AdminUsersDataTable({ data, sorting, onSortingChange }: AdminUse
                 to: '/{-$locale}/admin/users/$userId',
                 params: { userId: row.userId },
             })}
-            emptyMessage={{ de: 'Keine Nutzer gefunden.', en: 'No users found.' }[locale]}
+            emptyMessage={t(locale, 'admin', 'copy.noUsersFound')}
         />
     );
 }

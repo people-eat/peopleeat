@@ -1,5 +1,6 @@
 import { Link, useNavigate } from '@tanstack/react-router';
 
+import { t } from '../../../i18n/t';
 import { formatDate } from '../../../shared';
 import { AdminListPaginationBar } from '../../components/AdminListPaginationBar';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
@@ -8,6 +9,7 @@ import { CookMealCard } from '../../components/CookMealCard';
 import type { GqlCAdminMealsPageQuery } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
+import type { Locale } from '../../utils/locale';
 import {
     adminCookInventoryListCriterion,
     adminCookInventoryListSearchForUrl,
@@ -17,11 +19,12 @@ import type { AdminCookInventoryListSearch } from './adminCookInventoryListSearc
 import { AdminCookInventoryListToolbar } from './AdminCookInventoryListToolbar';
 import { adminListPageCount, adminListPageSize } from './adminListPaginationSearch';
 
-export const adminMealsPageTitle = { de: 'Gerichte', en: 'Meals' } as const;
-export const adminMealsPageDescription = {
-    de: 'Gerichte aller Köche einsehen (inkl. gelöschter).',
-    en: 'Inspect meals from all cooks (including deleted).',
-} as const;
+export function adminMealsPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'nav.meals.title');
+}
+export function adminMealsPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'nav.meals.description');
+}
 
 export type AdminMealsSearch = AdminCookInventoryListSearch;
 
@@ -78,16 +81,11 @@ export function AdminMealsPage({ data, search }: { data: GqlCAdminMealsPageQuery
                     search={search}
                     onSearchChange={updateSearch}
                     showImageFilter
-                    searchPlaceholder={
-                        {
-                            de: 'Titel, Beschreibung oder Koch suchen…',
-                            en: 'Search title, description, or cook…',
-                        }[locale]
-                    }
+                    searchPlaceholder={t(locale, 'admin', 'copy.searchTitleDescriptionOrCook')}
                 />
 
                 {meals.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">{{ de: 'Keine Gerichte gefunden.', en: 'No meals found.' }[locale]}</p>
+                    <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noMealsFound')}</p>
                 ) : (
                     <ul className="grid grid-cols-1 gap-2 @3xl:grid-cols-2">
                         {meals.map((meal) => (

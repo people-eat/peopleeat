@@ -2,7 +2,8 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import { FileInputIcon, ListIcon, PlusIcon } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
 
-import { formatCurrency, formatIsoDate, formatMonthYear } from '../../../shared';
+import { t } from '../../../i18n/t';
+import { formatCurrency, formatIsoDate, formatMonthYear, inlineCopy } from '../../../shared';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { DateRangePicker } from '../../components/base/date-range-picker';
 import type {
@@ -13,6 +14,7 @@ import type {
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { DATE_FNS_LOCALE } from '../../utils/dateFnsLocale';
+import type { Locale } from '../../utils/locale';
 import { adminBookingRequestsSectionTo } from './adminBookingRequests';
 import { adminBookingRequestPublicationStatusLabel } from './adminBookingRequestsColumns';
 import { AdminOverviewBarChart } from './AdminOverviewBarChart';
@@ -22,11 +24,12 @@ import { adminOverviewRangeResolve, adminOverviewRangeToGraphQlVariables } from 
 import type { AdminOverviewRangeSearch } from './adminOverviewRange';
 import { AdminOverviewStatCard } from './AdminOverviewStatCard';
 
-export const adminBookingRequestsOverviewPageTitle = { de: 'Buchungsanfragen', en: 'Booking Requests' } as const;
-export const adminBookingRequestsOverviewPageDescription = {
-    de: 'Verteilung, eingegangene Anfragen, Anlässe, Angebote und Koch-Rankings.',
-    en: 'Distribution, received requests, occasions, offers, and cook rankings.',
-} as const;
+export function adminBookingRequestsOverviewPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'nav.bookingRequests.title');
+}
+export function adminBookingRequestsOverviewPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.bookingRequestsOverview.description');
+}
 
 /** Order matches `bookingRequestsCounts` indices on the overview query. */
 const ADMIN_BOOKING_REQUEST_COUNT_CRITERIA: GqlCAdminBookingRequestCriterion[] = [
@@ -61,14 +64,17 @@ function adminBookingRequestsListSearch(publicationStatus: GqlCBookingRequestPub
     };
 }
 
-function participantsLabel(count: number, locale: 'de' | 'en'): string {
-    return {
-        de: count === 1 ? '1 Gast' : `${count} Gäste`,
-        en: count === 1 ? '1 guest' : `${count} guests`,
-    }[locale];
+function participantsLabel(count: number, locale: Locale): string {
+    return inlineCopy(
+        {
+            de: count === 1 ? '1 Gast' : `${count} Gäste`,
+            en: count === 1 ? '1 guest' : `${count} guests`,
+        },
+        locale,
+    );
 }
 
-function formatAverageOffers(value: number, locale: 'de' | 'en'): string {
+function formatAverageOffers(value: number, locale: Locale): string {
     return value.toLocaleString(locale === 'de' ? 'de-DE' : 'en-US', {
         minimumFractionDigits: 0,
         maximumFractionDigits: 1,
@@ -104,7 +110,7 @@ export function AdminBookingRequestsOverviewPage({
     }[] = [
         {
             key: 'total',
-            label: { de: 'Gesamt', en: 'Total' }[locale],
+            label: inlineCopy({ de: 'Gesamt', en: 'Total' }, locale),
             value: total,
             publicationStatus: undefined,
         },
@@ -155,13 +161,13 @@ export function AdminBookingRequestsOverviewPage({
                 <div className="grid gap-2">
                     <h1 className="flex items-center gap-3 font-serif text-4xl/tight text-foreground">
                         <FileInputIcon className="size-8 text-muted-foreground" aria-hidden />
-                        {adminBookingRequestsOverviewPageTitle[locale]}
+                        {adminBookingRequestsOverviewPageTitle(locale)}
                     </h1>
-                    <p className="text-muted-foreground">{adminBookingRequestsOverviewPageDescription[locale]}</p>
+                    <p className="text-muted-foreground">{adminBookingRequestsOverviewPageDescription(locale)}</p>
                 </div>
 
                 <section className="grid gap-3">
-                    <h2 className="text-lg font-medium">{{ de: 'Bereiche', en: 'Sections' }[locale]}</h2>
+                    <h2 className="text-lg font-medium">{inlineCopy({ de: 'Bereiche', en: 'Sections' }, locale)}</h2>
                     <ul className="grid gap-2 sm:grid-cols-2">
                         <li>
                             <AdminOverviewNavCard
@@ -169,19 +175,19 @@ export function AdminBookingRequestsOverviewPage({
                                 search={adminBookingRequestsListSearch(undefined)}
                                 icon={ListIcon}
                             >
-                                {{ de: 'Liste', en: 'List' }[locale]}
+                                {inlineCopy({ de: 'Liste', en: 'List' }, locale)}
                             </AdminOverviewNavCard>
                         </li>
                         <li>
                             <AdminOverviewNavCard to={adminBookingRequestsSectionTo('create')} icon={PlusIcon}>
-                                {{ de: 'Anlegen', en: 'Create' }[locale]}
+                                {inlineCopy({ de: 'Anlegen', en: 'Create' }, locale)}
                             </AdminOverviewNavCard>
                         </li>
                     </ul>
                 </section>
 
                 <section className="grid gap-3">
-                    <h2 className="text-lg font-medium">{{ de: 'Verteilung', en: 'Distribution' }[locale]}</h2>
+                    <h2 className="text-lg font-medium">{inlineCopy({ de: 'Verteilung', en: 'Distribution' }, locale)}</h2>
                     <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                         {distribution.map((entry) => (
                             <AdminOverviewStatCard
@@ -193,7 +199,7 @@ export function AdminBookingRequestsOverviewPage({
                             />
                         ))}
                         <AdminOverviewStatCard
-                            label={{ de: 'Ø Gäste', en: 'Avg. guests' }[locale]}
+                            label={inlineCopy({ de: 'Ø Gäste', en: 'Avg. guests' }, locale)}
                             value={averageParticipants}
                             displayValue={String(averageParticipants)}
                         />
@@ -203,55 +209,58 @@ export function AdminBookingRequestsOverviewPage({
                 <section className="grid gap-3">
                     <div className="flex flex-wrap items-end justify-between gap-3">
                         <h2 className="text-lg font-medium">
-                            {{ de: 'Eingegangene Buchungsanfragen', en: 'Received booking requests' }[locale]}
+                            {inlineCopy({ de: 'Eingegangene Buchungsanfragen', en: 'Received booking requests' }, locale)}
                         </h2>
                         <DateRangePicker
                             value={pickerValue}
                             onValueChange={onRangeChange}
                             locale={DATE_FNS_LOCALE[locale]}
-                            placeholder={{ de: 'Zeitraum wählen', en: 'Pick a date range' }[locale]}
+                            placeholder={inlineCopy({ de: 'Zeitraum wählen', en: 'Pick a date range' }, locale)}
                             className="w-auto"
-                            aria-label={
+                            aria-label={inlineCopy(
                                 {
                                     de: 'Zeitraum für eingegangene Buchungsanfragen und Umsatz',
                                     en: 'Date range for received booking requests and revenue',
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                         />
                     </div>
                     <AdminOverviewBarChart
                         data={buckets.map((bucket) => ({ bucketStart: bucket.bucketStart, count: bucket.count }))}
                         locale={locale}
                         timeZone={timeZone}
-                        ariaLabel={
+                        ariaLabel={inlineCopy(
                             {
                                 de: 'Balkendiagramm der eingegangenen Buchungsanfragen im gewählten Zeitraum',
                                 en: 'Bar chart of received booking requests in the selected range',
-                            }[locale]
-                        }
+                            },
+                            locale,
+                        )}
                     />
                 </section>
 
                 <section className="grid gap-3">
                     <div className="grid gap-1">
-                        <h2 className="text-lg font-medium">{{ de: 'Angebote & Umsatz', en: 'Offers & revenue' }[locale]}</h2>
+                        <h2 className="text-lg font-medium">{inlineCopy({ de: 'Angebote & Umsatz', en: 'Offers & revenue' }, locale)}</h2>
                         <p className="text-sm text-muted-foreground">
-                            {
+                            {inlineCopy(
                                 {
                                     de: 'Durchschnitte und Gesamtumsatz über alle bezahlten Angebote. Zeitraum-Summen folgen dem Diagrammzeitraum oben (Zahlungszeitpunkt).',
                                     en: 'Averages and totals across all paid offers. Range totals follow the chart range above (payment time).',
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                         </p>
                     </div>
                     <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                         <AdminOverviewStatCard
-                            label={{ de: 'Ø Angebote', en: 'Avg. offers' }[locale]}
+                            label={inlineCopy({ de: 'Ø Angebote', en: 'Avg. offers' }, locale)}
                             value={economics?.averageOffersPerRequest ?? 0}
                             displayValue={formatAverageOffers(economics?.averageOffersPerRequest ?? 0, locale)}
                         />
                         <AdminOverviewStatCard
-                            label={{ de: 'Ø Angebotspreis', en: 'Avg. offer price' }[locale]}
+                            label={inlineCopy({ de: 'Ø Angebotspreis', en: 'Avg. offer price' }, locale)}
                             value={economics?.averageMenuPriceCents ?? 0}
                             displayValue={formatCurrency(economics?.averageMenuPriceCents ?? 0, {
                                 locale,
@@ -259,7 +268,7 @@ export function AdminBookingRequestsOverviewPage({
                             })}
                         />
                         <AdminOverviewStatCard
-                            label={{ de: 'Ø Umsatz', en: 'Avg. revenue' }[locale]}
+                            label={inlineCopy({ de: 'Ø Umsatz', en: 'Avg. revenue' }, locale)}
                             value={economics?.averagePaidCustomerTotalCents ?? 0}
                             displayValue={formatCurrency(economics?.averagePaidCustomerTotalCents ?? 0, {
                                 locale,
@@ -267,7 +276,7 @@ export function AdminBookingRequestsOverviewPage({
                             })}
                         />
                         <AdminOverviewStatCard
-                            label={{ de: 'Ø Plattformgebühr', en: 'Avg. platform fee' }[locale]}
+                            label={inlineCopy({ de: 'Ø Plattformgebühr', en: 'Avg. platform fee' }, locale)}
                             value={economics?.averagePaidPlatformRevenueCents ?? 0}
                             displayValue={formatCurrency(economics?.averagePaidPlatformRevenueCents ?? 0, {
                                 locale,
@@ -277,7 +286,7 @@ export function AdminBookingRequestsOverviewPage({
                     </dl>
                     <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                         <AdminOverviewStatCard
-                            label={{ de: 'Umsatz gesamt', en: 'Total revenue' }[locale]}
+                            label={inlineCopy({ de: 'Umsatz gesamt', en: 'Total revenue' }, locale)}
                             value={economics?.totalPaidCustomerTotalCents ?? 0}
                             displayValue={formatCurrency(economics?.totalPaidCustomerTotalCents ?? 0, {
                                 locale,
@@ -285,7 +294,7 @@ export function AdminBookingRequestsOverviewPage({
                             })}
                         />
                         <AdminOverviewStatCard
-                            label={{ de: 'Plattformgewinn gesamt', en: 'Total platform profit' }[locale]}
+                            label={inlineCopy({ de: 'Plattformgewinn gesamt', en: 'Total platform profit' }, locale)}
                             value={economics?.totalPaidPlatformRevenueCents ?? 0}
                             displayValue={formatCurrency(economics?.totalPaidPlatformRevenueCents ?? 0, {
                                 locale,
@@ -293,7 +302,7 @@ export function AdminBookingRequestsOverviewPage({
                             })}
                         />
                         <AdminOverviewStatCard
-                            label={{ de: 'Umsatz im Zeitraum', en: 'Revenue in range' }[locale]}
+                            label={inlineCopy({ de: 'Umsatz im Zeitraum', en: 'Revenue in range' }, locale)}
                             value={economics?.rangeTotalPaidCustomerTotalCents ?? 0}
                             displayValue={formatCurrency(economics?.rangeTotalPaidCustomerTotalCents ?? 0, {
                                 locale,
@@ -301,7 +310,7 @@ export function AdminBookingRequestsOverviewPage({
                             })}
                         />
                         <AdminOverviewStatCard
-                            label={{ de: 'Plattformgewinn im Zeitraum', en: 'Platform profit in range' }[locale]}
+                            label={inlineCopy({ de: 'Plattformgewinn im Zeitraum', en: 'Platform profit in range' }, locale)}
                             value={economics?.rangeTotalPaidPlatformRevenueCents ?? 0}
                             displayValue={formatCurrency(economics?.rangeTotalPaidPlatformRevenueCents ?? 0, {
                                 locale,
@@ -313,18 +322,21 @@ export function AdminBookingRequestsOverviewPage({
 
                 <section className="grid gap-3">
                     <p className="text-sm text-muted-foreground">
-                        {
+                        {inlineCopy(
                             {
                                 de: 'Top 5 über alle Anfragen (unabhängig vom Diagrammzeitraum).',
                                 en: 'Top 5 across all requests (independent of the chart range).',
-                            }[locale]
-                        }
+                            },
+                            locale,
+                        )}
                     </p>
                     <div className="grid gap-3 sm:grid-cols-2 sm:items-start">
                         <div className="grid gap-3">
-                            <h2 className="text-lg font-medium">{{ de: 'Top-5-Anlässe', en: 'Top 5 occasions' }[locale]}</h2>
+                            <h2 className="text-lg font-medium">{inlineCopy({ de: 'Top-5-Anlässe', en: 'Top 5 occasions' }, locale)}</h2>
                             {occasionStats.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">{{ de: 'Keine Anfragen.', en: 'No requests.' }[locale]}</p>
+                                <p className="text-sm text-muted-foreground">
+                                    {inlineCopy({ de: 'Keine Anfragen.', en: 'No requests.' }, locale)}
+                                </p>
                             ) : (
                                 <ul className="grid gap-2">
                                     {occasionStats.map((stat) => (
@@ -346,9 +358,11 @@ export function AdminBookingRequestsOverviewPage({
                         </div>
 
                         <div className="grid gap-3">
-                            <h2 className="text-lg font-medium">{{ de: 'Top-5-Monate', en: 'Top 5 months' }[locale]}</h2>
+                            <h2 className="text-lg font-medium">{inlineCopy({ de: 'Top-5-Monate', en: 'Top 5 months' }, locale)}</h2>
                             {creationMonthStats.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">{{ de: 'Keine Anfragen.', en: 'No requests.' }[locale]}</p>
+                                <p className="text-sm text-muted-foreground">
+                                    {inlineCopy({ de: 'Keine Anfragen.', en: 'No requests.' }, locale)}
+                                </p>
                             ) : (
                                 <ul className="grid gap-2">
                                     {creationMonthStats.map((stat) => (
@@ -375,18 +389,21 @@ export function AdminBookingRequestsOverviewPage({
 
                 <section className="grid gap-3">
                     <p className="text-sm text-muted-foreground">
-                        {
+                        {inlineCopy(
                             {
                                 de: 'Top 5 Köche über alle Angebote (unabhängig vom Diagrammzeitraum).',
                                 en: 'Top 5 cooks across all offers (independent of the chart range).',
-                            }[locale]
-                        }
+                            },
+                            locale,
+                        )}
                     </p>
                     <div className="grid gap-3 sm:grid-cols-2 sm:items-start">
                         <div className="grid gap-3">
-                            <h2 className="text-lg font-medium">{{ de: 'Meiste Angebote', en: 'Most offers' }[locale]}</h2>
+                            <h2 className="text-lg font-medium">{inlineCopy({ de: 'Meiste Angebote', en: 'Most offers' }, locale)}</h2>
                             {cooksByOffers.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">{{ de: 'Keine Angebote.', en: 'No offers.' }[locale]}</p>
+                                <p className="text-sm text-muted-foreground">
+                                    {inlineCopy({ de: 'Keine Angebote.', en: 'No offers.' }, locale)}
+                                </p>
                             ) : (
                                 <ul className="grid gap-2">
                                     {cooksByOffers.map((stat) => (
@@ -400,12 +417,13 @@ export function AdminBookingRequestsOverviewPage({
                                             >
                                                 <span className="font-medium text-foreground">{stat.displayName}</span>
                                                 <span className="text-sm text-muted-foreground tabular-nums">
-                                                    {
+                                                    {inlineCopy(
                                                         {
                                                             de: `${stat.offerCount} Angebote · ${stat.conversionCount} Zusagen`,
                                                             en: `${stat.offerCount} offers · ${stat.conversionCount} conversions`,
-                                                        }[locale]
-                                                    }
+                                                        },
+                                                        locale,
+                                                    )}
                                                 </span>
                                             </Link>
                                         </li>
@@ -415,9 +433,11 @@ export function AdminBookingRequestsOverviewPage({
                         </div>
 
                         <div className="grid gap-3">
-                            <h2 className="text-lg font-medium">{{ de: 'Meiste Zusagen', en: 'Most conversions' }[locale]}</h2>
+                            <h2 className="text-lg font-medium">{inlineCopy({ de: 'Meiste Zusagen', en: 'Most conversions' }, locale)}</h2>
                             {cooksByConversions.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">{{ de: 'Keine Zusagen.', en: 'No conversions.' }[locale]}</p>
+                                <p className="text-sm text-muted-foreground">
+                                    {inlineCopy({ de: 'Keine Zusagen.', en: 'No conversions.' }, locale)}
+                                </p>
                             ) : (
                                 <ul className="grid gap-2">
                                     {cooksByConversions.map((stat) => (
@@ -431,12 +451,13 @@ export function AdminBookingRequestsOverviewPage({
                                             >
                                                 <span className="font-medium text-foreground">{stat.displayName}</span>
                                                 <span className="text-sm text-muted-foreground tabular-nums">
-                                                    {
+                                                    {inlineCopy(
                                                         {
                                                             de: `${stat.conversionCount} Zusagen · ${stat.offerCount} Angebote`,
                                                             en: `${stat.conversionCount} conversions · ${stat.offerCount} offers`,
-                                                        }[locale]
-                                                    }
+                                                        },
+                                                        locale,
+                                                    )}
                                                 </span>
                                             </Link>
                                         </li>

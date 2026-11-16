@@ -1,3 +1,5 @@
+import { i18nAudienceNamespace } from '../i18n/audienceNamespace';
+import { t } from '../i18n/t';
 import { formatDate, formatTime } from './formatDate';
 import type { Locale } from './locale';
 import type { StatusTone } from './statusTone';
@@ -41,25 +43,26 @@ export function cookCallSlotBookingStatusLabel(
     audience: CookCallSlotBookingAudience,
     locale: Locale,
 ): string {
+    const ns = i18nAudienceNamespace(audience);
     switch (booking.status) {
         case 'CONFIRMED':
-            return { de: 'Bestätigt', en: 'Confirmed' }[locale];
+            return t(locale, ns, 'callSlot.status.CONFIRMED');
         case 'DECLINED':
-            return { de: 'Abgelehnt', en: 'Declined' }[locale];
+            return t(locale, ns, 'callSlot.status.DECLINED');
         case 'CANCELED':
-            return { de: 'Abgesagt', en: 'Canceled' }[locale];
+            return t(locale, ns, 'callSlot.status.CANCELED');
         case 'COMPLETED':
-            return { de: 'Abgeschlossen', en: 'Completed' }[locale];
+            return t(locale, ns, 'callSlot.status.COMPLETED');
         case 'PENDING':
             if (cookCallSlotBookingAwaitsViewer(booking, audience)) {
-                return { de: 'Wartet auf deine Reaktion', en: 'Awaiting your response' }[locale];
+                return t(locale, ns, 'callSlot.status.PENDING_VIEWER');
             }
             if (audience === 'customer') {
-                return { de: 'Warte auf Bestätigung', en: 'Awaiting confirmation' }[locale];
+                return t(locale, ns, 'callSlot.status.PENDING_OTHER');
             }
             return booking.initiator === 'COOK'
-                ? { de: 'Wartet auf Kunden', en: 'Awaiting customer' }[locale]
-                : { de: 'Wartet auf Koch', en: 'Awaiting chef' }[locale];
+                ? t(locale, ns, 'callSlot.status.PENDING_CUSTOMER')
+                : t(locale, ns, 'callSlot.status.PENDING_COOK');
         default:
             return booking.status;
     }
@@ -106,7 +109,7 @@ export function cookCallSlotBookingWhenFormat(
 ): string {
     const day = formatDate(startAt, { locale, timeZone, weekday: true });
     const range = `${formatTime(startAt, { locale, timeZone })}–${formatTime(endAt, { locale, timeZone })}`;
-    return `${day} · ${range}${locale === 'de' ? ' Uhr' : ''}`;
+    return t(locale, 'common', 'bookingWhen.withTimeSuffix', { value: `${day} · ${range}` });
 }
 
 export function cookCallSlotBookingStatusTone(booking: CookCallSlotBookingStatusInput, audience: CookCallSlotBookingAudience): StatusTone {

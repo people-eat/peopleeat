@@ -1,9 +1,44 @@
 import { describe, expect, it } from 'vitest';
 
+import type { CatalogLocale } from '../../shared/locale';
 import { WHATSAPP_BOOKING_REQUEST_REACTION_LABELS, whatsappTemplateNameByPurpose } from './whatsapp';
-import { whatsappTemplateDefinitionFind, whatsappTemplateDefinitions, whatsappTemplateSnapshotCreate } from './whatsappTemplates';
+import {
+    whatsappTemplateDefinitionFind,
+    whatsappTemplateDefinitions,
+    whatsappTemplateLocale,
+    whatsappTemplateSnapshotCreate,
+} from './whatsappTemplates';
 
 describe('WhatsApp template catalog', () => {
+    it.each([
+        ['de', 'de'],
+        ['en', 'en'],
+        ['fr', 'en'],
+        ['it', 'en'],
+    ] as const satisfies ReadonlyArray<readonly [CatalogLocale, 'de' | 'en']>)(
+        'maps recipient locale %s to Meta template language %s',
+        (locale, languageCode) => {
+            expect(whatsappTemplateLocale(locale)).toBe(languageCode);
+        },
+    );
+
+    it.each(['fr', 'it'] as const)('snapshots %s recipients with English copy and languageCode', (locale) => {
+        // Arrange
+        const definition = whatsappTemplateDefinitionFind('booking_request_received_customer_v2');
+        // Act
+        const snapshot = whatsappTemplateSnapshotCreate(
+            definition,
+            locale,
+            definition.examples,
+            'https://people-eat.com/api/whatsapp/links/example',
+        );
+        // Assert
+        expect(snapshot.languageCode).toBe('en');
+        expect(snapshot.header).toBe(definition.en.header);
+        expect(snapshot.body).toContain('thanks for your booking request');
+        expect(snapshot.buttons[0]?.label).toBe(definition.en.buttonLabel);
+    });
+
     it('covers every configured purpose with both locales and exact parameter contracts', () => {
         // Arrange
         const names = Object.values(whatsappTemplateNameByPurpose).filter((name) => name !== null);

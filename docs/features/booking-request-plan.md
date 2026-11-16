@@ -68,6 +68,7 @@ Visitors without a venue id use the same route. Venue resolution order: URL venu
 
 - Route: `src/routes/{-$locale}/booking-request_.plan.tsx`
 - Page / search: `BookingRequestPlanPage.tsx`, `bookingRequestPlanSearch.ts` (+ tests)
+- Copy: `src/i18n/locales/{de,en}/publicBooking.json` (`plan.*`)
 - GraphQL: `BookingRequestPlanPage.graphql` (`publicPartnerVenue.findOne`, create mutation, location suggestions)
 - Venue: `PartnerVenues.locationAddress`; `PublicPartnerVenueQuery.findOne`; admin Standort Combobox on `AdminPartnerVenuePage`
 - Auth: optional `profileInitialValues` on `AuthIdentityGate`

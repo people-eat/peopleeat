@@ -1,9 +1,10 @@
+import { t } from '../../../i18n/t';
 import { DEFAULT_LOCALE } from '../../utils/locale';
 import type { Locale } from '../../utils/locale';
 import { adminAiGenerationsSectionLabel, parseAdminAiGenerationsSectionFromPath } from './adminAiGenerations';
 import { adminAssistantChatsSectionLabel, parseAdminAssistantChatsSectionFromPath } from './adminAssistantChats';
 import { adminBookingRequestsSectionLabel, parseAdminBookingRequestsSectionFromPath } from './adminBookingRequests';
-import { adminStubRouteByPath } from './adminCatalog';
+import { adminStubRouteByPath, adminStubRouteTitle } from './adminCatalog';
 import { adminGiftCardsSectionLabel, parseAdminGiftCardsSectionFromPath } from './adminGiftCards';
 import { adminLegalKindLabel, parseAdminLegalKindFromPath } from './adminLegal';
 import { adminLogsSectionLabel, parseAdminLogsSectionFromPath } from './adminLogs';
@@ -76,86 +77,86 @@ export function adminBreadcrumbsForPath(path: string, locale: Locale): AdminBrea
     const crumbs: AdminBreadcrumbCrumb[] = [];
 
     if (path === '/admin') {
-        crumbs.push({ label: { de: 'Übersicht', en: 'Overview' }[locale] });
+        crumbs.push({ label: t(locale, 'admin', 'nav.overview.title') });
     } else if (path === '/admin/account') {
-        crumbs.push({ label: { de: 'Konto', en: 'Account' }[locale] });
+        crumbs.push({ label: t(locale, 'admin', 'breadcrumb.account') });
     } else if (path === '/admin/users') {
-        crumbs.push({ label: { de: 'Benutzer', en: 'Users' }[locale] });
+        crumbs.push({ label: t(locale, 'admin', 'nav.users.title') });
     } else if (usersSection) {
         crumbs.push({
-            label: { de: 'Benutzer', en: 'Users' }[locale],
+            label: t(locale, 'admin', 'nav.users.title'),
             to: '/{-$locale}/admin/users',
         });
         crumbs.push({ label: adminUsersSectionLabel(usersSection, locale) });
     } else if (path === '/admin/sessions') {
-        crumbs.push({ label: { de: 'Sitzungen', en: 'Sessions' }[locale] });
+        crumbs.push({ label: t(locale, 'admin', 'nav.sessions.title') });
     } else if (sessionsSection) {
         crumbs.push({
-            label: { de: 'Sitzungen', en: 'Sessions' }[locale],
+            label: t(locale, 'admin', 'nav.sessions.title'),
             to: '/{-$locale}/admin/sessions',
         });
         crumbs.push({ label: adminSessionsSectionLabel(sessionsSection, locale) });
     } else if (path === '/admin/gift-cards') {
-        crumbs.push({ label: { de: 'Gutscheinverkäufe', en: 'Voucher Purchases' }[locale] });
+        crumbs.push({ label: t(locale, 'admin', 'nav.giftCards.title') });
     } else if (giftCardsSection) {
         crumbs.push({
-            label: { de: 'Gutscheinverkäufe', en: 'Voucher Purchases' }[locale],
+            label: t(locale, 'admin', 'nav.giftCards.title'),
             to: '/{-$locale}/admin/gift-cards',
         });
         crumbs.push({ label: adminGiftCardsSectionLabel(giftCardsSection, locale) });
     } else if (path === '/admin/logs') {
-        crumbs.push({ label: { de: 'Log Nachrichten', en: 'Log Messages' }[locale] });
+        crumbs.push({ label: t(locale, 'admin', 'nav.logs.title') });
     } else if (logsSection) {
         crumbs.push({
-            label: { de: 'Log Nachrichten', en: 'Log Messages' }[locale],
+            label: t(locale, 'admin', 'nav.logs.title'),
             to: '/{-$locale}/admin/logs',
         });
         crumbs.push({ label: adminLogsSectionLabel(logsSection, locale) });
     } else if (path === '/admin/ai-generations') {
-        crumbs.push({ label: { de: 'AI-Generierungen', en: 'AI Generations' }[locale] });
+        crumbs.push({ label: t(locale, 'admin', 'nav.aiGenerations.title') });
     } else if (aiGenerationsSection) {
         crumbs.push({
-            label: { de: 'AI-Generierungen', en: 'AI Generations' }[locale],
+            label: t(locale, 'admin', 'nav.aiGenerations.title'),
             to: '/{-$locale}/admin/ai-generations',
         });
         crumbs.push({ label: adminAiGenerationsSectionLabel(aiGenerationsSection, locale) });
     } else if (path === '/admin/outbound-emails') {
-        crumbs.push({ label: { de: 'E-Mails', en: 'Emails' }[locale] });
+        crumbs.push({ label: t(locale, 'admin', 'nav.outboundEmails.title') });
     } else if (outboundEmailsSection) {
         crumbs.push({
-            label: { de: 'E-Mails', en: 'Emails' }[locale],
+            label: t(locale, 'admin', 'nav.outboundEmails.title'),
             to: '/{-$locale}/admin/outbound-emails',
         });
         crumbs.push({ label: adminOutboundEmailsSectionLabel(outboundEmailsSection, locale) });
     } else if (promoCodesSection === 'create') {
         crumbs.push({
-            label: { de: 'Promo Codes', en: 'Promo Codes' }[locale],
+            label: t(locale, 'admin', 'nav.promoCodes.title'),
             to: '/{-$locale}/admin/promo-codes',
         });
         crumbs.push({ label: adminPromoCodesSectionLabel('create', locale) });
     } else if (promoCodesSection === 'list') {
-        crumbs.push({ label: { de: 'Promo Codes', en: 'Promo Codes' }[locale] });
+        crumbs.push({ label: t(locale, 'admin', 'nav.promoCodes.title') });
     } else if (path === '/admin/booking-requests') {
-        crumbs.push({ label: { de: 'Buchungsanfragen', en: 'Booking Requests' }[locale] });
+        crumbs.push({ label: t(locale, 'admin', 'nav.bookingRequests.title') });
     } else if (bookingRequestsSection) {
         crumbs.push({
-            label: { de: 'Buchungsanfragen', en: 'Booking Requests' }[locale],
+            label: t(locale, 'admin', 'nav.bookingRequests.title'),
             to: '/{-$locale}/admin/booking-requests',
         });
         crumbs.push({ label: adminBookingRequestsSectionLabel(bookingRequestsSection, locale) });
     } else if (path === '/admin/assistant-chats') {
-        crumbs.push({ label: { de: 'Assistent-Chats', en: 'Assistant chats' }[locale] });
+        crumbs.push({ label: t(locale, 'admin', 'nav.assistantChats.title') });
     } else if (assistantChatsSection) {
         crumbs.push({
-            label: { de: 'Assistent-Chats', en: 'Assistant chats' }[locale],
+            label: t(locale, 'admin', 'nav.assistantChats.title'),
             to: '/{-$locale}/admin/assistant-chats',
         });
         crumbs.push({ label: adminAssistantChatsSectionLabel(assistantChatsSection, locale) });
     } else if (path === '/admin/legal') {
-        crumbs.push({ label: { de: 'Rechtstexte', en: 'Legal texts' }[locale] });
+        crumbs.push({ label: t(locale, 'admin', 'nav.legal.title') });
     } else if (legalKind) {
         crumbs.push({
-            label: { de: 'Rechtstexte', en: 'Legal texts' }[locale],
+            label: t(locale, 'admin', 'nav.legal.title'),
             to: '/{-$locale}/admin/legal',
         });
         const kindBase = `/admin/legal/${legalKind}`;
@@ -168,11 +169,11 @@ export function adminBreadcrumbsForPath(path: string, locale: Locale): AdminBrea
                 params: { kind: legalKind },
             });
             crumbs.push({
-                label: path === `${kindBase}/draft` ? { de: 'Entwurf', en: 'Draft' }[locale] : { de: 'Version', en: 'Version' }[locale],
+                label: t(locale, 'admin', path === `${kindBase}/draft` ? 'legal.draft' : 'legal.version'),
             });
         }
     } else if (stubRoute) {
-        crumbs.push({ label: stubRoute.title[locale] });
+        crumbs.push({ label: adminStubRouteTitle(stubRoute.slug, locale) });
     }
 
     return crumbs;

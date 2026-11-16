@@ -1,7 +1,6 @@
 import { useForm, useSelector } from '@tanstack/react-form';
 import { useNavigate } from '@tanstack/react-router';
 import { de as dateFnsDe, enUS as dateFnsEn } from 'date-fns/locale';
-import type { LucideIcon } from 'lucide-react';
 import {
     ArrowLeftIcon,
     ArrowRightIcon,
@@ -20,7 +19,8 @@ import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation, useQuery } from 'urql';
 
-import type { BookingRequestFormPriceClassType } from '../../shared';
+import { t as translate } from '../../i18n/t';
+import type { BookingRequestFormPriceClassType, ExpansionMarket, Locale } from '../../shared';
 import {
     bookingRequestMarketClosedFromMessage,
     bookingRequestPriceClassInfo,
@@ -61,6 +61,7 @@ import { useIsMobile } from '../hooks/use-mobile';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useLocale } from '../hooks/useLocale';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
+import { useT } from '../hooks/useT';
 import { SectionPageTestimonials } from '../sections/SectionPageTestimonials';
 import type { QuestionsAndAnswersEntry } from '../sections/SectionQuestionsAndAnswers';
 import { SectionQuestionsAndAnswers } from '../sections/SectionQuestionsAndAnswers';
@@ -102,67 +103,22 @@ function selectionSurfaceClassName(selected: boolean): string {
 }
 
 const FORETASTE_ITEMS = [
-    {
-        src: '/booking-request/plan/foretaste-1.png',
-        caption: { de: 'Ein genussvoller Auftakt.', en: 'A delicious opening.' },
-    },
-    {
-        src: '/booking-request/plan/foretaste-2.jpg',
-        caption: { de: 'Drei Gänge. Ganz für euch.', en: 'Three courses. Just for you.' },
-    },
-    {
-        src: '/booking-request/plan/foretaste-3.png',
-        caption: { de: 'Ein süßer Abschluss.', en: 'A sweet finish.' },
-    },
-    {
-        src: '/booking-request/plan/foretaste-4.jpg',
-        caption: { de: 'Mit Liebe zum Detail.', en: 'With love for detail.' },
-    },
-    {
-        src: '/booking-request/plan/foretaste-5.jpg',
-        caption: { de: 'Euer Tisch im Loft.', en: 'Your table at the loft.' },
-    },
+    { src: '/booking-request/plan/foretaste-1.png', captionKey: 'plan.foretaste.item1' },
+    { src: '/booking-request/plan/foretaste-2.jpg', captionKey: 'plan.foretaste.item2' },
+    { src: '/booking-request/plan/foretaste-3.png', captionKey: 'plan.foretaste.item3' },
+    { src: '/booking-request/plan/foretaste-4.jpg', captionKey: 'plan.foretaste.item4' },
+    { src: '/booking-request/plan/foretaste-5.jpg', captionKey: 'plan.foretaste.item5' },
 ] as const;
 
-const CARE_ITEMS: ReadonlyArray<{
-    icon: LucideIcon;
-    de: { title: string; body: string };
-    en: { title: string; body: string };
-}> = [
-    {
-        icon: ShoppingBagIcon,
-        de: {
-            title: 'Alles vorbereitet.',
-            body: 'Euer Chef besorgt die Zutaten. Ihr habt Zeit für euch und die Kinder.',
-        },
-        en: {
-            title: 'Everything prepared.',
-            body: 'Your chef gets the ingredients. You have time for yourselves and the children.',
-        },
-    },
-    {
-        icon: UtensilsIcon,
-        de: {
-            title: 'Für euch gekocht.',
-            body: 'Drei Gänge, frisch im Loft zubereitet und an eurem Tisch serviert.',
-        },
-        en: {
-            title: 'Cooked for you.',
-            body: 'Three courses, freshly prepared in the loft and served at your table.',
-        },
-    },
-    {
-        icon: SparklesIcon,
-        de: {
-            title: 'Sauber hinterlassen.',
-            body: 'Euer Chef räumt die Küche auf. Ihr lasst den Abend ausklingen.',
-        },
-        en: {
-            title: 'Left clean.',
-            body: 'Your chef cleans up the kitchen. You let the evening wind down.',
-        },
-    },
-];
+const CARE_ITEMS = [
+    { icon: ShoppingBagIcon, titleKey: 'plan.care.prepared.title', bodyKey: 'plan.care.prepared.body' },
+    { icon: UtensilsIcon, titleKey: 'plan.care.cooked.title', bodyKey: 'plan.care.cooked.body' },
+    { icon: SparklesIcon, titleKey: 'plan.care.clean.title', bodyKey: 'plan.care.clean.body' },
+] as const;
+
+function marketComingTo(market: ExpansionMarket, locale: Locale): string {
+    return locale === 'de' ? market.comingToPhraseDe : market.comingToPhraseEn;
+}
 
 type PlanSession = GqlCBookingRequestPlanPageQuery['currentSession'];
 type PlanVenue = NonNullable<GqlCBookingRequestPlanPageQuery['publicPartnerVenue']['findOne']>;
@@ -199,215 +155,32 @@ function venueDefaultAddress(venue: PlanVenue | null | undefined): GqlCUserBooki
     };
 }
 
-function planFaqs(locale: 'de' | 'en'): ReadonlyArray<QuestionsAndAnswersEntry> {
+function planFaqs(locale: Locale): ReadonlyArray<QuestionsAndAnswersEntry> {
+    const ns = 'publicBooking' as const;
     return [
-        {
-            question: { de: 'Was ist im Service enthalten?', en: 'What is included in the service?' }[locale],
-            answer: {
-                de: 'Persönliche Menüabstimmung, Einkauf, frische Zubereitung vor Ort, Servieren der drei Gänge und eine saubere Küche danach.',
-                en: 'Personal menu coordination, grocery shopping, fresh on-site cooking, serving three courses, and a clean kitchen afterward.',
-            }[locale],
-        },
-        {
-            question: { de: 'Wie geht es nach der Anfrage weiter?', en: 'What happens after the request?' }[locale],
-            answer: {
-                de: 'Wir prüfen die Verfügbarkeit und stimmen das Menü mit euch ab. Danach erhaltet ihr die finale Buchungsbestätigung, sobald Chef und Termin bestätigt sind.',
-                en: 'We check availability and align the menu with you. You then get the final booking confirmation once chef and date are confirmed.',
-            }[locale],
-        },
-        {
-            question: {
-                de: 'Allergien, Kinder und besondere Wünsche',
-                en: 'Allergies, children, and special wishes',
-            }[locale],
-            answer: {
-                de: 'Im nächsten Schritt gebt ihr eure Wünsche und Allergien an. Vor der Bestätigung klären wir Allergien noch einmal mit dem Chef. Kinderportionen sind in der Regel günstiger.',
-                en: 'In the next step you share your wishes and allergies. We clarify allergies with the chef again before confirmation. Children portions are usually priced lower.',
-            }[locale],
-        },
-        {
-            question: { de: 'Was kostet euer Dinner?', en: 'What does your dinner cost?' }[locale],
-            answer: {
-                de: 'Die angezeigten Beträge sind Beispielpreise ab dem Signature-Menü. Das finale Angebot setzt euer Chef. Es erfolgt noch keine Zahlung bei der Anfrage.',
-                en: 'Shown amounts are example prices starting from the Signature menu. Your chef sets the final offer. No payment is taken with the request.',
-            }[locale],
-        },
+        { question: translate(locale, ns, 'plan.faq.included.question'), answer: translate(locale, ns, 'plan.faq.included.answer') },
+        { question: translate(locale, ns, 'plan.faq.after.question'), answer: translate(locale, ns, 'plan.faq.after.answer') },
+        { question: translate(locale, ns, 'plan.faq.wishes.question'), answer: translate(locale, ns, 'plan.faq.wishes.answer') },
+        { question: translate(locale, ns, 'plan.faq.cost.question'), answer: translate(locale, ns, 'plan.faq.cost.answer') },
     ];
 }
 
-function sampleMenuCopy(cuisine: BookingRequestPlanCuisineKey, locale: 'de' | 'en') {
+function sampleMenuCopy(cuisine: BookingRequestPlanCuisineKey, locale: Locale) {
+    const ns = 'publicBooking' as const;
     const cuisineLabel = bookingRequestPlanCuisineLabel(cuisine, locale);
-    const description = {
-        de: `Ein Beispielmenü für „${cuisineLabel}“. Euer Chef stimmt Gerichte, Kinderportionen und Ernährungswünsche persönlich mit euch ab.`,
-        en: `A sample menu for “${cuisineLabel}”. Your chef personally coordinates dishes, children portions, and dietary needs with you.`,
-    }[locale];
-    const menus = {
-        mediterranean: {
-            title: { de: 'Ein mediterraner Abend.', en: 'A Mediterranean evening.' },
-            courses: {
-                de: [
-                    {
-                        course: 'Vorspeise',
-                        title: 'Burrata, Tomaten & Basilikum',
-                        description: 'Mit geröstetem Sauerteigbrot und Olivenöl',
-                    },
-                    {
-                        course: 'Hauptgang',
-                        title: 'Dorade, Sommergemüse & Zitronen-Kartoffeln',
-                        description: 'Vegetarische Alternative: cremiges Safranrisotto',
-                    },
-                    {
-                        course: 'Dessert',
-                        title: 'Zitronencreme & Sommerbeeren',
-                        description: 'Fruchtig und leicht zum Abschluss',
-                    },
-                ],
-                en: [
-                    {
-                        course: 'Starter',
-                        title: 'Burrata, tomatoes & basil',
-                        description: 'With toasted sourdough and olive oil',
-                    },
-                    {
-                        course: 'Main',
-                        title: 'Sea bream, summer vegetables & lemon potatoes',
-                        description: 'Vegetarian alternative: creamy saffron risotto',
-                    },
-                    {
-                        course: 'Dessert',
-                        title: 'Lemon cream & summer berries',
-                        description: 'Fruity and light to finish',
-                    },
-                ],
-            },
-        },
-        regional: {
-            title: { de: 'Saisonal genießen. Bei euch im Loft.', en: 'Seasonal enjoyment. At your loft.' },
-            courses: {
-                de: [
-                    {
-                        course: 'Vorspeise',
-                        title: 'Erbsen, Blattsalat & Ziegenkäse',
-                        description: 'Mit Kräutervinaigrette und knusprigem Brot',
-                    },
-                    {
-                        course: 'Hauptgang',
-                        title: 'Hähnchenbrust, Ofengemüse & Kartoffelstampf',
-                        description: 'Vegetarische Alternative: gebratener Sellerie',
-                    },
-                    {
-                        course: 'Dessert',
-                        title: 'Apfelküchlein & Vanille',
-                        description: 'Mit warmer Apfelkomponente und Vanilleeis',
-                    },
-                ],
-                en: [
-                    {
-                        course: 'Starter',
-                        title: 'Peas, leaf salad & goat cheese',
-                        description: 'With herb vinaigrette and crusty bread',
-                    },
-                    {
-                        course: 'Main',
-                        title: 'Chicken breast, roasted vegetables & mashed potatoes',
-                        description: 'Vegetarian alternative: pan-fried celeriac',
-                    },
-                    {
-                        course: 'Dessert',
-                        title: 'Apple fritters & vanilla',
-                        description: 'With a warm apple component and vanilla ice cream',
-                    },
-                ],
-            },
-        },
-        asian: {
-            title: { de: 'Ein Abend voller neuer Aromen.', en: 'An evening full of new flavors.' },
-            courses: {
-                de: [
-                    {
-                        course: 'Vorspeise',
-                        title: 'Gurkensalat, Sesam & frische Kräuter',
-                        description: 'Mit Limetten-Dressing und knusprigen Akzenten',
-                    },
-                    {
-                        course: 'Hauptgang',
-                        title: 'Miso-Lachs, grünes Gemüse & Jasminreis',
-                        description: 'Vegetarische Alternative: knuspriger Tofu',
-                    },
-                    {
-                        course: 'Dessert',
-                        title: 'Kokoscreme, Mango & Limette',
-                        description: 'Ein frischer Abschluss mit tropischen Aromen',
-                    },
-                ],
-                en: [
-                    {
-                        course: 'Starter',
-                        title: 'Cucumber salad, sesame & fresh herbs',
-                        description: 'With lime dressing and crispy accents',
-                    },
-                    {
-                        course: 'Main',
-                        title: 'Miso salmon, greens & jasmine rice',
-                        description: 'Vegetarian alternative: crispy tofu',
-                    },
-                    {
-                        course: 'Dessert',
-                        title: 'Coconut cream, mango & lime',
-                        description: 'A fresh finish with tropical notes',
-                    },
-                ],
-            },
-        },
-        chef: {
-            title: { de: 'Ein Menü für euren Familienabend.', en: 'A menu for your family evening.' },
-            courses: {
-                de: [
-                    {
-                        course: 'Vorspeise',
-                        title: 'Burrata, sonnengereifte Tomaten & Basilikum',
-                        description: 'Geröstetes Sauerteigbrot und natives Olivenöl',
-                    },
-                    {
-                        course: 'Hauptgang',
-                        title: 'Dorade, Sommergemüse & Zitronen-Kartoffeln',
-                        description: 'Vegetarische Alternative: cremiges Safranrisotto',
-                    },
-                    {
-                        course: 'Dessert',
-                        title: 'Apfelküchlein & Vanille',
-                        description: 'Mit warmer Apfelkomponente und Vanilleeis',
-                    },
-                ],
-                en: [
-                    {
-                        course: 'Starter',
-                        title: 'Burrata, sun-ripened tomatoes & basil',
-                        description: 'Toasted sourdough and extra virgin olive oil',
-                    },
-                    {
-                        course: 'Main',
-                        title: 'Sea bream, summer vegetables & lemon potatoes',
-                        description: 'Vegetarian alternative: creamy saffron risotto',
-                    },
-                    {
-                        course: 'Dessert',
-                        title: 'Apple fritters & vanilla',
-                        description: 'With a warm apple component and vanilla ice cream',
-                    },
-                ],
-            },
-        },
-    } as const;
-    const menu = menus[cuisine];
+    const courseKeys = ['starter', 'main', 'dessert'] as const;
     return {
-        title: menu.title[locale],
-        description,
-        courses: menu.courses[locale],
+        title: translate(locale, ns, `plan.sampleMenu.${cuisine}.title`),
+        description: translate(locale, ns, 'plan.sampleMenu.description', { cuisine: cuisineLabel }),
+        courses: courseKeys.map((course) => ({
+            course: translate(locale, ns, `plan.sampleMenu.course.${course}`),
+            title: translate(locale, ns, `plan.sampleMenu.${cuisine}.${course}.title`),
+            description: translate(locale, ns, `plan.sampleMenu.${cuisine}.${course}.description`),
+        })),
     };
 }
 
-function bookingRequestPlanDateChipRangeLabel(days: ReadonlyArray<Date>, fallback: Date, locale: 'de' | 'en'): string {
+function bookingRequestPlanDateChipRangeLabel(days: ReadonlyArray<Date>, fallback: Date, locale: Locale): string {
     const first = days[0] ?? fallback;
     const last = days[days.length - 1] ?? first;
     if (first.getFullYear() === last.getFullYear() && first.getMonth() === last.getMonth()) {
@@ -471,7 +244,8 @@ function ParticipantCountField({
     );
 }
 
-function BookingRequestPlanForetasteCarousel({ locale }: { locale: 'de' | 'en' }) {
+function BookingRequestPlanForetasteCarousel() {
+    const { t } = useT('publicBooking');
     const scrollerRef = useRef<HTMLDivElement>(null);
     const prefersReducedMotion = usePrefersReducedMotion();
     const [canScrollStart, setCanScrollStart] = useState(false);
@@ -514,17 +288,8 @@ function BookingRequestPlanForetasteCarousel({ locale }: { locale: 'de' | 'en' }
         <div className="grid gap-4">
             <div className="flex items-start justify-between gap-4">
                 <div className="grid min-w-0 gap-2">
-                    <h2 className="font-serif text-3xl font-light @md:text-4xl">
-                        {{ de: 'Ein Vorgeschmack auf euren Abend', en: 'A taste of your evening' }[locale]}
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                        {
-                            {
-                                de: 'Frisch gekocht. Mit Liebe serviert. Gemeinsam genossen.',
-                                en: 'Freshly cooked. Served with care. Enjoyed together.',
-                            }[locale]
-                        }
-                    </p>
+                    <h2 className="font-serif text-3xl font-light @md:text-4xl">{t('plan.foretaste.title')}</h2>
+                    <p className="text-sm text-muted-foreground">{t('plan.foretaste.subtitle')}</p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
                     <Button
@@ -533,7 +298,7 @@ function BookingRequestPlanForetasteCarousel({ locale }: { locale: 'de' | 'en' }
                         size="icon"
                         className="size-9 rounded-full"
                         disabled={!canScrollStart}
-                        aria-label={{ de: 'Vorherige Bilder', en: 'Previous images' }[locale]}
+                        aria-label={t('plan.foretaste.previous')}
                         onClick={() => scrollByCard(-1)}
                     >
                         <ChevronLeftIcon className="size-4" aria-hidden />
@@ -544,7 +309,7 @@ function BookingRequestPlanForetasteCarousel({ locale }: { locale: 'de' | 'en' }
                         size="icon"
                         className="size-9 rounded-full"
                         disabled={!canScrollEnd}
-                        aria-label={{ de: 'Nächste Bilder', en: 'Next images' }[locale]}
+                        aria-label={t('plan.foretaste.next')}
                         onClick={() => scrollByCard(1)}
                     >
                         <ChevronRightIcon className="size-4" aria-hidden />
@@ -556,7 +321,7 @@ function BookingRequestPlanForetasteCarousel({ locale }: { locale: 'de' | 'en' }
                     <figure key={item.src} className="relative aspect-9/16 w-52 shrink-0 snap-start overflow-hidden rounded-2xl">
                         <AppImage
                             src={item.src}
-                            alt={item.caption[locale]}
+                            alt={t(item.captionKey)}
                             draggable={false}
                             className="absolute inset-0 size-full object-cover select-none"
                         />
@@ -565,7 +330,7 @@ function BookingRequestPlanForetasteCarousel({ locale }: { locale: 'de' | 'en' }
                             aria-hidden
                         />
                         <figcaption className="absolute inset-x-0 top-0 px-4 pt-4 text-sm font-medium text-white">
-                            {item.caption[locale]}
+                            {t(item.captionKey)}
                         </figcaption>
                     </figure>
                 ))}
@@ -582,6 +347,7 @@ export function BookingRequestPlanPage({
     search: BookingRequestPlanSearch;
 }) {
     const locale = useLocale();
+    const { t: tBooking } = useT('publicBooking');
     const navigate = useNavigate({ from: '/{-$locale}/booking-request/plan' });
     const [session, setSession] = useState<PlanSession>(loaderData.currentSession);
     const venue = loaderData.publicPartnerVenue.findOne ?? null;
@@ -695,21 +461,11 @@ export function BookingRequestPlanPage({
 
     function goToContact() {
         if (closedMarket) {
-            toast.error(
-                {
-                    de: `peopleeat kommt ${closedMarket.comingToPhraseDe} Anfang 2027. Für diese Adresse können wir noch keine Anfrage annehmen.`,
-                    en: `peopleeat is coming ${closedMarket.comingToPhraseEn} in early 2027. We cannot accept a request for this address yet.`,
-                }[locale],
-            );
+            toast.error(tBooking('marketClosed.toast', { comingTo: marketComingTo(closedMarket, locale) }));
             return;
         }
         if (!canContinueToContact()) {
-            toast.error(
-                {
-                    de: 'Bitte Datum, Gäste und Adresse vervollständigen.',
-                    en: 'Please complete date, guests, and address.',
-                }[locale],
-            );
+            toast.error(tBooking('plan.contact.completeDetails'));
             return;
         }
         setStep('contact');
@@ -719,26 +475,16 @@ export function BookingRequestPlanPage({
     async function submitBooking() {
         if (createStarted.current) return;
         if (closedMarket) {
-            toast.error(
-                {
-                    de: `peopleeat kommt ${closedMarket.comingToPhraseDe} Anfang 2027. Für diese Adresse können wir noch keine Anfrage annehmen.`,
-                    en: `peopleeat is coming ${closedMarket.comingToPhraseEn} in early 2027. We cannot accept a request for this address yet.`,
-                }[locale],
-            );
+            toast.error(tBooking('marketClosed.toast', { comingTo: marketComingTo(closedMarket, locale) }));
             return;
         }
         if (values.originalMessage.trim().length === 0) {
-            toast.error({ de: 'Nachricht ist erforderlich.', en: 'Message is required.' }[locale]);
+            toast.error(tBooking('plan.contact.messageRequired'));
             return;
         }
         const input = bookingRequestPlanCreateInputFromValues(values, locale);
         if (!input) {
-            toast.error(
-                {
-                    de: 'Bitte alle Pflichtfelder ausfüllen.',
-                    en: 'Please complete all required fields.',
-                }[locale],
-            );
+            toast.error(tBooking('requiredFields'));
             return;
         }
         createStarted.current = true;
@@ -751,15 +497,12 @@ export function BookingRequestPlanPage({
                 const closedFromError = bookingRequestMarketClosedFromMessage(result.error?.message);
                 toast.error(
                     closedFromError
-                        ? {
-                              de: `peopleeat kommt ${closedFromError.comingToPhraseDe} Anfang 2027. Für diese Adresse können wir noch keine Anfrage annehmen.`,
-                              en: `peopleeat is coming ${closedFromError.comingToPhraseEn} in early 2027. We cannot accept a request for this address yet.`,
-                          }[locale]
-                        : { de: 'Anfrage konnte nicht erstellt werden.', en: 'Could not create the booking request.' }[locale],
+                        ? tBooking('marketClosed.toast', { comingTo: marketComingTo(closedFromError, locale) })
+                        : tBooking('createFailed'),
                 );
                 return;
             }
-            toast.success({ de: 'Buchungsanfrage erstellt.', en: 'Booking request created.' }[locale]);
+            toast.success(tBooking('created'));
             await navigate({
                 to: '/{-$locale}/booking-request/$bookingRequestId/submitted',
                 params: { bookingRequestId: created.referenceId },
@@ -780,41 +523,37 @@ export function BookingRequestPlanPage({
     );
 
     const summaryCard = (
-        <aside
-            className="rounded-xl border border-border bg-card p-5 shadow-xs"
-            aria-label={{ de: 'Eure Auswahl', en: 'Your selection' }[locale]}
-        >
-            <p className="font-serif text-xl tracking-tight">{{ de: 'Eure Auswahl', en: 'Your selection' }[locale]}</p>
+        <aside className="rounded-xl border border-border bg-card p-5 shadow-xs" aria-label={tBooking('plan.summary.aria')}>
+            <p className="font-serif text-xl tracking-tight">{tBooking('plan.summary.title')}</p>
             <dl className="mt-4 grid gap-3 text-sm">
                 <div className="flex justify-between gap-3">
-                    <dt className="text-muted-foreground">{{ de: 'Datum', en: 'Date' }[locale]}</dt>
+                    <dt className="text-muted-foreground">{tBooking('date')}</dt>
                     <dd className="text-right">{formatDate(values.dateTime, { locale, weekday: true, dateStyle: 'medium' })}</dd>
                 </div>
                 <div className="flex justify-between gap-3">
-                    <dt className="text-muted-foreground">{{ de: 'Gäste', en: 'Guests' }[locale]}</dt>
+                    <dt className="text-muted-foreground">{tBooking('plan.summary.guests')}</dt>
                     <dd className="text-right">
-                        {
-                            {
-                                de: `${values.adultCount} Erwachsene${values.discountedCount > 0 ? ` · ${values.discountedCount} Kinder` : ''}`,
-                                en: `${values.adultCount} adults${values.discountedCount > 0 ? ` · ${values.discountedCount} children` : ''}`,
-                            }[locale]
-                        }
+                        {[
+                            tBooking('plan.summary.adults', { count: values.adultCount }),
+                            values.discountedCount > 0 ? tBooking('plan.summary.children', { count: values.discountedCount }) : null,
+                        ]
+                            .filter(Boolean)
+                            .join(' · ')}
                     </dd>
                 </div>
                 <div className="flex justify-between gap-3">
-                    <dt className="text-muted-foreground">{{ de: 'Menürichtung', en: 'Cuisine' }[locale]}</dt>
+                    <dt className="text-muted-foreground">{tBooking('plan.summary.cuisine')}</dt>
                     <dd className="text-right">{bookingRequestPlanCuisineLabel(values.cuisine, locale)}</dd>
                 </div>
                 <div className="flex justify-between gap-3">
-                    <dt className="text-muted-foreground">{{ de: 'Preisklasse', en: 'Price class' }[locale]}</dt>
+                    <dt className="text-muted-foreground">{tBooking('priceClass')}</dt>
                     <dd className="text-right">{priceInfo.title}</dd>
                 </div>
                 <div className="grid gap-1">
                     <div className="flex justify-between gap-3">
-                        <dt className="text-muted-foreground">{{ de: 'Menübeginn', en: 'Menu start' }[locale]}</dt>
+                        <dt className="text-muted-foreground">{tBooking('plan.summary.menuStart')}</dt>
                         <dd className="text-right">
-                            {formatTime(values.dateTime, { locale })}
-                            {locale === 'de' ? ' Uhr' : ''}
+                            {tBooking('plan.summary.menuStartValue', { time: formatTime(values.dateTime, { locale }) })}
                         </dd>
                     </div>
                     <p className="text-xs text-muted-foreground">{bookingRequestPlanChefArrivalHint(locale)}</p>
@@ -829,22 +568,20 @@ export function BookingRequestPlanPage({
                     className="h-auto w-fit -translate-x-3 justify-start"
                     onClick={() => setDetailsEditorOpen(true)}
                 >
-                    {{ de: 'Angaben bearbeiten', en: 'Edit details' }[locale]}
+                    {tBooking('plan.summary.editDetails')}
                     <PencilIcon className="size-3.5" />
                 </Button>
             </div>
 
             <div className="mt-8 grid gap-2">
                 <Button type="button" size="lg" className="w-full" onClick={goToContact} disabled={!canContinueToContact()}>
-                    {{ de: 'Weiter zur Anfrage', en: 'Continue to request' }[locale]}
+                    {tBooking('plan.summary.continue')}
                     <ArrowRightIcon className="size-4" />
                 </Button>
-                <p className="text-center text-xs text-muted-foreground">
-                    {{ de: 'Unverbindlich. Noch keine Zahlung.', en: 'Non-binding. No payment yet.' }[locale]}
-                </p>
+                <p className="text-center text-xs text-muted-foreground">{tBooking('plan.summary.nonBinding')}</p>
                 <Button type="button" variant="secondary" size="sm" className="mt-3" asChild>
                     <a href={SITE_WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
-                        {{ de: 'Noch Fragen? Talk to us', en: 'Still questions? Talk to us' }[locale]}
+                        {tBooking('plan.summary.talkToUs')}
                     </a>
                 </Button>
             </div>
@@ -854,7 +591,7 @@ export function BookingRequestPlanPage({
     function renderLocationPicker() {
         return (
             <div className="grid gap-2">
-                <p className="text-sm font-medium">{{ de: 'Adresse', en: 'Address' }[locale]}</p>
+                <p className="text-sm font-medium">{tBooking('address')}</p>
                 <Combobox
                     filter={null}
                     items={suggestions.map((suggestion) => suggestion.displayText)}
@@ -866,12 +603,7 @@ export function BookingRequestPlanPage({
                         if (!match) return;
                         const address = addressFromSuggestion(match);
                         if (!address) {
-                            toast.error(
-                                {
-                                    de: 'Bitte eine vollständige Adresse wählen.',
-                                    en: 'Please choose a full address.',
-                                }[locale],
-                            );
+                            toast.error(tBooking('pickFullAddress'));
                             return;
                         }
                         form.setFieldValue('exactEventAddress', address);
@@ -887,22 +619,13 @@ export function BookingRequestPlanPage({
                 >
                     <ComboboxInput
                         className="w-full"
-                        placeholder={
-                            {
-                                de: 'Musterstraße 1, 80331 München',
-                                en: '123 Main Street, 12345 Springfield',
-                            }[locale]
-                        }
+                        placeholder={tBooking('addressPlaceholder')}
                         showClear={false}
                         required={!values.exactEventAddress}
                         disabled={busy}
                     />
                     <ComboboxContent>
-                        <ComboboxEmpty>
-                            {suggestionsFetching
-                                ? { de: 'Suche…', en: 'Searching…' }[locale]
-                                : { de: 'Keine Treffer.', en: 'No matches.' }[locale]}
-                        </ComboboxEmpty>
+                        <ComboboxEmpty>{suggestionsFetching ? tBooking('searching') : tBooking('noMatches')}</ComboboxEmpty>
                         <ComboboxList>
                             {(item: string) => (
                                 <ComboboxItem key={item} value={item}>
@@ -932,28 +655,23 @@ export function BookingRequestPlanPage({
     const detailsEditorFields = (
         <div className="grid gap-6">
             <ParticipantCountField
-                label={{ de: 'Erwachsene', en: 'Adults' }[locale]}
-                subtitle={{ de: `ab ${softPrice} pro Person`, en: `from ${softPrice} per person` }[locale]}
+                label={tBooking('plan.editor.adults')}
+                subtitle={tBooking('fromAmountPerPerson', { amount: softPrice })}
                 value={values.adultCount}
                 min={1}
                 disabled={busy}
                 onChange={(next) => form.setFieldValue('adultCount', next)}
             />
             <ParticipantCountField
-                label={{ de: 'Kinder', en: 'Children' }[locale]}
-                subtitle={
-                    {
-                        de: '4–12 Jahre · Kinderportionen günstiger',
-                        en: 'Ages 4–12 · children portions cost less',
-                    }[locale]
-                }
+                label={tBooking('plan.editor.children')}
+                subtitle={tBooking('plan.editor.childrenHint')}
                 value={values.discountedCount}
                 min={0}
                 disabled={busy}
                 onChange={(next) => form.setFieldValue('discountedCount', next)}
             />
             <div className="grid gap-2">
-                <span className="text-sm font-medium">{{ de: 'Menübeginn', en: 'Menu start' }[locale]}</span>
+                <span className="text-sm font-medium">{tBooking('plan.summary.menuStart')}</span>
                 <div className="grid grid-cols-2 gap-2">
                     <Select
                         value={String(values.dateTime.getHours())}
@@ -988,7 +706,7 @@ export function BookingRequestPlanPage({
                 </div>
             </div>
             <div className="grid gap-2">
-                <span className="text-sm font-medium">{{ de: 'Menürichtung', en: 'Cuisine' }[locale]}</span>
+                <span className="text-sm font-medium">{tBooking('plan.summary.cuisine')}</span>
                 <Select
                     value={values.cuisine}
                     onValueChange={(value) => form.setFieldValue('cuisine', value as BookingRequestPlanCuisineKey)}
@@ -1006,7 +724,7 @@ export function BookingRequestPlanPage({
                 </Select>
             </div>
             <div className="grid gap-2">
-                <span className="text-sm font-medium">{{ de: 'Preisklasse', en: 'Price class' }[locale]}</span>
+                <span className="text-sm font-medium">{tBooking('priceClass')}</span>
                 <Select
                     value={values.priceClassType}
                     onValueChange={(value) => form.setFieldValue('priceClassType', value as BookingRequestFormPriceClassType)}
@@ -1020,7 +738,7 @@ export function BookingRequestPlanPage({
                             const minimum = formatCurrency(info.minimumAmountPerPersonCents, { locale });
                             return (
                                 <SelectItem key={priceClass} value={priceClass}>
-                                    {info.title} · {{ de: `ab ${minimum}`, en: `from ${minimum}` }[locale]}
+                                    {info.title} · {tBooking('fromAmount', { amount: minimum })}
                                 </SelectItem>
                             );
                         })}
@@ -1030,15 +748,8 @@ export function BookingRequestPlanPage({
             {!venueAddress && detailsEditorOpen ? renderLocationPicker() : null}
             {venueAddress && values.exactEventAddress ? (
                 <div className="grid gap-1.5 border-t border-border pt-6 text-sm">
-                    <span className="font-medium">{{ de: 'Adresse', en: 'Address' }[locale]}</span>
-                    <p className="text-xs text-muted-foreground">
-                        {
-                            {
-                                de: 'Standort der Location. Hier findet euer Dinner statt.',
-                                en: 'Venue address. This is where your dinner takes place.',
-                            }[locale]
-                        }
-                    </p>
+                    <span className="font-medium">{tBooking('address')}</span>
+                    <p className="text-xs text-muted-foreground">{tBooking('plan.editor.venueAddressHint')}</p>
                     <div className="text-muted-foreground">
                         <p>{values.exactEventAddress.addressLine1}</p>
                         {values.exactEventAddress.addressLine2.trim().length > 0 ? <p>{values.exactEventAddress.addressLine2}</p> : null}
@@ -1060,20 +771,13 @@ export function BookingRequestPlanPage({
         <Sheet open={detailsEditorOpen} onOpenChange={setDetailsEditorOpen}>
             <SheetContent side="bottom" className="max-h-[90dvh] overflow-y-auto rounded-t-2xl">
                 <SheetHeader>
-                    <SheetTitle>{{ de: 'Euer Abend im Detail.', en: 'Your evening in detail.' }[locale]}</SheetTitle>
-                    <SheetDescription>
-                        {
-                            {
-                                de: 'Gäste, Startzeit, Menürichtung und Preisklasse',
-                                en: 'Guests, start time, cuisine, and price class',
-                            }[locale]
-                        }
-                    </SheetDescription>
+                    <SheetTitle>{tBooking('plan.editor.title')}</SheetTitle>
+                    <SheetDescription>{tBooking('plan.editor.description')}</SheetDescription>
                 </SheetHeader>
                 <div className="px-4 pb-2">{detailsEditorFields}</div>
                 <SheetFooter>
                     <Button type="button" className="w-full" onClick={() => setDetailsEditorOpen(false)}>
-                        {{ de: 'Übernehmen', en: 'Apply' }[locale]}
+                        {tBooking('plan.editor.apply')}
                     </Button>
                 </SheetFooter>
             </SheetContent>
@@ -1082,20 +786,13 @@ export function BookingRequestPlanPage({
         <Dialog open={detailsEditorOpen} onOpenChange={setDetailsEditorOpen}>
             <DialogContent className="max-h-[85vh] max-w-md overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle>{{ de: 'Euer Abend im Detail.', en: 'Your evening in detail.' }[locale]}</DialogTitle>
-                    <DialogDescription>
-                        {
-                            {
-                                de: 'Gäste, Startzeit, Menürichtung und Preisklasse',
-                                en: 'Guests, start time, cuisine, and price class',
-                            }[locale]
-                        }
-                    </DialogDescription>
+                    <DialogTitle>{tBooking('plan.editor.title')}</DialogTitle>
+                    <DialogDescription>{tBooking('plan.editor.description')}</DialogDescription>
                 </DialogHeader>
                 {detailsEditorFields}
                 <DialogFooter>
                     <Button type="button" onClick={() => setDetailsEditorOpen(false)}>
-                        {{ de: 'Übernehmen', en: 'Apply' }[locale]}
+                        {tBooking('plan.editor.apply')}
                     </Button>
                 </DialogFooter>
             </DialogContent>
@@ -1116,24 +813,18 @@ export function BookingRequestPlanPage({
                     <div className={cn('grid gap-6', venue ? '@xl:grid-cols-[minmax(0,1fr)_auto] @xl:items-start' : null)}>
                         <div className="grid gap-3">
                             {greetingName ? (
-                                <p className="text-lg text-muted-foreground">
-                                    {{ de: `Willkommen, ${greetingName}.`, en: `Welcome, ${greetingName}.` }[locale]}
-                                </p>
+                                <p className="text-lg text-muted-foreground">{tBooking('plan.hero.welcome', { name: greetingName })}</p>
                             ) : null}
                             <h1 className="font-serif text-4xl tracking-tight @xl:text-5xl">
-                                <span className="block @xl:inline">{{ de: 'Euer Abend.', en: 'Your evening.' }[locale]}</span>{' '}
-                                <span className="block @xl:inline">{{ de: 'Eure Experience.', en: 'Your experience.' }[locale]}</span>
+                                <span className="block @xl:inline">{tBooking('plan.hero.evening')}</span>{' '}
+                                <span className="block @xl:inline">{tBooking('plan.hero.experience')}</span>
                             </h1>
                             <p className="max-w-2xl text-base/relaxed text-muted-foreground">
                                 {venue
-                                    ? {
-                                          de: `Euer privates 3-Gänge-Dinner${venueCity ? ` in ${venueCity}` : ''}, als optionales Upgrade. Einkauf, Kochen und Aufräumen sind inklusive.`,
-                                          en: `Your private three-course dinner${venueCity ? ` in ${venueCity}` : ''} as an optional upgrade. Shopping, cooking, and cleanup included.`,
-                                      }[locale]
-                                    : {
-                                          de: 'Euer privates 3-Gänge-Dinner mit Privatkoch. Einkauf, Kochen und Aufräumen sind inklusive.',
-                                          en: 'Your private three-course dinner with a private chef. Shopping, cooking, and cleanup included.',
-                                      }[locale]}
+                                    ? venueCity
+                                        ? tBooking('plan.hero.subtitleVenueCity', { city: venueCity })
+                                        : tBooking('plan.hero.subtitleVenue')
+                                    : tBooking('plan.hero.subtitle')}
                             </p>
                         </div>
 
@@ -1147,9 +838,7 @@ export function BookingRequestPlanPage({
                                     />
                                 ) : null}
                                 <div className="min-w-0 text-left @xl:text-right">
-                                    <p className="text-sm text-muted-foreground">
-                                        {{ de: 'Exklusiv für Gäste bei', en: 'Exclusive for guests at' }[locale]}
-                                    </p>
+                                    <p className="text-sm text-muted-foreground">{tBooking('plan.hero.exclusiveFor')}</p>
                                     <p className="truncate text-base font-medium">{venue.name}</p>
                                     {venueCity ? <p className="truncate text-sm text-muted-foreground">{venueCity}</p> : null}
                                 </div>
@@ -1171,12 +860,7 @@ export function BookingRequestPlanPage({
                                     <div className="group relative aspect-video overflow-hidden @3xl:aspect-auto @3xl:h-full @3xl:min-h-72">
                                         <AppImage
                                             src={heroSrc}
-                                            alt={
-                                                {
-                                                    de: 'Gedeckter Tisch für euer Dinner',
-                                                    en: 'Set table for your dinner',
-                                                }[locale]
-                                            }
+                                            alt={tBooking('plan.hero.alt')}
                                             className="size-full object-cover transition-transform duration-300 ease-out group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
                                         />
                                     </div>
@@ -1186,7 +870,7 @@ export function BookingRequestPlanPage({
                                                 <div
                                                     className="flex items-center gap-0.5"
                                                     role="img"
-                                                    aria-label={{ de: '5,0 von 5 Sternen', en: '5.0 out of 5 stars' }[locale]}
+                                                    aria-label={tBooking('plan.hero.stars')}
                                                 >
                                                     {Array.from({ length: 5 }, (_, index) => (
                                                         <StarIcon key={index} aria-hidden className="size-3.5 fill-accent text-accent" />
@@ -1207,40 +891,14 @@ export function BookingRequestPlanPage({
                                                         });
                                                     }}
                                                 >
-                                                    {
-                                                        {
-                                                            de: `${venue.testimonials.length} Bewertungen ansehen`,
-                                                            en: `View ${venue.testimonials.length} reviews`,
-                                                        }[locale]
-                                                    }
+                                                    {tBooking('plan.hero.reviews', { count: venue.testimonials.length })}
                                                 </Button>
                                             ) : null}
                                         </div>
-                                        <h2 className="font-serif text-2xl tracking-tight">
-                                            {
-                                                {
-                                                    de: 'Euer Ort wird zum Lieblingsrestaurant.',
-                                                    en: 'Your place becomes your favorite restaurant.',
-                                                }[locale]
-                                            }
-                                        </h2>
+                                        <h2 className="font-serif text-2xl tracking-tight">{tBooking('plan.hero.placeTitle')}</h2>
                                         <div className="grid gap-2 text-sm/relaxed text-muted-foreground">
-                                            <p>
-                                                {
-                                                    {
-                                                        de: 'Euer Privatkoch serviert Gänge, frisch bei euch zubereitet und nach euren Wünschen abgestimmt.',
-                                                        en: 'Your private chef serves courses, freshly prepared at your place and tailored to your wishes.',
-                                                    }[locale]
-                                                }
-                                            </p>
-                                            <p>
-                                                {
-                                                    {
-                                                        de: 'Einkauf, Kochen und eine saubere Küche inklusive.',
-                                                        en: 'Shopping, cooking, and a clean kitchen included.',
-                                                    }[locale]
-                                                }
-                                            </p>
+                                            <p>{tBooking('plan.hero.placeBody1')}</p>
+                                            <p>{tBooking('plan.hero.placeBody2')}</p>
                                         </div>
                                         <Button
                                             type="button"
@@ -1248,7 +906,7 @@ export function BookingRequestPlanPage({
                                             className="h-auto w-fit -translate-x-3 justify-start"
                                             onClick={() => setMenuDialogOpen(true)}
                                         >
-                                            {{ de: 'Beispielmenü entdecken', en: 'Discover sample menu' }[locale]}
+                                            {tBooking('plan.sampleMenu.discover')}
                                             <ArrowRightIcon className="size-4" />
                                         </Button>
                                     </div>
@@ -1257,7 +915,7 @@ export function BookingRequestPlanPage({
                                 <div className="grid gap-3">
                                     <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                                         <p className="min-w-0 font-serif text-3xl font-light @md:text-4xl">
-                                            {{ de: 'Wählt euren Dinner Abend', en: 'Choose your dinner evening' }[locale]}
+                                            {tBooking('plan.dateSection.title')}
                                         </p>
                                         <p className="shrink-0 text-sm text-muted-foreground">{dateChipRangeLabel}</p>
                                     </div>
@@ -1276,9 +934,9 @@ export function BookingRequestPlanPage({
                                                 }).format(day);
                                                 const venueStayLabel = search.venueId
                                                     ? index === 0
-                                                        ? { de: 'Anreise', en: 'Arrival' }[locale]
+                                                        ? tBooking('plan.dateSection.arrival')
                                                         : index === selectableDays.length - 1
-                                                          ? { de: 'Abreise', en: 'Departure' }[locale]
+                                                          ? tBooking('plan.dateSection.departure')
                                                           : null
                                                     : null;
                                                 const footLabel = venueStayLabel ?? month;
@@ -1310,7 +968,7 @@ export function BookingRequestPlanPage({
                                                 if (!date) return;
                                                 selectDay(date);
                                             }}
-                                            placeholder={{ de: 'Datum wählen', en: 'Choose a date' }[locale]}
+                                            placeholder={tBooking('plan.dateSection.pickDate')}
                                             locale={locale === 'de' ? dateFnsDe : dateFnsEn}
                                             startMonth={datePickerStartMonth}
                                             endMonth={datePickerEndMonth}
@@ -1340,17 +998,8 @@ export function BookingRequestPlanPage({
 
                                 <div className="grid gap-4">
                                     <div className="grid gap-2">
-                                        <h2 className="font-serif text-3xl font-light @md:text-4xl">
-                                            {{ de: 'Wählt euren Preisrahmen', en: 'Choose your price range' }[locale]}
-                                        </h2>
-                                        <p className="text-sm text-muted-foreground">
-                                            {
-                                                {
-                                                    de: 'Als Orientierung für den Menüvorschlag eures Kochs.',
-                                                    en: "As a guide for your chef's menu proposal.",
-                                                }[locale]
-                                            }
-                                        </p>
+                                        <h2 className="font-serif text-3xl font-light @md:text-4xl">{tBooking('plan.price.title')}</h2>
+                                        <p className="text-sm text-muted-foreground">{tBooking('plan.price.subtitle')}</p>
                                     </div>
                                     <div className="@container w-full min-w-0">
                                         <div className="grid gap-4 @3xl:grid-cols-3">
@@ -1371,7 +1020,7 @@ export function BookingRequestPlanPage({
                                                                 <CardTitle className="text-xl">{info.title}</CardTitle>
                                                                 {info.isPopular ? (
                                                                     <Badge className="border-green-300 bg-green-100 text-foreground">
-                                                                        {{ de: 'Populär', en: 'Popular' }[locale]}
+                                                                        {tBooking('popular')}
                                                                     </Badge>
                                                                 ) : null}
                                                             </div>
@@ -1379,7 +1028,7 @@ export function BookingRequestPlanPage({
                                                         </CardHeader>
                                                         <CardContent className="grid flex-1 content-start gap-2">
                                                             <p className="text-sm text-muted-foreground">
-                                                                {{ de: 'Häufig gebucht für', en: 'Frequently booked for' }[locale]}
+                                                                {tBooking('form.steps.priceClass.frequentlyBooked')}
                                                             </p>
                                                             <div className="flex flex-wrap items-start gap-2">
                                                                 {info.commonOccasions.map((occasion) => (
@@ -1392,11 +1041,11 @@ export function BookingRequestPlanPage({
                                                         <CardFooter className="mt-auto flex flex-col items-stretch gap-4">
                                                             <p className="text-center">
                                                                 <span className="text-2xl font-semibold">
-                                                                    {{ de: 'ab', en: 'starting at' }[locale]}{' '}
+                                                                    {tBooking('startingAt')}{' '}
                                                                     {formatCurrency(info.minimumAmountPerPersonCents, { locale })}
                                                                 </span>{' '}
                                                                 <span className="text-sm text-muted-foreground">
-                                                                    {{ de: 'pro Person', en: 'per person' }[locale]}
+                                                                    {tBooking('perPerson')}
                                                                 </span>
                                                             </p>
                                                             <Button
@@ -1405,9 +1054,7 @@ export function BookingRequestPlanPage({
                                                                 disabled={busy}
                                                                 onClick={() => form.setFieldValue('priceClassType', priceClass)}
                                                             >
-                                                                {selected
-                                                                    ? { de: 'Ausgewählt', en: 'Selected' }[locale]
-                                                                    : { de: 'Auswählen', en: 'Select' }[locale]}
+                                                                {selected ? tBooking('selected') : tBooking('select')}
                                                             </Button>
                                                         </CardFooter>
                                                     </Card>
@@ -1420,21 +1067,9 @@ export function BookingRequestPlanPage({
                                 <div className="grid gap-4">
                                     <div className="grid gap-2">
                                         <h2 className="font-serif text-3xl font-light @md:text-4xl">
-                                            {
-                                                {
-                                                    de: 'Welche Küche macht euren Abend besonders?',
-                                                    en: 'Which cuisine makes your evening special?',
-                                                }[locale]
-                                            }
+                                            {tBooking('plan.cuisineSection.title')}
                                         </h2>
-                                        <p className="text-sm text-muted-foreground">
-                                            {
-                                                {
-                                                    de: 'Als Inspiration für euren Koch. Euren Menüvorschlag erhaltet ihr nach der Anfrage.',
-                                                    en: 'As inspiration for your chef. You receive your menu proposal after the request.',
-                                                }[locale]
-                                            }
-                                        </p>
+                                        <p className="text-sm text-muted-foreground">{tBooking('plan.cuisineSection.subtitle')}</p>
                                     </div>
                                     <div className="grid grid-cols-2 gap-3 @xl:grid-cols-4">
                                         {bookingRequestPlanCuisineKeys.map((key) => {
@@ -1486,7 +1121,7 @@ export function BookingRequestPlanPage({
                                                             setMenuDialogOpen(true);
                                                         }}
                                                     >
-                                                        {{ de: 'Beispielmenü', en: 'Sample menu' }[locale]}
+                                                        {tBooking('plan.sampleMenu.link')}
                                                     </button>
                                                 </div>
                                             );
@@ -1495,38 +1130,31 @@ export function BookingRequestPlanPage({
                                 </div>
 
                                 <Reveal>
-                                    <BookingRequestPlanForetasteCarousel locale={locale} />
+                                    <BookingRequestPlanForetasteCarousel />
                                 </Reveal>
 
                                 <Reveal>
                                     <div className="grid gap-6">
                                         <div className="grid gap-2">
-                                            <h2 className="font-serif text-3xl font-light @md:text-4xl">
-                                                {{ de: 'Ihr genießt. Wir kümmern uns.', en: 'You enjoy. We take care.' }[locale]}
-                                            </h2>
-                                            <p className="max-w-2xl text-sm text-muted-foreground">
-                                                {
-                                                    {
-                                                        de: 'Mehr Zeit für die Familie. Einkauf, Zubereitung und Reinigung sind inklusive.',
-                                                        en: 'More time for the family. Shopping, preparation, and cleaning are included.',
-                                                    }[locale]
-                                                }
-                                            </p>
+                                            <h2 className="font-serif text-3xl font-light @md:text-4xl">{tBooking('plan.care.title')}</h2>
+                                            <p className="max-w-2xl text-sm text-muted-foreground">{tBooking('plan.care.subtitle')}</p>
                                         </div>
                                         <div className="grid items-stretch gap-4 @xl:grid-cols-3">
                                             {CARE_ITEMS.map((item) => {
                                                 const Icon = item.icon;
                                                 return (
                                                     <div
-                                                        key={item.de.title}
+                                                        key={item.titleKey}
                                                         className="flex h-full flex-col items-start gap-3 rounded-2xl border border-border bg-muted p-5 @xl:p-6"
                                                     >
                                                         <span className="flex size-8 shrink-0 items-center justify-center">
                                                             <Icon className="size-6 text-foreground" strokeWidth={1.5} aria-hidden />
                                                         </span>
                                                         <div className="grid gap-2">
-                                                            <p className="font-medium">{item[locale].title}</p>
-                                                            <p className="text-sm/relaxed text-muted-foreground">{item[locale].body}</p>
+                                                            <p className="font-medium">{tBooking(item.titleKey)}</p>
+                                                            <p className="text-sm/relaxed text-muted-foreground">
+                                                                {tBooking(item.bodyKey)}
+                                                            </p>
                                                         </div>
                                                     </div>
                                                 );
@@ -1541,7 +1169,7 @@ export function BookingRequestPlanPage({
                                             <SectionPageTestimonials
                                                 testimonials={venue.testimonials}
                                                 locale={locale}
-                                                title={{ de: 'Abende, die bleiben.', en: 'Evenings that stay with you.' }[locale]}
+                                                title={tBooking('plan.testimonials.title')}
                                                 inset={false}
                                                 columns={2}
                                             />
@@ -1551,7 +1179,7 @@ export function BookingRequestPlanPage({
 
                                 <Reveal>
                                     <SectionQuestionsAndAnswers
-                                        title={{ de: 'Gut zu wissen.', en: 'Good to know.' }[locale]}
+                                        title={tBooking('plan.faqSection.title')}
                                         faqs={planFaqs(locale)}
                                         inset={false}
                                     />
@@ -1566,28 +1194,15 @@ export function BookingRequestPlanPage({
                                     onClick={() => setStep('details')}
                                 >
                                     <ArrowLeftIcon aria-hidden />
-                                    {{ de: 'Auswahl bearbeiten', en: 'Edit selection' }[locale]}
+                                    {tBooking('plan.contact.editSelection')}
                                 </Button>
 
                                 <div className="grid gap-3">
-                                    <h1 className="font-serif text-3xl tracking-tight">
-                                        {
-                                            {
-                                                de: 'Ein Schritt näher an eurem Dinner.',
-                                                en: 'One step closer to your dinner.',
-                                            }[locale]
-                                        }
-                                    </h1>
+                                    <h1 className="font-serif text-3xl tracking-tight">{tBooking('plan.contact.title')}</h1>
                                     <p className="text-muted-foreground">
-                                        {venue
-                                            ? {
-                                                  de: `Euer Abend${venue.name ? ` bei ${venue.name}` : ''}. Wir prüfen euren Wunschtermin und stimmen das Menü mit euch ab.`,
-                                                  en: `Your evening${venue.name ? ` at ${venue.name}` : ''}. We check your preferred date and align the menu with you.`,
-                                              }[locale]
-                                            : {
-                                                  de: 'Wir prüfen euren Wunschtermin und stimmen das Menü mit euch ab.',
-                                                  en: 'We check your preferred date and align the menu with you.',
-                                              }[locale]}
+                                        {venue?.name
+                                            ? tBooking('plan.contact.subtitleVenue', { venue: venue.name })
+                                            : tBooking('plan.contact.subtitle')}
                                     </p>
                                 </div>
 
@@ -1595,21 +1210,14 @@ export function BookingRequestPlanPage({
                                     <form.Field name="originalMessage">
                                         {(field) => (
                                             <label className="grid gap-1.5 text-sm">
-                                                <span className="font-medium">
-                                                    {{ de: 'Wünsche & Allergien', en: 'Wishes & allergies' }[locale]}
-                                                </span>
+                                                <span className="font-medium">{tBooking('plan.contact.wishes')}</span>
                                                 <Textarea
                                                     required
                                                     rows={4}
                                                     value={field.state.value}
                                                     onChange={(event) => field.handleChange(event.target.value)}
                                                     onBlur={field.handleBlur}
-                                                    placeholder={
-                                                        {
-                                                            de: 'Ernährung, Allergien oder ein besonderer Anlass',
-                                                            en: 'Diet, allergies, or a special occasion',
-                                                        }[locale]
-                                                    }
+                                                    placeholder={tBooking('plan.contact.wishesPlaceholder')}
                                                     disabled={busy}
                                                 />
                                             </label>
@@ -1618,16 +1226,14 @@ export function BookingRequestPlanPage({
 
                                     {!startedSignedIn ? (
                                         <div className="grid gap-4">
-                                            <h2 className="text-lg font-medium">
-                                                {{ de: 'Deine Kontaktdaten', en: 'Your contact details' }[locale]}
-                                            </h2>
+                                            <h2 className="text-lg font-medium">{tBooking('plan.contact.contactDetails')}</h2>
                                             <AuthIdentityGate
                                                 initialSession={session}
                                                 onSessionChange={setSession}
                                                 onBusyChange={setAuthBusy}
                                                 profileInitialValues={search.firstName ? { firstName: search.firstName } : undefined}
                                                 registerHeading={null}
-                                                submitLabel={{ de: 'Buchungsanfrage senden', en: 'Send booking request' }[locale]}
+                                                submitLabel={tBooking('plan.contact.send')}
                                                 onReady={() => {
                                                     void submitBooking();
                                                 }}
@@ -1644,21 +1250,11 @@ export function BookingRequestPlanPage({
                                                             disabled={busy || authBusy || values.originalMessage.trim().length === 0}
                                                             onClick={() => void submitBooking()}
                                                         >
-                                                            {
-                                                                {
-                                                                    de: busy ? 'Anfrage wird gesendet…' : 'Buchungsanfrage senden',
-                                                                    en: busy ? 'Sending request…' : 'Send booking request',
-                                                                }[locale]
-                                                            }
+                                                            {busy ? tBooking('plan.contact.sending') : tBooking('plan.contact.send')}
                                                             {!busy ? <ArrowRightIcon className="size-4" /> : null}
                                                         </Button>
                                                         <p className="text-xs text-muted-foreground">
-                                                            {
-                                                                {
-                                                                    de: 'Unverbindlich. Es erfolgt noch keine Zahlung.',
-                                                                    en: 'Non-binding. No payment is made yet.',
-                                                                }[locale]
-                                                            }
+                                                            {tBooking('plan.contact.nonBinding')}
                                                         </p>
                                                     </div>
                                                 )}
@@ -1673,17 +1269,10 @@ export function BookingRequestPlanPage({
                                                 disabled={busy || authBusy || values.originalMessage.trim().length === 0}
                                                 onClick={() => void submitBooking()}
                                             >
-                                                {{ de: 'Buchungsanfrage senden', en: 'Send booking request' }[locale]}
+                                                {tBooking('plan.contact.send')}
                                                 <ArrowRightIcon className="size-4" />
                                             </Button>
-                                            <p className="text-xs text-muted-foreground">
-                                                {
-                                                    {
-                                                        de: 'Unverbindlich. Es erfolgt noch keine Zahlung.',
-                                                        en: 'Non-binding. No payment is made yet.',
-                                                    }[locale]
-                                                }
-                                            </p>
+                                            <p className="text-xs text-muted-foreground">{tBooking('plan.contact.nonBinding')}</p>
                                         </div>
                                     )}
                                 </div>
@@ -1706,28 +1295,23 @@ export function BookingRequestPlanPage({
                                 'hover:bg-muted/60 active:bg-muted/80',
                             )}
                             onClick={() => setDetailsEditorOpen(true)}
-                            aria-label={{ de: 'Angaben bearbeiten', en: 'Edit details' }[locale]}
+                            aria-label={tBooking('plan.summary.editDetails')}
                         >
                             <span className="grid min-w-0 gap-0.5">
                                 <span className="truncate text-sm font-medium">
-                                    {
-                                        {
-                                            de: `${values.adultCount + values.discountedCount} Teilnehmer`,
-                                            en: `${values.adultCount + values.discountedCount} guests`,
-                                        }[locale]
-                                    }
+                                    {tBooking('plan.bar.guests', { count: values.adultCount + values.discountedCount })}
                                 </span>
                                 <span className="inline-flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
                                     <span className="truncate">{priceInfo.title}</span>
                                     <span className="inline-flex shrink-0 items-center gap-1 underline-offset-2 hover:underline">
-                                        {{ de: 'Bearbeiten', en: 'Edit' }[locale]}
+                                        {tBooking('plan.bar.edit')}
                                         <PencilIcon className="size-3 shrink-0" aria-hidden />
                                     </span>
                                 </span>
                             </span>
                         </button>
                         <Button type="button" className="shrink-0" onClick={goToContact} disabled={!canContinueToContact()}>
-                            {{ de: 'Weiter', en: 'Next' }[locale]}
+                            {tBooking('next')}
                         </Button>
                     </div>
                 </div>
@@ -1754,7 +1338,7 @@ export function BookingRequestPlanPage({
                     </div>
                     <DialogFooter>
                         <Button type="button" onClick={() => setMenuDialogOpen(false)}>
-                            {{ de: 'Zurück zur Dinner-Planung', en: 'Back to dinner planning' }[locale]}
+                            {tBooking('plan.sampleMenu.back')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

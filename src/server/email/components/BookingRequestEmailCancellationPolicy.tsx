@@ -1,5 +1,6 @@
 import { Link } from 'react-email';
 
+import { tEmail } from '../../../i18n/tEmail';
 import type { Locale } from '../../../shared/locale';
 import { bookingRequestEmailTermsUrl } from './bookingRequestEmailUrls';
 import { EmailSectionHeading } from './EmailSectionHeading';
@@ -8,23 +9,16 @@ import { EmailText } from './EmailText';
 
 export function BookingRequestEmailCancellationPolicy({ locale, webPageUrl }: { locale: Locale; webPageUrl: string }) {
     const termsUrl = bookingRequestEmailTermsUrl(webPageUrl, locale);
-    const termsLabel = { de: 'AGB', en: 'terms and conditions' }[locale];
-    const heading = { de: 'Stornierungsbedingungen', en: 'Cancellation policy' }[locale];
-    const body = {
-        de: 'Kostenlose Stornierung ist bis zur Annahme der Anfrage und bis zu zwei Wochen vor dem Ereignis möglich. Bei späteren Stornierungen können Gebühren anfallen. Wenn du deine Reservierung ändern musst, kontaktiere uns bitte so früh wie möglich, damit wir dir bestmöglich helfen können. Weitere Informationen kannst du aus unseren ',
-        en: 'Free cancellation is possible until the request is accepted and up to two weeks before the event. Later cancellations may incur fees. If you need to change your reservation, please contact us as early as possible so we can help. You can find more information in our ',
-    }[locale];
-    const after = { de: ' entnehmen.', en: '.' }[locale];
 
     return (
         <>
-            <EmailSectionHeading>{heading}</EmailSectionHeading>
+            <EmailSectionHeading>{tEmail(locale, 'booking.cancellation.heading')}</EmailSectionHeading>
             <EmailText>
-                {body}
+                {tEmail(locale, 'booking.cancellation.before')}
                 <Link href={termsUrl} style={emailStyles.link}>
-                    {termsLabel}
+                    {tEmail(locale, 'booking.cancellation.terms')}
                 </Link>
-                {after}
+                {tEmail(locale, 'booking.cancellation.after')}
             </EmailText>
         </>
     );

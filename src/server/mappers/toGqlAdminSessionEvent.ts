@@ -1,3 +1,4 @@
+import { t } from '../../i18n/t';
 import { bookingRequestCheckoutFunnelArea } from '../../shared/bookingRequestCheckoutFunnel';
 import { bookingRequestFormFunnelArea } from '../../shared/bookingRequestFormFunnel';
 import { chefSignUpFunnelArea } from '../../shared/chefSignUpFunnel';
@@ -8,110 +9,24 @@ import type { SessionEventKey, SessionEventPayload } from '../domain/sessionEven
 import { isSessionEventKey } from '../domain/sessionEvent';
 import type { GqlSAdminSessionEvent } from '../graphql/generated';
 
-const STATIC_DESCRIPTIONS = {
-    WEB_PAGE_VISITED: { de: 'Seite besucht', en: 'Page visited' },
-    WEB_PAGE_INTERACTION: { de: 'Seiteninteraktion', en: 'Page interaction' },
-    BOOKING_REQUEST_CREATED: { de: 'Buchungsanfrage erstellt', en: 'Booking request created' },
-    BOOKING_REQUEST_OPENED_TO_OTHER_COOKS: {
-        de: 'Buchungsanfrage für andere Köche geöffnet',
-        en: 'Booking request opened to other cooks',
-    },
-    BOOKING_REQUEST_CANCELED: { de: 'Buchungsanfrage storniert', en: 'Booking request canceled' },
-    BOOKING_REQUEST_OFFER_ACCEPTED: { de: 'Angebot akzeptiert', en: 'Offer accepted' },
-    BOOKING_REQUEST_OFFER_DECLINED: { de: 'Angebot abgelehnt', en: 'Offer declined' },
-    BOOKING_REQUEST_OFFER_PAYMENT_SUCCEEDED: { de: 'Angebotszahlung erfolgreich', en: 'Offer payment succeeded' },
-    BOOKING_REQUEST_OFFER_PAYMENT_FAILED: { de: 'Angebotszahlung fehlgeschlagen', en: 'Offer payment failed' },
-    GIFT_CARD_CREATED: { de: 'Geschenkkarte erstellt', en: 'Gift card created' },
-    GIFT_CARD_PAYED: { de: 'Geschenkkarte bezahlt', en: 'Gift card paid' },
-    COOK_CREATED: { de: 'Koch-Konto erstellt', en: 'Chef account created' },
-    USER_CREATE_SUCCESSFUL: { de: 'Konto erstellt', en: 'Account created' },
-    USER_CREATE_FAILED: { de: 'Kontoerstellung fehlgeschlagen', en: 'Account creation failed' },
-    USER_CREATE_USER_WITH_EMAIL_ADDRESS_ALREADY_EXISTS: {
-        de: 'Kontoerstellung: E-Mail bereits registriert',
-        en: 'Account creation: email already registered',
-    },
-    USER_CREATE_USER_WITH_UNCONFIRMED_EMAIL_ADDRESS_ALREADY_EXISTS: {
-        de: 'Kontoerstellung: unbestätigte E-Mail bereits vorhanden (Legacy)',
-        en: 'Account creation: unconfirmed email already exists (legacy)',
-    },
-    USER_TERMS_ACCEPTED: { de: 'AGB akzeptiert', en: 'Terms accepted' },
-    USER_PRIVACY_POLICY_ACCEPTED: { de: 'Datenschutz akzeptiert', en: 'Privacy policy accepted' },
-    AUTH_EMAIL_OTP_REQUESTED: { de: 'E-Mail-OTP angefordert', en: 'Email OTP requested' },
-    AUTH_EMAIL_OTP_VERIFY_FAILED: { de: 'E-Mail-OTP Prüfung fehlgeschlagen', en: 'Email OTP verification failed' },
-    AUTH_EMAIL_OTP_VERIFY_SUCCEEDED: { de: 'E-Mail-OTP bestätigt', en: 'Email OTP verified' },
-    AUTH_PASSKEY_SIGN_IN_SUCCEEDED: { de: 'Passkey-Anmeldung erfolgreich', en: 'Passkey sign-in succeeded' },
-    AUTH_PASSKEY_SIGN_IN_FAILED: { de: 'Passkey-Anmeldung fehlgeschlagen', en: 'Passkey sign-in failed' },
-    AUTH_OAUTH_SIGN_IN_SUCCEEDED: { de: 'Social-Login erfolgreich', en: 'Social sign-in succeeded' },
-    AUTH_OAUTH_SIGN_IN_FAILED: { de: 'Social-Login fehlgeschlagen', en: 'Social sign-in failed' },
-    AUTH_OAUTH_ACCOUNT_CREATED: { de: 'Konto über Social-Login erstellt', en: 'Account created via social sign-in' },
-    AUTH_TOTP_CHALLENGE_PENDING: { de: 'TOTP-Prüfung ausstehend', en: 'TOTP challenge pending' },
-    AUTH_TOTP_VERIFY_SUCCEEDED: { de: 'TOTP bestätigt', en: 'TOTP verified' },
-    AUTH_TOTP_VERIFY_FAILED: { de: 'TOTP-Prüfung fehlgeschlagen', en: 'TOTP verification failed' },
-    SIGN_IN_FAILED: { de: 'Anmeldung fehlgeschlagen (Legacy)', en: 'Sign-in failed (legacy)' },
-    SIGN_IN_NO_USER_FOR_EMAIL_ADDRESS: {
-        de: 'Anmeldung: kein Nutzer für E-Mail (Legacy)',
-        en: 'Sign-in: no user for email (legacy)',
-    },
-    SIGN_IN_UNCONFIRMED_EMAIL_ADDRESS: {
-        de: 'Anmeldung: E-Mail unbestätigt (Legacy)',
-        en: 'Sign-in: unconfirmed email (legacy)',
-    },
-    SIGN_IN_NO_PASSWORD: { de: 'Anmeldung: kein Passwort (Legacy)', en: 'Sign-in: no password (legacy)' },
-    SIGN_IN_WRONG_PASSWORD: { de: 'Anmeldung: falsches Passwort (Legacy)', en: 'Sign-in: wrong password (legacy)' },
-    SIGN_IN_SUCCESSFUL: { de: 'Anmeldung erfolgreich (Legacy)', en: 'Sign-in succeeded (legacy)' },
-    SESSION_USER_PASSWORD_RESET_SUCCEEDED: {
-        de: 'Passwort-Reset angefordert (Legacy)',
-        en: 'Password reset requested (legacy)',
-    },
-    SESSION_USER_PASSWORD_RESET_FAILED: {
-        de: 'Passwort-Reset fehlgeschlagen (Legacy)',
-        en: 'Password reset failed (legacy)',
-    },
-    SESSION_USER_PASSWORD_RESET_CONFIRMATION_SUCCEEDED: {
-        de: 'Passwort-Reset bestätigt (Legacy)',
-        en: 'Password reset confirmed (legacy)',
-    },
-    SESSION_USER_PASSWORD_RESET_CONFIRMATION_FAILED: {
-        de: 'Passwort-Reset-Bestätigung fehlgeschlagen (Legacy)',
-        en: 'Password reset confirmation failed (legacy)',
-    },
-    USER_EMAIL_ADDRESS_UPDATE_CONFIRMATION_SUCCEEDED: {
-        de: 'E-Mail-Bestätigung erfolgreich (Legacy)',
-        en: 'Email confirmation succeeded (legacy)',
-    },
-    USER_EMAIL_ADDRESS_UPDATE_CONFIRMATION_FAILED: {
-        de: 'E-Mail-Bestätigung fehlgeschlagen (Legacy)',
-        en: 'Email confirmation failed (legacy)',
-    },
-    USER_PHONE_NUMBER_UPDATE_CONFIRMATION_SUCCEEDED: {
-        de: 'Telefon-Bestätigung erfolgreich (Legacy)',
-        en: 'Phone confirmation succeeded (legacy)',
-    },
-    USER_PHONE_NUMBER_UPDATE_CONFIRMATION_FAILED: {
-        de: 'Telefon-Bestätigung fehlgeschlagen (Legacy)',
-        en: 'Phone confirmation failed (legacy)',
-    },
-    NEWSLETTER_SUBSCRIPTION_CREATED: {
-        de: 'Newsletter abonniert',
-        en: 'Newsletter subscribed',
-    },
-    NEWSLETTER_SUBSCRIPTION_FAILED: {
-        de: 'Newsletter-Abo fehlgeschlagen',
-        en: 'Newsletter subscription failed',
-    },
-    NEWSLETTER_SUBSCRIPTION_ALREADY_EXISTS: {
-        de: 'Newsletter bereits abonniert',
-        en: 'Newsletter already subscribed',
-    },
-} as const satisfies Record<SessionEventKey, { de: string; en: string }>;
+function staticDescription(type: SessionEventKey): { de: string; en: string } {
+    return {
+        de: t('de', 'admin', `sessionEvents.static.${type}`),
+        en: t('en', 'admin', `sessionEvents.static.${type}`),
+    };
+}
+
+function bilingual(key: string, params?: Record<string, string | number>): { de: string; en: string } {
+    return {
+        de: t('de', 'admin', key, params),
+        en: t('en', 'admin', key, params),
+    };
+}
 
 function visitDescription(payload: SessionEventPayload<'WEB_PAGE_VISITED'>): { de: string; en: string } {
     const key = payload.webPageKey;
     const path = payload.path ? ` (${payload.path})` : '';
-    return {
-        de: `Seite besucht: ${key}${path}`,
-        en: `Page visited: ${key}${path}`,
-    };
+    return bilingual('sessionEvents.templates.visit', { key, path });
 }
 
 function interactionDescription(payload: SessionEventPayload<'WEB_PAGE_INTERACTION'>): { de: string; en: string } {
@@ -121,26 +36,27 @@ function interactionDescription(payload: SessionEventPayload<'WEB_PAGE_INTERACTI
         const isGiftCardFunnel = payload.area === giftCardFunnelArea;
         const isChefSignUpFunnel = payload.area === chefSignUpFunnelArea;
         const isBookingCheckoutFunnel = payload.area === bookingRequestCheckoutFunnelArea;
-        const verb =
+        const verbKey =
             interaction.type === 'step_entered'
                 ? isCookOfferFunnel
-                    ? { de: 'Angebots-Funnel-Schritt betreten', en: 'Entered offer funnel step' }
+                    ? 'enteredOffer'
                     : isGiftCardFunnel
-                      ? { de: 'Geschenkkarten-Schritt betreten', en: 'Entered gift card step' }
+                      ? 'enteredGiftCard'
                       : isChefSignUpFunnel
-                        ? { de: 'Koch-Registrierungs-Schritt betreten', en: 'Entered chef sign-up step' }
+                        ? 'enteredChefSignUp'
                         : isBookingCheckoutFunnel
-                          ? { de: 'Checkout-Schritt betreten', en: 'Entered checkout step' }
-                          : { de: 'Formularschritt betreten', en: 'Entered form step' }
+                          ? 'enteredCheckout'
+                          : 'enteredForm'
                 : isCookOfferFunnel
-                  ? { de: 'Angebots-Funnel-Schritt abgeschlossen', en: 'Completed offer funnel step' }
+                  ? 'completedOffer'
                   : isGiftCardFunnel
-                    ? { de: 'Geschenkkarten-Schritt abgeschlossen', en: 'Completed gift card step' }
+                    ? 'completedGiftCard'
                     : isChefSignUpFunnel
-                      ? { de: 'Koch-Registrierungs-Schritt abgeschlossen', en: 'Completed chef sign-up step' }
+                      ? 'completedChefSignUp'
                       : isBookingCheckoutFunnel
-                        ? { de: 'Checkout-Schritt abgeschlossen', en: 'Completed checkout step' }
-                        : { de: 'Formularschritt abgeschlossen', en: 'Completed form step' };
+                        ? 'completedCheckout'
+                        : 'completedForm';
+        const verb = bilingual(`sessionEvents.verbs.${verbKey}`);
         const knownFunnelArea =
             payload.area === bookingRequestFormFunnelArea ||
             isCookOfferFunnel ||
@@ -151,20 +67,24 @@ function interactionDescription(payload: SessionEventPayload<'WEB_PAGE_INTERACTI
         const requestNote =
             (isCookOfferFunnel || isBookingCheckoutFunnel) && payload.bookingRequestId != null ? ` (${payload.bookingRequestId})` : '';
         return {
-            de: `${verb.de}: ${interaction.step}${requestNote}${areaNote}`,
-            en: `${verb.en}: ${interaction.step}${requestNote}${areaNote}`,
+            de: t('de', 'admin', 'sessionEvents.templates.stepLine', {
+                verb: verb.de,
+                step: interaction.step,
+                requestNote,
+                areaNote,
+            }),
+            en: t('en', 'admin', 'sessionEvents.templates.stepLine', {
+                verb: verb.en,
+                step: interaction.step,
+                requestNote,
+                areaNote,
+            }),
         };
     }
     if (interaction.type === 'click') {
-        return {
-            de: `Klick: ${interaction.key} (${payload.area})`,
-            en: `Click: ${interaction.key} (${payload.area})`,
-        };
+        return bilingual('sessionEvents.templates.click', { key: interaction.key, area: payload.area });
     }
-    return {
-        de: `Änderung: ${interaction.key} (${payload.area})`,
-        en: `Change: ${interaction.key} (${payload.area})`,
-    };
+    return bilingual('sessionEvents.templates.change', { key: interaction.key, area: payload.area });
 }
 
 function bookingCreatedDescription(payload: SessionEventPayload<'BOOKING_REQUEST_CREATED'>): {
@@ -173,8 +93,7 @@ function bookingCreatedDescription(payload: SessionEventPayload<'BOOKING_REQUEST
     link: string;
 } {
     return {
-        de: `Buchungsanfrage erstellt (${payload.bookingRequestId})`,
-        en: `Booking request created (${payload.bookingRequestId})`,
+        ...bilingual('sessionEvents.templates.bookingCreated', { id: payload.bookingRequestId }),
         link: `/admin/booking-requests/${payload.bookingRequestId}`,
     };
 }
@@ -185,8 +104,7 @@ function bookingOpenedToOtherCooksDescription(payload: SessionEventPayload<'BOOK
     link: string;
 } {
     return {
-        de: `Buchungsanfrage für andere Köche geöffnet (${payload.bookingRequestId})`,
-        en: `Booking request opened to other cooks (${payload.bookingRequestId})`,
+        ...bilingual('sessionEvents.templates.bookingOpened', { id: payload.bookingRequestId }),
         link: `/admin/booking-requests/${payload.bookingRequestId}`,
     };
 }
@@ -197,8 +115,7 @@ function bookingCanceledDescription(payload: SessionEventPayload<'BOOKING_REQUES
     link: string;
 } {
     return {
-        de: `Buchungsanfrage storniert (${payload.bookingRequestId})`,
-        en: `Booking request canceled (${payload.bookingRequestId})`,
+        ...bilingual('sessionEvents.templates.bookingCanceled', { id: payload.bookingRequestId }),
         link: `/admin/booking-requests/${payload.bookingRequestId}`,
     };
 }
@@ -207,18 +124,12 @@ function bookingOfferActorDescription(
     payload: SessionEventPayload<'BOOKING_REQUEST_OFFER_ACCEPTED'> | SessionEventPayload<'BOOKING_REQUEST_OFFER_DECLINED'>,
     kind: 'accepted' | 'declined',
 ): { de: string; en: string; link: string } {
-    const actorDe = payload.actor === 'cook' ? 'Koch' : 'Kunde';
-    const actorEn = payload.actor === 'cook' ? 'cook' : 'customer';
-    if (kind === 'accepted') {
-        return {
-            de: `Angebot akzeptiert (${actorDe}, ${payload.bookingRequestOfferId})`,
-            en: `Offer accepted (${actorEn}, ${payload.bookingRequestOfferId})`,
-            link: `/admin/booking-requests/${payload.bookingRequestId}`,
-        };
-    }
+    const actorKey = payload.actor === 'cook' ? 'cook' : 'customer';
+    const actor = bilingual(`sessionEvents.actors.${actorKey}`);
+    const template = kind === 'accepted' ? 'sessionEvents.templates.offerAccepted' : 'sessionEvents.templates.offerDeclined';
     return {
-        de: `Angebot abgelehnt (${actorDe}, ${payload.bookingRequestOfferId})`,
-        en: `Offer declined (${actorEn}, ${payload.bookingRequestOfferId})`,
+        de: t('de', 'admin', template, { actor: actor.de, offerId: payload.bookingRequestOfferId }),
+        en: t('en', 'admin', template, { actor: actor.en, offerId: payload.bookingRequestOfferId }),
         link: `/admin/booking-requests/${payload.bookingRequestId}`,
     };
 }
@@ -227,16 +138,9 @@ function bookingOfferPaymentDescription(
     payload: SessionEventPayload<'BOOKING_REQUEST_OFFER_PAYMENT_SUCCEEDED'> | SessionEventPayload<'BOOKING_REQUEST_OFFER_PAYMENT_FAILED'>,
     kind: 'succeeded' | 'failed',
 ): { de: string; en: string; link: string } {
-    if (kind === 'succeeded') {
-        return {
-            de: `Angebotszahlung erfolgreich (${payload.bookingRequestOfferId})`,
-            en: `Offer payment succeeded (${payload.bookingRequestOfferId})`,
-            link: `/admin/booking-requests/${payload.bookingRequestId}`,
-        };
-    }
+    const template = kind === 'succeeded' ? 'sessionEvents.templates.paymentSucceeded' : 'sessionEvents.templates.paymentFailed';
     return {
-        de: `Angebotszahlung fehlgeschlagen (${payload.bookingRequestOfferId})`,
-        en: `Offer payment failed (${payload.bookingRequestOfferId})`,
+        ...bilingual(template, { offerId: payload.bookingRequestOfferId }),
         link: `/admin/booking-requests/${payload.bookingRequestId}`,
     };
 }
@@ -247,8 +151,7 @@ function giftCardCreatedDescription(payload: SessionEventPayload<'GIFT_CARD_CREA
     link: string;
 } {
     return {
-        de: `Geschenkkarte erstellt (${payload.giftCardId})`,
-        en: `Gift card created (${payload.giftCardId})`,
+        ...bilingual('sessionEvents.templates.giftCardCreated', { id: payload.giftCardId }),
         link: `/admin/gift-cards/${payload.giftCardId}`,
     };
 }
@@ -259,8 +162,7 @@ function giftCardPayedDescription(payload: SessionEventPayload<'GIFT_CARD_PAYED'
     link: string;
 } {
     return {
-        de: `Geschenkkarte bezahlt (${payload.giftCardId})`,
-        en: `Gift card paid (${payload.giftCardId})`,
+        ...bilingual('sessionEvents.templates.giftCardPayed', { id: payload.giftCardId }),
         link: `/admin/gift-cards/${payload.giftCardId}`,
     };
 }
@@ -275,31 +177,19 @@ function authOauthSignInSucceededDescription(payload: SessionEventPayload<'AUTH_
 } {
     const provider = oauthProviderLabel(payload.provider);
     if (payload.outcome === 'registration_ticket') {
-        return {
-            de: `${provider}-Anmeldung bestätigt (Registrierung)`,
-            en: `${provider} sign-in verified (registration)`,
-        };
+        return bilingual('sessionEvents.templates.oauthRegistration', { provider });
     }
-    return {
-        de: `${provider}-Anmeldung erfolgreich`,
-        en: `${provider} sign-in succeeded`,
-    };
+    return bilingual('sessionEvents.templates.oauthSucceeded', { provider });
 }
 
 function authOauthSignInFailedDescription(payload: SessionEventPayload<'AUTH_OAUTH_SIGN_IN_FAILED'>): { de: string; en: string } {
     const provider = oauthProviderLabel(payload.provider);
-    return {
-        de: `${provider}-Anmeldung fehlgeschlagen (${payload.reason})`,
-        en: `${provider} sign-in failed (${payload.reason})`,
-    };
+    return bilingual('sessionEvents.templates.oauthFailed', { provider, reason: payload.reason });
 }
 
 function authOauthAccountCreatedDescription(payload: SessionEventPayload<'AUTH_OAUTH_ACCOUNT_CREATED'>): { de: string; en: string } {
     const provider = oauthProviderLabel(payload.provider);
-    return {
-        de: `Konto über ${provider} erstellt`,
-        en: `Account created via ${provider}`,
-    };
+    return bilingual('sessionEvents.templates.oauthAccountCreated', { provider });
 }
 
 function authEmailOtpVerifyDescription(payload: SessionEventPayload<'AUTH_EMAIL_OTP_VERIFY_SUCCEEDED'>): {
@@ -307,38 +197,23 @@ function authEmailOtpVerifyDescription(payload: SessionEventPayload<'AUTH_EMAIL_
     en: string;
 } {
     if (payload.outcome === 'registration_ticket') {
-        return {
-            de: 'E-Mail-OTP bestätigt (Registrierung)',
-            en: 'Email OTP verified (registration)',
-        };
+        return bilingual('sessionEvents.auth.emailOtpRegistration');
     }
-    return {
-        de: 'E-Mail-OTP bestätigt (Anmeldung)',
-        en: 'Email OTP verified (sign-in)',
-    };
+    return bilingual('sessionEvents.auth.emailOtpSignIn');
 }
 
 function authTotpVerifyDescription(payload: SessionEventPayload<'AUTH_TOTP_VERIFY_SUCCEEDED'>): { de: string; en: string } {
     if (payload.via === 'recovery') {
-        return {
-            de: 'TOTP bestätigt (Wiederherstellungscode)',
-            en: 'TOTP verified (recovery code)',
-        };
+        return bilingual('sessionEvents.auth.totpRecovery');
     }
-    return {
-        de: 'TOTP bestätigt (Authenticator)',
-        en: 'TOTP verified (authenticator)',
-    };
+    return bilingual('sessionEvents.auth.totpAuthenticator');
 }
 
 export function toGqlAdminSessionEvent(event: SessionEvent, isImpersonation = false): GqlSAdminSessionEvent {
     const rawType = event.type;
     const fallback = isSessionEventKey(rawType)
-        ? STATIC_DESCRIPTIONS[rawType]
-        : {
-              de: `Unbekanntes Ereignis (${rawType})`,
-              en: `Unknown event (${rawType})`,
-          };
+        ? staticDescription(rawType)
+        : bilingual('sessionEvents.templates.unknown', { type: rawType });
 
     let descriptionDe = fallback.de;
     let descriptionEn = fallback.en;

@@ -5,6 +5,7 @@ import { useMutation } from 'urql';
 
 import { SessionStartupGatesLegalAcceptDocument, SessionStartupGatesLegalSignOutDocument } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { redirectAfterSignOut } from '../utils/locale';
 import { AlertDialogAction, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './base/alert-dialog';
 import { Button } from './base/button';
@@ -31,17 +32,11 @@ export function LegalAcceptancePanel({
     onResolved: () => void | Promise<void>;
 }) {
     const locale = useLocale();
+    const { t } = useT('common');
     const [busy, setBusy] = useState(false);
     const [, acceptLegal] = useMutation(SessionStartupGatesLegalAcceptDocument);
     const [, signOut] = useMutation(SessionStartupGatesLegalSignOutDocument);
 
-    const title = { de: 'Aktualisierte rechtliche Hinweise', en: 'Updated legal terms' }[locale];
-    const description = {
-        de: 'Bitte bestätige die aktuellen rechtlichen Texte, bevor du peopleeat weiter nutzt.',
-        en: 'Please confirm the current legal texts before continuing to use peopleeat.',
-    }[locale];
-    const agreeLabel = { de: 'Ich stimme zu', en: 'I agree' }[locale];
-    const signOutLabel = { de: 'Abmelden', en: 'Sign out' }[locale];
     const fullTextTarget = fullTextInNewTab ? '_blank' : undefined;
     const fullTextRel = fullTextInNewTab ? 'noreferrer' : undefined;
 
@@ -50,7 +45,7 @@ export function LegalAcceptancePanel({
         try {
             const result = await acceptLegal({});
             if (result.error || !result.data?.user.userLegalAccept.success) {
-                toast.error({ de: 'Zustimmung konnte nicht gespeichert werden.', en: 'Could not save your acceptance.' }[locale]);
+                toast.error(t('legalAcceptance.acceptFailed'));
                 return;
             }
             await onResolved();
@@ -65,10 +60,10 @@ export function LegalAcceptancePanel({
         try {
             const result = await signOut({ sessionIds: [sessionId] });
             if (result.error || !result.data?.user.terminateSessions.success) {
-                toast.error({ de: 'Abmelden fehlgeschlagen.', en: 'Sign-out failed.' }[locale]);
+                toast.error(t('legalAcceptance.signOutFailed'));
                 return;
             }
-            toast.success({ de: 'Abgemeldet.', en: 'Signed out.' }[locale]);
+            toast.success(t('legalAcceptance.signedOut'));
             redirectAfterSignOut(locale);
         } finally {
             setBusy(false);
@@ -79,19 +74,19 @@ export function LegalAcceptancePanel({
         <div className="grid gap-4 text-sm text-foreground">
             {acceptance?.pendingPrivacyPolicy ? (
                 <div className="grid gap-1">
-                    <p className="font-medium">{{ de: 'Datenschutzerklärung', en: 'Privacy policy' }[locale]}</p>
+                    <p className="font-medium">{t('legalAcceptance.privacyPolicy')}</p>
                     <p className="whitespace-pre-wrap text-muted-foreground">{acceptance.pendingPrivacyPolicy.changeSummaryDe}</p>
                     <Link to="/{-$locale}/privacy-policy" target={fullTextTarget} rel={fullTextRel} className={legalLinkClassName}>
-                        {{ de: 'Vollständigen Text lesen', en: 'Read full text' }[locale]}
+                        {t('legalAcceptance.readFull')}
                     </Link>
                 </div>
             ) : null}
             {acceptance?.pendingTermsAndConditions ? (
                 <div className="grid gap-1">
-                    <p className="font-medium">{{ de: 'Allgemeine Geschäftsbedingungen', en: 'Terms and conditions' }[locale]}</p>
+                    <p className="font-medium">{t('legalAcceptance.terms')}</p>
                     <p className="whitespace-pre-wrap text-muted-foreground">{acceptance.pendingTermsAndConditions.changeSummaryDe}</p>
                     <Link to="/{-$locale}/terms-and-conditions" target={fullTextTarget} rel={fullTextRel} className={legalLinkClassName}>
-                        {{ de: 'Vollständigen Text lesen', en: 'Read full text' }[locale]}
+                        {t('legalAcceptance.readFull')}
                     </Link>
                 </div>
             ) : null}
@@ -100,7 +95,7 @@ export function LegalAcceptancePanel({
 
     const signOutButton = (
         <Button type="button" variant="outline" disabled={busy} onClick={() => void onSignOut()}>
-            {signOutLabel}
+            {t('legalAcceptance.signOut')}
         </Button>
     );
 
@@ -108,14 +103,14 @@ export function LegalAcceptancePanel({
         return (
             <>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>{title}</AlertDialogTitle>
-                    <AlertDialogDescription>{description}</AlertDialogDescription>
+                    <AlertDialogTitle>{t('legalAcceptance.title')}</AlertDialogTitle>
+                    <AlertDialogDescription>{t('legalAcceptance.description')}</AlertDialogDescription>
                 </AlertDialogHeader>
                 {pendingDocs}
                 <AlertDialogFooter>
                     {signOutButton}
                     <AlertDialogAction disabled={busy} onClick={() => void onAccept()}>
-                        {agreeLabel}
+                        {t('legalAcceptance.agree')}
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </>
@@ -125,14 +120,14 @@ export function LegalAcceptancePanel({
     return (
         <div className="grid gap-4">
             <div className="grid gap-1">
-                <p className="font-medium">{title}</p>
-                <p className="text-sm text-muted-foreground">{description}</p>
+                <p className="font-medium">{t('legalAcceptance.title')}</p>
+                <p className="text-sm text-muted-foreground">{t('legalAcceptance.description')}</p>
             </div>
             {pendingDocs}
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                 {signOutButton}
                 <Button type="button" disabled={busy} onClick={() => void onAccept()}>
-                    {agreeLabel}
+                    {t('legalAcceptance.agree')}
                 </Button>
             </div>
         </div>

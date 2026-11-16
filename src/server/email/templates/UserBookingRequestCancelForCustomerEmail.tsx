@@ -1,3 +1,4 @@
+import { tEmail } from '../../../i18n/tEmail';
 import type { Locale } from '../../../shared/locale';
 import { EmailLayout, EmailText } from '../components';
 
@@ -15,32 +16,22 @@ export function UserBookingRequestCancelForCustomerEmail({
     removeSavedEvent = false,
 }: UserBookingRequestCancelForCustomerEmailProps) {
     const subject = userBookingRequestCancelForCustomerEmailSubject(locale);
-    const preview = {
-        de: 'Deine Stornierung ist bestätigt. Wir sind da, wenn du wieder buchst',
-        en: "Your cancellation is confirmed. We're here when you're ready again",
-    }[locale];
-    const body = {
-        de: 'Schade, dass du deine Anfrage storniert hast. Wir hoffen, dass es beim nächsten Mal klappt und stehen dir jederzeit gerne zur Verfügung, wenn du wieder Interesse an einem Privatkoch hast.',
-        en: "Sorry to see you cancel your request. We hope it works out next time. We're here whenever you'd like a private chef again.",
-    }[locale];
-    const closing = {
-        de: 'Alles Gute und bis bald!',
-        en: 'All the best, see you soon!',
-    }[locale];
-    const calendarRemoval = {
-        de: 'Falls du den Abend gespeichert hast, nimm ihn bitte aus dem Kalender.',
-        en: 'If you saved the evening, please remove it from your calendar.',
-    }[locale];
 
     return (
-        <EmailLayout locale={locale} webPageUrl={webPageUrl} preview={preview} subject={subject} recipientFirstName={recipientFirstName}>
-            <EmailText>{body}</EmailText>
-            {removeSavedEvent ? <EmailText>{calendarRemoval}</EmailText> : null}
-            <EmailText>{closing}</EmailText>
+        <EmailLayout
+            locale={locale}
+            webPageUrl={webPageUrl}
+            preview={tEmail(locale, 'booking.cancelCustomer.preview')}
+            subject={subject}
+            recipientFirstName={recipientFirstName}
+        >
+            <EmailText>{tEmail(locale, 'booking.cancelCustomer.body')}</EmailText>
+            {removeSavedEvent ? <EmailText>{tEmail(locale, 'common.calendarRemovalEvening')}</EmailText> : null}
+            <EmailText>{tEmail(locale, 'booking.cancelCustomer.closing')}</EmailText>
         </EmailLayout>
     );
 }
 
 export function userBookingRequestCancelForCustomerEmailSubject(locale: Locale): string {
-    return { de: 'Stornierung', en: 'Cancellation' }[locale];
+    return tEmail(locale, 'booking.cancelCustomer.subject');
 }

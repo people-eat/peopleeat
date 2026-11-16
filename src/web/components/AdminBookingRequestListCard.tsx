@@ -1,7 +1,15 @@
 import { Link } from '@tanstack/react-router';
 import { CalendarIcon, MapPinIcon, UserIcon, UsersIcon } from 'lucide-react';
 
-import { formatBookingEventDateFromCountry, formatDate, formatDateTime, formatParticipants, userDisplayName } from '../../shared';
+import { t } from '../../i18n/t';
+import {
+    formatBookingEventDateFromCountry,
+    formatDate,
+    formatDateTime,
+    formatParticipants,
+    inlineCopy,
+    userDisplayName,
+} from '../../shared';
 import type { BookingRequestOfferStatus } from '../../shared/bookingRequestOfferStatus';
 import { bookingRequestOfferStatusLabel } from '../../shared/bookingRequestOfferStatus';
 import { bookingRequestStatusHue, bookingRequestStatusLabel } from '../../shared/bookingRequestStatus';
@@ -111,15 +119,21 @@ function offerTooltipLabel(chip: OfferChipModel, locale: Locale, timeZone: strin
     const name = userDisplayName({ firstName: chip.firstName, lastName: chip.lastName });
     const unread =
         chip.unreadCount > 0
-            ? {
-                  de: ` · ${chip.unreadCount} ungelesen`,
-                  en: ` · ${chip.unreadCount} unread`,
-              }[locale]
+            ? inlineCopy(
+                  {
+                      de: ` · ${chip.unreadCount} ungelesen`,
+                      en: ` · ${chip.unreadCount} unread`,
+                  },
+                  locale,
+              )
             : '';
-    return {
-        de: `Angebot von ${name} · ${statusTitle} · ${createdAtLabel}${unread}`,
-        en: `Offer from ${name} · ${statusTitle} · ${createdAtLabel}${unread}`,
-    }[locale];
+    return inlineCopy(
+        {
+            de: `Angebot von ${name} · ${statusTitle} · ${createdAtLabel}${unread}`,
+            en: `Offer from ${name} · ${statusTitle} · ${createdAtLabel}${unread}`,
+        },
+        locale,
+    );
 }
 
 function OfferChip({
@@ -199,12 +213,13 @@ function OfferChipStack({
                     to="/{-$locale}/admin/booking-requests/$bookingRequestId"
                     params={{ bookingRequestId: overflowHrefBookingRequestId }}
                     search={{ tab: 'offers' }}
-                    aria-label={
+                    aria-label={inlineCopy(
                         {
                             de: `${overflowCount} weitere Angebote anzeigen`,
                             en: `View ${overflowCount} more offers`,
-                        }[locale]
-                    }
+                        },
+                        locale,
+                    )}
                     className={cn(
                         '-ml-2 flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground ring-2 ring-card hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
                         muted && 'opacity-40 grayscale',
@@ -241,9 +256,9 @@ function OffersFooter({
     if (useAcceptedLayout) {
         offerLabel = acceptedChip.firstName;
     } else if (offerCount === 1) {
-        offerLabel = { de: '1 Angebot', en: '1 offer' }[locale];
+        offerLabel = t(locale, 'admin', 'copy.n1Offer');
     } else {
-        offerLabel = { de: `${offerCount} Angebote`, en: `${offerCount} offers` }[locale];
+        offerLabel = inlineCopy({ de: `${offerCount} Angebote`, en: `${offerCount} offers` }, locale);
     }
 
     const offersLinkClassName = cn(
@@ -254,7 +269,7 @@ function OffersFooter({
     if (chips.length === 0) {
         return (
             <div className="flex h-10 items-center justify-between gap-3">
-                <span className="text-sm text-muted-foreground">{{ de: 'Keine Angebote', en: 'No offers' }[locale]}</span>
+                <span className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noOffers')}</span>
                 <Link
                     to="/{-$locale}/admin/booking-requests/$bookingRequestId"
                     params={{ bookingRequestId }}
@@ -262,7 +277,7 @@ function OffersFooter({
                     className={offersLinkClassName}
                     onClick={(event) => event.stopPropagation()}
                 >
-                    {{ de: 'Angebote', en: 'Offers' }[locale]}
+                    {t(locale, 'admin', 'copy.offers')}
                 </Link>
             </div>
         );
@@ -365,7 +380,7 @@ export function AdminBookingRequestListCard({ request }: { request: AdminBooking
                                     {customerName}
                                 </Link>
                             </TooltipTrigger>
-                            <TooltipContent>{{ de: 'Zum Benutzerprofil', en: 'To user profile' }[locale]}</TooltipContent>
+                            <TooltipContent>{t(locale, 'admin', 'copy.toUserProfile')}</TooltipContent>
                         </Tooltip>
                     </p>
                     <Link
@@ -392,8 +407,7 @@ export function AdminBookingRequestListCard({ request }: { request: AdminBooking
                             <span className="truncate">{location}</span>
                         </p>
                         <p className="truncate text-xs text-muted-foreground/80">
-                            {{ de: 'Erstellt', en: 'Created' }[locale]}{' '}
-                            {formatDate(request.createdAt, { locale, timeZone, dateStyle: 'medium' })}
+                            {t(locale, 'admin', 'copy.created')} {formatDate(request.createdAt, { locale, timeZone, dateStyle: 'medium' })}
                         </p>
                     </Link>
                 </div>

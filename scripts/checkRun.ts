@@ -17,6 +17,7 @@ const PARALLEL: Check[] = [
     { name: 'spell', script: 'spell:check' },
     { name: 'types', script: 'type:check' },
     { name: 'usage', script: 'usage:check' },
+    { name: 'i18n', script: 'i18n:check' },
     { name: 'commitlint', script: 'commitlint:check' },
 ];
 

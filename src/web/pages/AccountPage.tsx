@@ -7,7 +7,9 @@ import type { ReactNode, SubmitEventHandler } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
+import { t } from '../../i18n/t';
 import { DEFAULT_TIME_ZONE, formatDate, phoneNumberNormalize, userDisplayName } from '../../shared';
+import type { Locale } from '../../shared';
 import { AccountNotificationSettings } from '../components/AccountNotificationSettings';
 import { AuthEmailOtpSpamHint } from '../components/auth/AuthEmailOtpSpamHint';
 import { AuthTotpAccountSection } from '../components/auth/AuthTotpAccountSection';
@@ -57,35 +59,29 @@ import { accountPageTitle } from './accountLabels';
 
 export { accountPageDescription, accountPageTitle } from './accountLabels';
 
-function emailAddressUpdateErrorMessage(error: unknown, locale: 'de' | 'en'): string {
+function emailAddressUpdateErrorMessage(error: unknown, locale: Locale): string {
     const message = error instanceof Error ? error.message : String(error ?? '');
     if (/invalid email|email unchanged/i.test(message)) {
-        return { de: 'Bitte eine gültige neue E-Mail-Adresse eingeben.', en: 'Please enter a valid new email address.' }[locale];
+        return t(locale, 'profile', 'account.errors.invalidEmail');
     }
     if (/already registered/i.test(message)) {
-        return {
-            de: 'Diese E-Mail-Adresse ist bereits vergeben.',
-            en: 'This email address is already in use.',
-        }[locale];
+        return t(locale, 'profile', 'account.errors.emailTaken');
     }
     if (/invalid or expired|too many attempt/i.test(message)) {
-        return { de: 'Code ungültig oder abgelaufen.', en: 'Invalid or expired code.' }[locale];
+        return t(locale, 'profile', 'account.errors.invalidOrExpiredCode');
     }
-    return { de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale];
+    return t(locale, 'common', 'saveFailed');
 }
 
-function phoneNumberUpdateErrorMessage(error: unknown, locale: 'de' | 'en'): string {
+function phoneNumberUpdateErrorMessage(error: unknown, locale: Locale): string {
     const message = error instanceof Error ? error.message : String(error ?? '');
     if (/already registered/i.test(message)) {
-        return { de: 'Diese Nummer ist bereits vergeben.', en: 'This number is already in use.' }[locale];
+        return t(locale, 'profile', 'account.errors.phoneTaken');
     }
     if (/phoneNumber|E\.164/i.test(message)) {
-        return {
-            de: 'Bitte eine Nummer mit Ländervorwahl eingeben, zum Beispiel +49…',
-            en: 'Enter a number with a country code, for example +49…',
-        }[locale];
+        return t(locale, 'profile', 'account.errors.invalidPhone');
     }
-    return { de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale];
+    return t(locale, 'common', 'saveFailed');
 }
 
 export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }) {
@@ -179,12 +175,7 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
         setPhoneError(null);
         const normalized = phoneNumberNormalize(phoneDraft);
         if (!normalized) {
-            setPhoneError(
-                {
-                    de: 'Bitte eine Nummer mit Ländervorwahl eingeben, zum Beispiel +49…',
-                    en: 'Enter a number with a country code, for example +49…',
-                }[locale],
-            );
+            setPhoneError(t(locale, 'profile', 'account.errors.invalidPhone'));
             return;
         }
         if (normalized === phoneNumber) {
@@ -197,16 +188,11 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
             if (result.error || !result.data?.user.userUpdate.success) {
                 throw result.error ?? new Error('Could not save.');
             }
-            toast.success({ de: 'Telefonnummer gespeichert.', en: 'Phone number saved.' }[locale]);
+            toast.success(t(locale, 'profile', 'account.toasts.phoneSaved'));
             const addingPhone = phoneNumber.length === 0;
             const whatsAppOn = user != null && Object.values(user.notificationSettings).some((row) => row.whatsApp);
             if (addingPhone && whatsAppOn) {
-                toast.success(
-                    {
-                        de: 'WhatsApp ist für die Nachrichten unten an. Einzelne kannst du ausschalten.',
-                        en: 'WhatsApp is on for the messages below. You can turn individual ones off.',
-                    }[locale],
-                );
+                toast.success(t(locale, 'profile', 'account.toasts.whatsappOn'));
             }
             setPhoneDialogOpen(false);
         } catch (error) {
@@ -224,12 +210,7 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
             if (result.error || !result.data?.user.emailAddressUpdateOtpRequest.success) {
                 throw result.error ?? new Error('Could not save.');
             }
-            toast.success(
-                {
-                    de: 'Code gesendet. Bitte Posteingang und Spam-Ordner prüfen.',
-                    en: 'Code sent. Please check your inbox and spam folder.',
-                }[locale],
-            );
+            toast.success(t(locale, 'profile', 'account.toasts.codeSent'));
             setEmailDialogOpen(false);
             setOtpCode('');
             otpVerifyStarted.current = false;
@@ -249,7 +230,7 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
             if (result.error || !result.data?.user.emailAddressUpdateOtpVerify.success) {
                 throw result.error ?? new Error('Could not save.');
             }
-            toast.success({ de: 'E-Mail-Adresse aktualisiert.', en: 'Email address updated.' }[locale]);
+            toast.success(t(locale, 'profile', 'account.toasts.emailUpdated'));
             setOtpCode('');
         } catch (error) {
             otpVerifyStarted.current = false;
@@ -274,7 +255,7 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                 throw result.error ?? new Error('Could not save.');
             }
             setOtpCode('');
-            toast.success({ de: 'Änderung verworfen.', en: 'Change discarded.' }[locale]);
+            toast.success(t(locale, 'profile', 'account.toasts.changeDiscarded'));
         } catch (error) {
             toast.error(emailAddressUpdateErrorMessage(error, locale));
         } finally {
@@ -291,13 +272,13 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
             const result = await userUpdate({ user: { timeZone: nextTimeZone } });
             if (result.error || !result.data?.user.userUpdate.success) {
                 setTimeZoneDraft(previous);
-                toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+                toast.error(t(locale, 'common', 'saveFailed'));
                 return;
             }
-            toast.success({ de: 'Zeitzone gespeichert.', en: 'Time zone saved.' }[locale]);
+            toast.success(t(locale, 'profile', 'account.toasts.timeZoneSaved'));
         } catch {
             setTimeZoneDraft(previous);
-            toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+            toast.error(t(locale, 'common', 'saveFailed'));
         } finally {
             setBusy(false);
         }
@@ -313,15 +294,10 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
             if (result.error || !result.data?.user.userUpdate.success) {
                 throw result.error ?? new Error('Could not save.');
             }
-            toast.success(
-                {
-                    de: 'Bevorzugte Kommunikation gespeichert.',
-                    en: 'Preferred communication saved.',
-                }[locale],
-            );
+            toast.success(t(locale, 'profile', 'account.toasts.preferredCommunicationSaved'));
         } catch {
             setPreferredCommunicationDraft(previous);
-            toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+            toast.error(t(locale, 'common', 'saveFailed'));
         } finally {
             setBusy(false);
         }
@@ -333,18 +309,18 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
             const optionsResult = await registerOptions({});
             const options = optionsResult.data?.user.authPasskeyRegisterOptions as PublicKeyCredentialCreationOptionsJSON | undefined;
             if (optionsResult.error || !options) {
-                toast.error({ de: 'Passkey konnte nicht erstellt werden.', en: 'Could not create a passkey.' }[locale]);
+                toast.error(t(locale, 'profile', 'account.toasts.passkeyCreateFailed'));
                 return;
             }
             const credential = await startRegistration({ optionsJSON: options });
             const verifyResult = await registerVerify({ response: credential });
             if (verifyResult.error || !verifyResult.data?.user.authPasskeyRegisterVerify.success) {
-                toast.error({ de: 'Passkey konnte nicht gespeichert werden.', en: 'Could not save the passkey.' }[locale]);
+                toast.error(t(locale, 'profile', 'account.toasts.passkeySaveFailed'));
                 return;
             }
-            toast.success({ de: 'Passkey gespeichert.', en: 'Passkey saved.' }[locale]);
+            toast.success(t(locale, 'profile', 'account.toasts.passkeySaved'));
         } catch {
-            toast.error({ de: 'Passkey-Registrierung abgebrochen.', en: 'Passkey registration cancelled.' }[locale]);
+            toast.error(t(locale, 'profile', 'account.toasts.passkeyCancelled'));
         } finally {
             setBusy(false);
         }
@@ -355,10 +331,10 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
         try {
             const result = await deletePasskey({ authPasskeyId });
             if (result.error || !result.data?.user.authPasskeyDelete.success) {
-                toast.error({ de: 'Passkey konnte nicht entfernt werden.', en: 'Could not remove the passkey.' }[locale]);
+                toast.error(t(locale, 'profile', 'account.toasts.passkeyRemoveFailed'));
                 return;
             }
-            toast.success({ de: 'Passkey entfernt.', en: 'Passkey removed.' }[locale]);
+            toast.success(t(locale, 'profile', 'account.toasts.passkeyRemoved'));
         } finally {
             setBusy(false);
         }
@@ -369,20 +345,15 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
         try {
             const result = await terminateSessions({ sessionIds });
             if (result.error || !result.data?.user.terminateSessions.success) {
-                toast.error(
-                    {
-                        de: signOut ? 'Abmelden fehlgeschlagen.' : 'Gerät konnte nicht abgemeldet werden.',
-                        en: signOut ? 'Sign-out failed.' : 'Could not sign out that device.',
-                    }[locale],
-                );
+                toast.error(t(locale, 'profile', signOut ? 'account.toasts.signOutFailed' : 'account.toasts.deviceSignOutFailed'));
                 return;
             }
             if (signOut) {
-                toast.success({ de: 'Abgemeldet.', en: 'Signed out.' }[locale]);
+                toast.success(t(locale, 'profile', 'account.toasts.signedOut'));
                 redirectAfterSignOut(locale);
                 return;
             }
-            toast.success({ de: 'Gerät abgemeldet.', en: 'Device signed out.' }[locale]);
+            toast.success(t(locale, 'profile', 'account.toasts.deviceSignedOut'));
         } finally {
             setBusy(false);
         }
@@ -405,12 +376,7 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
             }
             setDeleteCode('');
             setDeleteStep('code');
-            toast.success(
-                {
-                    de: 'Code gesendet. Bitte Posteingang und Spam-Ordner prüfen.',
-                    en: 'Code sent. Please check your inbox and spam folder.',
-                }[locale],
-            );
+            toast.success(t(locale, 'profile', 'account.toasts.codeSent'));
         } catch (error) {
             setDeleteError(emailAddressUpdateErrorMessage(error, locale));
         } finally {
@@ -427,14 +393,14 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
             if (result.error || !result.data?.user.userAnonymize.success) {
                 throw result.error ?? new Error('Could not save.');
             }
-            toast.success({ de: 'Konto gelöscht.', en: 'Account deleted.' }[locale]);
+            toast.success(t(locale, 'profile', 'account.toasts.accountDeleted'));
             redirectAfterSignOut(locale);
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error ?? '');
             if (/invalid or expired|too many attempt/i.test(message)) {
-                setDeleteError({ de: 'Code ungültig oder abgelaufen.', en: 'Invalid or expired code.' }[locale]);
+                setDeleteError(t(locale, 'profile', 'account.errors.invalidOrExpiredCode'));
             } else {
-                setDeleteError({ de: 'Konto konnte nicht gelöscht werden.', en: 'Could not delete the account.' }[locale]);
+                setDeleteError(t(locale, 'profile', 'account.errors.deleteFailed'));
             }
         } finally {
             setBusy(false);
@@ -444,15 +410,15 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
     const otherSessionIds = sessions.filter((row) => !row.isCurrent).map((row) => row.sessionId);
     const actionBusy = busy || profilePictureBusy;
     const hasPhoneNumber = phoneNumber.length > 0;
-    const phoneNumberLabel = hasPhoneNumber ? phoneNumber : { de: 'Keine Nummer hinterlegt', en: 'No number on file' }[locale];
+    const phoneNumberLabel = hasPhoneNumber ? phoneNumber : t(locale, 'profile', 'account.noPhone');
     const birthDateLabel = user.birthDate
         ? formatDate(user.birthDate, { locale, dateStyle: 'long' })
-        : { de: 'Nicht angegeben', en: 'Not set' }[locale];
+        : t(locale, 'profile', 'account.notSet');
     const registeredLabel = formatDate(user.createdAt, { locale, timeZone, dateStyle: 'long' });
 
     return (
         <main id="main-content" className="mx-auto grid w-full max-w-3xl content-start gap-6">
-            <h1 className="sr-only">{accountPageTitle[locale]}</h1>
+            <h1 className="sr-only">{accountPageTitle(locale)}</h1>
 
             <Card className="bg-card">
                 <CardContent>
@@ -469,32 +435,27 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                         </p>
                         <p className="truncate text-sm text-muted-foreground">
                             {user.birthDate != null
-                                ? { de: `Geboren am ${birthDateLabel}`, en: `Born ${birthDateLabel}` }[locale]
-                                : { de: 'Kein Geburtsdatum angegeben', en: 'No date of birth on file' }[locale]}
+                                ? t(locale, 'profile', 'account.bornOn', { date: birthDateLabel })
+                                : t(locale, 'profile', 'account.noBirthDate')}
                         </p>
                         <p className="truncate text-xs text-muted-foreground">
-                            {{ de: `Registriert am ${registeredLabel}`, en: `Registered ${registeredLabel}` }[locale]}
+                            {t(locale, 'profile', 'account.registeredOn', { date: registeredLabel })}
                         </p>
                     </ProfilePictureEditor>
                 </CardContent>
             </Card>
 
             <AccountCard
-                title={{ de: 'So erreichen wir dich', en: 'How we reach you' }[locale]}
-                description={
-                    {
-                        de: 'E-Mail und Telefon für dein Konto. Die Auswahl gilt für unseren Concierge, nicht für automatische Nachrichten.',
-                        en: 'Your account email and phone. This choice is for our concierge, not for automatic messages.',
-                    }[locale]
-                }
+                title={t(locale, 'profile', 'account.contact.title')}
+                description={t(locale, 'profile', 'account.contact.description')}
             >
                 <AccountValueRow
-                    label={{ de: 'E-Mail-Adresse', en: 'Email address' }[locale]}
+                    label={t(locale, 'profile', 'account.contact.email')}
                     value={currentEmailAddress}
                     action={
                         pendingUnverifiedOtp == null ? (
                             <Button type="button" variant="outline" size="sm" disabled={actionBusy} onClick={openEmailDialog}>
-                                {{ de: 'E-Mail ändern', en: 'Change email' }[locale]}
+                                {t(locale, 'profile', 'account.contact.changeEmail')}
                             </Button>
                         ) : null
                     }
@@ -503,16 +464,9 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                     <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card px-4 py-3">
                         <div className="grid min-w-0 gap-0.5">
                             <p className="text-sm text-foreground">
-                                {
-                                    {
-                                        de: `Code ausstehend für ${pendingUnverifiedOtp.emailAddress}`,
-                                        en: `Code pending for ${pendingUnverifiedOtp.emailAddress}`,
-                                    }[locale]
-                                }
+                                {t(locale, 'profile', 'account.contact.codePending', { email: pendingUnverifiedOtp.emailAddress })}
                             </p>
-                            <p className="text-xs text-muted-foreground">
-                                {{ de: 'Gib den Code aus der E-Mail ein.', en: 'Enter the code from the email.' }[locale]}
-                            </p>
+                            <p className="text-xs text-muted-foreground">{t(locale, 'profile', 'account.contact.enterEmailCode')}</p>
                         </div>
                         <Button
                             type="button"
@@ -521,19 +475,19 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                             disabled={actionBusy}
                             onClick={() => void onEmailAddressUpdateOtpDiscard()}
                         >
-                            {{ de: 'Änderung verwerfen', en: 'Discard change' }[locale]}
+                            {t(locale, 'profile', 'account.contact.discardChange')}
                         </Button>
                     </div>
                 ) : null}
                 <AccountValueRow
-                    label={{ de: 'Telefonnummer', en: 'Phone number' }[locale]}
+                    label={t(locale, 'profile', 'account.contact.phone')}
                     value={phoneNumberLabel}
                     muted={!hasPhoneNumber}
                     action={
                         <Button type="button" variant="outline" size="sm" disabled={actionBusy} onClick={openPhoneDialog}>
                             {hasPhoneNumber
-                                ? { de: 'Nummer ändern', en: 'Change number' }[locale]
-                                : { de: 'Nummer hinzufügen', en: 'Add a number' }[locale]}
+                                ? t(locale, 'profile', 'account.contact.changeNumber')
+                                : t(locale, 'profile', 'account.contact.addNumber')}
                         </Button>
                     }
                 />
@@ -542,32 +496,20 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                     onValueChange={(next) => void onPreferredCommunicationChange(next)}
                     disabled={actionBusy}
                     showSubtitle={false}
-                    title={{ de: 'Wie soll sich der Concierge melden?', en: 'How should the concierge reach you?' }}
+                    title={t(locale, 'profile', 'account.contact.conciergeTitle')}
                 />
 
                 <div className="grid gap-2">
-                    <p className="text-sm font-medium text-foreground">{{ de: 'Sprache', en: 'Language' }[locale]}</p>
-                    <p className="text-sm text-muted-foreground">
-                        {
-                            {
-                                de: 'Diese Sprache gilt für die Oberfläche, für E-Mails und für WhatsApp.',
-                                en: 'This language applies to the interface, to emails, and to WhatsApp.',
-                            }[locale]
-                        }
-                    </p>
+                    <p className="text-sm font-medium text-foreground">{t(locale, 'profile', 'account.language.title')}</p>
+                    <p className="text-sm text-muted-foreground">{t(locale, 'profile', 'account.language.description')}</p>
                     <LanguageSwitcher />
                 </div>
                 <TimeZoneField value={timeZoneDraft} onValueChange={(next) => void onTimeZoneChange(next)} disabled={actionBusy} />
             </AccountCard>
 
             <AccountCard
-                title={{ de: 'Benachrichtigungen', en: 'Notifications' }[locale]}
-                description={
-                    {
-                        de: 'Lege fest, wobei wir dir schreiben. In der App bleibt alles sichtbar. Anmeldecodes, Zahlungen und Support gehen immer an deine E-Mail.',
-                        en: 'Choose what we write to you about. Everything still shows in the app. Sign-in codes, payments, and support always go to your email.',
-                    }[locale]
-                }
+                title={t(locale, 'profile', 'account.notifications.title')}
+                description={t(locale, 'profile', 'account.notifications.description')}
             >
                 <AccountNotificationSettings
                     value={user.notificationSettings}
@@ -590,41 +532,29 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
             </AccountCard>
 
             <AccountCard
-                title={{ de: 'Konto löschen', en: 'Delete account' }[locale]}
-                description={
-                    {
-                        de: 'Personenbezogene Daten werden entfernt. Du kannst dich danach nicht mehr anmelden.',
-                        en: 'Personal profile data will be removed. You will not be able to sign in afterwards.',
-                    }[locale]
-                }
+                title={t(locale, 'profile', 'account.delete.action')}
+                description={t(locale, 'profile', 'account.delete.description')}
             >
                 <div className="flex justify-end">
                     <Button type="button" variant="destructive" size="sm" disabled={actionBusy} onClick={openDeleteDialog}>
-                        {{ de: 'Konto löschen', en: 'Delete account' }[locale]}
+                        {t(locale, 'profile', 'account.delete.action')}
                     </Button>
                 </div>
             </AccountCard>
 
-            <AccountCard title={{ de: 'Anmeldung und Sicherheit', en: 'Sign-in and security' }[locale]}>
+            <AccountCard title={t(locale, 'profile', 'account.security.title')}>
                 <div className="grid gap-3">
-                    <h2 className="text-sm font-medium text-foreground">{{ de: 'Passkeys', en: 'Passkeys' }[locale]}</h2>
+                    <h2 className="text-sm font-medium text-foreground">{t(locale, 'profile', 'account.security.passkeys')}</h2>
                     {passkeys.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">
-                            {
-                                {
-                                    de: 'Melde dich das nächste Mal mit Face ID oder Fingerabdruck an, ohne Code.',
-                                    en: 'Next time, sign in with Face ID or a fingerprint, without a code.',
-                                }[locale]
-                            }
-                        </p>
+                        <p className="text-sm text-muted-foreground">{t(locale, 'profile', 'account.security.passkeysHint')}</p>
                     ) : (
                         <ul className="divide-y divide-border overflow-hidden rounded-xl border bg-card">
                             {passkeys.map((passkey) => (
                                 <li key={passkey.authPasskeyId} className="flex items-center justify-between gap-4 bg-card px-4 py-3">
                                     <div className="grid min-w-0 gap-0.5">
                                         <p className="truncate text-sm text-foreground">
-                                            {passkey.deviceType ?? { de: 'Passkey', en: 'Passkey' }[locale]}
-                                            {passkey.backedUp ? { de: ' · gesichert', en: ' · backed up' }[locale] : ''}
+                                            {passkey.deviceType ?? t(locale, 'profile', 'account.security.passkeyFallback')}
+                                            {passkey.backedUp ? t(locale, 'profile', 'account.security.backedUp') : ''}
                                         </p>
                                         <p className="text-xs text-muted-foreground">
                                             {formatDate(passkey.createdAt, { locale, timeZone, dateStyle: 'medium' })}
@@ -633,33 +563,24 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
                                             <Button type="button" variant="destructive" size="sm" disabled={actionBusy}>
-                                                {{ de: 'Entfernen', en: 'Remove' }[locale]}
+                                                {t(locale, 'profile', 'account.security.remove')}
                                             </Button>
                                         </AlertDialogTrigger>
                                         <AlertDialogContent>
                                             <AlertDialogHeader>
-                                                <AlertDialogTitle>
-                                                    {{ de: 'Passkey entfernen?', en: 'Remove this passkey?' }[locale]}
-                                                </AlertDialogTitle>
+                                                <AlertDialogTitle>{t(locale, 'profile', 'account.security.removeTitle')}</AlertDialogTitle>
                                                 <AlertDialogDescription>
-                                                    {
-                                                        {
-                                                            de: 'Du kannst dich mit diesem Passkey nicht mehr anmelden. Andere Passkeys und Anmeldemethoden bleiben unverändert.',
-                                                            en: 'You will no longer be able to sign in with this passkey. Other passkeys and sign-in methods stay unchanged.',
-                                                        }[locale]
-                                                    }
+                                                    {t(locale, 'profile', 'account.security.removeBody')}
                                                 </AlertDialogDescription>
                                             </AlertDialogHeader>
                                             <AlertDialogFooter>
-                                                <AlertDialogCancel disabled={actionBusy}>
-                                                    {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
-                                                </AlertDialogCancel>
+                                                <AlertDialogCancel disabled={actionBusy}>{t(locale, 'common', 'cancel')}</AlertDialogCancel>
                                                 <AlertDialogAction
                                                     variant="destructive"
                                                     disabled={actionBusy}
                                                     onClick={() => void onPasskeyDelete(passkey.authPasskeyId)}
                                                 >
-                                                    {{ de: 'Entfernen', en: 'Remove' }[locale]}
+                                                    {t(locale, 'profile', 'account.security.remove')}
                                                 </AlertDialogAction>
                                             </AlertDialogFooter>
                                         </AlertDialogContent>
@@ -671,19 +592,17 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                     <div className="flex justify-end">
                         <Button type="button" variant="outline" disabled={actionBusy} onClick={() => void onPasskeyRegister()}>
                             <KeyRoundIcon />
-                            {{ de: 'Passkey hinzufügen', en: 'Add a passkey' }[locale]}
+                            {t(locale, 'profile', 'account.security.addPasskey')}
                         </Button>
                     </div>
                 </div>
                 <div className="grid gap-3">
-                    <h2 className="text-sm font-medium text-foreground">
-                        {{ de: 'Zwei-Faktor-Authentifizierung', en: 'Two-factor authentication' }[locale]}
-                    </h2>
+                    <h2 className="text-sm font-medium text-foreground">{t(locale, 'profile', 'account.security.totp')}</h2>
                     <AuthTotpAccountSection totp={user.timeBasedOneTimePassword ?? null} actionBusy={actionBusy} />
                 </div>
 
                 <div className="grid gap-3">
-                    <h2 className="text-sm font-medium text-foreground">{{ de: 'Angemeldete Geräte', en: 'Signed-in devices' }[locale]}</h2>
+                    <h2 className="text-sm font-medium text-foreground">{t(locale, 'profile', 'account.security.devices')}</h2>
                     <ul className="divide-y divide-border overflow-hidden rounded-xl border bg-card">
                         {sessions.map((row) => {
                             const deviceLabel = sessionDeviceLabel(row.userAgent, locale);
@@ -692,31 +611,25 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                                     <div className="grid min-w-0 gap-0.5">
                                         <p className="truncate text-sm text-foreground">{deviceLabel}</p>
                                         <p className="text-xs text-muted-foreground">
-                                            {
-                                                {
-                                                    de: `Zuletzt aktiv ${formatDate(row.lastInteractionAt, { locale, timeZone, dateStyle: 'medium' })}`,
-                                                    en: `Last active ${formatDate(row.lastInteractionAt, { locale, timeZone, dateStyle: 'medium' })}`,
-                                                }[locale]
-                                            }
+                                            {t(locale, 'profile', 'account.security.lastActive', {
+                                                date: formatDate(row.lastInteractionAt, { locale, timeZone, dateStyle: 'medium' }),
+                                            })}
                                         </p>
                                     </div>
                                     {row.isCurrent ? (
-                                        <Badge variant="outline">{{ de: 'Dieses Gerät', en: 'This device' }[locale]}</Badge>
+                                        <Badge variant="outline">{t(locale, 'profile', 'account.security.thisDevice')}</Badge>
                                     ) : (
                                         <AccountSignOutDialog
                                             disabled={actionBusy}
-                                            title={{ de: `${deviceLabel} abmelden?`, en: `Sign out ${deviceLabel}?` }[locale]}
-                                            description={
-                                                {
-                                                    de: `${deviceLabel} wird abgemeldet. Dieses Gerät bleibt angemeldet.`,
-                                                    en: `${deviceLabel} will be signed out. This device stays signed in.`,
-                                                }[locale]
-                                            }
-                                            confirmLabel={{ de: 'Abmelden', en: 'Sign out' }[locale]}
+                                            title={t(locale, 'profile', 'account.security.signOutDeviceTitle', { device: deviceLabel })}
+                                            description={t(locale, 'profile', 'account.security.signOutDeviceBody', {
+                                                device: deviceLabel,
+                                            })}
+                                            confirmLabel={t(locale, 'profile', 'account.security.signOut')}
                                             onConfirm={() => void onTerminateSessions([row.sessionId], { signOut: false })}
                                             trigger={
                                                 <Button type="button" variant="outline" size="sm" disabled={actionBusy}>
-                                                    {{ de: 'Abmelden', en: 'Sign out' }[locale]}
+                                                    {t(locale, 'profile', 'account.security.signOut')}
                                                 </Button>
                                             }
                                         />
@@ -729,37 +642,27 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                         {otherSessionIds.length > 0 ? (
                             <AccountSignOutDialog
                                 disabled={actionBusy}
-                                title={{ de: 'Überall sonst abmelden?', en: 'Sign out everywhere else?' }[locale]}
-                                description={
-                                    {
-                                        de: 'Alle anderen Geräte und Browser werden abgemeldet. Dieses Gerät bleibt angemeldet.',
-                                        en: 'All other devices and browsers will be signed out. This device stays signed in.',
-                                    }[locale]
-                                }
-                                confirmLabel={{ de: 'Überall sonst abmelden', en: 'Sign out everywhere else' }[locale]}
+                                title={t(locale, 'profile', 'account.security.signOutEverywhereTitle')}
+                                description={t(locale, 'profile', 'account.security.signOutEverywhereBody')}
+                                confirmLabel={t(locale, 'profile', 'account.security.signOutEverywhere')}
                                 onConfirm={() => void onTerminateSessions(otherSessionIds, { signOut: false })}
                                 trigger={
                                     <Button type="button" variant="outline" disabled={actionBusy}>
-                                        {{ de: 'Überall sonst abmelden', en: 'Sign out everywhere else' }[locale]}
+                                        {t(locale, 'profile', 'account.security.signOutEverywhere')}
                                     </Button>
                                 }
                             />
                         ) : null}
                         <AccountSignOutDialog
                             disabled={actionBusy}
-                            title={{ de: 'Auf diesem Gerät abmelden?', en: 'Sign out on this device?' }[locale]}
-                            description={
-                                {
-                                    de: 'Du wirst auf diesem Gerät abgemeldet und musst dich erneut anmelden, um auf dein Konto zuzugreifen.',
-                                    en: 'You will be signed out on this device and will need to sign in again to access your account.',
-                                }[locale]
-                            }
-                            confirmLabel={{ de: 'Abmelden', en: 'Sign out' }[locale]}
+                            title={t(locale, 'profile', 'account.security.signOutThisTitle')}
+                            description={t(locale, 'profile', 'account.security.signOutThisBody')}
+                            confirmLabel={t(locale, 'profile', 'account.security.signOut')}
                             onConfirm={() => void onTerminateSessions([currentSessionId], { signOut: true })}
                             trigger={
                                 <Button type="button" variant="outline" disabled={actionBusy}>
                                     <LogOutIcon />
-                                    {{ de: 'Abmelden', en: 'Sign out' }[locale]}
+                                    {t(locale, 'profile', 'account.security.signOut')}
                                 </Button>
                             }
                         />
@@ -769,13 +672,13 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
 
             <nav className="flex flex-wrap gap-x-4 gap-y-2 px-1 text-sm text-muted-foreground">
                 <Link to="/{-$locale}/privacy-policy" className="underline-offset-4 hover:text-foreground hover:underline">
-                    {{ de: 'Datenschutzerklärung', en: 'Privacy policy' }[locale]}
+                    {t(locale, 'profile', 'account.legal.privacy')}
                 </Link>
                 <Link to="/{-$locale}/terms-and-conditions" className="underline-offset-4 hover:text-foreground hover:underline">
-                    {{ de: 'AGB', en: 'Terms and conditions' }[locale]}
+                    {t(locale, 'profile', 'account.legal.terms')}
                 </Link>
                 <Link to="/{-$locale}/imprint" className="underline-offset-4 hover:text-foreground hover:underline">
-                    {{ de: 'Impressum', en: 'Imprint' }[locale]}
+                    {t(locale, 'profile', 'account.legal.imprint')}
                 </Link>
             </nav>
 
@@ -788,15 +691,8 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                         }}
                     >
                         <DialogHeader>
-                            <DialogTitle>{{ de: 'E-Mail-Adresse ändern', en: 'Change email address' }[locale]}</DialogTitle>
-                            <DialogDescription>
-                                {
-                                    {
-                                        de: 'Wir senden einen Bestätigungscode an die neue Adresse.',
-                                        en: 'We will send a confirmation code to the new address.',
-                                    }[locale]
-                                }
-                            </DialogDescription>
+                            <DialogTitle>{t(locale, 'profile', 'account.emailDialog.title')}</DialogTitle>
+                            <DialogDescription>{t(locale, 'profile', 'account.emailDialog.description')}</DialogDescription>
                         </DialogHeader>
                         <div className="grid gap-2 py-4">
                             <Input
@@ -807,16 +703,16 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                                 value={emailDraft}
                                 disabled={actionBusy}
                                 onChange={(event) => setEmailDraft(event.target.value)}
-                                placeholder={{ de: 'neue@email.de', en: 'new@email.com' }[locale]}
+                                placeholder={t(locale, 'profile', 'account.emailDialog.placeholder')}
                             />
                             {emailError != null ? <p className="text-sm text-destructive">{emailError}</p> : null}
                         </div>
                         <DialogFooter>
                             <Button type="button" variant="outline" disabled={actionBusy} onClick={() => setEmailDialogOpen(false)}>
-                                {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                {t(locale, 'common', 'cancel')}
                             </Button>
                             <Button type="submit" disabled={actionBusy}>
-                                {{ de: actionBusy ? 'Sendet…' : 'Code senden', en: actionBusy ? 'Sending…' : 'Send code' }[locale]}
+                                {t(locale, 'profile', actionBusy ? 'actions.sending' : 'actions.sendCode')}
                             </Button>
                         </DialogFooter>
                     </form>
@@ -833,14 +729,11 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                 <DialogContent showCloseButton={false}>
                     <form className="grid gap-4" onSubmit={onOtpVerifySubmit}>
                         <DialogHeader>
-                            <DialogTitle>{{ de: 'Code eingeben', en: 'Enter code' }[locale]}</DialogTitle>
+                            <DialogTitle>{t(locale, 'profile', 'account.emailDialog.enterCode')}</DialogTitle>
                             <DialogDescription>
-                                {
-                                    {
-                                        de: `Wir haben einen Code an ${pendingUnverifiedOtp?.emailAddress ?? ''} gesendet.`,
-                                        en: `We sent a code to ${pendingUnverifiedOtp?.emailAddress ?? ''}.`,
-                                    }[locale]
-                                }
+                                {t(locale, 'profile', 'account.emailDialog.codeSentTo', {
+                                    email: pendingUnverifiedOtp?.emailAddress ?? '',
+                                })}
                             </DialogDescription>
                         </DialogHeader>
                         <AuthEmailOtpSpamHint />
@@ -859,7 +752,7 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                                 inputMode="numeric"
                                 pattern="[0-9]*"
                                 disabled={actionBusy}
-                                aria-label={{ de: 'Bestätigungscode', en: 'Verification code' }[locale]}
+                                aria-label={t(locale, 'profile', 'account.emailDialog.codeAria')}
                             >
                                 <InputOTPGroup>
                                     <InputOTPSlot index={0} />
@@ -878,10 +771,10 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                                 onClick={() => void onEmailAddressUpdateOtpDiscard()}
                                 disabled={actionBusy}
                             >
-                                {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                {t(locale, 'common', 'cancel')}
                             </Button>
                             <Button type="submit" disabled={actionBusy || otpCode.length !== 6}>
-                                {{ de: 'Bestätigen', en: 'Verify' }[locale]}
+                                {t(locale, 'profile', 'actions.verify')}
                             </Button>
                         </DialogFooter>
                     </form>
@@ -908,25 +801,16 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                             }}
                         >
                             <DialogHeader>
-                                <DialogTitle>
-                                    {{ de: 'Konto wirklich löschen?', en: 'Delete your account permanently?' }[locale]}
-                                </DialogTitle>
-                                <DialogDescription>
-                                    {
-                                        {
-                                            de: 'Diese Aktion kann nicht rückgängig gemacht werden. Deine persönlichen Daten werden entfernt und alle Geräte abgemeldet. Buchungsverläufe bleiben für Köche und den Betrieb erhalten, sind aber nicht mehr mit deiner Identität verknüpft. Wir senden einen Code an deine E-Mail-Adresse.',
-                                            en: 'This cannot be undone. Your personal data will be removed and all devices signed out. Booking history stays available for chefs and operations, but is no longer linked to your identity. We will send a code to your email address.',
-                                        }[locale]
-                                    }
-                                </DialogDescription>
+                                <DialogTitle>{t(locale, 'profile', 'account.delete.confirmTitle')}</DialogTitle>
+                                <DialogDescription>{t(locale, 'profile', 'account.delete.confirmBody')}</DialogDescription>
                             </DialogHeader>
                             {deleteError != null ? <p className="py-4 text-sm text-destructive">{deleteError}</p> : null}
                             <DialogFooter className="pt-4">
                                 <Button type="button" variant="outline" disabled={actionBusy} onClick={() => setDeleteDialogOpen(false)}>
-                                    {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                    {t(locale, 'common', 'cancel')}
                                 </Button>
                                 <Button type="submit" variant="destructive" disabled={actionBusy}>
-                                    {{ de: actionBusy ? 'Sendet…' : 'Code senden', en: actionBusy ? 'Sending…' : 'Send code' }[locale]}
+                                    {t(locale, 'profile', actionBusy ? 'actions.sending' : 'actions.sendCode')}
                                 </Button>
                             </DialogFooter>
                         </form>
@@ -938,14 +822,9 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                             }}
                         >
                             <DialogHeader>
-                                <DialogTitle>{{ de: 'Code eingeben', en: 'Enter code' }[locale]}</DialogTitle>
+                                <DialogTitle>{t(locale, 'profile', 'account.emailDialog.enterCode')}</DialogTitle>
                                 <DialogDescription>
-                                    {
-                                        {
-                                            de: `Wir haben einen Code an ${currentEmailAddress} gesendet.`,
-                                            en: `We sent a code to ${currentEmailAddress}.`,
-                                        }[locale]
-                                    }
+                                    {t(locale, 'profile', 'account.emailDialog.codeSentTo', { email: currentEmailAddress })}
                                 </DialogDescription>
                             </DialogHeader>
                             <AuthEmailOtpSpamHint />
@@ -958,7 +837,7 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                                     inputMode="numeric"
                                     pattern="[0-9]*"
                                     disabled={actionBusy}
-                                    aria-label={{ de: 'Bestätigungscode', en: 'Verification code' }[locale]}
+                                    aria-label={t(locale, 'profile', 'account.emailDialog.codeAria')}
                                 >
                                     <InputOTPGroup>
                                         <InputOTPSlot index={0} />
@@ -973,10 +852,10 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                             {deleteError != null ? <p className="text-sm text-destructive">{deleteError}</p> : null}
                             <DialogFooter>
                                 <Button type="button" variant="outline" disabled={actionBusy} onClick={() => setDeleteDialogOpen(false)}>
-                                    {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                    {t(locale, 'common', 'cancel')}
                                 </Button>
                                 <Button type="submit" variant="destructive" disabled={actionBusy || deleteCode.length !== 6}>
-                                    {{ de: 'Konto löschen', en: 'Delete account' }[locale]}
+                                    {t(locale, 'profile', 'account.delete.action')}
                                 </Button>
                             </DialogFooter>
                         </form>
@@ -995,17 +874,10 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                         <DialogHeader>
                             <DialogTitle>
                                 {hasPhoneNumber
-                                    ? { de: 'Telefonnummer ändern', en: 'Change phone number' }[locale]
-                                    : { de: 'Telefonnummer hinzufügen', en: 'Add a phone number' }[locale]}
+                                    ? t(locale, 'profile', 'account.phoneDialog.changeTitle')
+                                    : t(locale, 'profile', 'account.phoneDialog.addTitle')}
                             </DialogTitle>
-                            <DialogDescription>
-                                {
-                                    {
-                                        de: 'Mit Ländervorwahl, zum Beispiel +49…',
-                                        en: 'Include the country code, for example +49…',
-                                    }[locale]
-                                }
-                            </DialogDescription>
+                            <DialogDescription>{t(locale, 'profile', 'account.phoneDialog.hint')}</DialogDescription>
                         </DialogHeader>
                         <div className="grid gap-2 py-4">
                             <Input
@@ -1023,10 +895,10 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                         </div>
                         <DialogFooter>
                             <Button type="button" variant="outline" disabled={actionBusy} onClick={() => setPhoneDialogOpen(false)}>
-                                {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                {t(locale, 'common', 'cancel')}
                             </Button>
                             <Button type="submit" disabled={actionBusy}>
-                                {{ de: actionBusy ? 'Speichert…' : 'Speichern', en: actionBusy ? 'Saving…' : 'Save' }[locale]}
+                                {actionBusy ? t(locale, 'profile', 'actions.saving') : t(locale, 'common', 'save')}
                             </Button>
                         </DialogFooter>
                     </form>
@@ -1062,7 +934,7 @@ function AccountSignOutDialog({
                     <AlertDialogDescription>{description}</AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel disabled={disabled}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                    <AlertDialogCancel disabled={disabled}>{t(locale, 'common', 'cancel')}</AlertDialogCancel>
                     <AlertDialogAction variant="destructive" disabled={disabled} onClick={onConfirm}>
                         {confirmLabel}
                     </AlertDialogAction>

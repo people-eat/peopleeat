@@ -1,13 +1,13 @@
 import { Loader2Icon } from 'lucide-react';
 import type { ComponentProps } from 'react';
-import { useLocale } from '../../hooks/useLocale';
+import { useT } from '../../hooks/useT';
 import { cn } from '../../utils/cn';
 
 function Spinner({ className, ...props }: ComponentProps<'svg'>) {
-    const locale = useLocale();
+    const { t } = useT('common');
     // Decorative usages pass `aria-hidden` which overrides this for AT; keep a
-    // bilingual default so standalone status spinners are never English-only.
-    const loadingLabel = { de: 'Lädt', en: 'Loading' }[locale];
+    // catalog default so standalone status spinners are never English-only.
+    const loadingLabel = t('spinner.loading');
     return <Loader2Icon role="status" aria-label={loadingLabel} className={cn('size-4 animate-spin', className)} {...props} />;
 }
 

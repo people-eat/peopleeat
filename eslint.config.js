@@ -108,6 +108,14 @@ export default [
                             regex: '(^|/)server/(db|domain)(/|$)',
                             message: 'Web must not import from server/db or server/domain. Use generated GraphQL types (GqlC*) instead.',
                         },
+                        {
+                            regex: 'i18n/(emailCatalogLoaders|tEmail)(\\.ts)?$',
+                            message: 'Web must not import email i18n catalogs. Those loaders are server-only.',
+                        },
+                        {
+                            regex: 'i18n/locales/.+/email\\.json$',
+                            message: 'Web must not import email i18n catalogs. Those loaders are server-only.',
+                        },
                     ],
                 },
             ],

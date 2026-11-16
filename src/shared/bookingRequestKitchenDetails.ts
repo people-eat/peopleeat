@@ -1,3 +1,4 @@
+import { t } from '../i18n/t';
 import type { Locale } from './locale';
 
 export const bookingRequestKitchenDetailsAvailabilities = ['FULL', 'LIMITED', 'NONE', 'UNKNOWN'] as const;
@@ -28,28 +29,15 @@ export const bookingRequestKitchenDetailsDraftEmpty: BookingRequestKitchenDetail
 };
 
 export function bookingRequestKitchenDetailsAvailabilityLabel(value: BookingRequestKitchenDetailsAvailability, locale: Locale): string {
-    return {
-        FULL: { de: 'Voll ausgestattet', en: 'Fully equipped' },
-        LIMITED: { de: 'Eingeschränkt', en: 'Limited' },
-        NONE: { de: 'Keine Küche', en: 'No kitchen' },
-        UNKNOWN: { de: 'Unsicher', en: 'Not sure' },
-    }[value][locale];
+    return t(locale, 'common', `bookingRequestKitchen.availability.${value}`);
 }
 
 export function bookingRequestKitchenDetailsSpaceLabel(value: BookingRequestKitchenDetailsSpace, locale: Locale): string {
-    return {
-        YES: { de: 'Ja', en: 'Yes' },
-        LIMITED: { de: 'Eingeschränkt', en: 'Limited' },
-        NO: { de: 'Nein', en: 'No' },
-    }[value][locale];
+    return t(locale, 'common', `bookingRequestKitchen.space.${value}`);
 }
 
 export function bookingRequestKitchenDetailsGuestTablewareLabel(value: BookingRequestKitchenDetailsGuestTableware, locale: Locale): string {
-    return {
-        PROVIDED: { de: 'Wir haben es', en: 'We have them' },
-        COOK_BRINGS: { de: 'Bitte mitbringen', en: 'Please bring' },
-        MIXED: { de: 'Gemischt', en: 'Mixed' },
-    }[value][locale];
+    return t(locale, 'common', `bookingRequestKitchen.guestTableware.${value}`);
 }
 
 export function bookingRequestKitchenDetailsDraftIsEmpty(draft: BookingRequestKitchenDetailsDraft, photoCount = 0): boolean {

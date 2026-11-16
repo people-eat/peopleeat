@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { createRequest, useClient } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { t as translate } from '../../../i18n/t';
 import { formatCurrency, formatDate, formatDateTime, userDisplayName } from '../../../shared';
 import { bookingRequestPublicationReviewQueueStatuses } from '../../../shared/bookingRequestStatus';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
@@ -16,13 +17,16 @@ import type {
 } from '../../graphql/generated';
 import { AdminOverviewPageUpdatesDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
+import { useT } from '../../hooks/useT';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import type { Locale } from '../../utils/locale';
 import { adminOverviewLinkCardChevronClassName, adminOverviewLinkCardClassName } from './adminOverviewLinkCard';
 import { AdminOverviewStatCard } from './AdminOverviewStatCard';
 import { adminUsersSectionTo } from './adminUsers';
 
-export const adminOverviewPageTitle = { de: 'Übersicht', en: 'Overview' } as const;
+export function adminOverviewPageTitle(locale: Locale): string {
+    return translate(locale, 'admin', 'nav.overview.title');
+}
 
 const PENDING_COOKS_TAKE = 5;
 const BLOCKED_BOOKING_REQUESTS_TAKE = 5;
@@ -70,11 +74,7 @@ export function adminOverviewPageVariables() {
 
 function cookPayoutBlockedReasonLabel(reason: GqlCAdminCookPayoutBlockedReason | null | undefined, locale: Locale): string | null {
     if (reason == null) return null;
-    return {
-        MISSING_STRIPE_ACCOUNT: { de: 'Kein Stripe-Konto', en: 'No Stripe account' },
-        STRIPE_ACCOUNT_INACTIVE: { de: 'Stripe inaktiv', en: 'Stripe inactive' },
-        STRIPE_PAYOUTS_DISABLED: { de: 'Auszahlungen deaktiviert', en: 'Payouts disabled' },
-    }[reason][locale];
+    return translate(locale, 'admin', `overview.payoutBlocked.${reason}`);
 }
 
 function AdminOverviewQueueSection({
@@ -127,6 +127,7 @@ function AdminOverviewQueueItemLink({
 
 export function AdminOverviewPage({ data }: { data: GqlCAdminOverviewPageQuery }) {
     const locale = useLocale();
+    const { t } = useT('admin');
     const timeZone = useTimeZone();
     const client = useClient();
     const seedAdmin = data.currentSession.user?.admin ?? null;
@@ -173,45 +174,43 @@ export function AdminOverviewPage({ data }: { data: GqlCAdminOverviewPageQuery }
         <AdminPathPageChrome>
             <main id="main-content" className="mx-auto grid w-full max-w-6xl content-start gap-8">
                 <div className="grid gap-2">
-                    <h1 className="font-serif text-4xl/tight text-foreground">{{ de: `Hallo ${name},`, en: `Hello ${name},` }[locale]}</h1>
-                    <p className="text-muted-foreground">
-                        {{ de: 'Hier siehst du, was als Nächstes ansteht.', en: 'Here is what to do next.' }[locale]}
-                    </p>
+                    <h1 className="font-serif text-4xl/tight text-foreground">{t('overview.hello', { name })}</h1>
+                    <p className="text-muted-foreground">{t('overview.intro')}</p>
                 </div>
 
                 <section className="grid gap-3" aria-labelledby="admin-open-tasks-heading">
                     <h2 id="admin-open-tasks-heading" className="text-lg font-medium">
-                        {{ de: 'Offene Aufgaben', en: 'Open tasks' }[locale]}
+                        {t('overview.openTasks')}
                     </h2>
                     <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
                         <AdminOverviewStatCard
-                            label={{ de: 'Freischaltungen', en: 'Approvals' }[locale]}
+                            label={t('overview.approvals')}
                             value={pendingCooksCount}
                             attention={pendingCooksCount > 0}
                             to={adminUsersSectionTo('list')}
                             search={{ type: 'cook', unapproved: true }}
                         />
                         <AdminOverviewStatCard
-                            label={{ de: 'Buchungsprüfung', en: 'Booking review' }[locale]}
+                            label={t('overview.bookingReview')}
                             value={blockedBookingRequestsCount}
                             attention={blockedBookingRequestsCount > 0}
                             to="/{-$locale}/admin/booking-requests/list"
                             search={blockedBookingRequestsListSearch}
                         />
                         <AdminOverviewStatCard
-                            label={{ de: 'Auszahlungen', en: 'Due payouts' }[locale]}
+                            label={t('overview.duePayouts')}
                             value={duePayoutOffersCount}
                             attention={duePayoutOffersCount > 0}
                         />
                         <AdminOverviewStatCard
-                            label={{ de: 'Support', en: 'Support' }[locale]}
+                            label={t('overview.support')}
                             value={openSupportRequestsCount}
                             attention={openSupportRequestsCount > 0}
                             to="/{-$locale}/admin/support-requests"
                             search={{ status: 'OPEN' }}
                         />
                         <AdminOverviewStatCard
-                            label={{ de: 'Angebots-Chats', en: 'Offer chats' }[locale]}
+                            label={t('overview.offerChats')}
                             value={pendingOfferChatReviewsCount}
                             attention={pendingOfferChatReviewsCount > 0}
                             to="/{-$locale}/admin/offer-chat-reviews"
@@ -220,20 +219,15 @@ export function AdminOverviewPage({ data }: { data: GqlCAdminOverviewPageQuery }
                 </section>
 
                 {allQueuesClear ? (
-                    <StatusAlert tone="success" title={{ de: 'Alles erledigt', en: 'All done' }[locale]}>
-                        {
-                            {
-                                de: 'Keine Freischaltungen, Buchungsprüfungen, Auszahlungen, Support-Anfragen oder Angebots-Chats warten.',
-                                en: 'No approvals, booking reviews, payouts, support requests, or offer chats are waiting.',
-                            }[locale]
-                        }
+                    <StatusAlert tone="success" title={t('overview.allDoneTitle')}>
+                        {t('overview.allDoneBody')}
                     </StatusAlert>
                 ) : (
                     <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
                         {pendingCooksCount > 0 ? (
                             <AdminOverviewQueueSection
                                 headingId="pending-cook-approvals-heading"
-                                title={{ de: 'Freischaltungen ausstehend', en: 'Pending approvals' }[locale]}
+                                title={t('overview.pendingApprovals')}
                                 viewAll={
                                     pendingCooksCount > PENDING_COOKS_TAKE ? (
                                         <Link
@@ -241,7 +235,7 @@ export function AdminOverviewPage({ data }: { data: GqlCAdminOverviewPageQuery }
                                             search={{ type: 'cook', unapproved: true }}
                                             className={viewAllClassName}
                                         >
-                                            {{ de: 'Alle anzeigen', en: 'View all' }[locale]}
+                                            {t('overview.viewAll')}
                                         </Link>
                                     ) : null
                                 }
@@ -265,7 +259,7 @@ export function AdminOverviewPage({ data }: { data: GqlCAdminOverviewPageQuery }
                         {blockedBookingRequestsCount > 0 ? (
                             <AdminOverviewQueueSection
                                 headingId="blocked-booking-requests-heading"
-                                title={{ de: 'Buchungsanfragen zur Prüfung', en: 'Booking requests for review' }[locale]}
+                                title={t('overview.bookingRequestsForReview')}
                                 viewAll={
                                     blockedBookingRequestsCount > BLOCKED_BOOKING_REQUESTS_TAKE ? (
                                         <Link
@@ -273,7 +267,7 @@ export function AdminOverviewPage({ data }: { data: GqlCAdminOverviewPageQuery }
                                             search={blockedBookingRequestsListSearch}
                                             className={viewAllClassName}
                                         >
-                                            {{ de: 'Alle anzeigen', en: 'View all' }[locale]}
+                                            {t('overview.viewAll')}
                                         </Link>
                                     ) : null
                                 }
@@ -291,12 +285,7 @@ export function AdminOverviewPage({ data }: { data: GqlCAdminOverviewPageQuery }
                                                     to="/{-$locale}/admin/booking-requests/$bookingRequestId"
                                                     params={{ bookingRequestId: request.bookingRequestId }}
                                                     title={request.occasion}
-                                                    detail={`${userDisplayName(request.customer)} · ${formatDateTime(request.dateTime, { locale, timeZone, dateStyle: 'full' })} · ${location} · ${
-                                                        {
-                                                            de: `${participantCount} Teilnehmer`,
-                                                            en: `${participantCount} participants`,
-                                                        }[locale]
-                                                    }`}
+                                                    detail={`${userDisplayName(request.customer)} · ${formatDateTime(request.dateTime, { locale, timeZone, dateStyle: 'full' })} · ${location} · ${t('overview.participants', { count: participantCount })}`}
                                                 />
                                             </li>
                                         );
@@ -306,10 +295,7 @@ export function AdminOverviewPage({ data }: { data: GqlCAdminOverviewPageQuery }
                         ) : null}
 
                         {duePayoutOffersCount > 0 ? (
-                            <AdminOverviewQueueSection
-                                headingId="due-payout-offers-heading"
-                                title={{ de: 'Auszahlungen fällig', en: 'Due payouts' }[locale]}
-                            >
+                            <AdminOverviewQueueSection headingId="due-payout-offers-heading" title={t('overview.payoutsDue')}>
                                 <ul className="grid gap-2">
                                     {duePayoutOffers.map((offer) => {
                                         const blockedLabel = cookPayoutBlockedReasonLabel(offer.cookPayoutBlockedReason, locale);
@@ -318,9 +304,7 @@ export function AdminOverviewPage({ data }: { data: GqlCAdminOverviewPageQuery }
                                             offer.plannedPayoutDateTime
                                                 ? formatDate(offer.plannedPayoutDateTime, { locale, timeZone, dateStyle: 'medium' })
                                                 : null,
-                                            offer.cookPayoutReady
-                                                ? { de: 'Bereit', en: 'Ready' }[locale]
-                                                : (blockedLabel ?? { de: 'Nicht bereit', en: 'Not ready' }[locale]),
+                                            offer.cookPayoutReady ? t('overview.ready') : (blockedLabel ?? t('overview.notReady')),
                                         ]
                                             .filter(Boolean)
                                             .join(' · ');
@@ -346,7 +330,7 @@ export function AdminOverviewPage({ data }: { data: GqlCAdminOverviewPageQuery }
                         {openSupportRequestsCount > 0 ? (
                             <AdminOverviewQueueSection
                                 headingId="open-support-requests-heading"
-                                title={{ de: 'Offene Support-Anfragen', en: 'Open support requests' }[locale]}
+                                title={t('overview.openSupport')}
                                 viewAll={
                                     openSupportRequestsCount > OPEN_SUPPORT_REQUESTS_TAKE ? (
                                         <Link
@@ -354,7 +338,7 @@ export function AdminOverviewPage({ data }: { data: GqlCAdminOverviewPageQuery }
                                             search={{ status: 'OPEN' }}
                                             className={viewAllClassName}
                                         >
-                                            {{ de: 'Alle anzeigen', en: 'View all' }[locale]}
+                                            {t('overview.viewAll')}
                                         </Link>
                                     ) : null
                                 }
@@ -368,7 +352,7 @@ export function AdminOverviewPage({ data }: { data: GqlCAdminOverviewPageQuery }
                                                 title={request.subject}
                                                 detail={`${userDisplayName(request.customer)} · ${formatDate(request.createdAt, { locale, timeZone, dateStyle: 'medium' })}${
                                                     request.adminUnreadNotificationCount > 0
-                                                        ? ` · ${request.adminUnreadNotificationCount} ${{ de: 'ungelesen', en: 'unread' }[locale]}`
+                                                        ? ` · ${request.adminUnreadNotificationCount} ${t('overview.unread')}`
                                                         : ''
                                                 }`}
                                             />
@@ -381,11 +365,11 @@ export function AdminOverviewPage({ data }: { data: GqlCAdminOverviewPageQuery }
                         {pendingOfferChatReviewsCount > 0 ? (
                             <AdminOverviewQueueSection
                                 headingId="pending-offer-chat-reviews-heading"
-                                title={{ de: 'Angebots-Chats zur Prüfung', en: 'Offer chats for review' }[locale]}
+                                title={t('overview.offerChatsForReview')}
                                 viewAll={
                                     pendingOfferChatReviewsCount > PENDING_OFFER_CHAT_REVIEWS_TAKE ? (
                                         <Link to="/{-$locale}/admin/offer-chat-reviews" className={viewAllClassName}>
-                                            {{ de: 'Alle anzeigen', en: 'View all' }[locale]}
+                                            {t('overview.viewAll')}
                                         </Link>
                                     ) : null
                                 }
@@ -393,13 +377,7 @@ export function AdminOverviewPage({ data }: { data: GqlCAdminOverviewPageQuery }
                                 <ul className="grid gap-2">
                                     {pendingOfferChatReviews.map((offer) => {
                                         const pending = offer.adminChatReviewPendingCount;
-                                        const pendingLabel =
-                                            pending === 1
-                                                ? { de: '1 neue Nachricht', en: '1 new message' }[locale]
-                                                : {
-                                                      de: `${pending} neue Nachrichten`,
-                                                      en: `${pending} new messages`,
-                                                  }[locale];
+                                        const pendingLabel = t('overview.pendingMessages', { count: pending });
                                         return (
                                             <li key={offer.bookingRequestOfferId}>
                                                 <AdminOverviewQueueItemLink

@@ -1,33 +1,10 @@
+import { t } from '../../../i18n/t';
 import type { WebPageKey } from '../../../shared/webPage';
 import { webPageKeys } from '../../../shared/webPage';
 import type { Locale } from '../../utils/locale';
 
-const adminWebPageLabels: Record<WebPageKey, Record<Locale, string>> = {
-    LANDING: { de: 'Startseite', en: 'Landing' },
-    CITIES: { de: 'Städte', en: 'Cities' },
-    VENUES: { de: 'Locations', en: 'Venues' },
-    OCCASIONS: { de: 'Anlässe', en: 'Occasions' },
-    CHEFS: { de: 'Köche', en: 'Chefs' },
-    BLOG_POSTS: { de: 'Blog', en: 'Blog' },
-    ABOUT_US: { de: 'Über uns', en: 'About us' },
-    GIFT_CARD: { de: 'Geschenkkarte', en: 'Gift card' },
-    HOW_TO_BECOME_A_CHEF: { de: 'Koch werden', en: 'How to become a chef' },
-    COMING_TO: { de: 'Kommt in ein neues Land', en: 'Coming to a new country' },
-    FOUNDING_CHEF: { de: 'Gründungskoch', en: 'Founding chef' },
-    BOOKING_REQUEST: { de: 'Buchungsanfrage', en: 'Booking request' },
-    BOOKING_REQUEST_FORM: { de: 'Buchungsanfrage: Formular', en: 'Booking request: form' },
-    BOOKING_REQUEST_CHAT: { de: 'Buchungsanfrage: Chat', en: 'Booking request: chat' },
-    CHEF_SIGN_UP: { de: 'Koch-Registrierung', en: 'Chef sign-up' },
-    IMPRINT: { de: 'Impressum', en: 'Imprint' },
-    TERMS_AND_CONDITIONS: { de: 'AGB', en: 'Terms and conditions' },
-    PRIVACY_POLICY: { de: 'Datenschutz', en: 'Privacy policy' },
-    SIGN_IN: { de: 'Anmelden', en: 'Log on' },
-    PROFILE: { de: 'Profil', en: 'Profile' },
-    ADMINISTRATION: { de: 'Admin', en: 'Admin' },
-};
-
 export function adminWebPageLabel(webPageKey: WebPageKey, locale: Locale): string {
-    return adminWebPageLabels[webPageKey][locale];
+    return t(locale, 'admin', `webPages.labels.${webPageKey}`);
 }
 
 export function parseAdminWebPageKey(value: string): WebPageKey | null {

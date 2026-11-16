@@ -1,3 +1,4 @@
+import { t } from '../i18n/t';
 import type { Locale } from './locale';
 
 /** Markets that can own a public city landing page. */
@@ -22,13 +23,7 @@ export function cityCountryCodeAssert(value: string, errorPrefix: string): CityC
 }
 
 export function cityCountryCodeLabel(countryCode: CityCountryCode, locale: Locale): string {
-    return (
-        {
-            DE: { de: 'Deutschland', en: 'Germany' },
-            NL: { de: 'Niederlande', en: 'the Netherlands' },
-            CH: { de: 'Schweiz', en: 'Switzerland' },
-        } as const
-    )[countryCode][locale];
+    return t(locale, 'public', `cityCountry.${countryCode}`);
 }
 
 /** Public hub for country-intent SEO. DE uses the cities catalog; NL/CH use coming-to until guest launch. */
@@ -40,18 +35,12 @@ export function cityCountryHubPath(countryCode: CityCountryCode): string {
 
 export function cityCountryHubLinkLabel(countryCode: CityCountryCode, locale: Locale): string {
     if (countryCode === 'DE') {
-        return { de: 'Alle Städte', en: 'All cities' }[locale];
+        return t(locale, 'public', 'cities.indexLink');
     }
     return cityCountryCodeLabel(countryCode, locale);
 }
 
 /** Section heading for same-country sibling city lists. */
 export function cityCountryCitiesHeading(countryCode: CityCountryCode, locale: Locale): string {
-    return (
-        {
-            DE: { de: 'Unsere Städte', en: 'Our cities' },
-            NL: { de: 'Städte in den Niederlanden', en: 'Cities in the Netherlands' },
-            CH: { de: 'Städte in der Schweiz', en: 'Cities in Switzerland' },
-        } as const
-    )[countryCode][locale];
+    return t(locale, 'public', `cityCountry.citiesHeading.${countryCode}`);
 }

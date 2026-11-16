@@ -1,4 +1,5 @@
 import { SoupIcon } from 'lucide-react';
+import { inlineCopy } from '../../shared';
 
 import { useLocale } from '../hooks/useLocale';
 import { AppImage } from './AppImage';
@@ -27,7 +28,9 @@ export function MealDetailsDialog({
             <DialogContent className="sm:max-w-3xl">
                 <DialogHeader>
                     <DialogTitle>{headerTitle}</DialogTitle>
-                    <DialogDescription className="sr-only">{{ de: 'Details zum Gericht', en: 'Meal details' }[locale]}</DialogDescription>
+                    <DialogDescription className="sr-only">
+                        {inlineCopy({ de: 'Details zum Gericht', en: 'Meal details' }, locale)}
+                    </DialogDescription>
                 </DialogHeader>
                 <div className="flex flex-col justify-start gap-8 lg:flex-row">
                     {imageUrl ? (
@@ -37,7 +40,7 @@ export function MealDetailsDialog({
                     ) : (
                         <div className="flex aspect-square w-56 shrink-0 flex-col items-center justify-center gap-4 rounded-2xl bg-secondary p-8 text-muted-foreground lg:w-80">
                             <SoupIcon className="size-8" aria-hidden />
-                            <p>{{ de: 'Kein Bild', en: 'No image' }[locale]}</p>
+                            <p>{inlineCopy({ de: 'Kein Bild', en: 'No image' }, locale)}</p>
                         </div>
                     )}
                     <div className="flex min-w-0 flex-col gap-4">

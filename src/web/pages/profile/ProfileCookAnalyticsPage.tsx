@@ -1,6 +1,7 @@
 import { useNavigate } from '@tanstack/react-router';
 import { useEffect } from 'react';
 
+import { t } from '../../../i18n/t';
 import { formatCurrency } from '../../../shared';
 import { Card, CardContent } from '../../components/base/card';
 import { StatusAlert } from '../../components/base/status-alert';
@@ -50,42 +51,39 @@ function AnalyticsSections({ analytics }: { analytics: GqlCProfileCookAnalyticsF
         <div className="grid gap-8">
             <section className="grid gap-3" aria-labelledby="cook-analytics-discovery">
                 <h2 id="cook-analytics-discovery" className="text-sm font-medium text-foreground">
-                    {{ de: 'Entdeckung', en: 'Discovery' }[locale]}
+                    {t(locale, 'profileCook', 'analytics.discovery')}
                 </h2>
                 <dl className="grid gap-3 sm:grid-cols-2">
-                    <StatCard
-                        label={{ de: 'Profilbesuche', en: 'Profile views' }[locale]}
-                        value={String(analytics.publicProfileViewCount)}
-                    />
+                    <StatCard label={t(locale, 'profileCook', 'analytics.profileViews')} value={String(analytics.publicProfileViewCount)} />
                 </dl>
             </section>
 
             <section className="grid gap-3" aria-labelledby="cook-analytics-responsiveness">
                 <h2 id="cook-analytics-responsiveness" className="text-sm font-medium text-foreground">
-                    {{ de: 'Reaktionszeit', en: 'Responsiveness' }[locale]}
+                    {t(locale, 'profileCook', 'analytics.responsiveness')}
                 </h2>
                 <dl className={cn('grid gap-3 sm:grid-cols-2 lg:grid-cols-3')}>
-                    <StatCard label={{ de: 'Benachrichtigt', en: 'Notified' }[locale]} value={String(analytics.requestsNotifiedCount)} />
-                    <StatCard label={{ de: 'Geöffnet', en: 'Opened' }[locale]} value={String(analytics.requestsOpenedCount)} />
-                    <StatCard label={{ de: 'Abgelehnt', en: 'Declined' }[locale]} value={String(analytics.requestsDeclinedCount)} />
+                    <StatCard label={t(locale, 'profileCook', 'analytics.notified')} value={String(analytics.requestsNotifiedCount)} />
+                    <StatCard label={t(locale, 'profileCook', 'analytics.opened')} value={String(analytics.requestsOpenedCount)} />
+                    <StatCard label={t(locale, 'profileCook', 'analytics.declined')} value={String(analytics.requestsDeclinedCount)} />
                     <StatCard
-                        label={{ de: 'Öffnungsrate', en: 'Open rate' }[locale]}
+                        label={t(locale, 'profileCook', 'analytics.openRate')}
                         value={cookAnalyticsFormatPercent(analytics.openRate, locale)}
                     />
                     <StatCard
-                        label={{ de: 'Ablehnungsrate', en: 'Decline rate' }[locale]}
+                        label={t(locale, 'profileCook', 'analytics.declineRate')}
                         value={cookAnalyticsFormatPercent(analytics.declineRate, locale)}
                     />
                     <StatCard
-                        label={{ de: 'Angebotsrate', en: 'Offer create rate' }[locale]}
+                        label={t(locale, 'profileCook', 'analytics.offerCreateRate')}
                         value={cookAnalyticsFormatPercent(analytics.offerCreateRate, locale)}
                     />
                     <StatCard
-                        label={{ de: 'Zeit bis Öffnen', en: 'Time to open' }[locale]}
+                        label={t(locale, 'profileCook', 'analytics.timeToOpen')}
                         value={cookAnalyticsFormatDurationMinutes(analytics.medianNotifyToOpenMinutes, locale)}
                     />
                     <StatCard
-                        label={{ de: 'Zeit bis Angebot', en: 'Time to offer' }[locale]}
+                        label={t(locale, 'profileCook', 'analytics.timeToOffer')}
                         value={cookAnalyticsFormatDurationMinutes(analytics.medianNotifyToOfferMinutes, locale)}
                     />
                 </dl>
@@ -93,29 +91,26 @@ function AnalyticsSections({ analytics }: { analytics: GqlCProfileCookAnalyticsF
 
             <section className="grid gap-3" aria-labelledby="cook-analytics-offers">
                 <h2 id="cook-analytics-offers" className="text-sm font-medium text-foreground">
-                    {{ de: 'Angebote und Buchungen', en: 'Offers and bookings' }[locale]}
+                    {t(locale, 'profileCook', 'analytics.offersAndBookings')}
                 </h2>
                 <dl className={cn('grid gap-3 sm:grid-cols-2 lg:grid-cols-3')}>
+                    <StatCard label={t(locale, 'profileCook', 'analytics.offersCreated')} value={String(analytics.offersCreatedCount)} />
+                    <StatCard label={t(locale, 'profileCook', 'analytics.accepted')} value={String(analytics.offersAcceptedCount)} />
                     <StatCard
-                        label={{ de: 'Angebote erstellt', en: 'Offers created' }[locale]}
-                        value={String(analytics.offersCreatedCount)}
-                    />
-                    <StatCard label={{ de: 'Angenommen', en: 'Accepted' }[locale]} value={String(analytics.offersAcceptedCount)} />
-                    <StatCard
-                        label={{ de: 'Conversion', en: 'Conversion' }[locale]}
+                        label={t(locale, 'profileCook', 'analytics.conversion')}
                         value={cookAnalyticsFormatPercent(analytics.offerConversionRate, locale)}
                     />
-                    <StatCard label={{ de: 'Bezahlt', en: 'Paid' }[locale]} value={String(analytics.offersPaidCount)} />
+                    <StatCard label={t(locale, 'profileCook', 'analytics.paid')} value={String(analytics.offersPaidCount)} />
                     <StatCard
-                        label={{ de: 'Auszahlung gesamt', en: 'Payout total' }[locale]}
+                        label={t(locale, 'profileCook', 'analytics.payoutTotal')}
                         value={formatCurrency(analytics.paidPayoutCentsCookTotal, { locale, maximumFractionDigits: 0 })}
                     />
                     <StatCard
-                        label={{ de: 'Ø Menüpreis', en: 'Avg. menu price' }[locale]}
+                        label={t(locale, 'profileCook', 'analytics.avgMenuPrice')}
                         value={cookAnalyticsFormatMenuPrice(analytics.averageMenuPriceCents, locale)}
                     />
                     <StatCard
-                        label={{ de: 'Ø Teilnehmer', en: 'Avg. participants' }[locale]}
+                        label={t(locale, 'profileCook', 'analytics.avgParticipants')}
                         value={cookAnalyticsFormatAverageParticipants(analytics.averageParticipants, locale)}
                     />
                 </dl>
@@ -150,8 +145,8 @@ export function ProfileCookAnalyticsPage({
     return (
         <main id="main-content" className="mx-auto grid w-full max-w-4xl content-start gap-8">
             <div className="grid gap-2">
-                <h1 className="font-serif text-2xl/tight text-foreground">{profileCookAnalyticsPageTitle[locale]}</h1>
-                <p className="text-muted-foreground">{profileCookAnalyticsPageDescription[locale]}</p>
+                <h1 className="font-serif text-2xl/tight text-foreground">{profileCookAnalyticsPageTitle(locale)}</h1>
+                <p className="text-muted-foreground">{profileCookAnalyticsPageDescription(locale)}</p>
             </div>
 
             <Tabs
@@ -166,7 +161,7 @@ export function ProfileCookAnalyticsPage({
                     });
                 }}
             >
-                <TabsList aria-label={{ de: 'Zeitraum', en: 'Time period' }[locale]}>
+                <TabsList aria-label={t(locale, 'profileCook', 'period.label')}>
                     {cookAnalyticsPeriods.map((entry) => (
                         <TabsTrigger key={entry} value={entry}>
                             {cookAnalyticsPeriodLabel(entry, locale)}
@@ -176,13 +171,8 @@ export function ProfileCookAnalyticsPage({
             </Tabs>
 
             {!analytics.hasInsights ? (
-                <StatusAlert tone="info" title={{ de: 'Noch keine Daten', en: 'No insights yet' }[locale]}>
-                    {
-                        {
-                            de: 'Sobald Anfragen in deinem Pool landen oder Gäste dein öffentliches Profil besuchen, erscheinen hier Auswertungen.',
-                            en: 'Once requests reach your pool or guests visit your public profile, insights will show up here.',
-                        }[locale]
-                    }
+                <StatusAlert tone="info" title={t(locale, 'profileCook', 'analytics.emptyTitle')}>
+                    {t(locale, 'profileCook', 'analytics.emptyBody')}
                 </StatusAlert>
             ) : (
                 <AnalyticsSections analytics={analytics} />

@@ -1,6 +1,6 @@
 import { and, eq, inArray } from 'drizzle-orm';
 
-import { bookingRequestPriceClassLabel } from '../../shared/bookingRequestFormDefaults';
+import { bookingRequestPriceClassCustomLabel, bookingRequestPriceClassLabel } from '../../shared/bookingRequestFormDefaults';
 import type { Locale } from '../../shared/locale';
 import { bookingRequestCooks, bookingRequestOffers, bookingRequestParticipants, bookingRequests, users } from '../db/schema';
 import type { BookingRequest, BookingRequestOffer } from '../db/schema';
@@ -163,7 +163,7 @@ function priceClassLabelResolve(priceClassType: string | null | undefined, local
     if (priceClassType === 'LOW' || priceClassType === 'MEDIUM' || priceClassType === 'HIGH') {
         return bookingRequestPriceClassLabel(priceClassType, locale);
     }
-    return { de: 'Individuell', en: 'Custom' }[locale];
+    return bookingRequestPriceClassCustomLabel(locale);
 }
 
 /**

@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router';
 
+import { t } from '../../../i18n/t';
 import { Button } from '../../components/base/button';
 import { Skeleton } from '../../components/base/skeleton';
 import { CookDefaultOfferMessageReadout } from '../../components/CookDefaultOfferMessageFields';
@@ -46,36 +47,36 @@ export function ProfileCookChefProfilePage({ data }: { data: GqlCProfileCookChef
             contentClassName="grid min-w-0 content-start gap-8"
             footer={
                 <Button asChild>
-                    <Link to="/{-$locale}/profile/chef-profile/edit">{{ de: 'Bearbeiten', en: 'Edit' }[locale]}</Link>
+                    <Link to="/{-$locale}/profile/chef-profile/edit">{t(locale, 'profileCook', 'actions.edit')}</Link>
                 </Button>
             }
         >
             <div className="grid gap-2">
-                <h1 className="font-serif text-3xl/tight text-foreground">{route.title[locale]}</h1>
-                <p className="text-muted-foreground">{route.description[locale]}</p>
+                <h1 className="font-serif text-3xl/tight text-foreground">{route.title(locale)}</h1>
+                <p className="text-muted-foreground">{route.description(locale)}</p>
             </div>
 
             <section className="grid min-w-0 gap-4">
                 <dl className="grid min-w-0 gap-4">
                     <div className="grid gap-1">
                         <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                            {{ de: 'Küchenstil und Philosophie', en: 'Cuisine style and philosophy' }[locale]}
+                            {t(locale, 'profileCook', 'chefProfile.cuisineAndPhilosophy')}
                         </dt>
                         <dd>
                             {hasProfileTags ? (
                                 <CookProfileTags cuisineStyle={cook.cuisineStyle} cookingPhilosophy={cook.cookingPhilosophy} size="md" />
                             ) : (
-                                <p className="text-sm text-muted-foreground">{{ de: 'Nicht angegeben', en: 'Not set' }[locale]}</p>
+                                <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'actions.notSet')}</p>
                             )}
                         </dd>
                     </div>
                     <DetailField
-                        label={{ de: 'Biografie', en: 'Biography' }[locale]}
-                        value={cook.biography.trim() ? cook.biography : { de: 'Noch keine Biografie.', en: 'No biography yet.' }[locale]}
+                        label={t(locale, 'profileCook', 'chefProfileEdit.biography')}
+                        value={cook.biography.trim() ? cook.biography : t(locale, 'profileCook', 'chefProfile.noBiography')}
                     />
                     <div className="grid gap-1">
                         <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                            {{ de: 'Biografie-Kurzfassung', en: 'Biography summary' }[locale]}
+                            {t(locale, 'profileCook', 'chefProfileEdit.summary')}
                         </dt>
                         <dd>
                             {cook.biographySummaryGenerating ? (
@@ -83,14 +84,14 @@ export function ProfileCookChefProfilePage({ data }: { data: GqlCProfileCookChef
                                     <Skeleton className="h-4 w-full" />
                                     <Skeleton className="h-4 w-3/4" />
                                     <p className="text-sm text-muted-foreground">
-                                        {{ de: 'Kurzfassung wird aktualisiert…', en: 'Updating summary…' }[locale]}
+                                        {t(locale, 'profileCook', 'chefProfile.summaryUpdating')}
                                     </p>
                                 </div>
                             ) : (
                                 <p className="text-sm whitespace-pre-wrap text-foreground">
                                     {cook.biographySummary.trim()
                                         ? cook.biographySummary
-                                        : { de: 'Noch keine Kurzfassung vorhanden.', en: 'No summary yet.' }[locale]}
+                                        : t(locale, 'profileCook', 'chefProfile.noSummary')}
                                 </p>
                             )}
                         </dd>
@@ -104,16 +105,9 @@ export function ProfileCookChefProfilePage({ data }: { data: GqlCProfileCookChef
             <section className="grid min-w-0 gap-3">
                 <div className="grid gap-1">
                     <h2 className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
-                        {{ de: 'Begrüßungstext für Angebote', en: 'Default offer note' }[locale]}
+                        {t(locale, 'profileCook', 'chefProfile.defaultOfferNote')}
                     </h2>
-                    <p className="text-sm text-muted-foreground">
-                        {
-                            {
-                                de: 'Wird beim Erstellen eines Angebots vorausgefüllt. Gäste sehen ihn als erste Chat-Nachricht.',
-                                en: 'Prefills when you create an offer. Guests see it as the first chat message.',
-                            }[locale]
-                        }
-                    </p>
+                    <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'chefProfile.defaultOfferNoteHint')}</p>
                 </div>
                 <CookDefaultOfferMessageReadout value={cook.defaultOfferMessage ?? null} />
             </section>
@@ -122,16 +116,9 @@ export function ProfileCookChefProfilePage({ data }: { data: GqlCProfileCookChef
                 <section className="grid min-w-0 gap-3">
                     <div className="grid gap-1">
                         <h2 className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
-                            {{ de: 'Weitere Profile', en: 'Other profiles' }[locale]}
+                            {t(locale, 'profileCook', 'chefProfile.otherProfiles')}
                         </h2>
-                        <p className="text-sm text-muted-foreground">
-                            {
-                                {
-                                    de: 'Nur das peopleeat-Team sieht diese Links, um dein Profil zu prüfen. Kunden sehen sie nicht.',
-                                    en: 'Only the peopleeat team sees these links, to review your profile. Customers do not see them.',
-                                }[locale]
-                            }
-                        </p>
+                        <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'chefProfile.otherProfilesHint')}</p>
                     </div>
                     <CookPresenceLinksReadout links={cook.presenceLinks} />
                 </section>

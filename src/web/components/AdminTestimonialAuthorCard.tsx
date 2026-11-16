@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { ExternalLinkIcon } from 'lucide-react';
 
+import { t } from '../../i18n/t';
 import { userDisplayName } from '../../shared';
 import { useLocale } from '../hooks/useLocale';
 import { AdminTestimonialOfferLink } from './AdminTestimonialOfferLink';
@@ -36,11 +37,11 @@ export function AdminTestimonialAuthorCard({
 }) {
     const locale = useLocale();
     const name = userDisplayName(user);
-    const roleLabel = role === 'customer' ? { de: 'Kunde', en: 'Customer' }[locale] : { de: 'Koch', en: 'Cook' }[locale];
+    const roleLabel = role === 'customer' ? t(locale, 'admin', 'copy.customer') : t(locale, 'admin', 'copy.cook');
 
     return (
         <div className="grid gap-2">
-            <h2 className="text-sm font-medium text-foreground">{{ de: 'Autor', en: 'Author' }[locale]}</h2>
+            <h2 className="text-sm font-medium text-foreground">{t(locale, 'admin', 'copy.author')}</h2>
             <Card className="gap-0 py-4">
                 <CardContent className="grid gap-3 px-4">
                     <div className="flex items-start justify-between gap-3">
@@ -64,15 +65,13 @@ export function AdminTestimonialAuthorCard({
                         <Button type="button" variant="outline" size="sm" asChild>
                             <Link to="/{-$locale}/admin/users/$userId" params={{ userId: user.userId }}>
                                 <ExternalLinkIcon data-icon="inline-start" />
-                                {{ de: 'Nutzer öffnen', en: 'Open user' }[locale]}
+                                {t(locale, 'admin', 'copy.openUser')}
                             </Link>
                         </Button>
                         {bookingRequestOfferId ? (
                             <AdminTestimonialOfferLink bookingRequestOfferId={bookingRequestOfferId} />
                         ) : (
-                            <span className="text-sm text-muted-foreground">
-                                {{ de: 'Kein Angebot verknüpft', en: 'No offer linked' }[locale]}
-                            </span>
+                            <span className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noOfferLinked')}</span>
                         )}
                     </div>
                 </CardContent>

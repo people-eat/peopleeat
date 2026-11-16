@@ -1,14 +1,15 @@
 import { Link } from '@tanstack/react-router';
+import { inlineCopy } from '../../shared';
 
+import type { InlineCopy, Locale } from '../../shared';
 import { cookStubRouteBySlug } from '../pages/profile/cookCatalog';
-import type { Locale } from '../utils/locale';
 import { Button } from './base/button';
 import { StatusAlert } from './base/status-alert';
 
 export type CookBookingRequestPoolUnavailableKind =
     'CookBookingRequestCanceled' | 'CookBookingRequestTaken' | 'CookBookingRequestExpired' | 'CookBookingRequestOfferAlreadyExists';
 
-const COPY: Record<CookBookingRequestPoolUnavailableKind, { title: Record<Locale, string>; body: Record<Locale, string> }> = {
+const COPY: Record<CookBookingRequestPoolUnavailableKind, { title: InlineCopy; body: InlineCopy }> = {
     CookBookingRequestCanceled: {
         title: {
             de: 'Anfrage zurückgezogen',
@@ -76,32 +77,32 @@ export function CookBookingRequestPoolUnavailable({
         <div className="grid content-start gap-6">
             <StatusAlert
                 tone="info"
-                title={copy.title[locale]}
+                title={inlineCopy(copy.title, locale)}
                 action={
                     offerLink != null ? (
                         <Button asChild variant="outline" size="sm">
-                            <Link {...offerLink}>{{ de: 'Zum Angebot', en: 'Go to offer' }[locale]}</Link>
+                            <Link {...offerLink}>{inlineCopy({ de: 'Zum Angebot', en: 'Go to offer' }, locale)}</Link>
                         </Button>
                     ) : (
                         <Button asChild variant="outline" size="sm">
-                            <Link to={poolRoute.to}>{{ de: 'Zum Anfragen-Pool', en: 'Back to request pool' }[locale]}</Link>
+                            <Link to={poolRoute.to}>{inlineCopy({ de: 'Zum Anfragen-Pool', en: 'Back to request pool' }, locale)}</Link>
                         </Button>
                     )
                 }
             >
-                {copy.body[locale]}
+                {inlineCopy(copy.body, locale)}
             </StatusAlert>
             {offerLink == null ? (
                 <Button asChild>
-                    <Link to={poolRoute.to}>{{ de: 'Offene Anfragen ansehen', en: 'View open requests' }[locale]}</Link>
+                    <Link to={poolRoute.to}>{inlineCopy({ de: 'Offene Anfragen ansehen', en: 'View open requests' }, locale)}</Link>
                 </Button>
             ) : (
                 <div className="flex flex-wrap gap-3">
                     <Button asChild>
-                        <Link {...offerLink}>{{ de: 'Angebot öffnen', en: 'Open offer' }[locale]}</Link>
+                        <Link {...offerLink}>{inlineCopy({ de: 'Angebot öffnen', en: 'Open offer' }, locale)}</Link>
                     </Button>
                     <Button asChild variant="outline">
-                        <Link to={offersRoute.to}>{{ de: 'Alle Angebote', en: 'All offers' }[locale]}</Link>
+                        <Link to={offersRoute.to}>{inlineCopy({ de: 'Alle Angebote', en: 'All offers' }, locale)}</Link>
                     </Button>
                 </div>
             )}

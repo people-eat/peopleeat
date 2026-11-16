@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { createRequest, useClient } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { t } from '../../../i18n/t';
+import { inlineCopy } from '../../../shared';
 import { AdminListPaginationBar } from '../../components/AdminListPaginationBar';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
@@ -20,7 +22,8 @@ import type {
 import { AdminSupportRequestsPageUpdatesDocument } from '../../graphql/generated';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useLocale } from '../../hooks/useLocale';
-import { adminStubRouteBySlug } from './adminCatalog';
+import type { Locale } from '../../utils/locale';
+import { adminStubRouteBySlug, adminStubRouteDescription, adminStubRouteTitle } from './adminCatalog';
 import {
     adminListPageCount,
     adminListPageSize,
@@ -33,8 +36,12 @@ import type { AdminListPageSize } from './adminListPaginationSearch';
 
 const route = adminStubRouteBySlug('support-requests');
 
-export const adminSupportRequestsPageTitle = route.title;
-export const adminSupportRequestsPageDescription = route.description;
+export function adminSupportRequestsPageTitle(locale: Locale): string {
+    return adminStubRouteTitle(route.slug, locale);
+}
+export function adminSupportRequestsPageDescription(locale: Locale): string {
+    return adminStubRouteDescription(route.slug, locale);
+}
 
 const ADMIN_SUPPORT_REQUEST_SORT_FIELDS = [
     'lastMessageAt',
@@ -217,18 +224,13 @@ export function AdminSupportRequestsPage({
                         type="search"
                         value={draftQ}
                         onChange={(event) => setDraftQ(event.target.value)}
-                        placeholder={
-                            {
-                                de: 'Betreff, Name oder Id suchen…',
-                                en: 'Search subject, name, or id…',
-                            }[locale]
-                        }
-                        aria-label={{ de: 'Support-Anfragen suchen', en: 'Search support requests' }[locale]}
+                        placeholder={t(locale, 'admin', 'copy.searchSubjectNameOrId')}
+                        aria-label={t(locale, 'admin', 'copy.searchSupportRequests')}
                         className="w-full min-w-0 basis-full @5xl:max-w-sm @5xl:flex-1 @5xl:basis-56"
                     />
                     <div className="flex w-full min-w-0 flex-wrap items-center gap-3 @5xl:w-auto @5xl:flex-1">
                         <label className="flex shrink-0 items-center gap-2 text-sm">
-                            <span className="text-muted-foreground">{{ de: 'Status', en: 'Status' }[locale]}</span>
+                            <span className="text-muted-foreground">{t(locale, 'admin', 'copy.status')}</span>
                             <Select
                                 value={search.status ?? '__all__'}
                                 onValueChange={(value) => {
@@ -239,17 +241,13 @@ export function AdminSupportRequestsPage({
                                     });
                                 }}
                             >
-                                <SelectTrigger
-                                    size="sm"
-                                    className="w-auto shrink-0"
-                                    aria-label={{ de: 'Status filtern', en: 'Filter by status' }[locale]}
-                                >
+                                <SelectTrigger size="sm" className="w-auto shrink-0" aria-label={t(locale, 'admin', 'copy.filterByStatus')}>
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="__all__">{{ de: 'Alle Status', en: 'All statuses' }[locale]}</SelectItem>
-                                    <SelectItem value="OPEN">{{ de: 'Offen', en: 'Open' }[locale]}</SelectItem>
-                                    <SelectItem value="RESOLVED">{{ de: 'Erledigt', en: 'Resolved' }[locale]}</SelectItem>
+                                    <SelectItem value="__all__">{t(locale, 'admin', 'copy.allStatuses')}</SelectItem>
+                                    <SelectItem value="OPEN">{t(locale, 'admin', 'copy.open')}</SelectItem>
+                                    <SelectItem value="RESOLVED">{t(locale, 'admin', 'copy.resolved')}</SelectItem>
                                 </SelectContent>
                             </Select>
                         </label>
@@ -265,15 +263,13 @@ export function AdminSupportRequestsPage({
                                 });
                             }}
                         >
-                            <SelectTrigger size="sm" className="w-auto shrink-0" aria-label={{ de: 'Sortierung', en: 'Sort' }[locale]}>
+                            <SelectTrigger size="sm" className="w-auto shrink-0" aria-label={t(locale, 'admin', 'copy.sort')}>
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="lastMessageAt">{{ de: 'Neueste Nachricht', en: 'Newest message' }[locale]}</SelectItem>
-                                <SelectItem value="createdAt">{{ de: 'Anfrage erstellt', en: 'Request created' }[locale]}</SelectItem>
-                                <SelectItem value="bookingDateTime">
-                                    {{ de: 'Nächster Termin zuerst', en: 'Soonest booking first' }[locale]}
-                                </SelectItem>
+                                <SelectItem value="lastMessageAt">{t(locale, 'admin', 'copy.newestMessage')}</SelectItem>
+                                <SelectItem value="createdAt">{t(locale, 'admin', 'copy.requestCreated')}</SelectItem>
+                                <SelectItem value="bookingDateTime">{t(locale, 'admin', 'copy.soonestBookingFirst')}</SelectItem>
                             </SelectContent>
                         </Select>
 
@@ -288,7 +284,7 @@ export function AdminSupportRequestsPage({
                                     })
                                 }
                             />
-                            {{ de: 'Ungelesene zuerst', en: 'Unread first' }[locale]}
+                            {t(locale, 'admin', 'copy.unreadFirst')}
                         </label>
 
                         {hasActiveFilters ? (
@@ -298,24 +294,25 @@ export function AdminSupportRequestsPage({
                                 className="h-auto shrink-0 p-0 text-sm text-muted-foreground"
                                 onClick={clearFilters}
                             >
-                                {{ de: 'Filter zurücksetzen', en: 'Clear filters' }[locale]}
+                                {t(locale, 'admin', 'copy.clearFilters')}
                             </Button>
                         ) : null}
 
                         <p className="text-sm text-muted-foreground tabular-nums xl:ml-auto">
-                            {
+                            {inlineCopy(
                                 {
                                     de: `${total} ${total === 1 ? 'Anfrage' : 'Anfragen'}`,
                                     en: `${total} ${total === 1 ? 'request' : 'requests'}`,
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                         </p>
                     </div>
                 </div>
 
                 {supportRequests.length === 0 ? (
                     <p className="rounded-xl border border-dashed border-border px-4 py-12 text-center text-sm text-muted-foreground">
-                        {{ de: 'Keine Support-Anfragen gefunden.', en: 'No support requests found.' }[locale]}
+                        {t(locale, 'admin', 'copy.noSupportRequestsFound')}
                     </p>
                 ) : (
                     <ul className="grid auto-rows-fr grid-cols-1 gap-2 @2xl:grid-cols-2 @5xl:grid-cols-3">

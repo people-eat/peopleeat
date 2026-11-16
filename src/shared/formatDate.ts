@@ -1,3 +1,4 @@
+import { t } from '../i18n/t';
 import { languageTagFromLocale } from './locale';
 import type { Locale } from './locale';
 
@@ -137,9 +138,9 @@ export function formatDateRange(
         return formatDate(startsOn ?? endsOn, dateOpts);
     }
     if (startsOn != null) {
-        return { de: `ab ${formatDate(startsOn, dateOpts)}`, en: `from ${formatDate(startsOn, dateOpts)}` }[locale];
+        return t(locale, 'common', 'dateRange.from', { date: formatDate(startsOn, dateOpts) });
     }
-    return { de: `bis ${formatDate(endsOn, dateOpts)}`, en: `until ${formatDate(endsOn, dateOpts)}` }[locale];
+    return t(locale, 'common', 'dateRange.until', { date: formatDate(endsOn, dateOpts) });
 }
 
 export function formatMonthYear(value: string | Date, options: FormatMonthYearOptions): string {

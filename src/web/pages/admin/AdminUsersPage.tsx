@@ -2,6 +2,8 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import type { SortingState, Updater } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
 
+import { t } from '../../../i18n/t';
+import { inlineCopy } from '../../../shared';
 import { AdminListPaginationBar } from '../../components/AdminListPaginationBar';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
@@ -11,6 +13,7 @@ import { Tabs, TabsList, TabsTrigger } from '../../components/base/tabs';
 import type { GqlCAdminUsersPageQuery, GqlCAdminUserType, GqlCUserStatus } from '../../graphql/generated';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useLocale } from '../../hooks/useLocale';
+import type { Locale } from '../../utils/locale';
 import {
     adminListPageCount,
     adminListPageSize,
@@ -31,11 +34,12 @@ import { ADMIN_USERS_SORT_FIELDS, adminUserStatusLabel, adminUserTypeLabel } fro
 import type { AdminUsersSortField } from './adminUsersColumns';
 import { AdminUsersDataTable } from './AdminUsersDataTable';
 
-export const adminUsersPageTitle = { de: 'Benutzerliste', en: 'User list' } as const;
-export const adminUsersPageDescription = {
-    de: 'Registrierte Konten durchsuchen und einsehen.',
-    en: 'Browse and inspect registered accounts.',
-} as const;
+export function adminUsersPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.users.title');
+}
+export function adminUsersPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.users.description');
+}
 
 const ADMIN_USERS_ALL_TYPES: GqlCAdminUserType[] = ['customer', 'cook', 'admin'];
 const ADMIN_USERS_STATUS_OPTIONS: Array<GqlCUserStatus | undefined> = [undefined, 'ACTIVE', 'BANNED', 'ANONYMIZED'];
@@ -129,7 +133,7 @@ export function AdminUsersPage({ data, search }: { data: GqlCAdminUsersPageQuery
     }
 
     const typeTabs: { value: GqlCAdminUserType | undefined; label: string }[] = [
-        { value: undefined, label: { de: 'Alle', en: 'All' }[locale] },
+        { value: undefined, label: t(locale, 'admin', 'copy.all') },
         ...ADMIN_USERS_ALL_TYPES.map((type) => ({
             value: type,
             label: adminUserTypeLabel(type, locale),
@@ -158,7 +162,7 @@ export function AdminUsersPage({ data, search }: { data: GqlCAdminUsersPageQuery
                 }
             >
                 <Tabs value={search.type ?? 'all'}>
-                    <TabsList variant="line" aria-label={{ de: 'Nutzer-Typ', en: 'User type' }[locale]}>
+                    <TabsList variant="line" aria-label={t(locale, 'admin', 'copy.userType')}>
                         {typeTabs.map((tab) => (
                             <TabsTrigger key={tab.value ?? 'all'} value={tab.value ?? 'all'} asChild>
                                 <Link
@@ -179,7 +183,7 @@ export function AdminUsersPage({ data, search }: { data: GqlCAdminUsersPageQuery
                 </Tabs>
 
                 <Tabs value={search.status ?? 'all'}>
-                    <TabsList variant="line" aria-label={{ de: 'Nutzer-Status', en: 'User status' }[locale]}>
+                    <TabsList variant="line" aria-label={t(locale, 'admin', 'copy.userStatus')}>
                         {ADMIN_USERS_STATUS_OPTIONS.map((status) => (
                             <TabsTrigger key={status ?? 'all'} value={status ?? 'all'} asChild>
                                 <Link
@@ -191,9 +195,7 @@ export function AdminUsersPage({ data, search }: { data: GqlCAdminUsersPageQuery
                                     })}
                                     replace
                                 >
-                                    {status == null
-                                        ? { de: 'Alle Status', en: 'All statuses' }[locale]
-                                        : adminUserStatusLabel(status, locale)}
+                                    {status == null ? t(locale, 'admin', 'copy.allStatuses') : adminUserStatusLabel(status, locale)}
                                 </Link>
                             </TabsTrigger>
                         ))}
@@ -205,16 +207,17 @@ export function AdminUsersPage({ data, search }: { data: GqlCAdminUsersPageQuery
                         type="search"
                         value={draftQ}
                         onChange={(event) => setDraftQ(event.target.value)}
-                        placeholder={{ de: 'Name oder E-Mail suchen…', en: 'Search name or email…' }[locale]}
-                        aria-label={{ de: 'Nutzer suchen', en: 'Search users' }[locale]}
+                        placeholder={t(locale, 'admin', 'copy.searchNameOrEmail')}
+                        aria-label={t(locale, 'admin', 'copy.searchUsers2')}
                     />
                     <p className="text-sm text-muted-foreground tabular-nums">
-                        {
+                        {inlineCopy(
                             {
                                 de: `${total} ${total === 1 ? 'Nutzer' : 'Nutzer'}`,
                                 en: `${total} ${total === 1 ? 'user' : 'users'}`,
-                            }[locale]
-                        }
+                            },
+                            locale,
+                        )}
                     </p>
                 </div>
 
@@ -230,7 +233,7 @@ export function AdminUsersPage({ data, search }: { data: GqlCAdminUsersPageQuery
                                 })
                             }
                         />
-                        {{ de: 'Nur nicht freigeschaltete', en: 'Unapproved only' }[locale]}
+                        {t(locale, 'admin', 'copy.unapprovedOnly')}
                     </label>
                 ) : null}
 

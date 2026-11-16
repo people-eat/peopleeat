@@ -3,6 +3,7 @@ import { parseISO } from 'date-fns';
 import { useState } from 'react';
 import type { DateRange } from 'react-day-picker';
 
+import { t } from '../../../i18n/t';
 import { formatIsoDate } from '../../../shared';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { Card, CardContent } from '../../components/base/card';
@@ -11,7 +12,8 @@ import { DateRangePicker } from '../../components/base/date-range-picker';
 import type { GqlCAdminMapPageQuery } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { DATE_FNS_LOCALE } from '../../utils/dateFnsLocale';
-import { adminStubRouteBySlug } from './adminCatalog';
+import type { Locale } from '../../utils/locale';
+import { adminStubRouteBySlug, adminStubRouteDescription, adminStubRouteTitle } from './adminCatalog';
 import type { AdminMapCoverageCook } from './AdminMapCanvas';
 import { AdminMapCanvas } from './AdminMapCanvas';
 import { AdminMapLocationSearch } from './AdminMapLocationSearch';
@@ -21,16 +23,20 @@ import { AdminMapSelectionPanel } from './AdminMapSelectionPanel';
 
 const route = adminStubRouteBySlug('map');
 
-export const adminMapPageTitle = route.title;
-export const adminMapPageDescription = route.description;
+export function adminMapPageTitle(locale: Locale): string {
+    return adminStubRouteTitle(route.slug, locale);
+}
+export function adminMapPageDescription(locale: Locale): string {
+    return adminStubRouteDescription(route.slug, locale);
+}
 
 export { adminMapPageVariables, parseAdminMapSearch } from './adminMapSearch';
 
-const LAYER_LABEL: Record<AdminMapLayer, { de: string; en: string }> = {
-    cooks: { de: 'Köche', en: 'Cooks' },
-    bookings: { de: 'Anfragen', en: 'Requests' },
-    cities: { de: 'Städte', en: 'Cities' },
-    venues: { de: 'Locations', en: 'Venues' },
+const LAYER_LABEL_KEY: Record<AdminMapLayer, string> = {
+    cooks: 'copy.cooks',
+    bookings: 'copy.requests',
+    cities: 'copy.cities',
+    venues: 'copy.venues',
 };
 
 type AdminMapPageProps = {
@@ -117,7 +123,7 @@ export function AdminMapPage({ data, search }: AdminMapPageProps) {
                                     return (
                                         <label key={layer} className="flex items-center gap-1.5 text-xs">
                                             <Checkbox checked={checked} onCheckedChange={(value) => toggleLayer(layer, value === true)} />
-                                            {LAYER_LABEL[layer][locale]}
+                                            {t(locale, 'admin', LAYER_LABEL_KEY[layer])}
                                         </label>
                                     );
                                 })}
@@ -141,9 +147,9 @@ export function AdminMapPage({ data, search }: AdminMapPageProps) {
                             value={pickerValue}
                             onValueChange={onRangeChange}
                             locale={DATE_FNS_LOCALE[locale]}
-                            placeholder={{ de: 'Zeitraum wählen', en: 'Pick a date range' }[locale]}
+                            placeholder={t(locale, 'admin', 'copy.pickADateRange')}
                             className="w-auto shadow-md"
-                            aria-label={{ de: 'Zeitraum für Anfragen', en: 'Date range for requests' }[locale]}
+                            aria-label={t(locale, 'admin', 'copy.dateRangeForRequests')}
                         />
                     </div>
                 </div>
@@ -152,12 +158,11 @@ export function AdminMapPage({ data, search }: AdminMapPageProps) {
                     <Card className="pointer-events-auto gap-0 py-0 shadow-md">
                         <CardContent className="px-3 py-2 text-xs text-muted-foreground">
                             <span>
-                                {{ de: 'Köche ohne Standort', en: 'Cooks missing origin' }[locale]}: {cooksMissingOriginCount}
+                                {t(locale, 'admin', 'copy.cooksMissingOrigin')}: {cooksMissingOriginCount}
                             </span>
                             <span className="mx-2 text-border">·</span>
                             <span>
-                                {{ de: 'Locations ohne Standort', en: 'Venues missing location' }[locale]}:{' '}
-                                {partnerVenuesMissingLocationCount}
+                                {t(locale, 'admin', 'copy.venuesMissingLocation')}: {partnerVenuesMissingLocationCount}
                             </span>
                         </CardContent>
                     </Card>

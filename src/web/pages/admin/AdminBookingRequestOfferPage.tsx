@@ -17,12 +17,14 @@ import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { t } from '../../../i18n/t';
 import {
     bookingRequestOfferChatCanSend,
     bookingRequestPaidParticipants,
     formatCurrency,
     formatDate,
     formatDateTime,
+    inlineCopy,
     userDisplayName,
 } from '../../../shared';
 import { bookingRequestOfferStatusHue, bookingRequestOfferStatusLabel } from '../../../shared/bookingRequestOfferStatus';
@@ -103,15 +105,16 @@ import { bookingPaymentPullIsPast } from '../../utils/bookingPaymentPullIsPast';
 import type { Locale } from '../../utils/locale';
 import { AdminBookingRequestOfferHandoverDialog } from './AdminBookingRequestOfferHandoverDialog';
 import { adminBookingRequestCustomerLabel } from './adminBookingRequestsColumns';
-import { adminStubRouteBySlug } from './adminCatalog';
+import { adminStubRouteBySlug, adminStubRouteTitle } from './adminCatalog';
 
 const listRoute = adminStubRouteBySlug('booking-requests');
 
-export const adminBookingRequestOfferPageTitle = { de: 'Angebot', en: 'Offer' } as const;
-export const adminBookingRequestOfferPageDescription = {
-    de: 'Angebot prüfen und im Chat mitlesen.',
-    en: 'Review the offer and follow the negotiation chat.',
-} as const;
+export function adminBookingRequestOfferPageTitle(locale: Locale): string {
+    return t(locale, 'admin', 'pages.bookingRequestOffer.title');
+}
+export function adminBookingRequestOfferPageDescription(locale: Locale): string {
+    return t(locale, 'admin', 'pages.bookingRequestOffer.description');
+}
 
 const OFFER_TABS = ['chat', 'offer', 'costs', 'menu', 'call', 'testimonial'] as const;
 
@@ -142,17 +145,17 @@ function resolveOfferTab(
 
 type OfferTabDef = {
     id: AdminBookingRequestOfferTab;
-    label: Record<Locale, string>;
+    labelKey: string;
     Icon: LucideIcon;
 };
 
 const OFFER_TAB_DEFS: readonly OfferTabDef[] = [
-    { id: 'chat', label: { de: 'Chat', en: 'Chat' }, Icon: MessageSquareIcon },
-    { id: 'offer', label: { de: 'Angebot', en: 'Offer' }, Icon: FileTextIcon },
-    { id: 'costs', label: { de: 'Kosten', en: 'Costs' }, Icon: BanknoteIcon },
-    { id: 'menu', label: { de: 'Menü', en: 'Menu' }, Icon: UtensilsCrossedIcon },
-    { id: 'call', label: { de: 'Anruf', en: 'Call' }, Icon: VideoIcon },
-    { id: 'testimonial', label: { de: 'Bewertung', en: 'Review' }, Icon: StarIcon },
+    { id: 'chat', labelKey: 'bookingRequestOffer.tabs.chat', Icon: MessageSquareIcon },
+    { id: 'offer', labelKey: 'bookingRequestOffer.tabs.offer', Icon: FileTextIcon },
+    { id: 'costs', labelKey: 'bookingRequestOffer.tabs.costs', Icon: BanknoteIcon },
+    { id: 'menu', labelKey: 'bookingRequestOffer.tabs.menu', Icon: UtensilsCrossedIcon },
+    { id: 'call', labelKey: 'bookingRequestOffer.tabs.call', Icon: VideoIcon },
+    { id: 'testimonial', labelKey: 'bookingRequestOffer.tabs.testimonial', Icon: StarIcon },
 ];
 
 export function adminBookingRequestOfferPageVariables(bookingRequestId: string, bookingRequestOfferId: string) {
@@ -163,8 +166,8 @@ function CopyValueButton({ text }: { text: string }) {
     const locale = useLocale();
     const [copied, setCopied] = useState(false);
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const idleLabel = { de: 'Kopieren', en: 'Copy' }[locale];
-    const ariaLabel = copied ? { de: 'Kopiert', en: 'Copied' }[locale] : idleLabel;
+    const idleLabel = t(locale, 'admin', 'copy.copy');
+    const ariaLabel = copied ? t(locale, 'admin', 'copy.copied') : idleLabel;
 
     useEffect(() => {
         return () => {
@@ -175,9 +178,9 @@ function CopyValueButton({ text }: { text: string }) {
     const onCopy = useCallback(async () => {
         try {
             await navigator.clipboard.writeText(text);
-            toast.success({ de: 'In die Zwischenablage kopiert', en: 'Copied to clipboard' }[locale]);
+            toast.success(t(locale, 'admin', 'copy.copiedToClipboard'));
         } catch {
-            toast.error({ de: 'Kopieren in die Zwischenablage fehlgeschlagen', en: 'Could not copy to clipboard' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.couldNotCopyToClipboard'));
         }
         setCopied(true);
         if (timerRef.current) clearTimeout(timerRef.current);
@@ -257,12 +260,12 @@ function PlannedPaymentPullValue({
 
 function AcceptStatusBadge({ value, locale }: { value: boolean | null | undefined; locale: Locale }) {
     if (value == null) {
-        return <StatusBadge tone="info">{{ de: 'Offen', en: 'Open' }[locale]}</StatusBadge>;
+        return <StatusBadge tone="info">{t(locale, 'admin', 'copy.open')}</StatusBadge>;
     }
     if (value) {
-        return <StatusBadge tone="success">{{ de: 'Ja', en: 'Yes' }[locale]}</StatusBadge>;
+        return <StatusBadge tone="success">{t(locale, 'admin', 'copy.yes')}</StatusBadge>;
     }
-    return <StatusBadge tone="error">{{ de: 'Nein', en: 'No' }[locale]}</StatusBadge>;
+    return <StatusBadge tone="error">{t(locale, 'admin', 'copy.no')}</StatusBadge>;
 }
 
 function OfferCostViews({
@@ -283,7 +286,7 @@ function OfferCostViews({
     return (
         <div className="grid items-start gap-4 @3xl:grid-cols-2">
             <div className="grid gap-3">
-                <h2 className="text-sm font-medium text-foreground">{{ de: 'Kundensicht', en: 'Customer view' }[locale]}</h2>
+                <h2 className="text-sm font-medium text-foreground">{t(locale, 'admin', 'copy.customerView')}</h2>
                 <Card className="gap-4 py-4">
                     <CardContent className="px-4">
                         <CostBreakdownPanel
@@ -291,19 +294,14 @@ function OfferCostViews({
                             lineItems={offer.costBreakdown.lineItems}
                             totalBeforeDiscount={offer.costBreakdown.totalBeforeDiscount}
                             total={offer.costBreakdown.total}
-                            footer={
-                                {
-                                    de: 'Die An- und Abreise sind im Gesamtpreis inkludiert',
-                                    en: 'Travel to and from the venue is included in the total price',
-                                }[locale]
-                            }
+                            footer={t(locale, 'admin', 'copy.travelToAndFromTheVenueIsIncludedInTheTotalPrice')}
                         />
                     </CardContent>
                 </Card>
             </div>
             {showCookView ? (
                 <div className="grid gap-3">
-                    <h2 className="text-sm font-medium text-foreground">{{ de: 'Kochsicht', en: 'Cook view' }[locale]}</h2>
+                    <h2 className="text-sm font-medium text-foreground">{t(locale, 'admin', 'copy.cookView')}</h2>
                     <BookingRequestOfferCostOverviewPanel
                         locale={locale}
                         viewer="admin"
@@ -328,22 +326,25 @@ function OfferCostViews({
 
 function cookPayoutBlockedReasonMessage(reason: GqlCAdminCookPayoutBlockedReason | null | undefined, locale: Locale): string {
     if (reason == null) {
-        return { de: 'Koch kann derzeit keine Auszahlung empfangen.', en: 'Cook cannot receive a payout right now.' }[locale];
+        return t(locale, 'admin', 'copy.cookCannotReceiveAPayoutRightNow');
     }
-    return {
-        MISSING_STRIPE_ACCOUNT: {
-            de: 'Der Koch hat noch kein Stripe-Konto verbunden.',
-            en: 'The cook has not connected a Stripe account yet.',
-        },
-        STRIPE_ACCOUNT_INACTIVE: {
-            de: 'Das Stripe-Konto des Kochs ist nicht aktiv.',
-            en: "The cook's Stripe account is not active.",
-        },
-        STRIPE_PAYOUTS_DISABLED: {
-            de: 'Stripe-Auszahlungen sind für dieses Konto noch nicht freigeschaltet.',
-            en: 'Stripe payouts are not enabled on this account yet.',
-        },
-    }[reason][locale];
+    return inlineCopy(
+        {
+            MISSING_STRIPE_ACCOUNT: {
+                de: 'Der Koch hat noch kein Stripe-Konto verbunden.',
+                en: 'The cook has not connected a Stripe account yet.',
+            },
+            STRIPE_ACCOUNT_INACTIVE: {
+                de: 'Das Stripe-Konto des Kochs ist nicht aktiv.',
+                en: "The cook's Stripe account is not active.",
+            },
+            STRIPE_PAYOUTS_DISABLED: {
+                de: 'Stripe-Auszahlungen sind für dieses Konto noch nicht freigeschaltet.',
+                en: 'Stripe payouts are not enabled on this account yet.',
+            },
+        }[reason],
+        locale,
+    );
 }
 
 function offerPayoutDue(offer: GqlCAdminBookingRequestOfferPageOfferFragment, now: Date = new Date()): boolean {
@@ -411,8 +412,8 @@ export function AdminBookingRequestOfferPage({
     }, [showTestimonialTab]);
     const tab = resolveOfferTab(search.tab, visibleTabs);
     const visibleTabDefs = OFFER_TAB_DEFS.filter((entry) => visibleTabs.has(entry.id));
-    const crumbRequestLabel = request?.occasion.trim() || adminBookingRequestOfferPageTitle[locale];
-    const crumbOfferLabel = offer ? userDisplayName(offer.cook.user) : adminBookingRequestOfferPageTitle[locale];
+    const crumbRequestLabel = request?.occasion.trim() || adminBookingRequestOfferPageTitle(locale);
+    const crumbOfferLabel = offer ? userDisplayName(offer.cook.user) : adminBookingRequestOfferPageTitle(locale);
     const pendingCall = offer?.callBookings.find((booking) => booking.status === 'PENDING') ?? null;
     const confirmedCall = offer?.callBookings.find((booking) => booking.status === 'CONFIRMED') ?? null;
 
@@ -455,7 +456,7 @@ export function AdminBookingRequestOfferPage({
         <>
             <AdminPageChrome
                 crumbs={[
-                    { label: listRoute.title[locale], to: '/{-$locale}/admin/booking-requests' },
+                    { label: adminStubRouteTitle(listRoute.slug, locale), to: '/{-$locale}/admin/booking-requests' },
                     {
                         label: crumbRequestLabel,
                         to: '/{-$locale}/admin/booking-requests/$bookingRequestId',
@@ -488,12 +489,12 @@ export function AdminBookingRequestOfferPage({
                                                         to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit"
                                                         params={{ bookingRequestId, bookingRequestOfferId }}
                                                     >
-                                                        {{ de: 'Angebot bearbeiten', en: 'Edit offer' }[locale]}
+                                                        {t(locale, 'admin', 'copy.editOffer')}
                                                     </Link>
                                                 </Button>
                                                 {canHandover ? (
                                                     <Button type="button" variant="outline" onClick={() => setHandoverOpen(true)}>
-                                                        {{ de: 'Übergeben', en: 'Hand over' }[locale]}
+                                                        {t(locale, 'admin', 'copy.handOver')}
                                                     </Button>
                                                 ) : null}
                                             </>
@@ -504,7 +505,7 @@ export function AdminBookingRequestOfferPage({
                                                     to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit-configured-menu"
                                                     params={{ bookingRequestId, bookingRequestOfferId }}
                                                 >
-                                                    {{ de: 'Menü bearbeiten', en: 'Edit menu' }[locale]}
+                                                    {t(locale, 'admin', 'copy.editMenu')}
                                                 </Link>
                                             </Button>
                                         ) : null}
@@ -514,7 +515,7 @@ export function AdminBookingRequestOfferPage({
                                                     to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit-price"
                                                     params={{ bookingRequestId, bookingRequestOfferId }}
                                                 >
-                                                    {{ de: 'Preis bearbeiten', en: 'Edit price' }[locale]}
+                                                    {t(locale, 'admin', 'copy.editPrice')}
                                                 </Link>
                                             </Button>
                                         ) : null}
@@ -543,7 +544,7 @@ export function AdminBookingRequestOfferPage({
                                                                 search={{ tab: 'costs' }}
                                                                 replace
                                                             >
-                                                                {{ de: 'Zu Kosten', en: 'View costs' }[locale]}
+                                                                {t(locale, 'admin', 'copy.viewCosts')}
                                                             </Link>
                                                         </Button>
                                                     ) : undefined
@@ -552,7 +553,7 @@ export function AdminBookingRequestOfferPage({
                                         ) : null}
                                         {pendingCall && showSchedule ? (
                                             <BookingRequestOfferAttentionBanner
-                                                message={
+                                                message={inlineCopy(
                                                     {
                                                         de:
                                                             pendingCall.initiator === 'CUSTOMER'
@@ -562,9 +563,10 @@ export function AdminBookingRequestOfferPage({
                                                             pendingCall.initiator === 'CUSTOMER'
                                                                 ? 'Call request pending: customer awaiting chef'
                                                                 : 'Call request pending: chef awaiting customer',
-                                                    }[locale]
-                                                }
-                                                actionLabel={{ de: 'Zum Anruf', en: 'View call' }[locale]}
+                                                    },
+                                                    locale,
+                                                )}
+                                                actionLabel={t(locale, 'admin', 'copy.viewCall')}
                                                 actionLink={
                                                     tab !== 'call'
                                                         ? {
@@ -583,9 +585,9 @@ export function AdminBookingRequestOfferPage({
                                             <TabsList
                                                 variant="line"
                                                 className="shrink-0"
-                                                aria-label={{ de: 'Angebotsbereiche', en: 'Offer sections' }[locale]}
+                                                aria-label={t(locale, 'admin', 'copy.offerSections')}
                                             >
-                                                {visibleTabDefs.map(({ id, label, Icon }) => (
+                                                {visibleTabDefs.map(({ id, labelKey, Icon }) => (
                                                     <TabsTrigger key={id} value={id} asChild>
                                                         <Link
                                                             to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId"
@@ -594,7 +596,7 @@ export function AdminBookingRequestOfferPage({
                                                             replace
                                                         >
                                                             <Icon aria-hidden />
-                                                            {label[locale]}
+                                                            {t(locale, 'admin', labelKey)}
                                                         </Link>
                                                     </TabsTrigger>
                                                 ))}
@@ -611,7 +613,7 @@ export function AdminBookingRequestOfferPage({
                                                     {offer.activeCallRoom?.status === 'ACTIVE' ? (
                                                         <StatusAlert
                                                             tone="info"
-                                                            title={{ de: 'Anruf läuft', en: 'Call in progress' }[locale]}
+                                                            title={t(locale, 'admin', 'copy.callInProgress')}
                                                             action={
                                                                 <Button type="button" size="sm" asChild>
                                                                     <Link
@@ -620,25 +622,18 @@ export function AdminBookingRequestOfferPage({
                                                                         search={{ tab: 'call' }}
                                                                         replace
                                                                     >
-                                                                        {{ de: 'Zum Anruf', en: 'Go to call' }[locale]}
+                                                                        {t(locale, 'admin', 'copy.goToCall')}
                                                                     </Link>
                                                                 </Button>
                                                             }
                                                         >
-                                                            {
-                                                                {
-                                                                    de: 'Ein Videoanruf für dieses Angebot ist aktiv.',
-                                                                    en: 'A video call for this offer is active.',
-                                                                }[locale]
-                                                            }
+                                                            {t(locale, 'admin', 'copy.aVideoCallForThisOfferIsActive')}
                                                         </StatusAlert>
                                                     ) : null}
                                                     {!pendingCall && confirmedCall && showSchedule ? (
                                                         <StatusAlert
                                                             tone="info"
-                                                            title={
-                                                                { de: 'Gesprächstermin bestätigt', en: 'Discovery call confirmed' }[locale]
-                                                            }
+                                                            title={t(locale, 'admin', 'copy.discoveryCallConfirmed')}
                                                             action={
                                                                 <Button type="button" size="sm" asChild>
                                                                     <Link
@@ -647,17 +642,12 @@ export function AdminBookingRequestOfferPage({
                                                                         search={{ tab: 'call' }}
                                                                         replace
                                                                     >
-                                                                        {{ de: 'Zum Anruf', en: 'View call' }[locale]}
+                                                                        {t(locale, 'admin', 'copy.viewCall')}
                                                                     </Link>
                                                                 </Button>
                                                             }
                                                         >
-                                                            {
-                                                                {
-                                                                    de: 'Der bestätigte Termin erscheint unter Anruf (nur Ansicht).',
-                                                                    en: 'The confirmed appointment is on the Call tab (read-only).',
-                                                                }[locale]
-                                                            }
+                                                            {t(locale, 'admin', 'copy.theConfirmedAppointmentIsOnTheCallTabReadOnly')}
                                                         </StatusAlert>
                                                     ) : null}
                                                 </div>
@@ -696,12 +686,7 @@ export function AdminBookingRequestOfferPage({
                                                 onSend={async (message, fileUploadIds) => {
                                                     const result = await sendChatMessage({ bookingRequestOfferId, message, fileUploadIds });
                                                     if (result.error || !result.data?.admin.bookingRequestOfferChatMessageCreate.success) {
-                                                        toast.error(
-                                                            {
-                                                                de: 'Nachricht konnte nicht gesendet werden.',
-                                                                en: 'Could not send the message.',
-                                                            }[locale],
-                                                        );
+                                                        toast.error(t(locale, 'admin', 'copy.couldNotSendTheMessage'));
                                                         return false;
                                                     }
                                                     return true;
@@ -712,12 +697,7 @@ export function AdminBookingRequestOfferPage({
                                                         message,
                                                     });
                                                     if (result.error || !result.data?.admin.bookingRequestOfferChatMessageUpdate.success) {
-                                                        toast.error(
-                                                            {
-                                                                de: 'Nachricht konnte nicht gespeichert werden.',
-                                                                en: 'Could not save the message.',
-                                                            }[locale],
-                                                        );
+                                                        toast.error(t(locale, 'admin', 'copy.couldNotSaveTheMessage'));
                                                         return false;
                                                     }
                                                     return true;
@@ -733,14 +713,8 @@ export function AdminBookingRequestOfferPage({
                                                     ) {
                                                         toast.error(
                                                             hiddenByAdmin
-                                                                ? {
-                                                                      de: 'Nachricht konnte nicht verborgen werden.',
-                                                                      en: 'Could not hide the message.',
-                                                                  }[locale]
-                                                                : {
-                                                                      de: 'Nachricht konnte nicht wieder angezeigt werden.',
-                                                                      en: 'Could not show the message again.',
-                                                                  }[locale],
+                                                                ? t(locale, 'admin', 'copy.couldNotHideTheMessage')
+                                                                : t(locale, 'admin', 'copy.couldNotShowTheMessageAgain'),
                                                         );
                                                         return false;
                                                     }
@@ -751,12 +725,7 @@ export function AdminBookingRequestOfferPage({
                                                         bookingRequestOfferEventId: chatMessageId,
                                                     });
                                                     if (result.error || !result.data?.admin.bookingRequestOfferChatMessageDelete.success) {
-                                                        toast.error(
-                                                            {
-                                                                de: 'Nachricht konnte nicht gelöscht werden.',
-                                                                en: 'Could not delete the message.',
-                                                            }[locale],
-                                                        );
+                                                        toast.error(t(locale, 'admin', 'copy.couldNotDeleteTheMessage'));
                                                         return false;
                                                     }
                                                     return true;
@@ -770,12 +739,7 @@ export function AdminBookingRequestOfferPage({
                                                         result.error ||
                                                         !result.data?.admin.bookingRequestOfferChatMessageReactionUpsert.success
                                                     ) {
-                                                        toast.error(
-                                                            {
-                                                                de: 'Reaktion konnte nicht gespeichert werden.',
-                                                                en: 'Could not save the reaction.',
-                                                            }[locale],
-                                                        );
+                                                        toast.error(t(locale, 'admin', 'copy.couldNotSaveTheReaction'));
                                                         return false;
                                                     }
                                                     return true;
@@ -896,9 +860,7 @@ export function AdminBookingRequestOfferPage({
                                     </Tabs>
                                 </>
                             ) : (
-                                <p className="text-sm text-muted-foreground">
-                                    {{ de: 'Angebot nicht gefunden.', en: 'Offer not found.' }[locale]}
-                                </p>
+                                <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.offerNotFound')}</p>
                             )}
                         </AdminPinnedFooterLayout>
                     )}
@@ -987,20 +949,10 @@ function OfferMetaTabPanel({
                 onClearPreparations={async () => {
                     const result = await clearPreparations({ bookingRequestOfferId: offer.bookingRequestOfferId });
                     if (result.error || !result.data?.admin.bookingRequestOfferPreparationsClear.success) {
-                        toast.error(
-                            {
-                                de: 'Sperre konnte nicht aufgehoben werden.',
-                                en: 'Could not clear the preparations lock.',
-                            }[locale],
-                        );
+                        toast.error(t(locale, 'admin', 'copy.couldNotClearThePreparationsLock'));
                         return;
                     }
-                    toast.success(
-                        {
-                            de: 'Vorbereitungssperre aufgehoben.',
-                            en: 'Preparations lock cleared.',
-                        }[locale],
-                    );
+                    toast.success(t(locale, 'admin', 'copy.preparationsLockCleared'));
                 }}
             />
             <AdminOfferPartyCards
@@ -1024,18 +976,18 @@ function OfferMetaTabPanel({
             />
 
             <div className="grid gap-3">
-                <h2 className="text-sm font-medium text-foreground">{{ de: 'Angebotsstatus', en: 'Offer status' }[locale]}</h2>
+                <h2 className="text-sm font-medium text-foreground">{t(locale, 'admin', 'copy.offerStatus')}</h2>
                 <Card className="gap-0 py-4">
                     <CardContent className="grid gap-4 px-4">
                         <dl className="grid gap-4 @sm:grid-cols-2">
                             <DetailField
-                                label={{ de: 'Angebots-ID', en: 'Offer ID' }[locale]}
+                                label={t(locale, 'admin', 'copy.offerId')}
                                 value={offer.bookingRequestOfferId}
                                 mono
                                 copyText={offer.bookingRequestOfferId}
                             />
                             <DetailField
-                                label={{ de: 'Erstellt', en: 'Created' }[locale]}
+                                label={t(locale, 'admin', 'copy.created')}
                                 value={formatDateTime(offer.createdAt, {
                                     locale,
                                     timeZone,
@@ -1044,11 +996,11 @@ function OfferMetaTabPanel({
                                 })}
                             />
                             <DetailField
-                                label={{ de: 'Kunde akzeptiert', en: 'Customer accepted' }[locale]}
+                                label={t(locale, 'admin', 'copy.customerAccepted')}
                                 value={<AcceptStatusBadge value={offer.userAccepted} locale={locale} />}
                             />
                             <DetailField
-                                label={{ de: 'Koch akzeptiert', en: 'Cook accepted' }[locale]}
+                                label={t(locale, 'admin', 'copy.cookAccepted')}
                                 value={<AcceptStatusBadge value={offer.cookAccepted} locale={locale} />}
                             />
                         </dl>
@@ -1056,15 +1008,12 @@ function OfferMetaTabPanel({
                             <dl className="grid gap-4 border-t border-border pt-4">
                                 {offer.userDeclinationReason ? (
                                     <DetailField
-                                        label={{ de: 'Ablehnungsgrund Kunde', en: 'Customer decline reason' }[locale]}
+                                        label={t(locale, 'admin', 'copy.customerDeclineReason')}
                                         value={offer.userDeclinationReason}
                                     />
                                 ) : null}
                                 {offer.cookDeclinationReason ? (
-                                    <DetailField
-                                        label={{ de: 'Ablehnungsgrund Koch', en: 'Cook decline reason' }[locale]}
-                                        value={offer.cookDeclinationReason}
-                                    />
+                                    <DetailField label={t(locale, 'admin', 'copy.cookDeclineReason')} value={offer.cookDeclinationReason} />
                                 ) : null}
                             </dl>
                         ) : null}
@@ -1100,7 +1049,7 @@ function CostsTabPanel({
     const done = offerPayoutDone(offer);
     const alreadyTookPlaceCheckable = offerPayoutAlreadyTookPlaceCheckable(offer);
     const outOfSystem = offer.paymentStatus === 'PAYED_OUT_OF_SYSTEM';
-    const empty = { de: '—', en: '—' }[locale];
+    const empty = t(locale, 'admin', 'copy.empty');
     const platformWinCents = offer.platformFeeCentsCook + offer.platformFeeCentsCustomer;
     const customerTotalCents = offer.costBreakdown.total?.amountCents ?? offer.totalWithoutDiscountsCentsCustomer;
     const discountLineItems = offer.costBreakdown.lineItems.filter((line) => line.amountCents < 0);
@@ -1115,10 +1064,10 @@ function CostsTabPanel({
             if (!result.data?.admin.bookingRequestOfferPayoutRelease.success) {
                 throw new Error('payout release failed');
             }
-            toast.success({ de: 'Auszahlung ausgelöst.', en: 'Payout released.' }[locale]);
+            toast.success(t(locale, 'admin', 'copy.payoutReleased'));
             setPayoutConfirm(null);
         } catch {
-            toast.error({ de: 'Auszahlung fehlgeschlagen.', en: 'Could not release the payout.' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.couldNotReleaseThePayout'));
         } finally {
             setPayoutBusy(false);
         }
@@ -1132,10 +1081,10 @@ function CostsTabPanel({
             if (!result.data?.admin.bookingRequestOfferPayoutMarkOutOfSystem.success) {
                 throw new Error('payout mark out of system failed');
             }
-            toast.success({ de: 'Als außerbetrieblich ausgezahlt markiert.', en: 'Marked as paid out of system.' }[locale]);
+            toast.success(t(locale, 'admin', 'copy.markedAsPaidOutOfSystem'));
             setPayoutConfirm(null);
         } catch {
-            toast.error({ de: 'Markierung fehlgeschlagen.', en: 'Could not mark as paid out of system.' }[locale]);
+            toast.error(t(locale, 'admin', 'copy.couldNotMarkAsPaidOutOfSystem'));
         } finally {
             setPayoutBusy(false);
         }
@@ -1150,33 +1099,17 @@ function CostsTabPanel({
                 throw new Error('payout already took place check failed');
             }
             if (!result.data?.admin.bookingRequestOfferPayoutAlreadyTookPlaceCheck.success) {
-                toast.error(
-                    {
-                        de: 'Keine passende Stripe-Auszahlung gefunden.',
-                        en: 'No matching Stripe payout found.',
-                    }[locale],
-                );
+                toast.error(t(locale, 'admin', 'copy.noMatchingStripePayoutFound'));
                 return;
             }
             toast.success(
                 outOfSystem
-                    ? {
-                          de: 'Passende Stripe-Auszahlung gefunden. Status von außerbetrieblich auf Stripe-Auszahlung korrigiert.',
-                          en: 'Matching Stripe payout found. Corrected from out-of-system to Stripe payout.',
-                      }[locale]
-                    : {
-                          de: 'Passende Stripe-Auszahlung gefunden. Als ausgezahlt markiert.',
-                          en: 'Matching Stripe payout found. Marked as paid out.',
-                      }[locale],
+                    ? t(locale, 'admin', 'copy.matchingStripePayoutFoundCorrectedFromOutOfSystemToStripePay')
+                    : t(locale, 'admin', 'copy.matchingStripePayoutFoundMarkedAsPaidOut'),
             );
             setPayoutConfirm(null);
         } catch {
-            toast.error(
-                {
-                    de: 'Prüfung fehlgeschlagen.',
-                    en: 'Could not check whether the payout already took place.',
-                }[locale],
-            );
+            toast.error(t(locale, 'admin', 'copy.couldNotCheckWhetherThePayoutAlreadyTookPlace'));
         } finally {
             setPayoutBusy(false);
         }
@@ -1185,9 +1118,9 @@ function CostsTabPanel({
     return (
         <div className="@container grid max-w-4xl gap-4">
             {offer.priceAutoAdjustReason != null ? (
-                <StatusAlert tone="info" title={{ de: 'Preis automatisch angepasst', en: 'Price auto-adjusted' }[locale]}>
-                    {
-                        (offer.priceAutoAdjustReason === 'PARTICIPANTS'
+                <StatusAlert tone="info" title={t(locale, 'admin', 'copy.priceAutoAdjusted')}>
+                    {inlineCopy(
+                        offer.priceAutoAdjustReason === 'PARTICIPANTS'
                             ? {
                                   de: 'Dieser Angebotspreis wurde automatisch an die neue Teilnehmerzahl angepasst.',
                                   en: 'This offer price was adjusted automatically to the new guest count.',
@@ -1205,27 +1138,29 @@ function CostsTabPanel({
                                 : {
                                       de: 'Dieser Angebotspreis wurde automatisch angepasst (nach einer Anfrageänderung).',
                                       en: 'This offer price was adjusted automatically after a request change.',
-                                  })[locale]
-                    }
+                                  },
+                        locale,
+                    )}
                 </StatusAlert>
             ) : null}
 
             {due ? (
                 <Card className="gap-4 py-4">
                     <CardHeader className="px-4 pb-0">
-                        <CardTitle className="text-sm">{{ de: 'Koch-Auszahlung', en: 'Cook payout' }[locale]}</CardTitle>
+                        <CardTitle className="text-sm">{t(locale, 'admin', 'copy.cookPayout')}</CardTitle>
                         <CardDescription>
-                            {
+                            {inlineCopy(
                                 {
                                     de: `Fällig seit ${offer.plannedPayoutDateTime ? formatDate(offer.plannedPayoutDateTime, { locale, timeZone, dateStyle: 'medium' }) : '—'} · ${payoutAmountLabel}`,
                                     en: `Due since ${offer.plannedPayoutDateTime ? formatDate(offer.plannedPayoutDateTime, { locale, timeZone, dateStyle: 'medium' }) : '—'} · ${payoutAmountLabel}`,
-                                }[locale]
-                            }
+                                },
+                                locale,
+                            )}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="grid gap-3 px-4">
                         {!offer.cookPayoutReady ? (
-                            <StatusAlert tone="warning" title={{ de: 'Auszahlung blockiert', en: 'Payout blocked' }[locale]}>
+                            <StatusAlert tone="warning" title={t(locale, 'admin', 'copy.payoutBlocked')}>
                                 {cookPayoutBlockedReasonMessage(offer.cookPayoutBlockedReason, locale)}
                             </StatusAlert>
                         ) : null}
@@ -1236,7 +1171,7 @@ function CostsTabPanel({
                                 disabled={payoutBusy || !offer.cookPayoutReady}
                                 onClick={() => setPayoutConfirm('release')}
                             >
-                                {{ de: 'Auszahlung freigeben', en: 'Release payout' }[locale]}
+                                {t(locale, 'admin', 'copy.releasePayout')}
                             </Button>
                             <Button
                                 type="button"
@@ -1245,12 +1180,7 @@ function CostsTabPanel({
                                 disabled={payoutBusy}
                                 onClick={() => setPayoutConfirm('alreadyTookPlaceCheck')}
                             >
-                                {
-                                    {
-                                        de: 'Prüfen, ob Auszahlung bereits erfolgt',
-                                        en: 'Check if payout already took place',
-                                    }[locale]
-                                }
+                                {t(locale, 'admin', 'copy.checkIfPayoutAlreadyTookPlace')}
                             </Button>
                             <Button
                                 type="button"
@@ -1259,7 +1189,7 @@ function CostsTabPanel({
                                 disabled={payoutBusy}
                                 onClick={() => setPayoutConfirm('outOfSystem')}
                             >
-                                {{ de: 'Außerhalb von Stripe markieren', en: 'Mark paid out of system' }[locale]}
+                                {t(locale, 'admin', 'copy.markPaidOutOfSystem')}
                             </Button>
                         </div>
                     </CardContent>
@@ -1268,7 +1198,7 @@ function CostsTabPanel({
             {done ? (
                 <StatusAlert
                     tone="success"
-                    title={{ de: 'Auszahlung erledigt', en: 'Payout completed' }[locale]}
+                    title={t(locale, 'admin', 'copy.payoutCompleted')}
                     action={
                         outOfSystem ? (
                             <Button
@@ -1278,17 +1208,12 @@ function CostsTabPanel({
                                 disabled={payoutBusy}
                                 onClick={() => setPayoutConfirm('alreadyTookPlaceCheck')}
                             >
-                                {
-                                    {
-                                        de: 'Prüfen, ob Auszahlung bereits erfolgt',
-                                        en: 'Check if payout already took place',
-                                    }[locale]
-                                }
+                                {t(locale, 'admin', 'copy.checkIfPayoutAlreadyTookPlace')}
                             </Button>
                         ) : undefined
                     }
                 >
-                    {
+                    {inlineCopy(
                         {
                             de: outOfSystem
                                 ? 'Als außerbetrieblich ausgezahlt markiert. Optional prüfen, ob Stripe bereits ausgezahlt hat.'
@@ -1296,8 +1221,9 @@ function CostsTabPanel({
                             en: outOfSystem
                                 ? 'Marked as paid out of system. Optionally check whether Stripe already paid out.'
                                 : 'Stripe bank payout to the cook was released.',
-                        }[locale]
-                    }
+                        },
+                        locale,
+                    )}
                 </StatusAlert>
             ) : null}
 
@@ -1310,53 +1236,37 @@ function CostsTabPanel({
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>
-                            {
-                                (
-                                    {
-                                        release: {
-                                            de: 'Auszahlung wirklich freigeben?',
-                                            en: 'Really release this payout?',
-                                        },
-                                        alreadyTookPlaceCheck: {
-                                            de: 'Prüfen, ob Auszahlung bereits erfolgt?',
-                                            en: 'Check if payout already took place?',
-                                        },
-                                        outOfSystem: {
-                                            de: 'Außerhalb von Stripe markieren?',
-                                            en: 'Mark as paid out of system?',
-                                        },
-                                    } as const
-                                )[payoutConfirm ?? 'release'][locale]
-                            }
+                            {t(
+                                locale,
+                                'admin',
+                                `offer.payoutConfirm.${
+                                    payoutConfirm === 'alreadyTookPlaceCheck'
+                                        ? 'checkTitle'
+                                        : payoutConfirm === 'outOfSystem'
+                                          ? 'outOfSystemTitle'
+                                          : 'releaseTitle'
+                                }`,
+                            )}
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                            {
-                                (
-                                    {
-                                        release: {
-                                            de: `Es wird eine Stripe-Auszahlung über ${payoutAmountLabel} an den Koch ausgelöst.`,
-                                            en: `This creates a Stripe bank payout of ${payoutAmountLabel} to the cook.`,
-                                        },
-                                        alreadyTookPlaceCheck: outOfSystem
-                                            ? {
-                                                  de: `Wir fragen Stripe nach einer passenden Auszahlung über ${payoutAmountLabel}. Wird eine gefunden, korrigieren wir den Status von außerbetrieblich auf Stripe-Auszahlung. Es wird keine neue Auszahlung erstellt.`,
-                                                  en: `We ask Stripe for a matching payout of ${payoutAmountLabel}. If one is found, we correct the status from out-of-system to Stripe payout. No new payout is created.`,
-                                              }
-                                            : {
-                                                  de: `Wir fragen Stripe nach einer passenden Auszahlung über ${payoutAmountLabel}. Wird eine gefunden, markieren wir das Angebot als ausgezahlt. Es wird keine neue Auszahlung erstellt.`,
-                                                  en: `We ask Stripe for a matching payout of ${payoutAmountLabel}. If one is found, we mark the offer as paid out. No new payout is created.`,
-                                              },
-                                        outOfSystem: {
-                                            de: `Keine Stripe-Auszahlung. Wir markieren ${payoutAmountLabel} als außerhalb von Stripe ausgezahlt (z. B. Überweisung oder Bargeld).`,
-                                            en: `No Stripe payout. We mark ${payoutAmountLabel} as paid outside Stripe (for example wire or cash).`,
-                                        },
-                                    } as const
-                                )[payoutConfirm ?? 'release'][locale]
-                            }
+                            {payoutConfirm === 'alreadyTookPlaceCheck'
+                                ? t(
+                                      locale,
+                                      'admin',
+                                      outOfSystem ? 'offer.payoutConfirm.checkBodyOutOfSystem' : 'offer.payoutConfirm.checkBody',
+                                      { amount: payoutAmountLabel },
+                                  )
+                                : payoutConfirm === 'outOfSystem'
+                                  ? t(locale, 'admin', 'offer.payoutConfirm.outOfSystemBody', {
+                                        amount: payoutAmountLabel,
+                                    })
+                                  : t(locale, 'admin', 'offer.payoutConfirm.releaseBody', {
+                                        amount: payoutAmountLabel,
+                                    })}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel disabled={payoutBusy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogCancel disabled={payoutBusy}>{t(locale, 'admin', 'copy.cancel')}</AlertDialogCancel>
                         <AlertDialogAction
                             disabled={payoutBusy || (payoutConfirm === 'release' && !offer.cookPayoutReady)}
                             onClick={(event) => {
@@ -1368,15 +1278,17 @@ function CostsTabPanel({
                         >
                             {payoutBusy
                                 ? payoutConfirm === 'alreadyTookPlaceCheck'
-                                    ? { de: 'Wird geprüft…', en: 'Checking…' }[locale]
-                                    : { de: 'Wird gespeichert…', en: 'Saving…' }[locale]
-                                : (
-                                      {
-                                          release: { de: 'Auszahlung freigeben', en: 'Release payout' },
-                                          alreadyTookPlaceCheck: { de: 'Prüfen', en: 'Check' },
-                                          outOfSystem: { de: 'Außerhalb markieren', en: 'Mark out of system' },
-                                      } as const
-                                  )[payoutConfirm ?? 'release'][locale]}
+                                    ? t(locale, 'admin', 'copy.checking')
+                                    : t(locale, 'admin', 'copy.saving')
+                                : t(
+                                      locale,
+                                      'admin',
+                                      payoutConfirm === 'alreadyTookPlaceCheck'
+                                          ? 'copy.check'
+                                          : payoutConfirm === 'outOfSystem'
+                                            ? 'copy.markOutOfSystem'
+                                            : 'copy.releasePayout',
+                                  )}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -1386,51 +1298,42 @@ function CostsTabPanel({
                 <Card className="gap-4 py-4">
                     <CardContent className="px-4">
                         <dl className="grid gap-3">
+                            <EconomicsRow label={t(locale, 'admin', 'copy.menuPrice')} value={money(offer.menuPriceCents, locale)} />
                             <EconomicsRow
-                                label={{ de: 'Menüpreis', en: 'Menu price' }[locale]}
-                                value={money(offer.menuPriceCents, locale)}
-                            />
-                            <EconomicsRow
-                                label={{ de: 'Reisekosten', en: 'Travel expenses' }[locale]}
+                                label={t(locale, 'admin', 'copy.travelExpenses2')}
                                 value={money(offer.travelExpensesCents, locale)}
                             />
                             <EconomicsRow
-                                label={{ de: 'Reiseentfernung', en: 'Travel distance' }[locale]}
+                                label={t(locale, 'admin', 'copy.travelDistance')}
                                 value={offer.travelDistanceKm != null ? `${offer.travelDistanceKm.toFixed(1)} km` : empty}
                             />
                             <Separator />
                             <EconomicsRow
-                                label={
-                                    {
-                                        de: `Plattformgebühr Koch (${offer.platformFeePercentCook} %)`,
-                                        en: `Platform fee cook (${offer.platformFeePercentCook}%)`,
-                                    }[locale]
-                                }
+                                label={t(locale, 'admin', 'offer.platformFeeCookLabel', {
+                                    percent: offer.platformFeePercentCook,
+                                })}
                                 value={money(offer.platformFeeCentsCook, locale)}
                             />
                             <EconomicsRow
-                                label={
-                                    {
-                                        de: `Plattformgebühr Kunde (${offer.platformFeePercentCustomer} %)`,
-                                        en: `Platform fee customer (${offer.platformFeePercentCustomer}%)`,
-                                    }[locale]
-                                }
+                                label={t(locale, 'admin', 'offer.platformFeeCustomerLabel', {
+                                    percent: offer.platformFeePercentCustomer,
+                                })}
                                 value={money(offer.platformFeeCentsCustomer, locale)}
                             />
                             <EconomicsRow
-                                label={{ de: 'Zahlungsanbietergebühr', en: 'Payment provider fee' }[locale]}
+                                label={t(locale, 'admin', 'copy.paymentProviderFee')}
                                 value={money(offer.paymentProviderFeeCents, locale)}
                             />
                             <Separator />
                             <EconomicsRow
-                                label={{ de: 'Koch-Auszahlung', en: 'Cook payout' }[locale]}
+                                label={t(locale, 'admin', 'copy.cookPayout')}
                                 value={money(offer.payoutCentsCook, locale)}
                                 emphasize
                             />
                             {hasDiscounts ? (
                                 <>
                                     <EconomicsRow
-                                        label={{ de: 'Kundenpreis vor Rabatt', en: 'Customer total before discount' }[locale]}
+                                        label={t(locale, 'admin', 'copy.customerTotalBeforeDiscount')}
                                         value={money(
                                             offer.costBreakdown.totalBeforeDiscount?.amountCents ??
                                                 offer.totalWithoutDiscountsCentsCustomer,
@@ -1441,20 +1344,20 @@ function CostsTabPanel({
                                         <EconomicsRow key={line.title} label={line.title} value={money(line.amountCents, locale)} />
                                     ))}
                                     <EconomicsRow
-                                        label={{ de: 'Kundenpreis', en: 'Customer total' }[locale]}
+                                        label={t(locale, 'admin', 'copy.customerTotal')}
                                         value={money(customerTotalCents, locale)}
                                         emphasize
                                     />
                                 </>
                             ) : (
                                 <EconomicsRow
-                                    label={{ de: 'Kundenpreis', en: 'Customer total' }[locale]}
+                                    label={t(locale, 'admin', 'copy.customerTotal')}
                                     value={money(customerTotalCents, locale)}
                                     emphasize
                                 />
                             )}
                             <EconomicsRow
-                                label={{ de: 'Plattformgewinn', en: 'Platform profit' }[locale]}
+                                label={t(locale, 'admin', 'copy.platformProfit')}
                                 value={money(platformWinCents, locale)}
                                 highlight="success"
                             />
@@ -1464,12 +1367,12 @@ function CostsTabPanel({
 
                 <Card className="gap-4 py-4">
                     <CardHeader className="px-4 pb-0">
-                        <CardTitle className="text-sm">{{ de: 'Zahlung & Stripe', en: 'Payment & Stripe' }[locale]}</CardTitle>
+                        <CardTitle className="text-sm">{t(locale, 'admin', 'copy.paymentStripe')}</CardTitle>
                     </CardHeader>
                     <CardContent className="grid gap-3 px-4">
                         <div className="grid gap-2">
                             <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                                {{ de: 'Zahlungsstatus', en: 'Payment status' }[locale]}
+                                {t(locale, 'admin', 'copy.paymentStatus')}
                             </p>
                             <StatusAlert
                                 tone={adminBookingRequestOfferPaymentStatusTone(offer.paymentStatus)}
@@ -1481,18 +1384,19 @@ function CostsTabPanel({
                                     })}
                                 </p>
                                 <p className="text-muted-foreground">
-                                    {
+                                    {inlineCopy(
                                         {
                                             de: `Technisch: ${offer.paymentStatus}`,
                                             en: `Technical: ${offer.paymentStatus}`,
-                                        }[locale]
-                                    }
+                                        },
+                                        locale,
+                                    )}
                                 </p>
                             </StatusAlert>
                         </div>
                         {offer.plannedPaymentPullDateTime ? (
                             <DetailField
-                                label={{ de: 'Geplanter Karteneinzug', en: 'Planned card pull' }[locale]}
+                                label={t(locale, 'admin', 'copy.plannedCardPull')}
                                 value={
                                     <PlannedPaymentPullValue
                                         plannedPaymentPullDateTime={offer.plannedPaymentPullDateTime}
@@ -1505,7 +1409,7 @@ function CostsTabPanel({
                         ) : null}
                         {offer.paymentDateTime ? (
                             <DetailField
-                                label={{ de: 'Bezahlt', en: 'Paid' }[locale]}
+                                label={t(locale, 'admin', 'copy.paid')}
                                 value={formatDateTime(offer.paymentDateTime, {
                                     locale,
                                     timeZone,
@@ -1516,7 +1420,7 @@ function CostsTabPanel({
                         ) : null}
                         {offer.plannedPayoutDateTime ? (
                             <DetailField
-                                label={{ de: 'Geplante Auszahlung', en: 'Planned payout' }[locale]}
+                                label={t(locale, 'admin', 'copy.plannedPayout')}
                                 value={formatDateTime(offer.plannedPayoutDateTime, {
                                     locale,
                                     timeZone,
@@ -1527,7 +1431,7 @@ function CostsTabPanel({
                         ) : null}
                         {offer.payoutDateTime ? (
                             <DetailField
-                                label={{ de: 'Ausgezahlt', en: 'Paid out' }[locale]}
+                                label={t(locale, 'admin', 'copy.paidOut')}
                                 value={formatDateTime(offer.payoutDateTime, {
                                     locale,
                                     timeZone,
@@ -1545,7 +1449,7 @@ function CostsTabPanel({
                                         rel="noreferrer"
                                         className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground hover:underline"
                                     >
-                                        {{ de: 'Payment Intent in Stripe', en: 'Payment Intent in Stripe' }[locale]}
+                                        {t(locale, 'admin', 'copy.paymentIntentInStripe')}
                                         <ExternalLinkIcon className="size-3.5 shrink-0" aria-hidden />
                                     </a>
                                 ) : null}
@@ -1556,19 +1460,14 @@ function CostsTabPanel({
                                         rel="noreferrer"
                                         className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground hover:underline"
                                     >
-                                        {{ de: 'Setup Intent in Stripe', en: 'Setup Intent in Stripe' }[locale]}
+                                        {t(locale, 'admin', 'copy.setupIntentInStripe')}
                                         <ExternalLinkIcon className="size-3.5 shrink-0" aria-hidden />
                                     </a>
                                 ) : null}
                             </div>
                         ) : (
                             <p className="text-sm text-muted-foreground">
-                                {
-                                    {
-                                        de: 'Noch keine Stripe Payment- oder Setup-Intent-IDs gespeichert.',
-                                        en: 'No Stripe Payment or Setup Intent ids stored yet.',
-                                    }[locale]
-                                }
+                                {t(locale, 'admin', 'copy.noStripePaymentOrSetupIntentIdsStoredYet')}
                             </p>
                         )}
                     </CardContent>
@@ -1589,12 +1488,7 @@ function OfferPaymentDocuments({ offer, locale }: { offer: GqlCAdminBookingReque
     const onRegenerate = () => {
         void regenerate({ bookingRequestOfferId: offer.bookingRequestOfferId }).then((result) => {
             if (result.error || !result.data?.admin.bookingRequestOfferPaymentDocumentsRegenerate.success) {
-                toast.error(
-                    {
-                        de: 'Belege sind für diesen Gast oder Koch noch nicht aktiv, oder die PDF-Erstellung ist fehlgeschlagen.',
-                        en: 'Receipts are not turned on for this guest or cook yet, or PDF creation failed.',
-                    }[locale],
-                );
+                toast.error(t(locale, 'admin', 'copy.receiptsAreNotTurnedOnForThisGuestOrCookYetOrPdfCreationFail'));
             }
         });
     };
@@ -1602,26 +1496,16 @@ function OfferPaymentDocuments({ offer, locale }: { offer: GqlCAdminBookingReque
         <div className="grid gap-4 @3xl:grid-cols-2">
             <BookingRequestOfferPaymentDocumentPanel
                 locale={locale}
-                title={{ de: 'Zahlungsbeleg (Gast)', en: 'Payment receipt (guest)' }[locale]}
-                description={
-                    {
-                        de: 'Nur wenn das Feature für den Gast aktiv ist. Keine Rechnung.',
-                        en: 'Only when the feature is on for the guest. Not an invoice.',
-                    }[locale]
-                }
+                title={t(locale, 'admin', 'copy.paymentReceiptGuest')}
+                description={t(locale, 'admin', 'copy.onlyWhenTheFeatureIsOnForTheGuestNotAnInvoice')}
                 file={offer.customerReceiptFileUpload}
                 busy={fetching}
                 onRegenerate={onRegenerate}
             />
             <BookingRequestOfferPaymentDocumentPanel
                 locale={locale}
-                title={{ de: 'Abrechnung (Koch)', en: 'Payout statement (cook)' }[locale]}
-                description={
-                    {
-                        de: 'Nur wenn das Feature für den Koch aktiv ist. Keine Rechnung.',
-                        en: 'Only when the feature is on for the cook. Not an invoice.',
-                    }[locale]
-                }
+                title={t(locale, 'admin', 'copy.payoutStatementCook')}
+                description={t(locale, 'admin', 'copy.onlyWhenTheFeatureIsOnForTheCookNotAnInvoice')}
                 file={offer.cookStatementFileUpload}
                 busy={fetching}
                 onRegenerate={onRegenerate}
@@ -1636,7 +1520,7 @@ function MenuTabPanel({ offer, locale }: { offer: GqlCAdminBookingRequestOfferPa
             <div className="@container grid max-w-4xl gap-4">
                 <Card className="gap-4 py-4">
                     <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 px-4 pb-0">
-                        <CardTitle className="text-sm">{{ de: 'Konfiguriertes Menü', en: 'Configured menu' }[locale]}</CardTitle>
+                        <CardTitle className="text-sm">{t(locale, 'admin', 'copy.configuredMenu')}</CardTitle>
                         <Button type="button" size="sm" variant="outline" asChild>
                             <Link
                                 to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit-configured-menu"
@@ -1645,7 +1529,7 @@ function MenuTabPanel({ offer, locale }: { offer: GqlCAdminBookingRequestOfferPa
                                     bookingRequestOfferId: offer.bookingRequestOfferId,
                                 }}
                             >
-                                {{ de: 'Menü bearbeiten', en: 'Edit menu' }[locale]}
+                                {t(locale, 'admin', 'copy.editMenu')}
                             </Link>
                         </Button>
                     </CardHeader>
@@ -1660,7 +1544,7 @@ function MenuTabPanel({ offer, locale }: { offer: GqlCAdminBookingRequestOfferPa
     if (offer.suggestedMenus.length > 0) {
         return (
             <div className="@container grid max-w-4xl gap-3">
-                <h2 className="text-sm font-medium text-foreground">{{ de: 'Vorgeschlagene Menüs', en: 'Suggested menus' }[locale]}</h2>
+                <h2 className="text-sm font-medium text-foreground">{t(locale, 'admin', 'copy.suggestedMenus')}</h2>
                 <ul className="grid grid-cols-1 gap-3 @md:grid-cols-2">
                     {offer.suggestedMenus.map((menu) => (
                         <li key={menu.menuId} className="min-w-0">
@@ -1687,7 +1571,7 @@ function MenuTabPanel({ offer, locale }: { offer: GqlCAdminBookingRequestOfferPa
     return (
         <Card className="max-w-4xl gap-4 py-4">
             <CardContent className="px-4">
-                <p className="text-sm text-muted-foreground">{{ de: 'Kein Menü hinterlegt.', en: 'No menu on this offer.' }[locale]}</p>
+                <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noMenuOnThisOffer')}</p>
             </CardContent>
         </Card>
     );
