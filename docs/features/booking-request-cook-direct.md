@@ -18,11 +18,14 @@ Guests can send a booking request from a public chef page to that cook only, the
 4. If the toggle is off, or the cook is not offer-ready, leftover `?cookId=` (and any `menuId`) shows an info alert and creates a normal
    marketplace request. If the cook is eligible but the menu is not catalog-eligible, the request stays exclusive without a menu and the
    form explains that.
-5. The submitted page, confirmation email, customer list chip, and request detail name the chef. Expand (**Also get offers from other
-   chefs**) is always available while the request is still exclusive and not dual-accepted. It is secondary while waiting or while an offer
-   is live, and primary after the requested cook has no live path (declined, offer declined, or banned). A confirm dialog says nearby chefs
-   will also receive it and that this chef stays on the request. Customers never see “seen”, response-time promises, or the cook’s decline
-   reason.
+5. The submitted page, confirmation email, customer list chip, and request detail name the chef. On the customer list card the requested
+   menu title is hidden (menu lives on the detail page). While exclusive and still waiting, the customer status pill says **Waiting for
+   chef** instead of **Waiting for offers**. Request detail shows two compact horizontal cards (cook + menu when frozen): square media left,
+   identity right; the cook card is fully clickable to the public profile and half-width on desktop when there is no menu. Exclusive note /
+   expand CTA sit under the cook card. Menu card opens `PublicCookMenuDialog`. Expand (**Also get offers from other chefs**) is always
+   available while the request is still exclusive and not dual-accepted. It is secondary while waiting or while an offer is live, and
+   primary after the requested cook has no live path (declined, offer declined, or banned). A confirm dialog says nearby chefs will also
+   receive it and that this chef stays on the request. Customers never see “seen”, response-time promises, or the cook’s decline reason.
 6. After a dead path, the customer also gets an email that this chef cannot make it this time, with the same expand CTA on the request.
 7. Expand under 12 guests flips to auto-approved and notifies other offer-ready cooks in travel radius (skips already notified or declined).
    Expand at 12+ waits for admin review. `requestedCookId` survives. The requested cook stays in the pool even outside their usual radius.

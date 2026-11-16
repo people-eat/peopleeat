@@ -54,7 +54,7 @@ export type CustomerBookingRequestCardRequest = {
             profilePicture: { url: string } | null;
         };
     } | null;
-    requestedMenu?: { menuId: string; title: string } | null;
+    isExclusive?: boolean;
     offers: CustomerBookingRequestCardOffer[];
 };
 
@@ -306,13 +306,12 @@ export function CustomerBookingRequestCard({
                     <div className={cn('flex items-start gap-2', attention != null ? 'justify-between' : 'justify-end')}>
                         {attention != null ? <StatusBadge tone={attention.tone}>{attention.badgeLabel}</StatusBadge> : null}
                         <BookingStatusPill hue={bookingRequestStatusHue(request.status)} className="w-fit shrink-0">
-                            {bookingRequestStatusLabel(request.status, locale, 'customer')}
+                            {bookingRequestStatusLabel(request.status, locale, 'customer', {
+                                isExclusive: request.isExclusive === true,
+                            })}
                         </BookingStatusPill>
                     </div>
                     <h2 className="line-clamp-1 pr-8 font-semibold leading-snug">{request.occasion}</h2>
-                    {request.requestedMenu ? (
-                        <p className="line-clamp-1 text-sm text-muted-foreground">{request.requestedMenu.title}</p>
-                    ) : null}
                     <p className="flex min-w-0 items-center gap-2 text-sm text-foreground">
                         <CalendarIcon className="size-4 shrink-0 text-muted-foreground/70" aria-hidden />
                         <span className="truncate">

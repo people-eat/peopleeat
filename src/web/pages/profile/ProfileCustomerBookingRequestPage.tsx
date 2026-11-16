@@ -1,10 +1,11 @@
 import { Link, notFound } from '@tanstack/react-router';
-import { CircleHelpIcon, HeadsetIcon, MoreHorizontalIcon } from 'lucide-react';
-import { useState } from 'react';
+import { CircleHelpIcon, HeadsetIcon, MapPinIcon, MoreHorizontalIcon, StarIcon } from 'lucide-react';
+import { use, useState } from 'react';
 import type { ReactNode } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
+import { i18nResourcesLoadPromise } from '../../../i18n/catalogCache';
 import { t } from '../../../i18n/t';
 import {
     bookingRequestKitchenDetailsDraftIsEmpty,
@@ -32,6 +33,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Popover, PopoverContent, PopoverTrigger } from '../../components/base/popover';
 import { StatusAlert } from '../../components/base/status-alert';
 import { Textarea } from '../../components/base/textarea';
+import { bookingRequestCardInteractionClassName } from '../../components/bookingRequestCardInteraction';
 import { BookingRequestDiscountEditor } from '../../components/BookingRequestDiscountEditor';
 import {
     bookingRequestKitchenDetailsDraftFromGql,
@@ -48,8 +50,12 @@ import {
 } from '../../components/BookingRequestVenueConditionsFacts';
 import { BookingStatusPill } from '../../components/BookingStatusPill';
 import { BookingWhenLabel } from '../../components/BookingWhenLabel';
+import { CookMenuCardMedia } from '../../components/CookMenuCard';
+import { CookProfileTags } from '../../components/CookProfileTags';
 import { CustomerBookingRequestOfferCard } from '../../components/CustomerBookingRequestOfferCard';
 import { ProfilePinnedFooterLayout } from '../../components/ProfilePinnedFooterLayout';
+import { PublicCookMenuDialog } from '../../components/PublicCookMenuDialog';
+import type { PublicCookMenuDialogCourse } from '../../components/PublicCookMenuDialog';
 import { UserBookingRequestChurnDialog } from '../../components/UserBookingRequestChurnDialog';
 import type { GqlCProfileCustomerBookingRequestPageQuery } from '../../graphql/generated';
 import {
@@ -75,42 +81,38 @@ export function profileCustomerBookingRequestPageDescription(locale: Locale): st
 const CANCELABLE_STATUSES = new Set(['WAITING_FOR_OFFERS', 'OFFERS_WAITING_FOR_REVIEW', 'EXPIRED']);
 const UPDATABLE_STATUSES = new Set(['WAITING_FOR_OFFERS', 'OFFERS_WAITING_FOR_REVIEW']);
 
-function requestedCookIdentity(
-    cook: {
-        pathName: string;
-        hasPublicProfile: boolean;
-        user: { display: string; profilePicture: { url: string } | null };
-    },
-    isExclusive: boolean,
-    locale: Locale,
-) {
-    const subtitle = isExclusive
-        ? t(locale, 'profileCustomer', 'bookingRequest.exclusiveCook')
-        : t(locale, 'profileCustomer', 'bookingRequest.cookStaysOpen', { cook: cook.user.display });
-    const body = (
-        <>
-            <Avatar>
-                {cook.user.profilePicture?.url ? <AvatarImage src={cook.user.profilePicture.url} alt="" className="object-cover" /> : null}
-                <AvatarFallback>{initialsFromDisplay(cook.user.display)}</AvatarFallback>
-            </Avatar>
-            <div className="min-w-0">
-                <p className="font-medium">{cook.user.display}</p>
-                <p className="text-sm text-muted-foreground">{subtitle}</p>
-            </div>
-        </>
-    );
-    if (cook.hasPublicProfile) {
-        return (
-            <Link
-                to="/{-$locale}/chefs/$pathName"
-                params={{ pathName: cook.pathName }}
-                className="flex min-w-0 items-center gap-3 underline-offset-4 hover:underline"
-            >
-                {body}
-            </Link>
-        );
+type RequestedCookSnapshot = NonNullable<
+    NonNullable<NonNullable<GqlCProfileCustomerBookingRequestPageQuery['currentSession']['user']>['bookingRequest']>['requestedCook']
+>;
+
+type RequestedMenuSnapshot = NonNullable<
+    NonNullable<NonNullable<GqlCProfileCustomerBookingRequestPageQuery['currentSession']['user']>['bookingRequest']>['requestedMenu']
+>;
+
+function requestedMenuImages(menu: RequestedMenuSnapshot): string[] {
+    const images: string[] = [];
+    const seen = new Set<string>();
+    for (const course of menu.courses) {
+        for (const meal of course.meals) {
+            const url = meal.mealImageUrl?.trim() || null;
+            if (url == null || seen.has(url)) continue;
+            seen.add(url);
+            images.push(url);
+        }
     }
-    return <div className="flex min-w-0 items-center gap-3">{body}</div>;
+    return images;
+}
+
+function requestedMenuDialogCourses(menu: RequestedMenuSnapshot): PublicCookMenuDialogCourse[] {
+    return menu.courses.map((course, courseIndex) => ({
+        title: course.title,
+        mealOptions: course.meals.map((meal, mealIndex) => ({
+            mealId: `${menu.menuId}-${courseIndex}-${mealIndex}`,
+            title: meal.mealTitle,
+            description: meal.mealDescription,
+            imageUrl: meal.mealImageUrl,
+        })),
+    }));
 }
 
 function initialsFromDisplay(display: string): string {
@@ -118,6 +120,129 @@ function initialsFromDisplay(display: string): string {
     if (parts.length === 0) return '?';
     if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
     return `${parts[0]!.slice(0, 1)}${parts[1]!.slice(0, 1)}`.toUpperCase();
+}
+
+function StripCookRating({ rating }: { rating: NonNullable<RequestedCookSnapshot['rating']> }) {
+    const locale = useLocale();
+    use(i18nResourcesLoadPromise(locale, ['public']));
+    if (rating.reviewCount <= 0 || rating.averageRating == null) return null;
+
+    const filledStars = Math.round(rating.averageRating);
+    const summary = t(locale, 'public', 'chef.reviewSummary', {
+        rating: rating.averageRating.toFixed(1),
+        count: rating.reviewCount,
+    });
+
+    return (
+        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+            <div className="flex shrink-0 items-center gap-0.5" role="img" aria-label={summary}>
+                {Array.from({ length: 5 }, (_, index) => (
+                    <StarIcon
+                        key={index}
+                        aria-hidden
+                        className={cn('size-3', index < filledStars ? 'fill-accent text-accent' : 'text-muted-foreground/30')}
+                    />
+                ))}
+            </div>
+            <span className="text-[11px] leading-none whitespace-nowrap text-muted-foreground">{summary}</span>
+        </div>
+    );
+}
+
+const requestedStripCardClassName = cn(
+    'flex h-fit min-w-0 gap-3 overflow-hidden rounded-xl border border-border bg-card p-3 text-left text-card-foreground shadow-sm',
+);
+
+function RequestedCookCard({ cook }: { cook: RequestedCookSnapshot }) {
+    const name = cook.user.display;
+    const city = cook.city?.trim() || null;
+    const body = (
+        <>
+            <div className="size-28 shrink-0 overflow-hidden rounded-lg bg-muted sm:size-32">
+                <Avatar className="size-full rounded-none text-xl">
+                    {cook.user.profilePicture != null ? (
+                        <AvatarImage src={cook.user.profilePicture.url} alt="" className="rounded-none object-cover" />
+                    ) : null}
+                    <AvatarFallback className="rounded-none text-xl">{initialsFromDisplay(name)}</AvatarFallback>
+                </Avatar>
+            </div>
+            <div className="flex min-w-0 flex-1 flex-col gap-1.5 self-center">
+                <div className="flex min-w-0 flex-col gap-0.5">
+                    <p className="truncate text-sm font-semibold text-foreground">{name}</p>
+                    {city ? (
+                        <p className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
+                            <MapPinIcon aria-hidden className="size-3 shrink-0" />
+                            <span className="truncate">{city}</span>
+                        </p>
+                    ) : null}
+                </div>
+                <CookProfileTags cuisineStyle={cook.cuisineStyle} cookingPhilosophy={cook.cookingPhilosophy} />
+                {cook.rating != null ? <StripCookRating rating={cook.rating} /> : null}
+            </div>
+        </>
+    );
+
+    if (!cook.hasPublicProfile) {
+        return <div className={requestedStripCardClassName}>{body}</div>;
+    }
+
+    return (
+        <Link
+            to="/{-$locale}/chefs/$pathName"
+            params={{ pathName: cook.pathName }}
+            className={cn(requestedStripCardClassName, bookingRequestCardInteractionClassName)}
+        >
+            {body}
+        </Link>
+    );
+}
+
+function RequestedMenuCard({ menu, onOpen }: { menu: RequestedMenuSnapshot; onOpen: () => void }) {
+    const locale = useLocale();
+    use(i18nResourcesLoadPromise(locale, ['public']));
+    const images = requestedMenuImages(menu);
+
+    return (
+        <button type="button" className={cn(requestedStripCardClassName, bookingRequestCardInteractionClassName)} onClick={onOpen}>
+            <div className="size-28 shrink-0 overflow-hidden rounded-lg bg-muted sm:size-32">
+                <CookMenuCardMedia images={images} className="size-full rounded-none" />
+            </div>
+            <div className="flex min-w-0 flex-1 flex-col gap-1 self-center">
+                <p className="truncate text-sm font-semibold text-foreground">{menu.title}</p>
+                {menu.description.trim().length > 0 ? (
+                    <p className="line-clamp-2 text-sm text-muted-foreground">{menu.description}</p>
+                ) : null}
+                <p className="text-xs text-muted-foreground">{t(locale, 'public', 'chef.courseCount', { count: menu.courses.length })}</p>
+            </div>
+        </button>
+    );
+}
+
+function RequestedCookMenuStrip({
+    cook,
+    menu,
+    onOpenMenu,
+    visibilityNote,
+    expandAction,
+}: {
+    cook: RequestedCookSnapshot;
+    menu: RequestedMenuSnapshot | null;
+    onOpenMenu: () => void;
+    visibilityNote: ReactNode;
+    expandAction?: ReactNode;
+}) {
+    return (
+        <div className="grid gap-3">
+            <div className="grid grid-cols-1 items-start gap-4 @md:grid-cols-2">
+                <RequestedCookCard cook={cook} />
+                {menu != null ? <RequestedMenuCard menu={menu} onOpen={onOpenMenu} /> : null}
+            </div>
+            <div className="flex min-w-0 flex-col items-start gap-2 @md:max-w-[calc(50%-0.5rem)]">
+                <p className="text-sm text-muted-foreground">{visibilityNote}</p>
+                {expandAction}
+            </div>
+        </div>
+    );
 }
 
 function DetailField({ label, value, hint, className }: { label: string; value: ReactNode; hint?: ReactNode; className?: string }) {
@@ -157,6 +282,7 @@ export function ProfileCustomerBookingRequestPage({
     const [cancelReason, setCancelReason] = useState('');
     const [cancelBusy, setCancelBusy] = useState(false);
     const [cancelError, setCancelError] = useState(false);
+    const [requestedMenuOpen, setRequestedMenuOpen] = useState(false);
 
     const [, cancelRequest] = useMutation(ProfileBookingRequestCancelDocument);
     const [, updateDiscount] = useMutation(ProfileBookingRequestDiscountUpdateDocument);
@@ -282,35 +408,51 @@ export function ProfileCustomerBookingRequestPage({
                         )}
                     </Button>
                     <BookingStatusPill hue={bookingRequestStatusHue(statusForPill)} className="w-fit">
-                        {bookingRequestStatusLabel(statusForPill, locale, 'customer')}
+                        {bookingRequestStatusLabel(statusForPill, locale, 'customer', { isExclusive: request.isExclusive })}
                     </BookingStatusPill>
                 </div>
 
                 {request.requestedCook ? (
-                    <section className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-4">
-                        <div className="grid min-w-0 gap-1">
-                            {requestedCookIdentity(request.requestedCook, request.isExclusive, locale)}
-                            {request.requestedMenu ? (
-                                <p className="text-sm text-muted-foreground">
-                                    {t(locale, 'profileCustomer', 'bookingRequest.requestedMenu', { title: request.requestedMenu.title })}
-                                </p>
-                            ) : null}
-                        </div>
-                        {request.isExclusive ? (
-                            <div className="flex min-w-0 flex-col items-stretch gap-2 sm:items-end">
-                                {request.directRequestNeedsExpansion ? (
-                                    <StatusAlert tone="warning">
-                                        {t(locale, 'profileCustomer', 'bookingRequest.requestedCookUnavailable', {
-                                            cook: request.requestedCook.user.display,
-                                        })}
-                                    </StatusAlert>
-                                ) : null}
-                                <BookingRequestOpenToOtherCooksButton
-                                    bookingRequestId={bookingRequestId}
-                                    cookFirstName={request.requestedCook.user.display}
-                                    prominence={request.directRequestNeedsExpansion ? 'primary' : 'secondary'}
-                                />
-                            </div>
+                    <section className="grid gap-4">
+                        <RequestedCookMenuStrip
+                            cook={request.requestedCook}
+                            menu={request.requestedMenu}
+                            onOpenMenu={() => setRequestedMenuOpen(true)}
+                            visibilityNote={
+                                request.isExclusive
+                                    ? t(locale, 'profileCustomer', 'bookingRequest.exclusiveCook')
+                                    : t(locale, 'profileCustomer', 'bookingRequest.cookStaysOpen', {
+                                          cook: request.requestedCook.user.display,
+                                      })
+                            }
+                            expandAction={
+                                request.isExclusive ? (
+                                    <div className="flex min-w-0 flex-col items-stretch gap-2">
+                                        {request.directRequestNeedsExpansion ? (
+                                            <StatusAlert tone="warning">
+                                                {t(locale, 'profileCustomer', 'bookingRequest.requestedCookUnavailable', {
+                                                    cook: request.requestedCook.user.display,
+                                                })}
+                                            </StatusAlert>
+                                        ) : null}
+                                        <BookingRequestOpenToOtherCooksButton
+                                            bookingRequestId={bookingRequestId}
+                                            cookFirstName={request.requestedCook.user.display}
+                                            prominence={request.directRequestNeedsExpansion ? 'primary' : 'secondary'}
+                                        />
+                                    </div>
+                                ) : undefined
+                            }
+                        />
+                        {request.requestedMenu ? (
+                            <PublicCookMenuDialog
+                                open={requestedMenuOpen}
+                                onOpenChange={setRequestedMenuOpen}
+                                title={request.requestedMenu.title}
+                                description={request.requestedMenu.description}
+                                images={requestedMenuImages(request.requestedMenu)}
+                                courses={requestedMenuDialogCourses(request.requestedMenu)}
+                            />
                         ) : null}
                     </section>
                 ) : null}
@@ -334,26 +476,6 @@ export function ProfileCustomerBookingRequestPage({
                         }}
                     />
                 ) : null}
-
-                <section className="grid gap-4">
-                    <h2 className="font-serif text-2xl/tight text-foreground">{t(locale, 'profileCustomer', 'bookingRequest.offers')}</h2>
-                    {request.status === 'OFFERS_WAITING_FOR_REVIEW' && offers.length > 0 ? (
-                        <StatusAlert tone="info" title={t(locale, 'profileCustomer', 'bookingRequest.offersHint')}>
-                            {t(locale, 'profileCustomer', 'bookingRequest.offersReceived', { count: offers.length })}
-                        </StatusAlert>
-                    ) : null}
-                    {offers.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">{t(locale, 'profileCustomer', 'bookingRequest.noOffers')}</p>
-                    ) : (
-                        <ul className="grid grid-cols-1 gap-4 @md:grid-cols-2 @2xl:grid-cols-3 @4xl:grid-cols-4">
-                            {offers.map((offer) => (
-                                <li key={offer.bookingRequestOfferId} className="min-w-0">
-                                    <CustomerBookingRequestOfferCard bookingRequestId={bookingRequestId} offer={offer} />
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </section>
 
                 <div
                     className={cn(
@@ -471,6 +593,35 @@ export function ProfileCustomerBookingRequestPage({
                         </div>
                     ) : null}
                 </div>
+
+                <section className="grid gap-3">
+                    {offers.length === 0 ? (
+                        <>
+                            <h2 className="text-sm font-medium text-muted-foreground">
+                                {t(locale, 'profileCustomer', 'bookingRequest.offers')}
+                            </h2>
+                            <p className="text-sm text-muted-foreground">{t(locale, 'profileCustomer', 'bookingRequest.noOffers')}</p>
+                        </>
+                    ) : (
+                        <>
+                            <h2 className="font-serif text-2xl/tight text-foreground">
+                                {t(locale, 'profileCustomer', 'bookingRequest.offers')}
+                            </h2>
+                            {request.status === 'OFFERS_WAITING_FOR_REVIEW' ? (
+                                <StatusAlert tone="info" title={t(locale, 'profileCustomer', 'bookingRequest.offersHint')}>
+                                    {t(locale, 'profileCustomer', 'bookingRequest.offersReceived', { count: offers.length })}
+                                </StatusAlert>
+                            ) : null}
+                            <ul className="grid grid-cols-1 gap-4 @md:grid-cols-2 @2xl:grid-cols-3 @4xl:grid-cols-4">
+                                {offers.map((offer) => (
+                                    <li key={offer.bookingRequestOfferId} className="min-w-0">
+                                        <CustomerBookingRequestOfferCard bookingRequestId={bookingRequestId} offer={offer} />
+                                    </li>
+                                ))}
+                            </ul>
+                        </>
+                    )}
+                </section>
 
                 {kitchenEnabled &&
                 !request.canceledAt &&

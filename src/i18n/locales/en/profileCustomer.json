@@ -30,6 +30,7 @@
     "bookingRequest": {
         "status": {
             "WAITING_FOR_OFFERS": "Waiting for offers",
+            "WAITING_FOR_OFFERS_EXCLUSIVE": "Waiting for chef",
             "OFFERS_WAITING_FOR_REVIEW": "Offers available",
             "DEPOSIT_PAYMENT_PENDING": "Provide payment data",
             "PAYMENT_PULL_PENDING": "Confirmed",

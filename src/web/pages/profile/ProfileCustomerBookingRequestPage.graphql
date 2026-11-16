@@ -39,19 +39,21 @@ fragment ProfileCustomerBookingRequestPageUser on User {
         isExclusive
         directRequestNeedsExpansion
         requestedCook {
-            cookId
-            pathName
+            ...PublicCookCardFields
             hasPublicProfile
-            user {
-                display
-                profilePicture {
-                    url
-                }
-            }
         }
         requestedMenu {
             menuId
             title
+            description
+            courses {
+                title
+                meals {
+                    mealTitle
+                    mealDescription
+                    mealImageUrl
+                }
+            }
         }
         preferences
         canceledAt

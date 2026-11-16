@@ -45,6 +45,14 @@ export function bookingRequestStatusHue(status: BookingRequestStatus): BookingLi
     }
 }
 
-export function bookingRequestStatusLabel(status: BookingRequestStatus, locale: Locale, audience: BookingRequestStatusAudience): string {
+export function bookingRequestStatusLabel(
+    status: BookingRequestStatus,
+    locale: Locale,
+    audience: BookingRequestStatusAudience,
+    options?: { isExclusive?: boolean },
+): string {
+    if (audience === 'customer' && status === 'WAITING_FOR_OFFERS' && options?.isExclusive === true) {
+        return t(locale, 'profileCustomer', 'bookingRequest.status.WAITING_FOR_OFFERS_EXCLUSIVE');
+    }
     return t(locale, i18nAudienceNamespace(audience), `bookingRequest.status.${status}`);
 }

@@ -24,10 +24,10 @@ venue.
    (Preisklasse / Price class), with no per-person total. Default price class is MEDIUM / Signature, still editable in the details editor.
    When the toggle is on, those cards and the summary price-class row are hidden; create omits `priceClassType`; the sticky summary shows an
    **Estimated total** band (`Query.bookingRequestExpectedMenuPriceRange`, whole euros with an en dash) above the continue CTA, with hint
-   “Indicative price for N guests · Final offer by your chef” / DE “Richtpreis für N Gäste · Finales Angebot von eurem Koch”. The amount slot
-   always reserves space and shows a pulsating `Skeleton` until the range resolves (no layout shift). Cuisine
-   preference section sits below (after address Combobox when shown) without a wrapping card; subtitle under the title (“Als Inspiration für
-   euren Koch…” / “As inspiration for your chef…”); options use a 2-column grid on mobile and 4 columns from `@xl`; selected state is border
+   “Indicative price for N guests · Final offer by your chef” / DE “Richtpreis für N Gäste · Finales Angebot von eurem Koch”. The amount
+   slot always reserves space and shows a pulsating `Skeleton` until the range resolves (no layout shift). Cuisine preference section sits
+   below (after address Combobox when shown) without a wrapping card; subtitle under the title (“Als Inspiration für euren Koch…” / “As
+   inspiration for your chef…”); options use a 2-column grid on mobile and 4 columns from `@xl`; selected state is border
    - shadow (`border-primary shadow-md`), not a filled primary background. Cuisine options and date chips use the same pointer / hover /
      pressed / focus-visible interaction pattern as `SelectableChip`. Five-star row (cook-card style) and, when venue testimonials exist, “X
      Bewertungen ansehen” scrolls to that section; per-cuisine sample-menu dialog (title + courses keyed to the selected preference; each

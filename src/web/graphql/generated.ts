@@ -23229,12 +23229,21 @@ export type GqlCProfileCustomerBookingRequestPageUserFragment = {
             photos: Array<{ fileUploadId: string; url: string }>;
         } | null;
         requestedCook: {
+            hasPublicProfile: boolean;
             cookId: string;
             pathName: string;
-            hasPublicProfile: boolean;
+            cuisineStyle: string | null;
+            cookingPhilosophy: string | null;
+            city: string | null;
+            rating: { averageRating: number | null; reviewCount: number };
             user: { display: string; profilePicture: { url: string } | null };
         } | null;
-        requestedMenu: { menuId: string; title: string } | null;
+        requestedMenu: {
+            menuId: string;
+            title: string;
+            description: string;
+            courses: Array<{ title: string; meals: Array<{ mealTitle: string; mealDescription: string; mealImageUrl: string | null }> }>;
+        } | null;
         participants: Array<{
             bookingRequestParticipantId: string;
             type: Schema.GqlCBookingRequestParticipantType;
@@ -23341,12 +23350,24 @@ export type GqlCProfileCustomerBookingRequestPageQuery = {
                     photos: Array<{ fileUploadId: string; url: string }>;
                 } | null;
                 requestedCook: {
+                    hasPublicProfile: boolean;
                     cookId: string;
                     pathName: string;
-                    hasPublicProfile: boolean;
+                    cuisineStyle: string | null;
+                    cookingPhilosophy: string | null;
+                    city: string | null;
+                    rating: { averageRating: number | null; reviewCount: number };
                     user: { display: string; profilePicture: { url: string } | null };
                 } | null;
-                requestedMenu: { menuId: string; title: string } | null;
+                requestedMenu: {
+                    menuId: string;
+                    title: string;
+                    description: string;
+                    courses: Array<{
+                        title: string;
+                        meals: Array<{ mealTitle: string; mealDescription: string; mealImageUrl: string | null }>;
+                    }>;
+                } | null;
                 participants: Array<{
                     bookingRequestParticipantId: string;
                     type: Schema.GqlCBookingRequestParticipantType;
@@ -23458,12 +23479,24 @@ export type GqlCProfileCustomerBookingRequestPageUpdatesSubscription = {
                 photos: Array<{ fileUploadId: string; url: string }>;
             } | null;
             requestedCook: {
+                hasPublicProfile: boolean;
                 cookId: string;
                 pathName: string;
-                hasPublicProfile: boolean;
+                cuisineStyle: string | null;
+                cookingPhilosophy: string | null;
+                city: string | null;
+                rating: { averageRating: number | null; reviewCount: number };
                 user: { display: string; profilePicture: { url: string } | null };
             } | null;
-            requestedMenu: { menuId: string; title: string } | null;
+            requestedMenu: {
+                menuId: string;
+                title: string;
+                description: string;
+                courses: Array<{
+                    title: string;
+                    meals: Array<{ mealTitle: string; mealDescription: string; mealImageUrl: string | null }>;
+                }>;
+            } | null;
             participants: Array<{
                 bookingRequestParticipantId: string;
                 type: Schema.GqlCBookingRequestParticipantType;
@@ -23611,10 +23644,10 @@ export type GqlCProfileCustomerBookingRequestsPageUserFragment = {
         status: Schema.GqlCBookingRequestStatus;
         occasion: string;
         dateTime: string;
+        isExclusive: boolean;
         exactEventAddress: { displayText: string; city: string; country: string };
         participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
         requestedCook: { cookId: string; pathName: string; user: { display: string; profilePicture: { url: string } | null } } | null;
-        requestedMenu: { menuId: string; title: string } | null;
         offers: Array<{
             bookingRequestOfferId: string;
             userUnreadNotificationCount: number;
@@ -23642,6 +23675,7 @@ export type GqlCProfileCustomerBookingRequestsPageQuery = {
                 status: Schema.GqlCBookingRequestStatus;
                 occasion: string;
                 dateTime: string;
+                isExclusive: boolean;
                 exactEventAddress: { displayText: string; city: string; country: string };
                 participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
                 requestedCook: {
@@ -23649,7 +23683,6 @@ export type GqlCProfileCustomerBookingRequestsPageQuery = {
                     pathName: string;
                     user: { display: string; profilePicture: { url: string } | null };
                 } | null;
-                requestedMenu: { menuId: string; title: string } | null;
                 offers: Array<{
                     bookingRequestOfferId: string;
                     userUnreadNotificationCount: number;
@@ -23678,10 +23711,10 @@ export type GqlCProfileCustomerBookingRequestsPageUpdatesSubscription = {
             status: Schema.GqlCBookingRequestStatus;
             occasion: string;
             dateTime: string;
+            isExclusive: boolean;
             exactEventAddress: { displayText: string; city: string; country: string };
             participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
             requestedCook: { cookId: string; pathName: string; user: { display: string; profilePicture: { url: string } | null } } | null;
-            requestedMenu: { menuId: string; title: string } | null;
             offers: Array<{
                 bookingRequestOfferId: string;
                 userUnreadNotificationCount: number;
@@ -37227,27 +37260,8 @@ export const ProfileCustomerBookingRequestPageUserFragmentDoc = {
                                     selectionSet: {
                                         kind: 'SelectionSet',
                                         selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                                            { kind: 'FragmentSpread', name: { kind: 'Name', value: 'PublicCookCardFields' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'hasPublicProfile' } },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'user' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'display' } },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: { kind: 'Name', value: 'profilePicture' },
-                                                            selectionSet: {
-                                                                kind: 'SelectionSet',
-                                                                selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
-                                                            },
-                                                        },
-                                                    ],
-                                                },
-                                            },
                                         ],
                                     },
                                 },
@@ -37259,6 +37273,29 @@ export const ProfileCustomerBookingRequestPageUserFragmentDoc = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'courses' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'meals' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'mealTitle' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'mealDescription' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'mealImageUrl' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
                                         ],
                                     },
                                 },
@@ -37463,6 +37500,50 @@ export const ProfileCustomerBookingRequestPageUserFragmentDoc = {
                 ],
             },
         },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'PublicCookCardFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'PublicCook' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'rating' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'averageRating' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'reviewCount' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'profilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
     ],
 } as unknown as DocumentNode<GqlCProfileCustomerBookingRequestPageUserFragment, unknown>;
 export const ProfileCustomerBookingRequestsPageUserFragmentDoc = {
@@ -37509,6 +37590,7 @@ export const ProfileCustomerBookingRequestsPageUserFragmentDoc = {
                                         ],
                                     },
                                 },
+                                { kind: 'Field', name: { kind: 'Name', value: 'isExclusive' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'requestedCook' },
@@ -37535,17 +37617,6 @@ export const ProfileCustomerBookingRequestsPageUserFragmentDoc = {
                                                     ],
                                                 },
                                             },
-                                        ],
-                                    },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'requestedMenu' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
                                         ],
                                     },
                                 },
@@ -90889,6 +90960,50 @@ export const ProfileCustomerBookingRequestPageDocument = {
         },
         {
             kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'PublicCookCardFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'PublicCook' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'rating' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'averageRating' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'reviewCount' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'profilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
             name: { kind: 'Name', value: 'ProfileCustomerBookingRequestPageUser' },
             typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'User' } },
             selectionSet: {
@@ -90972,27 +91087,8 @@ export const ProfileCustomerBookingRequestPageDocument = {
                                     selectionSet: {
                                         kind: 'SelectionSet',
                                         selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                                            { kind: 'FragmentSpread', name: { kind: 'Name', value: 'PublicCookCardFields' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'hasPublicProfile' } },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'user' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'display' } },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: { kind: 'Name', value: 'profilePicture' },
-                                                            selectionSet: {
-                                                                kind: 'SelectionSet',
-                                                                selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
-                                                            },
-                                                        },
-                                                    ],
-                                                },
-                                            },
                                         ],
                                     },
                                 },
@@ -91004,6 +91100,29 @@ export const ProfileCustomerBookingRequestPageDocument = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'courses' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'meals' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'mealTitle' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'mealDescription' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'mealImageUrl' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
                                         ],
                                     },
                                 },
@@ -91242,6 +91361,50 @@ export const ProfileCustomerBookingRequestPageUpdatesDocument = {
         },
         {
             kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'PublicCookCardFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'PublicCook' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'rating' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'averageRating' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'reviewCount' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'profilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
             name: { kind: 'Name', value: 'ProfileCustomerBookingRequestPageUser' },
             typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'User' } },
             selectionSet: {
@@ -91325,27 +91488,8 @@ export const ProfileCustomerBookingRequestPageUpdatesDocument = {
                                     selectionSet: {
                                         kind: 'SelectionSet',
                                         selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                                            { kind: 'FragmentSpread', name: { kind: 'Name', value: 'PublicCookCardFields' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'hasPublicProfile' } },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'user' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'display' } },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: { kind: 'Name', value: 'profilePicture' },
-                                                            selectionSet: {
-                                                                kind: 'SelectionSet',
-                                                                selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
-                                                            },
-                                                        },
-                                                    ],
-                                                },
-                                            },
                                         ],
                                     },
                                 },
@@ -91357,6 +91501,29 @@ export const ProfileCustomerBookingRequestPageUpdatesDocument = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'courses' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'meals' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'mealTitle' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'mealDescription' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'mealImageUrl' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
                                         ],
                                     },
                                 },
@@ -92187,6 +92354,7 @@ export const ProfileCustomerBookingRequestsPageDocument = {
                                         ],
                                     },
                                 },
+                                { kind: 'Field', name: { kind: 'Name', value: 'isExclusive' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'requestedCook' },
@@ -92213,17 +92381,6 @@ export const ProfileCustomerBookingRequestsPageDocument = {
                                                     ],
                                                 },
                                             },
-                                        ],
-                                    },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'requestedMenu' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
                                         ],
                                     },
                                 },
@@ -92355,6 +92512,7 @@ export const ProfileCustomerBookingRequestsPageUpdatesDocument = {
                                         ],
                                     },
                                 },
+                                { kind: 'Field', name: { kind: 'Name', value: 'isExclusive' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'requestedCook' },
@@ -92381,17 +92539,6 @@ export const ProfileCustomerBookingRequestsPageUpdatesDocument = {
                                                     ],
                                                 },
                                             },
-                                        ],
-                                    },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'requestedMenu' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
                                         ],
                                     },
                                 },

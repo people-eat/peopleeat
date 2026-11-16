@@ -30,6 +30,7 @@
     "bookingRequest": {
         "status": {
             "WAITING_FOR_OFFERS": "Wachten op offertes",
+            "WAITING_FOR_OFFERS_EXCLUSIVE": "Wachten op de chef",
             "OFFERS_WAITING_FOR_REVIEW": "Offertes beschikbaar",
             "DEPOSIT_PAYMENT_PENDING": "Betaalgegevens invullen",
             "PAYMENT_PULL_PENDING": "Bevestigd",

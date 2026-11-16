@@ -30,6 +30,7 @@
     "bookingRequest": {
         "status": {
             "WAITING_FOR_OFFERS": "Ожидание предложений",
+            "WAITING_FOR_OFFERS_EXCLUSIVE": "Ожидание шефа",
             "OFFERS_WAITING_FOR_REVIEW": "Есть предложения",
             "DEPOSIT_PAYMENT_PENDING": "Укажи данные для оплаты",
             "PAYMENT_PULL_PENDING": "Подтверждено",

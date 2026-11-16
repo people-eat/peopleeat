@@ -615,7 +615,7 @@ export function BookingRequestPlanPage({
                             <p className="text-sm font-semibold text-foreground">{tBooking('plan.summary.estimatedTotal')}</p>
                             <div className="flex h-7 min-w-28 shrink-0 items-center justify-end">
                                 {displayExpectedPriceRangeLabel ? (
-                                    <p className="text-right text-lg leading-7 font-semibold text-foreground tabular-nums">
+                                    <p className="text-right text-lg/7 font-semibold text-foreground tabular-nums">
                                         {displayExpectedPriceRangeLabel}
                                     </p>
                                 ) : (

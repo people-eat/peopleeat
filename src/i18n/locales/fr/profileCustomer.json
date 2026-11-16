@@ -30,6 +30,7 @@
     "bookingRequest": {
         "status": {
             "WAITING_FOR_OFFERS": "En attente d’offres",
+            "WAITING_FOR_OFFERS_EXCLUSIVE": "En attente du chef",
             "OFFERS_WAITING_FOR_REVIEW": "Tu as reçu des offres",
             "DEPOSIT_PAYMENT_PENDING": "Enregistre un moyen de paiement",
             "PAYMENT_PULL_PENDING": "Confirmé",

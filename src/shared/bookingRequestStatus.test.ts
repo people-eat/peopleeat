@@ -13,6 +13,21 @@ describe('bookingRequestStatusLabel', () => {
         // Assert
         expect(labels).toEqual(['Bestätigt', 'Zahlungseinzug ausstehend']);
     });
+
+    it('uses exclusive waiting copy for customers while the request is chef-page only', () => {
+        // Arrange
+        const status = 'WAITING_FOR_OFFERS';
+
+        // Act
+        const exclusive = bookingRequestStatusLabel(status, 'en', 'customer', { isExclusive: true });
+        const marketplace = bookingRequestStatusLabel(status, 'en', 'customer');
+        const admin = bookingRequestStatusLabel(status, 'en', 'admin', { isExclusive: true });
+
+        // Assert
+        expect(exclusive).toBe('Waiting for chef');
+        expect(marketplace).toBe('Waiting for offers');
+        expect(admin).toBe('Waiting for offers');
+    });
 });
 
 describe('bookingRequestStatusHue', () => {
