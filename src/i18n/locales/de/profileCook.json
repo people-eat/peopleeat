@@ -421,6 +421,9 @@
         "suggestionsHint": "Übernimm eine Vorlage in deine Bibliothek. Preis und Text kannst du danach anpassen.",
         "noSuggestions": "Keine Vorschläge.",
         "empty": "Noch keine Zusatzleistungen.",
+        "noneFound": "Keine Zusatzleistungen gefunden.",
+        "searchPlaceholder": "Zusatzleistungen suchen…",
+        "searchAria": "Zusatzleistungen suchen",
         "add": "Hinzufügen",
         "adding": "Wird hinzugefügt…"
     },

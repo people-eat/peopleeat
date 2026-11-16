@@ -421,6 +421,9 @@
         "suggestionsHint": "Kopieer een sjabloon naar je bibliotheek. Je kunt de prijs en tekst daarna aanpassen.",
         "noSuggestions": "Geen suggesties.",
         "empty": "Nog geen extra's bij offertes.",
+        "noneFound": "Geen extra's bij offertes gevonden.",
+        "searchPlaceholder": "Extra's zoeken…",
+        "searchAria": "Extra's bij offertes zoeken",
         "add": "Toevoegen",
         "adding": "Toevoegen…"
     },

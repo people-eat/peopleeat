@@ -21,12 +21,14 @@ Published templates are what cooks see as suggestions. Drafts stay in admin only
 When `BOOKING_REQUEST_OFFER_ADDONS` is on, cooks see **Offer extras** in the profile nav (`/profile/offer-addons`). When it is off, the nav
 item is hidden and the pages return to the profile overview.
 
-- The library lists the cook’s own extras with title and price.
+- The library is a meals/menus-style grid of image cards (title, description, price; gift placeholder when there is no image). Search (`q`)
+  and sort (`sort`: recently updated default, oldest, title A–Z) live in the URL. The grid uses container query breakpoints (`@2xl` /
+  `@6xl`).
 - **Custom offer extra** creates a draft and opens the editor. The editor explains guest-facing title and description, the image, and the
   two pricing units: **flat** is once for the event, **per person** multiplies by paying guests (discounted guests count as half). v1 extras
   are optional for the guest. **Delete** removes a library extra. Extras already copied onto an offer stay on that offer.
-- **Add from suggestions** lists published admin templates. Adding one copies it into the library (locale title and suggested price) and
-  opens the editor so the cook can change it.
+- **Add from suggestions** lists published admin templates with thumbnails. Adding one copies it into the library (locale title and
+  suggested price) and opens the editor so the cook can change it.
 
 ### Offer create
 
@@ -89,7 +91,7 @@ GraphQL:
 UI:
 
 - `AdminOfferAddonTemplatesPage` / `AdminOfferAddonTemplatePage`
-- `ProfileCookOfferAddonsPage` / `ProfileCookOfferAddonEditPage` (nav gated in `CookSidebar`)
+- `ProfileCookOfferAddonsPage` / `ProfileCookOfferAddonEditPage` (nav gated in `CookSidebar`); library cards via `CookOfferAddonCard`
 - Shared guest picker `BookingRequestOfferAddonSelectionList` (image cards + `+` / check, same pattern as meal selection)
 - Guest picker on `ProfileCustomerBookingRequestOfferPage` Offer tab and `ProfileCustomerBookingRequestOfferCheckoutPage` left sidebar
   (below configured menu)

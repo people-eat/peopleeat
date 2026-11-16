@@ -816,6 +816,9 @@
         "suggestionsHint": "Copia un modello nella libreria. Poi puoi modificare prezzo e testo.",
         "noSuggestions": "Nessun suggerimento.",
         "empty": "Nessun extra offerta ancora.",
+        "noneFound": "Nessun extra offerta trovato.",
+        "searchPlaceholder": "Cerca extra…",
+        "searchAria": "Cerca extra offerta",
         "add": "Aggiungi",
         "adding": "Aggiunta…"
     },

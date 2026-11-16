@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { ProfileCookOfferAddonsPageDocument } from '../../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../../web/graphql/routeLoaderGraphqlClient';
 import {
+    parseProfileOfferAddonsSearch,
     ProfileCookOfferAddonsPage,
     profileCookOfferAddonsPageDescription,
     profileCookOfferAddonsPageTitle,
@@ -12,6 +13,7 @@ import { webPageUrlGet } from '../../../web/seo/webPageUrlGet';
 import { localeFromParam } from '../../../web/utils/locale';
 
 export const Route = createFileRoute('/{-$locale}/profile/offer-addons')({
+    validateSearch: (search: Record<string, unknown>) => parseProfileOfferAddonsSearch(search),
     // Blocking: edit unmounts this list, so save/delete miss userUpdates.
     // Do not remount on the pre-mutation snapshot. See state-synchronization.md.
     loader: {
@@ -31,6 +33,6 @@ export const Route = createFileRoute('/{-$locale}/profile/offer-addons')({
         });
     },
     component() {
-        return <ProfileCookOfferAddonsPage data={Route.useLoaderData()} />;
+        return <ProfileCookOfferAddonsPage data={Route.useLoaderData()} search={Route.useSearch()} />;
     },
 });

@@ -816,6 +816,9 @@
         "suggestionsHint": "Copie un modèle dans ta bibliothèque. Tu pourras ensuite changer le prix et le texte.",
         "noSuggestions": "Aucune suggestion.",
         "empty": "Pas encore d’extras d’offre.",
+        "noneFound": "Aucun extra d’offre trouvé.",
+        "searchPlaceholder": "Rechercher des extras…",
+        "searchAria": "Rechercher des extras d’offre",
         "add": "Ajouter",
         "adding": "Ajout…"
     },

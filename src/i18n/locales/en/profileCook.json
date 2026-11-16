@@ -421,6 +421,9 @@
         "suggestionsHint": "Copy a template into your library. You can change the price and text afterwards.",
         "noSuggestions": "No suggestions.",
         "empty": "No offer extras yet.",
+        "noneFound": "No offer extras found.",
+        "searchPlaceholder": "Search extras…",
+        "searchAria": "Search offer extras",
         "add": "Add",
         "adding": "Adding…"
     },
