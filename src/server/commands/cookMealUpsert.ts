@@ -38,7 +38,7 @@ async function cookMealInsert(
     const titled = meal?.title != null ? textNormalizeTitled(meal.title) : '';
     const title = titled.length > 0 ? titled : DRAFT_TITLE;
     const description = meal?.description != null ? textNormalizeProseTitled(meal.description) : '';
-    const publishedAt = publishedAtParse(meal?.publishedAt ?? undefined, 'cookMealUpsert') ?? null;
+    const explicitPublishedAt = publishedAtParse(meal?.publishedAt ?? undefined, 'cookMealUpsert');
 
     const mealId = idCreate();
     const values: MealCreate = {
@@ -46,7 +46,7 @@ async function cookMealInsert(
         cookId,
         title,
         description,
-        publishedAt,
+        publishedAt: null,
         deletedAt: null,
     };
 
@@ -62,6 +62,13 @@ async function cookMealInsert(
             });
             values.imageFileUploadId = meal.imageFileUploadId;
         }
+    }
+
+    // Setting an image publishes the meal unless publishedAt was sent explicitly.
+    if (explicitPublishedAt !== undefined) {
+        values.publishedAt = explicitPublishedAt;
+    } else if (values.imageFileUploadId != null) {
+        values.publishedAt = new Date();
     }
 
     try {
@@ -112,9 +119,11 @@ async function cookMealPatch(
             set.description = textNormalizeProseTitled(meal.description!);
         }
 
+        let currentPublishedAt: Date | null | undefined;
+
         if (hasImage) {
             const [current] = await serverRuntime.db
-                .select({ imageFileUploadId: meals.imageFileUploadId })
+                .select({ imageFileUploadId: meals.imageFileUploadId, publishedAt: meals.publishedAt })
                 .from(meals)
                 .where(and(eq(meals.mealId, mealId), eq(meals.cookId, cookId), isNull(meals.deletedAt)))
                 .limit(1);
@@ -122,6 +131,7 @@ async function cookMealPatch(
                 throw new Error('cookMealUpsert: meal not found');
             }
             previousImageFileUploadId = current.imageFileUploadId;
+            currentPublishedAt = current.publishedAt;
 
             if (meal.imageFileUploadId == null) {
                 set.imageFileUploadId = null;
@@ -138,6 +148,9 @@ async function cookMealPatch(
 
         if (hasPublishedAt) {
             set.publishedAt = publishedAtParse(meal.publishedAt, 'cookMealUpsert') ?? null;
+        } else if (hasImage && set.imageFileUploadId != null && currentPublishedAt == null) {
+            // Adding an image to a draft publishes it.
+            set.publishedAt = new Date();
         }
 
         await serverRuntime.db.transaction(async (transaction) => {
@@ -194,7 +207,10 @@ const cookMealUpsertToolSchema = z.object({
         .describe('Existing meal id when editing. Omit to create. Pass an id from the cook inventory snapshot — never invent one.'),
     title: z.string().nullish().describe('Dish title. On create, blank/omit uses a draft placeholder.'),
     description: z.string().nullish().describe('Short dish description.'),
-    imageFileUploadId: z.string().nullish().describe('Owned file upload id for the meal image. Pass null to clear on update.'),
+    imageFileUploadId: z
+        .string()
+        .nullish()
+        .describe('Owned file upload id for the meal image. Pass null to clear on update. Setting an image publishes a draft.'),
     publishedAt: z.string().nullish().describe('ISO-8601 timestamp to publish, or null to unpublish. Omit to leave unchanged.'),
 });
 
@@ -212,7 +228,7 @@ export function toolCookMealUpsert({
         description: [
             'Create or update a meal (dish) on the signed-in cook inventory.',
             'Omit mealId to create; pass mealId from the inventory snapshot to edit (avoids duplicate drafts).',
-            'On create, meals start as drafts unless publishedAt is set.',
+            'On create, meals start as drafts unless publishedAt is set or an image is attached (image auto-publishes).',
         ].join(' '),
         inputSchema: cookMealUpsertToolSchema as never,
         async execute(input: z.infer<typeof cookMealUpsertToolSchema>) {

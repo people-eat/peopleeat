@@ -43,7 +43,7 @@ async function adminCookMealInsert(
     const titled = meal.title != null ? textNormalizeTitled(meal.title) : '';
     const title = titled.length > 0 ? titled : DRAFT_TITLE;
     const description = meal.description != null ? textNormalizeProseTitled(meal.description) : '';
-    const publishedAt = publishedAtParse(meal.publishedAt ?? undefined, 'adminCookMealUpsert') ?? null;
+    const explicitPublishedAt = publishedAtParse(meal.publishedAt ?? undefined, 'adminCookMealUpsert');
 
     const mealId = idCreate();
     const values: MealCreate = {
@@ -51,7 +51,7 @@ async function adminCookMealInsert(
         cookId,
         title,
         description,
-        publishedAt,
+        publishedAt: null,
         deletedAt: null,
     };
 
@@ -67,6 +67,13 @@ async function adminCookMealInsert(
             });
             values.imageFileUploadId = meal.imageFileUploadId;
         }
+    }
+
+    // Setting an image publishes the meal unless publishedAt was sent explicitly.
+    if (explicitPublishedAt !== undefined) {
+        values.publishedAt = explicitPublishedAt;
+    } else if (values.imageFileUploadId != null) {
+        values.publishedAt = new Date();
     }
 
     try {
@@ -108,6 +115,7 @@ async function adminCookMealPatch(
             .select({
                 cookId: meals.cookId,
                 imageFileUploadId: meals.imageFileUploadId,
+                publishedAt: meals.publishedAt,
             })
             .from(meals)
             .where(and(eq(meals.mealId, mealId), isNull(meals.deletedAt)))
@@ -158,6 +166,9 @@ async function adminCookMealPatch(
 
         if (hasPublishedAt) {
             set.publishedAt = publishedAtParse(meal.publishedAt, 'adminCookMealUpsert') ?? null;
+        } else if (hasImage && set.imageFileUploadId != null && current.publishedAt == null) {
+            // Adding an image to a draft publishes it.
+            set.publishedAt = new Date();
         }
 
         const previousImageFileUploadId = current.imageFileUploadId;
@@ -229,7 +240,9 @@ const adminCookMealUpsertToolSchema = z.object({
     imageFileUploadId: z
         .string()
         .nullish()
-        .describe('Admin-owned file upload id for the meal image (reassigned to the cook). Pass null to clear on update.'),
+        .describe(
+            'Admin-owned file upload id for the meal image (reassigned to the cook). Pass null to clear on update. Setting an image publishes a draft.',
+        ),
     publishedAt: z.string().nullish().describe('ISO-8601 timestamp to publish, or null to unpublish. Omit to leave unchanged.'),
 });
 
@@ -245,7 +258,7 @@ export function toolAdminCookMealUpsert({
         description: [
             'Create or update a meal on any cook inventory (admin).',
             'Omit mealId and pass cookId to create; pass mealId from a list tool to edit.',
-            'On create, meals start as drafts unless publishedAt is set.',
+            'On create, meals start as drafts unless publishedAt is set or an image is attached (image auto-publishes).',
         ].join(' '),
         inputSchema: adminCookMealUpsertToolSchema as never,
         async execute(input: z.infer<typeof adminCookMealUpsertToolSchema>) {

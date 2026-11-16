@@ -1,7 +1,8 @@
 import { eq } from 'drizzle-orm';
 import { describe, expect, it } from 'vitest';
 
-import { cooks, meals } from '../db/schema';
+import { idCreate } from '../../shared/idCreate';
+import { cooks, fileUploads, meals } from '../db/schema';
 import { commandSetup, cookMutationParent, findLogsForSession, testDb } from '../test/commandTestUtils';
 import { cookMealDelete } from './cookMealDelete';
 import { cookMealUpsert } from './cookMealUpsert';
@@ -112,5 +113,57 @@ describe('cookMealUpsert', () => {
         await expect(
             cookMealUpsert(cookMutationParent(user.userId), { meal: { mealId, title: 'Gone' } }, requestingSession, serverRuntime),
         ).rejects.toThrow(/meal not found/);
+    });
+
+    it('auto-publishes when an image is added to a draft', async () => {
+        const { serverRuntime, requestingSession, user } = await setupCook();
+        const created = await cookMealUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
+        const mealId = created.referenceId!;
+        const imageFileUploadId = idCreate();
+        const bytes = Buffer.from('meal');
+        await testDb.insert(fileUploads).values({
+            fileUploadId: imageFileUploadId,
+            userId: user.userId,
+            filename: 'meal.jpg',
+            mediaType: 'image/jpeg',
+            size: bytes.byteLength,
+            bytes,
+        });
+
+        await cookMealUpsert(
+            cookMutationParent(user.userId),
+            { meal: { mealId, imageFileUploadId } },
+            requestingSession,
+            serverRuntime,
+        );
+
+        const [row] = await testDb.select().from(meals).where(eq(meals.mealId, mealId));
+        expect(row!.imageFileUploadId).toBe(imageFileUploadId);
+        expect(row!.publishedAt).not.toBeNull();
+    });
+
+    it('creates published when an image is attached on insert', async () => {
+        const { serverRuntime, requestingSession, user } = await setupCook();
+        const imageFileUploadId = idCreate();
+        const bytes = Buffer.from('meal');
+        await testDb.insert(fileUploads).values({
+            fileUploadId: imageFileUploadId,
+            userId: user.userId,
+            filename: 'meal.jpg',
+            mediaType: 'image/jpeg',
+            size: bytes.byteLength,
+            bytes,
+        });
+
+        const result = await cookMealUpsert(
+            cookMutationParent(user.userId),
+            { meal: { title: 'Steak', imageFileUploadId } },
+            requestingSession,
+            serverRuntime,
+        );
+
+        const [row] = await testDb.select().from(meals).where(eq(meals.mealId, result.referenceId!));
+        expect(row!.imageFileUploadId).toBe(imageFileUploadId);
+        expect(row!.publishedAt).not.toBeNull();
     });
 });

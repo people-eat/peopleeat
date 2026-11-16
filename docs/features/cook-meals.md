@@ -21,9 +21,10 @@ Signed-in cooks manage meals under the cook shell:
   rows link to menu detail; offer rows show customer + event time. Delete soft-deletes when allowed; blocked usage opens an error dialog and
   the server refuses delete.
 - **Edit** — TanStack Form for title, description, image; Save/Cancel. Image uses shared `CookMealImageField` (crop dialog 1:1; remove
-  confirms first; empty state and remove confirm mention public-page visibility). Save returns to detail. The same editor dialog + image
-  field open from menu edit (course rows, meal picker create/edit, missing-image Add picture) so cooks can change meals without leaving a
-  dirty menu form. Library meals are shared: edits apply everywhere the meal is used.
+  confirms first; empty state and remove confirm mention public-page visibility). Saving a non-null image on a draft auto-publishes the meal
+  (`publishedAt` set to now unless the client sent an explicit `publishedAt`). Save returns to detail. The same editor dialog + image field
+  open from menu edit (course rows, meal picker create/edit, missing-image Add picture) so cooks can change meals without leaving a dirty
+  menu form. Library meals are shared: edits apply everywhere the meal is used.
 
 Soft-deleted meals 404 on cook detail. Non-cooks see access denied.
 
@@ -81,9 +82,10 @@ mints a draft and navigates to admin meal edit.
 ### Chosen
 
 Meals with draft/publish timestamps and soft delete. Cook-facing APIs hide deleted rows; admin exposes deletion. Cook writes go through
-`mealUpsert` (omit `mealId` → draft insert with placeholder title; pass `mealId` → partial patch with title capitalization). Chosen for
-cook-assistant tool budget (one write tool per entity) while keeping list “New meal” and editors on the same path. Usage and delete
-blocking: a course blocks delete when this meal is its only active option.
+`mealUpsert` (omit `mealId` → draft insert with placeholder title; pass `mealId` → partial patch with title capitalization). Attaching a
+non-null image auto-publishes drafts (create and update) unless `publishedAt` is sent explicitly; clearing an image does not unpublish.
+Chosen for cook-assistant tool budget (one write tool per entity) while keeping list “New meal” and editors on the same path. Usage and
+delete blocking: a course blocks delete when this meal is its only active option.
 
 ## Implementation
 
