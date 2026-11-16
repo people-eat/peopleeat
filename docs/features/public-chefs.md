@@ -23,13 +23,14 @@ Shared profile layout (`ChefProfileView`, container-query driven):
 
 - **Hero** — top bar with back to all chefs (left) and **Share** (right; secondary button; native share sheet when available, else copy
   link; gated by `COOK_PUBLIC_PROFILE_SHARE`). Large photo, name, city, cuisine and philosophy pills (`CookProfileTags`, md size), summary,
-  star rating when there is at least one published review (hidden otherwise; cook self-preview can still show “no reviews yet”), primary CTA
-  to the booking form with non-binding copy underneath. When `BOOKING_REQUEST_COOK_DIRECT` is on and the cook is offer-ready
-  (`PublicCook.canReceiveDirectRequests`), the CTA names the chef and passes `?cookId=` so create stays exclusive; otherwise it stays the
-  generic marketplace form. Successful share/copy tracks discovery `click` / `share` (same `chefs` area as `book_cta`, which includes
-  `cookId`, and `menuId` when the CTA is a published menu). Share is wired only on the public detail page — cook WYSIWYG preview omits Share
-  but follows the same CTA rule. Stacks until ~48rem (`@3xl`); photo grows stepwise in the row (`@3xl` / `@4xl` / `@5xl`) so resize never
-  crushes copy beside a full-width square.
+  star rating when there is at least one published review (hidden otherwise; cook self-preview can still show “no reviews yet”). When
+  published testimonials are on the page, the hero rating shows the average plus a **View # reviews** link that smooth-scrolls to
+  `#chef-testimonials` (respects `prefers-reduced-motion`). Primary CTA to the booking form with non-binding copy underneath. When
+  `BOOKING_REQUEST_COOK_DIRECT` is on and the cook is offer-ready (`PublicCook.canReceiveDirectRequests`), the CTA names the chef and passes
+  `?cookId=` so create stays exclusive; otherwise it stays the generic marketplace form. Successful share/copy tracks discovery `click` /
+  `share` (same `chefs` area as `book_cta`, which includes `cookId`, and `menuId` when the CTA is a published menu). Share is wired only on
+  the public detail page — cook WYSIWYG preview omits Share but follows the same CTA rule. Stacks until ~48rem (`@3xl`); photo grows
+  stepwise in the row (`@3xl` / `@4xl` / `@5xl`) so resize never crushes copy beside a full-width square.
 - **Menus** — published, complete inventory menus with at least one meal-option image (`PublicCook.menus`) after the hero, gated by
   `COOK_PUBLIC_PROFILE_MENUS` (missing row stays off). Cards use the same collage as cook menu cards; click opens `PublicCookMenuDialog`
   (courses and dishes). When the chef-page request toggle is on and the cook is offer-ready, the dialog has **Request this menu** →

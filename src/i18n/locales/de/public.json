@@ -250,6 +250,7 @@
         "requestUnderlineDefault": "Unverbindlich und kostenlos",
         "noReviews": "Noch keine Bewertungen",
         "reviewSummary": "{rating} · {count, plural, one {# Bewertung} other {# Bewertungen}}",
+        "viewReviews": "{count, plural, one {# Bewertung ansehen} other {# Bewertungen ansehen}}",
         "about": "Über den Koch",
         "aboutImageAlt": "Zusätzliches Bild des Kochs",
         "menus": "Menüs",

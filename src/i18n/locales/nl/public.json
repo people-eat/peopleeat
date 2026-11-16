@@ -250,6 +250,7 @@
         "requestUnderlineDefault": "Gratis en vrijblijvend",
         "noReviews": "Nog geen reviews",
         "reviewSummary": "{rating} · {count, plural, one {# review} other {# reviews}}",
+        "viewReviews": "{count, plural, one {Bekijk # review} other {Bekijk # reviews}}",
         "about": "Over de chef",
         "aboutImageAlt": "Extra foto van de chef",
         "menus": "Menu's",

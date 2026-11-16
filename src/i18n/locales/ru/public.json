@@ -250,6 +250,7 @@
         "requestUnderlineDefault": "Бесплатно и без обязательств",
         "noReviews": "Пока нет отзывов",
         "reviewSummary": "{rating} · {count, plural, one {# отзыв} few {# отзыва} many {# отзывов} other {# отзыва}}",
+        "viewReviews": "{count, plural, one {Посмотреть # отзыв} few {Посмотреть # отзыва} many {Посмотреть # отзывов} other {Посмотреть # отзыва}}",
         "about": "О шефе",
         "aboutImageAlt": "Дополнительное фото шефа",
         "menus": "Меню",

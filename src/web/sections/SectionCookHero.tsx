@@ -10,6 +10,7 @@ import { useLocale } from '../hooks/useLocale';
 import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 import type { Locale } from '../utils/locale';
+import { chefTestimonialsSectionId } from './SectionCookTestimonials';
 
 type SectionCookHeroRating = {
     averageRating: number | null;
@@ -47,7 +48,14 @@ function initialsFromName(name: string): string {
     return `${parts[0]![0] ?? ''}${parts[1]![0] ?? ''}`.toUpperCase();
 }
 
-function CookRating({ rating }: { rating: SectionCookHeroRating }) {
+function CookRating({
+    rating,
+    scrollToTestimonials = false,
+}: {
+    rating: SectionCookHeroRating;
+    /** When true and reviews exist, the review count scrolls to `#chef-testimonials`. */
+    scrollToTestimonials?: boolean;
+}) {
     const { t } = useT('public');
     const hasReviews = rating.reviewCount > 0 && rating.averageRating != null;
     const filledStars = hasReviews ? Math.round(rating.averageRating!) : 0;
@@ -55,8 +63,16 @@ function CookRating({ rating }: { rating: SectionCookHeroRating }) {
         ? t('chef.reviewSummary', { rating: rating.averageRating!.toFixed(1), count: rating.reviewCount })
         : t('chef.noReviews');
 
+    function scrollToReviews() {
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        document.getElementById(chefTestimonialsSectionId)?.scrollIntoView({
+            behavior: reducedMotion ? 'auto' : 'smooth',
+            block: 'start',
+        });
+    }
+
     return (
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <div className="flex items-center gap-1" role="img" aria-label={summary}>
                 {Array.from({ length: 5 }, (_, index) => (
                     <StarIcon
@@ -66,7 +82,16 @@ function CookRating({ rating }: { rating: SectionCookHeroRating }) {
                     />
                 ))}
             </div>
-            <span className="text-sm text-muted-foreground">{summary}</span>
+            {hasReviews && scrollToTestimonials ? (
+                <>
+                    <span className="text-sm text-muted-foreground">{rating.averageRating!.toFixed(1)}</span>
+                    <Button type="button" variant="link" className="h-auto px-0 text-sm" onClick={scrollToReviews}>
+                        {t('chef.viewReviews', { count: rating.reviewCount })}
+                    </Button>
+                </>
+            ) : (
+                <span className="text-sm text-muted-foreground">{summary}</span>
+            )}
         </div>
     );
 }
@@ -77,6 +102,7 @@ export function SectionCookHero({
     onBookCtaClick,
     shareButton,
     bookCta,
+    scrollToTestimonials = false,
 }: {
     cook: SectionCookHeroCook;
     showChefsIndexLink?: boolean;
@@ -85,6 +111,8 @@ export function SectionCookHero({
     /** Optional Share control top-right beside the chefs index link (public chef page only). */
     shareButton?: ReactNode;
     bookCta?: SectionCookHeroBookCta;
+    /** When the testimonials section is on the page, turn the review count into a scroll control. */
+    scrollToTestimonials?: boolean;
 }) {
     const locale = useLocale();
     const { t } = useT('public');
@@ -148,7 +176,7 @@ export function SectionCookHero({
                         <p className="max-w-xl text-base/relaxed text-muted-foreground">{cook.biographySummary}</p>
                     ) : null}
 
-                    {cook.rating != null ? <CookRating rating={cook.rating} /> : null}
+                    {cook.rating != null ? <CookRating rating={cook.rating} scrollToTestimonials={scrollToTestimonials} /> : null}
 
                     <div className="inline-grid min-w-64 justify-items-stretch gap-2 self-center pt-2 @3xl:self-start">
                         <Button asChild size="lg" className="px-8">

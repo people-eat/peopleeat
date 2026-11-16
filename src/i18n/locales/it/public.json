@@ -250,6 +250,7 @@
         "requestUnderlineDefault": "Senza impegno e gratuito",
         "noReviews": "Ancora nessuna recensione",
         "reviewSummary": "{rating} · {count, plural, one {# recensione} other {# recensioni}}",
+        "viewReviews": "{count, plural, one {Vedi # recensione} other {Vedi # recensioni}}",
         "about": "Lo chef",
         "aboutImageAlt": "Immagine aggiuntiva dello chef",
         "menus": "Menu",

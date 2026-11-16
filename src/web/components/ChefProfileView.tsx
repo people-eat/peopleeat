@@ -36,6 +36,8 @@ export function ChefProfileView({
     shareButton?: ReactNode;
     bookCta?: SectionCookHeroBookCta;
 }) {
+    const hasTestimonials = cook.testimonials != null && cook.testimonials.length > 0;
+
     return (
         // Own `@container` so sections reflow with this pane (full page or cook
         // public preview), not a wider ancestor.
@@ -46,6 +48,7 @@ export function ChefProfileView({
                 onBookCtaClick={onBookCtaClick}
                 shareButton={shareButton}
                 bookCta={bookCta}
+                scrollToTestimonials={hasTestimonials}
             />
             <SectionCookMenus menus={cook.menus ?? []} bookCookId={bookCta?.cookId} onBookMenuCtaClick={onBookMenuCtaClick} />
             <SectionCookMeals meals={cook.meals} />

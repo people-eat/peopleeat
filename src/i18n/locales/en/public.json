@@ -250,6 +250,7 @@
         "requestUnderlineDefault": "Free of charge and without obligation",
         "noReviews": "No reviews yet",
         "reviewSummary": "{rating} · {count, plural, one {# review} other {# reviews}}",
+        "viewReviews": "{count, plural, one {View # review} other {View # reviews}}",
         "about": "About the chef",
         "aboutImageAlt": "Additional chef picture",
         "menus": "Menus",

@@ -250,6 +250,7 @@
         "requestUnderlineDefault": "Sans engagement et gratuit",
         "noReviews": "Pas encore d’avis",
         "reviewSummary": "{rating} · {count, plural, one {# avis} other {# avis}}",
+        "viewReviews": "{count, plural, one {Voir # avis} other {Voir # avis}}",
         "about": "À propos du chef",
         "aboutImageAlt": "Photo supplémentaire du chef",
         "menus": "Menus",
