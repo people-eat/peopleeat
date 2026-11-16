@@ -1,5 +1,6 @@
 import { createFileRoute, notFound, redirect } from '@tanstack/react-router';
 
+import { cityCountryCodeLabel, cityCountryHubPath } from '../../shared/cityCountryCode';
 import { contentLocaleText } from '../../shared/contentSection';
 import { PublicCityPageDocument } from '../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../web/graphql/routeLoaderGraphqlClient';
@@ -43,6 +44,11 @@ export const Route = createFileRoute('/{-$locale}/cities_/$pathName')({
         const cityName = contentLocaleText(city.nameDe, city.nameEn, locale);
         const serviceName = headline || title;
         const serviceDescription = subheadline || description;
+        const countryHubPath = cityCountryHubPath(city.countryCode);
+        const breadcrumbMiddle =
+            city.countryCode === 'DE'
+                ? { name: cityIndexLinkLabel(locale), path: '/cities' }
+                : { name: cityCountryCodeLabel(city.countryCode, locale), path: countryHubPath };
         return {
             ...seoMeta({
                 title,
@@ -53,11 +59,7 @@ export const Route = createFileRoute('/{-$locale}/cities_/$pathName')({
                 image: city.heroImageUrl ?? undefined,
             }),
             scripts: jsonLdHeadScripts([
-                jsonLdBreadcrumbList(webPageUrl, locale, [
-                    { name: SITE_NAME, path: '/' },
-                    { name: cityIndexLinkLabel(locale), path: '/cities' },
-                    { name: serviceName, path },
-                ]),
+                jsonLdBreadcrumbList(webPageUrl, locale, [{ name: SITE_NAME, path: '/' }, breadcrumbMiddle, { name: serviceName, path }]),
                 jsonLdCityService({
                     webPageUrl,
                     locale,
@@ -65,6 +67,7 @@ export const Route = createFileRoute('/{-$locale}/cities_/$pathName')({
                     name: serviceName,
                     description: serviceDescription,
                     cityName,
+                    countryCode: city.countryCode,
                     latitude: city.latitude,
                     longitude: city.longitude,
                     image: city.heroImageUrl ?? CITY_HERO_FALLBACK_IMAGE,

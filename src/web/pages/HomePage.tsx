@@ -61,7 +61,7 @@ export function HomePage({ loaderData }: { loaderData: GqlCHomePageQuery }) {
                 <SectionKnownFrom />
                 <SectionQuestionsAndAnswers />
                 <SectionSupport />
-                <SectionCities cities={loaderData.publicCity.findMany} />
+                <SectionCities cities={loaderData.publicCity.findMany} showExpansionHubs />
             </div>
 
             <Footer />

@@ -192,6 +192,7 @@ fragment AdminCityFields on AdminCity {
     previousPathNames
     nameDe
     nameEn
+    countryCode
     latitude
     longitude
     titleDe
@@ -241,6 +242,7 @@ fragment PublicCityFields on PublicCity {
     previousPathNames
     nameDe
     nameEn
+    countryCode
     latitude
     longitude
     titleDe

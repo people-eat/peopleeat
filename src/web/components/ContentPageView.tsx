@@ -71,6 +71,8 @@ export type ContentPageViewModel = {
     howItWorksAlternativeMedia?: boolean;
     /** City list below dynamic sections. Hidden when empty / omitted. */
     cities?: ReadonlyArray<SectionCitiesCity>;
+    /** When set with `cities`, only siblings in that market are listed. */
+    citiesCountryCode?: SectionCitiesCity['countryCode'];
     /** Venue detail CTA to `/venues` (exploration path). */
     venuesExplore?: boolean;
     /** Press logos after the cities list (city detail + landing + venues). */
@@ -175,7 +177,7 @@ export function ContentPageView({
                 <ContentSectionsRenderer sections={page.sections} locale={locale} />
                 {page.cities ? (
                     <div data-content-preview-anchor="cities">
-                        <SectionCities cities={page.cities} />
+                        <SectionCities cities={page.cities} countryCode={page.citiesCountryCode} />
                     </div>
                 ) : null}
                 {page.venuesExplore ? (

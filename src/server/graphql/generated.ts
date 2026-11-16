@@ -1014,6 +1014,7 @@ export interface GqlSAdminCity {
     cityId: Scalars['ID']['output'];
     cooks: Array<GqlSAdminFeaturedCook>;
     cooksInTravelRadius: Array<GqlSAdminCook>;
+    countryCode: GqlSCityCountryCode;
     createdAt: Scalars['DateTime']['output'];
     descriptionDe: Scalars['String']['output'];
     descriptionEn: Scalars['String']['output'];
@@ -3191,8 +3192,11 @@ export interface GqlSChatTurnUsage {
     totalTokens?: Maybe<Scalars['Int']['output']>;
 }
 
+export type GqlSCityCountryCode = 'CH' | 'DE' | 'NL';
+
 export type GqlSCityUpsert = {
     cityId?: InputMaybe<Scalars['ID']['input']>;
+    countryCode: GqlSCityCountryCode;
     descriptionDe: Scalars['String']['input'];
     descriptionEn: Scalars['String']['input'];
     firstSectionBodyDe: Scalars['String']['input'];
@@ -4795,6 +4799,7 @@ export type GqlSPublicBlogPostQueryFindOneByPathNameArgs = {
 export interface GqlSPublicCity {
     __typename?: 'PublicCity';
     cityId: Scalars['ID']['output'];
+    countryCode: GqlSCityCountryCode;
     createdAt: Scalars['DateTime']['output'];
     descriptionDe: Scalars['String']['output'];
     descriptionEn: Scalars['String']['output'];
@@ -6353,6 +6358,7 @@ export type GqlSResolversTypes = ResolversObject<{
     ChatTurnUpdate: ResolverTypeWrapper<GqlSResolversUnionTypes<GqlSResolversTypes>['ChatTurnUpdate']>;
     ChatTurnUpserted: ResolverTypeWrapper<Omit<GqlSChatTurnUpserted, 'turn'> & { turn: GqlSResolversTypes['ChatTurn'] }>;
     ChatTurnUsage: ResolverTypeWrapper<GqlSChatTurnUsage>;
+    CityCountryCode: GqlSCityCountryCode;
     CityUpsert: GqlSCityUpsert;
     ClientObservabilityKind: GqlSClientObservabilityKind;
     ClientObservabilityReportInput: GqlSClientObservabilityReportInput;
@@ -8055,6 +8061,7 @@ export type GqlSAdminCityResolvers<
     cityId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     cooks?: Resolver<Array<GqlSResolversTypes['AdminFeaturedCook']>, ParentType, ContextType>;
     cooksInTravelRadius?: Resolver<Array<GqlSResolversTypes['AdminCook']>, ParentType, ContextType>;
+    countryCode?: Resolver<GqlSResolversTypes['CityCountryCode'], ParentType, ContextType>;
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     descriptionDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     descriptionEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
@@ -11456,6 +11463,7 @@ export type GqlSPublicCityResolvers<
     ParentType extends GqlSResolversParentTypes['PublicCity'] = GqlSResolversParentTypes['PublicCity'],
 > = ResolversObject<{
     cityId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    countryCode?: Resolver<GqlSResolversTypes['CityCountryCode'], ParentType, ContextType>;
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     descriptionDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     descriptionEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
@@ -13433,6 +13441,8 @@ export const GqlSChatTurnStatusSchema: z.ZodType<
     'AWAITING_INPUT' | 'CANCELLED' | 'COMPLETE' | 'FAILED' | 'QUEUED' | 'RUNNING'
 > = z.enum(['AWAITING_INPUT', 'CANCELLED', 'COMPLETE', 'FAILED', 'QUEUED', 'RUNNING']);
 
+export const GqlSCityCountryCodeSchema: z.ZodType<'CH' | 'DE' | 'NL', 'CH' | 'DE' | 'NL'> = z.enum(['CH', 'DE', 'NL']);
+
 export const GqlSClientObservabilityKindSchema: z.ZodType<
     'GRAPHQL_ERROR' | 'ROUTE_ERROR' | 'WEB_VITAL',
     'GRAPHQL_ERROR' | 'ROUTE_ERROR' | 'WEB_VITAL'
@@ -14288,6 +14298,7 @@ export function GqlSChatAssistantOptionsSchema(): z.ZodObject<Properties<GqlSCha
 export function GqlSCityUpsertSchema(): z.ZodObject<Properties<GqlSCityUpsert>> {
     return z.object({
         cityId: z.string().nullish(),
+        countryCode: GqlSCityCountryCodeSchema,
         descriptionDe: z.string(),
         descriptionEn: z.string(),
         firstSectionBodyDe: z.string(),

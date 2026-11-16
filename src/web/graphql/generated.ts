@@ -1017,6 +1017,7 @@ export interface GqlCAdminCity {
     cityId: Scalars['ID']['output'];
     cooks: Array<GqlCAdminFeaturedCook>;
     cooksInTravelRadius: Array<GqlCAdminCook>;
+    countryCode: GqlCCityCountryCode;
     createdAt: Scalars['DateTime']['output'];
     descriptionDe: Scalars['String']['output'];
     descriptionEn: Scalars['String']['output'];
@@ -3194,8 +3195,11 @@ export interface GqlCChatTurnUsage {
     totalTokens?: Maybe<Scalars['Int']['output']>;
 }
 
+export type GqlCCityCountryCode = 'CH' | 'DE' | 'NL';
+
 export type GqlCCityUpsert = {
     cityId?: InputMaybe<Scalars['ID']['input']>;
+    countryCode: GqlCCityCountryCode;
     descriptionDe: Scalars['String']['input'];
     descriptionEn: Scalars['String']['input'];
     firstSectionBodyDe: Scalars['String']['input'];
@@ -4798,6 +4802,7 @@ export type GqlCPublicBlogPostQueryFindOneByPathNameArgs = {
 export interface GqlCPublicCity {
     __typename?: 'PublicCity';
     cityId: Scalars['ID']['output'];
+    countryCode: GqlCCityCountryCode;
     createdAt: Scalars['DateTime']['output'];
     descriptionDe: Scalars['String']['output'];
     descriptionEn: Scalars['String']['output'];
@@ -6913,6 +6918,7 @@ export type GqlCAdminCityFieldsFragment = {
     previousPathNames: Array<string>;
     nameDe: string;
     nameEn: string;
+    countryCode: Schema.GqlCCityCountryCode;
     latitude: number;
     longitude: number;
     titleDe: string;
@@ -7042,6 +7048,7 @@ export type GqlCPublicCityFieldsFragment = {
     previousPathNames: Array<string>;
     nameDe: string;
     nameEn: string;
+    countryCode: Schema.GqlCCityCountryCode;
     latitude: number;
     longitude: number;
     titleDe: string;
@@ -9226,6 +9233,7 @@ export type GqlCPublicCitiesPageQuery = {
     publicCity: {
         findMany: Array<{
             pathName: string;
+            countryCode: Schema.GqlCCityCountryCode;
             titleDe: string;
             titleEn: string;
             descriptionDe: string;
@@ -9249,6 +9257,7 @@ export type GqlCPublicCityPageQuery = {
             previousPathNames: Array<string>;
             nameDe: string;
             nameEn: string;
+            countryCode: Schema.GqlCCityCountryCode;
             latitude: number;
             longitude: number;
             titleDe: string;
@@ -9361,7 +9370,7 @@ export type GqlCPublicCityPageQuery = {
                       };
             }>;
         } | null;
-        findMany: Array<{ pathName: string; nameDe: string; nameEn: string }>;
+        findMany: Array<{ pathName: string; nameDe: string; nameEn: string; countryCode: Schema.GqlCCityCountryCode }>;
     };
 };
 
@@ -9626,7 +9635,7 @@ export type GqlCHomePageQuery = {
             cook: { cookId: string } | null;
         } | null;
     };
-    publicCity: { findMany: Array<{ pathName: string; nameDe: string; nameEn: string }> };
+    publicCity: { findMany: Array<{ pathName: string; nameDe: string; nameEn: string; countryCode: Schema.GqlCCityCountryCode }> };
     publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
 };
 
@@ -13146,6 +13155,7 @@ export type GqlCAdminCitiesPageQuery = {
                     pathName: string;
                     nameDe: string;
                     nameEn: string;
+                    countryCode: Schema.GqlCCityCountryCode;
                     titleDe: string;
                     publishedAt: string | null;
                     updatedAt: string;
@@ -13187,6 +13197,7 @@ export type GqlCAdminCitiesPageUpdatesSubscription = {
             pathName: string;
             nameDe: string;
             nameEn: string;
+            countryCode: Schema.GqlCCityCountryCode;
             titleDe: string;
             publishedAt: string | null;
             updatedAt: string;
@@ -13209,6 +13220,7 @@ export type GqlCAdminCityPageQuery = {
                     previousPathNames: Array<string>;
                     nameDe: string;
                     nameEn: string;
+                    countryCode: Schema.GqlCCityCountryCode;
                     latitude: number;
                     longitude: number;
                     titleDe: string;
@@ -13362,7 +13374,7 @@ export type GqlCAdminCityPageQuery = {
             } | null;
         } | null;
     };
-    publicCity: { findMany: Array<{ pathName: string; nameDe: string; nameEn: string }> };
+    publicCity: { findMany: Array<{ pathName: string; nameDe: string; nameEn: string; countryCode: Schema.GqlCCityCountryCode }> };
 };
 
 export type GqlCAdminCityUpsertMutationVariables = Exact<{
@@ -13416,6 +13428,7 @@ export type GqlCAdminCityPageUpdatesSubscription = {
             previousPathNames: Array<string>;
             nameDe: string;
             nameEn: string;
+            countryCode: Schema.GqlCCityCountryCode;
             latitude: number;
             longitude: number;
             titleDe: string;
@@ -24882,6 +24895,7 @@ export const AdminCityFieldsFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'nameDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'nameEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'countryCode' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
@@ -25347,6 +25361,7 @@ export const PublicCityFieldsFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'nameDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'nameEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'countryCode' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
@@ -45087,6 +45102,7 @@ export const PublicCitiesPageDocument = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'countryCode' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
@@ -45216,6 +45232,7 @@ export const PublicCityPageDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'nameDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'nameEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'countryCode' } },
                                         ],
                                     },
                                 },
@@ -45500,6 +45517,7 @@ export const PublicCityPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'nameDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'nameEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'countryCode' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
@@ -46554,6 +46572,7 @@ export const HomePageDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'nameDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'nameEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'countryCode' } },
                                         ],
                                     },
                                 },
@@ -57943,6 +57962,7 @@ export const AdminCitiesPageDocument = {
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'nameDe' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'nameEn' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'countryCode' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
@@ -58108,6 +58128,7 @@ export const AdminCitiesPageUpdatesDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'nameDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'nameEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'countryCode' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
@@ -58215,6 +58236,7 @@ export const AdminCityPageDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'nameDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'nameEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'countryCode' } },
                                         ],
                                     },
                                 },
@@ -58452,6 +58474,7 @@ export const AdminCityPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'nameDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'nameEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'countryCode' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
@@ -59058,6 +59081,7 @@ export const AdminCityPageUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'nameDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'nameEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'countryCode' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },

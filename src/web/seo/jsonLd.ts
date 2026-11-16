@@ -189,6 +189,7 @@ export function jsonLdCityService(input: {
     name: string;
     description: string;
     cityName: string;
+    countryCode: string;
     latitude: number;
     longitude: number;
     image?: string | null;
@@ -204,6 +205,10 @@ export function jsonLdCityService(input: {
         areaServed: {
             '@type': 'Place',
             name: input.cityName,
+            address: {
+                '@type': 'PostalAddress',
+                addressCountry: input.countryCode,
+            },
             geo: {
                 '@type': 'GeoCoordinates',
                 latitude: input.latitude,

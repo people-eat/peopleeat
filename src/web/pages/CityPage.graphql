@@ -12,6 +12,7 @@ query PublicCityPage($pathName: String!) {
             pathName
             nameDe
             nameEn
+            countryCode
         }
     }
 }

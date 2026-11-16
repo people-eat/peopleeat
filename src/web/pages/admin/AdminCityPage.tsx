@@ -4,12 +4,14 @@ import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
-import { contentLocaleText, fileUploadPublicUrl, userDisplayName } from '../../../shared';
+import type { CityCountryCode } from '../../../shared';
+import { cityCountryCodeLabel, cityCountryCodes, contentLocaleText, fileUploadPublicUrl, userDisplayName } from '../../../shared';
 import type { CityCenterSelection } from '../../components/AdminCityCenterField';
 import { AdminCityCenterField } from '../../components/AdminCityCenterField';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/base/card';
 import { Input } from '../../components/base/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/base/select';
 import { Textarea } from '../../components/base/textarea';
 import type { ContentPageEditorSearch, ContentPageEditorValues } from '../../components/ContentPageEditor';
 import { ContentImageField, ContentPageEditor, contentPageEditorTabFromSearch } from '../../components/ContentPageEditor';
@@ -46,6 +48,7 @@ export const adminCityPageDescription = {
 type CityEditorValues = ContentPageEditorValues & {
     nameDe: string;
     nameEn: string;
+    countryCode: CityCountryCode;
     latitude: number;
     longitude: number;
     firstSectionHeadlineDe: string;
@@ -63,6 +66,7 @@ function valuesFromCity(city: CityRow): CityEditorValues {
         pathName: city.pathName,
         nameDe: city.nameDe,
         nameEn: city.nameEn,
+        countryCode: city.countryCode,
         latitude: city.latitude,
         longitude: city.longitude,
         titleDe: city.titleDe,
@@ -243,6 +247,7 @@ export function AdminCityPage({ data, cityId, search }: { data: GqlCAdminCityPag
                 heroImageFallbackUrl={CITY_HERO_FALLBACK_IMAGE}
                 howItWorks
                 cities={data.publicCity.findMany}
+                citiesCountryCode={values.countryCode}
                 knownFrom
                 chefForAnyOccasion={{
                     displayName: contentLocaleText(values.nameDe, values.nameEn, locale).trim() || { de: 'Stadt', en: 'City' }[locale],
@@ -267,6 +272,25 @@ export function AdminCityPage({ data, cityId, search }: { data: GqlCAdminCityPag
                             <label className="flex flex-col gap-1.5 text-sm">
                                 <span className="font-medium">EN</span>
                                 <Input value={values.nameEn} onChange={(e) => patchCityValues({ nameEn: e.target.value })} />
+                            </label>
+                            <label className="flex flex-col gap-1.5 text-sm">
+                                <span className="font-medium">{{ de: 'Land', en: 'Country' }[locale]}</span>
+                                <Select
+                                    value={values.countryCode}
+                                    onValueChange={(value) => patchCityValues({ countryCode: value as CityCountryCode })}
+                                    disabled={busy}
+                                >
+                                    <SelectTrigger aria-label={{ de: 'Land', en: 'Country' }[locale]}>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {cityCountryCodes.map((code) => (
+                                            <SelectItem key={code} value={code}>
+                                                {cityCountryCodeLabel(code, locale)}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </label>
                             <AdminCityCenterField
                                 locale={locale}
@@ -441,6 +465,7 @@ export function AdminCityPage({ data, cityId, search }: { data: GqlCAdminCityPag
                                 pathName: current.pathName,
                                 nameDe: current.nameDe,
                                 nameEn: current.nameEn,
+                                countryCode: current.countryCode,
                                 latitude: center.latitude,
                                 longitude: center.longitude,
                                 titleDe: current.titleDe,

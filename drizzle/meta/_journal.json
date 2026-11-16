@@ -260,6 +260,13 @@
             "when": 1794695143046,
             "tag": "0036_fair_penance",
             "breakpoints": true
+        },
+        {
+            "idx": 37,
+            "version": "7",
+            "when": 1794823740981,
+            "tag": "0037_dark_mauler",
+            "breakpoints": true
         }
     ]
 }

@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm';
 
+import { cityCountryCodeAssert } from '../../shared/cityCountryCode';
 import { idCreate } from '../../shared/idCreate';
 import { cities } from '../db/schema';
 import type { CityCreate } from '../db/schema';
@@ -19,6 +20,7 @@ export async function adminCityUpsert(
     try {
         const pathName = contentPathNameNormalize(input.pathName);
         const sections = contentSectionsParseOrThrow(input.sections);
+        const countryCode = cityCountryCodeAssert(input.countryCode, 'adminCityUpsert');
         const nameDe = input.nameDe.trim();
         const titleDe = input.titleDe.trim();
         const descriptionDe = input.descriptionDe.trim();
@@ -47,6 +49,7 @@ export async function adminCityUpsert(
             previousPathNames,
             nameDe,
             nameEn: input.nameEn.trim(),
+            countryCode,
             latitude: input.latitude,
             longitude: input.longitude,
             titleDe,
@@ -78,6 +81,7 @@ export async function adminCityUpsert(
                     previousPathNames: values.previousPathNames,
                     nameDe: values.nameDe,
                     nameEn: values.nameEn,
+                    countryCode: values.countryCode,
                     latitude: values.latitude,
                     longitude: values.longitude,
                     titleDe: values.titleDe,

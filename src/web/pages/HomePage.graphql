@@ -14,6 +14,7 @@ query HomePage {
             pathName
             nameDe
             nameEn
+            countryCode
         }
     }
     publicWebPage {

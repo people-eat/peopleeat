@@ -20,6 +20,14 @@ enum Locale {
     en
 }
 
+# Markets that own public city landing pages. Taxonomy only — not a Countries CMS.
+# See docs/features/cities.md.
+enum CityCountryCode {
+    DE
+    NL
+    CH
+}
+
 enum ChatMessageDeliveryStatus {
     SENT
     DELIVERED
@@ -5651,6 +5659,7 @@ type AdminCity {
     previousPathNames: [String!]!
     nameDe: String!
     nameEn: String!
+    countryCode: CityCountryCode!
     latitude: Latitude!
     longitude: Longitude!
     titleDe: String!
@@ -5687,6 +5696,7 @@ type PublicCity {
     previousPathNames: [String!]!
     nameDe: String!
     nameEn: String!
+    countryCode: CityCountryCode!
     latitude: Latitude!
     longitude: Longitude!
     titleDe: String!
@@ -5991,6 +6001,7 @@ input CityUpsert {
     pathName: String!
     nameDe: String!
     nameEn: String!
+    countryCode: CityCountryCode!
     latitude: Latitude!
     longitude: Longitude!
     titleDe: String!

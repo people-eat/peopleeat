@@ -13,6 +13,7 @@ function cityInput(overrides: Partial<GqlSCityUpsert> = {}): GqlSCityUpsert {
         pathName: `city-${suffix}`,
         nameDe: 'Berlin',
         nameEn: 'Berlin',
+        countryCode: 'DE',
         latitude: 52.52,
         longitude: 13.405,
         titleDe: 'Titel',
@@ -60,6 +61,7 @@ describe('adminCityUpsert', () => {
         const [row] = await testDb.select().from(cities).where(eq(cities.cityId, result.referenceId!));
         expect(row).toMatchObject({
             nameDe: 'München',
+            countryCode: 'DE',
             titleDe: 'Titel',
             descriptionDe: 'Beschreibung',
             headlineDe: 'Headline',
@@ -68,6 +70,28 @@ describe('adminCityUpsert', () => {
         });
         expect(row?.pathName).toMatch(/^munich-city-/);
         expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledTimes(1);
+    });
+
+    it('persists NL countryCode on create', async () => {
+        const admin = await commandSetup.withUser({ firstName: 'city-upsert-nl', lastName: 'User' });
+        await testDb.insert(admins).values({ adminId: admin.user.userId });
+        const input = cityInput({
+            nameDe: 'Amsterdam',
+            nameEn: 'Amsterdam',
+            countryCode: 'NL',
+            latitude: 52.3676,
+            longitude: 4.9041,
+        });
+
+        const result = await adminCityUpsert(
+            adminMutationParent(admin.user.userId),
+            { input },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        const [row] = await testDb.select().from(cities).where(eq(cities.cityId, result.referenceId!));
+        expect(row?.countryCode).toBe('NL');
     });
 
     it('updates an existing city and archives the previous pathName', async () => {

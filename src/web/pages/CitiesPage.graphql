@@ -7,6 +7,7 @@ query PublicCitiesPage {
     publicCity {
         findMany {
             pathName
+            countryCode
             titleDe
             titleEn
             descriptionDe

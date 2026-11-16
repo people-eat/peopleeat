@@ -108,7 +108,7 @@ describe('jsonLdBreadcrumbList', () => {
 });
 
 describe('jsonLdCityService', () => {
-    it('places the city coordinates on the served area', () => {
+    it('places the city coordinates and country on the served area', () => {
         // Arrange — nothing
         // Act
         const service = JSON.parse(
@@ -119,13 +119,20 @@ describe('jsonLdCityService', () => {
                 name: 'Privatkoch in Berlin',
                 description: 'Köche für Berlin.',
                 cityName: 'Berlin',
+                countryCode: 'DE',
                 latitude: 52.52,
                 longitude: 13.405,
             }).children,
-        ) as { areaServed: { geo: { latitude: number } } };
+        ) as {
+            areaServed: {
+                geo: { latitude: number };
+                address: { addressCountry: string };
+            };
+        };
 
         // Assert
         expect(service.areaServed.geo.latitude).toBe(52.52);
+        expect(service.areaServed.address.addressCountry).toBe('DE');
     });
 });
 

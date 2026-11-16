@@ -10,6 +10,7 @@ function cityContentFields(row: City) {
         previousPathNames: row.previousPathNames,
         nameDe: row.nameDe,
         nameEn: row.nameEn,
+        countryCode: row.countryCode,
         latitude: row.latitude,
         longitude: row.longitude,
         titleDe: row.titleDe,

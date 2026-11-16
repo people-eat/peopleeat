@@ -5,7 +5,8 @@ import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
-import { formatDate } from '../../../shared';
+import type { CityCountryCode } from '../../../shared';
+import { cityCountryCodeLabel, cityCountryCodes, formatDate } from '../../../shared';
 import { AdminCityCenterField } from '../../components/AdminCityCenterField';
 import type { CityCenterSelection } from '../../components/AdminCityCenterField';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
@@ -13,6 +14,7 @@ import { Badge } from '../../components/base/badge';
 import { Button } from '../../components/base/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../components/base/dialog';
 import { Input } from '../../components/base/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/base/select';
 import type { GqlCAdminCitiesPageQuery } from '../../graphql/generated';
 import {
     AdminCitiesPageLocationSuggestionsDocument,
@@ -54,6 +56,7 @@ export function AdminCitiesPage({ data, search }: { data: GqlCAdminCitiesPageQue
     const [busy, setBusy] = useState(false);
     const [createOpen, setCreateOpen] = useState(false);
     const [nameDe, setNameDe] = useState('Neue Stadt');
+    const [countryCode, setCountryCode] = useState<CityCountryCode>('DE');
     const [center, setCenter] = useState<CityCenterSelection | null>(null);
     const [draftQ, setDraftQ] = useState(search.q ?? '');
     const debouncedQ = useDebouncedValue(draftQ, 300);
@@ -112,6 +115,7 @@ export function AdminCitiesPage({ data, search }: { data: GqlCAdminCitiesPageQue
                     pathName: `stadt-${Date.now()}`,
                     nameDe: trimmedName,
                     nameEn: '',
+                    countryCode,
                     latitude: center.latitude,
                     longitude: center.longitude,
                     titleDe: `Privatkoch in ${trimmedName}`,
@@ -135,6 +139,7 @@ export function AdminCitiesPage({ data, search }: { data: GqlCAdminCitiesPageQue
             setCreateOpen(false);
             setCenter(null);
             setNameDe('Neue Stadt');
+            setCountryCode('DE');
             await navigate({ to: '/{-$locale}/admin/cities/$cityId', params: { cityId: id } });
         } catch {
             toast.error({ de: 'Anlegen fehlgeschlagen.', en: 'Could not create.' }[locale]);
@@ -181,6 +186,7 @@ export function AdminCitiesPage({ data, search }: { data: GqlCAdminCitiesPageQue
                                     title={
                                         <>
                                             {city.nameDe}
+                                            <Badge variant="outline">{cityCountryCodeLabel(city.countryCode, locale)}</Badge>
                                             <Badge variant="outline">
                                                 {city.publishedAt
                                                     ? { de: 'Veröffentlicht', en: 'Published' }[locale]
@@ -214,6 +220,21 @@ export function AdminCitiesPage({ data, search }: { data: GqlCAdminCitiesPageQue
                         <label className="flex flex-col gap-1.5 text-sm">
                             <span className="font-medium">{{ de: 'Name (DE)', en: 'Name (DE)' }[locale]}</span>
                             <Input value={nameDe} onChange={(event) => setNameDe(event.target.value)} disabled={busy} />
+                        </label>
+                        <label className="flex flex-col gap-1.5 text-sm">
+                            <span className="font-medium">{{ de: 'Land', en: 'Country' }[locale]}</span>
+                            <Select value={countryCode} onValueChange={(value) => setCountryCode(value as CityCountryCode)} disabled={busy}>
+                                <SelectTrigger aria-label={{ de: 'Land', en: 'Country' }[locale]}>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {cityCountryCodes.map((code) => (
+                                        <SelectItem key={code} value={code}>
+                                            {cityCountryCodeLabel(code, locale)}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </label>
                         <AdminCityCenterField
                             locale={locale}

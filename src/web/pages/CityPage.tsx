@@ -1,5 +1,8 @@
+import type { CityCountryCode } from '../../shared/cityCountryCode';
+import { cityCountryHubLinkLabel } from '../../shared/cityCountryCode';
 import { contentLocaleText } from '../../shared/contentSection';
 import type { Locale } from '../../shared/locale';
+import type { ContentPageIndexLink } from '../components/contentPageIndexLink';
 import { ContentPageView } from '../components/ContentPageView';
 import { contentSectionsFromGql } from '../components/contentSectionsMap';
 import type { GqlCPublicCityPageQuery } from '../graphql/generated';
@@ -8,6 +11,24 @@ import { CITY_CHEF_CTA_FALLBACK_IMAGE, CITY_HERO_FALLBACK_IMAGE } from './cityPa
 
 export function cityIndexLinkLabel(locale: Locale): string {
     return { de: 'Alle Städte', en: 'All cities' }[locale];
+}
+
+function cityIndexLink(countryCode: CityCountryCode, locale: Locale): ContentPageIndexLink {
+    if (countryCode === 'NL') {
+        return {
+            to: '/{-$locale}/coming-to/$country',
+            params: { country: 'netherlands' },
+            label: cityCountryHubLinkLabel(countryCode, locale),
+        };
+    }
+    if (countryCode === 'CH') {
+        return {
+            to: '/{-$locale}/coming-to/$country',
+            params: { country: 'switzerland' },
+            label: cityCountryHubLinkLabel(countryCode, locale),
+        };
+    }
+    return { to: '/{-$locale}/cities', label: cityIndexLinkLabel(locale) };
 }
 
 export function CityPage({ data }: { data: GqlCPublicCityPageQuery }) {
@@ -38,8 +59,9 @@ export function CityPage({ data }: { data: GqlCPublicCityPageQuery }) {
                 },
                 howItWorks: true,
                 cities: data.publicCity.findMany,
+                citiesCountryCode: city.countryCode,
                 knownFrom: true,
-                indexLink: { to: '/{-$locale}/cities', label: cityIndexLinkLabel(locale) },
+                indexLink: cityIndexLink(city.countryCode, locale),
             }}
         />
     );

@@ -19,6 +19,7 @@ import {
     varchar,
 } from 'drizzle-orm/pg-core';
 
+import type { CityCountryCode } from '../../shared/cityCountryCode';
 import type { ContentSection } from '../../shared/contentSection';
 import type { CookInviteConsumption, CookInviteReward, CookInviteRewardStatus } from '../../shared/cookInviteReward';
 import type { CookPresenceLinks } from '../../shared/cookPresenceLinks';
@@ -1433,6 +1434,9 @@ export const cities = pgTable(
         cityId: nanoId().primaryKey(),
         nameDe: varchar().notNull(),
         nameEn: varchar().notNull().default(''),
+        // ISO 3166-1 alpha-2 market for list grouping / JSON-LD. Not a Countries CMS.
+        // See docs/features/cities.md.
+        countryCode: varchar().$type<CityCountryCode>().notNull().default('DE'),
         // City center for cook travel-radius discovery on the public city page
         // and admin cook assignment candidates. Required on every city.
         latitude: doublePrecision().notNull(),
@@ -1461,6 +1465,7 @@ export const cities = pgTable(
             .onUpdate('cascade')
             .onDelete('set null'),
         index('Cities_publishedAt_idx').on(table.publishedAt),
+        index('Cities_countryCode_idx').on(table.countryCode),
     ],
 );
 

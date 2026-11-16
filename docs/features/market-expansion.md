@@ -20,7 +20,9 @@ Key cities named on the pages:
 - Netherlands: Amsterdam, Rotterdam, The Hague, Utrecht, Eindhoven
 - Switzerland: Zurich, Geneva, Basel, Bern, Lausanne
 
-These names are copy and structured data only. There are **no** public `/cities/...` pages for those markets yet.
+These names are copy and structured data only. There are **no** published `/cities/...` pages for those markets yet. Admins may create
+**unpublished** `Cities` drafts with `countryCode` `NL` or `CH` (founding-chef assignment, copy, map center) and publish them only at guest
+launch together with lifting the booking guard. Country is a field on each city, not a Countries CMS — see [cities.md](./cities.md).
 
 Expectation rules:
 
@@ -38,26 +40,30 @@ pick.
 
 ### Alternatives considered
 
-| Option                                           | Outcome                                                                                         |
-| ------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
-| Publish NL/CH city pages for hosts now           | Rejected: empty chef lists would invite customers before supply exists                          |
-| Email-only interest form instead of chef sign-up | Rejected: founding chefs should complete profile and menu now                                   |
-| Two city chef pages per country, no country hub  | Rejected: would miss “peopleeat Netherlands / Switzerland” queries                              |
-| Reserve `/netherlands` as the coming-to URL      | Rejected: keep short country URLs for the 2027 customer hub                                     |
-| Add Dutch or French as locales                   | Deferred: stay on DE + EN; CH pages use German as the default locale                            |
-| Countries CMS table like cities                  | Rejected for four static pages: one shared market config, two templates                         |
-| Invent a founding-chef fee discount              | Rejected until a commercial term is confirmed                                                   |
-| Feature-toggle the pages                         | Rejected: they are meant to be indexed; unpublished city pages remain the pre-launch tool later |
+| Option                                            | Outcome                                                                                         |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Publish NL/CH city pages for hosts now            | Rejected: empty chef lists would invite customers before supply exists                          |
+| Email-only interest form instead of chef sign-up  | Rejected: founding chefs should complete profile and menu now                                   |
+| Two city chef pages per country, no country hub   | Rejected: would miss “peopleeat Netherlands / Switzerland” queries                              |
+| Reserve `/netherlands` as the coming-to URL       | Rejected: keep short country URLs for the 2027 customer hub                                     |
+| Add Dutch or French as locales                    | Deferred: stay on DE + EN; CH pages use German as the default locale                            |
+| Countries CMS table like cities                   | Rejected: country hubs stay in expansion config; cities carry `countryCode` only                |
+| Geo-filter `/cities` or homepage by IP / language | Rejected: unstable HTML per URL; crawlers would index the DE view                               |
+| Invent a founding-chef fee discount               | Rejected until a commercial term is confirmed                                                   |
+| Feature-toggle the pages                          | Rejected: they are meant to be indexed; unpublished city pages remain the pre-launch tool later |
 
 ### Chosen
 
 Four chef-first URLs from a shared market config. Coming-to pages manage expectation. Founding-chef pages convert. Booking-request publish
-for NL/CH is blocked until guest launch. City pages, extra locales, and CHF stay out of this phase.
+for NL/CH is blocked until guest launch. Published city pages, extra locales, and CHF stay out of this phase. Homepage and `/cities` already
+surface country grouping / hub links so crawlable HTML stays stable before NL/CH city publish.
 
 ## Next steps
 
 - Confirm any founding-chef fee or commission term before putting a number on the pages.
-- Before guest launch: publish city pages, lift the NL/CH booking notice, legal review, CHF for Swiss payouts if needed.
+- Before guest launch: publish NL/CH city pages (unique copy per city), 301 coming-to → `/netherlands` / `/switzerland`, lift the NL/CH
+  booking notice, legal review, CHF for Swiss payouts if needed. Keep Search Console international targeting unset on the multi-country
+  domain.
 - Optional later: Dutch copy for NL SEO; French/Italian for CH.
 - Cook-to-cook invites ([cook-invite.md](./cook-invite.md)) may attribute founding chefs now; fee credits stay locked until guest bookings
   exist. Do not invent invite commission copy on these pages until commercial confirms (same rule as founding-chef fee discounts).
@@ -74,3 +80,5 @@ for NL/CH is blocked until guest launch. City pages, extra locales, and CHF stay
   country `Service` JSON-LD
 - Booking guard: `bookingRequestMarketClosedAssert` in `userBookingRequestCreate` and `userBookingRequestUpdate`
 - Places: optional `regionCode` on `locationSuggestions` (default `DE`)
+- City taxonomy: `Cities.countryCode` + `src/shared/cityCountryCode.ts` (hub paths still point at `/coming-to/…` until short country URLs
+  ship) — [cities.md](./cities.md)

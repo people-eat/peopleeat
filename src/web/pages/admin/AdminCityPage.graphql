@@ -17,6 +17,7 @@ query AdminCityPage($cityId: ID!) {
             pathName
             nameDe
             nameEn
+            countryCode
         }
     }
 }

@@ -133,6 +133,7 @@ export function ContentPageEditor({
     howItWorksHideCta,
     howItWorksAlternativeMedia,
     cities,
+    citiesCountryCode,
     venuesExplore,
     knownFrom,
 }: {
@@ -166,6 +167,7 @@ export function ContentPageEditor({
     howItWorksHideCta?: ContentPageViewModel['howItWorksHideCta'];
     howItWorksAlternativeMedia?: ContentPageViewModel['howItWorksAlternativeMedia'];
     cities?: ContentPageViewModel['cities'];
+    citiesCountryCode?: ContentPageViewModel['citiesCountryCode'];
     venuesExplore?: ContentPageViewModel['venuesExplore'];
     knownFrom?: ContentPageViewModel['knownFrom'];
 }) {
@@ -280,6 +282,7 @@ export function ContentPageEditor({
                 howItWorksHideCta,
                 howItWorksAlternativeMedia,
                 cities,
+                citiesCountryCode,
                 venuesExplore,
                 knownFrom,
             }}

@@ -62,6 +62,7 @@ export function SectionHero({
                     {indexLink ? (
                         <Link
                             to={indexLink.to}
+                            params={'params' in indexLink ? indexLink.params : undefined}
                             activeOptions={{ exact: true }}
                             className={cn(
                                 'inline-flex items-center gap-1.5 text-sm hover:underline',
