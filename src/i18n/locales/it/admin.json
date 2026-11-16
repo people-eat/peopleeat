@@ -2514,7 +2514,13 @@
     "bookingRequests": {
         "offersAndAccepts": "{offerCount} offerte · {conversionCount} accettazioni",
         "acceptsAndOffers": "{conversionCount} accettazioni · {offerCount} offerte",
-        "guestCount": "{count, plural, one {# ospite} other {# ospiti}}"
+        "guestCount": "{count, plural, one {# ospite} other {# ospiti}}",
+        "publication": {
+            "PUBLICATION_BLOCKED_BY_ADMIN_REVIEW": "Admin review",
+            "PUBLICATION_AUTO_APPROVED": "Auto-approved",
+            "PUBLICATION_APPROVED_BY_ADMIN": "Admin-approved",
+            "PUBLICATION_DIRECT_TO_COOK": "Direct to cook"
+        }
     },
     "cookProfile": {
         "previousPaths": "Percorsi precedenti: {paths}"

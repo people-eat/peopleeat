@@ -1,7 +1,8 @@
 import { eq } from 'drizzle-orm';
 import { describe, expect, it } from 'vitest';
 
-import { admins, cooks, meals } from '../db/schema';
+import { idCreate } from '../../shared/idCreate';
+import { admins, cooks, fileUploads, meals } from '../db/schema';
 import { adminMutationParent, commandSetup, testDb } from '../test/commandTestUtils';
 import { adminCookMealDelete } from './adminCookMealDelete';
 import { adminCookMealUpsert } from './adminCookMealUpsert';
@@ -70,6 +71,42 @@ describe('adminCookMealUpsert', () => {
         expect(row?.publishedAt).not.toBeNull();
         expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cookUser.user.userId });
         expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalled();
+    });
+
+    it('auto-publishes when an image is added to a draft', async () => {
+        const admin = await commandSetup.withUser({ firstName: 'Meal', lastName: 'Admin' });
+        await testDb.insert(admins).values({ adminId: admin.user.userId });
+        const cookUser = await commandSetup.withUser({ firstName: 'Chef', lastName: 'Cook' });
+        await testDb.insert(cooks).values({ cookId: cookUser.user.userId });
+
+        const created = await adminCookMealUpsert(
+            adminMutationParent(admin.user.userId),
+            { meal: { cookId: cookUser.user.userId } },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+        const mealId = created.referenceId!;
+        const imageFileUploadId = idCreate();
+        const bytes = Buffer.from('meal');
+        await testDb.insert(fileUploads).values({
+            fileUploadId: imageFileUploadId,
+            userId: admin.user.userId,
+            filename: 'meal.jpg',
+            mediaType: 'image/jpeg',
+            size: bytes.byteLength,
+            bytes,
+        });
+
+        await adminCookMealUpsert(
+            adminMutationParent(admin.user.userId),
+            { meal: { mealId, imageFileUploadId } },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        const [row] = await testDb.select().from(meals).where(eq(meals.mealId, mealId));
+        expect(row?.imageFileUploadId).toBe(imageFileUploadId);
+        expect(row?.publishedAt).not.toBeNull();
     });
 
     it('refuses updates on soft-deleted meals', async () => {

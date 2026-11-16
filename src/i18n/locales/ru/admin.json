@@ -2514,7 +2514,13 @@
     "bookingRequests": {
         "offersAndAccepts": "{offerCount} предложений · {conversionCount} конверсий",
         "acceptsAndOffers": "{conversionCount} конверсий · {offerCount} предложений",
-        "guestCount": "{count, plural, one {# гость} few {# гостя} many {# гостей} other {# гостей}}"
+        "guestCount": "{count, plural, one {# гость} few {# гостя} many {# гостей} other {# гостей}}",
+        "publication": {
+            "PUBLICATION_BLOCKED_BY_ADMIN_REVIEW": "Проверка администратором",
+            "PUBLICATION_AUTO_APPROVED": "Одобрено автоматически",
+            "PUBLICATION_APPROVED_BY_ADMIN": "Одобрено администратором",
+            "PUBLICATION_DIRECT_TO_COOK": "Напрямую повару"
+        }
     },
     "cookProfile": {
         "previousPaths": "Предыдущие пути: {paths}"

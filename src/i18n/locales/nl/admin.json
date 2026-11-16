@@ -2514,7 +2514,13 @@
     "bookingRequests": {
         "offersAndAccepts": "{offerCount} offertes · {conversionCount} conversies",
         "acceptsAndOffers": "{conversionCount} conversies · {offerCount} offertes",
-        "guestCount": "{count, plural, one {# gast} other {# gasten}}"
+        "guestCount": "{count, plural, one {# gast} other {# gasten}}",
+        "publication": {
+            "PUBLICATION_BLOCKED_BY_ADMIN_REVIEW": "Admincontrole",
+            "PUBLICATION_AUTO_APPROVED": "Automatisch goedgekeurd",
+            "PUBLICATION_APPROVED_BY_ADMIN": "Door admin goedgekeurd",
+            "PUBLICATION_DIRECT_TO_COOK": "Direct aan chef"
+        }
     },
     "cookProfile": {
         "previousPaths": "Vorige paden: {paths}"
