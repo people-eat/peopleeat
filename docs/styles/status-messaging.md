@@ -27,7 +27,7 @@ hue for banners and chips. Separating status hues from brand tokens keeps “nee
 | ------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
 | `StatusIcon`        | `src/web/components/base/status-icon.tsx`        | Circular soft chip; building block for the other two                                               |
 | `StatusBadge`       | `src/web/components/base/status-badge.tsx`       | Compact: nav attention (icon-only + `label`) or list/card labels (icon + short text)               |
-| `NotificationBadge` | `src/web/components/base/notification-badge.tsx` | Unread count bubble (red disc + white bold numeral)                                                |
+| `NotificationBadge` | `src/web/components/base/notification-badge.tsx` | Unread count bubble (red disc + white bold numeral; pill from 10+)                                 |
 | `StatusAlert`       | `src/web/components/base/status-alert.tsx`       | Section / page banners with optional title, body, and action slot                                  |
 | `Alert`             | `src/web/components/base/alert.tsx`              | Low-level shadcn primitive; variants `info` / `success` / `warning` / `error` share the same tones |
 | `BookingStatusPill` | `src/web/components/BookingStatusPill.tsx`       | Booking request / offer lifecycle labels only — soft yellow/blue/green/purple/red palette          |
@@ -43,7 +43,8 @@ future surfaces can stay in sync. The `StatusTone` type itself lives in `src/sha
    cannot invert the glyph.
 2. **Unread counts (cards + sidebar)** → `NotificationBadge` with bilingual `label`. Cards use default `placement="corner"` (full disc,
    overhangs `-top-2 -right-2`) on a `relative` parent; sidebar rows nest `placement="inline"` (compact disc) inside `SidebarMenuBadge`
-   (neutralize host text colour the same way as `StatusBadge`). Corner overhang needs scrollport paint room — profile/admin content panes
+   (neutralize host text colour the same way as `StatusBadge`). Single digits stay circular; counts `≥ 10` add horizontal padding so the
+   badge stretches into a pill instead of looking overfilled. Corner overhang needs scrollport paint room — profile/admin content panes
    keep full `p-4` (do not zero `pt-0`) so the disc is not clipped at the top.
 3. **Row / card meta** → `StatusBadge` with a short label (`Incomplete`, `Pending`).
 4. **Explain a state** → `StatusAlert` with title + one short sentence. Put buttons in the `action` slot or beside the alert, not inside the
