@@ -53,26 +53,30 @@ function InviteeProgress({ invitee }: { invitee: GqlCProfileCookInviteCookFragme
                         const previousMilestone = milestones[index - 1];
                         const previousComplete = previousMilestone != null && done[previousMilestone];
                         return (
-                            <li key={step} className="relative grid justify-items-center gap-2 px-0.5 text-center">
-                                {index > 0 ? (
+                            <li key={step} className="grid justify-items-center gap-2 text-center">
+                                <div className="relative flex h-8 w-full items-center justify-center">
+                                    {index > 0 ? (
+                                        <span
+                                            aria-hidden
+                                            className={cn(
+                                                'absolute top-1/2 right-[calc(50%+1.25rem)] left-[calc(-50%+1.25rem)] h-px -translate-y-1/2 bg-[repeating-linear-gradient(to_right,currentColor_0_5px,transparent_5px_14px)]',
+                                                previousComplete ? 'text-green-300' : 'text-border',
+                                            )}
+                                        />
+                                    ) : null}
                                     <span
-                                        aria-hidden
                                         className={cn(
-                                            'absolute top-3 right-1/2 left-0 h-0.5 -translate-y-1/2',
-                                            previousComplete ? 'bg-green-400' : 'bg-border',
+                                            'relative z-10 flex size-8 items-center justify-center rounded-full text-sm font-medium',
+                                            complete
+                                                ? 'border border-green-600 bg-green-200 text-green-600'
+                                                : 'bg-muted text-muted-foreground',
                                         )}
-                                    />
-                                ) : null}
-                                <span
-                                    className={cn(
-                                        'relative z-10 flex size-6 items-center justify-center rounded-full text-xs font-medium',
-                                        complete ? 'bg-green-200 text-green-600' : 'bg-muted text-muted-foreground',
-                                    )}
-                                    aria-hidden
-                                >
-                                    {complete ? <CheckIcon className="size-3.5" /> : index + 1}
-                                </span>
-                                <span className={cn('text-xs sm:text-sm', complete ? 'text-foreground' : 'text-muted-foreground')}>
+                                        aria-hidden
+                                    >
+                                        {complete ? <CheckIcon className="size-4" /> : index + 1}
+                                    </span>
+                                </div>
+                                <span className={cn('px-0.5 text-xs sm:text-sm', complete ? 'text-foreground' : 'text-muted-foreground')}>
                                     {t(locale, 'profileCook', `invite.milestones.${step}`)}
                                 </span>
                             </li>
