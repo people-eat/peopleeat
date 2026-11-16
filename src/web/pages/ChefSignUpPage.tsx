@@ -278,7 +278,7 @@ export function ChefSignUpPage({
                                     ) : null}
                                 </div>
 
-                                <div className="grid gap-5 sm:grid-cols-2">
+                                <div className="grid items-end gap-5 sm:grid-cols-2">
                                     <form.Field name="maximumTravelDistanceText">
                                         {(field) => (
                                             <div className="grid gap-2">
