@@ -1,5 +1,5 @@
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
-import type { PropsWithChildren } from 'react';
+import type { PropsWithChildren, ReactNode } from 'react';
 
 import { cn } from '../utils/cn';
 import { Button } from './base/button';
@@ -14,6 +14,7 @@ export function BookingRequestFormStepLayout({
     stepCount,
     title,
     subTitle,
+    notice,
     completedSteps,
     onCompletedStepClick,
     children,
@@ -22,54 +23,60 @@ export function BookingRequestFormStepLayout({
     stepCount: number;
     title: string;
     subTitle?: string;
+    /** Optional status banner above the step + completed-steps row (e.g. direct cook request). */
+    notice?: ReactNode;
     completedSteps: BookingRequestFormCompletedStep[];
     onCompletedStepClick: (index: number) => void;
 }>) {
     const progressPercent = Math.min(100, Math.max(0, (stepNumber / stepCount) * 100));
 
     return (
-        <div className="flex justify-between gap-16">
-            <div className="flex flex-1 flex-col gap-8 p-4">
-                <div className="lg:hidden" aria-hidden="true">
-                    <div className="overflow-hidden rounded-full bg-muted">
-                        <div className="h-2 rounded-full bg-primary transition-[width]" style={{ width: `${progressPercent}%` }} />
-                    </div>
-                </div>
+        <div className="flex flex-col gap-8 p-4">
+            {notice ? <div className="w-full">{notice}</div> : null}
 
-                <div className="flex flex-col gap-4 lg:flex-row">
-                    <div
-                        className={cn(
-                            'mr-4 flex size-10 shrink-0 items-center justify-center rounded-md bg-primary text-sm text-primary-foreground',
-                            'lg:size-16 lg:text-3xl',
-                        )}
-                    >
-                        {String(stepNumber).padStart(2, '0')}
+            <div className="flex justify-between gap-16">
+                <div className="flex min-w-0 flex-1 flex-col gap-8">
+                    <div className="lg:hidden" aria-hidden="true">
+                        <div className="overflow-hidden rounded-full bg-muted">
+                            <div className="h-2 rounded-full bg-primary transition-[width]" style={{ width: `${progressPercent}%` }} />
+                        </div>
                     </div>
-                    <div className="lg:mt-1.5">
-                        <h1 className="font-serif text-2xl font-light tracking-tight lg:text-4xl">{title}</h1>
-                        {subTitle ? <p className="text-sm text-muted-foreground">{subTitle}</p> : null}
-                    </div>
-                </div>
 
-                {children}
-            </div>
-
-            <aside className="hidden w-64 shrink-0 lg:block">
-                <div className="flex flex-col gap-6">
-                    {completedSteps.map((completed, index) => (
-                        <button
-                            key={`${completed.title}-${index}`}
-                            type="button"
-                            tabIndex={-1}
-                            onClick={() => onCompletedStepClick(index)}
-                            className="min-h-16 cursor-pointer rounded-r-xl border-l-4 border-primary py-1 pl-4 text-start hover:bg-muted"
+                    <div className="flex flex-col gap-4 lg:flex-row">
+                        <div
+                            className={cn(
+                                'mr-4 flex size-10 shrink-0 items-center justify-center rounded-md bg-primary text-sm text-primary-foreground',
+                                'lg:size-16 lg:text-3xl',
+                            )}
                         >
-                            <p className="text-2xl">{completed.title}</p>
-                            <p className="line-clamp-1 text-lg text-muted-foreground">{completed.summary}</p>
-                        </button>
-                    ))}
+                            {String(stepNumber).padStart(2, '0')}
+                        </div>
+                        <div className="lg:mt-1.5">
+                            <h1 className="font-serif text-2xl font-light tracking-tight lg:text-4xl">{title}</h1>
+                            {subTitle ? <p className="text-sm text-muted-foreground">{subTitle}</p> : null}
+                        </div>
+                    </div>
+
+                    {children}
                 </div>
-            </aside>
+
+                <aside className="hidden w-64 shrink-0 lg:block">
+                    <div className="flex flex-col gap-6">
+                        {completedSteps.map((completed, index) => (
+                            <button
+                                key={`${completed.title}-${index}`}
+                                type="button"
+                                tabIndex={-1}
+                                onClick={() => onCompletedStepClick(index)}
+                                className="min-h-16 cursor-pointer rounded-r-xl border-l-4 border-primary py-1 pl-4 text-start hover:bg-muted"
+                            >
+                                <p className="text-2xl">{completed.title}</p>
+                                <p className="line-clamp-1 text-lg text-muted-foreground">{completed.summary}</p>
+                            </button>
+                        ))}
+                    </div>
+                </aside>
+            </div>
         </div>
     );
 }

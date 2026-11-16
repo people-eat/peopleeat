@@ -685,32 +685,35 @@ export function BookingRequestFormPage({
             <div className="flex min-h-0 flex-1 flex-col pt-14">
                 <div data-scroll-restoration-id="booking-form" className="min-h-0 flex-1 overflow-y-auto scrollbar-gutter-stable">
                     <div className="mx-auto w-full max-w-7xl lg:mt-20">
-                        {leftoverCookId ? (
-                            <div className="px-4 pt-4">
-                                <StatusAlert tone="info">{tBooking('form.leftoverCook')}</StatusAlert>
-                            </div>
-                        ) : null}
-                        {honorDirect && requestedCook ? (
-                            <div className="px-4 pt-4">
-                                <StatusAlert tone="info" title={tBooking('form.direct.title', { cookName: requestedCook.user.display })}>
-                                    {requestedMenu
-                                        ? tBooking('form.direct.bodyWithMenu', { menuTitle: requestedMenu.title })
-                                        : tBooking('form.direct.body')}
-                                </StatusAlert>
-                            </div>
-                        ) : null}
-                        {leftoverMenuId && requestedCook ? (
-                            <div className="px-4 pt-4">
-                                <StatusAlert tone="info">
-                                    {tBooking('form.leftoverMenu', { cookName: requestedCook.user.display })}
-                                </StatusAlert>
-                            </div>
-                        ) : null}
                         <BookingRequestFormStepLayout
                             stepNumber={stepNumber}
                             stepCount={stepCount}
                             title={copy.title}
                             subTitle={copy.subTitle}
+                            notice={
+                                leftoverCookId || (honorDirect && requestedCook) || (leftoverMenuId && requestedCook) ? (
+                                    <div className="flex flex-col gap-3">
+                                        {leftoverCookId ? (
+                                            <StatusAlert tone="info">{tBooking('form.leftoverCook')}</StatusAlert>
+                                        ) : null}
+                                        {honorDirect && requestedCook ? (
+                                            <StatusAlert
+                                                tone="info"
+                                                title={tBooking('form.direct.title', { cookName: requestedCook.user.display })}
+                                            >
+                                                {requestedMenu
+                                                    ? tBooking('form.direct.bodyWithMenu', { menuTitle: requestedMenu.title })
+                                                    : tBooking('form.direct.body')}
+                                            </StatusAlert>
+                                        ) : null}
+                                        {leftoverMenuId && requestedCook ? (
+                                            <StatusAlert tone="info">
+                                                {tBooking('form.leftoverMenu', { cookName: requestedCook.user.display })}
+                                            </StatusAlert>
+                                        ) : null}
+                                    </div>
+                                ) : undefined
+                            }
                             completedSteps={completedSteps}
                             onCompletedStepClick={(index) => {
                                 const target = contentSteps[index];
