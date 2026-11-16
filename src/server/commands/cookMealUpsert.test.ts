@@ -130,12 +130,7 @@ describe('cookMealUpsert', () => {
             bytes,
         });
 
-        await cookMealUpsert(
-            cookMutationParent(user.userId),
-            { meal: { mealId, imageFileUploadId } },
-            requestingSession,
-            serverRuntime,
-        );
+        await cookMealUpsert(cookMutationParent(user.userId), { meal: { mealId, imageFileUploadId } }, requestingSession, serverRuntime);
 
         const [row] = await testDb.select().from(meals).where(eq(meals.mealId, mealId));
         expect(row!.imageFileUploadId).toBe(imageFileUploadId);

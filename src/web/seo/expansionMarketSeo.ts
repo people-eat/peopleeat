@@ -41,7 +41,7 @@ export function expansionMarketComingToHead(market: ExpansionMarket, locale: Loc
                 path,
                 name: title,
                 description,
-                countryName: locale === 'de' ? market.nameDe : market.nameEn,
+                countryName: expansionMarketCountryName(market, locale),
                 cities: expansionMarketJsonLdCities(market, locale),
             }),
             jsonLdFaqPage(expansionMarketFaqEntries(market, 'comingTo', locale)),
@@ -68,10 +68,16 @@ export function expansionMarketFoundingChefHead(market: ExpansionMarket, locale:
                 path,
                 name: title,
                 description,
-                countryName: locale === 'de' ? market.nameDe : market.nameEn,
+                countryName: expansionMarketCountryName(market, locale),
                 cities: expansionMarketJsonLdCities(market, locale),
             }),
             jsonLdFaqPage(expansionMarketFaqEntries(market, 'foundingChef', locale)),
         ]),
     };
+}
+
+function expansionMarketCountryName(market: ExpansionMarket, locale: Locale): string {
+    if (locale === 'de') return market.nameDe;
+    if (locale === 'en') return market.nameEn;
+    return t(locale, 'public', `cityCountry.${market.countryCode}`);
 }
