@@ -939,7 +939,7 @@ under a labeled section. Lint still waits on types (and the rest of the wave) so
 ### Spell check
 
 `npm run spell:check` runs `cspell .`. **Source, comments, identifiers, and English catalogs are English-only.** German / French / Italian /
-Russian dictionaries apply only through `.cspell.json` `overrides`:
+Russian / Dutch dictionaries apply only through `.cspell.json` `overrides`:
 
 | Path                                                                                                          | Language |
 | ------------------------------------------------------------------------------------------------------------- | -------- |
@@ -948,13 +948,14 @@ Russian dictionaries apply only through `.cspell.json` `overrides`:
 | `src/i18n/locales/fr/**`                                                                                      | `en,fr`  |
 | `src/i18n/locales/it/**`                                                                                      | `en,it`  |
 | `src/i18n/locales/ru/**`                                                                                      | `en,ru`  |
+| `src/i18n/locales/nl/**`                                                                                      | `en,nl`  |
 | Slack ops, WhatsApp templates/webhooks, German-first LLM prompt files, tests, stories, docs, media, demo seed | `en,de`  |
 
-Do **not** put `de-de` / `fr-fr` / `it-it` / `ru_ru` in the root `dictionaries` list: that would accept German (etc.) in every TypeScript
-file. New UI copy belongs in catalogs. Unmigrated `{ de: '…', en: '…' }` values and CMS `*De` fields are ignored via `ignoreRegExpList`;
-German in a comment, identifier, or English string still fails. A shrinking file list in `.cspell.json` covers leftover German that is not a
-quoted `de:` / `*De` value; drop a path from that list when the file is migrated. Add English product/tech terms to the root `words` list.
-Do not add German words there to silence a source file.
+Do **not** put `de-de` / `fr-fr` / `it-it` / `ru_ru` / `nl-nl` in the root `dictionaries` list: that would accept German (etc.) in every
+TypeScript file. New UI copy belongs in catalogs. Unmigrated `{ de: '…', en: '…' }` values and CMS `*De` fields are ignored via
+`ignoreRegExpList`; German in a comment, identifier, or English string still fails. A shrinking file list in `.cspell.json` covers leftover
+German that is not a quoted `de:` / `*De` value; drop a path from that list when the file is migrated. Add English product/tech terms to the
+root `words` list. Do not add German words there to silence a source file.
 
 ## Browser Capture (Playwright)
 

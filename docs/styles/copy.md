@@ -26,7 +26,7 @@ When the same concept appears in both admin and end-user UI, keep two labels. Ex
 
 - German: **Du** / **dein** (informal singular), not Sie.
 - English: **you** / **your**.
-- French / Italian / Russian: informal singular (**tu** / **tu** / **ты**), matching German Du, not formal address.
+- French / Italian / Russian / Dutch: informal singular (**tu** / **tu** / **ты** / **je**), matching German Du, not formal address.
 - Prefer short, direct sentences. Questions for confirms (“Auf diesem Gerät abmelden?”) over abstract nouns.
 
 ## Wording habits

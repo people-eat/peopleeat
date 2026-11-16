@@ -22,6 +22,7 @@ enum Locale {
     fr
     it
     ru
+    nl
 }
 
 # Markets that own public city landing pages. Taxonomy only — not a Countries CMS.

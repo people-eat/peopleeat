@@ -4526,7 +4526,7 @@ export type GqlSInvoiceAddressInput = {
 
 export type GqlSLegalDocumentKind = 'IMPRINT' | 'PRIVACY_POLICY' | 'TERMS_AND_CONDITIONS';
 
-export type GqlSLocale = 'de' | 'en' | 'fr' | 'it' | 'ru';
+export type GqlSLocale = 'de' | 'en' | 'fr' | 'it' | 'nl' | 'ru';
 
 export interface GqlSLocationSuggestion {
     __typename?: 'LocationSuggestion';
@@ -13631,11 +13631,12 @@ export const GqlSLegalDocumentKindSchema: z.ZodType<
     'IMPRINT' | 'PRIVACY_POLICY' | 'TERMS_AND_CONDITIONS'
 > = z.enum(['IMPRINT', 'PRIVACY_POLICY', 'TERMS_AND_CONDITIONS']);
 
-export const GqlSLocaleSchema: z.ZodType<'de' | 'en' | 'fr' | 'it' | 'ru', 'de' | 'en' | 'fr' | 'it' | 'ru'> = z.enum([
+export const GqlSLocaleSchema: z.ZodType<'de' | 'en' | 'fr' | 'it' | 'nl' | 'ru', 'de' | 'en' | 'fr' | 'it' | 'nl' | 'ru'> = z.enum([
     'de',
     'en',
     'fr',
     'it',
+    'nl',
     'ru',
 ]);
 

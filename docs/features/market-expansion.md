@@ -46,7 +46,7 @@ pick.
 | Email-only interest form instead of chef sign-up  | Rejected: founding chefs should complete profile and menu now                                   |
 | Two city chef pages per country, no country hub   | Rejected: would miss “peopleeat Netherlands / Switzerland” queries                              |
 | Reserve `/netherlands` as the coming-to URL       | Rejected: keep short country URLs for the 2027 customer hub                                     |
-| Add Dutch as a locale                             | Deferred: UI locales are DE / EN / FR / IT; CH pages still use German CMS copy as the default   |
+| Add Dutch as a locale                             | Done: `nl` is a catalog locale (UI + email). CH pages still use German CMS copy as the default |
 | Countries CMS table like cities                   | Rejected: country hubs stay in expansion config; cities carry `countryCode` only                |
 | Geo-filter `/cities` or homepage by IP / language | Rejected: unstable HTML per URL; crawlers would index the DE view                               |
 | Invent a founding-chef fee discount               | Rejected until a commercial term is confirmed                                                   |
@@ -64,7 +64,7 @@ surface country grouping / hub links so crawlable HTML stays stable before NL/CH
 - Before guest launch: publish NL/CH city pages (unique copy per city), 301 coming-to → `/netherlands` / `/switzerland`, lift the NL/CH
   booking notice, legal review, CHF for Swiss payouts if needed. Keep Search Console international targeting unset on the multi-country
   domain.
-- Optional later: Dutch copy for NL SEO; French/Italian for CH.
+- Optional later: stronger NL SEO using Dutch CMS / city copy (UI catalogs already include `nl`); French/Italian for CH.
 - Cook-to-cook invites ([cook-invite.md](./cook-invite.md)) may attribute founding chefs now; fee credits stay locked until guest bookings
   exist. Do not invent invite commission copy on these pages until commercial confirms (same rule as founding-chef fee discounts).
 

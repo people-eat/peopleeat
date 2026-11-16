@@ -1,4 +1,4 @@
-export const CATALOG_LOCALES = ['de', 'en', 'fr', 'it', 'ru'] as const;
+export const CATALOG_LOCALES = ['de', 'en', 'fr', 'it', 'ru', 'nl'] as const;
 export type CatalogLocale = (typeof CATALOG_LOCALES)[number];
 
 /** Public URL / profile / GraphQL locale. Same set as catalog locales. */
@@ -12,6 +12,7 @@ const LANGUAGE_TAGS = {
     fr: 'fr-FR',
     it: 'it-IT',
     ru: 'ru-RU',
+    nl: 'nl-NL',
 } as const satisfies Record<CatalogLocale, string>;
 
 export function isLocale(value: string | undefined): value is Locale {

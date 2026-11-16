@@ -19,6 +19,14 @@ describe('namespacesForPath', () => {
     it('loads profile chrome with public for Header/Footer, without cook or customer catalogs', () => {
         expect(namespacesForPath('/profile')).toEqual(['common', 'public', 'profile']);
         expect(namespacesForPath('/profile/account')).toEqual(['common', 'public', 'profile']);
+        expect(namespacesForPath('/profile/booking-requests')).toEqual(['common', 'public', 'profile']);
+        expect(namespacesForPath('/profile/booking-request-pool')).toEqual(['common', 'public', 'profile']);
+    });
+
+    it('adds publicBooking on customer booking request detail and edit', () => {
+        expect(namespacesForPath('/profile/booking-requests/abc')).toEqual(['common', 'public', 'publicBooking', 'profile']);
+        expect(namespacesForPath('/profile/booking-requests/abc/edit')).toEqual(['common', 'public', 'publicBooking', 'profile']);
+        expect(namespacesForPath('/profile/booking-requests/abc/offers/def')).toEqual(['common', 'public', 'profile']);
     });
 
     it('loads admin with public for content-page preview, without profile catalogs', () => {

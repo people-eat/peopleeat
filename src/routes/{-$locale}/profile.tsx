@@ -33,8 +33,16 @@ export const Route = createFileRoute('/{-$locale}/profile')({
         return data;
     },
     staleTime: 0,
-    head: ({ params, loaderData }) => {
+    // Client hydrate restores loader data without re-running the loader side
+    // effect, so child `head()` `t(profileCook|profileCustomer)` would throw.
+    // Re-load the role catalog here first: parent heads run before children.
+    head: async ({ params, loaderData }) => {
         const locale = localeFromParam(params);
+        const user = loaderData?.currentSession.user;
+        if (user) {
+            const isCook = Boolean(user.cook);
+            await i18nResourcesLoad(locale, ['common', 'profile', isCook ? 'profileCook' : 'profileCustomer']);
+        }
         const webPage = loaderData?.publicWebPage.findOne;
         if (!webPage) {
             return {};

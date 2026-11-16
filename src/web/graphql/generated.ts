@@ -4529,7 +4529,7 @@ export type GqlCInvoiceAddressInput = {
 
 export type GqlCLegalDocumentKind = 'IMPRINT' | 'PRIVACY_POLICY' | 'TERMS_AND_CONDITIONS';
 
-export type GqlCLocale = 'de' | 'en' | 'fr' | 'it' | 'ru';
+export type GqlCLocale = 'de' | 'en' | 'fr' | 'it' | 'nl' | 'ru';
 
 export interface GqlCLocationSuggestion {
     __typename?: 'LocationSuggestion';

@@ -1,7 +1,7 @@
 import { DEFAULT_LOCALE } from '../shared/locale';
 import type { CatalogLocale } from '../shared/locale';
 
-/** Fallback chain: `fr | it | ru | en → de`. Missing keys render German, never a raw key. */
+/** Fallback chain: `fr | it | ru | nl | en → de`. Missing keys render German, never a raw key. */
 export function i18nFallbackLocales(locale: CatalogLocale): CatalogLocale[] {
     if (locale === DEFAULT_LOCALE) return [];
     return [DEFAULT_LOCALE];

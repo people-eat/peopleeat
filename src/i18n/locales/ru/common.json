@@ -10,7 +10,8 @@
         "en": "English",
         "fr": "Français",
         "it": "Italiano",
-        "ru": "Русский"
+        "ru": "Русский",
+        "nl": "Nederlands"
     },
     "languageSwitcher": {
         "groupLabel": "Выбрать язык"

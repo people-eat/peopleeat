@@ -1,0 +1,198 @@
+{
+    "title": "Profiel",
+    "chrome": {
+        "overview": "Overzicht",
+        "edit": "Bewerken"
+    },
+    "overview": {
+        "hello": "Hallo {name},",
+        "subtitle": "Dit staat er voor je klaar.",
+        "attention": "Aandacht nodig",
+        "gettingStarted": "Aan de slag",
+        "allSet": "Alles is geregeld"
+    },
+    "assistant": {
+        "title": "Assistent",
+        "description": "Assistent op volledig scherm voor je profiel.",
+        "toggle": "{title} in- of uitschakelen"
+    },
+    "ban": {
+        "title": "Je profiel is beperkt.",
+        "body": "Je kunt inloggen, maar boekingen en offertes zijn geblokkeerd. Neem contact met ons op als je vragen hebt.",
+        "whatsapp": "WhatsApp-support"
+    },
+    "actions": {
+        "saving": "Opslaan…",
+        "sending": "Versturen…",
+        "sendCode": "Code versturen",
+        "verify": "Bevestigen"
+    },
+    "account": {
+        "title": "Account",
+        "description": "Accountinstellingen, beveiliging en apparaten waarop je bent ingelogd.",
+        "errors": {
+            "invalidEmail": "Vul een geldig nieuw e-mailadres in.",
+            "emailTaken": "Dit e-mailadres is al in gebruik.",
+            "invalidOrExpiredCode": "Ongeldige of verlopen code.",
+            "phoneTaken": "Dit nummer is al in gebruik.",
+            "invalidPhone": "Vul een nummer in met landcode, bijvoorbeeld +49…",
+            "deleteFailed": "Het account kon niet worden verwijderd."
+        },
+        "toasts": {
+            "phoneSaved": "Telefoonnummer opgeslagen.",
+            "whatsappOn": "WhatsApp staat aan voor de onderstaande berichten. Je kunt ze afzonderlijk uitzetten.",
+            "codeSent": "Code verstuurd. Check je inbox en spamfolder.",
+            "emailUpdated": "E-mailadres bijgewerkt.",
+            "changeDiscarded": "Wijziging verworpen.",
+            "timeZoneSaved": "Tijdzone opgeslagen.",
+            "preferredCommunicationSaved": "Voorkeurscommunicatie opgeslagen.",
+            "passkeyCreateFailed": "Het aanmaken van een passkey is mislukt.",
+            "passkeySaveFailed": "De passkey kon niet worden opgeslagen.",
+            "passkeySaved": "Passkey opgeslagen.",
+            "passkeyCancelled": "Registratie van de passkey geannuleerd.",
+            "passkeyRemoveFailed": "De passkey kon niet worden verwijderd.",
+            "passkeyRemoved": "Passkey verwijderd.",
+            "signedOut": "Uitgelogd.",
+            "deviceSignedOut": "Apparaat uitgelogd.",
+            "accountDeleted": "Account verwijderd.",
+            "signOutFailed": "Uitloggen is mislukt.",
+            "deviceSignOutFailed": "Dat apparaat kon niet worden uitgelogd."
+        },
+        "noPhone": "Geen nummer opgeslagen",
+        "notSet": "Niet ingesteld",
+        "bornOn": "Geboren op {date}",
+        "noBirthDate": "Geen geboortedatum opgeslagen",
+        "registeredOn": "Geregistreerd op {date}",
+        "contact": {
+            "title": "Hoe we je bereiken",
+            "description": "Het e-mailadres en telefoonnummer van je account. Deze keuze is voor onze concierge, niet voor automatische berichten.",
+            "email": "E-mailadres",
+            "changeEmail": "E-mailadres wijzigen",
+            "codePending": "Code onderweg naar {email}",
+            "enterEmailCode": "Vul de code uit de e-mail in.",
+            "discardChange": "Wijziging verwerpen",
+            "phone": "Telefoonnummer",
+            "changeNumber": "Nummer wijzigen",
+            "addNumber": "Nummer toevoegen",
+            "conciergeTitle": "Hoe moet de concierge je bereiken?"
+        },
+        "language": {
+            "title": "Taal",
+            "description": "Deze taal geldt voor de interface, voor e-mails en voor WhatsApp."
+        },
+        "notifications": {
+            "title": "Meldingen",
+            "description": "Kies waarover we je berichten sturen. Alles blijft zichtbaar in de app. Inlogcodes, betalingen en support gaan altijd naar je e-mail.",
+            "whatsAppNeedsNumber": "WhatsApp blijft uit totdat er een nummer is opgeslagen.",
+            "bookedEvenings": "Geboekte avonden",
+            "eveningsYouBook": "Avonden die je boekt",
+            "asACook": "Als kok",
+            "whenYouCook": "Wanneer je kookt",
+            "lastChannelTitle": "Geen e-mail of WhatsApp?",
+            "lastChannelBodyOperator": "Deze persoon krijgt geen e-mail of WhatsApp als de avond wordt gewijzigd of geannuleerd. Het blijft wel zichtbaar in de app.",
+            "lastChannelBody": "Je krijgt geen e-mail of WhatsApp als deze avond wordt gewijzigd of geannuleerd. Je ziet het nog wel in de app.",
+            "turnOff": "Uitzetten",
+            "toastEmailOn": "{title} per e-mail ingeschakeld.",
+            "toastEmailOff": "{title} per e-mail uitgeschakeld.",
+            "toastWhatsAppOn": "{title} per WhatsApp ingeschakeld.",
+            "toastWhatsAppOff": "{title} per WhatsApp uitgeschakeld.",
+            "customer": {
+                "booking": {
+                    "title": "Wijzigingen in de avond",
+                    "description": "Aanvraag, menu, aantal gasten, annulering en het kennismakingsgesprek."
+                },
+                "chat": {
+                    "title": "Berichten van je kok",
+                    "operatorTitle": "Berichten van de kok",
+                    "description": "Wanneer een bericht nog ongelezen is."
+                },
+                "review": {
+                    "title": "Na de avond",
+                    "description": "Herinneringen om een review te schrijven."
+                }
+            },
+            "cook": {
+                "newRequest": {
+                    "title": "Nieuwe aanvragen bij jou in de buurt",
+                    "operatorTitle": "Nieuwe aanvragen in de buurt",
+                    "description": "Dit kunnen er veel zijn."
+                },
+                "directRequest": {
+                    "title": "Aanvragen die aan jou zijn gestuurd",
+                    "operatorTitle": "Directe aanvragen aan de kok",
+                    "description": "Wanneer een gast je aanvraagt via je chefprofiel."
+                },
+                "offer": {
+                    "title": "Je offertes",
+                    "operatorTitle": "Offertes",
+                    "description": "Wijzigingen, geaccepteerd of afgewezen, menu, aantal gasten en gesprekken."
+                },
+                "chat": {
+                    "title": "Berichten van je gasten",
+                    "operatorTitle": "Berichten van gasten",
+                    "description": "Wanneer een bericht nog ongelezen is."
+                },
+                "review": {
+                    "title": "Na de avond",
+                    "description": "Herinneringen over de reviews van je gasten.",
+                    "operatorDescription": "Herinneringen over de reviews van gasten."
+                }
+            }
+        },
+        "picture": {
+            "invalidType": "Kies een afbeelding (JPEG, PNG, WebP of GIF).",
+            "saved": "Profielfoto opgeslagen.",
+            "removed": "Profielfoto verwijderd.",
+            "select": "Foto kiezen",
+            "remove": "Foto verwijderen"
+        },
+        "delete": {
+            "title": "Account verwijderen",
+            "description": "Persoonlijke profielgegevens worden verwijderd. Daarna kun je niet meer inloggen.",
+            "action": "Account verwijderen",
+            "confirmTitle": "Je account definitief verwijderen?",
+            "confirmBody": "Dit kan niet ongedaan worden gemaakt. Je persoonlijke gegevens worden verwijderd en alle apparaten worden uitgelogd. De boekingsgeschiedenis blijft beschikbaar voor chefs en operations, maar is niet langer aan jouw identiteit gekoppeld. We sturen een code naar je e-mailadres."
+        },
+        "security": {
+            "title": "Inloggen en beveiliging",
+            "passkeys": "Passkeys",
+            "passkeysHint": "Log de volgende keer in met Face ID of een vingerafdruk, zonder code.",
+            "passkeyFallback": "Passkey",
+            "backedUp": " · back-up gemaakt",
+            "remove": "Verwijderen",
+            "removeTitle": "Deze passkey verwijderen?",
+            "removeBody": "Je kunt niet meer inloggen met deze passkey. Andere passkeys en inlogmethoden blijven ongewijzigd.",
+            "addPasskey": "Passkey toevoegen",
+            "totp": "Tweestapsverificatie",
+            "devices": "Apparaten waarop je bent ingelogd",
+            "lastActive": "Laatst actief op {date}",
+            "thisDevice": "Dit apparaat",
+            "signOutDeviceTitle": "{device} uitloggen?",
+            "signOutDeviceBody": "{device} wordt uitgelogd. Dit apparaat blijft ingelogd.",
+            "signOut": "Uitloggen",
+            "signOutEverywhereTitle": "Overal elders uitloggen?",
+            "signOutEverywhereBody": "Alle andere apparaten en browsers worden uitgelogd. Dit apparaat blijft ingelogd.",
+            "signOutEverywhere": "Overal elders uitloggen",
+            "signOutThisTitle": "Uitloggen op dit apparaat?",
+            "signOutThisBody": "Je wordt uitgelogd op dit apparaat en moet opnieuw inloggen om bij je account te komen."
+        },
+        "legal": {
+            "privacy": "Privacybeleid",
+            "terms": "Algemene voorwaarden",
+            "imprint": "Colofon"
+        },
+        "emailDialog": {
+            "title": "E-mailadres wijzigen",
+            "description": "We sturen een bevestigingscode naar het nieuwe adres.",
+            "placeholder": "nieuw@email.com",
+            "enterCode": "Code invullen",
+            "codeSentTo": "We hebben een code gestuurd naar {email}.",
+            "codeAria": "Verificatiecode"
+        },
+        "phoneDialog": {
+            "changeTitle": "Telefoonnummer wijzigen",
+            "addTitle": "Telefoonnummer toevoegen",
+            "hint": "Voeg de landcode toe, bijvoorbeeld +49…"
+        }
+    }
+}

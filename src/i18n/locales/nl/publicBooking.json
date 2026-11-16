@@ -1,0 +1,469 @@
+{
+    "searching": "Zoeken…",
+    "noMatches": "Geen resultaten.",
+    "addressPlaceholder": "Hoofdstraat 123, 1234 AB Voorbeeldstad",
+    "pickFullAddress": "Kies een volledig adres.",
+    "popular": "Populair",
+    "startingAt": "vanaf",
+    "fromAmount": "vanaf {amount}",
+    "perPerson": "per persoon",
+    "fromAmountPerPerson": "vanaf {amount} per persoon",
+    "selected": "Geselecteerd",
+    "select": "Kiezen",
+    "date": "Datum",
+    "address": "Adres",
+    "priceClass": "Prijsklasse",
+    "created": "Boekingsaanvraag aangemaakt.",
+    "createFailed": "De boekingsaanvraag kon niet worden aangemaakt.",
+    "requiredFields": "Vul alle verplichte velden in.",
+    "none": "Geen",
+    "back": "Terug",
+    "next": "Volgende",
+    "marketClosed": {
+        "title": "peopleeat komt begin 2027 {comingTo}",
+        "body": "We kunnen nog geen boekingsaanvraag voor dit adres accepteren. Chefs kunnen zich nu al aansluiten.",
+        "toast": "peopleeat komt begin 2027 {comingTo}. We kunnen nog geen aanvraag voor dit adres accepteren.",
+        "learnMore": "Meer informatie"
+    },
+    "index": {
+        "title": "Boekingsaanvraag",
+        "chat": "Chat",
+        "form": "Formulier"
+    },
+    "chat": {
+        "title": "Boekingsaanvraag: chat",
+        "back": "Terug naar de boekingsaanvraag"
+    },
+    "form": {
+        "leftoverCook": "Deze aanvraag gaat naar chefs in de buurt, niet alleen naar één chef.",
+        "leftoverMenu": "Dit menu is op dit moment niet beschikbaar. De aanvraag gaat nog steeds alleen naar {cookName}.",
+        "direct": {
+            "title": "Aanvraag voor {cookName}",
+            "body": "Alleen deze chef ziet je aanvraag eerst. Je kunt hem later voor anderen openen.",
+            "bodyWithMenu": "Alleen deze chef ziet je aanvraag eerst, voor het menu “{menuTitle}”. Je kunt hem later voor anderen openen.",
+            "farVenue": "Deze chef kan ook komen als de locatie wat verder weg is dan gebruikelijk."
+        },
+        "redeemFirst": "Verzilver eerst de kortingscode.",
+        "included": {
+            "heading": "Wat zit er in de prijs?",
+            "ingredients": "Ingrediënten",
+            "workTime": "Werktijd",
+            "serving": "Serveren",
+            "cleanKitchen": "Schone keuken"
+        },
+        "send": "Aanvraag versturen",
+        "sendToCook": "Stuur {cookName} een aanvraag",
+        "createAccount": "Account aanmaken",
+        "steps": {
+            "occasion": {
+                "sideBarTitle": "Gelegenheid",
+                "title": "Voor welke gelegenheid zoek je een privéchef?",
+                "hint": "Geef je gelegenheid aan of kies uit de voorgestelde opties.",
+                "placeholder": "bijv. verjaardag, bedrijfsdiner"
+            },
+            "participants": {
+                "sideBarTitle": "Personen",
+                "title": "Aantal gasten",
+                "adults": "Aantal volwassenen",
+                "adultsHint": "Het definitieve aantal personen kun je later nog aanpassen.",
+                "children": "Aantal kinderen",
+                "childrenHint": "Kinderen tot 10 jaar tellen meestal als een halve persoon."
+            },
+            "location": {
+                "sideBarTitle": "Waar",
+                "title": "Waar vindt het evenement plaats?",
+                "hint": "Vul je volledige adres in, inclusief straat en huisnummer:",
+                "previousAddresses": "Eerdere adressen",
+                "selectedAddress": "Gekozen adres: "
+            },
+            "dateTime": {
+                "sideBarTitle": "Wanneer",
+                "title": "Op welke datum vindt het evenement plaats?",
+                "subTitle": "Weet je de exacte datum nog niet? Kies dan gewoon een dag in de juiste maand. Je kunt hem later aanpassen.",
+                "pickDate": "Kies een datum",
+                "earlyBooking": "Perfect! Je zit helemaal goed. Meer dan 60% van onze boekingen wordt meer dan 3 weken van tevoren gedaan.",
+                "time": "Tijd",
+                "timeLater": "De definitieve tijd bespreek je later met de chef."
+            },
+            "priceClass": {
+                "sideBarTitle": "Prijsklasse",
+                "title": "Hoe wil je de avond invullen?",
+                "subTitleCook": "De prijsklasse helpt {cookName} een passend aanbod samen te stellen.",
+                "frequentlyBooked": "Vaak geboekt voor"
+            },
+            "preferences": {
+                "sideBarTitle": "Voorkeuren",
+                "title": "Hoe zou je je menu willen hebben?",
+                "subTitle": "Deel je wensen en voorkeuren met de chefs.",
+                "subTitleCook": "Deel je wensen en voorkeuren met {cookName}.",
+                "searchPlaceholder": "Kies uit de opties hieronder of voeg hier je eigen voorkeur toe",
+                "addCustom": "Eigen voorkeur toevoegen",
+                "maxReached": "Je hebt de limiet van 4 gekozen voorkeuren bereikt."
+            },
+            "restrictions": {
+                "sideBarTitle": "Beperkingen",
+                "title": "Zijn er beperkingen, zoals allergieën?",
+                "subTitle": "Selecteer de beperkingen die van toepassing zijn."
+            },
+            "message": {
+                "sideBarTitle": "Bericht",
+                "title": "Wil je nog wat meer details delen?",
+                "subTitle": "Vertel ons meer over je evenement.",
+                "subTitleCook": "Vertel {cookName} meer over je evenement.",
+                "placeholder": "Bericht voor de chefs",
+                "placeholderCook": "Bericht voor {cookName}",
+                "redeemLabel": "Cadeaubon of promotiecode verzilveren",
+                "redeemPlaceholder": "Code invoeren",
+                "checking": "Controleren…",
+                "redeem": "Verzilveren",
+                "invalid": "Deze code is ongeldig.",
+                "discountSecured": "Korting veiliggesteld",
+                "discountLead": "Je voordeel van",
+                "discountTrail": "is veiliggesteld en wordt automatisch van je offerteprijzen afgetrokken."
+            },
+            "auth": {
+                "title": "Log in of maak een account aan",
+                "subTitle": "Bevestig met een e-mailcode, maak je profiel af, dan sturen wij je aanvraag in."
+            }
+        }
+    },
+    "plan": {
+        "seo": {
+            "title": "Plan je diner · PeopleEat",
+            "description": "Plan je privé driegangendiner in twee stappen. Vrijblijvend en zonder betaling vooraf."
+        },
+        "cuisine": {
+            "mediterranean": {
+                "label": "Mediterraans",
+                "subtitle": "Zon, kruiden en lichte smaken"
+            },
+            "regional": {
+                "label": "Regionaal en seizoensgebonden",
+                "subtitle": "Vertrouwde ingrediënten, nieuw geïnterpreteerd"
+            },
+            "asian": {
+                "label": "Aziatisch geïnspireerd",
+                "subtitle": "Verse kruiden en spannende smaken"
+            },
+            "chef": {
+                "label": "Tip van de chef",
+                "subtitle": "We zoeken samen jouw richting"
+            }
+        },
+        "createMessage": "Keukenrichting: {cuisine}.\n\n{notes}",
+        "defaultOccasion": "Familiefeest",
+        "chefArrivalHint": "Je chef komt meestal 1,5 uur voordat het menu begint.",
+        "foretaste": {
+            "title": "Een voorproefje van jouw avond",
+            "subtitle": "Vers gekookt. Met zorg geserveerd. Samen genieten.",
+            "previous": "Vorige afbeeldingen",
+            "next": "Volgende afbeeldingen",
+            "item1": "Een heerlijke opener.",
+            "item2": "Drie gangen. Speciaal voor jou.",
+            "item3": "Een zoete afsluiter.",
+            "item4": "Met liefde voor detail.",
+            "item5": "Jouw tafel in de loft."
+        },
+        "care": {
+            "title": "Jij geniet. Wij zorgen.",
+            "subtitle": "Meer tijd voor het gezin. Boodschappen, voorbereiding en opruimen zijn inbegrepen.",
+            "prepared": {
+                "title": "Alles voorbereid.",
+                "body": "Je chef regelt de ingrediënten. Jij hebt tijd voor jezelf en de kinderen."
+            },
+            "cooked": {
+                "title": "Voor jou gekookt.",
+                "body": "Drie gangen, vers bereid in de loft en geserveerd aan jouw tafel."
+            },
+            "clean": {
+                "title": "Schoon achtergelaten.",
+                "body": "Je chef ruimt de keuken op. Jij laat de avond rustig uitlopen."
+            }
+        },
+        "faq": {
+            "included": {
+                "question": "Wat zit er in de service?",
+                "answer": "Persoonlijke afstemming van het menu, boodschappen doen, vers koken ter plekke, het serveren van drie gangen en een schone keuken achteraf."
+            },
+            "after": {
+                "question": "Wat gebeurt er na de aanvraag?",
+                "answer": "We controleren de beschikbaarheid en stemmen het menu met je af. Daarna krijg je de definitieve boekingsbevestiging zodra chef en datum vaststaan."
+            },
+            "wishes": {
+                "question": "Allergieën, kinderen en speciale wensen",
+                "answer": "In de volgende stap deel je je wensen en allergieën. Voor de bevestiging stemmen we allergieën nogmaals af met de chef. Kinderporties zijn meestal goedkoper."
+            },
+            "cost": {
+                "question": "Wat kost je diner?",
+                "answer": "De getoonde bedragen zijn voorbeeldprijzen vanaf het Signature-menu. Je chef bepaalt het definitieve aanbod. Bij de aanvraag wordt niets betaald."
+            }
+        },
+        "sampleMenu": {
+            "description": "Een voorbeeldmenu voor “{cuisine}”. Je chef stemt gerechten, kinderporties en dieetwensen persoonlijk met je af.",
+            "back": "Terug naar de dinerplanning",
+            "discover": "Bekijk het voorbeeldmenu",
+            "link": "Voorbeeldmenu",
+            "course": {
+                "starter": "Voorgerecht",
+                "main": "Hoofdgerecht",
+                "dessert": "Nagerecht"
+            },
+            "mediterranean": {
+                "title": "Een mediterrane avond.",
+                "starter": {
+                    "title": "Burrata, tomaten en basilicum",
+                    "description": "Met geroosterd zuurdesembrood en olijfolie"
+                },
+                "main": {
+                    "title": "Zeebrasem, zomergroenten en citroenaardappels",
+                    "description": "Vegetarisch alternatief: romige saffraanrisotto"
+                },
+                "dessert": {
+                    "title": "Citroenroom en zomerbessen",
+                    "description": "Fruitig en licht als afsluiter"
+                }
+            },
+            "regional": {
+                "title": "Genieten van het seizoen. In jouw loft.",
+                "starter": {
+                    "title": "Erwten, bladsla en geitenkaas",
+                    "description": "Met kruidenvinaigrette en knapperig brood"
+                },
+                "main": {
+                    "title": "Kipfilet, geroosterde groenten en aardappelpuree",
+                    "description": "Vegetarisch alternatief: gebakken knolselderij"
+                },
+                "dessert": {
+                    "title": "Appelbeignets en vanille",
+                    "description": "Met een warm appelcomponent en vanille-ijs"
+                }
+            },
+            "asian": {
+                "title": "Een avond vol nieuwe smaken.",
+                "starter": {
+                    "title": "Komkommersalade, sesam en verse kruiden",
+                    "description": "Met limoendressing en knapperige accenten"
+                },
+                "main": {
+                    "title": "Misozalm, groenten en jasmijnrijst",
+                    "description": "Vegetarisch alternatief: krokante tofu"
+                },
+                "dessert": {
+                    "title": "Kokosroom, mango en limoen",
+                    "description": "Een frisse afsluiter met tropische tonen"
+                }
+            },
+            "chef": {
+                "title": "Een menu voor jullie familieavond.",
+                "starter": {
+                    "title": "Burrata, zongerijpte tomaten en basilicum",
+                    "description": "Geroosterd zuurdesembrood en extra vierge olijfolie"
+                },
+                "main": {
+                    "title": "Zeebrasem, zomergroenten en citroenaardappels",
+                    "description": "Vegetarisch alternatief: romige saffraanrisotto"
+                },
+                "dessert": {
+                    "title": "Appelbeignets en vanille",
+                    "description": "Met een warm appelcomponent en vanille-ijs"
+                }
+            }
+        },
+        "summary": {
+            "aria": "Jouw selectie",
+            "title": "Jouw selectie",
+            "guests": "Gasten",
+            "adults": "{count, plural, one {# volwassene} other {# volwassenen}}",
+            "children": "{count, plural, one {# kind} other {# kinderen}}",
+            "cuisine": "Keuken",
+            "menuStart": "Start van het menu",
+            "menuStartValue": "{time}",
+            "editDetails": "Details aanpassen",
+            "continue": "Verder naar de aanvraag",
+            "nonBinding": "Vrijblijvend. Nog geen betaling.",
+            "talkToUs": "Nog vragen? Praat met ons"
+        },
+        "editor": {
+            "title": "Jouw avond in detail.",
+            "description": "Gasten, starttijd, keuken en prijsklasse",
+            "adults": "Volwassenen",
+            "children": "Kinderen",
+            "childrenHint": "Leeftijd 4–12 · kinderporties kosten minder",
+            "apply": "Toepassen",
+            "venueAddressHint": "Adres van de locatie. Hier vindt jouw diner plaats."
+        },
+        "hero": {
+            "welcome": "Welkom, {name}.",
+            "evening": "Jouw avond.",
+            "experience": "Jouw beleving.",
+            "subtitle": "Jouw privé driegangendiner met een privéchef. Boodschappen, koken en opruimen inbegrepen.",
+            "subtitleVenue": "Jouw privé driegangendiner als optionele upgrade. Boodschappen, koken en opruimen inbegrepen.",
+            "subtitleVenueCity": "Jouw privé driegangendiner in {city} als optionele upgrade. Boodschappen, koken en opruimen inbegrepen.",
+            "exclusiveFor": "Exclusief voor gasten van",
+            "alt": "Gedekte tafel voor jouw diner",
+            "stars": "5,0 van 5 sterren",
+            "reviews": "{count, plural, one {Bekijk # review} other {Bekijk # reviews}}",
+            "placeTitle": "Jouw plek wordt jouw favoriete restaurant.",
+            "placeBody1": "Je privéchef serveert gangen die vers bij jou thuis zijn bereid en op jouw wensen zijn afgestemd.",
+            "placeBody2": "Boodschappen, koken en een schone keuken inbegrepen."
+        },
+        "dateSection": {
+            "title": "Kies je dineravond",
+            "pickDate": "Kies een datum",
+            "arrival": "Aankomst",
+            "departure": "Vertrek"
+        },
+        "price": {
+            "title": "Kies je prijsklasse",
+            "subtitle": "Als richtlijn voor het menuvoorstel van je chef."
+        },
+        "cuisineSection": {
+            "title": "Welke keuken maakt jouw avond bijzonder?",
+            "subtitle": "Als inspiratie voor je chef. Je menuvoorstel ontvang je na de aanvraag."
+        },
+        "testimonials": {
+            "title": "Avonden die bijblijven."
+        },
+        "faqSection": {
+            "title": "Goed om te weten."
+        },
+        "contact": {
+            "editSelection": "Selectie aanpassen",
+            "title": "Een stap dichter bij je diner.",
+            "subtitle": "We controleren je gewenste datum en stemmen het menu met je af.",
+            "subtitleVenue": "Jouw avond bij {venue}. We controleren je gewenste datum en stemmen het menu met je af.",
+            "wishes": "Wensen en allergieën",
+            "wishesPlaceholder": "Dieet, allergieën of een bijzondere gelegenheid",
+            "contactDetails": "Jouw contactgegevens",
+            "send": "Boekingsaanvraag versturen",
+            "sending": "Aanvraag wordt verstuurd…",
+            "nonBinding": "Vrijblijvend. Er wordt nog niets betaald.",
+            "messageRequired": "Een bericht is verplicht.",
+            "completeDetails": "Vul datum, gasten en adres in."
+        },
+        "bar": {
+            "guests": "{count, plural, one {# gast} other {# gasten}}",
+            "edit": "Aanpassen"
+        }
+    },
+    "submitted": {
+        "seo": {
+            "title": "Aanvraag verstuurd",
+            "description": "Je boekingsaanvraag is verstuurd. Dit gebeurt er daarna."
+        },
+        "heading": "Wat gebeurt er nu?",
+        "viewRequest": "Aanvraag bekijken",
+        "kitchen": {
+            "saved": "Keukengegevens opgeslagen.",
+            "saveFailed": "De keukengegevens konden niet worden opgeslagen."
+        },
+        "steps": {
+            "menu": {
+                "title": "Je ontvangt een persoonlijk menuvoorstel",
+                "body": "Geschikte chefs bij jou in de buurt maken persoonlijke menuvoorstellen voor je evenement.",
+                "bodyCook": "{cookName} bekijkt je aanvraag en stuurt een offerte met menu en prijs."
+            },
+            "details": {
+                "title": "Rond de laatste details af",
+                "body": "We laten het je per e-mail weten, en via WhatsApp als we je nummer hebben, zodra er nieuwe voorstellen zijn. Je vergelijkt menu's en chefprofielen direct in je aanvraag."
+            },
+            "confirm": {
+                "title": "Bevestig je menubeleving",
+                "body": "Zodra je het juiste aanbod hebt gevonden, accepteer je het en reserveert de chef de datum in zijn agenda voor jouw evenement."
+            }
+        },
+        "images": {
+            "1": "Zalmcrudo met kumquat en kruidenolie, opgemaakt voor een evenement",
+            "2": "Gevulde kipfilet met aardappelpuree en geroosterde groenten",
+            "3": "Bloemvormig dessert met munt, groene saus en gele coulis"
+        },
+        "status": {
+            "exclusiveWithMenu": "{cookName} heeft je aanvraag voor “{menuTitle}” ontvangen. Je kunt hem op elk moment voor andere chefs openen.",
+            "exclusive": "{cookName} heeft je aanvraag ontvangen. Je kunt hem op elk moment voor andere chefs openen.",
+            "pool": "Geschikte chefs bij jou in de buurt hebben je aanvraag ontvangen. Je hoort het zodra je een offerte krijgt."
+        }
+    },
+    "paymentDocument": {
+        "receiptTitle": "Betaalbewijs",
+        "statementTitle": "Uitbetalingsoverzicht",
+        "amountPaid": "Betaald bedrag",
+        "payout": "Uitbetaling",
+        "receiptFooter": "Betaalbewijs voor een peopleeat-boeking. Geen factuur. De kok factureert je rechtstreeks voor de catering.",
+        "statementFooter": "Overzicht voor je administratie. Geen factuur. Factureer de gast voor het menu en de reiskosten. De peopleeat-vergoeding wordt ingehouden op de uitbetaling.",
+        "date": "Datum",
+        "occasion": "Gelegenheid",
+        "event": "Evenement",
+        "cook": "Kok",
+        "guest": "Gast",
+        "bookingNumber": "Boekingsnummer",
+        "billingAddress": "Factuuradres",
+        "guestBillingAddress": "Factuuradres van de gast",
+        "menu": "Menu",
+        "travel": "Reiskosten",
+        "serviceFee": "Servicekosten",
+        "paymentProcessing": "Betalingsverwerking",
+        "giftCard": "Cadeaubon",
+        "promoCode": "Promotiecode",
+        "invoiceGuest": "Bedrag om de gast te factureren",
+        "peopleeatFee": "peopleeat-vergoeding"
+    },
+    "formDefaults": {
+        "occasions": ["Verjaardag", "Romantisch diner", "Bruiloft", "Familiefeest", "Afspreken met vrienden", "Teamevenement"],
+        "preferences": [
+            "Italiaans",
+            "Frans",
+            "Aziatisch",
+            "Vegetarisch",
+            "Veganistisch",
+            "Mediterraans",
+            "BBQ",
+            "Zeevruchten",
+            "Vis",
+            "Vlees",
+            "Deelgerechten"
+        ],
+        "restrictions": [
+            "Gluten / tarwe",
+            "Noten",
+            "Pinda's",
+            "Melk / lactose",
+            "Eieren",
+            "Soja",
+            "Vis",
+            "Schaaldieren",
+            "Weekdieren",
+            "Sesam",
+            "Selderij",
+            "Mosterd",
+            "Lupine",
+            "Fructose",
+            "Histamine",
+            "Sorbitol",
+            "Vegetarisch",
+            "Veganistisch",
+            "Halal",
+            "Koosjer",
+            "Geen varkensvlees",
+            "Geen alcohol"
+        ],
+        "priceClasses": {
+            "LOW": {
+                "title": "Casual Dining",
+                "description": "Voor avonden waarop het gewoon om het samenzijn draait.",
+                "commonOccasions": ["Vrijgezellenfeesten", "Bruiloftsvieringen", "Teamevenementen", "Kookworkshops"]
+            },
+            "MEDIUM": {
+                "title": "Signature-menu",
+                "description": "Voor als je als gastheer of gastvrouw meer wilt dan alleen een goede maaltijd.",
+                "commonOccasions": ["Familiebijeenkomsten", "Avonden met vrienden", "Diners in vakantiewoningen"]
+            },
+            "HIGH": {
+                "title": "Prestige-ervaring",
+                "description": "Voor gelegenheden die bijzondere herinneringen maken.",
+                "commonOccasions": ["Jubilea", "Diners bij kaarslicht", "Bijzondere gelegenheden"]
+            }
+        },
+        "priceClassLabel": "{title} (vanaf {minimum} p.p.)",
+        "priceClassCustom": "Eigen keuze"
+    }
+}

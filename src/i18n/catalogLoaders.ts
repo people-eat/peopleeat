@@ -11,6 +11,7 @@ export const catalogLoaders: Record<I18nWebNamespace, Record<CatalogLocale, Loca
         fr: () => import('./locales/fr/common.json'),
         it: () => import('./locales/it/common.json'),
         ru: () => import('./locales/ru/common.json'),
+        nl: () => import('./locales/nl/common.json'),
     },
     public: {
         de: () => import('./locales/de/public.json'),
@@ -18,6 +19,7 @@ export const catalogLoaders: Record<I18nWebNamespace, Record<CatalogLocale, Loca
         fr: () => import('./locales/fr/public.json'),
         it: () => import('./locales/it/public.json'),
         ru: () => import('./locales/ru/public.json'),
+        nl: () => import('./locales/nl/public.json'),
     },
     publicBooking: {
         de: () => import('./locales/de/publicBooking.json'),
@@ -25,6 +27,7 @@ export const catalogLoaders: Record<I18nWebNamespace, Record<CatalogLocale, Loca
         fr: () => import('./locales/fr/publicBooking.json'),
         it: () => import('./locales/it/publicBooking.json'),
         ru: () => import('./locales/ru/publicBooking.json'),
+        nl: () => import('./locales/nl/publicBooking.json'),
     },
     profile: {
         de: () => import('./locales/de/profile.json'),
@@ -32,6 +35,7 @@ export const catalogLoaders: Record<I18nWebNamespace, Record<CatalogLocale, Loca
         fr: () => import('./locales/fr/profile.json'),
         it: () => import('./locales/it/profile.json'),
         ru: () => import('./locales/ru/profile.json'),
+        nl: () => import('./locales/nl/profile.json'),
     },
     profileCook: {
         de: () => import('./locales/de/profileCook.json'),
@@ -39,6 +43,7 @@ export const catalogLoaders: Record<I18nWebNamespace, Record<CatalogLocale, Loca
         fr: () => import('./locales/fr/profileCook.json'),
         it: () => import('./locales/it/profileCook.json'),
         ru: () => import('./locales/ru/profileCook.json'),
+        nl: () => import('./locales/nl/profileCook.json'),
     },
     profileCustomer: {
         de: () => import('./locales/de/profileCustomer.json'),
@@ -46,6 +51,7 @@ export const catalogLoaders: Record<I18nWebNamespace, Record<CatalogLocale, Loca
         fr: () => import('./locales/fr/profileCustomer.json'),
         it: () => import('./locales/it/profileCustomer.json'),
         ru: () => import('./locales/ru/profileCustomer.json'),
+        nl: () => import('./locales/nl/profileCustomer.json'),
     },
     admin: {
         de: () => import('./locales/de/admin.json'),
@@ -53,5 +59,6 @@ export const catalogLoaders: Record<I18nWebNamespace, Record<CatalogLocale, Loca
         fr: () => import('./locales/fr/admin.json'),
         it: () => import('./locales/it/admin.json'),
         ru: () => import('./locales/ru/admin.json'),
+        nl: () => import('./locales/nl/admin.json'),
     },
 };

@@ -23,11 +23,19 @@ function isPublicBookingPath(path: string): boolean {
     );
 }
 
+/** Customer booking detail/edit reuse `publicBooking` form-default helpers. */
+function isProfilePublicBookingPath(path: string): boolean {
+    return /^\/profile\/booking-requests\/[^/]+(?:\/edit)?$/.test(path);
+}
+
 /** Web namespaces the locale layout should preload for this unprefixed path. */
 export function namespacesForPath(pathname: string): I18nWebNamespace[] {
     const path = pathWithoutQuery(pathname);
     if (isAdminPath(path)) return ['common', 'public', 'admin'];
-    if (isProfilePath(path)) return ['common', 'public', 'profile'];
+    if (isProfilePath(path)) {
+        if (isProfilePublicBookingPath(path)) return ['common', 'public', 'publicBooking', 'profile'];
+        return ['common', 'public', 'profile'];
+    }
     if (isPublicBookingPath(path)) return ['common', 'public', 'publicBooking'];
     return ['common', 'public'];
 }

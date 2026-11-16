@@ -1,0 +1,308 @@
+{
+    "auth": {
+        "otp": {
+            "preview": "Je peopleeat-inlogcode: {code} (verloopt over 10 minuten)",
+            "subject": "Je peopleeat-inlogcode: {code}",
+            "body": "Voer deze code in op de inlogpagina. De code verloopt over tien minuten."
+        },
+        "accountDelete": {
+            "preview": "Code om je account te verwijderen: {code}",
+            "subject": "Code om je account te verwijderen",
+            "body": "Voer deze code in op de accountpagina om het verwijderen te bevestigen. De code verloopt over tien minuten. Was jij dit niet? Negeer dan deze e-mail."
+        },
+        "emailUpdate": {
+            "preview": "Bevestig je nieuwe e-mailadres. Code: {code}",
+            "subject": "Bevestig je nieuwe e-mailadres",
+            "body": "Voer deze code in op de accountpagina om je nieuwe e-mailadres te bevestigen. De code verloopt over tien minuten."
+        }
+    },
+    "common": {
+        "greetingNamed": "Hoi {name},",
+        "greeting": "Hoi,",
+        "questionsTitle": "Heb je vragen?",
+        "questionsBefore": "Neem gerust contact met ons op via ",
+        "questionsAfter": " met vragen of zorgen. Ons team helpt je altijd graag.",
+        "signOffClosing": "Groetjes,",
+        "signOffTeam": "Je peopleeat-team ❤️",
+        "ctaOffer": "Offerte openen",
+        "ctaChat": "Chat openen",
+        "ctaRequest": "Aanvraag bekijken",
+        "ctaBooking": "Boeking openen",
+        "ctaProfile": "Naar je profiel",
+        "ctaViewOffer": "Offerte bekijken",
+        "reason": "Reden",
+        "reasonLine": "Reden: {reason}",
+        "subjectLine": "Onderwerp: {subject}",
+        "calendarRemovalEvening": "Heb je de avond opgeslagen? Verwijder hem dan uit je agenda.",
+        "calendarRemovalSlot": "Heb je dit opgeslagen? Verwijder het dan uit je agenda.",
+        "calendarFileDayBefore": "Er zit een agendabestand bij. De tijd is het begin en je krijgt een herinnering de dag ervoor.",
+        "occasionWhen": "{occasion} · {when}"
+    },
+    "booking": {
+        "number": "Boekingsnummer",
+        "details": {
+            "heading": "Boekingsgegevens",
+            "priceClass": "Menucategorie",
+            "occasion": "Gelegenheid",
+            "date": "Datum",
+            "address": "Locatie",
+            "adults": "Volwassen gasten",
+            "children": "Kinderen",
+            "menus": "Voorgesteld menu",
+            "feesNote": "Let op: er kunnen reiskosten en servicekosten bijkomen."
+        },
+        "cancellation": {
+            "heading": "Annuleringsbeleid",
+            "terms": "algemene voorwaarden",
+            "before": "Gratis annuleren kan tot de aanvraag is geaccepteerd en tot twee weken voor het evenement. Latere annuleringen kunnen kosten met zich meebrengen. Moet je je reservering wijzigen? Neem dan zo vroeg mogelijk contact met ons op, dan helpen we je. Meer informatie vind je in onze ",
+            "after": "."
+        },
+        "create": {
+            "previewDirect": "{cookName} bekijkt je aanvraag",
+            "previewPool": "Je aanvraag is binnen. Chefs in de buurt maken menu's klaar",
+            "intro": "Bedankt voor je aanvraag! Hiermee bevestigen we dat we hem hebben ontvangen.",
+            "nextHeading": "Wat gebeurt er nu?",
+            "stepDirectMenu": "{cookName} bekijkt je aanvraag voor “{menuTitle}” en stuurt je een offerte.",
+            "stepDirect": "{cookName} bekijkt je aanvraag en stuurt je een offerte.",
+            "stepDirectDecide": "Daarna beslis jij, zonder haast.",
+            "stepDirectOpen": "Je kunt de aanvraag op elk moment ook openstellen voor andere chefs in de buurt.",
+            "stepDirectChat": "Na de boeking kun je met de chef chatten.",
+            "stepPoolMenus": "Chefs bij jou in de buurt maken menuvoorstellen.",
+            "stepPoolNotify": "Je hoort het zodra er nieuwe voorstellen binnenkomen.",
+            "stepPoolAdjust": "Je kunt op elk moment om aanpassingen vragen.",
+            "stepPoolChat": "Na de boeking kun je met de chef chatten.",
+            "statusNote": "Je kunt de status van je aanvraag op elk moment bekijken.",
+            "subject": "Boekingsaanvraag"
+        },
+        "directNeedsExpansion": {
+            "preview": "{requestedCookFirstName} kan deze keer niet. Je aanvraag staat nog open.",
+            "body": "{requestedCookFirstName} kan deze keer niet. Je aanvraag staat nog open. Ontvang offertes van andere chefs in de buurt.",
+            "cta": "Ontvang ook offertes van andere chefs",
+            "subject": "{requestedCookFirstName} kan deze keer niet"
+        },
+        "update": {
+            "preview": "Bekijk even: {customerFirstName} heeft de boekingsaanvraag aangepast",
+            "body": "{customerFirstName} heeft de boekingsaanvraag aangepast. Bekijk de wijzigingen en bevestig je offerte opnieuw als je nog steeds voor dit evenement wilt koken.",
+            "cta": "Wijzigingen bekijken",
+            "dateNote": "De datum is gewijzigd en nog niet opnieuw bevestigd. Verwijder de oude avond uit je agenda.",
+            "subject": "Boekingsaanvraag bijgewerkt"
+        },
+        "cancelCustomer": {
+            "preview": "Je annulering is bevestigd. We zijn er als je weer klaar bent",
+            "body": "Jammer dat je je aanvraag annuleert. We hopen dat het de volgende keer lukt. We zijn er altijd als je weer een privéchef wilt.",
+            "closing": "Het beste, tot snel!",
+            "subject": "Annulering"
+        },
+        "cancelCook": {
+            "preview": "Een aanvraag is ingetrokken. Nieuwe kansen wachten in de pool",
+            "intro": "Een boekingsaanvraag waarop je een offerte had gedaan, is ingetrokken. Je offerte is niet meer geldig.",
+            "closing": "Houd de pool met boekingsaanvragen in de gaten, zodat je geen nieuwe kansen mist. We mailen je ook over nieuwe aanvragen in jouw regio.",
+            "subject": "Aanvraag is geannuleerd"
+        },
+        "cooksNotify": {
+            "previewDirect": "Een gast heeft jou aangevraagd (“{occasion}”): stel nu een menu voor",
+            "previewPool": "Nieuwe aanvraag in {city} (“{occasion}”): stel nu een menu voor",
+            "introDirectMenu": "Een gast heeft jou aangevraagd via je chefprofiel voor “{menuTitle}” (“{occasion}” op {when} in {city}).",
+            "introDirect": "Een gast heeft jou aangevraagd via je chefprofiel (“{occasion}” op {when} in {city}).",
+            "introPool": "Goed nieuws: er is een nieuwe boekingsaanvraag in {city} (“{occasion}” op {when}).",
+            "nudge": "Maak nu een menuvoorstel, zodat de klant snel kan accepteren. We raden aan binnen het uur te reageren.",
+            "subjectDirect": "Een gast heeft jou aangevraagd",
+            "subjectPool": "Boekingsaanvraag in jouw regio"
+        },
+        "calendarDateMoved": {
+            "preview": "De datum is gewijzigd. Verwijder de oude avond uit je agenda",
+            "body": "De datum is gewijzigd en nog niet opnieuw bevestigd. Verwijder de oude avond uit je agenda.",
+            "subject": "Boekingsdatum gewijzigd"
+        },
+        "calendarRestored": {
+            "preview": "De avond is bevestigd. Het agendabestand zit erbij",
+            "body": "{occasion} · {when}. De avond is bevestigd. Er zit een agendabestand bij. De tijd is het begin. Heb je de oude avond opgeslagen? Vervang hem dan door dit bestand.",
+            "subject": "Avond opnieuw bevestigd"
+        }
+    },
+    "offer": {
+        "create": {
+            "preview": "Chef {cookFirstName} heeft je een menuvoorstel gestuurd. Kijk even mee",
+            "intro": "Goed nieuws: chef {cookFirstName} heeft je een offerte met een menuvoorstel gestuurd.",
+            "cta": "Menuvoorstel bekijken",
+            "subject": "Je hebt een offerte ontvangen"
+        },
+        "menusUpdate": {
+            "preview": "Chef {cookFirstName} heeft je menu aangepast aan je wensen",
+            "intro": "Goed nieuws: chef {cookFirstName} heeft het menu in je offerte aangepast op basis van je feedback.",
+            "cta": "Menu bekijken",
+            "subject": "Menu in de offerte is bijgewerkt"
+        },
+        "acceptCook": {
+            "preview": "Geweldig nieuws: {customerFirstName} heeft je menuvoorstel geaccepteerd",
+            "intro": "Geweldig nieuws! {customerFirstName} heeft je menuvoorstel geaccepteerd. Je kunt de overige details nu samen in de chat op peopleeat regelen.",
+            "venue": "Locatie: {venue}",
+            "nudge": "Neem snel contact op met de klant, zodat jullie alles wat belangrijk is voor het evenement kunnen afstemmen.",
+            "closing": "Jij kunt dit!",
+            "subject": "Offerte is geaccepteerd"
+        },
+        "acceptNotChosen": {
+            "preview": "Deze aanvraag is naar een andere chef gegaan. Nieuwe bij jou in de buurt komen eraan",
+            "intro": "{customerFirstName} heeft voor een andere privéchef gekozen. Deze aanvraag is niet meer beschikbaar.",
+            "closing": "Geen zorgen: er komen snel nieuwe aanvragen bij jou in de buurt. Houd de pool in de gaten en reageer snel om je volgende boeking binnen te halen.",
+            "subject": "Aanvraag is naar een andere chef gegaan"
+        },
+        "declineCook": {
+            "preview": "{customerFirstName} heeft je offerte niet gekozen. Nieuwe aanvragen wachten",
+            "intro": "{customerFirstName} heeft besloten niet door te gaan met je offerte.",
+            "reasonLabel": "Reden van afwijzing",
+            "closing": "Geen zorgen: er komen nog veel meer kansen. Houd de pool met boekingsaanvragen in de gaten. We mailen je ook als er nieuwe aanvragen binnenkomen.",
+            "subject": "Offerte is afgewezen"
+        },
+        "amendmentCreate": {
+            "preview": "{customerFirstName} wil het aantal deelnemers wijzigen",
+            "body": "{customerFirstName} heeft een wijziging van het aantal deelnemers voorgesteld. Bekijk het voorstel en accepteer of wijs het af. De boeking blijft ongewijzigd tot jij beslist.",
+            "cta": "Voorstel bekijken",
+            "subject": "Wijziging van deelnemers voorgesteld"
+        },
+        "amendmentAccept": {
+            "preview": "{cookFirstName} heeft de wijziging geaccepteerd",
+            "giftCardCredit": " Ongebruikt tegoed is teruggezet op je cadeaubon.",
+            "payDifference": " Rond de betaling van het verschil af in de checkout.",
+            "checkoutUpdated": " Je checkout is bijgewerkt. Rond de betaling af.",
+            "laterChargeUpdated": " Het bedrag voor de latere kaartafschrijving is bijgewerkt.",
+            "refund": " Het verschil wordt aan je terugbetaald.",
+            "chargeSavedMethod": " Het verschil wordt afgeschreven van je opgeslagen betaalmethode.",
+            "body": "{cookFirstName} heeft je boekingswijziging geaccepteerd.{moneyNote} Je ziet de bijgewerkte gegevens bij je offerte.",
+            "ctaPay": "Nu betalen",
+            "venueNote": "Het adres is gewijzigd: {venue}. Pas het aan in je agenda.",
+            "subject": "Boekingswijziging geaccepteerd"
+        },
+        "amendmentDecline": {
+            "preview": "{cookFirstName} heeft de wijziging van deelnemers afgewezen",
+            "body": "{cookFirstName} heeft je voorgestelde wijziging van deelnemers afgewezen. De boeking blijft ongewijzigd. Wil je het erover hebben? Stuur dan een bericht in de chat.",
+            "subject": "Wijziging van deelnemers afgewezen"
+        }
+    },
+    "payment": {
+        "finalize": {
+            "preview": "Je boeking bij {cookFirstName} is bevestigd. Dit is wat er nu komt",
+            "heading": "Je boeking bij {cookFirstName} is bevestigd!",
+            "intro": "Goede keuze met het menu van {cookFirstName}! Het wordt een onvergetelijke ervaring. Fijn dat je erbij bent. Je kunt nu alle overige details rechtstreeks met de chef bespreken.",
+            "receiptNote": "Er zit ook een betaalbewijs bij. Het is geen factuur. De chef factureert je rechtstreeks voor de catering.",
+            "subject": "Boekingsbevestiging"
+        },
+        "statement": {
+            "preview": "Je uitbetaling en de peopleeat-vergoeding die we hebben ingehouden",
+            "body": "De boeking ({occasion}) is betaald. Je afrekening zit bij, met het menu, de reiskosten, de peopleeat-vergoeding en de uitbetaling. Het is geen factuur. Factureer de gast zelf voor het menu en de reiskosten.",
+            "subject": "Afrekening voor je boeking"
+        },
+        "pullAnnouncement": {
+            "preview": "Je evenement komt eraan: {amount} wordt afgeschreven op {when}",
+            "intro": "We hebben een betaling voor je evenement gereserveerd. Omdat je evenement binnenkort plaatsvindt, schrijven we het bedrag af op {when}.",
+            "why": "Zo kan de chef alvast boodschappen en andere benodigdheden voor je evenement inkopen.",
+            "detailsHeading": "Gegevens van de afschrijving",
+            "price": "Prijs",
+            "chargeDate": "Afschrijfdatum",
+            "cardNote": "Zorg dat er genoeg saldo op je kaart staat en dat de kaart niet verloopt vóór de afschrijfdatum. Wil je de kaart wijzigen die we gebruiken? Neem dan contact met ons op.",
+            "subject": "We schrijven binnenkort van je kaart af"
+        }
+    },
+    "callSlot": {
+        "request": {
+            "preview": "{senderFirstName} wil je ontmoeten in een videogesprek. Bevestig de tijd",
+            "intro": "{senderFirstName} wil een videogesprek met je plannen om kennis te maken en de details van het evenement te bespreken. Bevestig of wijs de voorgestelde tijd af.",
+            "proposalHeading": "Voorgesteld videogesprek",
+            "eventHeading": "Over het evenement",
+            "eventDate": "Datum van het evenement",
+            "occasion": "Gelegenheid",
+            "subject": "Nieuw verzoek voor een videogesprek"
+        },
+        "confirm": {
+            "preview": "{accepterFirstName} heeft je videogesprek bevestigd. Alles staat klaar",
+            "intro": "{accepterFirstName} heeft je verzoek voor een videogesprek bevestigd:",
+            "reminderNote": "Je krijgt 60 minuten voor de start een herinnering met de link naar het videogesprek.",
+            "calendarNote": "Er zit een agendabestand bij. Je krijgt een herinnering 15 minuten ervoor.",
+            "subject": "Je videogesprek is bevestigd"
+        },
+        "decline": {
+            "preview": "{declinerFirstName} kan op dat moment niet. Stel gerust een andere tijd voor",
+            "intro": "{declinerFirstName} kan niet op de voorgestelde tijd.",
+            "nextStep": "Vraag gerust een nieuwe tijd aan.",
+            "subject": "Je videogesprek kon niet worden bevestigd"
+        },
+        "cancel": {
+            "preview": "{cancelerFirstName} heeft het videogesprek geannuleerd. Plan een nieuwe tijd",
+            "introConfirmed": "{cancelerFirstName} heeft het bevestigde videogesprek geannuleerd:",
+            "introPending": "{cancelerFirstName} heeft het verzoek voor een videogesprek ingetrokken:",
+            "nextStep": "Plan gerust een nieuwe tijd.",
+            "subject": "Videogesprek geannuleerd"
+        },
+        "reminder": {
+            "preview": "Je videogesprek met {counterpartyFirstName} begint over 60 minuten. Link erbij",
+            "intro": "Je videogesprek met {counterpartyFirstName} begint over 60 minuten.",
+            "joinNote": "We wensen je een fijn gesprek! Gebruik de link hieronder om deel te nemen:",
+            "subject": "Herinnering: videogesprek over 60 minuten"
+        }
+    },
+    "chat": {
+        "notify": {
+            "intro": "je hebt een nieuw bericht ontvangen van {senderFirstName}.",
+            "cta": "Bekijken in de chat",
+            "heading": "Je hebt een nieuw bericht!",
+            "preview": "Nieuw bericht van {senderFirstName}. Lees het in de chat",
+            "attachment": "(Bijlage)",
+            "subject": "Er is een nieuw bericht bij een van je offertes."
+        }
+    },
+    "testimonial": {
+        "memory": {
+            "preview": "Je evenement met {counterpartyFirstName} is bezig. Leg herinneringen vast voor later",
+            "bodyCustomer": "Je evenement met {counterpartyFirstName} is bezig. Met foto's en notities schrijf je later makkelijker een review.",
+            "bodyCook": "Je evenement met {counterpartyFirstName} is bezig. Noteer een paar indrukken voor later.",
+            "cta": "Boeking openen",
+            "subject": "Leg herinneringen van je evenement vast"
+        },
+        "review": {
+            "previewEvening": "Herinnering: hoe was je evenement met {counterpartyFirstName}?",
+            "previewMorning": "Hoe was je evenement met {counterpartyFirstName}? Laat een korte review achter",
+            "bodyCustomer": "Hoe was je evenement met {counterpartyFirstName}? Een korte review helpt andere gasten.",
+            "bodyCook": "Hoe was je evenement met {counterpartyFirstName}? Een korte review helpt ons het platform te verbeteren.",
+            "cta": "Review schrijven",
+            "subjectEvening": "Herinnering: beoordeel je evenement",
+            "subjectMorning": "Hoe was je evenement?"
+        }
+    },
+    "giftCard": {
+        "pay": {
+            "preview": "Je cadeaubon van {amount} voor {recipient} staat klaar",
+            "body": "Bedankt voor je aankoop. De cadeaubon van {amount} voor {recipient} is geldig tot {expiry}.",
+            "redeemCode": "Inwisselcode",
+            "message": "Jouw bericht",
+            "attachments": "In de bijlage vind je de afdrukbare cadeaubon (om te delen) en het betaalbewijs van je aankoop.",
+            "subject": "Je peopleeat-cadeaubon"
+        }
+    },
+    "support": {
+        "create": {
+            "preview": "Je supportaanvraag is binnen. We antwoorden in de chat",
+            "intro": "Bedankt voor je bericht. We hebben je supportaanvraag ontvangen en antwoorden in de chat zodra we kunnen.",
+            "cta": "Aanvraag openen",
+            "subject": "Supportaanvraag ontvangen"
+        },
+        "reply": {
+            "preview": "Nieuw antwoord op je supportaanvraag. Lees het in de chat",
+            "intro": "Ons team heeft op je supportaanvraag geantwoord. Open de chat om het bericht te lezen.",
+            "cta": "Antwoord lezen",
+            "subject": "Nieuw supportantwoord"
+        },
+        "resolve": {
+            "preview": "Je supportaanvraag is opgelost. Reageer gerust als je nog hulp nodig hebt",
+            "intro": "We hebben je supportaanvraag als opgelost gemarkeerd. Is er nog iets open? Reageer dan gewoon in de chat, dan gaat de aanvraag weer open.",
+            "subject": "Supportaanvraag opgelost"
+        }
+    },
+    "cook": {
+        "approval": {
+            "preview": "Je chefprofiel is goedgekeurd. Volgende stap: wallet en zichtbaarheid",
+            "intro": "Goed nieuws: ons team heeft je chefprofiel goedgekeurd. Je kunt nu je wallet instellen en jezelf zichtbaar maken voor klanten.",
+            "nudge": "Open je profiel om de volgende stap te zien.",
+            "subject": "Je chefprofiel is goedgekeurd"
+        }
+    }
+}
