@@ -46,13 +46,17 @@ export const Route = createFileRoute('/{-$locale}')({
     },
     // Child navigations keep this match (`cause: 'stay'`) so default stale
     // reload never runs — e.g. `/` → `/admin` would keep `common`+`public` only.
-    // Re-run on stay; `i18nResourcesLoad` is cached, so the cost is tiny.
+    // Re-run on stay. Default stale reload is background and lets the child
+    // paint first (`i18n catalog not loaded`); blocking waits for catalogs.
     shouldReload: ({ cause }) => cause === 'stay',
-    loader: async ({ params, location }) => {
-        const locale = localeFromParam(params);
-        const namespaces = namespacesForPath(pathWithoutLocale(location.pathname));
-        await i18nResourcesLoad(locale, namespaces);
-        return { locale, namespaces };
+    loader: {
+        handler: async ({ params, location }) => {
+            const locale = localeFromParam(params);
+            const namespaces = namespacesForPath(pathWithoutLocale(location.pathname));
+            await i18nResourcesLoad(locale, namespaces);
+            return { locale, namespaces };
+        },
+        staleReloadMode: 'blocking',
     },
     // Client hydrate restores loader data without re-running the loader side
     // effect, so `t()` in child `head()` would throw. Re-load here first:

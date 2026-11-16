@@ -147,9 +147,11 @@ Lifecycle emails: create / cook notify / request update / cancel — `src/server
   `BookingRequestParticipantsRestrictionsEditor.tsx`, `src/web/components/base/time-picker.tsx`, `src/shared/bookingRequestFormDefaults.ts`
   (`defaultBookingRequestRestrictions`, `bookingRequestPriceClassInfo` / `bookingRequestPriceClassLabel`),
   `src/shared/bookingRequestParticipants.ts`, `src/shared/bookingRequestFormFunnel.ts` (stable funnel step ids for session events),
-  `src/web/pages/bookingRequestFormSearch.ts`, `src/routes/{-$locale}/booking-request_.form.tsx`. Viewport-locked (`h-dvh`) with an inset
-  scroller — document gutters off via `workspace-no-document-scroll` ([theme.md](../styles/theme.md)). Funnel instrumentation:
-  [session-events.md](../architecture/session-events.md), [admin-analytics.md](./admin-analytics.md). Public funnel chrome:
+  `src/web/pages/bookingRequestFormSearch.ts`, `src/routes/{-$locale}/booking-request_.form.tsx`. Each public booking-request route loader /
+  `head()` also `await i18nResourcesLoad(…, ['common', 'public', 'publicBooking'])` so landing → funnel client nav does not throw
+  `i18n catalog not loaded` (locale layout blocking stay-reload is the other half — [i18n.md](../architecture/i18n.md)). Viewport-locked
+  (`h-dvh`) with an inset scroller — document gutters off via `workspace-no-document-scroll` ([theme.md](../styles/theme.md)). Funnel
+  instrumentation: [session-events.md](../architecture/session-events.md), [admin-analytics.md](./admin-analytics.md). Public funnel chrome:
   `src/i18n/locales/{de,en}/publicBooking.json` via `useT('publicBooking')` / `t(locale, 'publicBooking', key)`. Customer booking detail /
   edit reuse the same catalog through `namespacesForPath` (`/profile/booking-requests/$id` and `…/edit`) for shared form-default helpers
   (`bookingRequestPriceClassLabel`, occasion / preference chips).
