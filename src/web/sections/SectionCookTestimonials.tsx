@@ -28,7 +28,7 @@ export function SectionCookTestimonials({ testimonials }: { testimonials?: Reado
     }
 
     return (
-        <section id={chefTestimonialsSectionId} className="mx-auto w-full max-w-7xl px-4 @lg:px-6">
+        <section id={chefTestimonialsSectionId} className="mx-auto w-full max-w-7xl scroll-mt-20 px-4 @lg:px-6">
             <h2 className="font-serif text-3xl font-light @3xl:text-4xl">{t('home.testimonials.headingAlt')}</h2>
             <ul className="mt-10 grid grid-cols-1 gap-10 @2xl:grid-cols-2 @5xl:grid-cols-3">
                 {testimonials.map((testimonial) => (
