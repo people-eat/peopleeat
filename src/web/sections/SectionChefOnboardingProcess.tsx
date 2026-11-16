@@ -1,3 +1,4 @@
+import { expansionMarketInCountryPhrase } from '../../shared/expansionMarkets';
 import type { ExpansionMarket } from '../../shared/expansionMarkets';
 import { useLocale } from '../hooks/useLocale';
 import { useT } from '../hooks/useT';
@@ -5,7 +6,7 @@ import { useT } from '../hooks/useT';
 export function SectionChefOnboardingProcess({ market }: { market?: ExpansionMarket }) {
     const locale = useLocale();
     const { t } = useT('public');
-    const inCountry = market ? (locale === 'de' ? market.inCountryDe : market.inCountryEn) : '';
+    const inCountry = market ? expansionMarketInCountryPhrase(market, locale) : '';
 
     const timeline = [
         {

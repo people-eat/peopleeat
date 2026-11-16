@@ -9,7 +9,7 @@ section stack per entity.
 ## Decision
 
 1. **Canonical type** — `ContentSection` in [`src/shared/contentSection.ts`](../../src/shared/contentSection.ts), validated with Zod on
-   write (`contentSectionsSchema`). Paired `*De` / `*En` fields; empty EN falls back to DE at render (`contentLocaleText` /
+   write (`contentSectionsSchema`). Paired `*De` / `*En` fields; non-`de` locales prefer EN when present (`contentLocaleText` /
    `contentLocaleItems`).
 2. **Persistence** — jsonb `sections` column on `Cities`, `PartnerVenues`, `Occasions`, and `BlogPosts`.
 3. **GraphQL** — one `ContentSection` union; mappers stamp `gqlTypeName` (see [`extensions.ts`](../../src/server/graphql/extensions.ts));

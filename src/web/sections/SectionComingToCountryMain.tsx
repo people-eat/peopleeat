@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router';
 
-import { expansionMarketComingToTitle } from '../../shared/expansionMarkets';
+import { expansionMarketComingToTitle, expansionMarketInCountryPhrase } from '../../shared/expansionMarkets';
 import type { ExpansionMarket } from '../../shared/expansionMarkets';
 import { Button } from '../components/base/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '../components/base/card';
@@ -11,7 +11,7 @@ import { useT } from '../hooks/useT';
 export function SectionComingToCountryMain({ market }: { market: ExpansionMarket }) {
     const locale = useLocale();
     const { t } = useT('public');
-    const inCountry = locale === 'de' ? market.inCountryDe : market.inCountryEn;
+    const inCountry = expansionMarketInCountryPhrase(market, locale);
     const facts = [t('comingTo.fact1'), t('comingTo.fact2'), t('comingTo.fact3')];
 
     return (

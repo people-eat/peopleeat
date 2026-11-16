@@ -76,9 +76,12 @@ describe('contentSectionSchema', () => {
 });
 
 describe('contentLocaleText', () => {
-    it('falls back to DE when EN is empty', () => {
+    it('uses DE for de, EN for other locales when present, else DE', () => {
         expect(contentLocaleText('Deutsch', '', 'en')).toBe('Deutsch');
         expect(contentLocaleText('Deutsch', 'English', 'en')).toBe('English');
+        expect(contentLocaleText('Deutsch', 'English', 'de')).toBe('Deutsch');
+        expect(contentLocaleText('Deutsch', 'English', 'fr')).toBe('English');
+        expect(contentLocaleText('Deutsch', '', 'fr')).toBe('Deutsch');
     });
 });
 

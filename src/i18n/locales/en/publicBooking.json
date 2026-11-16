@@ -35,6 +35,10 @@
         "back": "Back to booking request"
     },
     "form": {
+        "seo": {
+            "title": "Booking request: form",
+            "description": "Submit a booking request for a private chef. Non-binding."
+        },
         "leftoverCook": "This request goes to chefs nearby, not only to one chef.",
         "leftoverMenu": "This menu is not available right now. The request still goes only to {cookName}.",
         "direct": {

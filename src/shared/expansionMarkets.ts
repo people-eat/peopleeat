@@ -7,9 +7,12 @@ export type ExpansionMarketSlug = (typeof expansionMarketSlugs)[number];
 
 export const BOOKING_REQUEST_MARKET_CLOSED_ERROR = 'bookingRequestMarketClosed';
 
+type NetherlandsCityKey = 'amsterdam' | 'rotterdam' | 'theHague' | 'utrecht' | 'eindhoven';
+type SwitzerlandCityKey = 'zurich' | 'geneva' | 'basel' | 'bern' | 'lausanne';
+type ExpansionMarketCityKey = NetherlandsCityKey | SwitzerlandCityKey;
+
 type ExpansionMarketCity = {
-    nameDe: string;
-    nameEn: string;
+    key: ExpansionMarketCityKey;
     latitude: number;
     longitude: number;
 };
@@ -19,12 +22,6 @@ export type ExpansionMarket = {
     countryCode: 'NL' | 'CH';
     nameDe: string;
     nameEn: string;
-    /** Accusative of motion: "in die Niederlande" / "in die Schweiz". */
-    comingToPhraseDe: string;
-    comingToPhraseEn: string;
-    /** Locative: "in den Niederlanden" / "in der Schweiz". */
-    inCountryDe: string;
-    inCountryEn: string;
     flagSrc: string;
     flagMarkSrc: string;
     comingToPath: string;
@@ -38,27 +35,27 @@ const comingToFaqKeys = ['canBook', 'registerNow', 'whichCities', 'sendAnyway'] 
 const foundingChefFaqKeys = ['requestsNow', 'whyEarly', 'whichCities', 'priceBenefit'] as const;
 
 const netherlandsCities = [
-    { nameDe: 'Amsterdam', nameEn: 'Amsterdam', latitude: 52.3676, longitude: 4.9041 },
-    { nameDe: 'Rotterdam', nameEn: 'Rotterdam', latitude: 51.9244, longitude: 4.4777 },
-    { nameDe: 'Den Haag', nameEn: 'The Hague', latitude: 52.0705, longitude: 4.3007 },
-    { nameDe: 'Utrecht', nameEn: 'Utrecht', latitude: 52.0907, longitude: 5.1214 },
-    { nameDe: 'Eindhoven', nameEn: 'Eindhoven', latitude: 51.4416, longitude: 5.4697 },
+    { key: 'amsterdam', latitude: 52.3676, longitude: 4.9041 },
+    { key: 'rotterdam', latitude: 51.9244, longitude: 4.4777 },
+    { key: 'theHague', latitude: 52.0705, longitude: 4.3007 },
+    { key: 'utrecht', latitude: 52.0907, longitude: 5.1214 },
+    { key: 'eindhoven', latitude: 51.4416, longitude: 5.4697 },
 ] as const satisfies readonly ExpansionMarketCity[];
 
 const switzerlandCities = [
-    { nameDe: 'Zürich', nameEn: 'Zurich', latitude: 47.3769, longitude: 8.5417 },
-    { nameDe: 'Genf', nameEn: 'Geneva', latitude: 46.2044, longitude: 6.1432 },
-    { nameDe: 'Basel', nameEn: 'Basel', latitude: 47.5596, longitude: 7.5886 },
-    { nameDe: 'Bern', nameEn: 'Bern', latitude: 46.948, longitude: 7.4474 },
-    { nameDe: 'Lausanne', nameEn: 'Lausanne', latitude: 46.5197, longitude: 6.6323 },
+    { key: 'zurich', latitude: 47.3769, longitude: 8.5417 },
+    { key: 'geneva', latitude: 46.2044, longitude: 6.1432 },
+    { key: 'basel', latitude: 47.5596, longitude: 7.5886 },
+    { key: 'bern', latitude: 46.948, longitude: 7.4474 },
+    { key: 'lausanne', latitude: 46.5197, longitude: 6.6323 },
 ] as const satisfies readonly ExpansionMarketCity[];
 
-function cityName(city: ExpansionMarketCity, locale: Locale): string {
-    return locale === 'de' ? city.nameDe : city.nameEn;
+function cityName(city: ExpansionMarketCity, market: ExpansionMarket, locale: Locale): string {
+    return t(locale, 'public', `comingTo.markets.${market.slug}.city.${city.key}`);
 }
 
-function cityList(cities: readonly ExpansionMarketCity[], locale: Locale): string {
-    const names = cities.map((city) => cityName(city, locale));
+function cityList(cities: readonly ExpansionMarketCity[], market: ExpansionMarket, locale: Locale): string {
+    const names = cities.map((city) => cityName(city, market, locale));
     if (names.length === 0) return '';
     if (names.length === 1) return names[0] ?? '';
     const last = names.at(-1) ?? '';
@@ -70,7 +67,7 @@ function marketPhrases(market: ExpansionMarket, locale: Locale): { comingTo: str
     return {
         comingTo: t(locale, 'public', `comingTo.markets.${market.slug}.comingTo`),
         inCountry: t(locale, 'public', `comingTo.markets.${market.slug}.inCountry`),
-        cities: cityList(market.cities, locale),
+        cities: cityList(market.cities, market, locale),
     };
 }
 
@@ -79,10 +76,6 @@ const netherlands: ExpansionMarket = {
     countryCode: 'NL',
     nameDe: 'Niederlande',
     nameEn: 'the Netherlands',
-    comingToPhraseDe: 'in die Niederlande',
-    comingToPhraseEn: 'to the Netherlands',
-    inCountryDe: 'in den Niederlanden',
-    inCountryEn: 'in the Netherlands',
     flagSrc: '/countries/flag-netherlands.png',
     flagMarkSrc: '/countries/flag-netherlands-peopleeat.png',
     comingToPath: '/coming-to/netherlands',
@@ -95,10 +88,6 @@ const switzerland: ExpansionMarket = {
     countryCode: 'CH',
     nameDe: 'Schweiz',
     nameEn: 'Switzerland',
-    comingToPhraseDe: 'in die Schweiz',
-    comingToPhraseEn: 'to Switzerland',
-    inCountryDe: 'in der Schweiz',
-    inCountryEn: 'in Switzerland',
     flagSrc: '/countries/flag-switzerland.png',
     flagMarkSrc: '/countries/flag-switzerland-peopleeat.png',
     comingToPath: '/coming-to/switzerland',
@@ -127,8 +116,20 @@ export function expansionMarketFromCountry(country: string | null | undefined): 
     return null;
 }
 
+export function expansionMarketInCountryPhrase(market: ExpansionMarket, locale: Locale): string {
+    return marketPhrases(market, locale).inCountry;
+}
+
+export function expansionMarketComingToPhrase(market: ExpansionMarket, locale: Locale): string {
+    return marketPhrases(market, locale).comingTo;
+}
+
 export function expansionMarketCityList(market: ExpansionMarket, locale: Locale): string {
-    return cityList(market.cities, locale);
+    return cityList(market.cities, market, locale);
+}
+
+export function expansionMarketCityNames(market: ExpansionMarket, locale: Locale): readonly string[] {
+    return market.cities.map((city) => cityName(city, market, locale));
 }
 
 export function expansionMarketComingToTitle(market: ExpansionMarket, locale: Locale): string {

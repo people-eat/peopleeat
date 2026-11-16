@@ -1,10 +1,10 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
 
-import { contentLocaleText } from '../../shared/contentSection';
 import { BookingRequestFormPageDocument } from '../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../web/graphql/routeLoaderGraphqlClient';
 import { BookingRequestFormPage, parseBookingRequestFormSearch } from '../../web/pages/BookingRequestFormPage';
 import { seoMeta } from '../../web/seo/seoMeta';
+import { webPageSeoText } from '../../web/seo/webPageSeoText';
 import { webPageUrlGet } from '../../web/seo/webPageUrlGet';
 import { localeFromParam } from '../../web/utils/locale';
 
@@ -27,9 +27,10 @@ export const Route = createFileRoute('/{-$locale}/booking-request_/form')({
         if (!webPage) {
             return {};
         }
+        const { title, description } = webPageSeoText(locale, webPage, 'form', 'publicBooking');
         return seoMeta({
-            title: contentLocaleText(webPage.titleDe, webPage.titleEn, locale),
-            description: contentLocaleText(webPage.descriptionDe, webPage.descriptionEn, locale),
+            title,
+            description,
             path: '/booking-request/form',
             locale,
             webPageUrl: webPageUrlGet(),

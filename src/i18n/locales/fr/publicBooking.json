@@ -21,7 +21,7 @@
     "next": "Suivant",
     "marketClosed": {
         "title": "peopleeat arrive {comingTo} début 2027",
-        "body": "Pour cette adresse, nous ne pouvons pas encore accepter de demande de réservation. Les cuisiniers peuvent déjà s’inscrire.",
+        "body": "Pour cette adresse, nous ne pouvons pas encore accepter de demande de réservation. Les chefs peuvent déjà s’inscrire.",
         "toast": "peopleeat arrive {comingTo} début 2027. Pour cette adresse, nous ne pouvons pas encore accepter de demande.",
         "learnMore": "En savoir plus"
     },
@@ -35,13 +35,17 @@
         "back": "Retour à la demande"
     },
     "form": {
-        "leftoverCook": "Cette demande va aux cuisiniers près de chez toi, pas seulement à un cuisinier précis.",
+        "seo": {
+            "title": "Demande de réservation : formulaire",
+            "description": "Envoie une demande de réservation pour un chef privé. Sans engagement."
+        },
+        "leftoverCook": "Cette demande va aux chefs près de chez toi, pas seulement à un chef précis.",
         "leftoverMenu": "Ce menu n’est pas disponible pour le moment. La demande n’est quand même envoyée qu’à {cookName}.",
         "direct": {
             "title": "Demande à {cookName}",
-            "body": "Seul ce cuisinier voit ta demande en premier. Tu pourras l’ouvrir aux autres plus tard.",
-            "bodyWithMenu": "Seul ce cuisinier voit ta demande en premier, pour le menu « {menuTitle} ». Tu pourras l’ouvrir aux autres plus tard.",
-            "farVenue": "Ce cuisinier peut aussi se déplacer si le lieu est un peu plus loin."
+            "body": "Seul ce chef voit ta demande en premier. Tu pourras l’ouvrir aux autres plus tard.",
+            "bodyWithMenu": "Seul ce chef voit ta demande en premier, pour le menu « {menuTitle} ». Tu pourras l’ouvrir aux autres plus tard.",
+            "farVenue": "Ce chef peut aussi se déplacer si le lieu est un peu plus loin."
         },
         "redeemFirst": "Utilise d’abord le code de réduction.",
         "included": {
@@ -57,7 +61,7 @@
         "steps": {
             "occasion": {
                 "sideBarTitle": "Occasion",
-                "title": "Pour quelle occasion cherches-tu un cuisinier privé ?",
+                "title": "Pour quelle occasion cherches-tu un chef privé ?",
                 "hint": "Indique ton occasion ou choisis parmi les options proposées.",
                 "placeholder": "ex. anniversaire, soirée d’entreprise"
             },
@@ -83,7 +87,7 @@
                 "pickDate": "Choisir une date",
                 "earlyBooking": "Parfait ! Tu es pile dans les temps. Plus de 60 % de nos réservations se font plus de 3 semaines à l’avance.",
                 "time": "Heure",
-                "timeLater": "Tu pourras convenir de l’heure finale avec le cuisinier plus tard."
+                "timeLater": "Tu pourras convenir de l’heure finale avec le chef plus tard."
             },
             "priceClass": {
                 "sideBarTitle": "Gamme de prix",
@@ -94,7 +98,7 @@
             "preferences": {
                 "sideBarTitle": "Préférences",
                 "title": "Comment veux-tu le menu ?",
-                "subTitle": "Partage tes envies et préférences avec les cuisiniers.",
+                "subTitle": "Partage tes envies et préférences avec les chefs.",
                 "subTitleCook": "Partage tes envies et préférences avec {cookName}.",
                 "searchPlaceholder": "Préférence (chercher ou saisir la tienne ici)",
                 "addCustom": "Ajouter la mienne",
@@ -110,7 +114,7 @@
                 "title": "Veux-tu encore nous donner quelques détails ?",
                 "subTitle": "Parle-nous un peu plus de ton occasion.",
                 "subTitleCook": "Parle un peu plus de ton occasion à {cookName}.",
-                "placeholder": "Message aux cuisiniers",
+                "placeholder": "Message aux chefs",
                 "placeholderCook": "Message à {cookName}",
                 "redeemLabel": "Utiliser un bon ou un code promo",
                 "redeemPlaceholder": "Saisir le code",
@@ -147,37 +151,37 @@
             },
             "chef": {
                 "label": "Recommandation du chef",
-                "subtitle": "On trouve ensemble votre direction"
+                "subtitle": "On trouve ensemble ta direction"
             }
         },
         "createMessage": "Orientation menu : {cuisine}.\n\n{notes}",
         "defaultOccasion": "Fête de famille",
-        "chefArrivalHint": "Ton cuisinier arrive en général 1,5 heure avant le début du menu.",
+        "chefArrivalHint": "Ton chef arrive en général 1,5 heure avant le début du menu.",
         "foretaste": {
-            "title": "Un avant-goût de votre soirée",
+            "title": "Un avant-goût de ta soirée",
             "subtitle": "Cuisiné frais. Servi avec soin. Dégusté ensemble.",
             "previous": "Images précédentes",
             "next": "Images suivantes",
             "item1": "Un début gourmand.",
-            "item2": "Trois plats. Rien que pour vous.",
+            "item2": "Trois plats. Rien que pour toi.",
             "item3": "Une douce conclusion.",
             "item4": "Avec le souci du détail.",
-            "item5": "Votre table dans le loft."
+            "item5": "Ta table dans le loft."
         },
         "care": {
-            "title": "Vous savourez. On s’occupe du reste.",
+            "title": "Tu savoures. On s’occupe du reste.",
             "subtitle": "Plus de temps pour la famille. Courses, préparation et nettoyage sont inclus.",
             "prepared": {
                 "title": "Tout est préparé.",
-                "body": "Votre chef s’occupe des ingrédients. Vous avez du temps pour vous et les enfants."
+                "body": "Ton chef s’occupe des ingrédients. Tu as du temps pour toi et les enfants."
             },
             "cooked": {
-                "title": "Cuisiné pour vous.",
-                "body": "Trois plats, préparés frais dans le loft et servis à votre table."
+                "title": "Cuisiné pour toi.",
+                "body": "Trois plats, préparés frais dans le loft et servis à ta table."
             },
             "clean": {
                 "title": "Laissé propre.",
-                "body": "Votre chef range la cuisine. Vous prolongez la soirée."
+                "body": "Ton chef range la cuisine. Tu prolonges la soirée."
             }
         },
         "faq": {
@@ -187,19 +191,19 @@
             },
             "after": {
                 "question": "Que se passe-t-il après la demande ?",
-                "answer": "Nous vérifions la disponibilité et accordons le menu avec vous. Vous recevez ensuite la confirmation finale dès que le chef et la date sont confirmés."
+                "answer": "Nous vérifions la disponibilité et accordons le menu avec toi. Tu reçois ensuite la confirmation finale dès que le chef et la date sont confirmés."
             },
             "wishes": {
                 "question": "Allergies, enfants et souhaits particuliers",
                 "answer": "À l’étape suivante, tu indiques tes souhaits et allergies. Avant confirmation, nous revérifions les allergies avec le chef. Les portions enfants sont en général moins chères."
             },
             "cost": {
-                "question": "Combien coûte votre dîner ?",
-                "answer": "Les montants affichés sont des prix d’exemple à partir du menu Signature. L’offre finale est fixée par votre chef. Aucun paiement n’a lieu à la demande."
+                "question": "Combien coûte ton dîner ?",
+                "answer": "Les montants affichés sont des prix d’exemple à partir du menu Signature. L’offre finale est fixée par ton chef. Aucun paiement n’a lieu à la demande."
             }
         },
         "sampleMenu": {
-            "description": "Un menu d’exemple pour « {cuisine} ». Votre chef accorde avec vous les plats, les portions enfants et les besoins alimentaires.",
+            "description": "Un menu d’exemple pour « {cuisine} ». Ton chef accorde avec toi les plats, les portions enfants et les besoins alimentaires.",
             "back": "Retour à la planification du dîner",
             "discover": "Découvrir le menu d’exemple",
             "link": "Menu d’exemple",
@@ -224,7 +228,7 @@
                 }
             },
             "regional": {
-                "title": "De saison. Chez vous dans le loft.",
+                "title": "De saison. Chez toi dans le loft.",
                 "starter": {
                     "title": "Petits pois, salade et chèvre",
                     "description": "Avec vinaigrette aux herbes et pain croustillant"
@@ -254,7 +258,7 @@
                 }
             },
             "chef": {
-                "title": "Un menu pour votre soirée en famille.",
+                "title": "Un menu pour ta soirée en famille.",
                 "starter": {
                     "title": "Burrata, tomates mûries au soleil et basilic",
                     "description": "Pain au levain grillé et huile d’olive vierge"
@@ -270,8 +274,8 @@
             }
         },
         "summary": {
-            "aria": "Votre sélection",
-            "title": "Votre sélection",
+            "aria": "Ta sélection",
+            "title": "Ta sélection",
             "guests": "Invités",
             "adults": "{count, plural, one {# adulte} other {# adultes}}",
             "children": "{count, plural, one {# enfant} other {# enfants}}",
@@ -281,45 +285,45 @@
             "editDetails": "Modifier les informations",
             "continue": "Continuer vers la demande",
             "nonBinding": "Sans engagement. Pas encore de paiement.",
-            "talkToUs": "Des questions ? Talk to us"
+            "talkToUs": "Des questions ? Écris-nous"
         },
         "editor": {
-            "title": "Votre soirée en détail.",
+            "title": "Ta soirée en détail.",
             "description": "Invités, heure de début, orientation menu et gamme de prix",
             "adults": "Adultes",
             "children": "Enfants",
             "childrenHint": "4–12 ans · portions enfants moins chères",
             "apply": "Appliquer",
-            "venueAddressHint": "Adresse du lieu. C’est ici que votre dîner a lieu."
+            "venueAddressHint": "Adresse du lieu. C’est ici que ton dîner a lieu."
         },
         "hero": {
             "welcome": "Bienvenue, {name}.",
-            "evening": "Votre soirée.",
-            "experience": "Votre expérience.",
-            "subtitle": "Votre dîner privé en 3 plats avec un cuisinier privé. Courses, cuisine et rangement inclus.",
-            "subtitleVenue": "Votre dîner privé en 3 plats, en option. Courses, cuisine et rangement inclus.",
-            "subtitleVenueCity": "Votre dîner privé en 3 plats à {city}, en option. Courses, cuisine et rangement inclus.",
+            "evening": "Ta soirée.",
+            "experience": "Ton expérience.",
+            "subtitle": "Ton dîner privé en 3 plats avec un chef privé. Courses, cuisine et rangement inclus.",
+            "subtitleVenue": "Ton dîner privé en 3 plats, en option. Courses, cuisine et rangement inclus.",
+            "subtitleVenueCity": "Ton dîner privé en 3 plats à {city}, en option. Courses, cuisine et rangement inclus.",
             "exclusiveFor": "Exclusif pour les hôtes chez",
-            "alt": "Table dressée pour votre dîner",
+            "alt": "Table dressée pour ton dîner",
             "stars": "5,0 sur 5 étoiles",
             "reviews": "{count, plural, one {Voir # avis} other {Voir # avis}}",
-            "placeTitle": "Votre lieu devient votre restaurant préféré.",
-            "placeBody1": "Votre cuisinier privé sert des plats, préparés frais chez vous et accordés à vos envies.",
+            "placeTitle": "Ton lieu devient ton restaurant préféré.",
+            "placeBody1": "Ton chef privé sert des plats, préparés frais chez toi et accordés à tes envies.",
             "placeBody2": "Courses, cuisine et une cuisine propre inclus."
         },
         "dateSection": {
-            "title": "Choisissez votre soirée dinner",
+            "title": "Choisis ta soirée dinner",
             "pickDate": "Choisir une date",
             "arrival": "Arrivée",
             "departure": "Départ"
         },
         "price": {
-            "title": "Choisissez votre fourchette de prix",
-            "subtitle": "Comme repère pour la proposition de menu de votre cuisinier."
+            "title": "Choisis ta fourchette de prix",
+            "subtitle": "Comme repère pour la proposition de menu de ton chef."
         },
         "cuisineSection": {
-            "title": "Quelle cuisine rend votre soirée spéciale ?",
-            "subtitle": "Comme inspiration pour votre cuisinier. Vous recevez votre proposition de menu après la demande."
+            "title": "Quelle cuisine rend ta soirée spéciale ?",
+            "subtitle": "Comme inspiration pour ton chef. Tu reçois ta proposition de menu après la demande."
         },
         "testimonials": {
             "title": "Des soirées qui restent."
@@ -329,9 +333,9 @@
         },
         "contact": {
             "editSelection": "Modifier la sélection",
-            "title": "Un pas de plus vers votre dîner.",
-            "subtitle": "Nous vérifions votre date souhaitée et accordons le menu avec vous.",
-            "subtitleVenue": "Votre soirée chez {venue}. Nous vérifions votre date souhaitée et accordons le menu avec vous.",
+            "title": "Un pas de plus vers ton dîner.",
+            "subtitle": "Nous vérifions ta date souhaitée et accordons le menu avec toi.",
+            "subtitleVenue": "Ta soirée chez {venue}. Nous vérifions ta date souhaitée et accordons le menu avec toi.",
             "wishes": "Souhaits et allergies",
             "wishesPlaceholder": "Alimentation, allergies ou une occasion particulière",
             "contactDetails": "Tes coordonnées",
@@ -360,16 +364,16 @@
         "steps": {
             "menu": {
                 "title": "Tu reçois une proposition de menu personnalisée",
-                "body": "Des cuisiniers adaptés près de chez toi préparent des propositions de menu individuelles pour ton événement.",
+                "body": "Des chefs adaptés près de chez toi préparent des propositions de menu individuelles pour ton événement.",
                 "bodyCook": "{cookName} examine ta demande et t’envoie une offre avec menu et prix."
             },
             "details": {
                 "title": "Finalise les derniers détails",
-                "body": "Nous te prévenons par e-mail et, si nous avons ton numéro, par WhatsApp dès que de nouvelles propositions sont prêtes. Tu compares menus et profils de cuisiniers directement dans ta demande."
+                "body": "Nous te prévenons par e-mail et, si nous avons ton numéro, par WhatsApp dès que de nouvelles propositions sont prêtes. Tu compares menus et profils de chefs directement dans ta demande."
             },
             "confirm": {
                 "title": "Confirme ton expérience menu",
-                "body": "Quand tu as trouvé l’offre qui te convient, tu l’acceptes et le cuisinier bloque le créneau pour toi."
+                "body": "Quand tu as trouvé l’offre qui te convient, tu l’acceptes et le chef bloque le créneau pour toi."
             }
         },
         "images": {
@@ -378,9 +382,9 @@
             "3": "Dessert en forme de fleur avec menthe, sauce verte et coulis jaune"
         },
         "status": {
-            "exclusiveWithMenu": "{cookName} a reçu ta demande pour « {menuTitle} ». Tu peux l’ouvrir à tout moment aussi aux autres cuisiniers.",
-            "exclusive": "{cookName} a reçu ta demande. Tu peux l’ouvrir à tout moment aussi aux autres cuisiniers.",
-            "pool": "Des cuisiniers adaptés dans ta région ont reçu ta demande. Nous t’informons dès que des propositions de menu sont prêtes."
+            "exclusiveWithMenu": "{cookName} a reçu ta demande pour « {menuTitle} ». Tu peux l’ouvrir à tout moment aussi aux autres chefs.",
+            "exclusive": "{cookName} a reçu ta demande. Tu peux l’ouvrir à tout moment aussi aux autres chefs.",
+            "pool": "Des chefs adaptés dans ta région ont reçu ta demande. Nous t’informons dès que des propositions de menu sont prêtes."
         }
     },
     "paymentDocument": {
@@ -388,12 +392,12 @@
         "statementTitle": "Relevé",
         "amountPaid": "Montant payé",
         "payout": "Montant du versement",
-        "receiptFooter": "Reçu de paiement pour une réservation peopleeat. Pas une facture. Le cuisinier te facture directement la prestation.",
+        "receiptFooter": "Reçu de paiement pour une réservation peopleeat. Pas une facture. Le chef te facture directement la prestation.",
         "statementFooter": "Relevé pour documentation. Pas une facture. Facture le menu et les frais de déplacement au client. Les frais peopleeat sont retenus sur le montant du versement.",
         "date": "Date",
         "occasion": "Occasion",
         "event": "Date de l’événement",
-        "cook": "Cuisinier",
+        "cook": "Chef",
         "guest": "Client",
         "bookingNumber": "Numéro de réservation",
         "billingAddress": "Adresse de facturation",
@@ -402,7 +406,7 @@
         "travel": "Frais de déplacement",
         "serviceFee": "Frais de service",
         "paymentProcessing": "Traitement du paiement",
-        "giftCard": "Bon cadeau",
+        "giftCard": "Carte cadeau",
         "promoCode": "Code promo",
         "invoiceGuest": "Montant à facturer au client",
         "peopleeatFee": "Frais peopleeat"
@@ -420,7 +424,7 @@
             "Fruits de mer",
             "Poisson",
             "Viande",
-            "Sharing Plates"
+            "Plats à partager"
         ],
         "restrictions": [
             "Gluten / blé",
@@ -448,7 +452,7 @@
         ],
         "priceClasses": {
             "LOW": {
-                "title": "Casual Dining",
+                "title": "Dîner décontracté",
                 "description": "Pour les soirées où il s’agit simplement d’être ensemble.",
                 "commonOccasions": ["EVG / EVJF", "Réceptions de mariage", "Événements d’équipe", "Cours de cuisine"]
             },
@@ -458,7 +462,7 @@
                 "commonOccasions": ["Réunions de famille", "Soirées entre amis", "Dîners en location de vacances"]
             },
             "HIGH": {
-                "title": "Prestige Experience",
+                "title": "Expérience prestige",
                 "description": "Pour les occasions qui créent des souvenirs particuliers.",
                 "commonOccasions": ["Anniversaires", "Dîners aux chandelles", "Occasions spéciales"]
             }

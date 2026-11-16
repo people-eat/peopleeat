@@ -1,6 +1,10 @@
 import { Link } from '@tanstack/react-router';
 
-import { expansionMarketComingToTitle, expansionMarketFoundingChefTitle } from '../../shared/expansionMarkets';
+import {
+    expansionMarketComingToTitle,
+    expansionMarketFoundingChefTitle,
+    expansionMarketInCountryPhrase,
+} from '../../shared/expansionMarkets';
 import type { ExpansionMarket } from '../../shared/expansionMarkets';
 import { AppImage } from '../components/AppImage';
 import { Button } from '../components/base/button';
@@ -12,7 +16,7 @@ export function SectionHowToBecomeAChefMain({ isCook, market }: { isCook: boolea
     const locale = useLocale();
     const { t } = useT('public');
     const signUpSearch = market ? { market: market.slug } : undefined;
-    const inCountry = market ? (locale === 'de' ? market.inCountryDe : market.inCountryEn) : '';
+    const inCountry = market ? expansionMarketInCountryPhrase(market, locale) : '';
 
     return (
         <section className="relative isolate overflow-hidden">

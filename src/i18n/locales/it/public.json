@@ -71,6 +71,10 @@
         "notPublic": "Non pubblico"
     },
     "home": {
+        "seo": {
+            "title": "Prenota uno chef privato",
+            "description": "Trova uno chef privato per ogni occasione. Con i tuoi cari. A casa tua."
+        },
         "hero": {
             "headline1": "Trova uno chef privato",
             "headline2": "vivi qualcosa di straordinario",
@@ -204,6 +208,10 @@
         "paymentAnswer": "L’importo totale viene addebitato al più presto due settimane prima. Se l’occasione è entro due settimane, l’importo viene addebitato subito. Il pagamento allo chef avviene solo il giorno dopo l’occasione. Così tutto procede in modo fluido e il tuo pagamento è protetto."
     },
     "about": {
+        "seo": {
+            "title": "Chi siamo",
+            "description": "Scopri peopleeat, il team e la nostra missione: chef d’eccezione per momenti indimenticabili."
+        },
         "startedKicker": "Come siamo partiti",
         "startedHeadline": "Rivoluzioniamo il modo di essere ospiti",
         "startedIntro": "Benvenuti! Siamo Natalia e Daniel, i fondatori di peopleeat!",
@@ -270,6 +278,10 @@
         "promoCode": "Con il codice {code}"
     },
     "chefSignUp": {
+        "seo": {
+            "title": "Registrati come chef",
+            "description": "Crea il tuo profilo chef peopleeat in un solo passo."
+        },
         "title": "Registrati come chef",
         "completeProfile": "Completa il profilo chef.",
         "invalidTravelExpenses": "Inserisci spese di viaggio valide (min. 0,25 €).",
@@ -318,6 +330,10 @@
         "indexLink": "Tutti gli articoli"
     },
     "giftCard": {
+        "seo": {
+            "title": "Carta regalo",
+            "description": "Regala una cena indimenticabile con uno chef privato."
+        },
         "title": "Carta regalo",
         "description": "Regala una cena indimenticabile con uno chef privato.",
         "createFailed": "Impossibile creare la carta regalo.",
@@ -430,11 +446,25 @@
         "markets": {
             "netherlands": {
                 "comingTo": "nei Paesi Bassi",
-                "inCountry": "nei Paesi Bassi"
+                "inCountry": "nei Paesi Bassi",
+                "city": {
+                    "amsterdam": "Amsterdam",
+                    "rotterdam": "Rotterdam",
+                    "theHague": "L'Aia",
+                    "utrecht": "Utrecht",
+                    "eindhoven": "Eindhoven"
+                }
             },
             "switzerland": {
                 "comingTo": "in Svizzera",
-                "inCountry": "in Svizzera"
+                "inCountry": "in Svizzera",
+                "city": {
+                    "zurich": "Zurigo",
+                    "geneva": "Ginevra",
+                    "basel": "Basilea",
+                    "bern": "Berna",
+                    "lausanne": "Losanna"
+                }
             }
         },
         "faq": {
@@ -475,6 +505,10 @@
         }
     },
     "howToBecome": {
+        "seo": {
+            "title": "Diventa chef",
+            "description": "Cucina i tuoi menu a casa dei clienti, alle tue condizioni. Iscriviti come chef peopleeat."
+        },
         "line1": "Cucina i tuoi menu.",
         "line2": "Nella loro cucina.",
         "line3": "Alle tue condizioni.",

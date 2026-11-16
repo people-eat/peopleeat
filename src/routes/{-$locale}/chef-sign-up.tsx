@@ -1,12 +1,12 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
 
-import { contentLocaleText } from '../../shared/contentSection';
 import { expansionMarketFromParam } from '../../shared/expansionMarkets';
 import type { ExpansionMarketSlug } from '../../shared/expansionMarkets';
 import { ChefSignUpPageDocument } from '../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../web/graphql/routeLoaderGraphqlClient';
 import { ChefSignUpPage } from '../../web/pages/ChefSignUpPage';
 import { seoMeta } from '../../web/seo/seoMeta';
+import { webPageSeoText } from '../../web/seo/webPageSeoText';
 import { webPageUrlGet } from '../../web/seo/webPageUrlGet';
 import { localeFromParam } from '../../web/utils/locale';
 
@@ -36,9 +36,10 @@ export const Route = createFileRoute('/{-$locale}/chef-sign-up')({
         if (!webPage) {
             return {};
         }
+        const { title, description } = webPageSeoText(locale, webPage, 'chefSignUp');
         return seoMeta({
-            title: contentLocaleText(webPage.titleDe, webPage.titleEn, locale),
-            description: contentLocaleText(webPage.descriptionDe, webPage.descriptionEn, locale),
+            title,
+            description,
             path: '/chef-sign-up',
             locale,
             webPageUrl: webPageUrlGet(),

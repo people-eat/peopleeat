@@ -1,10 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router';
 
-import { contentLocaleText } from '../../shared/contentSection';
 import { AboutUsPageDocument } from '../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../web/graphql/routeLoaderGraphqlClient';
 import { AboutUsPage } from '../../web/pages/AboutUsPage';
 import { seoMeta } from '../../web/seo/seoMeta';
+import { webPageSeoText } from '../../web/seo/webPageSeoText';
 import { webPageUrlGet } from '../../web/seo/webPageUrlGet';
 import { localeFromParam } from '../../web/utils/locale';
 
@@ -17,9 +17,10 @@ export const Route = createFileRoute('/{-$locale}/about-us')({
         if (!webPage) {
             return {};
         }
+        const { title, description } = webPageSeoText(locale, webPage, 'about');
         return seoMeta({
-            title: contentLocaleText(webPage.titleDe, webPage.titleEn, locale),
-            description: contentLocaleText(webPage.descriptionDe, webPage.descriptionEn, locale),
+            title,
+            description,
             path: '/about-us',
             locale,
             webPageUrl: webPageUrlGet(),

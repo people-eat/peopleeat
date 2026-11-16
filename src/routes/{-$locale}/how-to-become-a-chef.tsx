@@ -1,12 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router';
 
-import { contentLocaleText } from '../../shared/contentSection';
 import { HowToBecomeAChefPageDocument } from '../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../web/graphql/routeLoaderGraphqlClient';
 import { HowToBecomeAChefPage } from '../../web/pages/HowToBecomeAChefPage';
 import { publicFaqJsonLdEntries } from '../../web/sections/SectionQuestionsAndAnswers';
 import { jsonLdFaqPage } from '../../web/seo/jsonLd';
 import { seoMeta } from '../../web/seo/seoMeta';
+import { webPageSeoText } from '../../web/seo/webPageSeoText';
 import { webPageUrlGet } from '../../web/seo/webPageUrlGet';
 import { localeFromParam } from '../../web/utils/locale';
 
@@ -19,10 +19,11 @@ export const Route = createFileRoute('/{-$locale}/how-to-become-a-chef')({
         if (!webPage) {
             return {};
         }
+        const { title, description } = webPageSeoText(locale, webPage, 'howToBecome');
         return {
             ...seoMeta({
-                title: contentLocaleText(webPage.titleDe, webPage.titleEn, locale),
-                description: contentLocaleText(webPage.descriptionDe, webPage.descriptionEn, locale),
+                title,
+                description,
                 path: '/how-to-become-a-chef',
                 locale,
                 webPageUrl: webPageUrlGet(),

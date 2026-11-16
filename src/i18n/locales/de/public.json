@@ -71,6 +71,10 @@
         "notPublic": "Nicht öffentlich"
     },
     "home": {
+        "seo": {
+            "title": "Private Chefs buchen",
+            "description": "Finde einen Privatkoch für jeden Anlass. Mit deinen Liebsten. Bei dir zuhause."
+        },
         "hero": {
             "headline1": "Finde einen Privatkoch",
             "headline2": "erlebe Außergewöhnliches",
@@ -204,6 +208,10 @@
         "paymentAnswer": "Der Gesamtbetrag deiner Buchung wird frühestens zwei Wochen im Voraus abgebucht. Findet dein Anlass innerhalb von zwei Wochen statt, wird der Gesamtbetrag direkt abgebucht. Es ist wichtig zu beachten, dass deine Zahlung erst einen Tag nach dem Anlass an den Koch ausgezahlt wird. Das stellt sicher, dass alles reibungslos abläuft und deine Zahlung geschützt ist."
     },
     "about": {
+        "seo": {
+            "title": "Über uns",
+            "description": "Erfahre mehr über peopleeat, das Team und unsere Mission: erstklassige Köche für unvergessliche Momente."
+        },
         "startedKicker": "Wie wir gestartet haben",
         "startedHeadline": "Wir revolutionieren die Art, Gastgeber zu sein",
         "startedIntro": "Willkommen! Wir sind Natalia und Daniel, die Gründer von peopleeat!",
@@ -270,6 +278,10 @@
         "promoCode": "Mit dem Code {code}"
     },
     "chefSignUp": {
+        "seo": {
+            "title": "Als Koch registrieren",
+            "description": "Lege dein peopleeat-Kochprofil in einem Schritt an."
+        },
         "title": "Als Koch registrieren",
         "completeProfile": "Bitte vervollständige das Koch-Profil.",
         "invalidTravelExpenses": "Bitte gib gültige Reisekosten ein (mind. 0,25 €).",
@@ -318,6 +330,10 @@
         "indexLink": "Alle Beiträge"
     },
     "giftCard": {
+        "seo": {
+            "title": "Geschenkkarte",
+            "description": "Verschenke ein unvergessliches Dinner mit einem Privatkoch."
+        },
         "title": "Geschenkkarte",
         "description": "Verschenke ein unvergessliches Dinner mit einem Privatkoch.",
         "createFailed": "Gutschein konnte nicht erstellt werden.",
@@ -430,11 +446,25 @@
         "markets": {
             "netherlands": {
                 "comingTo": "in die Niederlande",
-                "inCountry": "in den Niederlanden"
+                "inCountry": "in den Niederlanden",
+                "city": {
+                    "amsterdam": "Amsterdam",
+                    "rotterdam": "Rotterdam",
+                    "theHague": "Den Haag",
+                    "utrecht": "Utrecht",
+                    "eindhoven": "Eindhoven"
+                }
             },
             "switzerland": {
                 "comingTo": "in die Schweiz",
-                "inCountry": "in der Schweiz"
+                "inCountry": "in der Schweiz",
+                "city": {
+                    "zurich": "Zürich",
+                    "geneva": "Genf",
+                    "basel": "Basel",
+                    "bern": "Bern",
+                    "lausanne": "Lausanne"
+                }
             }
         },
         "faq": {
@@ -475,6 +505,10 @@
         }
     },
     "howToBecome": {
+        "seo": {
+            "title": "Koch werden",
+            "description": "Koche deine Menüs bei deinen Gästen, zu deinen Konditionen. Melde dich als peopleeat-Koch an."
+        },
         "line1": "Koche deine Menüs.",
         "line2": "In ihrer Küche.",
         "line3": "Zu deinen Konditionen.",

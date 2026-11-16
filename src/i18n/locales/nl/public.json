@@ -71,6 +71,10 @@
         "notPublic": "Niet op de openbare pagina"
     },
     "home": {
+        "seo": {
+            "title": "Privéchefs boeken",
+            "description": "Vind een privéchef voor elke gelegenheid. Met je dierbaren. Bij jou thuis."
+        },
         "hero": {
             "headline1": "Vind een privéchef",
             "headline2": "Beleef iets bijzonders",
@@ -204,6 +208,10 @@
         "paymentAnswer": "Het totaalbedrag van je boeking wordt op zijn vroegst twee weken van tevoren afgeschreven. Vindt je evenement binnen twee weken plaats, dan wordt het totaalbedrag direct afgeschreven. Belangrijk om te weten: je betaling wordt pas een dag na het evenement aan de chef uitbetaald. Zo loopt alles soepel en is je betaling beschermd."
     },
     "about": {
+        "seo": {
+            "title": "Over ons",
+            "description": "Ontdek peopleeat, het team en onze missie: uitzonderlijke chefs voor onvergetelijke momenten."
+        },
         "startedKicker": "Hoe we begonnen",
         "startedHeadline": "We veranderen de manier waarop mensen gasten ontvangen",
         "startedIntro": "Welkom! Wij zijn Natalia en Daniel, de oprichters van peopleeat!",
@@ -270,6 +278,10 @@
         "promoCode": "Met de code {code}"
     },
     "chefSignUp": {
+        "seo": {
+            "title": "Aanmelden als chef",
+            "description": "Maak in één stap je peopleeat-chefprofiel aan."
+        },
         "title": "Aanmelden als chef",
         "completeProfile": "Maak het chefprofiel compleet.",
         "invalidTravelExpenses": "Vul geldige reiskosten in (minimaal €0,25).",
@@ -318,6 +330,10 @@
         "indexLink": "Alle artikelen"
     },
     "giftCard": {
+        "seo": {
+            "title": "Cadeaukaart",
+            "description": "Geef een onvergetelijk diner met een privéchef cadeau."
+        },
         "title": "Cadeaubon",
         "description": "Geef een onvergetelijk diner met een privéchef cadeau.",
         "createFailed": "De cadeaubon kon niet worden aangemaakt.",
@@ -430,11 +446,25 @@
         "markets": {
             "netherlands": {
                 "comingTo": "naar Nederland",
-                "inCountry": "in Nederland"
+                "inCountry": "in Nederland",
+                "city": {
+                    "amsterdam": "Amsterdam",
+                    "rotterdam": "Rotterdam",
+                    "theHague": "Den Haag",
+                    "utrecht": "Utrecht",
+                    "eindhoven": "Eindhoven"
+                }
             },
             "switzerland": {
                 "comingTo": "naar Zwitserland",
-                "inCountry": "in Zwitserland"
+                "inCountry": "in Zwitserland",
+                "city": {
+                    "zurich": "Zürich",
+                    "geneva": "Genève",
+                    "basel": "Bazel",
+                    "bern": "Bern",
+                    "lausanne": "Lausanne"
+                }
             }
         },
         "faq": {
@@ -475,6 +505,10 @@
         }
     },
     "howToBecome": {
+        "seo": {
+            "title": "Chef worden",
+            "description": "Kook jouw menu’s bij je gasten, op jouw voorwaarden. Meld je aan als peopleeat-chef."
+        },
         "line1": "Kook jouw menu.",
         "line2": "In hun keuken.",
         "line3": "Op jouw voorwaarden.",

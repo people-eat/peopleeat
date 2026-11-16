@@ -15,10 +15,10 @@ Visitors open four indexable pages (German unprefixed, English under `/en`):
    Germany chef page, with founding benefits and a last onboarding step that does **not** promise guest requests until early 2027. The CTA
    opens `/chef-sign-up?market=netherlands` (or `switzerland`).
 
-Key cities named on the pages:
+Key cities named on the pages (localized via `comingTo.markets.*.city.*` in public catalogs):
 
-- Netherlands: Amsterdam, Rotterdam, The Hague, Utrecht, Eindhoven
-- Switzerland: Zurich, Geneva, Basel, Bern, Lausanne
+- Netherlands: Amsterdam, Rotterdam, The Hague (Den Haag / La Haye), Utrecht, Eindhoven
+- Switzerland: Zurich, Geneva, Basel, Bern, Lausanne (localized in catalogs)
 
 These names are copy and structured data only. There are **no** published `/cities/...` pages for those markets yet. Admins may create
 **unpublished** `Cities` drafts with `countryCode` `NL` or `CH` (founding-chef assignment, copy, map center) and publish them only at guest
@@ -46,7 +46,7 @@ pick.
 | Email-only interest form instead of chef sign-up  | Rejected: founding chefs should complete profile and menu now                                   |
 | Two city chef pages per country, no country hub   | Rejected: would miss “peopleeat Netherlands / Switzerland” queries                              |
 | Reserve `/netherlands` as the coming-to URL       | Rejected: keep short country URLs for the 2027 customer hub                                     |
-| Add Dutch as a locale                             | Done: `nl` is a catalog locale (UI + email). CH pages still use German CMS copy as the default |
+| Add Dutch as a locale                             | Done: `nl` is a catalog locale (UI + email). CH pages still use German CMS copy as the default  |
 | Countries CMS table like cities                   | Rejected: country hubs stay in expansion config; cities carry `countryCode` only                |
 | Geo-filter `/cities` or homepage by IP / language | Rejected: unstable HTML per URL; crawlers would index the DE view                               |
 | Invent a founding-chef fee discount               | Rejected until a commercial term is confirmed                                                   |
@@ -70,7 +70,8 @@ surface country grouping / hub links so crawlable HTML stays stable before NL/CH
 
 ## Implementation
 
-- Config: [`src/shared/expansionMarkets.ts`](../../src/shared/expansionMarkets.ts)
+- Config: [`src/shared/expansionMarkets.ts`](../../src/shared/expansionMarkets.ts) — locative / motion phrases and city labels come from
+  `public.comingTo.markets.*` (do not inject `inCountryEn` / `comingToPhraseEn` into non-English UI)
 - Flags: `public/countries/flag-netherlands.png`, `flag-switzerland.png` (badges) and `flag-*-peopleeat.png` (hero / card marks)
 - Pages: [`ComingToCountryPage.tsx`](../../src/web/pages/ComingToCountryPage.tsx),
   [`FoundingChefCountryPage.tsx`](../../src/web/pages/FoundingChefCountryPage.tsx)

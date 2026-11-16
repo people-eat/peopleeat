@@ -35,6 +35,10 @@
         "back": "Terug naar de boekingsaanvraag"
     },
     "form": {
+        "seo": {
+            "title": "Boekingsaanvraag: formulier",
+            "description": "Stuur een boekingsaanvraag voor een privéchef. Vrijblijvend."
+        },
         "leftoverCook": "Deze aanvraag gaat naar chefs in de buurt, niet alleen naar één chef.",
         "leftoverMenu": "Dit menu is op dit moment niet beschikbaar. De aanvraag gaat nog steeds alleen naar {cookName}.",
         "direct": {

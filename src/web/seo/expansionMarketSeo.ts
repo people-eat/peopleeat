@@ -1,6 +1,7 @@
 import { t } from '../../i18n/t';
 import type { ExpansionMarket } from '../../shared/expansionMarkets';
 import {
+    expansionMarketCityNames,
     expansionMarketComingToDescription,
     expansionMarketComingToTitle,
     expansionMarketFaqEntries,
@@ -12,6 +13,15 @@ import { jsonLdBreadcrumbList, jsonLdCountryService, jsonLdFaqPage, jsonLdHeadSc
 import { SITE_NAME } from './seoConstants';
 import { seoMeta } from './seoMeta';
 import { webPageUrlGet } from './webPageUrlGet';
+
+function expansionMarketJsonLdCities(market: ExpansionMarket, locale: Locale) {
+    const names = expansionMarketCityNames(market, locale);
+    return market.cities.map((city, index) => ({
+        name: names[index] ?? city.key,
+        latitude: city.latitude,
+        longitude: city.longitude,
+    }));
+}
 
 export function expansionMarketComingToHead(market: ExpansionMarket, locale: Locale) {
     const webPageUrl = webPageUrlGet();
@@ -32,11 +42,7 @@ export function expansionMarketComingToHead(market: ExpansionMarket, locale: Loc
                 name: title,
                 description,
                 countryName: locale === 'de' ? market.nameDe : market.nameEn,
-                cities: market.cities.map((city) => ({
-                    name: locale === 'de' ? city.nameDe : city.nameEn,
-                    latitude: city.latitude,
-                    longitude: city.longitude,
-                })),
+                cities: expansionMarketJsonLdCities(market, locale),
             }),
             jsonLdFaqPage(expansionMarketFaqEntries(market, 'comingTo', locale)),
         ]),
@@ -63,11 +69,7 @@ export function expansionMarketFoundingChefHead(market: ExpansionMarket, locale:
                 name: title,
                 description,
                 countryName: locale === 'de' ? market.nameDe : market.nameEn,
-                cities: market.cities.map((city) => ({
-                    name: locale === 'de' ? city.nameDe : city.nameEn,
-                    latitude: city.latitude,
-                    longitude: city.longitude,
-                })),
+                cities: expansionMarketJsonLdCities(market, locale),
             }),
             jsonLdFaqPage(expansionMarketFaqEntries(market, 'foundingChef', locale)),
         ]),

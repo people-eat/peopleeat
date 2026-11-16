@@ -1,11 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router';
 
-import { contentLocaleText } from '../../shared/contentSection';
 import { GiftCardPageDocument } from '../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../web/graphql/routeLoaderGraphqlClient';
 import { GiftCardPage, parseGiftCardFormSearch } from '../../web/pages/GiftCardPage';
 import { recaptchaSiteKeyGet } from '../../web/seo/recaptchaSiteKeyGet';
 import { seoMeta } from '../../web/seo/seoMeta';
+import { webPageSeoText } from '../../web/seo/webPageSeoText';
 import { webPageUrlGet } from '../../web/seo/webPageUrlGet';
 import { localeFromParam } from '../../web/utils/locale';
 
@@ -22,9 +22,10 @@ export const Route = createFileRoute('/{-$locale}/gift-card')({
         if (!webPage) {
             return {};
         }
+        const { title, description } = webPageSeoText(locale, webPage, 'giftCard');
         return seoMeta({
-            title: contentLocaleText(webPage.titleDe, webPage.titleEn, locale),
-            description: contentLocaleText(webPage.descriptionDe, webPage.descriptionEn, locale),
+            title,
+            description,
             path: '/gift-card',
             locale,
             webPageUrl: webPageUrlGet(),

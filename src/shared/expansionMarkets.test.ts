@@ -30,11 +30,12 @@ describe('expansionMarketFromCountry', () => {
 });
 
 describe('expansionMarketCityList', () => {
-    it('joins city names for SEO copy', () => {
+    it('joins localized city names for SEO copy', () => {
         const netherlands = expansionMarketFromParam('netherlands');
         expect(netherlands).not.toBeNull();
         expect(expansionMarketCityList(netherlands!, 'en')).toContain('Amsterdam');
         expect(expansionMarketCityList(netherlands!, 'de')).toContain('Den Haag');
+        expect(expansionMarketCityList(netherlands!, 'fr')).toContain('La Haye');
     });
 });
 

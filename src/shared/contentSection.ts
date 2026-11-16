@@ -90,14 +90,22 @@ export const contentSectionsSchema = z.array(contentSectionSchema);
 
 export type ContentSection = z.infer<typeof contentSectionSchema>;
 
-/** Prefer EN when non-empty; otherwise DE. */
+/**
+ * CMS columns are still paired `*De` / `*En` only.
+ * - `de` → German
+ * - every other catalog locale → English when non-empty, otherwise German
+ * Route chrome that has catalog SEO keys should prefer those for `fr` / `it` / `ru` / `nl`
+ * via `webPageSeoText` instead of this helper alone.
+ */
 export function contentLocaleText(de: string, en: string | null | undefined, locale: Locale): string {
-    if (locale === 'en' && en?.trim()) return en;
+    if (locale === 'de') return de;
+    if (en?.trim()) return en;
     return de;
 }
 
 export function contentLocaleItems(itemsDe: string[], itemsEn: string[] | null | undefined, locale: Locale): string[] {
-    if (locale === 'en' && itemsEn && itemsEn.length > 0) return itemsEn;
+    if (locale === 'de') return itemsDe;
+    if (itemsEn && itemsEn.length > 0) return itemsEn;
     return itemsDe;
 }
 

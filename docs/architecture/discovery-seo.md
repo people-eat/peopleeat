@@ -83,13 +83,15 @@ For each page `seoMeta()` emits one `<link rel="canonical">` and one `<link rel=
 
 Fixed public and chrome routes (home, cities list, venues list, occasions list, chefs, blog list, about, gift card, how-to-become-a-chef,
 booking-request variants, chef sign-up, imprint / terms / privacy, sign-in, profile layout, admin layout) load **document title and meta
-description** from `Query.publicWebPage.findOne(webPageKey)` in the route loader. `head()` uses `contentLocaleText(…De, …En, locale)`.
-Visible H1 / in-page marketing copy stays on module consts in `src/web/pages/` — only `<title>` + meta description switch to the DB (with
-defaults from `src/shared/webPage.ts` when no row exists). Keys live in `WebPageKey`; admin edits under `/admin/web-pages`. Keep
-`noindex: true` where it was already set. Parameterized content pages (city / venue / occasion / blog post by path) keep entity-owned SEO,
-not `publicWebPage`. Expansion marketing URLs (`/coming-to/netherlands`, `/how-to-become-a-chef/netherlands`, and the Switzerland pair) own
-title and description in `expansionMarkets` and still emit `seoMeta()` plus FAQ / country `Service` JSON-LD. Visit keys `COMING_TO` and
-`FOUNDING_CHEF` exist for analytics; they are not the public title source.
+description** from `Query.publicWebPage.findOne(webPageKey)` in the route loader. `head()` uses
+`webPageSeoText(locale, webPage, 'catalogPrefix')` for reviewed public chrome: `de`/`en` read CMS `*De`/`*En`; `fr`/`it`/`ru`/`nl` read
+catalog `public.{prefix}.seo.*` (or `publicBooking.form.seo` for the booking form). Other CMS-backed surfaces still call `contentLocaleText`
+(EN for non-`de`, else DE). Visible H1 / in-page marketing copy stays in i18n catalogs / page modules — only `<title>` + meta description
+switch to the DB (with defaults from `src/shared/webPage.ts` when no row exists). Keys live in `WebPageKey`; admin edits under
+`/admin/web-pages`. Keep `noindex: true` where it was already set. Parameterized content pages (city / venue / occasion / blog post by path)
+keep entity-owned SEO, not `publicWebPage`. Expansion marketing URLs (`/coming-to/netherlands`, `/how-to-become-a-chef/netherlands`, and the
+Switzerland pair) own title and description via i18n market phrases in `expansionMarkets` and still emit `seoMeta()` plus FAQ / country
+`Service` JSON-LD. Visit keys `COMING_TO` and `FOUNDING_CHEF` exist for analytics; they are not the public title source.
 
 Wire by extending the page's loader GraphQL document (or adding a colocated `.graphql` + `routeLoaderGraphqlClient` when none exists), then:
 
@@ -97,9 +99,10 @@ Wire by extending the page's loader GraphQL document (or adding a colocated `.gr
 head: ({ params, loaderData }) => {
   const locale = localeFromParam(params);
   const webPage = loaderData.publicWebPage.findOne;
+  const { title, description } = webPageSeoText(locale, webPage, 'home');
   return seoMeta({
-    title: contentLocaleText(webPage.titleDe, webPage.titleEn, locale),
-    description: contentLocaleText(webPage.descriptionDe, webPage.descriptionEn, locale),
+    title,
+    description,
     path: '/…',
     locale,
     webPageUrl: webPageUrlGet(),

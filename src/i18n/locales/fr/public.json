@@ -49,7 +49,7 @@
         "haveQuestions": "Tu as des questions ?",
         "contactUs": "Contacte-nous",
         "newsletter": "Newsletter",
-        "newsletterBlurb": "Conseils et actualités sur le private dining. Désinscription à tout moment.",
+        "newsletterBlurb": "Conseils et actualités sur les dîners privés. Désinscription à tout moment.",
         "emailPlaceholder": "Adresse e-mail",
         "subscribe": "S’inscrire",
         "subscribed": "Merci, tu es inscrit.",
@@ -71,6 +71,10 @@
         "notPublic": "Pas public"
     },
     "home": {
+        "seo": {
+            "title": "Réserver un chef privé",
+            "description": "Trouve un chef privé pour chaque occasion. Avec tes proches. Chez toi."
+        },
         "hero": {
             "headline1": "Trouve un chef privé",
             "headline2": "vis quelque chose d’extraordinaire",
@@ -79,17 +83,17 @@
         },
         "experience": {
             "intro": "peopleeat est l’endroit où tu trouves un chef privé pour une soirée en quelques étapes, découvres des menus savoureux et vis des moments inoubliables à table, en toute détente.",
-            "casualTitle": "Casual Dining",
-            "casualBody": "Profite d’une soirée détendue entre amis ou en famille. Ton chef privé prépare des plats simples pendant que vous riez et discutez dans une ambiance familiale, un verre de vin à la main.",
+            "casualTitle": "Dîner décontracté",
+            "casualBody": "Profite d’une soirée détendue entre amis ou en famille. Ton chef privé prépare des plats simples pendant que tout le monde rit et discute dans une ambiance familiale, un verre de vin à la main.",
             "casualCta": "à partir de 75 € / personne",
             "casualAlt": "Des jeunes femmes assises autour d’une table avec des bougies, en train de dîner.",
             "signatureTitle": "Menu signature",
-            "signatureBody": "Les moments spéciaux méritent un menu fine dining exclusif, préparé par un chef d’exception. Idéal pour les anniversaires, les dates rondes ou d’autres occasions qui restent en mémoire.",
+            "signatureBody": "Les moments spéciaux méritent un menu gastronomique exclusif, préparé par un chef d’exception. Idéal pour les anniversaires, les anniversaires à chiffre rond ou d’autres occasions qui restent en mémoire.",
             "signatureCta": "à partir de 90 € / personne",
             "signatureAlt": "Un couple savoure un dîner aux chandelles préparé par un chef d’exception.",
             "giftTitle": "Un cadeau inoubliable",
             "giftBody": "Surprends tes proches avec une expérience particulière. Un cadeau idéal pour un anniversaire, un collègue cher, ou simplement pour dire merci.",
-            "giftCta": "Acheter un bon",
+            "giftCta": "Acheter une carte cadeau",
             "giftAlt": "Une carte cadeau peopleeat pour un dîner avec un chef privé."
         },
         "comparison": {
@@ -97,11 +101,11 @@
             "example": "Par exemple : une soirée avec 5 amis, un menu trois plats et ton occasion spéciale",
             "peopleeatTitle": "Avec peopleeat chez toi",
             "peopleeat1": "Un menu selon tes envies et tes goûts",
-            "peopleeat2": "Bois tes boissons préférées",
+            "peopleeat2": "Tes boissons préférées",
             "peopleeat3": "Une soirée confortable et spéciale, à la date que tu choisis",
             "restaurantTitle": "Au restaurant",
             "restaurant1": "Plats à la carte",
-            "restaurant2": "200 % de majoration sur les boissons",
+            "restaurant2": "Boissons souvent majorées de 200 %",
             "restaurant3": "Ouvert au public aux horaires fixés",
             "cta": "Demander sans engagement",
             "captionLine1": "L’anniversaire de Daniel",
@@ -166,7 +170,7 @@
             "intro": "Tu n’as pas à attendre : tu peux choisir directement l’un de nos meilleurs menus, composés pour chaque saison.",
             "people": "personnes",
             "photoAlt": "Photo du témoignage de {name}",
-            "t1": "Une soirée inoubliable grâce à une cheffe parfaitement organisée ! L’engagement et les petits extra ont enthousiasmé nos invités. Sceptique au début, mais au final l’une des meilleures décisions.",
+            "t1": "Une soirée inoubliable grâce à une cheffe parfaitement organisée ! L’engagement et les petits extras ont enthousiasmé nos invités. Sceptique au début, mais au final l’une des meilleures décisions.",
             "t2": "Un déroulé parfait du début à la fin ! Nos envies ont été demandées dès le premier appel, et les propositions de menus variées ont beaucoup aidé. La cheffe a tout donné pour notre fête.",
             "t3": "Un bel événement privé chez nous. La cuisine était excellente ! Avec plaisir une prochaine fois.",
             "hiddenCount": "{count, plural, one {1 avis n’apparaît pas publiquement} other {# avis n’apparaissent pas publiquement}}",
@@ -192,18 +196,22 @@
         "includedItem3": "Service : profite d’être l’hôte, sans te soucier du dressage. Le chef s’en charge.",
         "includedItem4": "Une cuisine propre : pendant que toi et tes convives savourez le dernier plat, le chef veille à laisser la cuisine propre.",
         "includedFooter": "En bref, peopleeat te permet de vivre l’hospitalité autrement, en te concentrant uniquement sur tes convives et les plats.",
-        "advanceQuestion": "Combien de temps à l’avance dois-je réserver un chef ?",
+        "advanceQuestion": "Combien de temps à l’avance dois-tu réserver un chef ?",
         "advanceAnswer": "Notre expérience : le plus tôt possible. Les chefs sont très demandés et travaillent de façon très individuelle ; tu peux toutefois réserver un chef jusqu’à une semaine avant l’occasion prévue.",
         "drinksQuestion": "Et les boissons ?",
         "drinksAnswer": "Nous ne proposons pas encore de sélection de boissons. Nous pensons que savourer tes vins, apéritifs et autres favoris fait pleinement partie du confort, et que cela doit rester entre tes mains. Si tu as besoin de suggestions, nous t’aidons volontiers.",
-        "cutleryQuestion": "Ai-je besoin de couverts et de vaisselle ?",
+        "cutleryQuestion": "As-tu besoin de couverts et de vaisselle ?",
         "cutleryAnswer": "En général, tout est déjà chez toi. Si tu as besoin de couverts ou de vaisselle, contacte-nous. Nous trouvons une solution adaptée.",
-        "menuQuestion": "Comment puis-je parler des détails du menu avec le chef ?",
+        "menuQuestion": "Comment peux-tu parler des détails du menu avec le chef ?",
         "menuAnswer": "Des ajustements de menu peuvent aussi arriver après la réservation. Via le chat, tu coordonnes tous les détails du menu avec le chef.",
-        "paymentQuestion": "Quand est-ce que je paie la réservation ?",
+        "paymentQuestion": "Quand paies-tu la réservation ?",
         "paymentAnswer": "Le montant total est débité au plus tôt deux semaines à l’avance. Si ton occasion a lieu dans les deux semaines, le montant est débité tout de suite. Ton paiement n’est versé au chef que le lendemain de l’occasion. Cela protège ton paiement et garantit que tout se passe bien."
     },
     "about": {
+        "seo": {
+            "title": "À propos",
+            "description": "Découvre peopleeat, l’équipe et notre mission : des chefs d’exception pour des moments inoubliables."
+        },
         "startedKicker": "Comment nous avons commencé",
         "startedHeadline": "Nous révolutionnons la façon d’être hôte",
         "startedIntro": "Bienvenue ! Nous sommes Natalia et Daniel, les fondateurs de peopleeat !",
@@ -212,12 +220,12 @@
         "missionTitle": "Notre mission",
         "missionBody": "Notre mission chez peopleeat est d’élever l’art d’être hôte en donnant accès à des chefs d’exception et en créant des expériences culinaires inoubliables. Nous voulons célébrer le plaisir de manger et l’importance des occasions spéciales, en créant des moments uniques qui rapprochent les gens et restent en mémoire. En même temps, nous voulons permettre aux chefs de vivre leur passion et leur créativité. Avec notre plateforme, nous unissons innovation, chefs et hospitalité, et redéfinissons la façon dont on savoure un repas et on partage un moment.",
         "teamTitle": "Découvre notre équipe",
-        "teamIntro": "Notre équipe se distingue par des personnalités variées et une grande expérience. Ce qui nous unit : révolutionner la façon dont les gens savoure la cuisine et partagent des occasions. Chaque jour, nous travaillons à rendre cette vision réelle.",
+        "teamIntro": "Notre équipe se distingue par des personnalités variées et une grande expérience. Ce qui nous unit : révolutionner la façon dont les gens savourent la cuisine et partagent des occasions. Chaque jour, nous travaillons à rendre cette vision réelle.",
         "teamAlt": "L’équipe peopleeat",
         "teamFounders": "Daniel et Natalia, cofondateurs de peopleeat, apportent une expérience en ventes et en contrôle financier (SAP SE, Raiffeisenbank).",
-        "teamCto": "est notre CTO et Senior Full-Stack Engineer, concentré sur des architectures web évolutives et l’intégration de services d’IA dans des produits existants. En plus de son travail chez SAP SE, il a notamment fondé",
+        "teamCto": "est notre directeur technique et ingénieur full-stack senior, concentré sur des architectures web évolutives et l’intégration de services d’IA dans des produits existants. En plus de son travail chez SAP SE, il a notamment fondé",
         "teamDrawSchema": "Draw Schema, un outil pour modéliser visuellement des bases relationnelles",
-        "teamExperts": "Dirk (à gauche) et Chris (à droite) sont nos experts du métier : Dirk apporte des années d’expérience comme chef en gastronomie haut de gamme et comme chef privé. Chris, maître cuisinier, apporte une large expertise gastronomique et travaille depuis plusieurs années comme chef à domicile (Food-Fighter).",
+        "teamExperts": "Dirk (à gauche) et Chris (à droite) sont nos experts du métier : Dirk apporte des années d’expérience comme chef en gastronomie haut de gamme et comme chef privé. Chris, maître cuisinier, apporte une large expertise gastronomique et travaille depuis plusieurs années comme chef à domicile (sous le nom Food-Fighter).",
         "joinHeadline": "Tu veux rejoindre notre équipe ?",
         "joinSubheadline": "Nous avons hâte de lire ton message.",
         "sendMessage": "Envoyer un message"
@@ -270,6 +278,10 @@
         "promoCode": "Avec le code {code}"
     },
     "chefSignUp": {
+        "seo": {
+            "title": "S’inscrire comme chef",
+            "description": "Crée ton profil chef peopleeat en une étape."
+        },
         "title": "S’inscrire comme chef",
         "completeProfile": "Merci de compléter le profil chef.",
         "invalidTravelExpenses": "Indique des frais de déplacement valides (min. 0,25 €).",
@@ -280,12 +292,12 @@
         "inviteBody": "Un chef peopleeat t’a invité. Ton inscription sera liée à ce chef.",
         "marketBody": "Tu t’inscris comme chef fondateur {inCountry}. Profil et menu maintenant. Demandes d’hôtes à partir de début 2027.",
         "alreadyCookIntro": "Bienvenue chez peopleeat ! Va sur ton profil pour terminer les prochaines étapes.",
-        "intro": "Connexion et profil chef en une étape, ou passage d’un compte existant au statut chef.",
+        "intro": "Connecte-toi et crée ton profil chef en une étape, ou passe ton compte existant en compte chef.",
         "registeredTitle": "Tu es inscrit comme chef",
         "goToProfile": "Aller au profil",
-        "registeredBody": "Ensuite : visibilité et onboarding Stripe dans Profil.",
+        "registeredBody": "Ensuite : visibilité et mise en route Stripe dans Profil.",
         "createProfile": "Créer le profil chef",
-        "createProfileBody": "Ton compte est prêt. Complète le profil chef pour devenir membre.",
+        "createProfileBody": "Ton compte est prêt. Complète le profil chef pour rejoindre le réseau de chefs.",
         "originAddress": "Adresse de départ pour les déplacements",
         "originHint": "Non visible pour les hôtes. Ils voient seulement la ville.",
         "searchAddress": "Rechercher une adresse…",
@@ -306,7 +318,7 @@
     },
     "venues": {
         "title": "Lieux",
-        "description": "Des lieux où vous pouvez réserver un chef privé.",
+        "description": "Des lieux où tu peux réserver un chef privé.",
         "empty": "Aucun lieu publié pour le moment.",
         "exploreTitle": "Découvrir d’autres lieux",
         "seeAll": "Voir tous les lieux"
@@ -318,6 +330,10 @@
         "indexLink": "Tous les articles"
     },
     "giftCard": {
+        "seo": {
+            "title": "Carte cadeau",
+            "description": "Offre un dîner inoubliable avec un chef privé."
+        },
         "title": "Carte cadeau",
         "description": "Offre un dîner inoubliable avec un chef privé.",
         "createFailed": "Impossible de créer la carte cadeau.",
@@ -338,16 +354,16 @@
         "occasionThanks": "Merci",
         "occasionChristmas": "Noël",
         "occasionJustBecause": "Sans raison",
-        "recipientName": "Nom de la personne offerte",
+        "recipientName": "Nom du destinataire",
         "recipientPlaceholder": "p. ex. Anna, ou Anna & Tom",
         "recipientHint": "Un nom suffit, y compris pour un couple ou une famille.",
         "message": "Message",
-        "messagePlaceholder": "Un mot personnel pour la personne offerte…",
+        "messagePlaceholder": "Un mot personnel pour le destinataire…",
         "codeGoesTo": "Le code d’utilisation sera envoyé à {email}.",
         "preparing": "Préparation…",
         "continueWithAmount": "Continuer vers le paiement · {amount}",
         "signInAndBuy": "Se connecter et acheter {amount}",
-        "previewAria": "Aperçu du bon",
+        "previewAria": "Aperçu de la carte cadeau",
         "preview": "Aperçu",
         "recipientFallback": "Destinataire",
         "messageFallback": "Ton message apparaît ici.",
@@ -403,13 +419,13 @@
         "benefitCities": "Premières pages villes",
         "benefitCitiesBody": "Au lancement, nous mettons en avant les chefs fondateurs sur les pages villes.",
         "benefitSupport": "Accompagnement direct",
-        "benefitSupportBody": "Nous t’accompagnons personnellement pendant l’onboarding.",
+        "benefitSupportBody": "Nous t’accompagnons personnellement pendant la mise en route.",
         "timelineTitle": "Comment se passe le lancement",
         "timelineIntro": "D’abord les chefs, ensuite les hôtes. L’attente reste claire : construire le réseau maintenant, réserver à partir de début 2027.",
         "now": "Maintenant",
         "joinAsChef": "S’inscrire comme chef",
         "joinAsChefBody": "Inscris-toi {inCountry} et crée ton profil et ton premier menu.",
-        "onboarding": "Onboarding",
+        "onboarding": "Mise en route",
         "weSupport": "Nous t’accompagnons",
         "weSupportBody": "Nous te contactons pour que ton profil soit prêt à l’ouverture du marché.",
         "early2027": "Début 2027",
@@ -430,11 +446,25 @@
         "markets": {
             "netherlands": {
                 "comingTo": "aux Pays-Bas",
-                "inCountry": "aux Pays-Bas"
+                "inCountry": "aux Pays-Bas",
+                "city": {
+                    "amsterdam": "Amsterdam",
+                    "rotterdam": "Rotterdam",
+                    "theHague": "La Haye",
+                    "utrecht": "Utrecht",
+                    "eindhoven": "Eindhoven"
+                }
             },
             "switzerland": {
                 "comingTo": "en Suisse",
-                "inCountry": "en Suisse"
+                "inCountry": "en Suisse",
+                "city": {
+                    "zurich": "Zurich",
+                    "geneva": "Genève",
+                    "basel": "Bâle",
+                    "bern": "Berne",
+                    "lausanne": "Lausanne"
+                }
             }
         },
         "faq": {
@@ -462,7 +492,7 @@
             },
             "whyEarly": {
                 "question": "Pourquoi m’inscrire tôt ?",
-                "answer": "Tu fais partie du premier réseau de chefs sur place, ton profil est en ligne au lancement, et tu es mis en avant sur les premières pages villes. Nous t’accompagnons personnellement pendant l’onboarding."
+                "answer": "Tu fais partie du premier réseau de chefs sur place, ton profil est en ligne au lancement, et tu es mis en avant sur les premières pages villes. Nous t’accompagnons personnellement pendant la mise en route."
             },
             "whichCities": {
                 "question": "Quelles villes puis-je couvrir ?",
@@ -475,6 +505,10 @@
         }
     },
     "howToBecome": {
+        "seo": {
+            "title": "Devenir chef",
+            "description": "Cuisine tes menus chez tes clients, selon tes conditions. Inscris-toi comme chef peopleeat."
+        },
         "line1": "Cuisine tes menus.",
         "line2": "Dans leur cuisine.",
         "line3": "Selon tes conditions.",
@@ -485,7 +519,7 @@
         "joinFoundingNow": "S’inscrire maintenant comme chef fondateur",
         "breadcrumb": "Devenir chef",
         "onboardingTitle": "Commence en quelques étapes",
-        "onboardingIntro": "Que tu sois chef à domicile, chef privé ou chef salarié : nous t’accompagnons dans l’onboarding pour bien démarrer.",
+        "onboardingIntro": "Que tu sois chef à domicile, chef privé ou chef salarié : nous t’accompagnons à la mise en route pour bien démarrer.",
         "step": "Étape {n}",
         "step1Name": "Inscription",
         "step1Body": "Saisis tes données dans le formulaire d’inscription et commence tout de suite à compléter ton profil.",
@@ -519,7 +553,7 @@
         "marketCities": "Visible sur les premières pages villes",
         "marketCitiesBody": "Au lancement, nous mettons en avant les chefs fondateurs sur les premières pages villes.",
         "marketCare": "Accompagnement direct",
-        "marketCareBody": "Nous t’accompagnons personnellement pendant l’onboarding.",
+        "marketCareBody": "Nous t’accompagnons personnellement pendant la mise en route.",
         "benefitsAlt1": "Bouilloire noire à long bec et corps incliné sur un plan de marbre, à côté d’une tasse et d’un système pour-over.",
         "benefitsAlt2": "Détail du réglage de température sur la base de la bouilloire, avec affichage numérique des degrés.",
         "benefitsAlt3": "Le bec de la bouilloire verse de l’eau bouillante sur le café dans une tasse pour-over.",
@@ -635,17 +669,17 @@
         "acceptPrivacyAfter": ""
     },
     "m": {
-        "noOccasionsPublishedYet": "No occasions published yet."
+        "noOccasionsPublishedYet": "Aucune occasion publiée pour le moment."
     },
     "occasions": {
         "title": "Occasions",
         "description": "Chefs privés pour chaque occasion, de l’anniversaire à la fête d’entreprise."
     },
     "aboutBenefits": {
-        "tasteTitle": "Exactement à votre goût",
-        "tasteBody": "Chaque menu est adapté avec votre chef à vos envies et à votre occasion.",
+        "tasteTitle": "Exactement à ton goût",
+        "tasteBody": "Chaque menu est adapté avec ton chef à tes envies et à ton occasion.",
         "relaxedTitle": "Totalement détendu",
-        "relaxedBody": "Votre chef s’occupe des courses, de la cuisine et du rangement. Vous avez du temps pour vos invités.",
+        "relaxedBody": "Ton chef s’occupe des courses, de la cuisine et du rangement. Tu as du temps pour tes invités.",
         "secureTitle": "Réservation simple et sûre",
         "secureBody": "Demande gratuite et sans engagement, paiement sécurisé directement via peopleeat."
     }

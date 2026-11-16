@@ -1,6 +1,11 @@
 import { Link } from '@tanstack/react-router';
 
-import { expansionMarketCityList, expansionMarketComingToTitle } from '../../shared/expansionMarkets';
+import {
+    expansionMarketCityList,
+    expansionMarketCityNames,
+    expansionMarketComingToTitle,
+    expansionMarketInCountryPhrase,
+} from '../../shared/expansionMarkets';
 import type { ExpansionMarket } from '../../shared/expansionMarkets';
 import { useLocale } from '../hooks/useLocale';
 import { useT } from '../hooks/useT';
@@ -15,8 +20,9 @@ export function SectionComingToCountryCities({
     const locale = useLocale();
     const { t } = useT('public');
     const cityList = expansionMarketCityList(market, locale);
+    const cityNames = expansionMarketCityNames(market, locale);
     const foundingChef = audience === 'founding-chef';
-    const inCountry = locale === 'de' ? market.inCountryDe : market.inCountryEn;
+    const inCountry = expansionMarketInCountryPhrase(market, locale);
 
     return (
         <section className="mx-auto w-full max-w-7xl px-4 @lg:px-6">
@@ -25,11 +31,9 @@ export function SectionComingToCountryCities({
                 {foundingChef ? t('comingTo.citiesFounding', { cities: cityList }) : t('comingTo.citiesComingTo', { cities: cityList })}
             </p>
             <ul className="mt-10 divide-y divide-border border-y border-border @md:mt-14">
-                {market.cities.map((city) => (
-                    <li key={city.nameEn}>
-                        <h3 className="py-5 font-serif text-3xl font-light tracking-tight @md:py-7 @md:text-5xl">
-                            {city[locale === 'de' ? 'nameDe' : 'nameEn']}
-                        </h3>
+                {market.cities.map((city, index) => (
+                    <li key={city.key}>
+                        <h3 className="py-5 font-serif text-3xl font-light tracking-tight @md:py-7 @md:text-5xl">{cityNames[index]}</h3>
                     </li>
                 ))}
             </ul>

@@ -71,6 +71,10 @@
         "notPublic": "Not on public page"
     },
     "home": {
+        "seo": {
+            "title": "Book private chefs",
+            "description": "Find a private chef for every occasion. With your loved ones. At your home."
+        },
         "hero": {
             "headline1": "Find a private chef",
             "headline2": "Experience something extraordinary",
@@ -204,6 +208,10 @@
         "paymentAnswer": "The total amount of your booking will be charged at the earliest two weeks in advance. If your event takes place within two weeks, the total amount will be charged immediately. It is important to note that your payment will only be paid out to the chef one day after the event. This ensures that everything runs smoothly and your payment is protected."
     },
     "about": {
+        "seo": {
+            "title": "About us",
+            "description": "Discover peopleeat, the team, and our mission: outstanding chefs for unforgettable moments."
+        },
         "startedKicker": "How we got started",
         "startedHeadline": "We are revolutionizing the way people host",
         "startedIntro": "Welcome! We are Natalia and Daniel, the founders of peopleeat!",
@@ -270,6 +278,10 @@
         "promoCode": "With the code {code}"
     },
     "chefSignUp": {
+        "seo": {
+            "title": "Chef sign-up",
+            "description": "Create your peopleeat chef profile in one step."
+        },
         "title": "Chef sign-up",
         "completeProfile": "Please complete the chef profile.",
         "invalidTravelExpenses": "Please enter valid travel expenses (at least €0.25).",
@@ -318,6 +330,10 @@
         "indexLink": "All articles"
     },
     "giftCard": {
+        "seo": {
+            "title": "Gift card",
+            "description": "Gift an unforgettable dinner with a private chef."
+        },
         "title": "Gift card",
         "description": "Gift an unforgettable dinner with a private chef.",
         "createFailed": "Could not create the gift card.",
@@ -430,11 +446,25 @@
         "markets": {
             "netherlands": {
                 "comingTo": "to the Netherlands",
-                "inCountry": "in the Netherlands"
+                "inCountry": "in the Netherlands",
+                "city": {
+                    "amsterdam": "Amsterdam",
+                    "rotterdam": "Rotterdam",
+                    "theHague": "The Hague",
+                    "utrecht": "Utrecht",
+                    "eindhoven": "Eindhoven"
+                }
             },
             "switzerland": {
                 "comingTo": "to Switzerland",
-                "inCountry": "in Switzerland"
+                "inCountry": "in Switzerland",
+                "city": {
+                    "zurich": "Zurich",
+                    "geneva": "Geneva",
+                    "basel": "Basel",
+                    "bern": "Bern",
+                    "lausanne": "Lausanne"
+                }
             }
         },
         "faq": {
@@ -475,6 +505,10 @@
         }
     },
     "howToBecome": {
+        "seo": {
+            "title": "How to become a chef",
+            "description": "Cook your menus at your guests’ homes, on your terms. Sign up as a peopleeat chef."
+        },
         "line1": "Cook your menu.",
         "line2": "In their kitchen.",
         "line3": "On your terms.",

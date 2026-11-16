@@ -35,6 +35,10 @@
         "back": "Torna alla richiesta"
     },
     "form": {
+        "seo": {
+            "title": "Richiesta di prenotazione: modulo",
+            "description": "Invia una richiesta di prenotazione per uno chef privato. Senza impegno."
+        },
         "leftoverCook": "Questa richiesta va ai cuochi vicino a te, non solo a un cuoco specifico.",
         "leftoverMenu": "Questo menu non è disponibile al momento. La richiesta va comunque solo a {cookName}.",
         "direct": {

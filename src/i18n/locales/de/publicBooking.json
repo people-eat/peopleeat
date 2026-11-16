@@ -35,6 +35,10 @@
         "back": "Zur Buchungsanfrage"
     },
     "form": {
+        "seo": {
+            "title": "Buchungsanfrage: Formular",
+            "description": "Stelle eine Buchungsanfrage für einen Privatkoch. Unverbindlich."
+        },
         "leftoverCook": "Diese Anfrage geht an Köche in deiner Nähe, nicht nur an einen bestimmten Koch.",
         "leftoverMenu": "Dieses Menü ist gerade nicht verfügbar. Die Anfrage geht trotzdem nur an {cookName}.",
         "direct": {

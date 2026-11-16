@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router';
 
+import { expansionMarketComingToPhrase } from '../../shared/expansionMarkets';
 import type { ExpansionMarket } from '../../shared/expansionMarkets';
 import { useLocale } from '../hooks/useLocale';
 import { useT } from '../hooks/useT';
@@ -9,7 +10,7 @@ import { StatusAlert } from './base/status-alert';
 export function BookingRequestMarketClosedNotice({ market }: { market: ExpansionMarket }) {
     const locale = useLocale();
     const { t } = useT('publicBooking');
-    const comingTo = locale === 'de' ? market.comingToPhraseDe : market.comingToPhraseEn;
+    const comingTo = expansionMarketComingToPhrase(market, locale);
 
     return (
         <StatusAlert

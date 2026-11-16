@@ -25,6 +25,7 @@ import {
     bookingRequestMarketClosedFromMessage,
     bookingRequestPriceClassInfo,
     bookingRequestPriceClassTypes,
+    expansionMarketComingToPhrase,
     expansionMarketFromCountry,
     featureToggleIsActive,
     formatCountryName,
@@ -117,7 +118,7 @@ const CARE_ITEMS = [
 ] as const;
 
 function marketComingTo(market: ExpansionMarket, locale: Locale): string {
-    return locale === 'de' ? market.comingToPhraseDe : market.comingToPhraseEn;
+    return expansionMarketComingToPhrase(market, locale);
 }
 
 type PlanSession = GqlCBookingRequestPlanPageQuery['currentSession'];

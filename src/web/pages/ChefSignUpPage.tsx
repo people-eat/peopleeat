@@ -6,7 +6,7 @@ import { useMutation, useQuery } from 'urql';
 
 import { chefSignUpFunnelArea } from '../../shared/chefSignUpFunnel';
 import type { ChefSignUpFunnelClientStep } from '../../shared/chefSignUpFunnel';
-import { expansionMarketFoundingChefTitle, expansionMarketFromParam } from '../../shared/expansionMarkets';
+import { expansionMarketFoundingChefTitle, expansionMarketFromParam, expansionMarketInCountryPhrase } from '../../shared/expansionMarkets';
 import type { ExpansionMarketSlug } from '../../shared/expansionMarkets';
 import { AuthIdentityGate } from '../components/auth/AuthIdentityGate';
 import { AuthIdentityGateLogOnFooter } from '../components/auth/AuthIdentityGateLogOnFooter';
@@ -66,7 +66,7 @@ export function ChefSignUpPage({
     const locale = useLocale();
     const { t } = useT('public');
     const market = expansionMarketFromParam(marketSlug);
-    const inCountry = market ? (locale === 'de' ? market.inCountryDe : market.inCountryEn) : '';
+    const inCountry = market ? expansionMarketInCountryPhrase(market, locale) : '';
     const [success, setSuccess] = useState(Boolean(loaderData.currentSession.user?.cook));
     const [session, setSession] = useState(loaderData.currentSession);
     const [, cookCreate] = useMutation(ChefSignUpCookCreateDocument);

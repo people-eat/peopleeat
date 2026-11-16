@@ -1,3 +1,4 @@
+import { expansionMarketInCountryPhrase } from '../../shared/expansionMarkets';
 import type { ExpansionMarket } from '../../shared/expansionMarkets';
 import { AppImage } from '../components/AppImage';
 import { useLocale } from '../hooks/useLocale';
@@ -6,7 +7,7 @@ import { useT } from '../hooks/useT';
 export function SectionBenefitsForChefs({ market }: { market?: ExpansionMarket }) {
     const locale = useLocale();
     const { t } = useT('public');
-    const inCountry = market ? (locale === 'de' ? market.inCountryDe : market.inCountryEn) : '';
+    const inCountry = market ? expansionMarketInCountryPhrase(market, locale) : '';
 
     const benefits = market
         ? [

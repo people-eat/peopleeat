@@ -43,6 +43,7 @@ import {
     dateDistanceInDaysToToday,
     defaultBookingRequestOccasions,
     defaultBookingRequestPreferences,
+    expansionMarketComingToPhrase,
     expansionMarketFromCountry,
     featureToggleIsActive,
     formatCurrency,
@@ -179,7 +180,7 @@ function exactEventAddressEqual(a: GqlCUserBookingRequestExactEventAddressInput,
 }
 
 function marketComingTo(market: ExpansionMarket, locale: Locale): string {
-    return locale === 'de' ? market.comingToPhraseDe : market.comingToPhraseEn;
+    return expansionMarketComingToPhrase(market, locale);
 }
 
 function stepCopy(

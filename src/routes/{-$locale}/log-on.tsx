@@ -1,11 +1,11 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
 
 import { t } from '../../i18n/t';
-import { contentLocaleText } from '../../shared/contentSection';
 import { LogOnPageDocument } from '../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../web/graphql/routeLoaderGraphqlClient';
 import { LogOnPage } from '../../web/pages/LogOnPage';
 import { seoMeta } from '../../web/seo/seoMeta';
+import { webPageSeoText } from '../../web/seo/webPageSeoText';
 import { webPageUrlGet } from '../../web/seo/webPageUrlGet';
 import { localeFromParam } from '../../web/utils/locale';
 import { parseSignInSearch, returnToSafe } from '../../web/utils/returnTo';
@@ -31,10 +31,11 @@ export const Route = createFileRoute('/{-$locale}/log-on')({
     head: ({ params, loaderData }) => {
         const locale = localeFromParam(params);
         const webPage = loaderData?.publicWebPage.findOne;
-        const title = webPage ? contentLocaleText(webPage.titleDe, webPage.titleEn, locale) : t(locale, 'public', 'logOn.seo.title');
-        const description = webPage
-            ? contentLocaleText(webPage.descriptionDe, webPage.descriptionEn, locale)
-            : t(locale, 'public', 'logOn.seo.description');
+        const fromCatalog = {
+            title: t(locale, 'public', 'logOn.seo.title'),
+            description: t(locale, 'public', 'logOn.seo.description'),
+        };
+        const { title, description } = webPage ? webPageSeoText(locale, webPage, 'logOn') : fromCatalog;
         return seoMeta({
             title,
             description,
