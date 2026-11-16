@@ -100,10 +100,11 @@ JSONB `{ de, en }` blob:
 - `subjectDe varchar default ''`, `subjectEn varchar default ''` — both default if the field is optional
 
 The GraphQL schema mirrors the same pair as `roleDe: String!`, `roleEn: String!`. The client picks the locale-matching half via
-`contentLocaleText` (EN if non-empty, else DE; `fr` / `it` fall back to DE until CMS columns grow). JSONB for two-key bilingual data is
-Postgres-native overhead; the column-pair shape keeps `WHERE roleDe ILIKE …` queries trivial. **UI chrome is not CMS**: product strings live
-in `src/i18n/locales/` catalogs, not `*De` / `*En` columns. See [`docs/architecture/content-model.md`](./architecture/content-model.md).
-One-language values (a chat title, a log line) stay a single column.
+`contentLocaleText` (EN if non-empty, else DE; `fr` / `it` / `ru` fall back to DE until CMS columns grow). JSONB for two-key bilingual data
+is Postgres-native overhead; the column-pair shape keeps `WHERE roleDe ILIKE …` queries trivial. **UI chrome is not CMS**: product strings
+live in `src/i18n/locales/` catalogs, not `*De` / `*En` columns. See
+[`docs/architecture/content-model.md`](./architecture/content-model.md). One-language values (a chat title, a log line) stay a single
+column.
 
 ## Icons
 
@@ -279,8 +280,8 @@ disclaimer, chat transcript messages region) may call `useT('common')` inside th
 
 **Every locale must be real copy.** Identical values are fine when the word is the same (`Name`, `Status`, brand names). It is **not** fine
 when German has a clear equivalent: write `Fähigkeiten` not `Skills`, `Protokolle` not `Logs`. Prefer translating UI chrome even when the
-English loanword is common in German tech speech. `en` / `fr` / `it` catalogs must match the `de` key tree (`npm run i18n:check`). Missing
-keys fall back to `de`, never a raw key.
+English loanword is common in German tech speech. `en` / `fr` / `it` / `ru` catalogs must match the `de` key tree (`npm run i18n:check`).
+Missing keys fall back to `de`, never a raw key.
 
 **No mid-sentence em or en dashes (`—` / `–`) in user-facing copy.** They read as AI-generated. Prefer commas, periods, colons, or
 parentheses. Empty-value placeholders that render a lone `—` for missing data are fine, as are en dashes in numeric or alphabetic ranges
@@ -937,8 +938,8 @@ under a labeled section. Lint still waits on types (and the rest of the wave) so
 
 ### Spell check
 
-`npm run spell:check` runs `cspell .`. **Source, comments, identifiers, and English catalogs are English-only.** German / French / Italian
-dictionaries apply only through `.cspell.json` `overrides`:
+`npm run spell:check` runs `cspell .`. **Source, comments, identifiers, and English catalogs are English-only.** German / French / Italian /
+Russian dictionaries apply only through `.cspell.json` `overrides`:
 
 | Path                                                                                                          | Language |
 | ------------------------------------------------------------------------------------------------------------- | -------- |
@@ -946,13 +947,14 @@ dictionaries apply only through `.cspell.json` `overrides`:
 | `src/i18n/locales/en/**`                                                                                      | `en`     |
 | `src/i18n/locales/fr/**`                                                                                      | `en,fr`  |
 | `src/i18n/locales/it/**`                                                                                      | `en,it`  |
+| `src/i18n/locales/ru/**`                                                                                      | `en,ru`  |
 | Slack ops, WhatsApp templates/webhooks, German-first LLM prompt files, tests, stories, docs, media, demo seed | `en,de`  |
 
-Do **not** put `de-de` / `fr-fr` / `it-it` in the root `dictionaries` list: that would accept German (etc.) in every TypeScript file. New UI
-copy belongs in catalogs. Unmigrated `{ de: '…', en: '…' }` values and CMS `*De` fields are ignored via `ignoreRegExpList`; German in a
-comment, identifier, or English string still fails. A shrinking file list in `.cspell.json` covers leftover German that is not a quoted
-`de:` / `*De` value; drop a path from that list when the file is migrated. Add English product/tech terms to the root `words` list. Do not
-add German words there to silence a source file.
+Do **not** put `de-de` / `fr-fr` / `it-it` / `ru_ru` in the root `dictionaries` list: that would accept German (etc.) in every TypeScript
+file. New UI copy belongs in catalogs. Unmigrated `{ de: '…', en: '…' }` values and CMS `*De` fields are ignored via `ignoreRegExpList`;
+German in a comment, identifier, or English string still fails. A shrinking file list in `.cspell.json` covers leftover German that is not a
+quoted `de:` / `*De` value; drop a path from that list when the file is migrated. Add English product/tech terms to the root `words` list.
+Do not add German words there to silence a source file.
 
 ## Browser Capture (Playwright)
 

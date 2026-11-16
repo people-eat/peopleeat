@@ -54,6 +54,7 @@ describe('seoMeta', () => {
                 { rel: 'alternate', hrefLang: 'en', href: 'https://example.com/en/terms-and-conditions' },
                 { rel: 'alternate', hrefLang: 'fr', href: 'https://example.com/fr/terms-and-conditions' },
                 { rel: 'alternate', hrefLang: 'it', href: 'https://example.com/it/terms-and-conditions' },
+                { rel: 'alternate', hrefLang: 'ru', href: 'https://example.com/ru/terms-and-conditions' },
                 { rel: 'alternate', hrefLang: 'x-default', href: 'https://example.com/terms-and-conditions' },
             ]),
         );

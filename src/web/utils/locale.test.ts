@@ -19,6 +19,7 @@ describe('localePath', () => {
         expect(localePath('en', '/')).toBe('/en');
         expect(localePath('fr', '/log-on')).toBe('/fr/log-on');
         expect(localePath('it', '/')).toBe('/it');
+        expect(localePath('ru', '/log-on')).toBe('/ru/log-on');
     });
 
     it('does not double-prefix an already-prefixed path', () => {
@@ -46,17 +47,19 @@ describe('pathWithoutLocale', () => {
         expect(pathWithoutLocale('/admin/users', 'de')).toBe('/admin/users');
     });
 
-    it('strips french and italian prefixes', () => {
+    it('strips french, italian, and Russian prefixes', () => {
         expect(pathWithoutLocale('/fr/about')).toBe('/about');
         expect(pathWithoutLocale('/it/log-on')).toBe('/log-on');
+        expect(pathWithoutLocale('/ru/about')).toBe('/about');
     });
 });
 
 describe('localeFromAcceptLanguage', () => {
-    it('prefers french and italian when the visitor asks for them', () => {
+    it('prefers french, italian, and Russian when the visitor asks for them', () => {
         expect(localeFromAcceptLanguage('fr,en;q=0.8')).toBe('fr');
         expect(localeFromAcceptLanguage('fr-FR,fr;q=0.9')).toBe('fr');
         expect(localeFromAcceptLanguage('it-IT,it;q=0.9,en;q=0.8')).toBe('it');
+        expect(localeFromAcceptLanguage('ru-RU,ru;q=0.9,en;q=0.8')).toBe('ru');
     });
 });
 

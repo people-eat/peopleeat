@@ -1,15 +1,15 @@
+import { localePath } from '../../../shared/locale';
 import type { Locale } from '../../../shared/locale';
 
 function webPageBase(webPageUrl: string): string {
     return webPageUrl.replace(/\/$/, '');
 }
 
-/** Absolute public URL with optional `/en` prefix for English. */
+/** Absolute public URL with locale prefix for non-default locales. */
 function bookingRequestEmailPublicUrl(webPageUrl: string, locale: Locale, path: string): string {
     const base = webPageBase(webPageUrl);
-    const prefix = locale === 'en' ? '/en' : '';
-    const normalized = path.startsWith('/') ? path : `/${path}`;
-    return `${base}${prefix}${normalized}`;
+    const normalized = (path.startsWith('/') ? path : `/${path}`) as `/${string}`;
+    return `${base}${localePath(locale, normalized)}`;
 }
 
 export function bookingRequestEmailTermsUrl(webPageUrl: string, locale: Locale): string {

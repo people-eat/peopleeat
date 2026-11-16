@@ -11,6 +11,8 @@ export const featureToggleKeys = [
     'COOK_ANALYTICS',
     'COOK_PUBLIC_PROFILE_SHARE',
     'COOK_PUBLIC_PROFILE_PATH_NAME',
+    // Published menus section on /chefs/$pathName (+ cook public preview).
+    'COOK_PUBLIC_PROFILE_MENUS',
     'COOK_PRESENCE_LINKS',
     // Cook profile invite entry (sidebar / invite page). Attribution and rewards stay on.
     'COOK_INVITE',

@@ -86,10 +86,9 @@ function adminUserStatusBadgeVariant(status: GqlCUserStatus): 'default' | 'destr
     return 'default';
 }
 
-function localeLabel(value: string): string {
-    if (value === 'de') return 'Deutsch';
-    if (value === 'en') return 'English';
-    return value;
+function localeLabel(value: string, uiLocale: Locale): string {
+    if (!isLocale(value)) return value;
+    return t(uiLocale, 'common', `language.${value}`);
 }
 
 function preferredCommunicationLabel(value: GqlCUserPreferredCommunication | null | undefined, locale: Locale): string {
@@ -663,7 +662,7 @@ export function AdminUserGeneralSection({
                         label={t(locale, 'admin', 'copy.preferredContact')}
                         value={preferredCommunicationLabel(user.preferredCommunication, locale)}
                     />
-                    <DetailField label={t(locale, 'admin', 'copy.language')} value={localeLabel(user.locale)} />
+                    <DetailField label={t(locale, 'admin', 'copy.language')} value={localeLabel(user.locale, locale)} />
                     <DetailField label={t(locale, 'admin', 'copy.timeZone')} value={user.timeZone} />
                     <DetailField label={t(locale, 'admin', 'copy.userId')} value={user.userId} mono copyText={user.userId} />
                 </dl>

@@ -7,4 +7,5 @@ export const emailCatalogLoaders: Record<CatalogLocale, () => Promise<CatalogMod
     en: () => import('./locales/en/email.json'),
     fr: () => import('./locales/fr/email.json'),
     it: () => import('./locales/it/email.json'),
+    ru: () => import('./locales/ru/email.json'),
 };

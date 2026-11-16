@@ -78,9 +78,7 @@ function preferredCommunicationLabel(value: GqlCUserPreferredCommunication | nul
 }
 
 function localeLabel(value: Locale, uiLocale: Locale): string {
-    if (value === 'de') return t(uiLocale, 'admin', 'copy.german');
-    if (value === 'en') return t(uiLocale, 'admin', 'copy.english');
-    return value;
+    return t(uiLocale, 'common', `language.${value}`);
 }
 
 function countShareLabel(count: number, total: number, locale: Locale): string {

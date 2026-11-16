@@ -145,8 +145,8 @@ in `docs/styles/`.
 
 ### New UI string
 
-1. Add the key to `src/i18n/locales/de/{namespace}.json` and the `en` file (same key tree). `fr` / `it` may omit until those locales are
-   enabled
+1. Add the key to `src/i18n/locales/de/{namespace}.json` and the `en` file (same key tree). `fr` / `it` / `ru` may omit until those locales
+   are enabled
 2. Use `useT('namespace')` in React or `t(locale, 'namespace', 'key')` in `head()` / emails / `src/shared`
 3. Pick the namespace that matches the lazy-load boundary — see [docs/architecture/i18n.md](./docs/architecture/i18n.md)
 4. Run `npm run i18n:check` after catalog edits

@@ -221,6 +221,13 @@ describe('WhatsApp deep links', () => {
         expect(cookCall).toBe(`/profile/booking-request-offers/${offerId}?tab=call`);
         expect(customerReview).toBe(`/profile/booking-requests/${requestId}/offers/${offerId}?tab=testimonial`);
         await expect(foreign).rejects.toThrow('does not belong');
+        const frenchOffer = await whatsappLinkPathFind(runtime, {
+            purpose: 'BOOKING_REQUEST_OFFER_CREATED',
+            locale: 'fr',
+            userId: customer.user.userId,
+            relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: offerId },
+        });
+        expect(frenchOffer).toBe(`/fr/profile/booking-requests/${requestId}/offers/${offerId}?tab=offer`);
         await testDb.update(cookCallSlotBookings).set({ status: 'DECLINED' }).where(eq(cookCallSlotBookings.cookCallSlotBookingId, callId));
         await bookingRequestOfferCallSlotCancelWhatsAppSend(runtime, {
             cookCallSlotBookingId: callId,

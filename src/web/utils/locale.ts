@@ -1,7 +1,7 @@
-import { DEFAULT_LOCALE, isLocale } from '../../shared/locale';
+import { DEFAULT_LOCALE, isLocale, localePath, pathWithoutLocale } from '../../shared/locale';
 import type { CatalogLocale, Locale } from '../../shared/locale';
 
-export { CATALOG_LOCALES, DEFAULT_LOCALE, isLocale } from '../../shared/locale';
+export { CATALOG_LOCALES, DEFAULT_LOCALE, isLocale, localePath, pathWithoutLocale } from '../../shared/locale';
 export type { CatalogLocale, Locale } from '../../shared/locale';
 
 export function localeFromAcceptLanguage(header: string | null | undefined): Locale {
@@ -25,33 +25,6 @@ export function localeFromParam(params: { locale?: string | undefined } | undefi
     const locale = params?.locale;
     if (isLocale(locale)) return locale;
     return DEFAULT_LOCALE;
-}
-
-/** True when the first path segment is a non-default locale prefix (`en`, …). */
-function isLocalePrefixSegment(segment: string | undefined): segment is CatalogLocale {
-    return isLocale(segment) && segment !== DEFAULT_LOCALE;
-}
-
-/**
- * Strip every leading non-default locale prefix (`/en/…`, doubled `/en/en/…`).
- * Default locale stays unprefixed in URLs, so `de` is never treated as a prefix.
- * The optional `locale` argument is kept for call-site clarity; stripping is
- * path-based so a mismatched claimed locale cannot leave `/en` in place.
- */
-export function pathWithoutLocale(pathname: string, _locale?: Locale): string {
-    let path = pathname;
-    for (;;) {
-        const firstSegment = path.split('/')[1];
-        if (!isLocalePrefixSegment(firstSegment)) return path;
-        path = path.slice(firstSegment.length + 1) || '/';
-    }
-}
-
-/** Locale-prefixed absolute path (`/log-on` → `/en/log-on`). Default locale stays unprefixed. */
-export function localePath(locale: CatalogLocale, path: `/${string}`): string {
-    const unprefixed = pathWithoutLocale(path);
-    if (locale === DEFAULT_LOCALE) return unprefixed;
-    return unprefixed === '/' ? `/${locale}` : `/${locale}${unprefixed}`;
 }
 
 /**

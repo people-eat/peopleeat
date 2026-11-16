@@ -7,7 +7,7 @@ describe('catalogLoaders', () => {
     it('maps every web namespace to an explicit per-locale dynamic import', () => {
         expect(Object.keys(catalogLoaders).sort()).toEqual([...I18N_WEB_NAMESPACES].sort());
         for (const namespace of I18N_WEB_NAMESPACES) {
-            expect(Object.keys(catalogLoaders[namespace]).sort()).toEqual(['de', 'en', 'fr', 'it']);
+            expect(Object.keys(catalogLoaders[namespace]).sort()).toEqual(['de', 'en', 'fr', 'it', 'ru']);
         }
     });
 

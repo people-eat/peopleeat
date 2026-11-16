@@ -1,6 +1,6 @@
 {
-    // Default is English-only. Platform dictionaries (de / fr / it) apply only via
-    // `overrides` (catalogs + German-first ops). Never put de-de / fr-fr / it-it in
+    // Default is English-only. Platform dictionaries (de / fr / it / ru) apply only via
+    // `overrides` (catalogs + German-first ops). Never put de-de / fr-fr / it-it / ru_ru in
     // the root `dictionaries` list: that enables German in every TypeScript file.
     "language": "en",
     "ignorePaths": [
@@ -20,7 +20,12 @@
         "scripts/demo-landing-video-manifest.json",
         ".cspell.json"
     ],
-    "import": ["@cspell/dict-de-de/cspell-ext.json", "@cspell/dict-fr-fr/cspell-ext.json", "@cspell/dict-it-it/cspell-ext.json"],
+    "import": [
+        "@cspell/dict-de-de/cspell-ext.json",
+        "@cspell/dict-fr-fr/cspell-ext.json",
+        "@cspell/dict-it-it/cspell-ext.json",
+        "@cspell/dict-ru_ru/cspell-ext.json"
+    ],
     "dictionaries": ["typescript", "node", "html", "css"],
     // Unmigrated `{ de: …, en: … }` objects and CMS `*De` fields. New copy belongs
     // in catalogs; this only keeps leftover German values from failing English-only
@@ -53,14 +58,27 @@
                 "switzerland",
                 "totp",
                 "whatsapp",
-                "Whatsapp"
+                "Whatsapp",
+                "Русский"
             ],
             "ignoreRegExpList": ["/[A-Za-z]{40,}/"]
         },
         {
             "filename": "src/i18n/locales/en/**",
             "language": "en",
-            "words": ["christmas", "Didn", "einfach", "geburt", "geburtstag", "hochzeit", "jahrestag", "JPEGPNG", "unter", "weihnachten"],
+            "words": [
+                "christmas",
+                "Didn",
+                "einfach",
+                "geburt",
+                "geburtstag",
+                "hochzeit",
+                "jahrestag",
+                "JPEGPNG",
+                "unter",
+                "weihnachten",
+                "Русский"
+            ],
             "ignoreRegExpList": ["/[A-Za-z]{40,}/"]
         },
         {
@@ -90,7 +108,8 @@
                 "unter",
                 "visio",
                 "whatsapp",
-                "Whatsapp"
+                "Whatsapp",
+                "Русский"
             ],
             "ignoreRegExpList": ["/[A-Za-z]{40,}/"]
         },
@@ -131,7 +150,8 @@
                 "sull’integrazione",
                 "sull’offerta",
                 "unter",
-                "videochiamata"
+                "videochiamata",
+                "Русский"
             ],
             "ignoreRegExpList": ["/[A-Za-z]{40,}/"]
         },
@@ -139,6 +159,83 @@
             "filename": "src/i18n/locales/it/admin.json",
             "language": "en,it,de",
             "words": ["Anonimizza", "christmas", "OBJECTSTORAGES", "pgstatstatements", "stepcompletato", "stim"]
+        },
+        {
+            "filename": "src/i18n/locales/ru/**",
+            "language": "en,ru",
+            "words": [
+                "christmas",
+                "Didn",
+                "ipad",
+                "JPEGPNG",
+                "netherlands",
+                "OBJECTSTORAGES",
+                "pgstatstatements",
+                "switzerland",
+                "unter",
+                "whatsapp",
+                "Whatsapp",
+                "Амюз",
+                "Анонимизирован",
+                "Анонимизировать",
+                "Бакет",
+                "Бейджи",
+                "Буррата",
+                "Веганское",
+                "Версионирование",
+                "Видеозвонок",
+                "Дорадо",
+                "Мудборд",
+                "Неодобренные",
+                "Непрочитано",
+                "Онбординг",
+                "Отсканируй",
+                "Предзаполняет",
+                "Свежеприготовлено",
+                "Сорбитол",
+                "Уведомлён",
+                "Уведомлённые",
+                "Финализация",
+                "Фингерфуд",
+                "Халяль",
+                "автоизменения",
+                "анонимизирован",
+                "анонимизированные",
+                "анонимизировать",
+                "аутентификатора",
+                "бакете",
+                "бейджа",
+                "бейджами",
+                "бейджи",
+                "видеозвонка",
+                "видеозвонку",
+                "видеозвонок",
+                "видеопетлями",
+                "контроллинге",
+                "кумкватом",
+                "маркетплейса",
+                "маркетплейсе",
+                "мисо",
+                "неанонимизированным",
+                "неодобренные",
+                "непрочитано",
+                "онбординга",
+                "онбординге",
+                "переписаться",
+                "портвейновым",
+                "предпросмотра",
+                "предпросмотре",
+                "пуровера",
+                "сооснователи",
+                "уведомлён",
+                "уведомлённые"
+            ],
+            "ignoreRegExpList": ["/[A-Za-z]{40,}/"]
+        },
+        {
+            "filename": "src/i18n/locales/ru/admin.json",
+            "language": "en,ru,de",
+            "words": ["christmas", "OBJECTSTORAGES", "pgstatstatements"]
         },
         {
             "filename": "src/server/slack/**",

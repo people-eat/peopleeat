@@ -15,6 +15,7 @@ describe('WhatsApp template catalog', () => {
         ['en', 'en'],
         ['fr', 'en'],
         ['it', 'en'],
+        ['ru', 'en'],
     ] as const satisfies ReadonlyArray<readonly [CatalogLocale, 'de' | 'en']>)(
         'maps recipient locale %s to Meta template language %s',
         (locale, languageCode) => {
@@ -22,7 +23,7 @@ describe('WhatsApp template catalog', () => {
         },
     );
 
-    it.each(['fr', 'it'] as const)('snapshots %s recipients with English copy and languageCode', (locale) => {
+    it.each(['fr', 'it', 'ru'] as const)('snapshots %s recipients with English copy and languageCode', (locale) => {
         // Arrange
         const definition = whatsappTemplateDefinitionFind('booking_request_received_customer_v2');
         // Act

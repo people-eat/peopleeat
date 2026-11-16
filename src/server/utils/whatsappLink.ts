@@ -2,14 +2,16 @@ import { eq, sql } from 'drizzle-orm';
 import { isbot } from 'isbot';
 
 import { zNanoId } from '../../shared/idCreate';
+import { CATALOG_LOCALES, DEFAULT_LOCALE, localePath } from '../../shared/locale';
 import type { Locale } from '../../shared/locale';
 import { bookingRequestOffers, bookingRequests, cookCallSlotBookings, outboundWhatsAppMessages, whatsAppMessages } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { OutboundWhatsAppPurpose, OutboundWhatsAppRelatedEntityType } from '../domain/whatsapp';
 
 const idPattern = '[A-Za-z0-9_-]{20}';
+const localePrefixPattern = CATALOG_LOCALES.filter((locale) => locale !== DEFAULT_LOCALE).join('|');
 const destinationPattern = new RegExp(
-    `^/(?:en/)?profile/(?:booking-requests/${idPattern}(?:/offers/${idPattern})?|booking-request-offers/${idPattern}|booking-request-pool/${idPattern})(?:\\?tab=(?:offer|chat|call|testimonial|request))?$`,
+    `^/(?:(?:${localePrefixPattern})/)?profile/(?:booking-requests/${idPattern}(?:/offers/${idPattern})?|booking-request-offers/${idPattern}|booking-request-pool/${idPattern})(?:\\?tab=(?:offer|chat|call|testimonial|request))?$`,
     'u',
 );
 
@@ -29,10 +31,12 @@ export async function whatsappLinkPathFind(
 ): Promise<string> {
     const entity = args.relatedEntity;
     if (!entity) throw new Error('WhatsApp link requires a related booking');
-    const prefix = args.locale === 'en' ? '/en' : '';
     if (entity.type === 'BOOKING_REQUEST') {
         return whatsappLinkPathAssert(
-            `${prefix}/profile/${args.purpose === 'BOOKING_REQUEST_COOK_NOTIFY' ? 'booking-request-pool' : 'booking-requests'}/${entity.id}`,
+            localePath(
+                args.locale,
+                `/profile/${args.purpose === 'BOOKING_REQUEST_COOK_NOTIFY' ? 'booking-request-pool' : 'booking-requests'}/${entity.id}`,
+            ),
         );
     }
     const offerId =
@@ -59,8 +63,8 @@ export async function whatsappLinkPathFind(
     }
     const path =
         args.userId === context.cookId
-            ? `${prefix}/profile/booking-request-offers/${offerId}`
-            : `${prefix}/profile/booking-requests/${context.requestId}/offers/${offerId}`;
+            ? localePath(args.locale, `/profile/booking-request-offers/${offerId}`)
+            : localePath(args.locale, `/profile/booking-requests/${context.requestId}/offers/${offerId}`);
     const tab = args.purpose.startsWith('CALL_SLOT_')
         ? 'call'
         : args.purpose.includes('CHAT_UNREAD') || args.purpose === 'BOOKING_REQUEST_OFFER_MENU_CHANGES_REQUESTED_COOK'

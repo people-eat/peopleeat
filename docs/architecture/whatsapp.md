@@ -24,10 +24,10 @@ inbox must show what was actually sent, and template categorization must not sil
    portfolio, and the phone number id is a third node), or the token lacks template-read access. Meta remains the approval/category
    authority; requested category alone does not mean approval.
 4. **Exact language and snapshots.** Meta templates are registered DE/EN only (`WhatsAppTemplateDefinition` stays `{ de, en }`). Map the
-   recipient catalog locale with `whatsappTemplateLocale`: German sends `de`; English, French, Italian, and any other non-`de` catalog
-   locale send the **English** variant. Never silently substitute German for English. Store `templateSnapshot.languageCode` as the effective
-   Meta language actually sent (`de` or `en`), not a raw `fr`/`it` code. Render plain text once at send time using the same definition and
-   normalized parameter values sent to Meta. Persist an immutable `templateSnapshot` on both `OutboundWhatsAppMessages` and
+   recipient catalog locale with `whatsappTemplateLocale`: German sends `de`; English, French, Italian, Russian, and any other non-`de`
+   catalog locale send the **English** variant. Never silently substitute German for English. Store `templateSnapshot.languageCode` as the
+   effective Meta language actually sent (`de` or `en`), not a raw `fr`/`it`/`ru` code. Render plain text once at send time using the same
+   definition and normalized parameter values sent to Meta. Persist an immutable `templateSnapshot` on both `OutboundWhatsAppMessages` and
    `WhatsAppMessages`, including effective language, header, rendered body, parameters, and rendered buttons. Audit `bodySnapshot` and
    transcript `body` retain the complete text projection. Transcript and inbox reads use stored `body` directly; they never render the
    current catalog or reformat the structured snapshot. Incoming webhook messages store their received text, and delivery-status webhooks

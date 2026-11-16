@@ -31,6 +31,14 @@ import itProfileCook from '../i18n/locales/it/profileCook.json';
 import itProfileCustomer from '../i18n/locales/it/profileCustomer.json';
 import itPublic from '../i18n/locales/it/public.json';
 import itPublicBooking from '../i18n/locales/it/publicBooking.json';
+import ruAdmin from '../i18n/locales/ru/admin.json';
+import ruCommon from '../i18n/locales/ru/common.json';
+import ruEmail from '../i18n/locales/ru/email.json';
+import ruProfile from '../i18n/locales/ru/profile.json';
+import ruProfileCook from '../i18n/locales/ru/profileCook.json';
+import ruProfileCustomer from '../i18n/locales/ru/profileCustomer.json';
+import ruPublic from '../i18n/locales/ru/public.json';
+import ruPublicBooking from '../i18n/locales/ru/publicBooking.json';
 import type { I18nWebNamespace } from '../i18n/namespaces';
 import { emailCatalogRegister } from '../i18n/tEmail';
 import type { CatalogLocale } from '../shared/locale';
@@ -38,13 +46,19 @@ import type { CatalogLocale } from '../shared/locale';
 type Catalog = Record<string, unknown>;
 
 const WEB: Record<I18nWebNamespace, Record<CatalogLocale, Catalog>> = {
-    common: { de: deCommon, en: enCommon, fr: frCommon, it: itCommon },
-    public: { de: dePublic, en: enPublic, fr: frPublic, it: itPublic },
-    publicBooking: { de: dePublicBooking, en: enPublicBooking, fr: frPublicBooking, it: itPublicBooking },
-    profile: { de: deProfile, en: enProfile, fr: frProfile, it: itProfile },
-    profileCook: { de: deProfileCook, en: enProfileCook, fr: frProfileCook, it: itProfileCook },
-    profileCustomer: { de: deProfileCustomer, en: enProfileCustomer, fr: frProfileCustomer, it: itProfileCustomer },
-    admin: { de: deAdmin, en: enAdmin, fr: frAdmin, it: itAdmin },
+    common: { de: deCommon, en: enCommon, fr: frCommon, it: itCommon, ru: ruCommon },
+    public: { de: dePublic, en: enPublic, fr: frPublic, it: itPublic, ru: ruPublic },
+    publicBooking: { de: dePublicBooking, en: enPublicBooking, fr: frPublicBooking, it: itPublicBooking, ru: ruPublicBooking },
+    profile: { de: deProfile, en: enProfile, fr: frProfile, it: itProfile, ru: ruProfile },
+    profileCook: { de: deProfileCook, en: enProfileCook, fr: frProfileCook, it: itProfileCook, ru: ruProfileCook },
+    profileCustomer: {
+        de: deProfileCustomer,
+        en: enProfileCustomer,
+        fr: frProfileCustomer,
+        it: itProfileCustomer,
+        ru: ruProfileCustomer,
+    },
+    admin: { de: deAdmin, en: enAdmin, fr: frAdmin, it: itAdmin, ru: ruAdmin },
 };
 
 const EMAIL: Record<CatalogLocale, Catalog> = {
@@ -52,6 +66,7 @@ const EMAIL: Record<CatalogLocale, Catalog> = {
     en: enEmail,
     fr: frEmail,
     it: itEmail,
+    ru: ruEmail,
 };
 
 let done = false;

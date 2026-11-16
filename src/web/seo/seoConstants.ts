@@ -30,4 +30,5 @@ export const OG_LOCALE: Record<CatalogLocale, string> = {
     en: 'en_US',
     fr: 'fr_FR',
     it: 'it_IT',
+    ru: 'ru_RU',
 };

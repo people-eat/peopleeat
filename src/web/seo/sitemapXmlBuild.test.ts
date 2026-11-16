@@ -13,10 +13,12 @@ describe('sitemapXmlBuild', () => {
         expect(xml).toContain('<loc>https://example.com/en/about-us</loc>');
         expect(xml).toContain('<loc>https://example.com/fr/about-us</loc>');
         expect(xml).toContain('<loc>https://example.com/it/about-us</loc>');
+        expect(xml).toContain('<loc>https://example.com/ru/about-us</loc>');
         expect(xml).toContain('<xhtml:link rel="alternate" hreflang="de" href="https://example.com/about-us" />');
         expect(xml).toContain('<xhtml:link rel="alternate" hreflang="en" href="https://example.com/en/about-us" />');
         expect(xml).toContain('<xhtml:link rel="alternate" hreflang="fr" href="https://example.com/fr/about-us" />');
         expect(xml).toContain('<xhtml:link rel="alternate" hreflang="it" href="https://example.com/it/about-us" />');
+        expect(xml).toContain('<xhtml:link rel="alternate" hreflang="ru" href="https://example.com/ru/about-us" />');
         expect(xml).toContain('<xhtml:link rel="alternate" hreflang="x-default" href="https://example.com/about-us" />');
         expect(xml).toContain('<lastmod>2026-05-20T00:00:00.000Z</lastmod>');
         expect(xml).toContain('<changefreq>monthly</changefreq>');
