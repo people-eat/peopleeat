@@ -2,7 +2,7 @@ import { and, eq } from 'drizzle-orm';
 
 import { bookingRequestOfferPriceCalculate } from '../../shared/bookingRequestOfferPrice';
 import { idCreate } from '../../shared/idCreate';
-import { bookingRequestOfferEvents, bookingRequestOffers, bookingRequests, cooks, promoCodes, users } from '../db/schema';
+import { bookingRequestOfferEvents, bookingRequestOffers, bookingRequests, promoCodes, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type {
     GqlSCookMutation,
@@ -16,7 +16,6 @@ import { bookingRequestOfferHardMinimumAssert } from '../utils/bookingRequestOff
 import { bookingRequestOfferNegotiationAssert } from '../utils/bookingRequestOfferNegotiationAssert';
 import { bookingRequestOfferPriceSnapshot } from '../utils/bookingRequestOfferPriceSnapshot';
 import { bookingRequestReactionReminderSchedule } from '../utils/bookingRequestReactionReminderSchedule';
-import { travelDistanceKmResolve } from '../utils/travelDistanceKmResolve';
 import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 
 export async function cookBookingRequestOfferPriceUpdate(
@@ -36,10 +35,9 @@ export async function cookBookingRequestOfferPriceUpdate(
         }
 
         const [row] = await serverRuntime.db
-            .select({ offer: bookingRequestOffers, bookingRequest: bookingRequests, cook: cooks })
+            .select({ offer: bookingRequestOffers, bookingRequest: bookingRequests })
             .from(bookingRequestOffers)
             .innerJoin(bookingRequests, eq(bookingRequests.bookingRequestId, bookingRequestOffers.bookingRequestId))
-            .innerJoin(cooks, eq(cooks.cookId, bookingRequestOffers.cookId))
             .where(and(eq(bookingRequestOffers.cookId, cookId), eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId)))
             .limit(1);
 
@@ -49,25 +47,11 @@ export async function cookBookingRequestOfferPriceUpdate(
 
         bookingRequestOfferNegotiationAssert(row.offer);
 
-        const origin = row.cook.exactTravelOriginAddress;
-        if (!origin) {
-            throw new Error('cookBookingRequestOfferPriceUpdate: cook travel origin is required');
-        }
-
-        const travelDistanceKm =
-            row.offer.travelDistanceKm ??
-            (await travelDistanceKmResolve(
-                serverRuntime.places,
-                { latitude: origin.latitude, longitude: origin.longitude },
-                {
-                    latitude: row.bookingRequest.exactEventAddress.latitude,
-                    longitude: row.bookingRequest.exactEventAddress.longitude,
-                },
-            ));
-        const travelExpensesCents = Math.round(travelDistanceKm * row.cook.travelExpensesAmount * 2);
+        // Travel is locked at offer create (or venue-edit auto-adjust). Menu
+        // price edits must not re-apply the cook's live travel rate or distance.
         const price = bookingRequestOfferPriceCalculate({
             menuPriceCents,
-            travelExpensesCents,
+            travelExpensesCents: row.offer.travelExpensesCents,
             addonPriceCents: row.offer.addonPriceCents,
             platformFeePercentCook: row.offer.platformFeePercentCook,
             platformFeePercentCustomer: row.offer.platformFeePercentCustomer,
@@ -91,10 +75,8 @@ export async function cookBookingRequestOfferPriceUpdate(
                 .update(bookingRequestOffers)
                 .set({
                     userUnreadNotificationCount: row.offer.userUnreadNotificationCount + 1,
-                    travelDistanceKm,
                     platformFeePercentCook: price.platformFeePercentCook,
                     platformFeePercentCustomer: price.platformFeePercentCustomer,
-                    travelExpensesCents: price.travelExpensesCents,
                     menuPriceCents: price.menuPriceCents,
                     addonPriceCents: price.addonPriceCents,
                     paymentProviderFeeCents: price.paymentProviderFeeCents,

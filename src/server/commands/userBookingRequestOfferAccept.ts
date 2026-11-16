@@ -39,13 +39,15 @@ import { bookingRequestPoolCooksPublish } from '../utils/bookingRequestPoolCooks
 import { bookingRequestReactionReminderCancel } from '../utils/bookingRequestReactionReminderSchedule';
 import { giftCardCharge } from '../utils/giftCardCharge';
 import { sessionEventCreate } from '../utils/sessionEventCreate';
-import { travelDistanceKmResolve } from '../utils/travelDistanceKmResolve';
 
 /**
  * Dual-accept an offer and prepare Stripe payment:
  * €0 gift/promo → immediate cook transfer + PAYED;
  * event &lt;15d (Europe/Berlin) → PaymentIntent;
  * else → SetupIntent (card save; pull jobs after paymentStatusUpdate).
+ *
+ * Travel is locked at offer create (or venue-edit auto-adjust). Accept must not
+ * re-resolve distance or re-apply the cook's live travel rate.
  */
 export async function userBookingRequestOfferAccept(
     { userId }: GqlSUserMutation,
@@ -101,18 +103,6 @@ export async function userBookingRequestOfferAccept(
             throw new Error('userBookingRequestOfferAccept: cook cannot receive bookings');
         }
 
-        const origin = row.cook.exactTravelOriginAddress;
-        if (!origin) {
-            throw new Error('userBookingRequestOfferAccept: cook travel origin is required');
-        }
-
-        const eventAddress = row.bookingRequest.exactEventAddress;
-        const travelDistanceKm = await travelDistanceKmResolve(
-            serverRuntime.places,
-            { latitude: origin.latitude, longitude: origin.longitude },
-            { latitude: eventAddress.latitude, longitude: eventAddress.longitude },
-        );
-        const travelExpensesCents = Math.round(travelDistanceKm * row.cook.travelExpensesAmount * 2);
         const [participantRows, offerAddonRows] = await Promise.all([
             serverRuntime.db
                 .select({ type: bookingRequestParticipants.type })
@@ -127,7 +117,7 @@ export async function userBookingRequestOfferAccept(
         const addonPriceCents = bookingRequestOfferAddonPriceFromRows(offerAddonRows, paidParticipants);
         const price = bookingRequestOfferPriceCalculate({
             menuPriceCents: row.offer.menuPriceCents,
-            travelExpensesCents,
+            travelExpensesCents: row.offer.travelExpensesCents,
             addonPriceCents,
             platformFeePercentCook: row.offer.platformFeePercentCook,
             platformFeePercentCustomer: row.offer.platformFeePercentCustomer,
@@ -171,9 +161,7 @@ export async function userBookingRequestOfferAccept(
                 .update(bookingRequestOffers)
                 .set({
                     userAccepted: true,
-                    travelDistanceKm,
                     addonPriceCents: price.addonPriceCents,
-                    travelExpensesCents: price.travelExpensesCents,
                     paymentProviderFeeCents: price.paymentProviderFeeCents,
                     platformFeePercentCook: price.platformFeePercentCook,
                     platformFeePercentCustomer: price.platformFeePercentCustomer,

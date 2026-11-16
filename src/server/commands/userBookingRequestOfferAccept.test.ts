@@ -3,7 +3,14 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { bookingRequestOfferPriceCalculate } from '../../shared/bookingRequestOfferPrice';
 import { idCreate } from '../../shared/idCreate';
-import { bookingRequestOffers, bookingRequestParticipants, bookingRequests, cooks, giftCards } from '../db/schema';
+import {
+    bookingRequestOfferEvents,
+    bookingRequestOffers,
+    bookingRequestParticipants,
+    bookingRequests,
+    cooks,
+    giftCards,
+} from '../db/schema';
 import { commandSetup, cookMutationParent, testDb, userMutationParent } from '../test/commandTestUtils';
 import { cookBookingRequestOfferCreate } from './cookBookingRequestOfferCreate';
 import { userBookingRequestOfferAccept } from './userBookingRequestOfferAccept';
@@ -146,6 +153,42 @@ describe('userBookingRequestOfferAccept', () => {
         expectFeeSnapshot(offer!);
         expect(customer.serverRuntime.stripe.paymentIntentCreateWithSplit).toHaveBeenCalledOnce();
         expect(customer.serverRuntime.stripe.setupIntentCreate).not.toHaveBeenCalled();
+    });
+
+    it('keeps locked travel on accept even when Routes would return a different distance', async () => {
+        const cook = await setupCookReadyToOffer();
+        const { customer, bookingRequestId } = await insertCustomerBookingRequest(30);
+        const offerId = await createOffer(cook, bookingRequestId);
+        const [before] = await testDb.select().from(bookingRequestOffers).where(eq(bookingRequestOffers.bookingRequestOfferId, offerId));
+        expect(before!.travelExpensesCents).toBeGreaterThan(0);
+
+        vi.mocked(customer.serverRuntime.places.drivingDistanceKm).mockResolvedValue(500);
+        await testDb.update(cooks).set({ travelExpensesAmount: 99 }).where(eq(cooks.cookId, cook.user.userId));
+        vi.mocked(customer.serverRuntime.stripe.setupIntentCreate).mockResolvedValue({
+            setupIntentId: 'si_accept_travel_lock',
+            clientSecret: 'si_accept_travel_lock_secret',
+        });
+
+        const accepted = await userBookingRequestOfferAccept(
+            userMutationParent(customer.user.userId),
+            { bookingRequestOfferId: offerId },
+            customer.requestingSession,
+            customer.serverRuntime,
+        );
+
+        expect(accepted.success).toBe(true);
+        const [after] = await testDb.select().from(bookingRequestOffers).where(eq(bookingRequestOffers.bookingRequestOfferId, offerId));
+        expect(after!.travelExpensesCents).toBe(before!.travelExpensesCents);
+        expect(after!.travelDistanceKm).toBe(before!.travelDistanceKm);
+        expect(after!.totalWithoutDiscountsCentsCustomer).toBe(before!.totalWithoutDiscountsCentsCustomer);
+        expect(customer.serverRuntime.places.drivingDistanceKm).not.toHaveBeenCalled();
+
+        const events = await testDb
+            .select({ type: bookingRequestOfferEvents.type })
+            .from(bookingRequestOfferEvents)
+            .where(eq(bookingRequestOfferEvents.bookingRequestOfferId, offerId));
+        expect(events.map((event) => event.type)).not.toContain('SYSTEM_CHANGED_PRICE');
+        expect(events.map((event) => event.type)).toContain('USER_ACCEPTED');
     });
 
     it('marks a fully discounted offer PAYED via transfer and keeps the fee snapshot', async () => {
