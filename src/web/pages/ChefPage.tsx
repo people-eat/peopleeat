@@ -21,6 +21,7 @@ export function ChefPage({ data }: { data: GqlCChefPageQuery }) {
     const cook = data.publicCook.findOneByPathName!;
     const [, trackDiscovery] = useMutation(ChefsDiscoveryTrackDocument);
     const shareEnabled = featureToggleIsActive(data.currentSession.activeFeatureToggleKeys, 'COOK_PUBLIC_PROFILE_SHARE');
+    const menusEnabled = featureToggleIsActive(data.currentSession.activeFeatureToggleKeys, 'COOK_PUBLIC_PROFILE_MENUS');
     const lastVisitedEnabled = featureToggleIsActive(data.currentSession.activeFeatureToggleKeys, 'LAST_VISITED_COOK_PROFILES');
     const lastVisitedCooks = (data.currentSession.lastVisitedCookProfiles ?? []).filter((entry) => entry.cookId !== cook.cookId);
     const displayName = cook.user.display;
@@ -50,21 +51,23 @@ export function ChefPage({ data }: { data: GqlCChefPageQuery }) {
             description: meal.description,
             imageUrl: meal.imageUrl,
         })),
-        menus: cook.menus.map((menu) => ({
-            menuId: menu.menuId,
-            title: menu.title,
-            description: menu.description,
-            courseMealOptionImages: menu.courseMealOptionImages,
-            courses: menu.courses.map((course) => ({
-                title: course.title,
-                mealOptions: course.mealOptions.map((meal) => ({
-                    mealId: meal.mealId,
-                    title: meal.title,
-                    description: meal.description,
-                    imageUrl: meal.imageUrl,
-                })),
-            })),
-        })),
+        menus: menusEnabled
+            ? cook.menus.map((menu) => ({
+                  menuId: menu.menuId,
+                  title: menu.title,
+                  description: menu.description,
+                  courseMealOptionImages: menu.courseMealOptionImages,
+                  courses: menu.courses.map((course) => ({
+                      title: course.title,
+                      mealOptions: course.mealOptions.map((meal) => ({
+                          mealId: meal.mealId,
+                          title: meal.title,
+                          description: meal.description,
+                          imageUrl: meal.imageUrl,
+                      })),
+                  })),
+              }))
+            : [],
         testimonials: cook.testimonials.map((testimonial) => ({
             customerTestimonialId: testimonial.customerTestimonialId,
             authorName: testimonial.authorName,

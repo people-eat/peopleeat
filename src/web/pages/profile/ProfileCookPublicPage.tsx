@@ -84,6 +84,7 @@ function visibilityConfirmCopy({
 export function ProfileCookPublicPage({ data, search }: { data: GqlCProfileCookPublicPageQuery; search: ProfileCookPublicSearch }) {
     const locale = useLocale();
     const shareEnabled = useFeatureToggleActive('COOK_PUBLIC_PROFILE_SHARE');
+    const menusEnabled = useFeatureToggleActive('COOK_PUBLIC_PROFILE_MENUS');
     const cookDirectEnabled = useFeatureToggleActive('BOOKING_REQUEST_COOK_DIRECT');
     const seedUser = data.currentSession.user ?? null;
     const user = useUserUpdatesSeed(seedUser, ProfileCookPublicPageUpdatesDocument);
@@ -128,21 +129,23 @@ export function ProfileCookPublicPage({ data, search }: { data: GqlCProfileCookP
             description: meal.description,
             imageUrl: meal.imageUrl,
         })),
-        menus: publicCatalogMenus.map((menu) => ({
-            menuId: menu.menuId,
-            title: menu.title,
-            description: menu.description,
-            courseMealOptionImages: menu.courseMealOptionImages,
-            courses: menu.courses.map((course) => ({
-                title: course.title,
-                mealOptions: course.mealOptions.map((meal) => ({
-                    mealId: meal.mealId,
-                    title: meal.title,
-                    description: meal.description,
-                    imageUrl: meal.imageUrl,
-                })),
-            })),
-        })),
+        menus: menusEnabled
+            ? publicCatalogMenus.map((menu) => ({
+                  menuId: menu.menuId,
+                  title: menu.title,
+                  description: menu.description,
+                  courseMealOptionImages: menu.courseMealOptionImages,
+                  courses: menu.courses.map((course) => ({
+                      title: course.title,
+                      mealOptions: course.mealOptions.map((meal) => ({
+                          mealId: meal.mealId,
+                          title: meal.title,
+                          description: meal.description,
+                          imageUrl: meal.imageUrl,
+                      })),
+                  })),
+              }))
+            : [],
     };
     const confirmCopy =
         pendingVisible == null

@@ -30,10 +30,11 @@ Shared profile layout (`ChefProfileView`, container-query driven):
   `cookId`, and `menuId` when the CTA is a published menu). Share is wired only on the public detail page — cook WYSIWYG preview omits Share
   but follows the same CTA rule. Stacks until ~48rem (`@3xl`); photo grows stepwise in the row (`@3xl` / `@4xl` / `@5xl`) so resize never
   crushes copy beside a full-width square.
-- **Menus** — published, complete inventory menus with at least one meal-option image (`PublicCook.menus`) after the hero. Cards use the
-  same collage as cook menu cards; click opens `PublicCookMenuDialog` (courses and dishes). When the chef-page request toggle is on and the
-  cook is offer-ready, the dialog has **Request this menu** → `/booking-request/form?cookId=&menuId=`. Hidden when none qualify. Shows the
-  first 5 menus; Show more / Show less when there are more. Grid 2 → 3 (`@md`) → 4 (`@2xl`) → 5 (`@5xl`).
+- **Menus** — published, complete inventory menus with at least one meal-option image (`PublicCook.menus`) after the hero, gated by
+  `COOK_PUBLIC_PROFILE_MENUS` (missing row stays off). Cards use the same collage as cook menu cards; click opens `PublicCookMenuDialog`
+  (courses and dishes). When the chef-page request toggle is on and the cook is offer-ready, the dialog has **Request this menu** →
+  `/booking-request/form?cookId=&menuId=`. Hidden when the toggle is off or none qualify. Shows the first 5 menus; Show more / Show less
+  when there are more. Grid 2 → 3 (`@md`) → 4 (`@2xl`) → 5 (`@5xl`).
 - **Meals** — published dishes **with an image** as marketing meal tiles (`CustomerMealCard` `variant="marketing"`: square image on top,
   title, up to two lines of description); published meals without an image are omitted. Click opens the shared meal details dialog. Shows
   the first 5 meals; when there are more, a bilingual Show more / Show less control sits top-right on the section title row. Grid 2 → 3
@@ -112,6 +113,7 @@ None for public slug URLs. Cook self-serve slug editing stays behind `COOK_PUBLI
 - Share: `ShareButton` + `webShareOrCopy` / `publicChefUrl(pathName)` (`src/web/utils/webShare.ts`); gated by `COOK_PUBLIC_PROFILE_SHARE`;
   hero Share only from `ChefPage` (discovery `chefsDiscoveryShareKey`, secondary variant); cook Preview toolbar Share / Copy / Open when
   live
+- Menus: `SectionCookMenus` on `ChefPage` and cook Preview gated by `COOK_PUBLIC_PROFILE_MENUS` (empty list when off; meal tiles stay)
 - Cook preview: `ProfileCookPublicPage` at `/profile/public` — Preview tab (default; Share / Copy / Open + static `PublicCookCard` + detail
   WYSIWYG) and Manage tab (`?tab=manage`; visibility + additional picture); both previews use `Cook.rating`; testimonials section still
   omitted on preview
