@@ -280,7 +280,23 @@ type AdminUserAssistantChatListItem = NonNullable<
 
 type AdminUserTabDef = {
     id: AdminUserTab;
-    labelKey: string;
+    labelKey:
+        | 'user.tabs.general'
+        | 'user.tabs.cook_profile'
+        | 'user.tabs.offers'
+        | 'user.tabs.meals'
+        | 'user.tabs.menus'
+        | 'user.tabs.pool'
+        | 'user.tabs.calls'
+        | 'user.tabs.testimonials'
+        | 'user.tabs.booking_requests'
+        | 'user.tabs.feature_toggles'
+        | 'user.tabs.session_events'
+        | 'user.tabs.sessions'
+        | 'user.tabs.notes'
+        | 'user.tabs.whatsapp'
+        | 'user.tabs.emails'
+        | 'user.tabs.assistant_chats';
     Icon: LucideIcon;
     cookOnly?: boolean;
 };

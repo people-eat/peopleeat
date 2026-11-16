@@ -5,7 +5,8 @@ import { tEmail, tEmailAsync, tEmailReady } from './tEmail';
 describe('tEmail', () => {
     it('loads the email catalog without throwing', async () => {
         await tEmailReady('de');
-        expect(tEmail('de', 'missing.key')).toBe('');
+        // Runtime missing-key path; key intentionally not in the email catalog.
+        expect(tEmail('de', 'missing.key' as 'auth.otp.subject')).toBe('');
     });
 
     it('returns the OTP subject for german and english', async () => {

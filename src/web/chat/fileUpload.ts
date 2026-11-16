@@ -8,6 +8,8 @@
 // through here. We do throw a typed `FileUploadError` on any non-2xx
 // response so callers can map it onto the per-tile error state.
 
+import type { ParseKeys } from 'i18next';
+
 import { t } from '../../i18n/t';
 import type { Locale } from '../utils/locale';
 
@@ -18,13 +20,13 @@ export interface UploadedFile {
     size: number;
 }
 
-const KNOWN_UPLOAD_ERROR_KEYS: Record<string, string> = {
+const KNOWN_UPLOAD_ERROR_KEYS = {
     'Unauthorized: anonymous session has no user': 'fileUpload.unauthorizedAnonymous',
     'Could not parse multipart form data': 'fileUpload.multipartParseFailed',
     'No file in form data': 'fileUpload.noFile',
     'File type is not allowed': 'fileUpload.typeNotAllowed',
     'Failed to persist file upload': 'fileUpload.persistFailed',
-};
+} as const satisfies Record<string, ParseKeys<'common'>>;
 
 // Map English API / fetch error bodies onto catalog UI copy so tiles and
 // forms never show raw server English to a DE visitor (or vice versa).
@@ -39,7 +41,9 @@ export function uploadErrorMessage(error: unknown, locale: Locale): string {
     if (match) {
         return t(locale, 'common', 'fileUpload.failedWithStatus', { status: match[1] });
     }
-    const knownKey = KNOWN_UPLOAD_ERROR_KEYS[error.message];
+    const knownKey = Object.hasOwn(KNOWN_UPLOAD_ERROR_KEYS, error.message)
+        ? KNOWN_UPLOAD_ERROR_KEYS[error.message as keyof typeof KNOWN_UPLOAD_ERROR_KEYS]
+        : undefined;
     if (knownKey) return t(locale, 'common', knownKey);
     const tooLarge = /^File too large: (\d+) bytes exceeds (\d+)-byte limit$/.exec(error.message);
     if (tooLarge) {

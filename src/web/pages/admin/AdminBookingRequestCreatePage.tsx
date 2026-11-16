@@ -131,7 +131,7 @@ function formatTravelDistanceKm(km: number, locale: Locale): string {
     }).format(km);
 }
 
-function requiredTrimmed(value: string, locale: Locale, key: string): string | undefined {
+function requiredTrimmed(value: string, locale: Locale, key: 'copy.occasionIsRequired' | 'copy.messageIsRequired'): string | undefined {
     if (value.trim().length === 0) return t(locale, 'admin', key);
     return undefined;
 }

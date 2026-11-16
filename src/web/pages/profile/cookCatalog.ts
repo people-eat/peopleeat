@@ -1,3 +1,4 @@
+import type { ParseKeys } from 'i18next';
 import type { LucideIcon } from 'lucide-react';
 import {
     BarChart3Icon,
@@ -40,27 +41,42 @@ export type CookNavRoute = {
     icon: LucideIcon;
 };
 
-const NAV_KEY: Record<CookNavSlug, string> = {
-    'booking-request-pool': 'bookingRequestPool',
-    'booking-request-offers': 'bookingRequestOffers',
-    analytics: 'analytics',
-    invite: 'invite',
-    'chef-profile': 'chefProfile',
-    travel: 'travel',
-    public: 'public',
-    meals: 'meals',
-    menus: 'menus',
-    'offer-addons': 'offerAddons',
-    wallet: 'wallet',
-    calls: 'calls',
-};
+const NAV_TITLE_KEY = {
+    'booking-request-pool': 'nav.bookingRequestPool.title',
+    'booking-request-offers': 'nav.bookingRequestOffers.title',
+    analytics: 'nav.analytics.title',
+    invite: 'nav.invite.title',
+    'chef-profile': 'nav.chefProfile.title',
+    travel: 'nav.travel.title',
+    public: 'nav.public.title',
+    meals: 'nav.meals.title',
+    menus: 'nav.menus.title',
+    'offer-addons': 'nav.offerAddons.title',
+    wallet: 'nav.wallet.title',
+    calls: 'nav.calls.title',
+} as const satisfies Record<CookNavSlug, ParseKeys<'profileCook'>>;
+
+const NAV_DESCRIPTION_KEY = {
+    'booking-request-pool': 'nav.bookingRequestPool.description',
+    'booking-request-offers': 'nav.bookingRequestOffers.description',
+    analytics: 'nav.analytics.description',
+    invite: 'nav.invite.description',
+    'chef-profile': 'nav.chefProfile.description',
+    travel: 'nav.travel.description',
+    public: 'nav.public.description',
+    meals: 'nav.meals.description',
+    menus: 'nav.menus.description',
+    'offer-addons': 'nav.offerAddons.description',
+    wallet: 'nav.wallet.description',
+    calls: 'nav.calls.description',
+} as const satisfies Record<CookNavSlug, ParseKeys<'profileCook'>>;
 
 function cookNavTitle(slug: CookNavSlug) {
-    return (locale: Locale) => t(locale, 'profileCook', `nav.${NAV_KEY[slug]}.title`);
+    return (locale: Locale) => t(locale, 'profileCook', NAV_TITLE_KEY[slug]);
 }
 
 function cookNavDescription(slug: CookNavSlug) {
-    return (locale: Locale) => t(locale, 'profileCook', `nav.${NAV_KEY[slug]}.description`);
+    return (locale: Locale) => t(locale, 'profileCook', NAV_DESCRIPTION_KEY[slug]);
 }
 
 export const COOK_NAV_ROUTES: readonly CookNavRoute[] = [

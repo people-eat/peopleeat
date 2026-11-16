@@ -51,7 +51,24 @@ const switzerlandCities = [
 ] as const satisfies readonly ExpansionMarketCity[];
 
 function cityName(city: ExpansionMarketCity, market: ExpansionMarket, locale: Locale): string {
-    return t(locale, 'public', `comingTo.markets.${market.slug}.city.${city.key}`);
+    if (market.slug === 'netherlands') {
+        const labels = {
+            amsterdam: t(locale, 'public', 'comingTo.markets.netherlands.city.amsterdam'),
+            rotterdam: t(locale, 'public', 'comingTo.markets.netherlands.city.rotterdam'),
+            theHague: t(locale, 'public', 'comingTo.markets.netherlands.city.theHague'),
+            utrecht: t(locale, 'public', 'comingTo.markets.netherlands.city.utrecht'),
+            eindhoven: t(locale, 'public', 'comingTo.markets.netherlands.city.eindhoven'),
+        } satisfies Record<NetherlandsCityKey, string>;
+        return labels[city.key as NetherlandsCityKey];
+    }
+    const labels = {
+        zurich: t(locale, 'public', 'comingTo.markets.switzerland.city.zurich'),
+        geneva: t(locale, 'public', 'comingTo.markets.switzerland.city.geneva'),
+        basel: t(locale, 'public', 'comingTo.markets.switzerland.city.basel'),
+        bern: t(locale, 'public', 'comingTo.markets.switzerland.city.bern'),
+        lausanne: t(locale, 'public', 'comingTo.markets.switzerland.city.lausanne'),
+    } satisfies Record<SwitzerlandCityKey, string>;
+    return labels[city.key as SwitzerlandCityKey];
 }
 
 function cityList(cities: readonly ExpansionMarketCity[], market: ExpansionMarket, locale: Locale): string {
@@ -64,9 +81,18 @@ function cityList(cities: readonly ExpansionMarketCity[], market: ExpansionMarke
 }
 
 function marketPhrases(market: ExpansionMarket, locale: Locale): { comingTo: string; inCountry: string; cities: string } {
+    const phrases = {
+        netherlands: {
+            comingTo: t(locale, 'public', 'comingTo.markets.netherlands.comingTo'),
+            inCountry: t(locale, 'public', 'comingTo.markets.netherlands.inCountry'),
+        },
+        switzerland: {
+            comingTo: t(locale, 'public', 'comingTo.markets.switzerland.comingTo'),
+            inCountry: t(locale, 'public', 'comingTo.markets.switzerland.inCountry'),
+        },
+    } satisfies Record<ExpansionMarketSlug, { comingTo: string; inCountry: string }>;
     return {
-        comingTo: t(locale, 'public', `comingTo.markets.${market.slug}.comingTo`),
-        inCountry: t(locale, 'public', `comingTo.markets.${market.slug}.inCountry`),
+        ...phrases[market.slug],
         cities: cityList(market.cities, market, locale),
     };
 }
@@ -154,12 +180,46 @@ export function expansionMarketFaqEntries(
     locale: Locale,
 ): ReadonlyArray<{ question: string; answer: string }> {
     const phrases = marketPhrases(market, locale);
-    const keys = kind === 'comingTo' ? comingToFaqKeys : foundingChefFaqKeys;
-    const prefix = kind === 'comingTo' ? 'comingTo.faq' : 'comingTo.foundingFaq';
-    return keys.map((key) => ({
-        question: t(locale, 'public', `${prefix}.${key}.question`, phrases),
-        answer: t(locale, 'public', `${prefix}.${key}.answer`, phrases),
-    }));
+    if (kind === 'comingTo') {
+        const entry = {
+            canBook: {
+                question: t(locale, 'public', 'comingTo.faq.canBook.question', phrases),
+                answer: t(locale, 'public', 'comingTo.faq.canBook.answer', phrases),
+            },
+            registerNow: {
+                question: t(locale, 'public', 'comingTo.faq.registerNow.question', phrases),
+                answer: t(locale, 'public', 'comingTo.faq.registerNow.answer', phrases),
+            },
+            whichCities: {
+                question: t(locale, 'public', 'comingTo.faq.whichCities.question', phrases),
+                answer: t(locale, 'public', 'comingTo.faq.whichCities.answer', phrases),
+            },
+            sendAnyway: {
+                question: t(locale, 'public', 'comingTo.faq.sendAnyway.question', phrases),
+                answer: t(locale, 'public', 'comingTo.faq.sendAnyway.answer', phrases),
+            },
+        } satisfies Record<(typeof comingToFaqKeys)[number], { question: string; answer: string }>;
+        return comingToFaqKeys.map((key) => entry[key]);
+    }
+    const entry = {
+        requestsNow: {
+            question: t(locale, 'public', 'comingTo.foundingFaq.requestsNow.question', phrases),
+            answer: t(locale, 'public', 'comingTo.foundingFaq.requestsNow.answer', phrases),
+        },
+        whyEarly: {
+            question: t(locale, 'public', 'comingTo.foundingFaq.whyEarly.question', phrases),
+            answer: t(locale, 'public', 'comingTo.foundingFaq.whyEarly.answer', phrases),
+        },
+        whichCities: {
+            question: t(locale, 'public', 'comingTo.foundingFaq.whichCities.question', phrases),
+            answer: t(locale, 'public', 'comingTo.foundingFaq.whichCities.answer', phrases),
+        },
+        priceBenefit: {
+            question: t(locale, 'public', 'comingTo.foundingFaq.priceBenefit.question', phrases),
+            answer: t(locale, 'public', 'comingTo.foundingFaq.priceBenefit.answer', phrases),
+        },
+    } satisfies Record<(typeof foundingChefFaqKeys)[number], { question: string; answer: string }>;
+    return foundingChefFaqKeys.map((key) => entry[key]);
 }
 
 export function placesRegionCodeNormalize(value: string | null | undefined): string {

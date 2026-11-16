@@ -210,16 +210,12 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
         return null;
     }
 
-    const primaryLabel = t(
-        locale,
-        'profileCook',
-        {
-            EMPTY: 'wallet.addWallet',
-            PREPARED: 'wallet.continueSetup',
-            ACTIVE_WAS_RESET: 'wallet.updateWallet',
-            COMPLETED: 'wallet.openDashboard',
-        }[cook.stripeStatus],
-    );
+    const primaryLabel = {
+        EMPTY: t(locale, 'profileCook', 'wallet.addWallet'),
+        PREPARED: t(locale, 'profileCook', 'wallet.continueSetup'),
+        ACTIVE_WAS_RESET: t(locale, 'profileCook', 'wallet.updateWallet'),
+        COMPLETED: t(locale, 'profileCook', 'wallet.openDashboard'),
+    }[cook.stripeStatus];
 
     const detailsChecklist =
         stripeDetails != null && cookStripeAccountDetailsHasActionableContent(stripeDetails, cook.stripeStatus)

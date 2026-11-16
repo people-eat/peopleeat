@@ -1,3 +1,4 @@
+import { catalogKey } from '../../../i18n/catalogKey';
 import { t } from '../../../i18n/t';
 import type { Locale } from '../../utils/locale';
 
@@ -8,7 +9,10 @@ export const ADMIN_GIFT_CARDS_SECTIONS: AdminGiftCardsSection[] = ['list'];
 export type AdminGiftCardsSectionTo = '/{-$locale}/admin/gift-cards/list';
 
 export function adminGiftCardsSectionLabel(section: AdminGiftCardsSection, locale: Locale): string {
-    return t(locale, 'admin', `section.${section}`);
+    const labels = {
+        list: t(locale, 'admin', 'section.list'),
+    } satisfies Record<AdminGiftCardsSection, string>;
+    return labels[section];
 }
 
 export function adminGiftCardsSectionPath(section: AdminGiftCardsSection): `/admin/gift-cards/${AdminGiftCardsSection}` {
@@ -29,7 +33,8 @@ export function parseAdminGiftCardsSectionFromPath(path: string): AdminGiftCards
 }
 
 export function adminGiftCardOccasionLabel(occasion: string, locale: Locale): string {
-    const key = `giftCards.occasions.${occasion}`;
+    // Occasion strings are free-form purchase data; catalog may only cover known presets.
+    const key = catalogKey('admin', `giftCards.occasions.${occasion}`);
     const translated = t(locale, 'admin', key);
     return translated === key ? occasion : translated;
 }

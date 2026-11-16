@@ -30,11 +30,26 @@ function formatSlotWhen(startAt: string, endAt: string, locale: Locale, timeZone
 }
 
 export function adminCallKindLabel(kind: GqlCAdminCallListItemKind, locale: Locale): string {
-    return t(locale, 'admin', `calls.attention.${kind}`);
+    const labels = {
+        LIVE: t(locale, 'admin', 'calls.attention.LIVE'),
+        PENDING: t(locale, 'admin', 'calls.attention.PENDING'),
+        UPCOMING: t(locale, 'admin', 'calls.attention.UPCOMING'),
+        RECENT_ROOM: t(locale, 'admin', 'calls.attention.RECENT_ROOM'),
+        RECENT_SLOT: t(locale, 'admin', 'calls.attention.RECENT_SLOT'),
+        DECLINED: t(locale, 'admin', 'calls.attention.DECLINED'),
+        CANCELED: t(locale, 'admin', 'calls.attention.CANCELED'),
+    } satisfies Record<GqlCAdminCallListItemKind, string>;
+    return labels[kind];
 }
 
 function sectionLabel(kind: 'live' | 'pending' | 'upcoming' | 'recent', locale: Locale): string {
-    return t(locale, 'admin', `calls.attention.${kind}`);
+    const labels = {
+        live: t(locale, 'admin', 'calls.attention.live'),
+        pending: t(locale, 'admin', 'calls.attention.pending'),
+        upcoming: t(locale, 'admin', 'calls.attention.upcoming'),
+        recent: t(locale, 'admin', 'calls.attention.recent'),
+    } satisfies Record<'live' | 'pending' | 'upcoming' | 'recent', string>;
+    return labels[kind];
 }
 
 function offerDeepLink(item: AdminCallsAttentionRow) {

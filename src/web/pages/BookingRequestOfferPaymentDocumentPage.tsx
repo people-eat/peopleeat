@@ -1,3 +1,4 @@
+import { catalogKey } from '../../i18n/catalogKey';
 import { t } from '../../i18n/t';
 import {
     DEFAULT_TIME_ZONE,
@@ -62,7 +63,7 @@ export type BookingRequestOfferPaymentDocumentPageProps =
     BookingRequestOfferCustomerReceiptPageProps | BookingRequestOfferCookStatementPageProps;
 
 function copy(locale: Locale, key: string): string {
-    return t(locale, 'publicBooking', `paymentDocument.${key}`);
+    return t(locale, 'publicBooking', catalogKey('publicBooking', `paymentDocument.${key}`));
 }
 
 export function BookingRequestOfferPaymentDocumentPage(props: BookingRequestOfferPaymentDocumentPageProps) {

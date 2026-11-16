@@ -28,7 +28,13 @@ export type AdminLogsSortField = (typeof ADMIN_LOGS_SORT_FIELDS)[number];
 const columnHelper = createColumnHelper<AdminLogsDataTableFeatures, AdminLogsTableRow>();
 
 export function adminLogLevelLabel(level: GqlCAdminLogLevel, locale: Locale) {
-    return t(locale, 'admin', `logs.levels.${level}`);
+    const labels = {
+        error: t(locale, 'admin', 'logs.levels.error'),
+        warn: t(locale, 'admin', 'logs.levels.warn'),
+        info: t(locale, 'admin', 'logs.levels.info'),
+        debug: t(locale, 'admin', 'logs.levels.debug'),
+    } satisfies Record<GqlCAdminLogLevel, string>;
+    return labels[level];
 }
 
 export function adminLogLevelBadgeClassName(level: GqlCAdminLogLevel) {

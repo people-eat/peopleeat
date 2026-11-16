@@ -24,7 +24,12 @@
             "offerCount": "{count, plural, one {# offer} other {# offers}}"
         },
         "selectedCount": "{count} selected",
-        "notifyCount": "Notify ({count})"
+        "notifyCount": "Notify ({count})",
+        "tabs": {
+            "overview": "Overview",
+            "offers": "Offers",
+            "discount": "Discount"
+        }
     },
     "bookingRequestOffer": {
         "status": {
@@ -40,6 +45,14 @@
             "COMPLETED": "Completed",
             "EXPIRED": "Expired",
             "CANCELED": "Cancelled"
+        },
+        "tabs": {
+            "chat": "Chat",
+            "offer": "Offer",
+            "costs": "Costs",
+            "menu": "Menu",
+            "call": "Call",
+            "testimonial": "Review"
         }
     },
     "callSlot": {
@@ -2360,6 +2373,10 @@
             "n": "Thank you",
             "Weihnachten": "Christmas",
             "Einfach so": "Just because"
+        },
+        "status": {
+            "PREPARED": "Prepared",
+            "PAYED": "Paid"
         }
     },
     "outboundEmail": {
@@ -2501,11 +2518,25 @@
     },
     "users": {
         "countPercent": "{count} · {percent}%",
-        "turnsAge": "turns {age}"
+        "turnsAge": "turns {age}",
+        "roles": {
+            "customer": "Customer",
+            "cook": "Cook",
+            "admin": "Admin"
+        },
+        "accountStatus": {
+            "ACTIVE": "Active",
+            "BANNED": "Banned",
+            "ANONYMIZED": "Anonymized"
+        }
     },
     "testimonials": {
         "outOf5Stars": "{average} out of 5 stars",
-        "positionN": "Position {n}"
+        "positionN": "Position {n}",
+        "CUSTOMER": "Customer",
+        "COOK": "Cook",
+        "PUBLISHED": "Published",
+        "PENDING_REVIEW": "Pending review"
     },
     "fileStore": {
         "bucket": "Bucket: {bucket}.",
@@ -2524,5 +2555,89 @@
     },
     "cookProfile": {
         "previousPaths": "Previous paths: {paths}"
+    },
+    "user": {
+        "tabs": {
+            "general": "General",
+            "cook_profile": "Cook profile",
+            "offers": "Offers",
+            "meals": "Meals",
+            "menus": "Menus",
+            "pool": "Pool",
+            "calls": "Calls",
+            "testimonials": "Testimonials",
+            "booking_requests": "Booking requests",
+            "feature_toggles": "Feature toggles",
+            "session_events": "Session events",
+            "sessions": "Sessions",
+            "notes": "Notes",
+            "whatsapp": "WhatsApp",
+            "emails": "Emails",
+            "assistant_chats": "Assistant chats"
+        }
+    },
+    "session": {
+        "tabs": {
+            "overview": "Overview",
+            "events": "Events"
+        }
+    },
+    "sessions": {
+        "visitorKind": {
+            "human": "Human",
+            "bot": "Bot"
+        }
+    },
+    "promoCode": {
+        "tabs": {
+            "general": "General",
+            "expiration": "Expiration",
+            "usage": "Usage"
+        }
+    },
+    "logs": {
+        "levels": {
+            "error": "Error",
+            "warn": "Warn",
+            "info": "Info",
+            "debug": "Debug"
+        }
+    },
+    "assistantChats": {
+        "surfaces": {
+            "admin": "Admin",
+            "customer": "Customer",
+            "cook": "Cook"
+        }
+    },
+    "calls": {
+        "attention": {
+            "LIVE": "Live",
+            "PENDING": "Pending",
+            "UPCOMING": "Upcoming",
+            "RECENT_ROOM": "Room ended",
+            "RECENT_SLOT": "Slot completed",
+            "DECLINED": "Declined",
+            "CANCELED": "Canceled",
+            "live": "Live",
+            "pending": "Pending",
+            "upcoming": "Upcoming",
+            "recent": "Recent"
+        },
+        "parties": {
+            "CUSTOMER": "Customer",
+            "COOK": "Cook"
+        }
+    },
+    "offer": {
+        "payoutConfirm": {
+            "releaseTitle": "Really release this payout?",
+            "checkTitle": "Check if payout already took place?",
+            "outOfSystemTitle": "Mark as paid out of system?",
+            "releaseBody": "This creates a Stripe bank payout of {amount} to the cook.",
+            "checkBody": "We ask Stripe for a matching payout of {amount}. If one is found, we mark the offer as paid out. No new payout is created.",
+            "checkBodyOutOfSystem": "We ask Stripe for a matching payout of {amount}. If one is found, we correct the status from out-of-system to Stripe payout. No new payout is created.",
+            "outOfSystemBody": "No Stripe payout. We mark {amount} as paid outside Stripe (for example wire or cash)."
+        }
     }
 }

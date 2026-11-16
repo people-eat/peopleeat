@@ -101,17 +101,13 @@ export function AdminMapSelectionPanel({
                       : focus.id
                   : (venue?.name ?? focus.id);
 
-    const kindLabel = t(
-        locale,
-        'admin',
-        {
-            cook: 'copy.cook',
-            booking: 'copy.bookingRequest',
-            city: 'copy.city',
-            venue: 'copy.venue',
-            place: 'copy.place',
-        }[focus.kind],
-    );
+    const kindLabel = {
+        cook: t(locale, 'admin', 'copy.cook'),
+        booking: t(locale, 'admin', 'copy.bookingRequest'),
+        city: t(locale, 'admin', 'copy.city'),
+        venue: t(locale, 'admin', 'copy.venue'),
+        place: t(locale, 'admin', 'copy.place'),
+    }[focus.kind];
 
     return (
         <aside className="pointer-events-auto flex max-h-[min(70vh,28rem)] w-full flex-col overflow-hidden rounded-lg border bg-background/95 shadow-md backdrop-blur-sm">
@@ -136,15 +132,13 @@ export function AdminMapSelectionPanel({
                     <>
                         <p>
                             {t(locale, 'admin', 'copy.status')}:{' '}
-                            {t(
-                                locale,
-                                'admin',
+                            {
                                 {
-                                    LISTABLE: 'copy.listable',
-                                    PENDING: 'copy.pending',
-                                    HIDDEN: 'copy.hidden',
-                                }[cook.mapStatus],
-                            )}
+                                    LISTABLE: t(locale, 'admin', 'copy.listable'),
+                                    PENDING: t(locale, 'admin', 'copy.pending'),
+                                    HIDDEN: t(locale, 'admin', 'copy.hidden'),
+                                }[cook.mapStatus]
+                            }
                         </p>
                         <p>
                             {t(locale, 'admin', 'copy.radius')}:{' '}

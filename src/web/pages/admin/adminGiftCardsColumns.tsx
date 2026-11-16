@@ -25,7 +25,11 @@ export type AdminGiftCardsSortField = (typeof ADMIN_GIFT_CARDS_SORT_FIELDS)[numb
 const columnHelper = createColumnHelper<AdminGiftCardsDataTableFeatures, AdminGiftCardsTableRow>();
 
 export function adminGiftCardPaymentStatusLabel(status: GqlCGiftCardPaymentStatus, locale: Locale) {
-    return t(locale, 'admin', `giftCards.status.${status}`);
+    const labels = {
+        PREPARED: t(locale, 'admin', 'giftCards.status.PREPARED'),
+        PAYED: t(locale, 'admin', 'giftCards.status.PAYED'),
+    } satisfies Record<GqlCGiftCardPaymentStatus, string>;
+    return labels[status];
 }
 
 export function adminGiftCardsColumns(locale: Locale, timeZone: string) {

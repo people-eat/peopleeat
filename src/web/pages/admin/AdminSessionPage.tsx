@@ -86,7 +86,7 @@ type AdminSessionDetail = NonNullable<NonNullable<NonNullable<GqlCAdminSessionPa
 
 type AdminSessionTabDef = {
     id: AdminSessionTab;
-    labelKey: string;
+    labelKey: 'session.tabs.overview' | 'session.tabs.events';
     Icon: LucideIcon;
 };
 

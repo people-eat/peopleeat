@@ -107,7 +107,7 @@ type AdminBookingRequestCookInRadius = AdminBookingRequestDetail['cooksInTravelR
 
 type AdminBookingRequestTabDef = {
     id: AdminBookingRequestTab;
-    labelKey: string;
+    labelKey: 'bookingRequest.tabs.overview' | 'bookingRequest.tabs.offers' | 'bookingRequest.tabs.discount';
     Icon: LucideIcon;
 };
 

@@ -1,3 +1,4 @@
+import type { ParseKeys } from 'i18next';
 import { use, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -24,10 +25,10 @@ type NotificationChannel = 'email' | 'whatsApp';
 type NotificationRow = {
     domain: NotificationDomain;
     confirmLastChannel: boolean;
-    titleKey: string;
-    descriptionKey: string;
-    operatorTitleKey?: string;
-    operatorDescriptionKey?: string;
+    titleKey: ParseKeys<'profile'>;
+    descriptionKey: ParseKeys<'profile'>;
+    operatorTitleKey?: ParseKeys<'profile'>;
+    operatorDescriptionKey?: ParseKeys<'profile'>;
 };
 
 export type AccountNotificationVoice = 'account' | 'operator';

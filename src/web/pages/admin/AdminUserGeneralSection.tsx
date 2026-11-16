@@ -78,7 +78,12 @@ function formFromUser(user: AdminUserRow): GeneralFormValues {
 }
 
 function adminUserStatusLabel(status: GqlCUserStatus, locale: Locale): string {
-    return t(locale, 'admin', `users.accountStatus.${status}`);
+    const labels = {
+        ACTIVE: t(locale, 'admin', 'users.accountStatus.ACTIVE'),
+        BANNED: t(locale, 'admin', 'users.accountStatus.BANNED'),
+        ANONYMIZED: t(locale, 'admin', 'users.accountStatus.ANONYMIZED'),
+    } satisfies Record<GqlCUserStatus, string>;
+    return labels[status];
 }
 
 function adminUserStatusBadgeVariant(status: GqlCUserStatus): 'default' | 'destructive' {
@@ -88,12 +93,26 @@ function adminUserStatusBadgeVariant(status: GqlCUserStatus): 'default' | 'destr
 
 function localeLabel(value: string, uiLocale: Locale): string {
     if (!isLocale(value)) return value;
-    return t(uiLocale, 'common', `language.${value}`);
+    const labels = {
+        de: t(uiLocale, 'common', 'language.de'),
+        en: t(uiLocale, 'common', 'language.en'),
+        fr: t(uiLocale, 'common', 'language.fr'),
+        it: t(uiLocale, 'common', 'language.it'),
+        ru: t(uiLocale, 'common', 'language.ru'),
+        nl: t(uiLocale, 'common', 'language.nl'),
+    } satisfies Record<Locale, string>;
+    return labels[value];
 }
 
 function preferredCommunicationLabel(value: GqlCUserPreferredCommunication | null | undefined, locale: Locale): string {
     if (value == null) return t(locale, 'admin', 'copy.notSet');
-    return t(locale, 'admin', `users.accountStatus.${value}`);
+    const labels = {
+        SMS: t(locale, 'admin', 'copy.message'),
+        WHATS_APP: t(locale, 'admin', 'copy.whatsapp'),
+        CALL: t(locale, 'admin', 'copy.call2'),
+        E_MAIL: t(locale, 'admin', 'copy.email'),
+    } satisfies Record<GqlCUserPreferredCommunication, string>;
+    return labels[value];
 }
 
 function initialsFromName(name: string): string {

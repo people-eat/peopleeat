@@ -60,7 +60,7 @@ type AdminPromoCodeUsageBookingRequest = NonNullable<AdminPromoCodeDetail['booki
 
 type AdminPromoCodeTabDef = {
     id: AdminPromoCodeTab;
-    labelKey: string;
+    labelKey: 'promoCode.tabs.general' | 'promoCode.tabs.expiration' | 'promoCode.tabs.usage';
     Icon: LucideIcon;
 };
 

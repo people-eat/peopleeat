@@ -45,7 +45,19 @@ export type AdminNavPage = {
     keywords: string[];
 };
 
-function titleWithSection(locale: Locale, parentKey: string, sectionLabel: string): string {
+function titleWithSection(
+    locale: Locale,
+    parentKey:
+        | 'nav.users.title'
+        | 'nav.bookingRequests.title'
+        | 'nav.assistantChats.title'
+        | 'nav.sessions.title'
+        | 'nav.giftCards.title'
+        | 'nav.logs.title'
+        | 'nav.aiGenerations.title'
+        | 'nav.legal.title',
+    sectionLabel: string,
+): string {
     return t(locale, 'admin', 'nav.titleWithSection', { parent: t(locale, 'admin', parentKey), section: sectionLabel });
 }
 

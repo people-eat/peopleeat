@@ -22,7 +22,7 @@ type AdminImportantLink = {
 };
 
 type AdminImportantLinkGroup = {
-    titleKey: string;
+    titleKey: 'copy.infrastructure' | 'copy.notificationsMessaging' | 'copy.socialMedia';
     links: readonly AdminImportantLink[];
 };
 

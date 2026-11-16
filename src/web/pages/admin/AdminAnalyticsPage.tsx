@@ -159,12 +159,12 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
     const signInChartData = Array.from(signInBucketsByDate.values());
 
     function signInMethodLabel(method: string): string {
-        const key = {
-            EMAIL_OTP: 'copy.emailCode',
-            PASSKEY: 'copy.passkey',
-            GOOGLE: 'copy.google',
-        }[method];
-        return key ? t(locale, 'admin', key) : method;
+        const labels = {
+            EMAIL_OTP: t(locale, 'admin', 'copy.emailCode'),
+            PASSKEY: t(locale, 'admin', 'copy.passkey'),
+            GOOGLE: t(locale, 'admin', 'copy.google'),
+        } as const;
+        return method in labels ? labels[method as keyof typeof labels] : method;
     }
 
     const formVisitCount = formVisits.reduce((sum, bucket) => sum + bucket.count, 0);

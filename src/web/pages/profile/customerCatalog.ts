@@ -1,3 +1,4 @@
+import type { ParseKeys } from 'i18next';
 import type { LucideIcon } from 'lucide-react';
 import { FileTextIcon, GiftIcon, HeadsetIcon } from 'lucide-react';
 
@@ -15,18 +16,24 @@ export type CustomerNavRoute = {
     icon: LucideIcon;
 };
 
-const NAV_KEY: Record<CustomerNavSlug, string> = {
-    'booking-requests': 'bookingRequests',
-    'gift-cards': 'giftCards',
-    'support-requests': 'supportRequests',
-};
+const NAV_TITLE_KEY = {
+    'booking-requests': 'nav.bookingRequests.title',
+    'gift-cards': 'nav.giftCards.title',
+    'support-requests': 'nav.supportRequests.title',
+} as const satisfies Record<CustomerNavSlug, ParseKeys<'profileCustomer'>>;
+
+const NAV_DESCRIPTION_KEY = {
+    'booking-requests': 'nav.bookingRequests.description',
+    'gift-cards': 'nav.giftCards.description',
+    'support-requests': 'nav.supportRequests.description',
+} as const satisfies Record<CustomerNavSlug, ParseKeys<'profileCustomer'>>;
 
 function customerNavTitle(slug: CustomerNavSlug) {
-    return (locale: Locale) => t(locale, 'profileCustomer', `nav.${NAV_KEY[slug]}.title`);
+    return (locale: Locale) => t(locale, 'profileCustomer', NAV_TITLE_KEY[slug]);
 }
 
 function customerNavDescription(slug: CustomerNavSlug) {
-    return (locale: Locale) => t(locale, 'profileCustomer', `nav.${NAV_KEY[slug]}.description`);
+    return (locale: Locale) => t(locale, 'profileCustomer', NAV_DESCRIPTION_KEY[slug]);
 }
 
 const bookingRequestsRoute: CustomerNavRoute = {

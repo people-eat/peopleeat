@@ -144,7 +144,13 @@ function resolveOfferTab(
 
 type OfferTabDef = {
     id: AdminBookingRequestOfferTab;
-    labelKey: string;
+    labelKey:
+        | 'bookingRequestOffer.tabs.chat'
+        | 'bookingRequestOffer.tabs.offer'
+        | 'bookingRequestOffer.tabs.costs'
+        | 'bookingRequestOffer.tabs.menu'
+        | 'bookingRequestOffer.tabs.call'
+        | 'bookingRequestOffer.tabs.testimonial';
     Icon: LucideIcon;
 };
 
@@ -1197,17 +1203,15 @@ function CostsTabPanel({
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>
-                            {t(
-                                locale,
-                                'admin',
-                                `offer.payoutConfirm.${
-                                    payoutConfirm === 'alreadyTookPlaceCheck'
-                                        ? 'checkTitle'
-                                        : payoutConfirm === 'outOfSystem'
-                                          ? 'outOfSystemTitle'
-                                          : 'releaseTitle'
-                                }`,
-                            )}
+                            {
+                                (
+                                    {
+                                        release: t(locale, 'admin', 'offer.payoutConfirm.releaseTitle'),
+                                        alreadyTookPlaceCheck: t(locale, 'admin', 'offer.payoutConfirm.checkTitle'),
+                                        outOfSystem: t(locale, 'admin', 'offer.payoutConfirm.outOfSystemTitle'),
+                                    } satisfies Record<'release' | 'alreadyTookPlaceCheck' | 'outOfSystem', string>
+                                )[payoutConfirm ?? 'release']
+                            }
                         </AlertDialogTitle>
                         <AlertDialogDescription>
                             {payoutConfirm === 'alreadyTookPlaceCheck'
@@ -1270,13 +1274,13 @@ function CostsTabPanel({
                             />
                             <Separator />
                             <EconomicsRow
-                                label={t(locale, 'admin', 'offer.platformFeeCookLabel', {
+                                label={t(locale, 'admin', 'copy.platformFeeCookPercent', {
                                     percent: offer.platformFeePercentCook,
                                 })}
                                 value={money(offer.platformFeeCentsCook, locale)}
                             />
                             <EconomicsRow
-                                label={t(locale, 'admin', 'offer.platformFeeCustomerLabel', {
+                                label={t(locale, 'admin', 'copy.platformFeeCustomerPercent', {
                                     percent: offer.platformFeePercentCustomer,
                                 })}
                                 value={money(offer.platformFeeCentsCustomer, locale)}

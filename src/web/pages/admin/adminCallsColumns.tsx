@@ -29,7 +29,11 @@ export type AdminCallsSortField = (typeof ADMIN_CALLS_SORT_FIELDS)[number];
 const columnHelper = createColumnHelper<AdminCallsDataTableFeatures, AdminCallsTableRow>();
 
 export function adminCallInitiatorLabel(initiator: GqlCCookCallSlotBookingActor, locale: Locale): string {
-    return t(locale, 'admin', `calls.parties.${initiator}`);
+    const labels = {
+        CUSTOMER: t(locale, 'admin', 'calls.parties.CUSTOMER'),
+        COOK: t(locale, 'admin', 'calls.parties.COOK'),
+    } satisfies Record<GqlCCookCallSlotBookingActor, string>;
+    return labels[initiator];
 }
 
 export function adminCallsColumns(locale: Locale, timeZone: string) {

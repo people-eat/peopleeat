@@ -45,14 +45,14 @@ type AdminCallRecording = NonNullable<AdminCallDetail['recording']>;
 type TranscriptSegment = NonNullable<AdminCallRecording['transcriptSegments']>[number];
 
 function recordingStatusLabel(status: AdminCallRecording['status'], locale: Locale): string {
-    const key = {
-        PENDING: 'copy.recordingInProgress',
-        EGRESS_COMPLETE: 'copy.audioSaved',
-        TRANSCRIBING: 'copy.transcribing',
-        COMPLETED: 'copy.completed3',
-        FAILED: 'copy.failed',
-    }[status];
-    return t(locale, 'admin', key);
+    const labels = {
+        PENDING: t(locale, 'admin', 'copy.recordingInProgress'),
+        EGRESS_COMPLETE: t(locale, 'admin', 'copy.audioSaved'),
+        TRANSCRIBING: t(locale, 'admin', 'copy.transcribing'),
+        COMPLETED: t(locale, 'admin', 'copy.completed3'),
+        FAILED: t(locale, 'admin', 'copy.failed'),
+    } satisfies Record<AdminCallRecording['status'], string>;
+    return labels[status];
 }
 
 function formatOffset(ms: number): string {

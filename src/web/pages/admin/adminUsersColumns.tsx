@@ -24,11 +24,21 @@ export type AdminUsersSortField = (typeof ADMIN_USERS_SORT_FIELDS)[number];
 const columnHelper = createColumnHelper<AdminUsersDataTableFeatures, AdminUsersTableRow>();
 
 export function adminUserTypeLabel(type: GqlCAdminUserType, locale: Locale) {
-    return t(locale, 'admin', `users.roles.${type}`);
+    const labels = {
+        customer: t(locale, 'admin', 'users.roles.customer'),
+        cook: t(locale, 'admin', 'users.roles.cook'),
+        admin: t(locale, 'admin', 'users.roles.admin'),
+    } satisfies Record<GqlCAdminUserType, string>;
+    return labels[type];
 }
 
 export function adminUserStatusLabel(status: GqlCUserStatus, locale: Locale) {
-    return t(locale, 'admin', `users.roles.${status}`);
+    const labels = {
+        ACTIVE: t(locale, 'admin', 'users.accountStatus.ACTIVE'),
+        BANNED: t(locale, 'admin', 'users.accountStatus.BANNED'),
+        ANONYMIZED: t(locale, 'admin', 'users.accountStatus.ANONYMIZED'),
+    } satisfies Record<GqlCUserStatus, string>;
+    return labels[status];
 }
 
 export function adminUsersColumns(locale: Locale, timeZone: string) {

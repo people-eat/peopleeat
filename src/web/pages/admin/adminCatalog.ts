@@ -1,3 +1,4 @@
+import type { ParseKeys } from 'i18next';
 import type { LucideIcon } from 'lucide-react';
 import {
     AppWindowIcon,
@@ -80,21 +81,97 @@ export type AdminNavGroup = {
     items: readonly AdminNavItemKey[];
 };
 
-function adminNavSlugKey(slug: AdminStubSlug | 'overview' | 'users' | 'legal'): string {
-    return slug.replace(/-([a-z])/g, (_, letter: string) => letter.toUpperCase());
-}
+type AdminNavCatalogKey = AdminStubSlug | AdminSpecialNavKey;
+
+const ADMIN_NAV_TITLE_KEY = {
+    overview: 'nav.overview.title',
+    users: 'nav.users.title',
+    legal: 'nav.legal.title',
+    'assistant-chats': 'nav.assistantChats.title',
+    'booking-requests': 'nav.bookingRequests.title',
+    calls: 'nav.calls.title',
+    'file-store': 'nav.fileStore.title',
+    'gift-cards': 'nav.giftCards.title',
+    jobs: 'nav.jobs.title',
+    meals: 'nav.meals.title',
+    menus: 'nav.menus.title',
+    'offer-addon-templates': 'nav.offerAddonTemplates.title',
+    'outbound-emails': 'nav.outboundEmails.title',
+    'support-requests': 'nav.supportRequests.title',
+    'promo-codes': 'nav.promoCodes.title',
+    logs: 'nav.logs.title',
+    'database-slow-statements': 'nav.databaseSlowStatements.title',
+    'ai-generations': 'nav.aiGenerations.title',
+    sessions: 'nav.sessions.title',
+    analytics: 'nav.analytics.title',
+    map: 'nav.map.title',
+    'feature-toggles': 'nav.featureToggles.title',
+    'blog-posts': 'nav.blogPosts.title',
+    testimonials: 'nav.testimonials.title',
+    cities: 'nav.cities.title',
+    partners: 'nav.partners.title',
+    occasions: 'nav.occasions.title',
+    'whats-app-chats': 'nav.whatsAppChats.title',
+    'offer-chat-reviews': 'nav.offerChatReviews.title',
+    links: 'nav.links.title',
+    'web-pages': 'nav.webPages.title',
+} as const satisfies Record<AdminNavCatalogKey, ParseKeys<'admin'>>;
+
+const ADMIN_NAV_DESCRIPTION_KEY = {
+    'assistant-chats': 'nav.assistantChats.description',
+    'booking-requests': 'nav.bookingRequests.description',
+    calls: 'nav.calls.description',
+    'file-store': 'nav.fileStore.description',
+    'gift-cards': 'nav.giftCards.description',
+    jobs: 'nav.jobs.description',
+    meals: 'nav.meals.description',
+    menus: 'nav.menus.description',
+    'offer-addon-templates': 'nav.offerAddonTemplates.description',
+    'outbound-emails': 'nav.outboundEmails.description',
+    'support-requests': 'nav.supportRequests.description',
+    'promo-codes': 'nav.promoCodes.description',
+    logs: 'nav.logs.description',
+    'database-slow-statements': 'nav.databaseSlowStatements.description',
+    'ai-generations': 'nav.aiGenerations.description',
+    sessions: 'nav.sessions.description',
+    analytics: 'nav.analytics.description',
+    map: 'nav.map.description',
+    'feature-toggles': 'nav.featureToggles.description',
+    'blog-posts': 'nav.blogPosts.description',
+    testimonials: 'nav.testimonials.description',
+    cities: 'nav.cities.description',
+    partners: 'nav.partners.description',
+    occasions: 'nav.occasions.description',
+    'whats-app-chats': 'nav.whatsAppChats.description',
+    'offer-chat-reviews': 'nav.offerChatReviews.description',
+    links: 'nav.links.description',
+    'web-pages': 'nav.webPages.description',
+} as const satisfies Record<AdminStubSlug, ParseKeys<'admin'>>;
+
+type AdminNavGroupId = 'operations' | 'messaging' | 'commerce' | 'catalog' | 'content' | 'insights' | 'platform';
+
+const ADMIN_NAV_GROUP_KEY = {
+    operations: 'nav.groups.operations',
+    messaging: 'nav.groups.messaging',
+    commerce: 'nav.groups.commerce',
+    catalog: 'nav.groups.catalog',
+    content: 'nav.groups.content',
+    insights: 'nav.groups.insights',
+    platform: 'nav.groups.platform',
+} as const satisfies Record<AdminNavGroupId, ParseKeys<'admin'>>;
 
 export function adminStubRouteTitle(slug: AdminStubSlug, locale: Locale): string {
-    return t(locale, 'admin', `nav.${adminNavSlugKey(slug)}.title`);
+    return t(locale, 'admin', ADMIN_NAV_TITLE_KEY[slug]);
 }
 
 export function adminStubRouteDescription(slug: AdminStubSlug, locale: Locale): string {
-    return t(locale, 'admin', `nav.${adminNavSlugKey(slug)}.description`);
+    return t(locale, 'admin', ADMIN_NAV_DESCRIPTION_KEY[slug]);
 }
 
 export function adminNavGroupLabel(id: string, locale: Locale): string | null {
     if (id === 'home') return null;
-    return t(locale, 'admin', `nav.groups.${id}`);
+    if (!(id in ADMIN_NAV_GROUP_KEY)) return null;
+    return t(locale, 'admin', ADMIN_NAV_GROUP_KEY[id as AdminNavGroupId]);
 }
 
 /**

@@ -1,5 +1,5 @@
 import i18next from 'i18next';
-import type { i18n, Resource, TOptions } from 'i18next';
+import type { i18n, ParseKeys, Resource, TOptions } from 'i18next';
 import ICU from 'i18next-icu';
 
 import { DEFAULT_LOCALE } from '../shared/locale';
@@ -59,13 +59,13 @@ export async function tEmailReady(locale: CatalogLocale): Promise<void> {
     if (locale !== DEFAULT_LOCALE) await emailCatalogEnsure(DEFAULT_LOCALE);
 }
 
-export function tEmail(locale: CatalogLocale, key: string, options?: TOptions): string {
+export function tEmail(locale: CatalogLocale, key: ParseKeys<'email'>, options?: TOptions): string {
     const instance = emailI18nCreateSync(locale);
     const translate = instance.t.bind(instance) as unknown as Translate;
-    return translate(key, { ns: I18N_EMAIL_NAMESPACE, ...options });
+    return translate(key as string, { ns: I18N_EMAIL_NAMESPACE, ...options });
 }
 
-export async function tEmailAsync(locale: CatalogLocale, key: string, options?: TOptions): Promise<string> {
+export async function tEmailAsync(locale: CatalogLocale, key: ParseKeys<'email'>, options?: TOptions): Promise<string> {
     await tEmailReady(locale);
     return tEmail(locale, key, options);
 }

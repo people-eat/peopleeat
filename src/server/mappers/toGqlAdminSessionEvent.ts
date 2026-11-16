@@ -1,3 +1,4 @@
+import { catalogKey } from '../../i18n/catalogKey';
 import { t } from '../../i18n/t';
 import { bookingRequestCheckoutFunnelArea } from '../../shared/bookingRequestCheckoutFunnel';
 import { bookingRequestFormFunnelArea } from '../../shared/bookingRequestFormFunnel';
@@ -11,7 +12,8 @@ import { isSessionEventKey } from '../domain/sessionEvent';
 import type { GqlSAdminSessionEvent } from '../graphql/generated';
 
 function copy(locale: Locale, key: string, params?: Record<string, string | number>): string {
-    return t(locale, 'admin', key, params);
+    // Session-event description keys are built from runtime event types / verbs.
+    return t(locale, 'admin', catalogKey('admin', key), params);
 }
 
 function staticDescription(locale: Locale, type: SessionEventKey): string {

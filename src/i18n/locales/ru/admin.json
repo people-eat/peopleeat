@@ -24,7 +24,12 @@
             "offerCount": "{count, plural, one {# предложение} few {# предложения} many {# предложений} other {# предложений}}"
         },
         "selectedCount": "{count} выбрано",
-        "notifyCount": "Уведомить ({count})"
+        "notifyCount": "Уведомить ({count})",
+        "tabs": {
+            "overview": "Overview",
+            "offers": "Offers",
+            "discount": "Discount"
+        }
     },
     "bookingRequestOffer": {
         "status": {
@@ -40,6 +45,14 @@
             "COMPLETED": "Завершено",
             "EXPIRED": "Истекло",
             "CANCELED": "Отменено"
+        },
+        "tabs": {
+            "chat": "Chat",
+            "offer": "Offer",
+            "costs": "Costs",
+            "menu": "Menu",
+            "call": "Call",
+            "testimonial": "Review"
         }
     },
     "callSlot": {
@@ -2360,6 +2373,10 @@
             "n": "Благодарность",
             "Weihnachten": "Рождество",
             "Einfach so": "Просто так"
+        },
+        "status": {
+            "PREPARED": "Подготовлен",
+            "PAYED": "Оплачен"
         }
     },
     "outboundEmail": {
@@ -2501,11 +2518,25 @@
     },
     "users": {
         "countPercent": "{count} · {percent}%",
-        "turnsAge": "исполняется {age}"
+        "turnsAge": "исполняется {age}",
+        "roles": {
+            "customer": "Клиент",
+            "cook": "Повар",
+            "admin": "Админ"
+        },
+        "accountStatus": {
+            "ACTIVE": "Активен",
+            "BANNED": "Заблокирован",
+            "ANONYMIZED": "Анонимизирован"
+        }
     },
     "testimonials": {
         "outOf5Stars": "{average} из 5 звёзд",
-        "positionN": "Позиция {n}"
+        "positionN": "Позиция {n}",
+        "CUSTOMER": "Клиент",
+        "COOK": "Повар",
+        "PUBLISHED": "Опубликован",
+        "PENDING_REVIEW": "На проверке"
     },
     "fileStore": {
         "bucket": "Бакет: {bucket}.",
@@ -2524,5 +2555,89 @@
     },
     "cookProfile": {
         "previousPaths": "Предыдущие пути: {paths}"
+    },
+    "user": {
+        "tabs": {
+            "general": "General",
+            "cook_profile": "Cook profile",
+            "offers": "Offers",
+            "meals": "Meals",
+            "menus": "Menus",
+            "pool": "Pool",
+            "calls": "Calls",
+            "testimonials": "Testimonials",
+            "booking_requests": "Booking requests",
+            "feature_toggles": "Feature toggles",
+            "session_events": "Session events",
+            "sessions": "Sessions",
+            "notes": "Notes",
+            "whatsapp": "WhatsApp",
+            "emails": "Emails",
+            "assistant_chats": "Assistant chats"
+        }
+    },
+    "session": {
+        "tabs": {
+            "overview": "Overview",
+            "events": "Events"
+        }
+    },
+    "sessions": {
+        "visitorKind": {
+            "human": "Человек",
+            "bot": "Бот"
+        }
+    },
+    "promoCode": {
+        "tabs": {
+            "general": "General",
+            "expiration": "Expiration",
+            "usage": "Usage"
+        }
+    },
+    "logs": {
+        "levels": {
+            "error": "Ошибка",
+            "warn": "Предупреждение",
+            "info": "Инфо",
+            "debug": "Отладка"
+        }
+    },
+    "assistantChats": {
+        "surfaces": {
+            "admin": "Админ",
+            "customer": "Клиент",
+            "cook": "Повар"
+        }
+    },
+    "calls": {
+        "attention": {
+            "LIVE": "В эфире",
+            "PENDING": "Ожидает",
+            "UPCOMING": "Предстоит",
+            "RECENT_ROOM": "Комната завершена",
+            "RECENT_SLOT": "Слот завершён",
+            "DECLINED": "Отклонён",
+            "CANCELED": "Отменён",
+            "live": "В эфире",
+            "pending": "Ожидает",
+            "upcoming": "Предстоит",
+            "recent": "Недавние"
+        },
+        "parties": {
+            "CUSTOMER": "Клиент",
+            "COOK": "Повар"
+        }
+    },
+    "offer": {
+        "payoutConfirm": {
+            "releaseTitle": "Really release this payout?",
+            "checkTitle": "Check if payout already took place?",
+            "outOfSystemTitle": "Mark as paid out of system?",
+            "releaseBody": "This creates a Stripe bank payout of {amount} to the cook.",
+            "checkBody": "We ask Stripe for a matching payout of {amount}. If one is found, we mark the offer as paid out. No new payout is created.",
+            "checkBodyOutOfSystem": "We ask Stripe for a matching payout of {amount}. If one is found, we correct the status from out-of-system to Stripe payout. No new payout is created.",
+            "outOfSystemBody": "No Stripe payout. We mark {amount} as paid outside Stripe (for example wire or cash)."
+        }
     }
 }

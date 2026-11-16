@@ -1,3 +1,4 @@
+import { catalogKey } from '../../i18n/catalogKey';
 import { t } from '../../i18n/t';
 import { contentLocaleText } from '../../shared/contentSection';
 import type { Locale } from '../../shared/locale';
@@ -26,8 +27,9 @@ export function webPageSeoText(
             description: contentLocaleText(webPage.descriptionDe, webPage.descriptionEn, locale),
         };
     }
+    // Prefix comes from route/CMS wiring; keys are `{prefix}.seo.title|description`.
     return {
-        title: t(locale, namespace, `${catalogPrefix}.seo.title`),
-        description: t(locale, namespace, `${catalogPrefix}.seo.description`),
+        title: t(locale, namespace, catalogKey(namespace, `${catalogPrefix}.seo.title`)),
+        description: t(locale, namespace, catalogKey(namespace, `${catalogPrefix}.seo.description`)),
     };
 }

@@ -4,6 +4,7 @@
 // catalog label + icon. Everything else falls back to a mechanical label
 // derived from the tool name.
 
+import type { ParseKeys } from 'i18next';
 import {
     BookOpenIcon,
     ClipboardListIcon,
@@ -23,7 +24,7 @@ import type { Locale } from '../utils/locale';
 
 interface ToolDisplayEntry {
     Icon: LucideIcon;
-    labelKey: string;
+    labelKey: ParseKeys<'common'>;
 }
 
 const TOOL_DISPLAY: Record<string, ToolDisplayEntry> = {

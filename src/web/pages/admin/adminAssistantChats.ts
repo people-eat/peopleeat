@@ -32,7 +32,12 @@ export function parseAdminAssistantChatsSectionFromPath(path: string): AdminAssi
 }
 
 export function adminChatSurfaceLabel(surface: GqlCChatSurface, locale: Locale): string {
-    return t(locale, 'admin', `assistantChats.surfaces.${surface}`);
+    const labels = {
+        admin: t(locale, 'admin', 'assistantChats.surfaces.admin'),
+        customer: t(locale, 'admin', 'assistantChats.surfaces.customer'),
+        cook: t(locale, 'admin', 'assistantChats.surfaces.cook'),
+    } satisfies Record<GqlCChatSurface, string>;
+    return labels[surface];
 }
 
 export function adminAssistantChatTitle(title: string, locale: Locale): string {

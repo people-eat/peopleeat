@@ -8,7 +8,10 @@ export const ADMIN_SESSIONS_SECTIONS: AdminSessionsSection[] = ['list'];
 export type AdminSessionsSectionTo = '/{-$locale}/admin/sessions/list';
 
 export function adminSessionsSectionLabel(section: AdminSessionsSection, locale: Locale): string {
-    return t(locale, 'admin', `section.${section}`);
+    const labels = {
+        list: t(locale, 'admin', 'section.list'),
+    } satisfies Record<AdminSessionsSection, string>;
+    return labels[section];
 }
 
 export function adminSessionsSectionPath(section: AdminSessionsSection): `/admin/sessions/${AdminSessionsSection}` {
@@ -29,5 +32,9 @@ export function parseAdminSessionsSectionFromPath(path: string): AdminSessionsSe
 }
 
 export function adminSessionKindLabel(kind: 'human' | 'bot', locale: Locale): string {
-    return t(locale, 'admin', `sessions.visitorKind.${kind}`);
+    const labels = {
+        human: t(locale, 'admin', 'sessions.visitorKind.human'),
+        bot: t(locale, 'admin', 'sessions.visitorKind.bot'),
+    } satisfies Record<'human' | 'bot', string>;
+    return labels[kind];
 }

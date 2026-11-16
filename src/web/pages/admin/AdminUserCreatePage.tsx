@@ -36,7 +36,10 @@ export function adminUserCreatePageDescription(locale: Locale): string {
 
 const CREATE_FORM_ID = 'admin-user-create-form';
 
-const preferredCommunicationOptions: { value: GqlCUserPreferredCommunication; key: string }[] = [
+const preferredCommunicationOptions: {
+    value: GqlCUserPreferredCommunication;
+    key: 'copy.message' | 'copy.whatsapp' | 'copy.call2' | 'copy.email';
+}[] = [
     { value: 'SMS', key: 'copy.message' },
     { value: 'WHATS_APP', key: 'copy.whatsapp' },
     { value: 'CALL', key: 'copy.call2' },
@@ -69,17 +72,12 @@ export function AdminUserCreatePage() {
         if (asCook) {
             const built = cookCreateInputFromFields(cookFields);
             if ('error' in built) {
-                toast.error(
-                    t(
-                        locale,
-                        'admin',
-                        {
-                            travelExpenses: 'copy.pleaseEnterValidTravelExpensesAtLeast025',
-                            travelDistance: 'copy.maximumTravelDistanceMustBeBetween5And250Km',
-                            incomplete: 'copy.pleaseCompleteTheChefProfile',
-                        }[built.error],
-                    ),
-                );
+                const errorLabels = {
+                    travelExpenses: t(locale, 'admin', 'copy.pleaseEnterValidTravelExpensesAtLeast025'),
+                    travelDistance: t(locale, 'admin', 'copy.maximumTravelDistanceMustBeBetween5And250Km'),
+                    incomplete: t(locale, 'admin', 'copy.pleaseCompleteTheChefProfile'),
+                } as const;
+                toast.error(errorLabels[built.error]);
                 return;
             }
             cookInput = built.input;

@@ -32,12 +32,12 @@ export function adminMapPageDescription(locale: Locale): string {
 
 export { adminMapPageVariables, parseAdminMapSearch } from './adminMapSearch';
 
-const LAYER_LABEL_KEY: Record<AdminMapLayer, string> = {
+const LAYER_LABEL_KEY = {
     cooks: 'copy.cooks',
     bookings: 'copy.requests',
     cities: 'copy.cities',
     venues: 'copy.venues',
-};
+} as const satisfies Record<AdminMapLayer, 'copy.cooks' | 'copy.requests' | 'copy.cities' | 'copy.venues'>;
 
 type AdminMapPageProps = {
     data: GqlCAdminMapPageQuery;

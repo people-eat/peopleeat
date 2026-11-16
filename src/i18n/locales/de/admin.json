@@ -24,7 +24,12 @@
             "offerCount": "{count, plural, one {# Angebot} other {# Angebote}}"
         },
         "selectedCount": "{count} ausgewählt",
-        "notifyCount": "Benachrichtigung ({count})"
+        "notifyCount": "Benachrichtigung ({count})",
+        "tabs": {
+            "overview": "Übersicht",
+            "offers": "Angebote",
+            "discount": "Rabatt"
+        }
     },
     "bookingRequestOffer": {
         "status": {
@@ -40,6 +45,14 @@
             "COMPLETED": "Stattgefunden",
             "EXPIRED": "Abgelaufen",
             "CANCELED": "Storniert"
+        },
+        "tabs": {
+            "chat": "Chat",
+            "offer": "Angebot",
+            "costs": "Kosten",
+            "menu": "Menü",
+            "call": "Anruf",
+            "testimonial": "Bewertung"
         }
     },
     "callSlot": {
@@ -2360,6 +2373,10 @@
             "n": "Dankeschön",
             "Weihnachten": "Weihnachten",
             "Einfach so": "Einfach so"
+        },
+        "status": {
+            "PREPARED": "Vorbereitet",
+            "PAYED": "Bezahlt"
         }
     },
     "outboundEmail": {
@@ -2501,11 +2518,25 @@
     },
     "users": {
         "countPercent": "{count} · {percent} %",
-        "turnsAge": "wird {age}"
+        "turnsAge": "wird {age}",
+        "roles": {
+            "customer": "Kunde",
+            "cook": "Koch",
+            "admin": "Admin"
+        },
+        "accountStatus": {
+            "ACTIVE": "Aktiv",
+            "BANNED": "Gesperrt",
+            "ANONYMIZED": "Anonymisiert"
+        }
     },
     "testimonials": {
         "outOf5Stars": "{average} von 5 Sternen",
-        "positionN": "Position {n}"
+        "positionN": "Position {n}",
+        "CUSTOMER": "Kunde",
+        "COOK": "Koch",
+        "PUBLISHED": "Veröffentlicht",
+        "PENDING_REVIEW": "Ausstehend"
     },
     "fileStore": {
         "bucket": "Bucket: {bucket}.",
@@ -2524,5 +2555,89 @@
     },
     "cookProfile": {
         "previousPaths": "Frühere Pfade: {paths}"
+    },
+    "user": {
+        "tabs": {
+            "general": "Allgemeines",
+            "cook_profile": "Kochprofil",
+            "offers": "Angebote",
+            "meals": "Gerichte",
+            "menus": "Menüs",
+            "pool": "Pool",
+            "calls": "Anrufe",
+            "testimonials": "Bewertungen",
+            "booking_requests": "Buchungsanfragen",
+            "feature_toggles": "Feature Toggles",
+            "session_events": "Sitzungsereignisse",
+            "sessions": "Sitzungen",
+            "notes": "Notizen",
+            "whatsapp": "WhatsApp",
+            "emails": "E-Mails",
+            "assistant_chats": "Assistent-Chats"
+        }
+    },
+    "session": {
+        "tabs": {
+            "overview": "Übersicht",
+            "events": "Ereignisse"
+        }
+    },
+    "sessions": {
+        "visitorKind": {
+            "human": "Mensch",
+            "bot": "Bot"
+        }
+    },
+    "promoCode": {
+        "tabs": {
+            "general": "Allgemeines",
+            "expiration": "Ablauf",
+            "usage": "Nutzung"
+        }
+    },
+    "logs": {
+        "levels": {
+            "error": "Fehler",
+            "warn": "Warnung",
+            "info": "Info",
+            "debug": "Debug"
+        }
+    },
+    "assistantChats": {
+        "surfaces": {
+            "admin": "Admin",
+            "customer": "Kunde",
+            "cook": "Koch"
+        }
+    },
+    "calls": {
+        "attention": {
+            "LIVE": "Live",
+            "PENDING": "Ausstehend",
+            "UPCOMING": "Bevorstehend",
+            "RECENT_ROOM": "Raum beendet",
+            "RECENT_SLOT": "Termin erledigt",
+            "DECLINED": "Abgelehnt",
+            "CANCELED": "Storniert",
+            "live": "Live",
+            "pending": "Ausstehend",
+            "upcoming": "Bevorstehend",
+            "recent": "Kürzlich"
+        },
+        "parties": {
+            "CUSTOMER": "Kunde",
+            "COOK": "Koch"
+        }
+    },
+    "offer": {
+        "payoutConfirm": {
+            "releaseTitle": "Auszahlung wirklich freigeben?",
+            "checkTitle": "Prüfen, ob Auszahlung bereits erfolgt?",
+            "outOfSystemTitle": "Außerhalb von Stripe markieren?",
+            "releaseBody": "Es wird eine Stripe-Auszahlung über {amount} an den Koch ausgelöst.",
+            "checkBody": "Wir fragen Stripe nach einer passenden Auszahlung über {amount}. Wird eine gefunden, markieren wir das Angebot als ausgezahlt. Es wird keine neue Auszahlung erstellt.",
+            "checkBodyOutOfSystem": "Wir fragen Stripe nach einer passenden Auszahlung über {amount}. Wird eine gefunden, korrigieren wir den Status von außerbetrieblich auf Stripe-Auszahlung. Es wird keine neue Auszahlung erstellt.",
+            "outOfSystemBody": "Keine Stripe-Auszahlung. Wir markieren {amount} als außerhalb von Stripe ausgezahlt (z. B. Überweisung oder Bargeld)."
+        }
     }
 }

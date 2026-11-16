@@ -5,9 +5,17 @@ import type { Locale } from '../../utils/locale';
 export type AdminTestimonialType = 'CUSTOMER' | 'COOK';
 
 export function testimonialTypeLabel(type: AdminTestimonialType, locale: Locale): string {
-    return t(locale, 'admin', `testimonials.${type}`);
+    const labels = {
+        CUSTOMER: t(locale, 'admin', 'testimonials.CUSTOMER'),
+        COOK: t(locale, 'admin', 'testimonials.COOK'),
+    } satisfies Record<AdminTestimonialType, string>;
+    return labels[type];
 }
 
 export function testimonialPublicationStatusLabel(status: GqlCTestimonialPublicationStatus, locale: Locale): string {
-    return t(locale, 'admin', `testimonials.${status}`);
+    const labels = {
+        PUBLISHED: t(locale, 'admin', 'testimonials.PUBLISHED'),
+        PENDING_REVIEW: t(locale, 'admin', 'testimonials.PENDING_REVIEW'),
+    } satisfies Record<GqlCTestimonialPublicationStatus, string>;
+    return labels[status];
 }

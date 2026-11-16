@@ -72,15 +72,15 @@ function nameSplit(fullName: string): { firstName: string; lastName: string } {
 /** Map Stripe decline/code to bilingual copy — never surface raw English `error.message`. */
 function stripeConfirmErrorMessage(error: { code?: string; decline_code?: string } | undefined, locale: Locale): string {
     const code = error?.decline_code ?? error?.code;
-    const byCode: Record<string, string> = {
+    const byCode = {
         card_declined: 'stripePayment.cardDeclined',
         expired_card: 'stripePayment.expiredCard',
         incorrect_cvc: 'stripePayment.incorrectCvc',
         insufficient_funds: 'stripePayment.insufficientFunds',
         processing_error: 'stripePayment.processingError',
         authentication_required: 'stripePayment.authenticationRequired',
-    };
-    const key = code && byCode[code] ? byCode[code] : 'stripePayment.failed';
+    } as const;
+    const key = code && code in byCode ? byCode[code as keyof typeof byCode] : 'stripePayment.failed';
     return t(locale, 'common', key);
 }
 

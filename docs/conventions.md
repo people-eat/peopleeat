@@ -251,7 +251,8 @@ Physical table renames are hand-authored `ALTER TABLE … RENAME` migrations —
 
 UI chrome lives in JSON catalogs under `src/i18n/locales/{locale}/{namespace}.json` with type-safe keys. `de` is the completeness source of
 truth. Read copy with `useT(namespace)` in React and isomorphic `t(locale, namespace, key)` in `head()` and `src/shared`. Email templates
-use server-only `tEmail(locale, key)` from `src/i18n/tEmail.ts`.
+use server-only `tEmail(locale, key)` from `src/i18n/tEmail.ts`. Both helpers type-check keys against the `de` JSON modules (`ParseKeys`).
+Interpolation like `` `users.roles.${type}` `` is not enough for enum exhaustiveness: map each union member to an exact literal key.
 
 ```tsx
 const { t } = useT('public');
@@ -261,6 +262,16 @@ return <h1>{t('about.title')}</h1>;
 ```ts
 // Route `head()`, shared helpers (no React)
 seoMeta({ title: t(locale, 'public', 'about.seo.title'), … });
+
+// Enum / union labels
+const labels = {
+  customer: t(locale, 'admin', 'users.roles.customer'),
+  cook: t(locale, 'admin', 'users.roles.cook'),
+  admin: t(locale, 'admin', 'users.roles.admin'),
+} satisfies Record<GqlCAdminUserType, string>;
+return labels[type];
+
+// Open-ended runtime keys only (job names, occasions): catalogKey('admin', `…${name}`)
 ```
 
 **Do not** add inline `{ de: '…', en: '…' }[locale]` objects for new copy. **Do not** hoist a page-level `COPY` const. Put the string in the

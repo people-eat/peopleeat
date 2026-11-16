@@ -19,14 +19,13 @@ export type AdminTestimonialPublicPagePlacement = {
 };
 
 function kindLabel(kind: string, locale: Locale): string {
-    const keys: Record<string, string> = {
-        CITY: 'copy.city',
-        PARTNER_VENUE: 'copy.venue',
-        OCCASION: 'copy.occasion',
-        CHEF: 'copy.cookProfile',
-    };
-    const key = keys[kind];
-    return key ? t(locale, 'admin', key) : kind;
+    const labels = {
+        CITY: t(locale, 'admin', 'copy.city'),
+        PARTNER_VENUE: t(locale, 'admin', 'copy.venue'),
+        OCCASION: t(locale, 'admin', 'copy.occasion'),
+        CHEF: t(locale, 'admin', 'copy.cookProfile'),
+    } as const;
+    return kind in labels ? labels[kind as keyof typeof labels] : kind;
 }
 
 function placementLabel(placement: AdminTestimonialPublicPagePlacement, locale: Locale): string {

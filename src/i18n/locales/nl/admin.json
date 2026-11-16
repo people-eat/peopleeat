@@ -24,7 +24,12 @@
             "offerCount": "{count, plural, one {# offerte} other {# offertes}}"
         },
         "selectedCount": "{count} geselecteerd",
-        "notifyCount": "Informeren ({count})"
+        "notifyCount": "Informeren ({count})",
+        "tabs": {
+            "overview": "Overview",
+            "offers": "Offers",
+            "discount": "Discount"
+        }
     },
     "bookingRequestOffer": {
         "status": {
@@ -40,6 +45,14 @@
             "COMPLETED": "Afgerond",
             "EXPIRED": "Verlopen",
             "CANCELED": "Geannuleerd"
+        },
+        "tabs": {
+            "chat": "Chat",
+            "offer": "Offer",
+            "costs": "Costs",
+            "menu": "Menu",
+            "call": "Call",
+            "testimonial": "Review"
         }
     },
     "callSlot": {
@@ -2360,6 +2373,10 @@
             "n": "Bedankt",
             "Weihnachten": "Kerst",
             "Einfach so": "Gewoon zo"
+        },
+        "status": {
+            "PREPARED": "Voorbereid",
+            "PAYED": "Betaald"
         }
     },
     "outboundEmail": {
@@ -2501,11 +2518,25 @@
     },
     "users": {
         "countPercent": "{count} · {percent}%",
-        "turnsAge": "wordt {age}"
+        "turnsAge": "wordt {age}",
+        "roles": {
+            "customer": "Klant",
+            "cook": "Kok",
+            "admin": "Admin"
+        },
+        "accountStatus": {
+            "ACTIVE": "Actief",
+            "BANNED": "Geblokkeerd",
+            "ANONYMIZED": "Geanonimiseerd"
+        }
     },
     "testimonials": {
         "outOf5Stars": "{average} van 5 sterren",
-        "positionN": "Positie {n}"
+        "positionN": "Positie {n}",
+        "CUSTOMER": "Klant",
+        "COOK": "Kok",
+        "PUBLISHED": "Gepubliceerd",
+        "PENDING_REVIEW": "In afwachting"
     },
     "fileStore": {
         "bucket": "Bucket: {bucket}.",
@@ -2524,5 +2555,89 @@
     },
     "cookProfile": {
         "previousPaths": "Vorige paden: {paths}"
+    },
+    "user": {
+        "tabs": {
+            "general": "General",
+            "cook_profile": "Cook profile",
+            "offers": "Offers",
+            "meals": "Meals",
+            "menus": "Menus",
+            "pool": "Pool",
+            "calls": "Calls",
+            "testimonials": "Testimonials",
+            "booking_requests": "Booking requests",
+            "feature_toggles": "Feature toggles",
+            "session_events": "Session events",
+            "sessions": "Sessions",
+            "notes": "Notes",
+            "whatsapp": "WhatsApp",
+            "emails": "Emails",
+            "assistant_chats": "Assistant chats"
+        }
+    },
+    "session": {
+        "tabs": {
+            "overview": "Overview",
+            "events": "Events"
+        }
+    },
+    "sessions": {
+        "visitorKind": {
+            "human": "Mens",
+            "bot": "Bot"
+        }
+    },
+    "promoCode": {
+        "tabs": {
+            "general": "General",
+            "expiration": "Expiration",
+            "usage": "Usage"
+        }
+    },
+    "logs": {
+        "levels": {
+            "error": "Fout",
+            "warn": "Waarschuwing",
+            "info": "Info",
+            "debug": "Debug"
+        }
+    },
+    "assistantChats": {
+        "surfaces": {
+            "admin": "Admin",
+            "customer": "Klant",
+            "cook": "Kok"
+        }
+    },
+    "calls": {
+        "attention": {
+            "LIVE": "Live",
+            "PENDING": "In afwachting",
+            "UPCOMING": "Aankomend",
+            "RECENT_ROOM": "Ruimte beëindigd",
+            "RECENT_SLOT": "Slot afgerond",
+            "DECLINED": "Afgewezen",
+            "CANCELED": "Geannuleerd",
+            "live": "Live",
+            "pending": "In afwachting",
+            "upcoming": "Aankomend",
+            "recent": "Recent"
+        },
+        "parties": {
+            "CUSTOMER": "Klant",
+            "COOK": "Kok"
+        }
+    },
+    "offer": {
+        "payoutConfirm": {
+            "releaseTitle": "Really release this payout?",
+            "checkTitle": "Check if payout already took place?",
+            "outOfSystemTitle": "Mark as paid out of system?",
+            "releaseBody": "This creates a Stripe bank payout of {amount} to the cook.",
+            "checkBody": "We ask Stripe for a matching payout of {amount}. If one is found, we mark the offer as paid out. No new payout is created.",
+            "checkBodyOutOfSystem": "We ask Stripe for a matching payout of {amount}. If one is found, we correct the status from out-of-system to Stripe payout. No new payout is created.",
+            "outOfSystemBody": "No Stripe payout. We mark {amount} as paid outside Stripe (for example wire or cash)."
+        }
     }
 }
