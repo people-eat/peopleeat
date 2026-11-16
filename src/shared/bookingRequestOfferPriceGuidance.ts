@@ -33,6 +33,18 @@ const PRICE_CLASS_RANGES_TEN_PLUS_ADULTS: Record<BookingRequestOfferPriceClassTy
     HIGH: { min: 8900, max: 13200 },
 };
 
+/** Cold-start / empty-history prior: union of soft price-class bands (independent of a chosen class). */
+export function bookingRequestMenuPriceClassUnionRangePerPersonCents(participantsAdult: number): {
+    minCents: number;
+    maxCents: number;
+} {
+    const ranges = participantsAdult >= 10 ? PRICE_CLASS_RANGES_TEN_PLUS_ADULTS : PRICE_CLASS_RANGES;
+    return {
+        minCents: ranges.LOW.min,
+        maxCents: ranges.HIGH.max,
+    };
+}
+
 const CUSTOMER_PLATFORM_FEE_FRACTION = 0.04;
 const GROSS_UP_FACTOR = 0.98;
 const PLATFORM_MIN_SPEND_TOTAL_CENTS = 35_000;

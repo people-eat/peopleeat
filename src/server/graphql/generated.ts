@@ -2686,6 +2686,12 @@ export interface GqlSBookingRequestCookPoolDetails {
     notifiedAt?: Maybe<Scalars['DateTime']['output']>;
 }
 
+export interface GqlSBookingRequestExpectedMenuPriceRange {
+    __typename?: 'BookingRequestExpectedMenuPriceRange';
+    maxAmountCents: Scalars['Int']['output'];
+    minAmountCents: Scalars['Int']['output'];
+}
+
 export interface GqlSBookingRequestKitchenDetails {
     __typename?: 'BookingRequestKitchenDetails';
     availability?: Maybe<GqlSBookingRequestKitchenDetailsAvailability>;
@@ -5099,6 +5105,7 @@ export type GqlSPublicWebPageQueryFindOneArgs = {
 
 export interface GqlSQuery {
     __typename?: 'Query';
+    bookingRequestExpectedMenuPriceRange: GqlSBookingRequestExpectedMenuPriceRange;
     currentSession: GqlSSession;
     publicBlogPost: GqlSPublicBlogPostQuery;
     publicCity: GqlSPublicCityQuery;
@@ -5108,6 +5115,11 @@ export interface GqlSQuery {
     publicPartnerVenue: GqlSPublicPartnerVenueQuery;
     publicWebPage: GqlSPublicWebPageQuery;
 }
+
+export type GqlSQueryBookingRequestExpectedMenuPriceRangeArgs = {
+    participantsAdult: Scalars['Int']['input'];
+    participantsDiscounted: Scalars['Int']['input'];
+};
 
 export interface GqlSSession {
     __typename?: 'Session';
@@ -6280,6 +6292,7 @@ export type GqlSResolversTypes = ResolversObject<{
     BookingRequestCookMenuEvaluationGeneratedMenu: ResolverTypeWrapper<GqlSBookingRequestCookMenuEvaluationGeneratedMenu>;
     BookingRequestCookMenuEvaluationMenu: ResolverTypeWrapper<GqlSBookingRequestCookMenuEvaluationMenu>;
     BookingRequestCookPoolDetails: ResolverTypeWrapper<GqlSBookingRequestCookPoolDetails>;
+    BookingRequestExpectedMenuPriceRange: ResolverTypeWrapper<GqlSBookingRequestExpectedMenuPriceRange>;
     BookingRequestKitchenDetails: ResolverTypeWrapper<GqlSBookingRequestKitchenDetails>;
     BookingRequestKitchenDetailsAvailability: GqlSBookingRequestKitchenDetailsAvailability;
     BookingRequestKitchenDetailsGuestTableware: GqlSBookingRequestKitchenDetailsGuestTableware;
@@ -6878,6 +6891,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
     BookingRequestCookMenuEvaluationGeneratedMenu: GqlSBookingRequestCookMenuEvaluationGeneratedMenu;
     BookingRequestCookMenuEvaluationMenu: GqlSBookingRequestCookMenuEvaluationMenu;
     BookingRequestCookPoolDetails: GqlSBookingRequestCookPoolDetails;
+    BookingRequestExpectedMenuPriceRange: GqlSBookingRequestExpectedMenuPriceRange;
     BookingRequestKitchenDetails: GqlSBookingRequestKitchenDetails;
     BookingRequestKitchenDetailsInput: GqlSBookingRequestKitchenDetailsInput;
     BookingRequestOfferAddonSelectionInput: GqlSBookingRequestOfferAddonSelectionInput;
@@ -9622,6 +9636,15 @@ export type GqlSBookingRequestCookPoolDetailsResolvers<
     notifiedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
 }>;
 
+export type GqlSBookingRequestExpectedMenuPriceRangeResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['BookingRequestExpectedMenuPriceRange'] =
+        GqlSResolversParentTypes['BookingRequestExpectedMenuPriceRange'],
+> = ResolversObject<{
+    maxAmountCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    minAmountCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
 export type GqlSBookingRequestKitchenDetailsResolvers<
     ContextType = any,
     ParentType extends GqlSResolversParentTypes['BookingRequestKitchenDetails'] = GqlSResolversParentTypes['BookingRequestKitchenDetails'],
@@ -11801,6 +11824,12 @@ export type GqlSQueryResolvers<
     ContextType = any,
     ParentType extends GqlSResolversParentTypes['Query'] = GqlSResolversParentTypes['Query'],
 > = ResolversObject<{
+    bookingRequestExpectedMenuPriceRange?: Resolver<
+        GqlSResolversTypes['BookingRequestExpectedMenuPriceRange'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSQueryBookingRequestExpectedMenuPriceRangeArgs, 'participantsAdult' | 'participantsDiscounted'>
+    >;
     currentSession?: Resolver<GqlSResolversTypes['Session'], ParentType, ContextType>;
     publicBlogPost?: Resolver<GqlSResolversTypes['PublicBlogPostQuery'], ParentType, ContextType>;
     publicCity?: Resolver<GqlSResolversTypes['PublicCityQuery'], ParentType, ContextType>;
@@ -12622,6 +12651,7 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     BookingRequestCookMenuEvaluationGeneratedMenu?: GqlSBookingRequestCookMenuEvaluationGeneratedMenuResolvers<ContextType>;
     BookingRequestCookMenuEvaluationMenu?: GqlSBookingRequestCookMenuEvaluationMenuResolvers<ContextType>;
     BookingRequestCookPoolDetails?: GqlSBookingRequestCookPoolDetailsResolvers<ContextType>;
+    BookingRequestExpectedMenuPriceRange?: GqlSBookingRequestExpectedMenuPriceRangeResolvers<ContextType>;
     BookingRequestKitchenDetails?: GqlSBookingRequestKitchenDetailsResolvers<ContextType>;
     BookingRequestOfferCallRecording?: GqlSBookingRequestOfferCallRecordingResolvers<ContextType>;
     BookingRequestOfferCallRoom?: GqlSBookingRequestOfferCallRoomResolvers<ContextType>;

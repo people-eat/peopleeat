@@ -360,6 +360,7 @@ import { adminWhatsAppConversationFindMany } from '../queries/adminWhatsAppConve
 import { adminWhatsAppConversationFindManyCounts } from '../queries/adminWhatsAppConversationFindManyCounts';
 import { adminWhatsAppConversationFindOne } from '../queries/adminWhatsAppConversationFindOne';
 import { adminWhatsAppConversationsAdminUnreadCount } from '../queries/adminWhatsAppConversationsAdminUnreadCount';
+import { bookingRequestExpectedMenuPriceRangeFindOne } from '../queries/bookingRequestExpectedMenuPriceRangeFindOne';
 import { bookingRequestOfferCallRoomFindActive } from '../queries/bookingRequestOfferCallRoomFindActive';
 import { bookingRequestOfferMessagesFindMany } from '../queries/bookingRequestOfferMessagesFindMany';
 import { chatTurnsFindMany } from '../queries/chatTurnsFindMany';
@@ -778,6 +779,7 @@ import type {
     GqlSPublicPartnerVenueQueryFindOneByPathNameArgs,
     GqlSPublicWebPageQuery,
     GqlSPublicWebPageQueryFindOneArgs,
+    GqlSQueryBookingRequestExpectedMenuPriceRangeArgs,
     GqlSResolvers,
     GqlSSession,
     GqlSSessionDiscountArgs,
@@ -3018,6 +3020,9 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             publicWebPage() {
                 return {} as GqlSPublicWebPageQuery;
+            },
+            bookingRequestExpectedMenuPriceRange(_: unknown, args: GqlSQueryBookingRequestExpectedMenuPriceRangeArgs) {
+                return bookingRequestExpectedMenuPriceRangeFindOne(args, serverRuntime);
             },
         },
         PublicCityQuery: {

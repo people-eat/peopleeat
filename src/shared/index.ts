@@ -66,7 +66,16 @@ export type {
     BookingRequestOfferPriceInput,
     BookingRequestOfferPriceResult,
 } from './bookingRequestOfferPrice';
-export { bookingRequestOfferPriceGuidance, bookingRequestPaidParticipants } from './bookingRequestOfferPriceGuidance';
+export { bookingRequestExpectedMenuPriceRangeCalculate, percentileCont } from './bookingRequestExpectedMenuPriceRange';
+export type {
+    BookingRequestExpectedMenuPriceRangeResult,
+    BookingRequestExpectedMenuPriceRangeSample,
+} from './bookingRequestExpectedMenuPriceRange';
+export {
+    bookingRequestMenuPriceClassUnionRangePerPersonCents,
+    bookingRequestOfferPriceGuidance,
+    bookingRequestPaidParticipants,
+} from './bookingRequestOfferPriceGuidance';
 export type {
     BookingRequestOfferPriceClassType,
     BookingRequestOfferPriceGuidanceInput,

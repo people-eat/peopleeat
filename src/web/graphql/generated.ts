@@ -2689,6 +2689,12 @@ export interface GqlCBookingRequestCookPoolDetails {
     notifiedAt?: Maybe<Scalars['DateTime']['output']>;
 }
 
+export interface GqlCBookingRequestExpectedMenuPriceRange {
+    __typename?: 'BookingRequestExpectedMenuPriceRange';
+    maxAmountCents: Scalars['Int']['output'];
+    minAmountCents: Scalars['Int']['output'];
+}
+
 export interface GqlCBookingRequestKitchenDetails {
     __typename?: 'BookingRequestKitchenDetails';
     availability?: Maybe<GqlCBookingRequestKitchenDetailsAvailability>;
@@ -5102,6 +5108,7 @@ export type GqlCPublicWebPageQueryFindOneArgs = {
 
 export interface GqlCQuery {
     __typename?: 'Query';
+    bookingRequestExpectedMenuPriceRange: GqlCBookingRequestExpectedMenuPriceRange;
     currentSession: GqlCSession;
     publicBlogPost: GqlCPublicBlogPostQuery;
     publicCity: GqlCPublicCityQuery;
@@ -5111,6 +5118,11 @@ export interface GqlCQuery {
     publicPartnerVenue: GqlCPublicPartnerVenueQuery;
     publicWebPage: GqlCPublicWebPageQuery;
 }
+
+export type GqlCQueryBookingRequestExpectedMenuPriceRangeArgs = {
+    participantsAdult: Scalars['Int']['input'];
+    participantsDiscounted: Scalars['Int']['input'];
+};
 
 export interface GqlCSession {
     __typename?: 'Session';

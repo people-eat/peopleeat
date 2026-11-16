@@ -2380,6 +2380,14 @@ type UserBookingRequestOfferPriceImpact {
     payoutCentsCookAfter: Int!
 }
 
+# Public history-based estimated total menu-price band for a requested headcount
+# (P25–P75 over offers, independent of price class; always non-null via local →
+# global → static prior fallback). See docs/architecture/booking.md.
+type BookingRequestExpectedMenuPriceRange {
+    minAmountCents: Int!
+    maxAmountCents: Int!
+}
+
 enum BookingRequestSetting {
     INDOOR
     OUTDOOR
@@ -3408,6 +3416,8 @@ type Query {
     publicCook: PublicCookQuery!
     # Fixed-route SEO titles/descriptions (admin-editable WebPages rows).
     publicWebPage: PublicWebPageQuery!
+    # Estimated total menu-price band from historical offers for the given headcount.
+    bookingRequestExpectedMenuPriceRange(participantsAdult: Int!, participantsDiscounted: Int!): BookingRequestExpectedMenuPriceRange!
 }
 
 type Mutation {

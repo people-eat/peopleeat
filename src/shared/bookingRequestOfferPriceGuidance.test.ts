@@ -1,10 +1,30 @@
 import { describe, expect, it } from 'vitest';
 
-import { bookingRequestOfferPriceGuidance, bookingRequestPaidParticipants } from './bookingRequestOfferPriceGuidance';
+import {
+    bookingRequestMenuPriceClassUnionRangePerPersonCents,
+    bookingRequestOfferPriceGuidance,
+    bookingRequestPaidParticipants,
+} from './bookingRequestOfferPriceGuidance';
 
 describe('bookingRequestPaidParticipants', () => {
     it('counts discounted guests at half', () => {
         expect(bookingRequestPaidParticipants(4, 2)).toBe(5);
+    });
+});
+
+describe('bookingRequestMenuPriceClassUnionRangePerPersonCents', () => {
+    it('returns LOW.min through HIGH.max for under-ten adults', () => {
+        expect(bookingRequestMenuPriceClassUnionRangePerPersonCents(4)).toEqual({
+            minCents: 7500,
+            maxCents: 15500,
+        });
+    });
+
+    it('returns the ten-plus union when adults are 10 or more', () => {
+        expect(bookingRequestMenuPriceClassUnionRangePerPersonCents(10)).toEqual({
+            minCents: 6400,
+            maxCents: 13200,
+        });
     });
 });
 

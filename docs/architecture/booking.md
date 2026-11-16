@@ -153,6 +153,12 @@ Soft price-class guidance (`suggestedOfferAmountCents` / `minOfferAmountCents` /
 payout at that suggested per-person price (via `bookingRequestSuggestedCookPayoutCents`) for pool-detail preview. Promo
 `minimumTotalAmountCustomerCents` is a **hard** customer-total floor enforced on cook create / price-update.
 
+Public **expected menu-price range** (`Query.bookingRequestExpectedMenuPriceRange` → `minAmountCents` / `maxAmountCents`) is independent of
+price class: P25–P75 of historical offer `menuPriceCents` normalized per paid participant (`bookingRequestExpectedMenuPriceRangeCalculate`),
+scaled to the requested headcount. Always non-null — rich nearby headcount uses local percentiles; sparse samples shrink toward the global
+band; empty history falls back to the soft price-class union prior (`bookingRequestMenuPriceClassUnionRangePerPersonCents`). Intended for
+customer-facing “estimated menu price: min–max” copy (UI wiring separate).
+
 ### GraphQL shape (**implemented** — foundation)
 
 Role-scoped types — no Open|Accepted unions. Customer / cook / admin each get their own request and offer types; shared enums and
@@ -215,6 +221,8 @@ Drive UI with `status` + field presence.
 
 - `src/shared/bookingRequestOfferPrice.ts` — fee formula
 - `src/shared/bookingRequestOfferPriceGuidance.ts` — soft price-class bounds + promo hard min
+- `src/shared/bookingRequestExpectedMenuPriceRange.ts` — history-based P25/P75 menu-price band + hierarchical fallback
+- `src/server/queries/bookingRequestExpectedMenuPriceRangeFindOne.ts` — loads offer samples for the public range query
 - `src/web/components/BookingRequestOfferPriceConfigurationPanel.tsx` — per-person input, banners; also exports readonly
   `BookingRequestOfferCostOverviewPanel`
 - `src/server/db/schema.ts` — tables
