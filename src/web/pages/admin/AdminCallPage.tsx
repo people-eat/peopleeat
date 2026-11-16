@@ -4,7 +4,7 @@ import { useRef, useState } from 'react';
 import { useMutation } from 'urql';
 
 import { t } from '../../../i18n/t';
-import { formatDate, formatTime, inlineCopy } from '../../../shared';
+import { formatDate, formatTime } from '../../../shared';
 import { AdminOfferPartyCards } from '../../components/AdminOfferPartyCards';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AudioWaveformPlayer } from '../../components/AudioWaveformPlayer';
@@ -103,13 +103,7 @@ export function AdminCallPage({
                     <AdminCallDetailBody call={call} />
                 ) : (
                     <p className="text-sm text-muted-foreground">
-                        {inlineCopy(
-                            {
-                                de: `Anruf ${bookingRequestOfferCallRoomId} wurde nicht gefunden.`,
-                                en: `Call ${bookingRequestOfferCallRoomId} was not found.`,
-                            },
-                            locale,
-                        )}
+                        {t(locale, 'admin', 'copy.callNotFound', { id: bookingRequestOfferCallRoomId })}
                     </p>
                 )}
             </main>
@@ -318,13 +312,11 @@ function AdminCallRecordingReview({ call }: { call: AdminCallDetail }) {
                                 }}
                             >
                                 <RefreshCwIcon className={cn('size-3.5', summarizing && 'animate-spin')} aria-hidden />
-                                {inlineCopy(
-                                    {
-                                        de: summarizing ? 'Wird erstellt…' : summaryText ? 'Neu erzeugen' : 'Zusammenfassen',
-                                        en: summarizing ? 'Generating…' : summaryText ? 'Regenerate' : 'Summarize',
-                                    },
-                                    locale,
-                                )}
+                                {summarizing
+                                    ? t(locale, 'admin', 'copy.generating')
+                                    : summaryText
+                                      ? t(locale, 'admin', 'copy.regenerate')
+                                      : t(locale, 'admin', 'copy.summarize')}
                             </Button>
                         </div>
                         {summaryError ? (
@@ -353,13 +345,7 @@ function AdminCallRecordingReview({ call }: { call: AdminCallDetail }) {
                                     className={cn('size-4 transition-transform', transcriptOpen && 'rotate-180')}
                                     aria-hidden
                                 />
-                                {inlineCopy(
-                                    {
-                                        de: transcriptOpen ? 'Transkript ausblenden' : 'Transkript anzeigen',
-                                        en: transcriptOpen ? 'Hide transcript' : 'Show transcript',
-                                    },
-                                    locale,
-                                )}
+                                {t(locale, 'admin', transcriptOpen ? 'copy.hideTranscript' : 'copy.showTranscript')}
                             </button>
 
                             {transcriptOpen ? (

@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
 import { t } from '../../../i18n/t';
-import { inlineCopy, userDisplayName } from '../../../shared';
+import { userDisplayName } from '../../../shared';
 import { idCreate } from '../../../shared/idCreate';
 import {
     AdminConfiguredMenuCoursesEditor,
@@ -109,9 +109,9 @@ export function AdminBookingRequestOfferConfiguredMenuEditPage({
                 toast.error(t(locale, 'admin', 'copy.pleaseEnterAMenuTitle'));
                 return;
             }
-            const coursesError = adminConfiguredMenuDraftValidate(value.courses);
+            const coursesError = adminConfiguredMenuDraftValidate(value.courses, locale);
             if (coursesError) {
-                toast.error(inlineCopy(coursesError, locale));
+                toast.error(coursesError);
                 return;
             }
 
@@ -149,7 +149,7 @@ export function AdminBookingRequestOfferConfiguredMenuEditPage({
     const isSubmitting = useSelector(form.store, (state) => state.isSubmitting);
     const titleValue = useSelector(form.store, (state) => state.values.title);
     const coursesValue = useSelector(form.store, (state) => state.values.courses);
-    const coursesValidationError = showValidation ? adminConfiguredMenuDraftValidate(coursesValue) : null;
+    const coursesValidationError = showValidation ? adminConfiguredMenuDraftValidate(coursesValue, locale) : null;
 
     const offerHref = {
         to: '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId' as const,
@@ -258,7 +258,7 @@ export function AdminBookingRequestOfferConfiguredMenuEditPage({
 
                         {showValidation && titleValue.trim() !== '' && coursesValidationError ? (
                             <StatusAlert tone="error" title={t(locale, 'admin', 'copy.pleaseCheckYourInputs')}>
-                                {inlineCopy(coursesValidationError, locale)}
+                                {coursesValidationError}
                             </StatusAlert>
                         ) : null}
 

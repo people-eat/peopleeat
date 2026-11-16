@@ -1,13 +1,14 @@
 import { Link } from '@tanstack/react-router';
 import { Fragment, useState } from 'react';
 
-import { containsPhoneNumber, inlineCopy } from '../../shared';
+import { containsPhoneNumber } from '../../shared';
 import type { BookingWhenPeer } from '../../shared';
 import { groupMessagesByDate, peerUserMessageStreak } from '../chat/chatTranscript';
 import { useComposerFileAttachments } from '../chat/useComposerFileAttachments';
 import type { GqlCHumanChatMessageFieldsFragment } from '../graphql/generated';
 import { useFeatureToggleActive } from '../hooks/useFeatureToggleActive';
 import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 import { Avatar, AvatarFallback, AvatarGroup, AvatarImage } from './base/avatar';
 import { ChatTranscriptShell } from './base/chat-transcript-shell';
@@ -45,8 +46,8 @@ function ConciergePresenceBanner({
     body?: string | null;
     className?: string;
 }) {
-    const locale = useLocale();
-    const openUserLabel = inlineCopy({ de: 'Nutzer öffnen', en: 'Open user' }, locale);
+    const { t } = useT('common');
+    const openUserLabel = t('chat.openUser');
 
     return (
         <div className={cn('mb-2 flex shrink-0 items-center gap-3 p-1 sm:px-2', className)}>
@@ -115,6 +116,7 @@ export function BookingRequestOfferChat({
     className?: string;
 }) {
     const locale = useLocale();
+    const { t } = useT('common');
     const reactionsEnabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_CHAT_REACTIONS', { gateInAdminShell: true });
     const [draft, setDraft] = useState('');
     const [busy, setBusy] = useState(false);
@@ -124,22 +126,7 @@ export function BookingRequestOfferChat({
     const draftContainsPhoneNumber = containsPhoneNumber(draft);
 
     const presenceTitle = `${peers.map((peer) => peer.display).join(', ')} & Concierge Juliana`;
-    const presenceBody =
-        viewerRole === 'admin'
-            ? null
-            : inlineCopy(
-                  {
-                      customer: {
-                          de: 'Ihr seid direkt mit eurem Koch im Chat. Juliana unterstützt euch zusätzlich bei besonderen Anliegen oder Fragen.',
-                          en: 'You’re chatting directly with your chef. Juliana also supports you with special requests or questions.',
-                      },
-                      cook: {
-                          de: 'Ihr seid direkt mit eurem Gast im Chat. Juliana unterstützt euch zusätzlich bei besonderen Anliegen oder Fragen.',
-                          en: 'You’re chatting directly with your guest. Juliana also supports you with special requests or questions.',
-                      },
-                  }[viewerRole],
-                  locale,
-              );
+    const presenceBody = viewerRole === 'admin' ? null : t(viewerRole === 'customer' ? 'chat.directWithCook' : 'chat.directWithGuest');
 
     return (
         <BookingOfferTimeProvider callPeers={callTimePeers ?? []}>
@@ -147,7 +134,7 @@ export function BookingRequestOfferChat({
                 <ConciergePresenceBanner peers={peers} title={presenceTitle} body={presenceBody} className="hidden md:flex" />
                 <ChatTranscriptShell
                     mode="human"
-                    jumpToLatestLabel={inlineCopy({ de: 'Zum neuesten springen', en: 'Jump to latest' }, locale)}
+                    jumpToLatestLabel={t('chat.jumpToLatest')}
                     contentClassName="w-full gap-3"
                     className="min-h-0 min-w-0"
                     viewportClassName="px-1 sm:px-2"
@@ -158,18 +145,7 @@ export function BookingRequestOfferChat({
                     {messages.length === 0 ? (
                         <MessageScrollerItem>
                             <p className="flex min-h-48 flex-1 items-center justify-center px-4 text-center text-sm text-muted-foreground">
-                                {inlineCopy(
-                                    canSend
-                                        ? {
-                                              de: 'Noch keine Nachrichten. Schreibe die erste Nachricht.',
-                                              en: 'No messages yet. Send the first message.',
-                                          }
-                                        : {
-                                              de: 'Noch keine Nachrichten.',
-                                              en: 'No messages yet.',
-                                          },
-                                    locale,
-                                )}
+                                {canSend ? t('chat.noMessagesWriteFirst') : t('chat.noMessages')}
                             </p>
                         </MessageScrollerItem>
                     ) : (
@@ -202,24 +178,14 @@ export function BookingRequestOfferChat({
                 </ChatTranscriptShell>
                 {canSend ? (
                     <div className="flex flex-col gap-2 px-1 pt-3 pb-(--chat-composer-pb) sm:px-2">
-                        {draftContainsPhoneNumber ? (
-                            <StatusAlert tone="warning">
-                                {inlineCopy(
-                                    {
-                                        de: 'Das Teilen von Telefonnummern ist nicht erlaubt. Bitte bleibe für Absprachen hier im Chat.',
-                                        en: 'Sharing phone numbers is not allowed. Please keep arrangements in this chat.',
-                                    },
-                                    locale,
-                                )}
-                            </StatusAlert>
-                        ) : null}
+                        {draftContainsPhoneNumber ? <StatusAlert tone="warning">{t('chat.phoneNumbersNotAllowed')}</StatusAlert> : null}
                         <MessageComposer
                             value={draft}
                             onValueChange={setDraft}
                             busy={busy}
                             sendDisabled={draftContainsPhoneNumber}
                             showDisclaimer={false}
-                            ariaLabel={inlineCopy({ de: 'Nachricht an Angebot', en: 'Offer message' }, locale)}
+                            ariaLabel={t('chat.offerMessage')}
                             attachments={attachments}
                             onAttachmentsAdd={onAttachmentsAdd}
                             onAttachmentRemove={onAttachmentRemove}

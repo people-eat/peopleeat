@@ -5,7 +5,6 @@ import { ChevronRightIcon } from 'lucide-react';
 import type { MouseEvent, ReactNode } from 'react';
 
 import { t } from '../../../i18n/t';
-import { inlineCopy } from '../../../shared';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '../../components/base/pagination';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/base/table';
 import { useLocale } from '../../hooks/useLocale';
@@ -173,7 +172,7 @@ export function AdminDataTable<TData extends RowData>({
                         </PaginationItem>
                         <PaginationItem>
                             <span className="px-2 text-sm text-muted-foreground tabular-nums">
-                                {inlineCopy({ de: `Seite ${page} von ${pageCount}`, en: `Page ${page} of ${pageCount}` }, locale)}
+                                {t(locale, 'admin', 'list.pageOf', { page, pageCount })}
                             </span>
                         </PaginationItem>
                         <PaginationItem>

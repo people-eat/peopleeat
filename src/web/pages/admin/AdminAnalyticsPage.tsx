@@ -3,7 +3,7 @@ import type { DateRange } from 'react-day-picker';
 import { Layer, Rectangle, ResponsiveContainer, Sankey, Tooltip, useChartWidth } from 'recharts';
 
 import { t } from '../../../i18n/t';
-import { formatIsoDate, inlineCopy } from '../../../shared';
+import { formatIsoDate } from '../../../shared';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { Card, CardContent } from '../../components/base/card';
 import { DateRangePicker } from '../../components/base/date-range-picker';
@@ -105,17 +105,16 @@ function cookFunnelDropOffPercent(
 function sankeyFromFlow(
     flow:
         | {
-              nodes: ReadonlyArray<{ id: string; labelDe: string; labelEn: string }>;
+              nodes: ReadonlyArray<{ id: string; label: string }>;
               links: ReadonlyArray<{ source: string; target: string; value: number }>;
           }
         | null
         | undefined,
-    locale: Locale,
 ) {
     if (!flow || flow.links.length === 0) return null;
     const indexById = new Map(flow.nodes.map((node, index) => [node.id, index]));
     const nodes = flow.nodes.map((node) => ({
-        name: locale === 'de' ? node.labelDe : node.labelEn,
+        name: node.label,
     }));
     const links = flow.links
         .map((link) => {
@@ -160,12 +159,12 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
     const signInChartData = Array.from(signInBucketsByDate.values());
 
     function signInMethodLabel(method: string): string {
-        const copy = {
-            EMAIL_OTP: { de: 'E-Mail-Code', en: 'Email code' },
-            PASSKEY: { de: 'Passkey', en: 'Passkey' },
-            GOOGLE: { de: 'Google', en: 'Google' },
+        const key = {
+            EMAIL_OTP: 'copy.emailCode',
+            PASSKEY: 'copy.passkey',
+            GOOGLE: 'copy.google',
         }[method];
-        return copy ? inlineCopy(copy, locale) : method;
+        return key ? t(locale, 'admin', key) : method;
     }
 
     const formVisitCount = formVisits.reduce((sum, bucket) => sum + bucket.count, 0);
@@ -208,11 +207,11 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
         });
     }
 
-    const sankeyData = sankeyFromFlow(flow, locale);
-    const giftCardSankeyData = sankeyFromFlow(giftCardFlow, locale);
-    const chefSignUpSankeyData = sankeyFromFlow(chefSignUpFlow, locale);
-    const bookingCheckoutSankeyData = sankeyFromFlow(bookingCheckoutFlow, locale);
-    const cookSankeyData = sankeyFromFlow(cookOfferFlow, locale);
+    const sankeyData = sankeyFromFlow(flow);
+    const giftCardSankeyData = sankeyFromFlow(giftCardFlow);
+    const chefSignUpSankeyData = sankeyFromFlow(chefSignUpFlow);
+    const bookingCheckoutSankeyData = sankeyFromFlow(bookingCheckoutFlow);
+    const cookSankeyData = sankeyFromFlow(cookOfferFlow);
 
     const giftCardSteps = giftCardFlow?.steps ?? [];
     const giftCardStepsWithActivity = giftCardSteps.filter((step) => step.enteredCount > 0 || step.completedCount > 0);
@@ -228,49 +227,19 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
 
     const sankeyEmptyCopy = (() => {
         if (hasStepActivity && flow && flow.nodes.length > 0 && flow.links.length === 0) {
-            return inlineCopy(
-                {
-                    de: 'Keine Übergänge im Zeitraum (nur Einzelschritt-Sitzungen). Die Schritttabelle zeigt die Reichweite.',
-                    en: 'No transitions in this range (only single-step sessions). The step table shows reach.',
-                },
-                locale,
-            );
+            return t(locale, 'admin', 'copy.noTransitionsInThisRangeOnlySingleStepSessionsTheStepTableSh');
         }
         if (formVisitCount > 0 && !hasStepActivity) {
-            return inlineCopy(
-                {
-                    de: 'Noch keine strukturierten Funnel-Abschlüsse im Zeitraum. Seitenbesuche zählen alle Sitzungen; der Funnel nur menschliche Nicht-Admin-/Nicht-Koch-Sitzungen mit step_completed.',
-                    en: 'No structured funnel completions in this range yet. Visit charts count all sessions; the funnel only human non-admin/non-cook sessions with step_completed.',
-                },
-                locale,
-            );
+            return t(locale, 'admin', 'copy.noStructuredFunnelCompletionsInThisRangeYetVisitChartsCountA');
         }
-        return inlineCopy(
-            {
-                de: 'Keine Funnel-Daten im gewählten Zeitraum.',
-                en: 'No funnel data in the selected range.',
-            },
-            locale,
-        );
+        return t(locale, 'admin', 'copy.noFunnelDataInTheSelectedRange');
     })();
 
     const cookSankeyEmptyCopy = (() => {
         if (hasCookStepActivity && cookOfferFlow && cookOfferFlow.nodes.length > 0 && cookOfferFlow.links.length === 0) {
-            return inlineCopy(
-                {
-                    de: 'Keine Übergänge im Zeitraum. Die Schritttabelle zeigt die Reichweite.',
-                    en: 'No transitions in this range. The step table shows reach.',
-                },
-                locale,
-            );
+            return t(locale, 'admin', 'copy.noTransitionsInThisRangeTheStepTableShowsReach');
         }
-        return inlineCopy(
-            {
-                de: 'Keine Koch-Angebots-Funnel-Daten im gewählten Zeitraum (Kohorte = benachrichtigte Köche).',
-                en: 'No cook offer funnel data in the selected range (cohort = notified cooks).',
-            },
-            locale,
-        );
+        return t(locale, 'admin', 'copy.noCookOfferFunnelDataInTheSelectedRangeCohortNotifiedCooks');
     })();
 
     return (
@@ -285,70 +254,40 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
                         value={pickerValue}
                         onValueChange={onRangeChange}
                         locale={DATE_FNS_LOCALE[locale]}
-                        placeholder={inlineCopy({ de: 'Zeitraum wählen', en: 'Pick a date range' }, locale)}
+                        placeholder={t(locale, 'admin', 'copy.pickADateRange')}
                         className="w-auto"
-                        aria-label={inlineCopy({ de: 'Zeitraum für Analysen', en: 'Date range for analytics' }, locale)}
+                        aria-label={t(locale, 'admin', 'copy.dateRangeForAnalytics')}
                     />
                 </div>
 
                 <section className="grid gap-3">
-                    <h2 className="text-lg font-medium">{inlineCopy({ de: 'Überblick', en: 'Overview' }, locale)}</h2>
+                    <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.overview')}</h2>
                     <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                        <AdminOverviewStatCard
-                            label={inlineCopy({ de: 'Formularbesuche', en: 'Form visits' }, locale)}
-                            value={formVisitCount}
-                        />
-                        <AdminOverviewStatCard
-                            label={inlineCopy({ de: 'Sitzungen mit Abschluss', en: 'Sessions with completion' }, locale)}
-                            value={sessionsWithCompletion}
-                        />
-                        <AdminOverviewStatCard
-                            label={inlineCopy({ de: 'Anfragen erstellt', en: 'Requests created' }, locale)}
-                            value={bookingRequestsCreated}
-                        />
-                        <AdminOverviewStatCard
-                            label={inlineCopy({ de: 'Conversion %', en: 'Conversion %' }, locale)}
-                            value={conversionPercent ?? 0}
-                        />
+                        <AdminOverviewStatCard label={t(locale, 'admin', 'copy.formVisits')} value={formVisitCount} />
+                        <AdminOverviewStatCard label={t(locale, 'admin', 'copy.sessionsWithCompletion')} value={sessionsWithCompletion} />
+                        <AdminOverviewStatCard label={t(locale, 'admin', 'copy.requestsCreated')} value={bookingRequestsCreated} />
+                        <AdminOverviewStatCard label={t(locale, 'admin', 'copy.conversion')} value={conversionPercent ?? 0} />
                     </dl>
                     {conversionPercent == null && formVisitCount === 0 ? (
                         <p className="text-sm text-muted-foreground">
-                            {inlineCopy(
-                                {
-                                    de: 'Conversion ist Besuch → Anfrage erstellt (0%, wenn keine Formularbesuche).',
-                                    en: 'Conversion is visit → request created (0% when there are no form visits).',
-                                },
-                                locale,
-                            )}
+                            {t(locale, 'admin', 'copy.conversionIsVisitRequestCreated0WhenThereAreNoFormVisits')}
                         </p>
                     ) : null}
                 </section>
 
                 <section className="grid gap-3">
-                    <h2 className="font-serif text-2xl text-foreground">
-                        {inlineCopy({ de: 'Anmeldemethoden', en: 'Sign-in methods' }, locale)}
-                    </h2>
+                    <h2 className="font-serif text-2xl text-foreground">{t(locale, 'admin', 'copy.signInMethods')}</h2>
                     <p className="text-sm text-muted-foreground">
-                        {inlineCopy(
-                            {
-                                de: 'Menschliche Sitzungen ohne Impersonation (Köche eingeschlossen). Anmelden = bestehendes Konto, Registrierung = neues E-Mail-Ticket, Konto erstellt = abgeschlossene Registrierung über diesen Nachweis.',
-                                en: 'Human sessions without impersonation (cooks included). Sign-ins = existing account, registration = new-email ticket, accounts created = completed registration via that proof.',
-                            },
-                            locale,
-                        )}
+                        {t(locale, 'admin', 'copy.humanSessionsWithoutImpersonationCooksIncludedSignInsExistin')}
                     </p>
-                    <Table aria-label={inlineCopy({ de: 'Anmeldemethoden', en: 'Sign-in methods' }, locale)}>
+                    <Table aria-label={t(locale, 'admin', 'copy.signInMethods')}>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>{inlineCopy({ de: 'Methode', en: 'Method' }, locale)}</TableHead>
-                                <TableHead className="text-right">{inlineCopy({ de: 'Anmeldungen', en: 'Sign-ins' }, locale)}</TableHead>
-                                <TableHead className="text-right">
-                                    {inlineCopy({ de: 'Registrierungen', en: 'Registrations' }, locale)}
-                                </TableHead>
-                                <TableHead className="text-right">
-                                    {inlineCopy({ de: 'Konten erstellt', en: 'Accounts created' }, locale)}
-                                </TableHead>
-                                <TableHead className="text-right">{inlineCopy({ de: 'Fehler', en: 'Failures' }, locale)}</TableHead>
+                                <TableHead>{t(locale, 'admin', 'copy.method')}</TableHead>
+                                <TableHead className="text-right">{t(locale, 'admin', 'copy.signIns')}</TableHead>
+                                <TableHead className="text-right">{t(locale, 'admin', 'copy.registrations')}</TableHead>
+                                <TableHead className="text-right">{t(locale, 'admin', 'copy.accountsCreated')}</TableHead>
+                                <TableHead className="text-right">{t(locale, 'admin', 'copy.failures')}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -367,7 +306,7 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
                         data={signInChartData}
                         locale={locale}
                         timeZone={timeZone}
-                        ariaLabel={inlineCopy({ de: 'Anmeldungen nach Methode', en: 'Sign-ins by method' }, locale)}
+                        ariaLabel={t(locale, 'admin', 'copy.signInsByMethod')}
                         series={[
                             { dataKey: 'EMAIL_OTP', label: signInMethodLabel('EMAIL_OTP'), color: 'var(--chart-2)' },
                             { dataKey: 'PASSKEY', label: signInMethodLabel('PASSKEY'), color: 'var(--chart-3)' },
@@ -377,42 +316,25 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
                 </section>
 
                 <section className="grid gap-3">
-                    <h2 className="font-serif text-2xl text-foreground">
-                        {inlineCopy({ de: 'Buchungsformular-Funnel', en: 'Booking form funnel' }, locale)}
-                    </h2>
+                    <h2 className="font-serif text-2xl text-foreground">{t(locale, 'admin', 'copy.bookingFormFunnel')}</h2>
                     <p className="text-sm text-muted-foreground">
-                        {inlineCopy(
-                            showReachedColumn
-                                ? {
-                                      de: 'Menschliche Nicht-Admin-/Nicht-Koch-Sitzungen. Erreicht = Schritt betreten, Abgeschlossen = Schritt beendet, Ende = Anfrage erstellt.',
-                                      en: 'Human non-admin/non-cook sessions. Reached = step entered, completed = step finished, end = request created.',
-                                  }
-                                : {
-                                      de: 'Menschliche Nicht-Admin-/Nicht-Koch-Sitzungen. Abgeschlossen = Schritt beendet (inkl. migrierter Weiter-Klicks). Erreicht erscheint erst bei neuen step_entered-Ereignissen.',
-                                      en: 'Human non-admin/non-cook sessions. Completed = step finished (including migrated Next clicks). Reached appears once live step_entered events exist.',
-                                  },
-                            locale,
-                        )}
+                        {showReachedColumn
+                            ? t(locale, 'admin', 'copy.humanNonAdminNonCookSessionsReachedStepEnteredCompletedStepF')
+                            : t(locale, 'admin', 'copy.humanNonAdminNonCookSessionsCompletedStepFinishedIncludingMi')}
                     </p>
 
                     {hasStepActivity ? (
                         <Card>
                             <CardContent className="pt-4">
-                                <Table aria-label={inlineCopy({ de: 'Funnel-Schritte', en: 'Funnel steps' }, locale)}>
+                                <Table aria-label={t(locale, 'admin', 'copy.funnelSteps')}>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>{inlineCopy({ de: 'Schritt', en: 'Step' }, locale)}</TableHead>
+                                            <TableHead>{t(locale, 'admin', 'copy.step')}</TableHead>
                                             {showReachedColumn ? (
-                                                <TableHead className="text-right">
-                                                    {inlineCopy({ de: 'Erreicht', en: 'Reached' }, locale)}
-                                                </TableHead>
+                                                <TableHead className="text-right">{t(locale, 'admin', 'copy.reached')}</TableHead>
                                             ) : null}
-                                            <TableHead className="text-right">
-                                                {inlineCopy({ de: 'Abgeschlossen', en: 'Completed' }, locale)}
-                                            </TableHead>
-                                            <TableHead className="text-right">
-                                                {inlineCopy({ de: 'Abfall %', en: 'Drop-off %' }, locale)}
-                                            </TableHead>
+                                            <TableHead className="text-right">{t(locale, 'admin', 'copy.completed2')}</TableHead>
+                                            <TableHead className="text-right">{t(locale, 'admin', 'copy.dropOff')}</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -422,9 +344,7 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
                                                 previous == null ? null : dropOffPercent(previous.completedCount, step.completedCount);
                                             return (
                                                 <TableRow key={step.id}>
-                                                    <TableCell className="font-medium">
-                                                        {locale === 'de' ? step.labelDe : step.labelEn}
-                                                    </TableCell>
+                                                    <TableCell className="font-medium">{step.label}</TableCell>
                                                     {showReachedColumn ? (
                                                         <TableCell className="text-right tabular-nums">
                                                             {step.id === 'created' ? '-' : step.enteredCount}
@@ -449,7 +369,7 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
                                 <div
                                     className="w-full"
                                     style={{ height: SANKEY_HEIGHT }}
-                                    aria-label={inlineCopy({ de: 'Buchungsformular Sankey', en: 'Booking form Sankey' }, locale)}
+                                    aria-label={t(locale, 'admin', 'copy.bookingFormSankey')}
                                 >
                                     <ResponsiveContainer
                                         width="100%"
@@ -475,46 +395,29 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
                 </section>
 
                 <section className="grid gap-3">
-                    <h2 className="font-serif text-2xl text-foreground">
-                        {inlineCopy({ de: 'Geschenkkarten-Funnel', en: 'Gift card funnel' }, locale)}
-                    </h2>
+                    <h2 className="font-serif text-2xl text-foreground">{t(locale, 'admin', 'copy.giftCardFunnel')}</h2>
                     <p className="text-sm text-muted-foreground">
-                        {inlineCopy(
-                            {
-                                de: 'Menschliche Nicht-Admin-/Nicht-Koch-Sitzungen. Ende = Geschenkkarte bezahlt.',
-                                en: 'Human non-admin/non-cook sessions. End = gift card paid.',
-                            },
-                            locale,
-                        )}
+                        {t(locale, 'admin', 'copy.humanNonAdminNonCookSessionsEndGiftCardPaid')}
                     </p>
                     <dl className="grid gap-3 sm:grid-cols-2">
                         <AdminOverviewStatCard
-                            label={inlineCopy({ de: 'Sitzungen mit Abschluss', en: 'Sessions with completion' }, locale)}
+                            label={t(locale, 'admin', 'copy.sessionsWithCompletion')}
                             value={giftCardFlow?.sessionsWithCompletion ?? 0}
                         />
-                        <AdminOverviewStatCard
-                            label={inlineCopy({ de: 'Bezahlt', en: 'Paid' }, locale)}
-                            value={giftCardFlow?.terminalCount ?? 0}
-                        />
+                        <AdminOverviewStatCard label={t(locale, 'admin', 'copy.paid')} value={giftCardFlow?.terminalCount ?? 0} />
                     </dl>
                     {giftCardStepsWithActivity.length > 0 ? (
                         <Card>
                             <CardContent className="pt-4">
-                                <Table aria-label={inlineCopy({ de: 'Geschenkkarten-Schritte', en: 'Gift card steps' }, locale)}>
+                                <Table aria-label={t(locale, 'admin', 'copy.giftCardSteps')}>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>{inlineCopy({ de: 'Schritt', en: 'Step' }, locale)}</TableHead>
+                                            <TableHead>{t(locale, 'admin', 'copy.step')}</TableHead>
                                             {showGiftCardReachedColumn ? (
-                                                <TableHead className="text-right">
-                                                    {inlineCopy({ de: 'Erreicht', en: 'Reached' }, locale)}
-                                                </TableHead>
+                                                <TableHead className="text-right">{t(locale, 'admin', 'copy.reached')}</TableHead>
                                             ) : null}
-                                            <TableHead className="text-right">
-                                                {inlineCopy({ de: 'Abgeschlossen', en: 'Completed' }, locale)}
-                                            </TableHead>
-                                            <TableHead className="text-right">
-                                                {inlineCopy({ de: 'Abfall %', en: 'Drop-off %' }, locale)}
-                                            </TableHead>
+                                            <TableHead className="text-right">{t(locale, 'admin', 'copy.completed2')}</TableHead>
+                                            <TableHead className="text-right">{t(locale, 'admin', 'copy.dropOff')}</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -524,9 +427,7 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
                                                 previous == null ? null : dropOffPercent(previous.completedCount, step.completedCount);
                                             return (
                                                 <TableRow key={step.id}>
-                                                    <TableCell className="font-medium">
-                                                        {locale === 'de' ? step.labelDe : step.labelEn}
-                                                    </TableCell>
+                                                    <TableCell className="font-medium">{step.label}</TableCell>
                                                     {showGiftCardReachedColumn ? (
                                                         <TableCell className="text-right tabular-nums">
                                                             {step.id === 'created' || step.id === 'paid' ? '-' : step.enteredCount}
@@ -550,7 +451,7 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
                                 <div
                                     className="w-full"
                                     style={{ height: SANKEY_HEIGHT }}
-                                    aria-label={inlineCopy({ de: 'Geschenkkarten Sankey', en: 'Gift card Sankey' }, locale)}
+                                    aria-label={t(locale, 'admin', 'copy.giftCardSankey')}
                                 >
                                     <ResponsiveContainer
                                         width="100%"
@@ -571,59 +472,34 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
                             </CardContent>
                         </Card>
                     ) : (
-                        <p className="text-sm text-muted-foreground">
-                            {inlineCopy(
-                                {
-                                    de: 'Keine Geschenkkarten-Funnel-Daten im gewählten Zeitraum.',
-                                    en: 'No gift card funnel data in the selected range.',
-                                },
-                                locale,
-                            )}
-                        </p>
+                        <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noGiftCardFunnelDataInTheSelectedRange')}</p>
                     )}
                 </section>
 
                 <section className="grid gap-3">
-                    <h2 className="font-serif text-2xl text-foreground">
-                        {inlineCopy({ de: 'Buchungs-Checkout-Funnel', en: 'Booking checkout funnel' }, locale)}
-                    </h2>
+                    <h2 className="font-serif text-2xl text-foreground">{t(locale, 'admin', 'copy.bookingCheckoutFunnel')}</h2>
                     <p className="text-sm text-muted-foreground">
-                        {inlineCopy(
-                            {
-                                de: 'Menschliche Nicht-Admin-/Nicht-Koch-Sitzungen. Ende = Angebotszahlung erfolgreich.',
-                                en: 'Human non-admin/non-cook sessions. End = offer payment succeeded.',
-                            },
-                            locale,
-                        )}
+                        {t(locale, 'admin', 'copy.humanNonAdminNonCookSessionsEndOfferPaymentSucceeded')}
                     </p>
                     <dl className="grid gap-3 sm:grid-cols-2">
                         <AdminOverviewStatCard
-                            label={inlineCopy({ de: 'Sitzungen mit Abschluss', en: 'Sessions with completion' }, locale)}
+                            label={t(locale, 'admin', 'copy.sessionsWithCompletion')}
                             value={bookingCheckoutFlow?.sessionsWithCompletion ?? 0}
                         />
-                        <AdminOverviewStatCard
-                            label={inlineCopy({ de: 'Bezahlt', en: 'Paid' }, locale)}
-                            value={bookingCheckoutFlow?.terminalCount ?? 0}
-                        />
+                        <AdminOverviewStatCard label={t(locale, 'admin', 'copy.paid')} value={bookingCheckoutFlow?.terminalCount ?? 0} />
                     </dl>
                     {bookingCheckoutStepsWithActivity.length > 0 ? (
                         <Card>
                             <CardContent className="pt-4">
-                                <Table aria-label={inlineCopy({ de: 'Checkout-Schritte', en: 'Checkout steps' }, locale)}>
+                                <Table aria-label={t(locale, 'admin', 'copy.checkoutSteps')}>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>{inlineCopy({ de: 'Schritt', en: 'Step' }, locale)}</TableHead>
+                                            <TableHead>{t(locale, 'admin', 'copy.step')}</TableHead>
                                             {showBookingCheckoutReachedColumn ? (
-                                                <TableHead className="text-right">
-                                                    {inlineCopy({ de: 'Erreicht', en: 'Reached' }, locale)}
-                                                </TableHead>
+                                                <TableHead className="text-right">{t(locale, 'admin', 'copy.reached')}</TableHead>
                                             ) : null}
-                                            <TableHead className="text-right">
-                                                {inlineCopy({ de: 'Abgeschlossen', en: 'Completed' }, locale)}
-                                            </TableHead>
-                                            <TableHead className="text-right">
-                                                {inlineCopy({ de: 'Abfall %', en: 'Drop-off %' }, locale)}
-                                            </TableHead>
+                                            <TableHead className="text-right">{t(locale, 'admin', 'copy.completed2')}</TableHead>
+                                            <TableHead className="text-right">{t(locale, 'admin', 'copy.dropOff')}</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -633,9 +509,7 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
                                                 previous == null ? null : dropOffPercent(previous.completedCount, step.completedCount);
                                             return (
                                                 <TableRow key={step.id}>
-                                                    <TableCell className="font-medium">
-                                                        {locale === 'de' ? step.labelDe : step.labelEn}
-                                                    </TableCell>
+                                                    <TableCell className="font-medium">{step.label}</TableCell>
                                                     {showBookingCheckoutReachedColumn ? (
                                                         <TableCell className="text-right tabular-nums">
                                                             {step.id === 'paid' ? '-' : step.enteredCount}
@@ -659,7 +533,7 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
                                 <div
                                     className="w-full"
                                     style={{ height: SANKEY_HEIGHT }}
-                                    aria-label={inlineCopy({ de: 'Buchungs-Checkout Sankey', en: 'Booking checkout Sankey' }, locale)}
+                                    aria-label={t(locale, 'admin', 'copy.bookingCheckoutSankey')}
                                 >
                                     <ResponsiveContainer
                                         width="100%"
@@ -680,59 +554,37 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
                             </CardContent>
                         </Card>
                     ) : (
-                        <p className="text-sm text-muted-foreground">
-                            {inlineCopy(
-                                {
-                                    de: 'Keine Checkout-Funnel-Daten im gewählten Zeitraum.',
-                                    en: 'No checkout funnel data in the selected range.',
-                                },
-                                locale,
-                            )}
-                        </p>
+                        <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noCheckoutFunnelDataInTheSelectedRange')}</p>
                     )}
                 </section>
 
                 <section className="grid gap-3">
-                    <h2 className="font-serif text-2xl text-foreground">
-                        {inlineCopy({ de: 'Koch-Registrierungs-Funnel', en: 'Chef sign-up funnel' }, locale)}
-                    </h2>
+                    <h2 className="font-serif text-2xl text-foreground">{t(locale, 'admin', 'copy.chefSignUpFunnel')}</h2>
                     <p className="text-sm text-muted-foreground">
-                        {inlineCopy(
-                            {
-                                de: 'Menschliche Nicht-Admin-Sitzungen (Köche eingeschlossen). Ende = Koch-Konto erstellt.',
-                                en: 'Human non-admin sessions (cooks included). End = chef account created.',
-                            },
-                            locale,
-                        )}
+                        {t(locale, 'admin', 'copy.humanNonAdminSessionsCooksIncludedEndChefAccountCreated')}
                     </p>
                     <dl className="grid gap-3 sm:grid-cols-2">
                         <AdminOverviewStatCard
-                            label={inlineCopy({ de: 'Sitzungen mit Abschluss', en: 'Sessions with completion' }, locale)}
+                            label={t(locale, 'admin', 'copy.sessionsWithCompletion')}
                             value={chefSignUpFlow?.sessionsWithCompletion ?? 0}
                         />
                         <AdminOverviewStatCard
-                            label={inlineCopy({ de: 'Koch-Konten erstellt', en: 'Chef accounts created' }, locale)}
+                            label={t(locale, 'admin', 'copy.chefAccountsCreated')}
                             value={chefSignUpFlow?.terminalCount ?? 0}
                         />
                     </dl>
                     {chefSignUpStepsWithActivity.length > 0 ? (
                         <Card>
                             <CardContent className="pt-4">
-                                <Table aria-label={inlineCopy({ de: 'Koch-Registrierungs-Schritte', en: 'Chef sign-up steps' }, locale)}>
+                                <Table aria-label={t(locale, 'admin', 'copy.chefSignUpSteps')}>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>{inlineCopy({ de: 'Schritt', en: 'Step' }, locale)}</TableHead>
+                                            <TableHead>{t(locale, 'admin', 'copy.step')}</TableHead>
                                             {showChefSignUpReachedColumn ? (
-                                                <TableHead className="text-right">
-                                                    {inlineCopy({ de: 'Erreicht', en: 'Reached' }, locale)}
-                                                </TableHead>
+                                                <TableHead className="text-right">{t(locale, 'admin', 'copy.reached')}</TableHead>
                                             ) : null}
-                                            <TableHead className="text-right">
-                                                {inlineCopy({ de: 'Abgeschlossen', en: 'Completed' }, locale)}
-                                            </TableHead>
-                                            <TableHead className="text-right">
-                                                {inlineCopy({ de: 'Abfall %', en: 'Drop-off %' }, locale)}
-                                            </TableHead>
+                                            <TableHead className="text-right">{t(locale, 'admin', 'copy.completed2')}</TableHead>
+                                            <TableHead className="text-right">{t(locale, 'admin', 'copy.dropOff')}</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -742,9 +594,7 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
                                                 previous == null ? null : dropOffPercent(previous.completedCount, step.completedCount);
                                             return (
                                                 <TableRow key={step.id}>
-                                                    <TableCell className="font-medium">
-                                                        {locale === 'de' ? step.labelDe : step.labelEn}
-                                                    </TableCell>
+                                                    <TableCell className="font-medium">{step.label}</TableCell>
                                                     {showChefSignUpReachedColumn ? (
                                                         <TableCell className="text-right tabular-nums">
                                                             {step.id === 'created' ? '-' : step.enteredCount}
@@ -768,7 +618,7 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
                                 <div
                                     className="w-full"
                                     style={{ height: SANKEY_HEIGHT }}
-                                    aria-label={inlineCopy({ de: 'Koch-Registrierung Sankey', en: 'Chef sign-up Sankey' }, locale)}
+                                    aria-label={t(locale, 'admin', 'copy.chefSignUpSankey')}
                                 >
                                     <ResponsiveContainer
                                         width="100%"
@@ -790,72 +640,40 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
                         </Card>
                     ) : (
                         <p className="text-sm text-muted-foreground">
-                            {inlineCopy(
-                                {
-                                    de: 'Keine Koch-Registrierungs-Funnel-Daten im gewählten Zeitraum.',
-                                    en: 'No chef sign-up funnel data in the selected range.',
-                                },
-                                locale,
-                            )}
+                            {t(locale, 'admin', 'copy.noChefSignUpFunnelDataInTheSelectedRange')}
                         </p>
                     )}
                 </section>
 
                 <section className="grid gap-3">
-                    <h2 className="font-serif text-2xl text-foreground">
-                        {inlineCopy({ de: 'Koch-Angebots-Funnel', en: 'Cook offer funnel' }, locale)}
-                    </h2>
+                    <h2 className="font-serif text-2xl text-foreground">{t(locale, 'admin', 'copy.cookOfferFunnel')}</h2>
                     <p className="text-sm text-muted-foreground">
-                        {inlineCopy(
-                            {
-                                de: 'Kohorte: Köche mit Benachrichtigung im Zeitraum (ohne Admins). Abgelehnt und Angebot starten sind parallele Äste nach Geöffnet (Abfall % jeweils gegen den Elternschritt, nicht gegen die Zeile darüber). Menüs/Preis brauchen Live-Tracking auf der Angebotsseite.',
-                                en: 'Cohort: cooks notified in range (excluding admins). Declined and Start offer are parallel branches after Opened (drop-off % is vs the parent step, not the row above). Menus/price need live tracking on the create page.',
-                            },
-                            locale,
-                        )}
+                        {t(locale, 'admin', 'copy.cohortCooksNotifiedInRangeExcludingAdminsDeclinedAndStartOff')}
                     </p>
                     <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                        <AdminOverviewStatCard
-                            label={inlineCopy({ de: 'Benachrichtigt', en: 'Notified' }, locale)}
-                            value={cookNotifiedCount}
-                        />
-                        <AdminOverviewStatCard label={inlineCopy({ de: 'Geöffnet', en: 'Opened' }, locale)} value={cookOpenedCount} />
-                        <AdminOverviewStatCard label={inlineCopy({ de: 'Abgelehnt', en: 'Declined' }, locale)} value={cookDeclinedCount} />
-                        <AdminOverviewStatCard
-                            label={inlineCopy({ de: 'Angebote erstellt', en: 'Offers created' }, locale)}
-                            value={cookOffersCreatedCount}
-                        />
+                        <AdminOverviewStatCard label={t(locale, 'admin', 'copy.notified')} value={cookNotifiedCount} />
+                        <AdminOverviewStatCard label={t(locale, 'admin', 'copy.opened')} value={cookOpenedCount} />
+                        <AdminOverviewStatCard label={t(locale, 'admin', 'copy.declined')} value={cookDeclinedCount} />
+                        <AdminOverviewStatCard label={t(locale, 'admin', 'copy.offersCreated')} value={cookOffersCreatedCount} />
                     </dl>
                     {cookNotifiedCount > 0 ? (
                         <p className="text-sm text-muted-foreground">
-                            {inlineCopy(
-                                {
-                                    de: `Conversion benachrichtigt → Angebot: ${cookConversionPercent ?? 0}%.`,
-                                    en: `Conversion notified → offer: ${cookConversionPercent ?? 0}%.`,
-                                },
-                                locale,
-                            )}
+                            {t(locale, 'admin', 'analytics.cookConversion', { percent: cookConversionPercent ?? 0 })}
                         </p>
                     ) : null}
 
                     {hasCookStepActivity ? (
                         <Card>
                             <CardContent className="pt-4">
-                                <Table aria-label={inlineCopy({ de: 'Koch-Funnel-Schritte', en: 'Cook funnel steps' }, locale)}>
+                                <Table aria-label={t(locale, 'admin', 'copy.cookFunnelSteps')}>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>{inlineCopy({ de: 'Schritt', en: 'Step' }, locale)}</TableHead>
+                                            <TableHead>{t(locale, 'admin', 'copy.step')}</TableHead>
                                             {showCookReachedColumn ? (
-                                                <TableHead className="text-right">
-                                                    {inlineCopy({ de: 'Erreicht', en: 'Reached' }, locale)}
-                                                </TableHead>
+                                                <TableHead className="text-right">{t(locale, 'admin', 'copy.reached')}</TableHead>
                                             ) : null}
-                                            <TableHead className="text-right">
-                                                {inlineCopy({ de: 'Abgeschlossen', en: 'Completed' }, locale)}
-                                            </TableHead>
-                                            <TableHead className="text-right">
-                                                {inlineCopy({ de: 'Abfall %', en: 'Drop-off %' }, locale)}
-                                            </TableHead>
+                                            <TableHead className="text-right">{t(locale, 'admin', 'copy.completed2')}</TableHead>
+                                            <TableHead className="text-right">{t(locale, 'admin', 'copy.dropOff')}</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -863,9 +681,7 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
                                             const dropOff = cookFunnelDropOffPercent(step.id, step.completedCount, cookStepsById);
                                             return (
                                                 <TableRow key={step.id}>
-                                                    <TableCell className="font-medium">
-                                                        {locale === 'de' ? step.labelDe : step.labelEn}
-                                                    </TableCell>
+                                                    <TableCell className="font-medium">{step.label}</TableCell>
                                                     {showCookReachedColumn ? (
                                                         <TableCell className="text-right tabular-nums">
                                                             {step.enteredCount > 0 ? step.enteredCount : '-'}
@@ -890,7 +706,7 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
                                 <div
                                     className="w-full"
                                     style={{ height: SANKEY_HEIGHT }}
-                                    aria-label={inlineCopy({ de: 'Koch-Angebots Sankey', en: 'Cook offer Sankey' }, locale)}
+                                    aria-label={t(locale, 'admin', 'copy.cookOfferSankey')}
                                 >
                                     <ResponsiveContainer
                                         width="100%"
@@ -916,50 +732,42 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
                 </section>
 
                 <section className="grid gap-3">
-                    <h2 className="font-serif text-2xl text-foreground">
-                        {inlineCopy({ de: 'Seitenbesuche Formular', en: 'Form page visits' }, locale)}
-                    </h2>
+                    <h2 className="font-serif text-2xl text-foreground">{t(locale, 'admin', 'copy.formPageVisits')}</h2>
                     <AdminOverviewBarChart
                         data={formVisits}
                         locale={locale}
                         timeZone={timeZone}
-                        ariaLabel={inlineCopy({ de: 'Besuche Buchungsformular', en: 'Booking form visits' }, locale)}
+                        ariaLabel={t(locale, 'admin', 'copy.bookingFormVisits')}
                     />
                 </section>
 
                 <section className="grid gap-3">
-                    <h2 className="font-serif text-2xl text-foreground">
-                        {inlineCopy({ de: 'Seitenbesuche Startseite', en: 'Landing page visits' }, locale)}
-                    </h2>
+                    <h2 className="font-serif text-2xl text-foreground">{t(locale, 'admin', 'copy.landingPageVisits')}</h2>
                     <AdminOverviewBarChart
                         data={landingVisits}
                         locale={locale}
                         timeZone={timeZone}
-                        ariaLabel={inlineCopy({ de: 'Besuche Startseite', en: 'Landing page visits' }, locale)}
+                        ariaLabel={t(locale, 'admin', 'copy.landingPageVisits2')}
                     />
                 </section>
 
                 <section className="grid gap-3">
-                    <h2 className="font-serif text-2xl text-foreground">
-                        {inlineCopy({ de: 'Seitenbesuche Köche', en: 'Chefs page visits' }, locale)}
-                    </h2>
+                    <h2 className="font-serif text-2xl text-foreground">{t(locale, 'admin', 'copy.chefsPageVisits')}</h2>
                     <AdminOverviewBarChart
                         data={chefsVisits}
                         locale={locale}
                         timeZone={timeZone}
-                        ariaLabel={inlineCopy({ de: 'Besuche Köche', en: 'Chefs page visits' }, locale)}
+                        ariaLabel={t(locale, 'admin', 'copy.chefsPageVisits2')}
                     />
                 </section>
 
                 <section className="grid gap-3">
-                    <h2 className="font-serif text-2xl text-foreground">
-                        {inlineCopy({ de: 'Seitenbesuche Geschenkkarte', en: 'Gift card page visits' }, locale)}
-                    </h2>
+                    <h2 className="font-serif text-2xl text-foreground">{t(locale, 'admin', 'copy.giftCardPageVisits')}</h2>
                     <AdminOverviewBarChart
                         data={giftCardVisits}
                         locale={locale}
                         timeZone={timeZone}
-                        ariaLabel={inlineCopy({ de: 'Besuche Geschenkkarte', en: 'Gift card page visits' }, locale)}
+                        ariaLabel={t(locale, 'admin', 'copy.giftCardPageVisits2')}
                     />
                 </section>
             </main>

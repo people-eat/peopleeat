@@ -3,7 +3,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { FeatureToggleKey } from '../../shared/featureToggle';
 import { idCreate } from '../../shared/idCreate';
-import { bookingRequestOffers, bookingRequestParticipants, bookingRequests, cooks, featureToggles } from '../db/schema';
+import {
+    bookingRequestOffers,
+    bookingRequestParticipants,
+    bookingRequests,
+    cooks,
+    featureToggles,
+    featureToggleUserOverrides,
+} from '../db/schema';
 import { commandSetup, cookMutationParent, testDb, userMutationParent } from '../test/commandTestUtils';
 import { cookBookingRequestOfferParticipantAmendmentAccept } from './cookBookingRequestOfferParticipantAmendmentAccept';
 import { cookBookingRequestOfferPreparationsComplete } from './cookBookingRequestOfferPreparationsComplete';
@@ -120,8 +127,19 @@ describe('userBookingRequestOfferParticipantAmendmentCreate', () => {
     });
 
     it('rejects when the feature toggle is off', async () => {
-        await setFeatureToggle('BOOKING_REQUEST_OFFER_AMENDMENT', false);
+        // Per-user override wins over the global row, so this does not flip the shared toggle.
         const { customer, bookingRequestOfferId } = await seedDualAcceptedOffer();
+        await testDb
+            .insert(featureToggleUserOverrides)
+            .values({
+                userId: customer.user.userId,
+                featureToggleKey: 'BOOKING_REQUEST_OFFER_AMENDMENT',
+                enabled: false,
+            })
+            .onConflictDoUpdate({
+                target: [featureToggleUserOverrides.userId, featureToggleUserOverrides.featureToggleKey],
+                set: { enabled: false },
+            });
         const result = await userBookingRequestOfferParticipantAmendmentCreate(
             userMutationParent(customer.user.userId),
             {

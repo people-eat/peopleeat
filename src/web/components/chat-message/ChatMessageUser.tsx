@@ -5,11 +5,10 @@ import {
     BOOKING_REQUEST_OFFER_CHAT_MESSAGE_AUTHOR_DELETE_WINDOW_MS,
     bookingRequestOfferChatMessageAuthorCanDelete,
     containsPhoneNumber,
-    inlineCopy,
 } from '../../../shared';
 import { isVoiceNoteMessage, voiceNoteCaption } from '../../chat/chatVoiceMessage';
 import type { GqlCChatMessageUser } from '../../graphql/generated';
-import { useLocale } from '../../hooks/useLocale';
+import { useT } from '../../hooks/useT';
 import { cn } from '../../utils/cn';
 import {
     AlertDialog,
@@ -36,6 +35,27 @@ import { Bubble, CopyButton, MessageRow, Timestamp } from './shared';
 
 /** WhatsApp-style quick reactions offered in the Concierge picker. */
 const QUICK_REACTION_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🙏'] as const;
+
+const CONFIRM_TITLE = {
+    hide: 'chat.message.hideConfirmTitle',
+    unhide: 'chat.message.unhideConfirmTitle',
+    delete: 'chat.message.deleteConfirmTitle',
+    softDelete: 'chat.message.softDeleteConfirmTitle',
+} as const;
+
+const CONFIRM_BODY = {
+    hide: 'chat.message.hideConfirmBody',
+    unhide: 'chat.message.unhideConfirmBody',
+    delete: 'chat.message.deleteConfirmBody',
+    softDelete: 'chat.message.softDeleteConfirmBody',
+} as const;
+
+const CONFIRM_ACTION = {
+    hide: 'chat.message.hideAction',
+    unhide: 'chat.message.unhideAction',
+    delete: 'chat.message.deleteAction',
+    softDelete: 'chat.message.softDeleteAction',
+} as const;
 
 function initialsFromName(name: string): string {
     const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -70,7 +90,7 @@ export function ChatMessageUserView({
      */
     onReact?: (emoji: string) => Promise<boolean>;
 }) {
-    const locale = useLocale();
+    const { t } = useT('common');
     const hasAttachments = message.attachments.length > 0;
     const voiceNote = isVoiceNoteMessage(message.attachments);
     const voiceAttachment = voiceNote ? message.attachments[0]! : null;
@@ -98,15 +118,15 @@ export function ChatMessageUserView({
         onEdit != null || onVisibilityChange != null || (onDelete != null && message.canHardDelete) || canSoftDeleteNow;
     const editContainsPhoneNumber = containsPhoneNumber(editDraft);
     const editEmptyBlocked = editDraft.trim().length === 0 && !hasAttachments;
-    const editLabel = inlineCopy({ de: 'Nachricht bearbeiten', en: 'Edit message' }, locale);
-    const moreLabel = inlineCopy({ de: 'Nachrichtenaktionen', en: 'Message actions' }, locale);
-    const hideLabel = inlineCopy({ de: 'Vor Teilnehmern verbergen', en: 'Hide from participants' }, locale);
-    const unhideLabel = inlineCopy({ de: 'Wieder für Teilnehmer zeigen', en: 'Show to participants' }, locale);
-    const deleteLabel = inlineCopy({ de: 'Dauerhaft löschen', en: 'Delete permanently' }, locale);
-    const softDeleteLabel = inlineCopy({ de: 'Löschen', en: 'Delete' }, locale);
-    const hiddenLabel = inlineCopy({ de: 'Vor Gast und Koch verborgen', en: 'Hidden from customer and cook' }, locale);
-    const deletedByAuthorLabel = inlineCopy({ de: 'Vom Absender gelöscht', en: 'Deleted by the sender' }, locale);
-    const reactLabel = inlineCopy({ de: 'Reagieren', en: 'React' }, locale);
+    const editLabel = t('chat.editMessage');
+    const moreLabel = t('chat.messageActions');
+    const hideLabel = t('chat.hideFromParticipants');
+    const unhideLabel = t('chat.showToParticipants');
+    const deleteLabel = t('chat.message.deleteAction');
+    const softDeleteLabel = t('chat.message.softDeleteAction');
+    const hiddenLabel = t('chat.hiddenFromParticipants');
+    const deletedByAuthorLabel = t('chat.deletedBySender');
+    const reactLabel = t('chat.react');
     const reactions = message.reactions ?? [];
     const ownReactionEmoji = reactions.find((reaction) => reaction.isOwn)?.emoji;
 
@@ -166,17 +186,7 @@ export function ChatMessageUserView({
                         <DialogTitle>{editLabel}</DialogTitle>
                     </DialogHeader>
                     <div className="grid gap-3">
-                        {editContainsPhoneNumber ? (
-                            <StatusAlert tone="warning">
-                                {inlineCopy(
-                                    {
-                                        de: 'Das Teilen von Telefonnummern ist nicht erlaubt. Bitte bleibe für Absprachen hier im Chat.',
-                                        en: 'Sharing phone numbers is not allowed. Please keep arrangements in this chat.',
-                                    },
-                                    locale,
-                                )}
-                            </StatusAlert>
-                        ) : null}
+                        {editContainsPhoneNumber ? <StatusAlert tone="warning">{t('chat.phoneNumbersNotAllowed')}</StatusAlert> : null}
                         <Textarea
                             value={editDraft}
                             onChange={(event) => setEditDraft(event.target.value)}
@@ -187,7 +197,7 @@ export function ChatMessageUserView({
                     </div>
                     <DialogFooter>
                         <Button type="button" variant="outline" disabled={editBusy} onClick={() => setEditOpen(false)}>
-                            {inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, locale)}
+                            {t('cancel')}
                         </Button>
                         <Button
                             type="button"
@@ -205,7 +215,7 @@ export function ChatMessageUserView({
                                 })();
                             }}
                         >
-                            {inlineCopy({ de: 'Speichern', en: 'Save' }, locale)}
+                            {t('save')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -217,45 +227,11 @@ export function ChatMessageUserView({
             <AlertDialog open onOpenChange={(open) => !open && !confirmBusy && setConfirmAction(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>
-                            {inlineCopy(
-                                {
-                                    hide: { de: 'Nachricht verbergen?', en: 'Hide this message?' },
-                                    unhide: { de: 'Nachricht wieder zeigen?', en: 'Show this message again?' },
-                                    delete: { de: 'Nachricht dauerhaft löschen?', en: 'Delete this message permanently?' },
-                                    softDelete: { de: 'Nachricht löschen?', en: 'Delete this message?' },
-                                }[confirmAction],
-                                locale,
-                            )}
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {inlineCopy(
-                                {
-                                    hide: {
-                                        de: 'Gast und Koch sehen diese Nachricht nicht mehr. Du kannst sie später wieder einblenden.',
-                                        en: 'The customer and cook will no longer see this message. You can show it again later.',
-                                    },
-                                    unhide: {
-                                        de: 'Gast und Koch sehen diese Nachricht wieder im Chat.',
-                                        en: 'The customer and cook will see this message in the chat again.',
-                                    },
-                                    delete: {
-                                        de: 'Diese Admin-Nachricht wird unwiderruflich gelöscht, inklusive Anhänge und Reaktionen.',
-                                        en: 'This admin message will be permanently deleted, including attachments and reactions.',
-                                    },
-                                    softDelete: {
-                                        de: 'Die Nachricht wird für dich und den anderen Teilnehmer nicht mehr angezeigt.',
-                                        en: 'The message will no longer be shown for you or the other participant.',
-                                    },
-                                }[confirmAction],
-                                locale,
-                            )}
-                        </AlertDialogDescription>
+                        <AlertDialogTitle>{t(CONFIRM_TITLE[confirmAction])}</AlertDialogTitle>
+                        <AlertDialogDescription>{t(CONFIRM_BODY[confirmAction])}</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel disabled={confirmBusy}>
-                            {inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, locale)}
-                        </AlertDialogCancel>
+                        <AlertDialogCancel disabled={confirmBusy}>{t('cancel')}</AlertDialogCancel>
                         <AlertDialogAction
                             disabled={confirmBusy}
                             variant={
@@ -268,15 +244,7 @@ export function ChatMessageUserView({
                                 void runConfirmAction();
                             }}
                         >
-                            {inlineCopy(
-                                {
-                                    hide: { de: 'Verbergen', en: 'Hide' },
-                                    unhide: { de: 'Wieder zeigen', en: 'Show again' },
-                                    delete: { de: 'Dauerhaft löschen', en: 'Delete permanently' },
-                                    softDelete: { de: 'Löschen', en: 'Delete' },
-                                }[confirmAction],
-                                locale,
-                            )}
+                            {t(CONFIRM_ACTION[confirmAction])}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -481,11 +449,7 @@ export function ChatMessageUserView({
                                     role="option"
                                     aria-selected={selected}
                                     disabled={reactBusy}
-                                    aria-label={
-                                        selected
-                                            ? inlineCopy({ de: `${emoji} entfernen`, en: `Remove ${emoji}` }, locale)
-                                            : inlineCopy({ de: `Mit ${emoji} reagieren`, en: `React with ${emoji}` }, locale)
-                                    }
+                                    aria-label={selected ? t('chat.removeReaction', { emoji }) : t('chat.reactWith', { emoji })}
                                     onClick={() => {
                                         void applyReaction(emoji);
                                     }}
@@ -509,13 +473,13 @@ export function ChatMessageUserView({
         reactions.length > 0 ? (
             <div
                 className={cn('z-10 -mt-2 flex flex-wrap gap-0.5', isOwn ? 'mr-1 justify-end' : 'ml-8 justify-start')}
-                aria-label={inlineCopy({ de: 'Reaktionen', en: 'Reactions' }, locale)}
+                aria-label={t('chat.reactions')}
             >
                 {reactions.map((reaction) => (
                     <span
                         key={`${reaction.emoji}-${reaction.isOwn ? 'own' : 'peer'}`}
                         className="inline-flex min-h-6 min-w-6 items-center justify-center rounded-full border border-border/80 bg-background px-1.5 text-sm leading-none shadow-sm"
-                        title={reaction.isOwn ? inlineCopy({ de: 'Deine Reaktion', en: 'Your reaction' }, locale) : undefined}
+                        title={reaction.isOwn ? t('chat.yourReaction') : undefined}
                     >
                         {reaction.emoji}
                     </span>
@@ -584,7 +548,7 @@ export function ChatMessageUserView({
 }
 
 function UserMessageBody({ body, tone, collapseLongBody }: { body: string; tone: 'user' | 'assistant'; collapseLongBody: boolean }) {
-    const locale = useLocale();
+    const { t } = useT('common');
     const panelId = useId();
     const [expanded, setExpanded] = useState(false);
     const [animate, setAnimate] = useState(false);
@@ -643,9 +607,7 @@ function UserMessageBody({ body, tone, collapseLongBody }: { body: string; tone:
     };
 
     const maxHeight = !interactive || collapsedH === 0 ? undefined : expanded ? (animate ? fullH : undefined) : collapsedH;
-    const label = expanded
-        ? inlineCopy({ de: 'Weniger anzeigen', en: 'Show less' }, locale)
-        : inlineCopy({ de: 'Mehr anzeigen', en: 'Show more' }, locale);
+    const label = expanded ? t('expandableText.less') : t('expandableText.more');
 
     return (
         <div className="flex flex-col items-end">

@@ -16,6 +16,7 @@ import {
     VideoIcon,
 } from 'lucide-react';
 
+import { t } from '../../../i18n/t';
 import {
     bookingRequestOfferPriceCalculate,
     formatBookingCallWhen,
@@ -23,7 +24,6 @@ import {
     formatCurrency,
     formatDate,
     formatTime,
-    inlineCopy,
 } from '../../../shared';
 import type { BookingWhenPeer, Locale } from '../../../shared';
 import type { GqlCChatMessageBookingRequestOfferEvent, GqlCChatMessageBookingRequestOfferEventType } from '../../graphql/generated';
@@ -186,96 +186,7 @@ function offerEventIcon(type: GqlCChatMessageBookingRequestOfferEventType): Luci
 }
 
 function chatMessageBookingRequestOfferEventLabel(type: GqlCChatMessageBookingRequestOfferEventType, locale: Locale): string {
-    return inlineCopy(
-        (
-            {
-                COOK_CREATED: { de: 'Angebot erstellt', en: 'Offer created' },
-                COOK_UPDATED_SUGGESTED_MENU: { de: 'Vorgeschlagene Menüs aktualisiert', en: 'Suggested menus updated' },
-                USER_REQUESTED_MENU_CHANGES: { de: 'Menüänderungen angefragt', en: 'Menu changes requested' },
-                USER_CONFIGURED_MENU: { de: 'Menü konfiguriert', en: 'Menu configured' },
-                COOK_ACCEPTED: { de: 'Koch hat akzeptiert', en: 'Cook accepted' },
-                COOK_DECLINED: { de: 'Koch hat abgelehnt', en: 'Cook declined' },
-                USER_ACCEPTED: { de: 'Gast hat akzeptiert', en: 'Guest accepted' },
-                USER_DECLINED: { de: 'Gast hat abgelehnt', en: 'Guest declined' },
-                USER_CANCELLED: { de: 'Anfrage storniert', en: 'Request cancelled' },
-                ADMIN_HANDED_OVER_CLOSED: { de: 'Von Concierge geschlossen', en: 'Closed by concierge' },
-                ADMIN_HANDED_OVER_TO_COOK: { de: 'Von Concierge übergeben', en: 'Handed over by concierge' },
-                USER_PARTICIPANTS_UPDATED: { de: 'Teilnehmer aktualisiert', en: 'Participants updated' },
-                USER_PARTICIPANT_AMENDMENT_REQUESTED: {
-                    de: 'Buchungsänderung vorgeschlagen',
-                    en: 'Booking change proposed',
-                },
-                USER_PARTICIPANT_AMENDMENT_CANCELED: {
-                    de: 'Buchungsänderung zurückgezogen',
-                    en: 'Booking change withdrawn',
-                },
-                COOK_PARTICIPANT_AMENDMENT_ACCEPTED: {
-                    de: 'Buchungsänderung angenommen',
-                    en: 'Booking change accepted',
-                },
-                COOK_PARTICIPANT_AMENDMENT_DECLINED: {
-                    de: 'Buchungsänderung abgelehnt',
-                    en: 'Booking change declined',
-                },
-                ADMIN_PARTICIPANT_AMENDMENT_REQUESTED: {
-                    de: 'Concierge hat Buchungsänderung vorgeschlagen',
-                    en: 'Concierge proposed a booking change',
-                },
-                ADMIN_PARTICIPANT_AMENDMENT_APPLIED: {
-                    de: 'Concierge hat Buchungsänderung angewendet',
-                    en: 'Concierge applied a booking change',
-                },
-                COOK_PREPARATIONS_COMPLETED: { de: 'Einkauf / Vorbereitung erledigt', en: 'Shopping / preparations done' },
-                ADMIN_PREPARATIONS_CLEARED: { de: 'Vorbereitungssperre aufgehoben', en: 'Preparations lock cleared' },
-                USER_RESTRICTIONS_UPDATED: { de: 'Einschränkungen aktualisiert', en: 'Restrictions updated' },
-                USER_DATE_UPDATED: { de: 'Datum aktualisiert', en: 'Date updated' },
-                USER_TIME_UPDATED: { de: 'Uhrzeit aktualisiert', en: 'Time updated' },
-                USER_PREFERENCES_UPDATED: { de: 'Präferenzen aktualisiert', en: 'Preferences updated' },
-                USER_LOCATION_UPDATED: { de: 'Adresse aktualisiert', en: 'Location updated' },
-                COOK_CHANGED_PRICE: { de: 'Preis geändert', en: 'Price changed' },
-                SYSTEM_CHANGED_PRICE: { de: 'Preis automatisch angepasst', en: 'Price adjusted automatically' },
-                ADMIN_CHANGED_PRICE: { de: 'Concierge hat den Preis geändert', en: 'Concierge changed the price' },
-                COOK_CHANGED_ADDONS: { de: 'Extras aktualisiert', en: 'Extras updated' },
-                USER_CHANGED_ADDON_SELECTION: { de: 'Extras ausgewählt', en: 'Extras selected' },
-                ADMIN_CHANGED_ADDONS: { de: 'Concierge hat die Extras aktualisiert', en: 'Concierge updated extras' },
-                ADMIN_ACCEPTANCE_UPDATED: {
-                    de: 'Concierge hat die Annahme aktualisiert',
-                    en: 'Concierge updated acceptance',
-                },
-                ADMIN_PAYMENT_SCHEDULE_UPDATED: {
-                    de: 'Concierge hat den Zahlungsplan aktualisiert',
-                    en: 'Concierge updated the payment schedule',
-                },
-                ADMIN_CONFIGURED_MENU_UPDATED: {
-                    de: 'Concierge hat das konfigurierte Menü aktualisiert',
-                    en: 'Concierge updated the configured menu',
-                },
-                SYSTEM_PAYMENT_SETUP: { de: 'Zahlungsmittel hinterlegt', en: 'Payment method saved' },
-                SYSTEM_PAYMENT_SUCCEEDED: { de: 'Zahlung bestätigt', en: 'Payment confirmed' },
-                SYSTEM_PAYMENT_FAILED: { de: 'Zahlung fehlgeschlagen', en: 'Payment failed' },
-                ADMIN_PAYOUT_RELEASED: { de: 'Auszahlung an den Koch ausgeführt', en: 'Payout released to cook' },
-                ADMIN_PAYED_OUT_OF_SYSTEM: {
-                    de: 'Außerhalb von Stripe als bezahlt markiert',
-                    en: 'Marked paid outside Stripe',
-                },
-                USER_CALL_SLOT_REQUESTED: { de: 'Gesprächszeit angefragt', en: 'Call slot requested' },
-                COOK_CALL_SLOT_REQUESTED: { de: 'Gesprächszeit angefragt', en: 'Call slot requested' },
-                COOK_CALL_SLOT_CONFIRMED: { de: 'Gesprächszeit bestätigt', en: 'Call slot confirmed' },
-                USER_CALL_SLOT_CONFIRMED: { de: 'Gesprächszeit bestätigt', en: 'Call slot confirmed' },
-                COOK_CALL_SLOT_DECLINED: { de: 'Gesprächszeit abgelehnt', en: 'Call slot declined' },
-                USER_CALL_SLOT_DECLINED: { de: 'Gesprächszeit abgelehnt', en: 'Call slot declined' },
-                USER_CALL_SLOT_CANCELLED: { de: 'Gesprächszeit storniert', en: 'Call slot cancelled' },
-                COOK_CALL_SLOT_CANCELLED: { de: 'Gesprächszeit storniert', en: 'Call slot cancelled' },
-                USER_CALL_STARTED: { de: 'Spontaner Anruf gestartet', en: 'Spontaneous call started' },
-                COOK_CALL_STARTED: { de: 'Spontaner Anruf gestartet', en: 'Spontaneous call started' },
-                ADMIN_CALL_STARTED: {
-                    de: 'Concierge hat einen Anruf gestartet',
-                    en: 'Concierge started a call',
-                },
-            } as const
-        )[type],
-        locale,
-    );
+    return t(locale, 'common', `offerEvent.${type}`);
 }
 
 function chatMessageBookingRequestOfferEventDetail(
@@ -295,22 +206,16 @@ function chatMessageBookingRequestOfferEventDetail(
         const cookNameBefore = record.cookNameBefore.trim();
         if (cookNameBefore.length === 0) return null;
         if (record.chatCopied === true) {
-            return inlineCopy(
-                {
-                    de: `Vorheriger Chat mit ${cookNameBefore} wurde übernommen`,
-                    en: `Prior chat with ${cookNameBefore} was copied`,
-                },
-                locale,
-            );
+            return t(locale, 'common', 'offerEvent.priorChatCopied', { cookName: cookNameBefore });
         }
         return cookNameBefore;
     }
     if (typeof record.reason === 'string' && record.reason.trim().length > 0) {
         if (record.reason === 'ANOTHER_SLOT_CONFIRMED') {
-            return inlineCopy({ de: 'Ein anderer Termin wurde bestätigt.', en: 'Another slot was confirmed.' }, locale);
+            return t(locale, 'common', 'offerEvent.anotherSlotConfirmed');
         }
         if (record.reason === 'HANDED_OVER') {
-            return inlineCopy({ de: 'An Angebot übergeben', en: 'Handed over to another offer' }, locale);
+            return t(locale, 'common', 'offerEvent.handedOver');
         }
         return record.reason.trim();
     }
@@ -350,13 +255,9 @@ function chatMessageBookingRequestOfferEventDetail(
     }
     if (typeof record.amountCents === 'number') {
         if (message.type === 'SYSTEM_PAYMENT_SUCCEEDED' && record.source === 'PULL') {
-            return inlineCopy(
-                {
-                    de: `Karteneinzug · ${formatCurrency(record.amountCents, { locale })}`,
-                    en: `Card charge · ${formatCurrency(record.amountCents, { locale })}`,
-                },
-                locale,
-            );
+            return t(locale, 'common', 'offerEvent.cardCharge', {
+                amount: formatCurrency(record.amountCents, { locale }),
+            });
         }
         return formatCurrency(record.amountCents, { locale });
     }

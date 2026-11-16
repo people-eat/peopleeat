@@ -2,10 +2,8 @@ import { Link } from '@tanstack/react-router';
 import { SoupIcon } from 'lucide-react';
 import { useLayoutEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { inlineCopy } from '../../shared';
-
 import { useFeatureToggleActive } from '../hooks/useFeatureToggleActive';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 import { AppImage } from './AppImage';
 import { Badge } from './base/badge';
@@ -48,18 +46,15 @@ export function CookMealCard({
     className?: string;
     density?: 'comfortable' | 'compact';
 }) {
-    const locale = useLocale();
+    const { t } = useT('profileCook');
     const publicationEnabled = useFeatureToggleActive('PUBLICATION_MEALS');
     const [detailsOpen, setDetailsOpen] = useState(false);
     const shellRef = useRef<HTMLDivElement>(null);
     const [mediaSizePx, setMediaSizePx] = useState<number | null>(null);
     const isDeleted = meal.deletedAt != null;
     const resolvedImageUrl = meal.imageUrl != null && meal.imageUrl.length > 0 ? meal.imageUrl : null;
-    const priorPublishLabel = meal.publishedAt
-        ? inlineCopy({ de: 'War veröffentlicht', en: 'Was published' }, locale)
-        : inlineCopy({ de: 'War Entwurf', en: 'Was a draft' }, locale);
-    const description =
-        meal.description.trim().length > 0 ? meal.description : inlineCopy({ de: 'Keine Beschreibung', en: 'No description' }, locale);
+    const priorPublishLabel = meal.publishedAt ? t('meal.wasPublished') : t('meal.wasADraft');
+    const description = meal.description.trim().length > 0 ? meal.description : t('actions.noDescription');
     const renderDraftPublishedBadge = showStatusBadge && publicationEnabled && !isDeleted;
     const renderDeletedBadge = showStatusBadge && isDeleted;
     const missingImage = resolvedImageUrl == null;
@@ -113,18 +108,12 @@ export function CookMealCard({
 
     const footer = (
         <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1 pt-1">
-            {renderDeletedBadge ? <Badge variant="destructive">{inlineCopy({ de: 'Gelöscht', en: 'Deleted' }, locale)}</Badge> : null}
+            {renderDeletedBadge ? <Badge variant="destructive">{t('meal.deletedBadge')}</Badge> : null}
             {renderDraftPublishedBadge ? (
-                <Badge variant="outline">
-                    {meal.publishedAt
-                        ? inlineCopy({ de: 'Veröffentlicht', en: 'Published' }, locale)
-                        : inlineCopy({ de: 'Entwurf', en: 'Draft' }, locale)}
-                </Badge>
+                <Badge variant="outline">{meal.publishedAt ? t('actions.published') : t('actions.draft')}</Badge>
             ) : null}
-            {meal.generatedAt != null ? <Badge variant="outline">{inlineCopy({ de: 'Generiert', en: 'Generated' }, locale)}</Badge> : null}
-            {showStatusBadge && publishedWithoutImage ? (
-                <StatusBadge tone="warning">{inlineCopy({ de: 'Nicht auf Profil', en: 'Not on public page' }, locale)}</StatusBadge>
-            ) : null}
+            {meal.generatedAt != null ? <Badge variant="outline">{t('actions.generated')}</Badge> : null}
+            {showStatusBadge && publishedWithoutImage ? <StatusBadge tone="warning">{t('meal.notOnProfile')}</StatusBadge> : null}
             {showStatusBadge && missingImage && !publishedWithoutImage ? (
                 <div
                     className="inline-flex"
@@ -136,43 +125,16 @@ export function CookMealCard({
                 >
                     <Popover>
                         <PopoverTrigger asChild>
-                            <button
-                                type="button"
-                                className="inline-flex cursor-pointer"
-                                aria-label={inlineCopy(
-                                    {
-                                        de: 'Hinweis: Gericht ohne Bild',
-                                        en: 'Note: meal without picture',
-                                    },
-                                    locale,
-                                )}
-                            >
-                                <StatusBadge
-                                    tone="warning"
-                                    label={inlineCopy(
-                                        {
-                                            de: 'Hinweis: Gericht ohne Bild',
-                                            en: 'Note: meal without picture',
-                                        },
-                                        locale,
-                                    )}
-                                />
+                            <button type="button" className="inline-flex cursor-pointer" aria-label={t('meal.noPictureNote')}>
+                                <StatusBadge tone="warning" label={t('meal.noPictureNote')} />
                             </button>
                         </PopoverTrigger>
                         <PopoverContent align="start" className="w-64 p-3 text-sm">
                             <div className="grid gap-2">
-                                <p>
-                                    {inlineCopy(
-                                        {
-                                            de: 'Ohne Bild erscheint dieses Gericht nicht auf deiner öffentlichen Kochseite, sobald es veröffentlicht ist.',
-                                            en: 'Without a picture, this meal will not appear on your public cook page once published.',
-                                        },
-                                        locale,
-                                    )}
-                                </p>
+                                <p>{t('meal.noPictureWillHide')}</p>
                                 {onAddImage != null ? (
                                     <Button type="button" size="sm" variant="outline" className="justify-self-start" onClick={onAddImage}>
-                                        {inlineCopy({ de: 'Bild hinzufügen', en: 'Add picture' }, locale)}
+                                        {t('meal.addPicture')}
                                     </Button>
                                 ) : null}
                             </div>

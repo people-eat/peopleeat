@@ -1,7 +1,7 @@
 import { ImageOffIcon } from 'lucide-react';
 import type { MouseEvent, ReactNode } from 'react';
-import { inlineCopy } from '../../shared';
 
+import { t } from '../../i18n/t';
 import type { ContentSection } from '../../shared/contentSection';
 import { contentLocaleItems, contentLocaleText, fileUploadPublicUrl } from '../../shared/contentSection';
 import type { Locale } from '../../shared/locale';
@@ -43,7 +43,7 @@ function ContentSectionView({ section, locale }: { section: ContentSection; loca
         case 'image': {
             const imageUrl = resolvedImageUrl(section.imageFileUploadId);
             if (!imageUrl) {
-                return <ImagePlaceholder label={inlineCopy({ de: 'Kein Bild', en: 'No image' }, locale)} />;
+                return <ImagePlaceholder label={t(locale, 'common', 'contentSections.missing.image')} />;
             }
             return (
                 <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
@@ -57,7 +57,7 @@ function ContentSectionView({ section, locale }: { section: ContentSection; loca
             return (
                 <figure className="border-l-2 border-foreground/20 pl-6">
                     <blockquote className="whitespace-pre-wrap font-serif text-2xl font-light text-foreground @md:text-3xl">
-                        {quote || <PlaceholderText>{inlineCopy({ de: 'Zitat fehlt', en: 'Quote missing' }, locale)}</PlaceholderText>}
+                        {quote || <PlaceholderText>{t(locale, 'common', 'contentSections.missing.quote')}</PlaceholderText>}
                     </blockquote>
                     {attribution ? <figcaption className="mt-3 text-sm text-muted-foreground">{attribution}</figcaption> : null}
                 </figure>
@@ -82,9 +82,7 @@ function ContentSectionView({ section, locale }: { section: ContentSection; loca
                             items.map((item, index) => <li key={`${section.sectionId}-${index}`}>{item}</li>)
                         ) : (
                             <li>
-                                <PlaceholderText>
-                                    {inlineCopy({ de: 'Listenpunkt fehlt', en: 'List item missing' }, locale)}
-                                </PlaceholderText>
+                                <PlaceholderText>{t(locale, 'common', 'contentSections.missing.listItem')}</PlaceholderText>
                             </li>
                         )}
                     </ListTag>
@@ -98,14 +96,12 @@ function ContentSectionView({ section, locale }: { section: ContentSection; loca
             return (
                 <div className="flex flex-col items-start gap-4 rounded-xl border-l-4 border-accent bg-accent/10 px-8 py-10">
                     <h2 className="font-serif text-3xl font-light">
-                        {headline || (
-                            <PlaceholderText>{inlineCopy({ de: 'Überschrift fehlt', en: 'Headline missing' }, locale)}</PlaceholderText>
-                        )}
+                        {headline || <PlaceholderText>{t(locale, 'common', 'contentSections.missing.headline')}</PlaceholderText>}
                     </h2>
                     {body ? <p className="max-w-prose whitespace-pre-wrap text-base/relaxed text-muted-foreground">{body}</p> : null}
                     <CtaLink
                         href={section.href.trim() || '#'}
-                        label={buttonLabel || inlineCopy({ de: 'Button-Text fehlt', en: 'Button label missing' }, locale)}
+                        label={buttonLabel || t(locale, 'common', 'contentSections.missing.buttonLabel')}
                         placeholder={!buttonLabel}
                     />
                 </div>
@@ -117,8 +113,8 @@ function ContentSectionView({ section, locale }: { section: ContentSection; loca
                 const question = contentLocaleText(entry.questionDe, entry.questionEn, locale).trim();
                 const answer = contentLocaleText(entry.answerDe, entry.answerEn, locale).trim();
                 return {
-                    question: question || inlineCopy({ de: 'Frage fehlt', en: 'Question missing' }, locale),
-                    answer: answer || inlineCopy({ de: 'Antwort fehlt', en: 'Answer missing' }, locale),
+                    question: question || t(locale, 'common', 'contentSections.missing.question'),
+                    answer: answer || t(locale, 'common', 'contentSections.missing.answer'),
                     answerFormat: 'markdown' as const,
                 };
             });
@@ -132,8 +128,8 @@ function ContentSectionView({ section, locale }: { section: ContentSection; loca
                             ? faqs
                             : [
                                   {
-                                      question: inlineCopy({ de: 'Frage fehlt', en: 'Question missing' }, locale),
-                                      answer: inlineCopy({ de: 'Antwort fehlt', en: 'Answer missing' }, locale),
+                                      question: t(locale, 'common', 'contentSections.missing.question'),
+                                      answer: t(locale, 'common', 'contentSections.missing.answer'),
                                       answerFormat: 'markdown',
                                   },
                               ]
@@ -159,7 +155,7 @@ function ContentBlock({ section, locale }: { section: Extract<ContentSection, { 
                 <MarkdownBody text={body} />
             ) : (
                 <p>
-                    <PlaceholderText>{inlineCopy({ de: 'Text fehlt', en: 'Body missing' }, locale)}</PlaceholderText>
+                    <PlaceholderText>{t(locale, 'common', 'contentSections.missing.body')}</PlaceholderText>
                 </p>
             )}
         </div>

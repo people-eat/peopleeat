@@ -1,5 +1,5 @@
 import { t } from '../../i18n/t';
-import { formatCurrency, inlineCopy } from '../../shared';
+import { formatCurrency } from '../../shared';
 import type { Locale } from '../utils/locale';
 import {
     AlertDialog,
@@ -50,13 +50,12 @@ export function AdminBookingRequestOfferAmendmentConfirmDialog(props: {
                     <AlertDialogDescription asChild>
                         <div className="grid gap-3 text-sm text-muted-foreground">
                             <p>
-                                {inlineCopy(
-                                    {
-                                        de: `Gastgeberpreis ${formatCurrency(props.totalCentsCustomerBefore, { locale })} → ${formatCurrency(props.totalCentsCustomerAfter, { locale })}. Koch-Auszahlung ${formatCurrency(props.payoutCentsCookBefore, { locale })} → ${formatCurrency(props.payoutCentsCookAfter, { locale })}.`,
-                                        en: `Host price ${formatCurrency(props.totalCentsCustomerBefore, { locale })} → ${formatCurrency(props.totalCentsCustomerAfter, { locale })}. Cook payout ${formatCurrency(props.payoutCentsCookBefore, { locale })} → ${formatCurrency(props.payoutCentsCookAfter, { locale })}.`,
-                                    },
-                                    locale,
-                                )}
+                                {t(locale, 'admin', 'copy.hostPriceToCookPayout', {
+                                    from: formatCurrency(props.totalCentsCustomerBefore, { locale }),
+                                    to: formatCurrency(props.totalCentsCustomerAfter, { locale }),
+                                    payoutFrom: formatCurrency(props.payoutCentsCookBefore, { locale }),
+                                    payoutTo: formatCurrency(props.payoutCentsCookAfter, { locale }),
+                                })}
                             </p>
                             <p>{paymentConsequenceCopy(props.paymentStatus, locale)}</p>
                             <p className="font-medium text-foreground">{t(locale, 'admin', 'copy.howShouldThisChangeBeApplied')}</p>

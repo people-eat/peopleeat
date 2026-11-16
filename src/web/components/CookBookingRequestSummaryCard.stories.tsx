@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { cardCanvasDecorator, STORYBOOK_TIME_ZONE } from '../../../.storybook/decorators';
-import { inlineCopy } from '../../shared';
+import { t } from '../../i18n/t';
 
 import { useLocale } from '../hooks/useLocale';
 import { fixtureSummaryParticipants } from '../storybook/fixtures/booking';
@@ -28,13 +28,7 @@ function SummaryCardStory() {
             participants={fixtureSummaryParticipants}
             preferences={['Vegetarische Option', 'Kein scharfes Essen']}
             eventLocation={fixtureAddress.displayText}
-            eventLocationHint={inlineCopy(
-                {
-                    de: 'Die genaue Adresse wird nach gemeinsamer Zusage freigegeben. Für die Reisekosten nutzen wir sie bereits.',
-                    en: 'The exact address is shared after both sides accept. We already use it for travel expense calculations.',
-                },
-                locale,
-            )}
+            eventLocationHint={t(locale, 'common', 'storybook.cookRequestSummary.exactAddressHint')}
             estimatedTravelDistanceKm={12.4}
             estimatedTravelExpensesCents={1800}
             message={{

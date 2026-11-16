@@ -4,7 +4,6 @@ import { PlusIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { t } from '../../../i18n/t';
-import { inlineCopy } from '../../../shared';
 import { AdminListPaginationBar } from '../../components/AdminListPaginationBar';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
@@ -166,13 +165,7 @@ export function AdminPromoCodesPage({ data, search }: { data: GqlCAdminPromoCode
                             aria-label={t(locale, 'admin', 'copy.searchPromoCodes')}
                         />
                         <p className="text-sm text-muted-foreground tabular-nums">
-                            {inlineCopy(
-                                {
-                                    de: `${total} ${total === 1 ? 'Promo-Code' : 'Promo-Codes'}`,
-                                    en: `${total} ${total === 1 ? 'promo code' : 'promo codes'}`,
-                                },
-                                locale,
-                            )}
+                            {t(locale, 'admin', 'copy.promoCodeCount', { count: total })}
                         </p>
                     </div>
                     <Button asChild>

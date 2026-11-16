@@ -1,8 +1,8 @@
+import { t } from '../../i18n/t';
 import {
     bookingRequestKitchenDetailsAvailabilityLabel,
     bookingRequestKitchenDetailsGuestTablewareLabel,
     bookingRequestKitchenDetailsSpaceLabel,
-    inlineCopy,
 } from '../../shared';
 import type { Locale } from '../utils/locale';
 import { AppImage } from './AppImage';
@@ -24,31 +24,31 @@ function bookingRequestKitchenDetailsFactLines(
     const lines: { label: string; value: string }[] = [];
     if (details.availability) {
         lines.push({
-            label: inlineCopy({ de: 'Küche', en: 'Kitchen' }, locale),
+            label: t(locale, 'common', 'bookingRequestKitchenUi.fact.kitchen'),
             value: bookingRequestKitchenDetailsAvailabilityLabel(details.availability, locale),
         });
     }
     if (details.fridgeSpace) {
         lines.push({
-            label: inlineCopy({ de: 'Kühlschrank', en: 'Fridge' }, locale),
+            label: t(locale, 'common', 'bookingRequestKitchenUi.fact.fridge'),
             value: bookingRequestKitchenDetailsSpaceLabel(details.fridgeSpace, locale),
         });
     }
     if (details.platingSpace) {
         lines.push({
-            label: inlineCopy({ de: 'Anrichten', en: 'Plating' }, locale),
+            label: t(locale, 'common', 'bookingRequestKitchenUi.fact.plating'),
             value: bookingRequestKitchenDetailsSpaceLabel(details.platingSpace, locale),
         });
     }
     if (details.guestTableware) {
         lines.push({
-            label: inlineCopy({ de: 'Geschirr', en: 'Tableware' }, locale),
+            label: t(locale, 'common', 'bookingRequestKitchenUi.fact.tableware'),
             value: bookingRequestKitchenDetailsGuestTablewareLabel(details.guestTableware, locale),
         });
     }
     if (details.notes?.trim()) {
         lines.push({
-            label: inlineCopy({ de: 'Hinweise', en: 'Notes' }, locale),
+            label: t(locale, 'common', 'bookingRequestKitchenUi.fact.notes'),
             value: details.notes.trim(),
         });
     }

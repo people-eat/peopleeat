@@ -2,11 +2,11 @@ import { CheckIcon, PlusIcon } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
-import { inlineCopy } from '../../shared';
 
 import type { GqlCOfferAddonInclusion, GqlCOfferAddonPricingUnit } from '../graphql/generated';
 import { ProfileCustomerBookingRequestOfferAddonSelectionUpdateDocument } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { offerAddonPriceLabel } from '../utils/offerAddonPriceLabel';
 import { Button } from './base/button';
 import { CustomerMealCard } from './CustomerMealCard';
@@ -37,6 +37,7 @@ export function BookingRequestOfferAddonSelectionList({
     compact?: boolean;
 }) {
     const locale = useLocale();
+    const { t } = useT('common');
     const [, updateAddonSelection] = useMutation(ProfileCustomerBookingRequestOfferAddonSelectionUpdateDocument);
     const [pendingAddonId, setPendingAddonId] = useState<string | null>(null);
 
@@ -57,7 +58,7 @@ export function BookingRequestOfferAddonSelectionList({
                     const priceLabel = offerAddonPriceLabel(addon.priceCents, addon.pricingUnit, locale);
                     const detailParts = [addon.description.trim(), priceLabel].filter((part) => part.length > 0);
                     if (required) {
-                        detailParts.push(inlineCopy({ de: 'enthalten', en: 'included' }, locale));
+                        detailParts.push(t('addon.included'));
                     }
 
                     return (
@@ -68,7 +69,7 @@ export function BookingRequestOfferAddonSelectionList({
                                 imageUrl={addon.imageUrl}
                                 selected={selected}
                                 disabled={disabled && !selected}
-                                dialogTitle={inlineCopy({ de: 'Zusatzleistung', en: 'Extra' }, locale)}
+                                dialogTitle={t('addon.extra')}
                                 action={
                                     <Button
                                         type="button"
@@ -76,11 +77,7 @@ export function BookingRequestOfferAddonSelectionList({
                                         variant={selected ? 'default' : 'outline'}
                                         disabled={disabled}
                                         aria-pressed={selected}
-                                        aria-label={
-                                            selected
-                                                ? inlineCopy({ de: 'Auswahl entfernen', en: 'Remove selection' }, locale)
-                                                : inlineCopy({ de: 'Zusatzleistung wählen', en: 'Select extra' }, locale)
-                                        }
+                                        aria-label={selected ? t('addon.removeSelection') : t('addon.selectExtra')}
                                         onClick={() => {
                                             if (required) return;
                                             setPendingAddonId(addon.cookOfferAddonId);
@@ -90,15 +87,7 @@ export function BookingRequestOfferAddonSelectionList({
                                             }).then((result) => {
                                                 setPendingAddonId(null);
                                                 if (result.error || !result.data?.user.bookingRequestOfferAddonSelectionUpdate.success) {
-                                                    toast.error(
-                                                        inlineCopy(
-                                                            {
-                                                                de: 'Die Auswahl konnte nicht gespeichert werden.',
-                                                                en: 'Could not save that choice.',
-                                                            },
-                                                            locale,
-                                                        ),
-                                                    );
+                                                    toast.error(t('addon.couldNotSave'));
                                                 }
                                             });
                                         }}

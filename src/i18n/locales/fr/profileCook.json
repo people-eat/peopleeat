@@ -171,7 +171,6 @@
         "incompleteMenus": "Incomplete menus ({incompleteMenusLength})",
         "theseMenusCannotBeSelectedYetEvery": "These menus cannot be selected yet. Every course needs a title and at least one dish. Tap Finish to complete them.",
         "cookOnlyArea": "Cette zone est réservée aux chefs.",
-        "readingYourFileAsConstReturn": "Reading your file…' }\n            : { de: 'Dein Text wird gelesen…', en: 'Reading your text…' },\n        { de: 'Wir suchen passende Gerichte aus deinen Gerichten…', en: 'Finding dishes you already have…' },\n        { de: 'Die Gänge werden zusammengestellt…', en: 'Putting the courses together…' },\n    ] as const;\n    return (lines[index] ?? lines[0])[locale];\n}\n\nfunction suggestionReuseSummary(locale: Locale, reusedCount: number, newCount: number): string {\n    const fromDishes =\n        reusedCount === 1\n            ? t('m.n1FromYourDishes')\n            : { de: `{reusedCount} aus deinen Gerichten`, en: `{reusedCount} from your dishes` }[locale];\n    const newDrafts =\n        newCount === 1\n            ? t('m.n1NewDraft')\n            : { de: `{newCount} neue Entwürfe`, en: `{newCount} new drafts` }[locale];\n    if (newCount === 0) {\n        return { de: `Alle {reusedCount} aus deinen Gerichten`, en: `All {reusedCount} from your dishes` }[locale];\n    }\n    if (reusedCount === 0) return newDrafts;\n    return `{fromDishes}, {newDrafts}`;\n}\n\nfunction CreateChooserCard({\n    icon,\n    title,\n    description,\n    tone,\n    disabled,\n    onClick,\n}: {\n    icon: ReactNode;\n    title: string;\n    description: string;\n    tone: 'accent' | 'sky';\n    disabled?: boolean;\n    onClick: () => void;\n}) {\n    return (\n        <button\n            type=\"button\"\n            className={cn(\n                'grid cursor-pointer gap-2 rounded-xl border p-4 text-left outline-none transition-[color,background-color,border-color,box-shadow,opacity] focus-visible:ring-[3px] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',\n                tone === 'accent'\n                    ? 'border-accent/35 bg-accent/10 hover:border-accent/50 hover:bg-accent/15 active:bg-accent/20 focus-visible:border-accent focus-visible:ring-accent/50'\n                    : 'border-sky-300 bg-sky-50 hover:border-sky-400 hover:bg-sky-100/80 active:bg-sky-100 focus-visible:border-sky-500 focus-visible:ring-sky-500/50',\n            )}\n            disabled={disabled}\n            onClick={onClick}\n        >\n            <span\n                className={cn(\n                    'flex size-10 items-center justify-center rounded-lg',\n                    tone === 'accent' ? 'bg-accent/15 text-accent' : 'bg-sky-100 text-sky-700',\n                )}\n                aria-hidden\n            >\n                {icon}\n            </span>\n            <span className=\"font-medium\">{title}</span>\n            <span className=\"text-sm text-muted-foreground\">{description}</span>\n        </button>\n    );\n}\n\nexport function CookMenuCreateDialog({\n    open,\n    onOpenChange,\n    onEmptyCreate,\n    onApplied,\n    busy = false,\n    context = 'library',\n}: {\n    open: boolean;\n    onOpenChange: (open: boolean) => void;\n    onEmptyCreate: () => void;\n    onApplied: (menuId: string) => void;\n    busy?: boolean;\n    context?: CookMenuCreateContext;\n}) {\n    const locale = useLocale();\n    const { t } = useT('profileCook');\n    const formId = useId();\n    const openRef = useRef(open);\n    const generateRequestIdRef = useRef(0);\n    const [step, setStep] = useState<CreateStep>('chooser');\n    const [generatingIndex, setGeneratingIndex] = useState(0);\n    const [generatingFromFiles, setGeneratingFromFiles] = useState(false);\n    const [generateFailed, setGenerateFailed] = useState(false);\n    const [draft, setDraft] = useState<SuggestionDraft | null>(null);\n    const [, suggestFromText] = useMutation(CookMenuCreateDialogSuggestionFromTextDocument);\n    const [, applySuggestion] = useMutation(CookMenuCreateDialogSuggestionApplyDocument);\n    const [applying, setApplying] = useState(false);\n    const [{ data: mealsData }] = useQuery({ query: CookMenuCreateDialogMealsDocument, pause: !open });\n    const mealsById = new Map((mealsData?.currentSession.user?.cook?.meals ?? []).map((meal) => [meal.mealId, meal]));\n    const { attachments, onAttachmentsAdd, onAttachmentRemove, clearAttachments, uploadedFileUploadIds, hasUploading } =\n        useComposerFileAttachments();\n    const notesForm = useForm({\n        defaultValues: { notes: '' },\n        onSubmit: async ({ value }) => {\n            await generate(value.notes);\n        },\n    });\n    const notes = useSelector(notesForm.store, (state) => state.values.notes);\n    const { fileInputRef, isDragOver, formHandlers, onPickerChange, onPaste, openPicker } = useMessageComposerFileIntake({\n        enabled: !busy && !hasUploading && step === 'input',\n        multiple: true,\n        onAdd: (files) => {\n            const remaining = COOK_MENU_SUGGESTION_FILE_MAX - attachments.length;\n            if (remaining <= 0) return;\n            onAttachmentsAdd(files.slice(0, remaining));\n        },\n        value: notes,\n        onValueChange: (next) => notesForm.setFieldValue('notes', next),\n    });\n    openRef.current = open;\n    const workStep = step !== 'chooser';\n    const filesAtCap = attachments.length >= COOK_MENU_SUGGESTION_FILE_MAX;\n\n    useEffect(() => {\n        if (open) return;\n        generateRequestIdRef.current += 1;\n        setStep('chooser');\n        setDraft(null);\n        setGenerateFailed(false);\n        setApplying(false);\n        setGeneratingFromFiles(false);\n        notesForm.reset();\n        clearAttachments();\n    }, [open, clearAttachments, notesForm]);\n\n    useEffect(() => {\n        setGenerateFailed(false);\n    }, [notes, attachments.length]);\n\n    useEffect(() => {\n        if (step !== 'generating') {\n            setGeneratingIndex(0);\n            return;\n        }\n        const timer = globalThis.setInterval(() => {\n            setGeneratingIndex((current) => Math.min(current + 1, 2));\n        }, GENERATING_INTERVAL_MS);\n        return () => globalThis.clearInterval(timer);\n    }, [step]);\n\n    async function generate(notesValue: string) {\n        const trimmed = notesValue.trim();\n        if ((trimmed.length === 0 && uploadedFileUploadIds.length === 0) || hasUploading) return;\n        const requestId = ++generateRequestIdRef.current;\n        const fromFiles = uploadedFileUploadIds.length > 0;\n        setGenerateFailed(false);\n        setGeneratingFromFiles(fromFiles);\n        setStep('generating');\n        try {\n            const result = await suggestFromText({\n                text: trimmed.length > 0 ? trimmed : null,\n                fileUploadIds: uploadedFileUploadIds.length > 0 ? uploadedFileUploadIds : null,\n            });\n            if (requestId !== generateRequestIdRef.current || !openRef.current) return;\n            const suggestion = result.data?.user.cook.menuSuggestionFromText;\n            if (result.error || suggestion == null || !suggestionHasMeals(suggestion)) {\n                throw new Error('generate failed');\n            }\n            setDraft(suggestion);\n            setStep('review');\n        } catch {\n            if (requestId !== generateRequestIdRef.current || !openRef.current) return;\n            setGenerateFailed(true);\n            setStep('input');\n        }\n    }\n\n    async function onApply() {\n        if (draft == null || applying || !suggestionHasMeals(draft)) return;\n        setApplying(true);\n        try {\n            const result = await applySuggestion({\n                suggestion: {\n                    title: draft.title,\n                    description: draft.description,\n                    courses: draft.courses.map((course) => ({\n                        title: course.title,\n                        mealOptions: course.mealOptions.map((meal) => ({\n                            type: meal.type,\n                            mealId: meal.mealId,\n                            title: meal.title,\n                            description: meal.description,\n                        })),\n                    })),\n                },\n            });\n            const applied = result.data?.user.cook.menuSuggestionApply;\n            if (result.error || !applied?.success || applied.referenceId == null) {\n                throw new Error('apply failed');\n            }\n            if (!openRef.current) return;\n            onApplied(applied.referenceId);\n            onOpenChange(false);\n        } catch {\n            if (!openRef.current) return;\n            toast.error(t('m.couldNotCreateTheMenu'));\n        } finally {\n            setApplying(false);\n        }\n    }\n\n    function removeMeal(courseIndex: number, mealIndex: number) {\n        if (draft == null) return;\n        const previous = draft;\n        const course = draft.courses[courseIndex];\n        if (course == null) return;\n        const removedCourse = course.mealOptions.length <= 1;\n        const courses = draft.courses\n            .map((row, index) => {\n                if (index !== courseIndex) return row;\n                return { ...row, mealOptions: row.mealOptions.filter((_, optionIndex) => optionIndex !== mealIndex) };\n            })\n            .filter((row) => row.mealOptions.length > 0);\n        setDraft({ ...draft, courses });\n        toast(\n            removedCourse\n                ? { de: `Gang „{courseTitle}“ entfernt.`, en: `Removed course \"{courseTitle}\".` }[locale]\n                : t('m.dishRemoved'),\n            {\n                action: {\n                    label: t('m.undo'),\n                    onClick: () => setDraft(previous),\n                },\n            },\n        );\n    }\n\n    const reusedCount =\n        draft?.courses.reduce((sum, course) => sum + course.mealOptions.filter((meal) => meal.type === 'EXISTING_MEAL').length, 0) ?? 0;\n    const newCount =\n        draft?.courses.reduce((sum, course) => sum + course.mealOptions.filter((meal) => meal.type === 'NEW_MEAL').length, 0) ?? 0;\n    const generateDisabled = busy || hasUploading || (notes.trim().length === 0 && uploadedFileUploadIds.length === 0);\n    const title =\n        step === 'chooser'\n            ? t('m.howDoYouWantToCreateThis')\n            : step === 'review'\n              ? t('m.reviewYourMenuSuggestion')\n              : t('m.fromTextOrAFile');\n\n    return (\n        <Dialog open={open} onOpenChange={onOpenChange}>\n            <DialogContent\n                className={cn(\n                    'flex w-full flex-col overflow-hidden',\n                    workStep\n                        ? 'h-dvh max-h-dvh max-w-full gap-0 rounded-none p-0 sm:h-auto sm:min-h-[min(36rem,90dvh)] sm:max-h-[min(90dvh,100%)] sm:max-w-3xl sm:rounded-lg'\n                        : 'sm:max-w-3xl',\n                )}\n                onInteractOutside={(event) => {\n                    if (step === 'generating' || step === 'review') event.preventDefault();\n                }}\n            >\n                <DialogHeader className={cn('pr-8 text-left', workStep && 'shrink-0 px-6 pt-6 pb-4')}>\n                    <DialogTitle>{title}</DialogTitle>\n                    {step === 'input' || step === 'generating' ? (\n                        <DialogDescription>\n                            {\n                                {\n                                    de: 'Wir nutzen zuerst deine Gerichte und schlagen nur für Lücken neue vor. Gespeichert wird erst, wenn du zustimmst.',\n                                    en: 'We use your dishes first and only suggest new ones for gaps. Nothing is saved until you confirm.",
         "discoveryCallNote": "Discovery call note",
         "pleaseChooseAnImageJpegPng": "Please choose an image (JPEG, PNG, WebP, or GIF).",
         "withoutAPictureTheMealDoes": "Without a picture, the meal does not appear on your public cook page.",
@@ -217,7 +216,11 @@
                 "description": "Ce texte est prérempli quand tu crées une offre."
             }
         },
-        "guestsSeeHint": "Les invités le voient comme premier message du chat. Enregistre vide si tu veux écrire une nouvelle note à chaque fois."
+        "guestsSeeHint": "Les invités le voient comme premier message du chat. Enregistre vide si tu veux écrire une nouvelle note à chaque fois.",
+        "notSet": "Pas encore défini. Les nouvelles offres commencent par une courte salutation peopleeat.",
+        "emptyReadout": "Vide. Tu rédiges un nouveau message pour chaque offre.",
+        "yourText": "Ton texte",
+        "phoneSharing": "Le partage de numéros de téléphone n’est pas autorisé. Garde les arrangements dans le chat."
     },
     "presence": {
         "issue": {
@@ -232,7 +235,16 @@
             "labelTooLong": "Le nom de la plateforme est trop long.",
             "duplicatePlatform": "Cette plateforme est déjà listée.",
             "tooMany": "Cinq autres profils au maximum."
-        }
+        },
+        "anotherProfile": "Autre profil",
+        "website": "Site web",
+        "googleProfile": "Profil Google",
+        "empty": "Aucun autre profil pour le moment.",
+        "removeProfile": "Retirer le profil",
+        "platformName": "Nom de la plateforme",
+        "address": "Adresse",
+        "addAnother": "Ajouter un autre profil",
+        "other": "Autre"
     },
     "menuCreate": {
         "readingFile": "Lecture de ton fichier…",
@@ -240,7 +252,7 @@
         "findingDishes": "Nous cherchons des plats parmi les tiens…",
         "assemblingCourses": "Assemblage des services…",
         "fromDishes": "{count} issus de tes plats",
-        "newDrafts": "{count} nouveaux brouillons",
+        "newDrafts": "{count, plural, one {1 nouveau brouillon} other {# nouveaux brouillons}}",
         "allFromDishes": "Tous les {count} issus de tes plats",
         "removedCourse": "Service « {title} » retiré.",
         "couldNotCreate": "Impossible de créer le menu.",
@@ -293,7 +305,10 @@
         "CookBookingRequestOfferAlreadyExists": {
             "title": "Tu as déjà créé une offre",
             "body": "Tu as déjà une offre pour cette demande. Ouvre-la dans ta boîte d’offres."
-        }
+        },
+        "viewOpenRequests": "Voir les demandes ouvertes",
+        "allOffers": "Toutes les offres",
+        "backToPool": "Retour au pool de demandes"
     },
     "menuCourses": {
         "presets": {
@@ -308,21 +323,76 @@
             "8": "Accord mets-vins"
         },
         "removeMealNamed": "« {title} » sera retiré de ce service.",
-        "removeMeal": "Ce plat sera retiré du service."
+        "removeMeal": "Ce plat sera retiré du service.",
+        "mealsCount": "{count, plural, one {1 plat} other {# plats}}",
+        "dragCourse": "Déplacer le service",
+        "untitled": "Sans titre",
+        "incomplete": "Incomplet",
+        "moveUp": "Monter le service",
+        "moveDown": "Descendre le service",
+        "removeCourse": "Retirer le service",
+        "name": "Nom",
+        "mealOptions": "Options de plats",
+        "chooseMeals": "Choisir des plats",
+        "allowMultiple": "Autoriser plusieurs plats",
+        "selectUpTo": "Choisir jusqu’à",
+        "selectionLimit": "Limite de sélection",
+        "insertBelow": "Insérer un service en dessous",
+        "addCourse": "Ajouter un service",
+        "deleteTitle": "Supprimer ce service ?",
+        "deleteBody": "Les options de plats de ce service seront perdues.",
+        "removeMealTitle": "Retirer ce plat ?",
+        "dragMeal": "Déplacer le plat",
+        "moveMealUp": "Monter le plat",
+        "moveMealDown": "Descendre le plat",
+        "editMeal": "Modifier le plat",
+        "removeMealAria": "Retirer le plat",
+        "titlePlaceholder": "p. ex. Entrée",
+        "pickerHint": "Choisis les options de plats pour ce service, ou crée un nouveau plat.",
+        "emptyPicker": "Pas encore de plats. Crée-en un ci-dessus.",
+        "selected": "Sélectionné",
+        "select": "Sélectionner",
+        "emptyCourse": "Pas encore de plats dans ce service."
     },
     "mealEditor": {
         "saving": "Enregistrement…",
         "saveMeal": "Enregistrer le plat",
-        "save": "Enregistrer"
+        "save": "Enregistrer",
+        "titleRequired": "Saisis un titre.",
+        "created": "Plat créé.",
+        "saved": "Plat enregistré.",
+        "createFailed": "Impossible de créer le plat.",
+        "saveFailed": "Enregistrement impossible.",
+        "hint": "Titre, description et image. Les modifications s’appliquent à tous les menus qui utilisent ce plat."
     },
     "menuSelect": {
         "goodFit": "Adapté",
         "weakerFit": "Moins adapté",
         "courseSuggestionOne": "1 service (suggestion)",
-        "courseSuggestionOther": "{count} services (suggestion)"
+        "courseSuggestionOther": "{count} services (suggestion)",
+        "incompleteCount": "Menus incomplets ({count})",
+        "incompleteHint": "Ces menus ne peuvent pas encore être sélectionnés. Chaque service a besoin d’un titre et d’au moins un plat. Appuie sur Terminer pour les compléter.",
+        "evaluating": "Évaluation en cours…",
+        "refresh": "Actualiser les recommandations",
+        "evaluatingBody": "Nous évaluons tes menus pour cette demande et préparons une recommandation.",
+        "emptyContinue": "Pas encore de menus. Crée-en un pour continuer.",
+        "noneComplete": "Aucun menu complet à sélectionner. Termine-en un ci-dessous.",
+        "recommendationLoading": "Recommandation en cours de chargement",
+        "platformRecommendation": "Recommandation de la plateforme",
+        "useRecommendation": "Utiliser la recommandation",
+        "finish": "Terminer",
+        "showEvaluation": "{label} : afficher l’évaluation"
     },
     "pathName": {
-        "previousPaths": "Anciens chemins : {paths}"
+        "previousPaths": "Anciens chemins : {paths}",
+        "checking": "Vérification de la disponibilité…",
+        "available": "Ce chemin est libre.",
+        "taken": "Ce chemin est déjà pris.",
+        "invalid": "Saisis un chemin valide (lettres, chiffres, tirets).",
+        "publicUrl": "URL publique",
+        "hint": "Se trouve sous /chefs/… . Un changement conserve l’ancienne adresse comme redirection. Le nom de famille dans l’URL est public, même si la page affiche le prénom ou le nom de scène.",
+        "copiedToast": "Copié dans le presse-papiers",
+        "copyFailed": "Impossible de copier dans le presse-papiers"
     },
     "bookingRequestOffer": {
         "create": {
@@ -354,7 +424,8 @@
             "COMPLETED": "Terminé",
             "EXPIRED": "Expiré",
             "CANCELED": "Annulé"
-        }
+        },
+        "generatedMenuRecommended": "Recommandé par la plateforme pour cette demande."
     },
     "callSlot": {
         "status": {
@@ -578,7 +649,8 @@
         "newMeal": "Nouveau plat",
         "newMenu": "Nouveau menu",
         "newExtra": "Extra personnalisé",
-        "hideRequest": "Masquer la demande"
+        "hideRequest": "Masquer la demande",
+        "remove": "Retirer"
     },
     "format": {
         "na": "n/d",
@@ -651,7 +723,19 @@
         "cannotDeleteBody": "Ce plat est le seul plat de sa portée dans au moins un menu et ne peut donc pas être supprimé. Mets à jour les menus concernés en supprimant la portée, en y ajoutant d’autres plats ou en remplaçant le plat.",
         "publishTitle": "Publier ce plat ?",
         "publishNoPicture": "Le plat sera marqué comme publié. Sans image, il n’apparaîtra quand même pas sur ta page chef publique.",
-        "publishWithPicture": "Le plat sera marqué comme publié et apparaîtra sur ta page chef publique."
+        "publishWithPicture": "Le plat sera marqué comme publié et apparaîtra sur ta page chef publique.",
+        "wasPublished": "Était publié",
+        "wasADraft": "Était un brouillon",
+        "deletedBadge": "Supprimé",
+        "notOnProfile": "Pas sur la page publique",
+        "noPictureNote": "Remarque : plat sans photo",
+        "chooseImageType": "Choisis une image (JPEG, PNG, WebP ou GIF).",
+        "noPublicWithoutPicture": "Sans photo, le plat n’apparaît pas sur ta page chef publique.",
+        "uploading": "Envoi…",
+        "selectImage": "Choisir une image",
+        "removeImage": "Retirer l’image",
+        "removeImageTitle": "Retirer cette image ?",
+        "removeImageBody": "L’image sera retirée de ce plat. Enregistre ensuite pour appliquer le changement. Sans photo, le plat n’apparaît pas sur ta page chef publique."
     },
     "mealEdit": {
         "title": "Modifier le plat",
@@ -761,7 +845,11 @@
         "defaultOfferNote": "Note d’offre par défaut",
         "defaultOfferNoteHint": "Se préremplit quand tu crées une offre. Les hôtes la voient comme premier message du chat.",
         "otherProfiles": "Autres profils",
-        "otherProfilesHint": "Seul l’équipe peopleeat voit ces liens, pour examiner ton profil. Les clients ne les voient pas."
+        "otherProfilesHint": "Seul l’équipe peopleeat voit ces liens, pour examiner ton profil. Les clients ne les voient pas.",
+        "reviewTitle": "Vérifier la suggestion de biographie",
+        "reviewHint": "Compare le texte actuel avec la suggestion de l’IA. Accepter remplit le champ. Enregistrer écrit la biographie.",
+        "current": "Actuel",
+        "suggestion": "Suggestion"
     },
     "chefProfileEdit": {
         "title": "Modifier le profil de chef",
@@ -814,7 +902,9 @@
         "origin": "Adresse de départ pour le trajet",
         "cityForCustomers": "Ville affichée aux clients",
         "maxDistance": "Distance de déplacement maximale",
-        "expensesPerKm": "Frais de déplacement par km"
+        "expensesPerKm": "Frais de déplacement par km",
+        "originHostsHint": "Non affiché aux hôtes. Ils voient uniquement la ville.",
+        "hostsSee": "Les hôtes verront {city}."
     },
     "travelEdit": {
         "title": "Modifier les déplacements",
@@ -943,7 +1033,11 @@
         "emptyOpen": "Aucune demande ouverte dans le pool.",
         "emptyDeclined": "Aucune demande masquée.",
         "requestedYou": "T’a demandé",
-        "nearby": "Près de toi"
+        "nearby": "Près de toi",
+        "aboutKm": "env. {km} km",
+        "requestedYouAlsoOpen": "T’a demandé, aussi ouvert aux autres",
+        "newRequest": "Nouvelle demande",
+        "declinedAt": "Refusé le"
     },
     "poolRequest": {
         "title": "Demande de réservation du pool",
@@ -1062,7 +1156,10 @@
         "statementBody": "Montant versé et commission retenue. Ce n’est pas une facture. Tu factures encore l’hôte toi-même.",
         "statementFailed": "Le décompte de paiement n’a pas pu être créé.",
         "adjustPrice": "Ajuster le prix",
-        "exactAddressHint": "L’adresse exacte est partagée après acceptation des deux côtés. Nous l’utilisons déjà pour les frais de déplacement."
+        "exactAddressHint": "L’adresse exacte est partagée après acceptation des deux côtés. Nous l’utilisons déjà pour les frais de déplacement.",
+        "payoutAmount": "Montant versé",
+        "orderValue": "Valeur de la commande",
+        "discoveryCallNote": "Note sur l’appel de découverte"
     },
     "offerCreate": {
         "suggestMenus": "Proposer des menus",
@@ -1109,5 +1206,22 @@
         "menuCreated": "Menu créé.",
         "menuCreatedSelected": "Menu créé et sélectionné.",
         "backToOffer": "Retour à l’offre"
+    },
+    "offerMenu": {
+        "selectedCount": "{selected} / {limit} choisi(s)",
+        "selectRemaining": "Encore {remaining} sur {limit} à choisir",
+        "chooseOne": "Choisir 1 plat",
+        "removeSelection": "Retirer la sélection",
+        "selectMeal": "Choisir le plat",
+        "noMealsSelected": "Aucun plat choisi."
+    },
+    "logo": {
+        "saved": "Image supplémentaire enregistrée.",
+        "removed": "Image supplémentaire retirée.",
+        "empty": "Pas d’image supplémentaire",
+        "hint": "Image paysage pour la section À propos. Sans image supplémentaire, nous montrons les avantages peopleeat.",
+        "select": "Choisir une image",
+        "saving": "Enregistrement…",
+        "remove": "Retirer l’image"
     }
 }

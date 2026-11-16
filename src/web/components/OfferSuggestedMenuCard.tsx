@@ -1,5 +1,4 @@
-import { inlineCopy } from '../../shared';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 import { Card, CardDescription, CardHeader, CardTitle } from './base/card';
 import { CookMenuCardMedia } from './CookMenuCard';
@@ -23,11 +22,8 @@ export function OfferSuggestedMenuCard({
     disabled?: boolean;
     onSelect: (menuId: string) => void;
 }) {
-    const locale = useLocale();
-    const courseLabel =
-        menu.courseCount === 1
-            ? inlineCopy({ de: '1 Gang', en: '1 course' }, locale)
-            : inlineCopy({ de: `${menu.courseCount} Gänge`, en: `${menu.courseCount} courses` }, locale);
+    const { t } = useT('profileCook');
+    const courseLabel = t('menus.coursesCount', { count: menu.courseCount });
 
     return (
         <li className="min-w-0">

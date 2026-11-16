@@ -1,56 +1,13 @@
 import { Link } from '@tanstack/react-router';
-import { inlineCopy } from '../../shared';
 
-import type { InlineCopy, Locale } from '../../shared';
+import { t } from '../../i18n/t';
+import type { Locale } from '../../shared';
 import { cookStubRouteBySlug } from '../pages/profile/cookCatalog';
 import { Button } from './base/button';
 import { StatusAlert } from './base/status-alert';
 
 export type CookBookingRequestPoolUnavailableKind =
     'CookBookingRequestCanceled' | 'CookBookingRequestTaken' | 'CookBookingRequestExpired' | 'CookBookingRequestOfferAlreadyExists';
-
-const COPY: Record<CookBookingRequestPoolUnavailableKind, { title: InlineCopy; body: InlineCopy }> = {
-    CookBookingRequestCanceled: {
-        title: {
-            de: 'Anfrage zurückgezogen',
-            en: 'Request withdrawn',
-        },
-        body: {
-            de: 'Der Gast hat diese Buchungsanfrage zurückgezogen. Sie ist nicht mehr verfügbar.',
-            en: 'The guest withdrew this booking request. It is no longer available.',
-        },
-    },
-    CookBookingRequestTaken: {
-        title: {
-            de: 'Ein anderer Koch wurde gewählt',
-            en: 'Another chef was chosen',
-        },
-        body: {
-            de: 'Für dieses Event wurde ein anderer Privatkoch gewählt. Die Anfrage ist daher nicht mehr verfügbar.',
-            en: 'Another private chef was chosen for this event. This request is no longer available.',
-        },
-    },
-    CookBookingRequestExpired: {
-        title: {
-            de: 'Anfrage abgelaufen',
-            en: 'Request expired',
-        },
-        body: {
-            de: 'Diese Buchungsanfrage ist abgelaufen und nicht mehr verfügbar.',
-            en: 'This booking request has expired and is no longer available.',
-        },
-    },
-    CookBookingRequestOfferAlreadyExists: {
-        title: {
-            de: 'Du hast bereits ein Angebot erstellt',
-            en: 'You already created an offer',
-        },
-        body: {
-            de: 'Für diese Anfrage hast du bereits ein Angebot. Öffne es in deinem Angebots-Posteingang.',
-            en: 'You already have an offer for this request. Open it in your offer inbox.',
-        },
-    },
-};
 
 const poolRoute = cookStubRouteBySlug('booking-request-pool');
 const offersRoute = cookStubRouteBySlug('booking-request-offers');
@@ -64,7 +21,6 @@ export function CookBookingRequestPoolUnavailable({
     locale: Locale;
     bookingRequestOfferId?: string;
 }) {
-    const copy = COPY[kind];
     const offerLink =
         kind === 'CookBookingRequestOfferAlreadyExists' && bookingRequestOfferId != null
             ? ({
@@ -77,32 +33,32 @@ export function CookBookingRequestPoolUnavailable({
         <div className="grid content-start gap-6">
             <StatusAlert
                 tone="info"
-                title={inlineCopy(copy.title, locale)}
+                title={t(locale, 'profileCook', `poolUnavailable.${kind}.title`)}
                 action={
                     offerLink != null ? (
                         <Button asChild variant="outline" size="sm">
-                            <Link {...offerLink}>{inlineCopy({ de: 'Zum Angebot', en: 'Go to offer' }, locale)}</Link>
+                            <Link {...offerLink}>{t(locale, 'profileCook', 'offerCreate.goToOffer')}</Link>
                         </Button>
                     ) : (
                         <Button asChild variant="outline" size="sm">
-                            <Link to={poolRoute.to}>{inlineCopy({ de: 'Zum Anfragen-Pool', en: 'Back to request pool' }, locale)}</Link>
+                            <Link to={poolRoute.to}>{t(locale, 'profileCook', 'poolUnavailable.backToPool')}</Link>
                         </Button>
                     )
                 }
             >
-                {inlineCopy(copy.body, locale)}
+                {t(locale, 'profileCook', `poolUnavailable.${kind}.body`)}
             </StatusAlert>
             {offerLink == null ? (
                 <Button asChild>
-                    <Link to={poolRoute.to}>{inlineCopy({ de: 'Offene Anfragen ansehen', en: 'View open requests' }, locale)}</Link>
+                    <Link to={poolRoute.to}>{t(locale, 'profileCook', 'poolUnavailable.viewOpenRequests')}</Link>
                 </Button>
             ) : (
                 <div className="flex flex-wrap gap-3">
                     <Button asChild>
-                        <Link {...offerLink}>{inlineCopy({ de: 'Angebot öffnen', en: 'Open offer' }, locale)}</Link>
+                        <Link {...offerLink}>{t(locale, 'profileCook', 'menus.openOffer')}</Link>
                     </Button>
                     <Button asChild variant="outline">
-                        <Link to={offersRoute.to}>{inlineCopy({ de: 'Alle Angebote', en: 'All offers' }, locale)}</Link>
+                        <Link to={offersRoute.to}>{t(locale, 'profileCook', 'poolUnavailable.allOffers')}</Link>
                     </Button>
                 </div>
             )}

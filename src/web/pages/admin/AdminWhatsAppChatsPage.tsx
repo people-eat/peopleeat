@@ -5,7 +5,7 @@ import { createRequest, useClient } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
 import { t } from '../../../i18n/t';
-import { inlineCopy, userDisplayName } from '../../../shared';
+import { userDisplayName } from '../../../shared';
 import { formatInboxListTimestamp } from '../../chat/formatInboxListTimestamp';
 import { AdminListPaginationBar } from '../../components/AdminListPaginationBar';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
@@ -202,13 +202,7 @@ export function AdminWhatsAppChatsPage({ data, search }: { data: GqlCAdminWhatsA
                             </TabsList>
                         </Tabs>
                         <p className="text-sm text-muted-foreground tabular-nums xl:ml-auto">
-                            {inlineCopy(
-                                {
-                                    de: `${total} ${total === 1 ? 'Chat' : 'Chats'}`,
-                                    en: `${total} ${total === 1 ? 'chat' : 'chats'}`,
-                                },
-                                locale,
-                            )}
+                            {t(locale, 'admin', 'copy.chatCount', { count: total })}
                         </p>
                     </div>
                 </div>
@@ -264,13 +258,9 @@ export function AdminWhatsAppChatsPage({ data, search }: { data: GqlCAdminWhatsA
                                                 </span>
                                                 <NotificationBadge
                                                     count={conversation.adminUnreadCount}
-                                                    label={inlineCopy(
-                                                        {
-                                                            de: `${conversation.adminUnreadCount} ungelesene Nachrichten`,
-                                                            en: `${conversation.adminUnreadCount} unread messages`,
-                                                        },
-                                                        locale,
-                                                    )}
+                                                    label={t(locale, 'admin', 'copy.unreadMessageCount', {
+                                                        count: conversation.adminUnreadCount,
+                                                    })}
                                                     placement="inline"
                                                     className="size-5 bg-green-500 text-[11px] shadow-none"
                                                 />

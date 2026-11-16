@@ -1,8 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { BellIcon, HeartIcon, MailIcon, SettingsIcon } from 'lucide-react';
-import { inlineCopy } from '../../../shared';
-
-import { useLocale } from '../../hooks/useLocale';
+import { useT } from '../../hooks/useT';
 import { fixtureAvatarCook, fixtureCook, fixtureCustomer } from '../../storybook/fixtures/people';
 import { GallerySection, WarmPage } from '../../storybook/gallery';
 import { Avatar, AvatarFallback, AvatarGroup, AvatarImage } from './avatar';
@@ -43,105 +41,87 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 function BaseOverview() {
-    const locale = useLocale();
+    const { t } = useT('common');
 
     return (
         <TooltipProvider>
             <WarmPage className="mx-auto flex max-w-4xl flex-col gap-10">
                 <header className="grid max-w-2xl gap-2">
-                    <h1 className="font-serif text-2xl font-semibold">
-                        {inlineCopy({ de: 'Basis-Komponenten', en: 'Base components' }, locale)}
-                    </h1>
-                    <p className="text-sm text-muted-foreground">
-                        {inlineCopy(
-                            {
-                                de: 'Primitive auf dem warmen Canvas. Für Produktstimmung und Kartenfamilien siehe Foundations/Mood Board. Für Rollenvergleiche siehe Perspectives.',
-                                en: 'Primitives on the warm canvas. For product mood and card families see Foundations/Mood Board. For role comparisons see Perspectives.',
-                            },
-                            locale,
-                        )}
-                    </p>
+                    <h1 className="font-serif text-2xl font-semibold">{t('storybook.overview.title')}</h1>
+                    <p className="text-sm text-muted-foreground">{t('storybook.overview.intro')}</p>
                 </header>
 
-                <GallerySection title={inlineCopy({ de: 'Status', en: 'Status' }, locale)}>
+                <GallerySection title={t('storybook.overview.status')}>
                     <div className="grid max-w-xl gap-3">
                         <div className="flex flex-wrap items-center gap-2">
-                            <StatusBadge tone="info" label={inlineCopy({ de: 'Info', en: 'Info' }, locale)} />
-                            <StatusBadge tone="success" label={inlineCopy({ de: 'Bereit', en: 'Ready' }, locale)} />
-                            <StatusBadge tone="warning" label={inlineCopy({ de: 'Unvollständig', en: 'Incomplete' }, locale)} />
-                            <StatusBadge tone="error" label={inlineCopy({ de: 'Fehler', en: 'Error' }, locale)} />
+                            <StatusBadge tone="info" label={t('storybook.moodBoard.info')} />
+                            <StatusBadge tone="success" label={t('storybook.moodBoard.ready')} />
+                            <StatusBadge tone="warning" label={t('storybook.moodBoard.incomplete')} />
+                            <StatusBadge tone="error" label={t('storybook.moodBoard.error')} />
                             <span className="relative inline-flex size-9 items-center justify-center rounded-md border border-border bg-secondary">
-                                <NotificationBadge count={3} label={inlineCopy({ de: '3 ungelesen', en: '3 unread' }, locale)} />
+                                <NotificationBadge count={3} label={t('storybook.overview.unread3')} />
                             </span>
                         </div>
-                        <StatusAlert tone="warning" title={inlineCopy({ de: 'Profil unvollständig', en: 'Profile incomplete' }, locale)}>
-                            {inlineCopy(
-                                {
-                                    de: 'Ergänze deine Küchenphilosophie, bevor du Menüs veröffentlichst.',
-                                    en: 'Add your cooking philosophy before publishing menus.',
-                                },
-                                locale,
-                            )}
+                        <StatusAlert tone="warning" title={t('storybook.overview.profileIncomplete')}>
+                            {t('storybook.overview.addPhilosophy')}
                         </StatusAlert>
                     </div>
                 </GallerySection>
 
                 <Separator />
 
-                <GallerySection title={inlineCopy({ de: 'Buttons', en: 'Buttons' }, locale)}>
+                <GallerySection title={t('storybook.overview.buttons')}>
                     <div className="flex flex-wrap items-center gap-3">
-                        <Button variant="default">{inlineCopy({ de: 'Standard', en: 'Default' }, locale)}</Button>
-                        <Button variant="secondary">{inlineCopy({ de: 'Sekundär', en: 'Secondary' }, locale)}</Button>
-                        <Button variant="destructive">{inlineCopy({ de: 'Löschen', en: 'Destructive' }, locale)}</Button>
-                        <Button variant="outline">{inlineCopy({ de: 'Outline', en: 'Outline' }, locale)}</Button>
-                        <Button variant="ghost">{inlineCopy({ de: 'Ghost', en: 'Ghost' }, locale)}</Button>
-                        <Button variant="link">{inlineCopy({ de: 'Link', en: 'Link' }, locale)}</Button>
+                        <Button variant="default">{t('storybook.overview.default')}</Button>
+                        <Button variant="secondary">{t('storybook.overview.secondary')}</Button>
+                        <Button variant="destructive">{t('storybook.overview.destructive')}</Button>
+                        <Button variant="outline">{t('storybook.overview.outline')}</Button>
+                        <Button variant="ghost">{t('storybook.overview.ghost')}</Button>
+                        <Button variant="link">{t('storybook.overview.link')}</Button>
                     </div>
                     <div className="flex flex-wrap items-center gap-3">
-                        <Button size="xs">{inlineCopy({ de: 'XS', en: 'XS' }, locale)}</Button>
-                        <Button size="sm">{inlineCopy({ de: 'Klein', en: 'Small' }, locale)}</Button>
-                        <Button size="default">{inlineCopy({ de: 'Standard', en: 'Default' }, locale)}</Button>
-                        <Button size="lg">{inlineCopy({ de: 'Groß', en: 'Large' }, locale)}</Button>
-                        <Button size="icon" aria-label={inlineCopy({ de: 'Einstellungen', en: 'Settings' }, locale)}>
+                        <Button size="xs">{t('storybook.overview.xs')}</Button>
+                        <Button size="sm">{t('storybook.overview.small')}</Button>
+                        <Button size="default">{t('storybook.overview.default')}</Button>
+                        <Button size="lg">{t('storybook.overview.large')}</Button>
+                        <Button size="icon" aria-label={t('storybook.overview.settings')}>
                             <SettingsIcon />
                         </Button>
                     </div>
                     <div className="flex flex-wrap items-center gap-3">
                         <Button>
-                            <MailIcon /> {inlineCopy({ de: 'Nachricht', en: 'Message' }, locale)}
+                            <MailIcon /> {t('storybook.overview.message')}
                         </Button>
-                        <Button disabled>{inlineCopy({ de: 'Deaktiviert', en: 'Disabled' }, locale)}</Button>
+                        <Button disabled>{t('storybook.overview.disabled')}</Button>
                         <Button disabled>
-                            <Spinner /> {inlineCopy({ de: 'Lädt', en: 'Loading' }, locale)}
+                            <Spinner /> {t('loading')}
                         </Button>
                     </div>
                 </GallerySection>
 
                 <Separator />
 
-                <GallerySection title={inlineCopy({ de: 'Eingaben', en: 'Inputs' }, locale)}>
+                <GallerySection title={t('storybook.overview.inputs')}>
                     <div className="grid max-w-sm gap-3">
-                        <Input placeholder={inlineCopy({ de: 'Anlass', en: 'Occasion' }, locale)} />
-                        <Input type="email" placeholder={inlineCopy({ de: 'E-Mail', en: 'Email' }, locale)} />
-                        <Input disabled placeholder={inlineCopy({ de: 'Deaktiviert', en: 'Disabled' }, locale)} />
-                        <Textarea placeholder={inlineCopy({ de: 'Nachricht an die Köchin…', en: 'Message to the cook…' }, locale)} />
+                        <Input placeholder={t('storybook.overview.occasion')} />
+                        <Input type="email" placeholder={t('storybook.overview.email')} />
+                        <Input disabled placeholder={t('storybook.overview.disabled')} />
+                        <Textarea placeholder={t('storybook.moodBoard.messageToCook')} />
                     </div>
                 </GallerySection>
 
                 <Separator />
 
-                <GallerySection title={inlineCopy({ de: 'Select', en: 'Select' }, locale)}>
+                <GallerySection title={t('storybook.overview.select')}>
                     <div className="max-w-sm">
                         <Select>
                             <SelectTrigger>
-                                <SelectValue placeholder={inlineCopy({ de: 'Küchenstil wählen', en: 'Choose a cuisine' }, locale)} />
+                                <SelectValue placeholder={t('storybook.overview.chooseCuisine')} />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="italian">{inlineCopy({ de: 'Italienisch', en: 'Italian' }, locale)}</SelectItem>
-                                <SelectItem value="european">
-                                    {inlineCopy({ de: 'Modern European', en: 'Modern European' }, locale)}
-                                </SelectItem>
-                                <SelectItem value="asian">{inlineCopy({ de: 'Asiatisch', en: 'Asian' }, locale)}</SelectItem>
+                                <SelectItem value="italian">{t('storybook.overview.italian')}</SelectItem>
+                                <SelectItem value="european">{t('storybook.overview.modernEuropean')}</SelectItem>
+                                <SelectItem value="asian">{t('storybook.overview.asian')}</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -149,19 +129,19 @@ function BaseOverview() {
 
                 <Separator />
 
-                <GallerySection title={inlineCopy({ de: 'Switch und Slider', en: 'Switch and slider' }, locale)}>
+                <GallerySection title={t('storybook.overview.switchAndSlider')}>
                     <div className="flex items-center gap-6">
                         <div className="flex items-center gap-2">
                             <Switch defaultChecked />
-                            <span className="text-sm">{inlineCopy({ de: 'Aktiv', en: 'Enabled' }, locale)}</span>
+                            <span className="text-sm">{t('storybook.overview.enabled')}</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <Switch />
-                            <span className="text-sm">{inlineCopy({ de: 'Aus', en: 'Off' }, locale)}</span>
+                            <span className="text-sm">{t('storybook.overview.off')}</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <Switch size="sm" defaultChecked />
-                            <span className="text-sm">{inlineCopy({ de: 'Klein', en: 'Small' }, locale)}</span>
+                            <span className="text-sm">{t('storybook.overview.small')}</span>
                         </div>
                     </div>
                     <div className="max-w-sm">
@@ -171,7 +151,7 @@ function BaseOverview() {
 
                 <Separator />
 
-                <GallerySection title={inlineCopy({ de: 'Avatare', en: 'Avatars' }, locale)}>
+                <GallerySection title={t('storybook.overview.avatars')}>
                     <div className="flex items-center gap-4">
                         <Avatar size="sm">
                             <AvatarFallback>AS</AvatarFallback>
@@ -199,68 +179,38 @@ function BaseOverview() {
 
                 <Separator />
 
-                <GallerySection title={inlineCopy({ de: 'Card', en: 'Card' }, locale)}>
+                <GallerySection title={t('storybook.overview.card')}>
                     <div className="grid gap-4 sm:grid-cols-2">
                         <Card>
                             <CardHeader>
-                                <CardTitle>{inlineCopy({ de: 'Benachrichtigungen', en: 'Notifications' }, locale)}</CardTitle>
-                                <CardDescription>
-                                    {inlineCopy(
-                                        {
-                                            de: 'Du hast 3 ungelesene Nachrichten.',
-                                            en: 'You have 3 unread messages.',
-                                        },
-                                        locale,
-                                    )}
-                                </CardDescription>
+                                <CardTitle>{t('storybook.overview.notifications')}</CardTitle>
+                                <CardDescription>{t('storybook.overview.unreadMessages')}</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <div className="flex items-center gap-3">
                                     <BellIcon className="size-5 text-muted-foreground" />
-                                    <span className="text-sm">
-                                        {inlineCopy(
-                                            {
-                                                de: 'Push-Benachrichtigungen sind aktiv',
-                                                en: 'Push notifications are enabled',
-                                            },
-                                            locale,
-                                        )}
-                                    </span>
+                                    <span className="text-sm">{t('storybook.overview.pushEnabled')}</span>
                                 </div>
                             </CardContent>
                             <CardFooter>
                                 <Button size="sm" variant="outline">
-                                    {inlineCopy({ de: 'Alle gelesen', en: 'Mark all read' }, locale)}
+                                    {t('storybook.overview.markAllRead')}
                                 </Button>
                             </CardFooter>
                         </Card>
                         <Card>
                             <CardHeader>
-                                <CardTitle>{inlineCopy({ de: 'Profil', en: 'Profile' }, locale)}</CardTitle>
-                                <CardDescription>
-                                    {inlineCopy(
-                                        {
-                                            de: 'Verwalte deine Kontodaten.',
-                                            en: 'Manage your account details.',
-                                        },
-                                        locale,
-                                    )}
-                                </CardDescription>
+                                <CardTitle>{t('storybook.overview.profile')}</CardTitle>
+                                <CardDescription>{t('storybook.overview.manageAccount')}</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <div className="flex flex-col gap-2">
-                                    <Input
-                                        placeholder={inlineCopy({ de: 'Name', en: 'Name' }, locale)}
-                                        defaultValue={fixtureCustomer.display}
-                                    />
-                                    <Input
-                                        placeholder={inlineCopy({ de: 'E-Mail', en: 'Email' }, locale)}
-                                        defaultValue={fixtureCustomer.emailAddress}
-                                    />
+                                    <Input placeholder={t('storybook.overview.name')} defaultValue={fixtureCustomer.display} />
+                                    <Input placeholder={t('storybook.overview.email')} defaultValue={fixtureCustomer.emailAddress} />
                                 </div>
                             </CardContent>
                             <CardFooter>
-                                <Button size="sm">{inlineCopy({ de: 'Speichern', en: 'Save' }, locale)}</Button>
+                                <Button size="sm">{t('save')}</Button>
                             </CardFooter>
                         </Card>
                     </div>
@@ -268,7 +218,7 @@ function BaseOverview() {
 
                 <Separator />
 
-                <GallerySection title={inlineCopy({ de: 'OTP', en: 'OTP' }, locale)}>
+                <GallerySection title={t('storybook.overview.otp')}>
                     <InputOTP maxLength={6}>
                         <InputOTPGroup>
                             <InputOTPSlot index={0} />
@@ -286,22 +236,22 @@ function BaseOverview() {
 
                 <Separator />
 
-                <GallerySection title={inlineCopy({ de: 'Tooltip und Tastatur', en: 'Tooltip and keyboard' }, locale)}>
+                <GallerySection title={t('storybook.overview.tooltipAndKeyboard')}>
                     <div className="flex items-center gap-4">
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <Button variant="outline" size="icon" aria-label={inlineCopy({ de: 'Merken', en: 'Favorite' }, locale)}>
+                                <Button variant="outline" size="icon" aria-label={t('storybook.overview.favorite')}>
                                     <HeartIcon />
                                 </Button>
                             </TooltipTrigger>
                             <TooltipContent>
                                 <p>
-                                    {inlineCopy({ de: 'Merken', en: 'Add to favorites' }, locale)} <Kbd>F</Kbd>
+                                    {t('storybook.overview.addToFavorites')} <Kbd>F</Kbd>
                                 </p>
                             </TooltipContent>
                         </Tooltip>
                         <div className="flex items-center gap-2 text-sm">
-                            <span>{inlineCopy({ de: 'Shortcuts:', en: 'Shortcuts:' }, locale)}</span>
+                            <span>{t('storybook.overview.shortcuts')}</span>
                             <Kbd>⌘</Kbd>
                             <Kbd>K</Kbd>
                             <Kbd>Ctrl+S</Kbd>
@@ -311,7 +261,7 @@ function BaseOverview() {
 
                 <Separator />
 
-                <GallerySection title={inlineCopy({ de: 'Skeleton und Spinner', en: 'Skeleton and spinner' }, locale)}>
+                <GallerySection title={t('storybook.overview.skeletonAndSpinner')}>
                     <div className="flex items-center gap-4">
                         <Skeleton className="size-10 rounded-full" />
                         <div className="flex flex-col gap-2">
@@ -328,7 +278,7 @@ function BaseOverview() {
 
                 <Separator />
 
-                <GallerySection title={inlineCopy({ de: 'Pagination', en: 'Pagination' }, locale)}>
+                <GallerySection title={t('storybook.overview.pagination')}>
                     <Pagination>
                         <PaginationContent>
                             <PaginationItem>

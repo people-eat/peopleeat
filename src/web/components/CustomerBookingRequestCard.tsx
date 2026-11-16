@@ -1,7 +1,8 @@
 import { Link } from '@tanstack/react-router';
 import { CalendarIcon, MapPinIcon, UsersIcon } from 'lucide-react';
 
-import { formatBookingEventDateFromCountry, formatParticipants, inlineCopy } from '../../shared';
+import { t } from '../../i18n/t';
+import { formatBookingEventDateFromCountry, formatParticipants } from '../../shared';
 import { bookingRequestStatusHue, bookingRequestStatusLabel } from '../../shared/bookingRequestStatus';
 import type { Locale } from '../../shared/locale';
 import type { GqlCBookingRequestStatus } from '../graphql/generated';
@@ -129,31 +130,10 @@ function uniqueOfferChips(offers: readonly CustomerBookingRequestCardOffer[]): O
 
 function offerTooltipLabel(chip: OfferChipModel, locale: Locale): string {
     if (chip.bookingRequestOfferId.length === 0) {
-        return inlineCopy(
-            {
-                de: `Angefragt: ${chip.display}`,
-                en: `Requested: ${chip.display}`,
-            },
-            locale,
-        );
+        return t(locale, 'profileCustomer', 'm.requested2', { chipDisplay: chip.display });
     }
-    const unread =
-        chip.unreadCount > 0
-            ? inlineCopy(
-                  {
-                      de: ` · ${chip.unreadCount} ungelesen`,
-                      en: ` · ${chip.unreadCount} unread`,
-                  },
-                  locale,
-              )
-            : '';
-    return inlineCopy(
-        {
-            de: `Angebot von ${chip.display}${unread}`,
-            en: `Offer from ${chip.display}${unread}`,
-        },
-        locale,
-    );
+    const unread = chip.unreadCount > 0 ? t(locale, 'profileCustomer', 'm.unread', { chipUnreadCount: chip.unreadCount }) : '';
+    return t(locale, 'profileCustomer', 'm.offerFrom', { chipDisplay: chip.display, unread });
 }
 
 function OfferChip({ chip, bookingRequestId, className }: { chip: OfferChipModel; bookingRequestId: string; className?: string }) {
@@ -221,13 +201,7 @@ function OfferChipStack({ chips, bookingRequestId }: { chips: OfferChipModel[]; 
                 <Link
                     to="/{-$locale}/profile/booking-requests/$bookingRequestId"
                     params={{ bookingRequestId }}
-                    aria-label={inlineCopy(
-                        {
-                            de: `${overflowCount} weitere Angebote anzeigen`,
-                            en: `View ${overflowCount} more offers`,
-                        },
-                        locale,
-                    )}
+                    aria-label={t(locale, 'profileCustomer', 'm.viewMoreOffers', { overflowCount })}
                     className="-ml-2 flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground ring-2 ring-card hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
                     onClick={(event) => event.stopPropagation()}
                 >
@@ -292,20 +266,10 @@ export function CustomerBookingRequestCard({
     const badgeCount = unreadCount > 0 ? unreadCount : missingReviewCount;
     const badgeLabel =
         unreadCount > 0
-            ? inlineCopy(
-                  {
-                      de: `${unreadCount} ungelesene Benachrichtigungen`,
-                      en: `${unreadCount} unread notifications`,
-                  },
-                  locale,
-              )
-            : inlineCopy(
-                  {
-                      de: missingReviewCount === 1 ? '1 Bewertung ausstehend' : `${missingReviewCount} Bewertungen ausstehend`,
-                      en: missingReviewCount === 1 ? '1 review outstanding' : `${missingReviewCount} reviews outstanding`,
-                  },
-                  locale,
-              );
+            ? t(locale, 'profileCustomer', 'm.unreadNotifications', { unreadCount })
+            : missingReviewCount === 1
+              ? t(locale, 'profileCustomer', 'bookingCard.reviewsOutstandingOne')
+              : t(locale, 'profileCustomer', 'bookingCard.reviewsOutstandingOther', { count: missingReviewCount });
     const callHint = callBookingOverviewHintAcrossOffers(request.offers, locale, timeZone);
     const reviewHint = testimonialMissingHint(request.offers);
     const primary = attention?.destination ?? cardPrimaryDestination(request, callHint, reviewHint);
@@ -324,15 +288,15 @@ export function CustomerBookingRequestCard({
     const chips = requestedCookChip ? [requestedCookChip, ...offerChips] : offerChips;
     const offerLabel =
         request.offers.length === 0 && requestedCookChip
-            ? inlineCopy({ de: 'Angefragt', en: 'Requested' }, locale)
+            ? t(locale, 'profileCustomer', 'm.requested')
             : request.offers.length === 1
-              ? inlineCopy({ de: 'Angebot', en: 'Offer' }, locale)
-              : inlineCopy({ de: 'Angebote', en: 'Offers' }, locale);
+              ? t(locale, 'profileCustomer', 'bookingRequestOffer.detail.title')
+              : t(locale, 'profileCustomer', 'bookingRequest.offers');
     const ctaLabel =
         attention?.actionLabel ??
         (reviewIsPrimaryAction
-            ? inlineCopy({ de: 'Bewertung abgeben', en: 'Leave a review' }, locale)
-            : inlineCopy({ de: 'Zur Anfrage', en: 'View request' }, locale));
+            ? t(locale, 'profileCustomer', 'attention.user.TESTIMONIAL_MISSING.action')
+            : t(locale, 'profileCustomer', 'attention.user.KITCHEN_DETAILS_MISSING.action'));
 
     return (
         <article className={cardClassName}>

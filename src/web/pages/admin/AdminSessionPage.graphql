@@ -36,8 +36,7 @@ query AdminSessionPage($sessionId: ID!, $includeEvents: Boolean!, $eventsCriteri
                     sessionEventId
                     sessionId
                     type
-                    descriptionDe
-                    descriptionEn
+                    description
                     createdAt
                     link
                     isImpersonation

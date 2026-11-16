@@ -18,8 +18,7 @@ query AdminAnalyticsPage(
                 bookingRequestFormFlow(range: $range) {
                     nodes {
                         id
-                        labelDe
-                        labelEn
+                        label
                     }
                     links {
                         source
@@ -28,8 +27,7 @@ query AdminAnalyticsPage(
                     }
                     steps {
                         id
-                        labelDe
-                        labelEn
+                        label
                         enteredCount
                         completedCount
                     }
@@ -39,8 +37,7 @@ query AdminAnalyticsPage(
                 giftCardFlow(range: $range) {
                     nodes {
                         id
-                        labelDe
-                        labelEn
+                        label
                     }
                     links {
                         source
@@ -49,8 +46,7 @@ query AdminAnalyticsPage(
                     }
                     steps {
                         id
-                        labelDe
-                        labelEn
+                        label
                         enteredCount
                         completedCount
                     }
@@ -60,8 +56,7 @@ query AdminAnalyticsPage(
                 chefSignUpFlow(range: $range) {
                     nodes {
                         id
-                        labelDe
-                        labelEn
+                        label
                     }
                     links {
                         source
@@ -70,8 +65,7 @@ query AdminAnalyticsPage(
                     }
                     steps {
                         id
-                        labelDe
-                        labelEn
+                        label
                         enteredCount
                         completedCount
                     }
@@ -81,8 +75,7 @@ query AdminAnalyticsPage(
                 bookingRequestCheckoutFlow(range: $range) {
                     nodes {
                         id
-                        labelDe
-                        labelEn
+                        label
                     }
                     links {
                         source
@@ -91,8 +84,7 @@ query AdminAnalyticsPage(
                     }
                     steps {
                         id
-                        labelDe
-                        labelEn
+                        label
                         enteredCount
                         completedCount
                     }
@@ -102,8 +94,7 @@ query AdminAnalyticsPage(
                 cookBookingRequestOfferFlow(range: $range) {
                     nodes {
                         id
-                        labelDe
-                        labelEn
+                        label
                     }
                     links {
                         source
@@ -112,8 +103,7 @@ query AdminAnalyticsPage(
                     }
                     steps {
                         id
-                        labelDe
-                        labelEn
+                        label
                         enteredCount
                         completedCount
                     }

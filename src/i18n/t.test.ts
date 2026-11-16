@@ -23,4 +23,12 @@ describe('t', () => {
         await i18nResourcesLoad('de', ['common']);
         expect(t('de', 'common', 'costBreakdown.promoCode', { code: 'SAVE10' })).toBe('Promocode SAVE10');
     });
+
+    it('keeps cross-shell titles in common so admin does not load profile', async () => {
+        await i18nResourcesLoad('it', ['common', 'public', 'admin']);
+        expect(t('it', 'common', 'shell.profile')).toBe('Profilo');
+        expect(t('it', 'common', 'shell.account')).toBe('Account');
+        await i18nResourcesLoad('it', ['common', 'public', 'profile']);
+        expect(t('it', 'common', 'shell.admin')).toBe('Admin');
+    });
 });

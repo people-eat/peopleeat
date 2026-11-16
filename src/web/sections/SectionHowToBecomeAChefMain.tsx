@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router';
 
-import { inlineCopy } from '../../shared';
+import { expansionMarketComingToTitle, expansionMarketFoundingChefTitle } from '../../shared/expansionMarkets';
 import type { ExpansionMarket } from '../../shared/expansionMarkets';
 import { AppImage } from '../components/AppImage';
 import { Button } from '../components/base/button';
@@ -22,12 +22,12 @@ export function SectionHowToBecomeAChefMain({ isCook, market }: { isCook: boolea
                         {market ? (
                             <p className="mb-4 flex items-center gap-2.5 text-sm font-medium text-muted-foreground">
                                 <ExpansionMarketFlag market={market} size="lg" />
-                                {inlineCopy(market.comingToTitle, locale)}
+                                {expansionMarketComingToTitle(market, locale)}
                             </p>
                         ) : null}
                         <h1 className="font-serif text-4xl font-light tracking-tight @sm:text-6xl">
                             {market ? (
-                                inlineCopy(market.foundingChefTitle, locale)
+                                expansionMarketFoundingChefTitle(market, locale)
                             ) : (
                                 <>
                                     {t('howToBecome.line1')}

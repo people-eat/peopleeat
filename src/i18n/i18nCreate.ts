@@ -44,6 +44,7 @@ export function i18nCreateSync(locale: CatalogLocale, namespaces: readonly I18nW
         ns,
         defaultNS: 'common',
         resources,
+        initAsync: false,
         interpolation: { escapeValue: false },
         returnNull: false,
         parseMissingKeyHandler: (_key, defaultValue) => defaultValue ?? '',

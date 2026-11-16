@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react';
-import { inlineCopy } from '../../shared';
 
 import { useFeatureToggleActive } from '../hooks/useFeatureToggleActive';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { Badge } from './base/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './base/dialog';
 import { CookMenuCardMedia } from './CookMenuCard';
@@ -30,25 +29,19 @@ export function MenuDetailsDialog({
     meta?: ReactNode;
     dialogTitle?: string;
 }) {
-    const locale = useLocale();
+    const { t } = useT('common');
     const publicationEnabled = useFeatureToggleActive('PUBLICATION_MENUS');
     const headerTitle = dialogTitle?.trim() || title;
     const isDeleted = deletedAt != null;
-    const courseLabel =
-        courseCount === 1
-            ? inlineCopy({ de: '1 Gang', en: '1 course' }, locale)
-            : inlineCopy({ de: `${courseCount} Gänge`, en: `${courseCount} courses` }, locale);
-    const bodyDescription =
-        description.trim().length > 0 ? description : inlineCopy({ de: 'Keine Beschreibung', en: 'No description' }, locale);
+    const courseLabel = t('menuDetails.courseCount', { count: courseCount });
+    const bodyDescription = description.trim().length > 0 ? description : t('menuDetails.noDescription');
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-3xl">
                 <DialogHeader>
                     <DialogTitle>{headerTitle}</DialogTitle>
-                    <DialogDescription className="sr-only">
-                        {inlineCopy({ de: 'Details zum Menü', en: 'Menu details' }, locale)}
-                    </DialogDescription>
+                    <DialogDescription className="sr-only">{t('menuDetails.title')}</DialogDescription>
                 </DialogHeader>
                 <div className="flex flex-col justify-start gap-8 lg:flex-row">
                     <CookMenuCardMedia images={images} className="size-56 rounded-2xl lg:size-80" />
@@ -56,14 +49,10 @@ export function MenuDetailsDialog({
                         <h2 className="text-xl font-semibold">{title}</h2>
                         <p className="whitespace-pre-wrap text-muted-foreground">{bodyDescription}</p>
                         <div className="flex flex-wrap items-center gap-2">
-                            {isDeleted ? (
-                                <Badge variant="destructive">{inlineCopy({ de: 'Gelöscht', en: 'Deleted' }, locale)}</Badge>
-                            ) : null}
+                            {isDeleted ? <Badge variant="destructive">{t('contentPage.deleted')}</Badge> : null}
                             {publicationEnabled && !isDeleted ? (
                                 <Badge variant="outline">
-                                    {publishedAt
-                                        ? inlineCopy({ de: 'Veröffentlicht', en: 'Published' }, locale)
-                                        : inlineCopy({ de: 'Entwurf', en: 'Draft' }, locale)}
+                                    {publishedAt ? t('contentPage.status.published') : t('contentPage.status.draft')}
                                 </Badge>
                             ) : null}
                             <span className="text-sm text-muted-foreground">{courseLabel}</span>

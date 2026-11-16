@@ -13,11 +13,12 @@ import {
 } from 'lucide-react';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 
-import { inlineCopy } from '../../shared';
-import type { ContentSection, ContentSectionKind, InlineCopy, Locale } from '../../shared';
+import { t as catalogT } from '../../i18n/t';
+import type { ContentSection, ContentSectionKind, Locale } from '../../shared';
 import { fileUploadPublicUrl } from '../../shared/contentSection';
 import { idCreate } from '../../shared/idCreate';
 import { uploadErrorMessage, uploadFile } from '../chat/fileUpload';
+import { useT } from '../hooks/useT';
 import { animateListReorder } from '../utils/animateListReorder';
 import { cn } from '../utils/cn';
 import { IMAGE_CROP_ACCEPT } from '../utils/imageCropCompress';
@@ -44,14 +45,7 @@ const ImageCropDialog = lazy(async () => {
     return { default: mod.ImageCropDialog };
 });
 
-const KIND_OPTIONS: { kind: ContentSectionKind; label: InlineCopy }[] = [
-    { kind: 'content', label: { de: 'Inhalt', en: 'Content' } },
-    { kind: 'image', label: { de: 'Bild', en: 'Image' } },
-    { kind: 'quote', label: { de: 'Zitat', en: 'Quote' } },
-    { kind: 'list', label: { de: 'Liste', en: 'List' } },
-    { kind: 'cta', label: { de: 'Call-to-Action', en: 'Call to action' } },
-    { kind: 'qa', label: { de: 'Fragen & Antworten', en: 'Q&A' } },
-];
+const KIND_OPTIONS: ContentSectionKind[] = ['content', 'image', 'quote', 'list', 'cta', 'qa'];
 
 function emptySection(kind: ContentSectionKind): ContentSection {
     const sectionId = idCreate();
@@ -94,6 +88,7 @@ export function ContentSectionsEditor({
     editLocale: Locale;
     uiLocale: Locale;
 }) {
+    const { t } = useT('common');
     const sectionsListRef = useRef<HTMLDivElement>(null);
     const [expandedId, setExpandedId] = useState<string | null>(sections[0]?.sectionId ?? null);
     const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
@@ -136,22 +131,18 @@ export function ContentSectionsEditor({
         <div className="flex flex-col gap-4">
             <Card className="gap-4 py-4">
                 <CardHeader className="px-4">
-                    <CardTitle>{inlineCopy({ de: 'Abschnitt hinzufügen', en: 'Add section' }, uiLocale)}</CardTitle>
+                    <CardTitle>{t('contentSections.addSection')}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-3 px-4">
                     <div className="flex flex-wrap gap-2">
-                        {KIND_OPTIONS.map(({ kind, label }) => (
+                        {KIND_OPTIONS.map((kind) => (
                             <Button key={kind} type="button" variant="outline" size="sm" onClick={() => add(kind)}>
                                 <PlusIcon className="size-3.5" />
-                                {inlineCopy(label, uiLocale)}
+                                {t(`contentSections.kind.${kind}`)}
                             </Button>
                         ))}
                     </div>
-                    {sections.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">
-                            {inlineCopy({ de: 'Noch keine Abschnitte.', en: 'No sections yet.' }, uiLocale)}
-                        </p>
-                    ) : null}
+                    {sections.length === 0 ? <p className="text-sm text-muted-foreground">{t('contentSections.noSectionsYet')}</p> : null}
                 </CardContent>
             </Card>
 
@@ -232,28 +223,18 @@ export function ContentSectionsEditor({
             <AlertDialog open={deleteIndex !== null} onOpenChange={(open) => !open && setDeleteIndex(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>
-                            {inlineCopy({ de: 'Abschnitt löschen?', en: 'Delete this section?' }, uiLocale)}
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {inlineCopy(
-                                {
-                                    de: 'Der Abschnitt wird aus dem Entwurf entfernt. Speichern übernimmt die Änderung.',
-                                    en: 'The section is removed from the draft. Saving applies the change.',
-                                },
-                                uiLocale,
-                            )}
-                        </AlertDialogDescription>
+                        <AlertDialogTitle>{t('contentSections.deleteSectionTitle')}</AlertDialogTitle>
+                        <AlertDialogDescription>{t('contentSections.deleteSectionBody')}</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>{inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, uiLocale)}</AlertDialogCancel>
+                        <AlertDialogCancel>{t('contentSections.cancel')}</AlertDialogCancel>
                         <AlertDialogAction
                             variant="destructive"
                             onClick={() => {
                                 if (deleteIndex !== null) removeAt(deleteIndex);
                             }}
                         >
-                            {inlineCopy({ de: 'Löschen', en: 'Delete' }, uiLocale)}
+                            {t('contentSections.delete')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -281,8 +262,7 @@ function KindIcon({ kind }: { kind: ContentSectionKind }) {
 }
 
 function sectionSummary(section: ContentSection, editLocale: Locale, uiLocale: Locale): string {
-    const kindLabelCopy = KIND_OPTIONS.find((o) => o.kind === section.kind)?.label;
-    const kindLabel = kindLabelCopy ? inlineCopy(kindLabelCopy, uiLocale) : section.kind;
+    const kindLabel = catalogT(uiLocale, 'common', `contentSections.kind.${section.kind}`);
     const withDetail = (detail: string) => {
         const trimmed = detail.trim();
         return trimmed ? `${kindLabel}: ${trimmed}` : kindLabel;
@@ -306,8 +286,8 @@ function sectionSummary(section: ContentSection, editLocale: Locale, uiLocale: L
             const count = section.entries.length;
             const countLabel =
                 count === 1
-                    ? inlineCopy({ de: '1 Eintrag', en: '1 entry' }, uiLocale)
-                    : inlineCopy({ de: `${count} Einträge`, en: `${count} entries` }, uiLocale);
+                    ? catalogT(uiLocale, 'common', 'contentSections.entryCountOne')
+                    : catalogT(uiLocale, 'common', 'contentSections.entryCountOther', { count });
             return withDetail(firstQuestion.trim() || countLabel);
         }
     }
@@ -324,11 +304,12 @@ function SectionFields({
     uiLocale: Locale;
     onChange: (section: ContentSection) => void;
 }) {
+    const { t } = useT('common');
     switch (section.kind) {
         case 'content':
             return (
                 <div className="flex flex-col gap-4">
-                    <Field label={inlineCopy({ de: 'Titel', en: 'Title' }, uiLocale)}>
+                    <Field label={t('contentSections.title')}>
                         <Input
                             value={editLocale === 'en' ? (section.titleEn ?? '') : (section.titleDe ?? '')}
                             onChange={(e) =>
@@ -338,7 +319,7 @@ function SectionFields({
                             }
                         />
                     </Field>
-                    <Field label={inlineCopy({ de: 'Untertitel', en: 'Subtitle' }, uiLocale)}>
+                    <Field label={t('contentSections.subtitle')}>
                         <Input
                             value={editLocale === 'en' ? (section.subtitleEn ?? '') : (section.subtitleDe ?? '')}
                             onChange={(e) =>
@@ -350,7 +331,7 @@ function SectionFields({
                             }
                         />
                     </Field>
-                    <Field label={inlineCopy({ de: 'Text (Markdown)', en: 'Body (Markdown)' }, uiLocale)}>
+                    <Field label={t('contentSections.bodyMarkdown')}>
                         <Textarea
                             rows={8}
                             value={editLocale === 'en' ? section.bodyEn : section.bodyDe}
@@ -373,7 +354,7 @@ function SectionFields({
                                 checked={Boolean(section.imageFirst)}
                                 onCheckedChange={(checked) => onChange({ ...section, imageFirst: checked === true })}
                             />
-                            {inlineCopy({ de: 'Bild zuerst anzeigen', en: 'Show image first' }, uiLocale)}
+                            {t('contentSections.showImageFirst')}
                         </label>
                     ) : null}
                 </div>
@@ -395,7 +376,7 @@ function SectionFields({
         case 'quote':
             return (
                 <div className="flex flex-col gap-4">
-                    <Field label={inlineCopy({ de: 'Zitat', en: 'Quote' }, uiLocale)}>
+                    <Field label={t('contentSections.quote')}>
                         <Textarea
                             rows={3}
                             value={editLocale === 'en' ? section.quoteEn : section.quoteDe}
@@ -406,7 +387,7 @@ function SectionFields({
                             }
                         />
                     </Field>
-                    <Field label={inlineCopy({ de: 'Zuschreibung', en: 'Attribution' }, uiLocale)}>
+                    <Field label={t('contentSections.attribution')}>
                         <Input
                             value={editLocale === 'en' ? (section.attributionEn ?? '') : (section.attributionDe ?? '')}
                             onChange={(e) =>
@@ -423,7 +404,7 @@ function SectionFields({
         case 'list':
             return (
                 <div className="flex flex-col gap-4">
-                    <Field label={inlineCopy({ de: 'Titel', en: 'Title' }, uiLocale)}>
+                    <Field label={t('contentSections.title')}>
                         <Input
                             value={editLocale === 'en' ? (section.titleEn ?? '') : (section.titleDe ?? '')}
                             onChange={(e) =>
@@ -433,7 +414,7 @@ function SectionFields({
                             }
                         />
                     </Field>
-                    <Field label={inlineCopy({ de: 'Stil', en: 'Style' }, uiLocale)}>
+                    <Field label={t('contentSections.style')}>
                         <Select
                             value={section.style}
                             onValueChange={(value) => onChange({ ...section, style: value as 'BULLET' | 'NUMBERED' })}
@@ -442,12 +423,12 @@ function SectionFields({
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="BULLET">{inlineCopy({ de: 'Aufzählung', en: 'Bullets' }, uiLocale)}</SelectItem>
-                                <SelectItem value="NUMBERED">{inlineCopy({ de: 'Nummeriert', en: 'Numbered' }, uiLocale)}</SelectItem>
+                                <SelectItem value="BULLET">{t('contentSections.bullets')}</SelectItem>
+                                <SelectItem value="NUMBERED">{t('contentSections.numbered')}</SelectItem>
                             </SelectContent>
                         </Select>
                     </Field>
-                    <Field label={inlineCopy({ de: 'Einträge (eine Zeile pro Punkt)', en: 'Items (one per line)' }, uiLocale)}>
+                    <Field label={t('contentSections.itemsOnePerLine')}>
                         <Textarea
                             rows={6}
                             value={(editLocale === 'en' ? section.itemsEn : section.itemsDe).join('\n')}
@@ -462,7 +443,7 @@ function SectionFields({
         case 'cta':
             return (
                 <div className="flex flex-col gap-4">
-                    <Field label={inlineCopy({ de: 'Überschrift', en: 'Headline' }, uiLocale)}>
+                    <Field label={t('contentSections.headline')}>
                         <Input
                             value={editLocale === 'en' ? section.headlineEn : section.headlineDe}
                             onChange={(e) =>
@@ -474,7 +455,7 @@ function SectionFields({
                             }
                         />
                     </Field>
-                    <Field label={inlineCopy({ de: 'Text', en: 'Body' }, uiLocale)}>
+                    <Field label={t('contentSections.body')}>
                         <Textarea
                             rows={3}
                             value={editLocale === 'en' ? (section.bodyEn ?? '') : (section.bodyDe ?? '')}
@@ -485,7 +466,7 @@ function SectionFields({
                             }
                         />
                     </Field>
-                    <Field label={inlineCopy({ de: 'Button-Text', en: 'Button label' }, uiLocale)}>
+                    <Field label={t('contentSections.buttonLabel')}>
                         <Input
                             value={editLocale === 'en' ? section.buttonLabelEn : section.buttonLabelDe}
                             onChange={(e) =>
@@ -497,7 +478,7 @@ function SectionFields({
                             }
                         />
                     </Field>
-                    <Field label="URL">
+                    <Field label={t('contentSections.url')}>
                         <Input value={section.href} onChange={(e) => onChange({ ...section, href: e.target.value })} />
                     </Field>
                 </div>
@@ -505,7 +486,7 @@ function SectionFields({
         case 'qa':
             return (
                 <div className="flex flex-col gap-4">
-                    <Field label={inlineCopy({ de: 'Titel', en: 'Title' }, uiLocale)}>
+                    <Field label={t('contentSections.title')}>
                         <Input
                             value={editLocale === 'en' ? (section.titleEn ?? '') : (section.titleDe ?? '')}
                             onChange={(e) =>
@@ -517,7 +498,7 @@ function SectionFields({
                     </Field>
                     <div className="flex flex-col gap-3">
                         <div className="flex items-center justify-between gap-2">
-                            <span className="text-sm font-medium">{inlineCopy({ de: 'Einträge', en: 'Entries' }, uiLocale)}</span>
+                            <span className="text-sm font-medium">{t('contentSections.entries')}</span>
                             <Button
                                 type="button"
                                 variant="outline"
@@ -539,14 +520,14 @@ function SectionFields({
                                 }
                             >
                                 <PlusIcon className="size-3.5" />
-                                {inlineCopy({ de: 'Eintrag', en: 'Entry' }, uiLocale)}
+                                {t('contentSections.entry')}
                             </Button>
                         </div>
                         {section.entries.map((entry, entryIndex) => (
                             <div key={entry.entryId} className="flex flex-col gap-3 rounded-md border border-border/70 p-3">
                                 <div className="flex items-center justify-between gap-2">
                                     <span className="text-xs font-medium text-muted-foreground">
-                                        {inlineCopy({ de: `Eintrag ${entryIndex + 1}`, en: `Entry ${entryIndex + 1}` }, uiLocale)}
+                                        {t('contentSections.entryN', { n: entryIndex + 1 })}
                                     </span>
                                     <Button
                                         type="button"
@@ -564,7 +545,7 @@ function SectionFields({
                                         <Trash2Icon className="size-4" />
                                     </Button>
                                 </div>
-                                <Field label={inlineCopy({ de: 'Frage', en: 'Question' }, uiLocale)}>
+                                <Field label={t('contentSections.question')}>
                                     <Input
                                         value={editLocale === 'en' ? entry.questionEn : entry.questionDe}
                                         onChange={(e) => {
@@ -579,7 +560,7 @@ function SectionFields({
                                         }}
                                     />
                                 </Field>
-                                <Field label={inlineCopy({ de: 'Antwort (Markdown)', en: 'Answer (Markdown)' }, uiLocale)}>
+                                <Field label={t('contentSections.answerMarkdown')}>
                                     <Textarea
                                         rows={4}
                                         value={editLocale === 'en' ? entry.answerEn : entry.answerDe}
@@ -628,6 +609,7 @@ function ImageUploadField({
     const [error, setError] = useState<string | null>(null);
     const [confirmRemove, setConfirmRemove] = useState(false);
     const [cropSrc, setCropSrc] = useState<string | null>(null);
+    const { t } = useT('common');
     const previewClassName =
         variant === 'content'
             ? 'aspect-square h-auto w-full max-w-xs rounded-lg object-cover'
@@ -643,15 +625,7 @@ function ImageUploadField({
         if (file == null) return;
         setError(null);
         if (!file.type.startsWith('image/')) {
-            setError(
-                inlineCopy(
-                    {
-                        de: 'Bitte ein Bild (JPEG, PNG, WebP oder GIF) wählen.',
-                        en: 'Please choose an image (JPEG, PNG, WebP, or GIF).',
-                    },
-                    uiLocale,
-                ),
-            );
+            setError(t('contentSections.chooseImage'));
             if (inputRef.current) inputRef.current.value = '';
             return;
         }
@@ -687,7 +661,7 @@ function ImageUploadField({
     return (
         <>
             <div className="flex flex-col gap-2">
-                <span className="text-sm font-medium">{inlineCopy({ de: 'Bild', en: 'Image' }, uiLocale)}</span>
+                <span className="text-sm font-medium">{t('contentSections.image')}</span>
                 {fileUploadId ? <img src={fileUploadPublicUrl(fileUploadId)} alt="" className={previewClassName} /> : null}
                 <input
                     ref={inputRef}
@@ -699,17 +673,11 @@ function ImageUploadField({
                 />
                 <div className="flex flex-wrap gap-2">
                     <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => inputRef.current?.click()}>
-                        {inlineCopy(
-                            {
-                                de: busy ? 'Lädt…' : 'Bild auswählen',
-                                en: busy ? 'Uploading…' : 'Select image',
-                            },
-                            uiLocale,
-                        )}
+                        {busy ? t('contentSections.uploading') : t('contentSections.selectImage')}
                     </Button>
                     {fileUploadId ? (
                         <Button type="button" variant="ghost" size="sm" disabled={busy} onClick={() => setConfirmRemove(true)}>
-                            {inlineCopy({ de: 'Entfernen', en: 'Remove' }, uiLocale)}
+                            {t('contentSections.remove')}
                         </Button>
                     ) : null}
                 </div>
@@ -718,19 +686,11 @@ function ImageUploadField({
                 <AlertDialog open={confirmRemove} onOpenChange={setConfirmRemove}>
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>{inlineCopy({ de: 'Bild entfernen?', en: 'Remove this image?' }, uiLocale)}</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                {inlineCopy(
-                                    {
-                                        de: 'Das Bild wird aus diesem Abschnitt entfernt. Speichern übernimmt die Änderung.',
-                                        en: 'The image is removed from this section. Saving applies the change.',
-                                    },
-                                    uiLocale,
-                                )}
-                            </AlertDialogDescription>
+                            <AlertDialogTitle>{t('contentSections.removeImageTitle')}</AlertDialogTitle>
+                            <AlertDialogDescription>{t('contentSections.removeImageBody')}</AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                            <AlertDialogCancel>{inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, uiLocale)}</AlertDialogCancel>
+                            <AlertDialogCancel>{t('contentSections.cancel')}</AlertDialogCancel>
                             <AlertDialogAction
                                 variant="destructive"
                                 onClick={() => {
@@ -738,7 +698,7 @@ function ImageUploadField({
                                     setConfirmRemove(false);
                                 }}
                             >
-                                {inlineCopy({ de: 'Entfernen', en: 'Remove' }, uiLocale)}
+                                {t('contentSections.remove')}
                             </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>

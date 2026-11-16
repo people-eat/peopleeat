@@ -82,7 +82,69 @@
         },
         "notifications": {
             "title": "Notifiche",
-            "description": "Scegli di cosa ti scriviamo. Nell’app resta tutto visibile. Codici di accesso, pagamenti e supporto vanno sempre alla tua e-mail."
+            "description": "Scegli di cosa ti scriviamo. Nell’app resta tutto visibile. Codici di accesso, pagamenti e supporto vanno sempre alla tua e-mail.",
+            "whatsAppNeedsNumber": "WhatsApp resta disattivato finché non c’è un numero salvato.",
+            "bookedEvenings": "Serate prenotate",
+            "eveningsYouBook": "Per le tue serate",
+            "asACook": "Come cuoco",
+            "whenYouCook": "Quando cucini",
+            "lastChannelTitle": "Niente più e-mail né WhatsApp?",
+            "lastChannelBodyOperator": "Questa persona non riceverà e-mail né WhatsApp se la serata cambia o viene annullata. Resta visibile nell’app.",
+            "lastChannelBody": "Non riceverai e-mail né WhatsApp se la serata cambia o viene annullata. Continui a vederlo nell’app.",
+            "turnOff": "Disattiva",
+            "toastEmailOn": "{title} via e-mail attivato.",
+            "toastEmailOff": "{title} via e-mail disattivato.",
+            "toastWhatsAppOn": "{title} via WhatsApp attivato.",
+            "toastWhatsAppOff": "{title} via WhatsApp disattivato.",
+            "customer": {
+                "booking": {
+                    "title": "Modifiche alla serata",
+                    "description": "Richiesta, menu, numero di ospiti, disdetta e chiamata di conoscenza."
+                },
+                "chat": {
+                    "title": "Messaggi del tuo cuoco",
+                    "operatorTitle": "Messaggi del cuoco",
+                    "description": "Quando un messaggio non è ancora letto."
+                },
+                "review": {
+                    "title": "Dopo la serata",
+                    "description": "Promemoria per scrivere una recensione."
+                }
+            },
+            "cook": {
+                "newRequest": {
+                    "title": "Nuove richieste vicino a te",
+                    "operatorTitle": "Nuove richieste nelle vicinanze",
+                    "description": "Possono arrivare spesso."
+                },
+                "directRequest": {
+                    "title": "Richieste inviate a te",
+                    "operatorTitle": "Richieste dirette al cuoco",
+                    "description": "Quando un ospite ti richiede dal tuo profilo cuoco."
+                },
+                "offer": {
+                    "title": "Le tue offerte",
+                    "operatorTitle": "Offerte",
+                    "description": "Modifiche, accettazioni e rifiuti, menu, numero di ospiti e chiamate."
+                },
+                "chat": {
+                    "title": "Messaggi dei tuoi ospiti",
+                    "operatorTitle": "Messaggi degli ospiti",
+                    "description": "Quando un messaggio non è ancora letto."
+                },
+                "review": {
+                    "title": "Dopo la serata",
+                    "description": "Promemoria sulle recensioni dei tuoi ospiti.",
+                    "operatorDescription": "Promemoria sulle recensioni degli ospiti."
+                }
+            }
+        },
+        "picture": {
+            "invalidType": "Scegli un’immagine (JPEG, PNG, WebP o GIF).",
+            "saved": "Foto profilo salvata.",
+            "removed": "Foto profilo rimossa.",
+            "select": "Scegli immagine",
+            "remove": "Rimuovi immagine"
         },
         "delete": {
             "title": "Elimina account",

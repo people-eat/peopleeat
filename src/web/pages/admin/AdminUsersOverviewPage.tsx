@@ -3,7 +3,7 @@ import { CakeIcon, ListIcon, UserPlusIcon, UsersIcon } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
 
 import { t } from '../../../i18n/t';
-import { formatDate, formatIsoDate, inlineCopy, userDisplayName } from '../../../shared';
+import { formatDate, formatIsoDate, userDisplayName } from '../../../shared';
 import type { Locale } from '../../../shared/locale';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { Badge } from '../../components/base/badge';
@@ -86,7 +86,7 @@ function localeLabel(value: Locale, uiLocale: Locale): string {
 function countShareLabel(count: number, total: number, locale: Locale): string {
     if (total <= 0) return String(count);
     const percent = Math.round((count / total) * 100);
-    return inlineCopy({ de: `${count} · ${percent} %`, en: `${count} · ${percent}%` }, locale);
+    return t(locale, 'admin', 'users.countPercent', { count, percent });
 }
 
 function formatAgeYears(age: number | null | undefined, locale: Locale): string {
@@ -102,7 +102,7 @@ function turningAgeLabel(birthDate: string, nextBirthday: string, locale: Locale
     const nextYear = Number(nextBirthday.slice(0, 4));
     if (!Number.isFinite(birthYear) || !Number.isFinite(nextYear)) return '';
     const age = nextYear - birthYear;
-    return inlineCopy({ de: `wird ${age}`, en: `turns ${age}` }, locale);
+    return t(locale, 'admin', 'users.turnsAge', { age });
 }
 
 export function AdminUsersOverviewPage({ data, search }: { data: GqlCAdminUsersOverviewPageQuery; search: AdminOverviewRangeSearch }) {

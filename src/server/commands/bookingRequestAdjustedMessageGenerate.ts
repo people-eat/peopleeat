@@ -1,6 +1,8 @@
 import { generateText } from 'ai';
 import { eq } from 'drizzle-orm';
 
+import { t } from '../../i18n/t';
+import { DEFAULT_LOCALE } from '../../shared/locale';
 import { textNormalizeProseTitled } from '../../shared/textNormalize';
 import { bookingRequestCooks, bookingRequests, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -70,8 +72,8 @@ export async function bookingRequestAdjustedMessageGenerate({
         .where(eq(users.userId, bookingRequest.userId))
         .limit(1);
 
-    const occasionFallback = { de: 'Unbekannt', en: 'Unknown' }[customer?.locale === 'en' ? 'en' : 'de'];
-    const occasion = bookingRequest.occasion.trim() || occasionFallback;
+    const locale = customer?.locale ?? DEFAULT_LOCALE;
+    const occasion = bookingRequest.occasion.trim() || t(locale, 'common', 'occasionUnknown');
     const prompt = `Anlass: ${occasion}; Nachricht: ${originalMessage}`;
 
     try {

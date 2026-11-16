@@ -1,10 +1,11 @@
 import { Link } from '@tanstack/react-router';
 import { CalendarIcon, InfoIcon, MapPinIcon, UserIcon, UsersIcon } from 'lucide-react';
 
-import { formatBookingEventDateFromCountry, formatCurrency, formatParticipants, inlineCopy } from '../../shared';
+import { formatBookingEventDateFromCountry, formatCurrency, formatParticipants } from '../../shared';
 import type { BookingRequestOfferStatus } from '../../shared/bookingRequestOfferStatus';
 import { bookingRequestOfferStatusHue, bookingRequestOfferStatusLabel } from '../../shared/bookingRequestOfferStatus';
 import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { useTimeZone } from '../hooks/useTimeZone';
 import { cn } from '../utils/cn';
 import { NotificationBadge } from './base/notification-badge';
@@ -39,6 +40,7 @@ export type CookBookingRequestOfferCardOffer = {
 
 export function CookBookingRequestOfferCard({ offer }: { offer: CookBookingRequestOfferCardOffer }) {
     const locale = useLocale();
+    const { t } = useT('profileCook');
     const timeZone = useTimeZone();
     const request = offer.bookingRequest;
     const location =
@@ -52,9 +54,7 @@ export function CookBookingRequestOfferCard({ offer }: { offer: CookBookingReque
     );
     const mutuallyAccepted = offer.cookAccepted && offer.userAccepted;
     const amountCents = mutuallyAccepted ? offer.payoutCentsCook : offer.totalWithoutDiscountsCentsCustomer;
-    const amountLabel = mutuallyAccepted
-        ? inlineCopy({ de: 'Auszahlungsbetrag', en: 'Payout amount' }, locale)
-        : inlineCopy({ de: 'Auftragswert', en: 'Order value' }, locale);
+    const amountLabel = mutuallyAccepted ? t('offer.payoutAmount') : t('offer.orderValue');
 
     return (
         <Link
@@ -68,13 +68,7 @@ export function CookBookingRequestOfferCard({ offer }: { offer: CookBookingReque
         >
             <NotificationBadge
                 count={offer.cookUnreadNotificationCount}
-                label={inlineCopy(
-                    {
-                        de: `${offer.cookUnreadNotificationCount} ungelesene Benachrichtigungen`,
-                        en: `${offer.cookUnreadNotificationCount} unread notifications`,
-                    },
-                    locale,
-                )}
+                label={t('chrome.offersUnreadCount', { count: offer.cookUnreadNotificationCount })}
             />
             {callHint ? (
                 <div
@@ -90,13 +84,7 @@ export function CookBookingRequestOfferCard({ offer }: { offer: CookBookingReque
                             <button
                                 type="button"
                                 className="inline-flex cursor-pointer rounded-full text-muted-foreground hover:text-foreground"
-                                aria-label={inlineCopy(
-                                    {
-                                        de: 'Hinweis zum Gesprächstermin',
-                                        en: 'Discovery call note',
-                                    },
-                                    locale,
-                                )}
+                                aria-label={t('offer.discoveryCallNote')}
                             >
                                 <InfoIcon className="size-4" />
                             </button>
@@ -140,7 +128,7 @@ export function CookBookingRequestOfferCard({ offer }: { offer: CookBookingReque
                 </p>
             </div>
             <span className="mt-4 inline-flex h-9 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground">
-                {inlineCopy({ de: 'Zum Angebot', en: 'View offer' }, locale)}
+                {t('offerCreate.goToOffer')}
             </span>
         </Link>
     );

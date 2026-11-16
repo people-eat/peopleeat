@@ -1,12 +1,11 @@
 import { Link } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
-import { inlineCopy } from '../../shared';
-
 import { groupMessagesByDate, peerUserMessageStreak } from '../chat/chatTranscript';
 import { useComposerFileAttachments } from '../chat/useComposerFileAttachments';
 import type { GqlCHumanChatMessageFieldsFragment } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 import { Avatar, AvatarFallback, AvatarImage } from './base/avatar';
 import { ChatTranscriptShell } from './base/chat-transcript-shell';
@@ -39,8 +38,8 @@ function SupportPresenceBanner({
     trailing?: ReactNode;
     className?: string;
 }) {
-    const locale = useLocale();
-    const openUserLabel = inlineCopy({ de: 'Nutzer öffnen', en: 'Open user' }, locale);
+    const { t } = useT('common');
+    const openUserLabel = t('chat.openUser');
 
     const avatar = (
         <Avatar size="lg" className="size-12">
@@ -97,16 +96,14 @@ export function SupportRequestChat({
     className?: string;
 }) {
     const locale = useLocale();
+    const { t } = useT('common');
     const [draft, setDraft] = useState('');
     const [busy, setBusy] = useState(false);
     const { attachments, onAttachmentsAdd, onAttachmentRemove, clearAttachments, restoreAttachments, uploadedFileUploadIds, hasUploaded } =
         useComposerFileAttachments();
     const groupedMessages = groupMessagesByDate(messages);
 
-    const resolvedSubtitle =
-        subtitle === undefined
-            ? inlineCopy({ de: 'Support-Chat mit dem peopleeat Team.', en: 'Support chat with the peopleeat team.' }, locale)
-            : subtitle;
+    const resolvedSubtitle = subtitle === undefined ? t('supportRequest.chatSubtitle') : subtitle;
 
     const presenceProps = {
         peerDisplay,
@@ -122,7 +119,7 @@ export function SupportRequestChat({
             <SupportPresenceBanner {...presenceProps} className="hidden md:flex" />
             <ChatTranscriptShell
                 mode="human"
-                jumpToLatestLabel={inlineCopy({ de: 'Zum neuesten springen', en: 'Jump to latest' }, locale)}
+                jumpToLatestLabel={t('chat.jumpToLatest')}
                 contentClassName="w-full gap-3"
                 className="min-h-0 min-w-0"
                 viewportClassName="px-1 sm:px-2"
@@ -133,13 +130,7 @@ export function SupportRequestChat({
                 {messages.length === 0 ? (
                     <MessageScrollerItem>
                         <p className="flex min-h-48 flex-1 items-center justify-center px-4 text-center text-sm text-muted-foreground">
-                            {inlineCopy(
-                                {
-                                    de: 'Noch keine Nachrichten.',
-                                    en: 'No messages yet.',
-                                },
-                                locale,
-                            )}
+                            {t('chat.noMessages')}
                         </p>
                     </MessageScrollerItem>
                 ) : (
@@ -169,7 +160,7 @@ export function SupportRequestChat({
                         onValueChange={setDraft}
                         busy={busy}
                         showDisclaimer={false}
-                        ariaLabel={inlineCopy({ de: 'Support-Nachricht', en: 'Support message' }, locale)}
+                        ariaLabel={t('supportRequest.supportMessage')}
                         attachments={attachments}
                         onAttachmentsAdd={onAttachmentsAdd}
                         onAttachmentRemove={onAttachmentRemove}

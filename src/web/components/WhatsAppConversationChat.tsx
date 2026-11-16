@@ -1,11 +1,11 @@
 import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
-import { inlineCopy } from '../../shared';
 
 import { formatDateTime } from '../../shared/formatDate';
 import { groupMessagesByDate, peerUserMessageStreak } from '../chat/chatTranscript';
 import type { GqlCHumanChatMessageFieldsFragment } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { useTimeZone } from '../hooks/useTimeZone';
 import { cn } from '../utils/cn';
 import { Avatar, AvatarFallback, AvatarImage } from './base/avatar';
@@ -34,8 +34,8 @@ function WhatsAppPresenceBanner({
     customerUserId: string | null;
     className?: string;
 }) {
-    const locale = useLocale();
-    const openUserLabel = inlineCopy({ de: 'Nutzer öffnen', en: 'Open user' }, locale);
+    const { t } = useT('common');
+    const openUserLabel = t('chat.openUser');
 
     const avatar = (
         <Avatar size="lg" className="size-12">
@@ -58,12 +58,7 @@ function WhatsAppPresenceBanner({
             ) : (
                 <span className="shrink-0">{avatar}</span>
             )}
-            <span className="min-w-0 text-sm text-muted-foreground">
-                {inlineCopy(
-                    { de: 'WhatsApp-Chat mit dem peopleeat Concierge.', en: 'WhatsApp chat with the peopleeat concierge.' },
-                    locale,
-                )}
-            </span>
+            <span className="min-w-0 text-sm text-muted-foreground">{t('whatsappChat.subtitle')}</span>
         </div>
     );
 }
@@ -88,6 +83,7 @@ export function WhatsAppConversationChat({
     className?: string;
 }) {
     const locale = useLocale();
+    const { t } = useT('common');
     const timeZone = useTimeZone();
     const [draft, setDraft] = useState('');
     const [busy, setBusy] = useState(false);
@@ -100,7 +96,7 @@ export function WhatsAppConversationChat({
             <WhatsAppPresenceBanner {...presenceProps} className="hidden md:flex" />
             <ChatTranscriptShell
                 mode="human"
-                jumpToLatestLabel={inlineCopy({ de: 'Zum neuesten springen', en: 'Jump to latest' }, locale)}
+                jumpToLatestLabel={t('chat.jumpToLatest')}
                 contentClassName="w-full gap-3"
                 className="min-h-0 min-w-0"
                 viewportClassName="px-1 sm:px-2"
@@ -111,7 +107,7 @@ export function WhatsAppConversationChat({
                 {messages.length === 0 ? (
                     <MessageScrollerItem>
                         <p className="flex min-h-48 flex-1 items-center justify-center px-4 text-center text-sm text-muted-foreground">
-                            {inlineCopy({ de: 'Noch keine Nachrichten.', en: 'No messages yet.' }, locale)}
+                            {t('whatsappChat.noMessages')}
                         </p>
                     </MessageScrollerItem>
                 ) : (
@@ -132,7 +128,7 @@ export function WhatsAppConversationChat({
                                     {message.__typename === 'ChatMessageUser' && message.linkClickedAt ? (
                                         <p className="mt-1 text-right text-xs text-muted-foreground">
                                             <time dateTime={message.linkClickedAt}>
-                                                {inlineCopy({ de: 'Link aufgerufen', en: 'Link opened' }, locale)}:{' '}
+                                                {t('whatsappChat.linkOpened')}:{' '}
                                                 {formatDateTime(message.linkClickedAt, { locale, timeZone })}
                                             </time>
                                         </p>
@@ -151,7 +147,7 @@ export function WhatsAppConversationChat({
                         busy={busy}
                         showDisclaimer={false}
                         showAttachButton={false}
-                        ariaLabel={inlineCopy({ de: 'WhatsApp-Nachricht', en: 'WhatsApp message' }, locale)}
+                        ariaLabel={t('whatsappChat.messageAria')}
                         onSubmit={async () => {
                             const text = draft.trim();
                             if (!text || busy) return false;
@@ -169,15 +165,7 @@ export function WhatsAppConversationChat({
                 </div>
             ) : (
                 <div className="p-3 pb-(--chat-composer-pb)">
-                    <StatusAlert tone="info">
-                        {inlineCopy(
-                            {
-                                de: 'Das 24-Stunden-Fenster ist geschlossen. Der Kunde muss zuerst schreiben, oder eine Lifecycle-Vorlage wird automatisch gesendet.',
-                                en: 'The 24-hour window is closed. The customer must message first, or a lifecycle template is sent automatically.',
-                            },
-                            locale,
-                        )}
-                    </StatusAlert>
+                    <StatusAlert tone="info">{t('whatsappChat.windowClosed')}</StatusAlert>
                 </div>
             )}
         </div>

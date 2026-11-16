@@ -1,8 +1,8 @@
 import { ArrowDownIcon, ArrowUpIcon, PlusIcon, XIcon } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { inlineCopy } from '../../shared';
 
+import { t } from '../../i18n/t';
 import type { Locale } from '../../shared';
 import type { SectionPageTestimonial } from '../sections/SectionPageTestimonials';
 import { Badge } from './base/badge';
@@ -211,9 +211,9 @@ export function ContentPageTestimonialsEditor({
         setSaving(true);
         try {
             await onSave(draftKeys.map(entryFromKey));
-            toast.success(inlineCopy({ de: 'Bewertungen gespeichert', en: 'Testimonials saved' }, locale));
+            toast.success(t(locale, 'common', 'contentPageTestimonials.saved'));
         } catch {
-            toast.error(inlineCopy({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }, locale));
+            toast.error(t(locale, 'common', 'contentPageTestimonials.couldNotSave'));
         } finally {
             setSaving(false);
         }
@@ -231,14 +231,12 @@ export function ContentPageTestimonialsEditor({
     return (
         <Card className="gap-4 py-4" data-content-editor-anchor="testimonials">
             <CardHeader className="px-4">
-                <CardTitle>{inlineCopy({ de: 'Bewertungen auf der Seite', en: 'Testimonials on this page' }, locale)}</CardTitle>
+                <CardTitle>{t(locale, 'common', 'contentPageTestimonials.title')}</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 px-4">
                 <p className="text-sm text-muted-foreground">{emptyHint}</p>
                 {draftCandidates.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                        {inlineCopy({ de: 'Keine Bewertungen ausgewählt.', en: 'No testimonials selected.' }, locale)}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{t(locale, 'common', 'contentPageTestimonials.noneSelected')}</p>
                 ) : (
                     <ul className="divide-y divide-border border border-border">
                         {draftCandidates.map((candidate, index) => (
@@ -248,8 +246,8 @@ export function ContentPageTestimonialsEditor({
                                         <p className="truncate text-sm font-medium">{candidate.displayAuthorName}</p>
                                         <Badge variant="outline" className="shrink-0">
                                             {candidate.testimonialType === 'COOK'
-                                                ? inlineCopy({ de: 'Koch', en: 'Chef' }, locale)
-                                                : inlineCopy({ de: 'Kunde', en: 'Customer' }, locale)}
+                                                ? t(locale, 'common', 'contentPageTestimonials.chef')
+                                                : t(locale, 'common', 'contentPageTestimonials.customer')}
                                         </Badge>
                                         <TestimonialRatingStars rating={candidate.rating} className="shrink-0" />
                                     </div>
@@ -259,10 +257,7 @@ export function ContentPageTestimonialsEditor({
                                     </p>
                                     {candidate.publicationStatus === 'PENDING_REVIEW' ? (
                                         <StatusBadge tone="warning" className="mt-1 font-normal">
-                                            {inlineCopy(
-                                                { de: 'Nicht öffentlich, wartet auf Freigabe', en: 'Not on public page, pending review' },
-                                                locale,
-                                            )}
+                                            {t(locale, 'common', 'contentPageTestimonials.pendingReview')}
                                         </StatusBadge>
                                     ) : null}
                                 </div>
@@ -272,7 +267,7 @@ export function ContentPageTestimonialsEditor({
                                     size="icon-sm"
                                     disabled={index === 0 || saving || busy}
                                     onClick={() => move(index, -1)}
-                                    aria-label={inlineCopy({ de: 'Nach oben', en: 'Move up' }, locale)}
+                                    aria-label={t(locale, 'common', 'contentPageTestimonials.moveUp')}
                                 >
                                     <ArrowUpIcon className="size-4" />
                                 </Button>
@@ -282,7 +277,7 @@ export function ContentPageTestimonialsEditor({
                                     size="icon-sm"
                                     disabled={index === draftCandidates.length - 1 || saving || busy}
                                     onClick={() => move(index, 1)}
-                                    aria-label={inlineCopy({ de: 'Nach unten', en: 'Move down' }, locale)}
+                                    aria-label={t(locale, 'common', 'contentPageTestimonials.moveDown')}
                                 >
                                     <ArrowDownIcon className="size-4" />
                                 </Button>
@@ -292,7 +287,7 @@ export function ContentPageTestimonialsEditor({
                                     size="icon-sm"
                                     disabled={saving || busy}
                                     onClick={() => setDraftKeys(draftKeys.filter((key) => key !== entryKey(candidate)))}
-                                    aria-label={inlineCopy({ de: 'Entfernen', en: 'Remove' }, locale)}
+                                    aria-label={t(locale, 'common', 'contentPageTestimonials.remove')}
                                 >
                                     <XIcon className="size-4" />
                                 </Button>
@@ -303,10 +298,10 @@ export function ContentPageTestimonialsEditor({
                 <div className="flex flex-wrap gap-2">
                     <Button type="button" variant="outline" size="sm" disabled={saving || busy} onClick={() => setPickerOpen(true)}>
                         <PlusIcon className="size-4" />
-                        {inlineCopy({ de: 'Bewertungen wählen', en: 'Choose testimonials' }, locale)}
+                        {t(locale, 'common', 'contentPageTestimonials.choose')}
                     </Button>
                     <Button type="button" size="sm" disabled={!dirty || saving || busy} onClick={() => void save()}>
-                        {inlineCopy({ de: 'Bewertungen speichern', en: 'Save testimonials' }, locale)}
+                        {t(locale, 'common', 'contentPageTestimonials.save')}
                     </Button>
                     {dirty ? (
                         <Button
@@ -316,7 +311,7 @@ export function ContentPageTestimonialsEditor({
                             disabled={saving || busy}
                             onClick={() => setDraftKeys(assignedKeys)}
                         >
-                            {inlineCopy({ de: 'Zurücksetzen', en: 'Reset' }, locale)}
+                            {t(locale, 'common', 'contentPageTestimonials.reset')}
                         </Button>
                     ) : null}
                 </div>
@@ -325,26 +320,18 @@ export function ContentPageTestimonialsEditor({
             <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
                 <DialogContent className="max-w-lg">
                     <DialogHeader>
-                        <DialogTitle>{inlineCopy({ de: 'Bewertungen auswählen', en: 'Select testimonials' }, locale)}</DialogTitle>
-                        <DialogDescription>
-                            {inlineCopy(
-                                {
-                                    de: 'Ausgewählte Bewertungen erscheinen in der gewählten Reihenfolge.',
-                                    en: 'Selected testimonials appear in the chosen order.',
-                                },
-                                locale,
-                            )}
-                        </DialogDescription>
+                        <DialogTitle>{t(locale, 'common', 'contentPageTestimonials.selectTitle')}</DialogTitle>
+                        <DialogDescription>{t(locale, 'common', 'contentPageTestimonials.selectDescription')}</DialogDescription>
                     </DialogHeader>
                     <Input
                         value={search}
                         onChange={(event) => setSearch(event.target.value)}
-                        placeholder={inlineCopy({ de: 'Suchen…', en: 'Search…' }, locale)}
+                        placeholder={t(locale, 'common', 'contentPageTestimonials.searchPlaceholder')}
                     />
                     <ul className="max-h-72 divide-y divide-border overflow-y-auto border border-border">
                         {filteredCandidates.length === 0 ? (
                             <li className="px-3 py-4 text-sm text-muted-foreground">
-                                {inlineCopy({ de: 'Keine Kandidaten.', en: 'No candidates.' }, locale)}
+                                {t(locale, 'common', 'contentPageTestimonials.noCandidates')}
                             </li>
                         ) : (
                             filteredCandidates.map((candidate) => {
@@ -367,12 +354,12 @@ export function ContentPageTestimonialsEditor({
                                                 <p className="truncate text-sm font-medium">{candidate.displayAuthorName}</p>
                                                 <Badge variant="outline" className="shrink-0">
                                                     {candidate.testimonialType === 'COOK'
-                                                        ? inlineCopy({ de: 'Koch', en: 'Chef' }, locale)
-                                                        : inlineCopy({ de: 'Kunde', en: 'Customer' }, locale)}
+                                                        ? t(locale, 'common', 'contentPageTestimonials.chef')
+                                                        : t(locale, 'common', 'contentPageTestimonials.customer')}
                                                 </Badge>
                                                 {candidate.publicationStatus === 'PENDING_REVIEW' ? (
                                                     <StatusBadge tone="warning" className="shrink-0 font-normal">
-                                                        {inlineCopy({ de: 'Nicht öffentlich', en: 'Not on public page' }, locale)}
+                                                        {t(locale, 'common', 'contentPageTestimonials.notPublic')}
                                                     </StatusBadge>
                                                 ) : null}
                                                 <TestimonialRatingStars rating={candidate.rating} className="shrink-0" />
@@ -389,7 +376,7 @@ export function ContentPageTestimonialsEditor({
                     </ul>
                     <DialogFooter>
                         <Button type="button" onClick={() => setPickerOpen(false)}>
-                            {inlineCopy({ de: 'Fertig', en: 'Done' }, locale)}
+                            {t(locale, 'common', 'contentPageTestimonials.done')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

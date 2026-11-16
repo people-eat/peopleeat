@@ -1,17 +1,17 @@
 import { sql } from 'drizzle-orm';
-import { t } from '../../i18n/t';
 
+import { t } from '../../i18n/t';
 import { cookBookingRequestOfferFunnelArea, cookBookingRequestOfferFunnelSteps } from '../../shared/cookBookingRequestOfferFunnel';
 import type { CookBookingRequestOfferFunnelStep } from '../../shared/cookBookingRequestOfferFunnel';
+import { DEFAULT_LOCALE } from '../../shared/locale';
+import type { Locale } from '../../shared/locale';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminAnalyticsCookBookingRequestOfferFlow, GqlSDateTimeRange, GqlSSession } from '../graphql/generated';
 import { dateTimeRangeNormalize } from '../utils/dateTimeRangeNormalize';
+import { userLocaleRequire } from '../utils/userLocaleRequire';
 
-function funnelLabel(step: CookBookingRequestOfferFunnelStep): { de: string; en: string } {
-    return {
-        de: t('de', 'admin', `analytics.funnels.cookOffer.${step}`),
-        en: t('en', 'admin', `analytics.funnels.cookOffer.${step}`),
-    };
+function funnelLabel(locale: Locale, step: CookBookingRequestOfferFunnelStep): string {
+    return t(locale, 'admin', `analytics.funnels.cookOffer.${step}`);
 }
 
 type CohortRow = {
@@ -46,6 +46,7 @@ export async function adminAnalyticsCookBookingRequestOfferFlow(
     serverRuntime: ServerRuntime,
 ): Promise<GqlSAdminAnalyticsCookBookingRequestOfferFlow> {
     try {
+        const locale = requestingSession.userId ? await userLocaleRequire(serverRuntime, requestingSession.userId) : DEFAULT_LOCALE;
         const { startDateTime, endDateTime } = dateTimeRangeNormalize(range);
 
         const cohortResult = await serverRuntime.db.execute<CohortRow>(sql`
@@ -213,8 +214,7 @@ export async function adminAnalyticsCookBookingRequestOfferFlow(
             .filter((step) => nodeIds.has(step))
             .map((step) => ({
                 id: step,
-                labelDe: funnelLabel(step).de,
-                labelEn: funnelLabel(step).en,
+                label: funnelLabel(locale, step),
             }));
 
         const links = [...edgeCounts.entries()].map(([key, value]) => {
@@ -224,8 +224,7 @@ export async function adminAnalyticsCookBookingRequestOfferFlow(
 
         const steps = cookBookingRequestOfferFunnelSteps.map((step) => ({
             id: step,
-            labelDe: funnelLabel(step).de,
-            labelEn: funnelLabel(step).en,
+            label: funnelLabel(locale, step),
             enteredCount: enteredByStep.get(step)?.size ?? 0,
             completedCount: completedByStep.get(step)?.size ?? 0,
         }));

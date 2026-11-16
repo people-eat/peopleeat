@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
 import { t } from '../../../i18n/t';
-import { bookingRequestOfferPriceGuidance, centsToEuros, containsPhoneNumber, inlineCopy, userDisplayName } from '../../../shared';
+import { bookingRequestOfferPriceGuidance, centsToEuros, containsPhoneNumber, userDisplayName } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { Button } from '../../components/base/button';
 import { Checkbox } from '../../components/base/checkbox';
@@ -118,20 +118,15 @@ export function AdminBookingRequestOfferCreatePage({
         } satisfies FormValues,
         onSubmit: async ({ value }) => {
             if (!value.cookId) {
-                toast.error(inlineCopy({ de: 'Bitte einen Koch auswählen.', en: 'Please choose a cook.' }, locale));
+                toast.error(t(locale, 'admin', 'copy.pleaseChooseACook'));
                 return;
             }
             if (seedRequest.canceledAt) {
-                toast.error(
-                    inlineCopy(
-                        { de: 'Stornierte Anfragen können kein Angebot erhalten.', en: 'Canceled requests cannot receive offers.' },
-                        locale,
-                    ),
-                );
+                toast.error(t(locale, 'admin', 'copy.canceledRequestsCannotReceiveOffers'));
                 return;
             }
             if (!priceValid) {
-                toast.error(inlineCopy({ de: 'Bitte einen gültigen Menüpreis eingeben.', en: 'Please enter a valid menu price.' }, locale));
+                toast.error(t(locale, 'admin', 'copy.pleaseEnterAValidMenuPrice'));
                 return;
             }
             const trimmedMessage = value.message.trim();
@@ -169,13 +164,13 @@ export function AdminBookingRequestOfferCreatePage({
                 if (!result.data?.admin.bookingRequestOfferCreate.success || !referenceId) {
                     throw new Error('create failed');
                 }
-                toast.success(inlineCopy({ de: 'Angebot angelegt.', en: 'Offer created.' }, locale));
+                toast.success(t(locale, 'admin', 'copy.offerCreated'));
                 await navigate({
                     to: '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId',
                     params: { bookingRequestId, bookingRequestOfferId: referenceId },
                 });
             } catch {
-                toast.error(inlineCopy({ de: 'Anlegen fehlgeschlagen.', en: 'Could not create the offer.' }, locale));
+                toast.error(t(locale, 'admin', 'copy.couldNotCreate'));
             }
         },
     });
@@ -212,7 +207,7 @@ export function AdminBookingRequestOfferCreatePage({
             crumbs={[
                 { label: adminStubRouteTitle(listRoute.slug, locale), to: '/{-$locale}/admin/booking-requests' },
                 {
-                    label: seedRequest.occasion.trim() || inlineCopy({ de: 'Anfrage', en: 'Request' }, locale),
+                    label: seedRequest.occasion.trim() || t(locale, 'admin', 'copy.request'),
                     to: '/{-$locale}/admin/booking-requests/$bookingRequestId',
                     params: { bookingRequestId },
                 },
@@ -227,13 +222,7 @@ export function AdminBookingRequestOfferCreatePage({
 
                 {cooks.length === 0 ? (
                     <p className="text-sm text-muted-foreground">
-                        {inlineCopy(
-                            {
-                                de: 'Keine Köche im Anfahrtsradius. Angebot anlegen ist derzeit nicht möglich.',
-                                en: 'No cooks in travel radius. Creating an offer is not available right now.',
-                            },
-                            locale,
-                        )}
+                        {t(locale, 'admin', 'copy.noCooksInTravelRadiusCreatingAnOfferIsNotAvailableRightNow')}
                     </p>
                 ) : (
                     <form
@@ -247,13 +236,13 @@ export function AdminBookingRequestOfferCreatePage({
                         <form.Field name="cookId">
                             {(field) => (
                                 <div className="grid gap-1.5">
-                                    <span className="text-sm font-medium">{inlineCopy({ de: 'Koch', en: 'Cook' }, locale)}</span>
+                                    <span className="text-sm font-medium">{t(locale, 'admin', 'copy.cook')}</span>
                                     <Select
                                         value={field.state.value.length > 0 ? field.state.value : undefined}
                                         onValueChange={(next) => next && onCookChange(next)}
                                     >
                                         <SelectTrigger className="w-full">
-                                            <SelectValue placeholder={inlineCopy({ de: 'Koch wählen…', en: 'Choose cook…' }, locale)} />
+                                            <SelectValue placeholder={t(locale, 'admin', 'copy.chooseCook')} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {cooks.map((row) => {
@@ -276,9 +265,7 @@ export function AdminBookingRequestOfferCreatePage({
                             <form.Field name="cookAccepted">
                                 {(field) => (
                                     <div className="grid gap-1.5">
-                                        <span className="text-sm font-medium">
-                                            {inlineCopy({ de: 'Koch akzeptiert', en: 'Cook accepted' }, locale)}
-                                        </span>
+                                        <span className="text-sm font-medium">{t(locale, 'admin', 'copy.cookAccepted')}</span>
                                         <Select
                                             value={field.state.value}
                                             onValueChange={(next) => next && field.handleChange(next as AdminOfferAcceptTriad)}
@@ -300,9 +287,7 @@ export function AdminBookingRequestOfferCreatePage({
                             <form.Field name="userAccepted">
                                 {(field) => (
                                     <div className="grid gap-1.5">
-                                        <span className="text-sm font-medium">
-                                            {inlineCopy({ de: 'Kunde akzeptiert', en: 'Customer accepted' }, locale)}
-                                        </span>
+                                        <span className="text-sm font-medium">{t(locale, 'admin', 'copy.customerAccepted')}</span>
                                         <Select
                                             value={field.state.value}
                                             onValueChange={(next) => next && field.handleChange(next as AdminOfferAcceptTriad)}
@@ -327,7 +312,7 @@ export function AdminBookingRequestOfferCreatePage({
                             {(field) => (
                                 <div className="grid gap-1.5">
                                     <label htmlFor={`${formId}-travel`} className="text-sm font-medium">
-                                        {inlineCopy({ de: 'Reisekosten (€)', en: 'Travel expenses (€)' }, locale)}
+                                        {t(locale, 'admin', 'copy.travelExpenses')}
                                     </label>
                                     <Input
                                         id={`${formId}-travel`}
@@ -347,7 +332,7 @@ export function AdminBookingRequestOfferCreatePage({
                             {(field) => (
                                 <div className="grid gap-1.5">
                                     <label htmlFor={`${formId}-distance`} className="text-sm font-medium">
-                                        {inlineCopy({ de: 'Reiseentfernung', en: 'Travel distance' }, locale)}
+                                        {t(locale, 'admin', 'copy.travelDistance')}
                                     </label>
                                     <div className="flex items-center gap-2">
                                         <Input
@@ -368,7 +353,7 @@ export function AdminBookingRequestOfferCreatePage({
                                 {(field) => (
                                     <div className="grid gap-1.5">
                                         <label htmlFor={`${formId}-fee-cook`} className="text-sm font-medium">
-                                            {inlineCopy({ de: 'Plattformgebühr Koch (%)', en: 'Platform fee cook (%)' }, locale)}
+                                            {t(locale, 'admin', 'copy.platformFeeCook')}
                                         </label>
                                         <Input
                                             id={`${formId}-fee-cook`}
@@ -387,7 +372,7 @@ export function AdminBookingRequestOfferCreatePage({
                                 {(field) => (
                                     <div className="grid gap-1.5">
                                         <label htmlFor={`${formId}-fee-customer`} className="text-sm font-medium">
-                                            {inlineCopy({ de: 'Plattformgebühr Kunde (%)', en: 'Platform fee customer (%)' }, locale)}
+                                            {t(locale, 'admin', 'copy.platformFeeCustomer')}
                                         </label>
                                         <Input
                                             id={`${formId}-fee-customer`}
@@ -435,29 +420,14 @@ export function AdminBookingRequestOfferCreatePage({
                             {(field) => (
                                 <div className="grid gap-1.5">
                                     <label htmlFor={`${formId}-message`} className="text-sm font-medium">
-                                        {inlineCopy(
-                                            { de: 'Nachricht an den Gast (optional)', en: 'Message to the guest (optional)' },
-                                            locale,
-                                        )}
+                                        {t(locale, 'admin', 'copy.messageToTheGuestOptional')}
                                     </label>
                                     <p className="text-sm text-muted-foreground">
-                                        {inlineCopy(
-                                            {
-                                                de: 'Erscheint als erste Koch-Nachricht im Angebots-Chat.',
-                                                en: 'Appears as the cook’s first message in the offer chat.',
-                                            },
-                                            locale,
-                                        )}
+                                        {t(locale, 'admin', 'copy.appearsAsTheCookSFirstMessageInTheOfferChat')}
                                     </p>
                                     {messageContainsPhoneNumber ? (
                                         <StatusAlert tone="warning">
-                                            {inlineCopy(
-                                                {
-                                                    de: 'Das Teilen von Telefonnummern ist nicht erlaubt. Bitte bleibe für Absprachen hier im Chat.',
-                                                    en: 'Sharing phone numbers is not allowed. Please keep arrangements in this chat.',
-                                                },
-                                                locale,
-                                            )}
+                                            {t(locale, 'admin', 'copy.sharingPhoneNumbersIsNotAllowedPleaseKeepArrangementsInThisC')}
                                         </StatusAlert>
                                     ) : null}
                                     <Textarea
@@ -476,14 +446,12 @@ export function AdminBookingRequestOfferCreatePage({
                         <form.Field name="createdAt">
                             {(field) => (
                                 <div className="grid gap-1.5">
-                                    <span className="text-sm font-medium">
-                                        {inlineCopy({ de: 'Erstellt am', en: 'Created at' }, locale)}
-                                    </span>
+                                    <span className="text-sm font-medium">{t(locale, 'admin', 'copy.createdAt')}</span>
                                     <DateTimePicker
                                         value={field.state.value}
                                         onValueChange={(date) => field.handleChange(date)}
-                                        placeholder={inlineCopy({ de: 'Datum & Uhrzeit', en: 'Date & time' }, locale)}
-                                        timeAriaLabel={inlineCopy({ de: 'Uhrzeit', en: 'Time' }, locale)}
+                                        placeholder={t(locale, 'admin', 'copy.dateTime')}
+                                        timeAriaLabel={t(locale, 'admin', 'copy.time')}
                                         locale={DATE_FNS_LOCALE[locale]}
                                         className="w-full"
                                     />
@@ -493,12 +461,12 @@ export function AdminBookingRequestOfferCreatePage({
                         <form.Field name="paymentDateTime">
                             {(field) => (
                                 <div className="grid gap-1.5">
-                                    <span className="text-sm font-medium">{inlineCopy({ de: 'Bezahlt am', en: 'Paid at' }, locale)}</span>
+                                    <span className="text-sm font-medium">{t(locale, 'admin', 'copy.paidAt')}</span>
                                     <DateTimePicker
                                         value={field.state.value}
                                         onValueChange={(date) => field.handleChange(date)}
-                                        placeholder={inlineCopy({ de: 'Datum & Uhrzeit', en: 'Date & time' }, locale)}
-                                        timeAriaLabel={inlineCopy({ de: 'Uhrzeit', en: 'Time' }, locale)}
+                                        placeholder={t(locale, 'admin', 'copy.dateTime')}
+                                        timeAriaLabel={t(locale, 'admin', 'copy.time')}
                                         locale={DATE_FNS_LOCALE[locale]}
                                         className="w-full"
                                     />
@@ -508,14 +476,12 @@ export function AdminBookingRequestOfferCreatePage({
                         <form.Field name="plannedPayoutDateTime">
                             {(field) => (
                                 <div className="grid gap-1.5">
-                                    <span className="text-sm font-medium">
-                                        {inlineCopy({ de: 'Geplante Auszahlung', en: 'Planned payout' }, locale)}
-                                    </span>
+                                    <span className="text-sm font-medium">{t(locale, 'admin', 'copy.plannedPayout')}</span>
                                     <DateTimePicker
                                         value={field.state.value}
                                         onValueChange={(date) => field.handleChange(date)}
-                                        placeholder={inlineCopy({ de: 'Datum & Uhrzeit', en: 'Date & time' }, locale)}
-                                        timeAriaLabel={inlineCopy({ de: 'Uhrzeit', en: 'Time' }, locale)}
+                                        placeholder={t(locale, 'admin', 'copy.dateTime')}
+                                        timeAriaLabel={t(locale, 'admin', 'copy.time')}
                                         locale={DATE_FNS_LOCALE[locale]}
                                         className="w-full"
                                     />
@@ -525,14 +491,12 @@ export function AdminBookingRequestOfferCreatePage({
                         <form.Field name="payoutDateTime">
                             {(field) => (
                                 <div className="grid gap-1.5">
-                                    <span className="text-sm font-medium">
-                                        {inlineCopy({ de: 'Ausgezahlt am', en: 'Paid out at' }, locale)}
-                                    </span>
+                                    <span className="text-sm font-medium">{t(locale, 'admin', 'copy.paidOutAt')}</span>
                                     <DateTimePicker
                                         value={field.state.value}
                                         onValueChange={(date) => field.handleChange(date)}
-                                        placeholder={inlineCopy({ de: 'Datum & Uhrzeit', en: 'Date & time' }, locale)}
-                                        timeAriaLabel={inlineCopy({ de: 'Uhrzeit', en: 'Time' }, locale)}
+                                        placeholder={t(locale, 'admin', 'copy.dateTime')}
+                                        timeAriaLabel={t(locale, 'admin', 'copy.time')}
                                         locale={DATE_FNS_LOCALE[locale]}
                                         className="w-full"
                                     />
@@ -547,21 +511,18 @@ export function AdminBookingRequestOfferCreatePage({
                                         checked={field.state.value}
                                         onCheckedChange={(checked) => field.handleChange(checked === true)}
                                     />
-                                    {inlineCopy({ de: 'Kunde benachrichtigen', en: 'Notify customer' }, locale)}
+                                    {t(locale, 'admin', 'copy.notifyCustomer')}
                                 </label>
                             )}
                         </form.Field>
 
                         <div className="flex flex-wrap gap-2">
                             <Button type="submit" disabled={isSubmitting || !priceValid || messageContainsPhoneNumber}>
-                                {inlineCopy(
-                                    { de: isSubmitting ? 'Wird angelegt…' : 'Anlegen', en: isSubmitting ? 'Creating…' : 'Create' },
-                                    locale,
-                                )}
+                                {isSubmitting ? t(locale, 'admin', 'copy.creating') : t(locale, 'admin', 'copy.create')}
                             </Button>
                             <Button type="button" variant="outline" asChild>
                                 <Link to="/{-$locale}/admin/booking-requests/$bookingRequestId" params={{ bookingRequestId }}>
-                                    {inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, locale)}
+                                    {t(locale, 'admin', 'copy.cancel')}
                                 </Link>
                             </Button>
                         </div>

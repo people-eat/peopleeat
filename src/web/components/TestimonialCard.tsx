@@ -3,7 +3,8 @@ import { ChevronLeftIcon, ChevronRightIcon, StarIcon } from 'lucide-react';
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode, UIEvent } from 'react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-import { formatDate, inlineCopy } from '../../shared';
+import { t } from '../../i18n/t';
+import { formatDate } from '../../shared';
 import type { Locale } from '../../shared';
 import { useIsMobile } from '../hooks/use-mobile';
 import { useLocale } from '../hooks/useLocale';
@@ -39,7 +40,9 @@ function initialsFromName(name: string): string {
 function TestimonialRating({ rating, className }: { rating: number; className?: string }) {
     const locale = useLocale();
     const average = rating.toFixed(1);
-    const label = inlineCopy({ de: `${average.replace('.', ',')} von 5 Sternen`, en: `${average} out of 5 stars` }, locale);
+    const label = t(locale, 'common', 'testimonial.starsOutOf5', {
+        average: locale === 'de' ? average.replace('.', ',') : average,
+    });
 
     return (
         <div className={cn('flex items-center gap-1.5', className)}>
@@ -81,7 +84,7 @@ function TestimonialAuthor({
     let meta: string | null = null;
     if (locationPlacement === 'with-date') {
         if (writtenAt && city) {
-            meta = inlineCopy({ de: `${writtenAt} in ${city}`, en: `${writtenAt} in ${city}` }, locale);
+            meta = t(locale, 'common', 'testimonial.writtenInCity', { writtenAt, city });
         } else {
             meta = writtenAt ?? city;
         }
@@ -106,21 +109,9 @@ function TestimonialAuthor({
 
 function experienceTitle(authorName: string, occasion: string | null, locale: Locale): string {
     if (occasion) {
-        return inlineCopy(
-            {
-                de: `${authorName}s Experience bei „${occasion}“`,
-                en: `${authorName}'s experience at ${occasion}`,
-            },
-            locale,
-        );
+        return t(locale, 'common', 'testimonial.experienceAt', { authorName, occasion });
     }
-    return inlineCopy(
-        {
-            de: `${authorName}s Experience`,
-            en: `${authorName}'s experience`,
-        },
-        locale,
-    );
+    return t(locale, 'common', 'testimonial.experience', { authorName });
 }
 
 /** Up to four square thumbs; when there are more than four, slot 4 is “+N more”. */
@@ -141,7 +132,7 @@ function TestimonialImageStrip({
     const interactive = onOpen != null;
 
     return (
-        <ul className="grid grid-cols-4 gap-1.5" aria-label={inlineCopy({ de: 'Fotos der Bewertung', en: 'Review photos' }, locale)}>
+        <ul className="grid grid-cols-4 gap-1.5" aria-label={t(locale, 'common', 'testimonial.reviewPhotos')}>
             {imageUrls.slice(0, visibleCount).map((url, index) => (
                 <li key={url}>
                     {interactive ? (
@@ -152,7 +143,7 @@ function TestimonialImageStrip({
                                 event.stopPropagation();
                                 onOpen(index);
                             }}
-                            aria-label={inlineCopy({ de: `Foto ${index + 1} ansehen`, en: `View photo ${index + 1}` }, locale)}
+                            aria-label={t(locale, 'common', 'testimonial.viewPhotoN', { n: index + 1 })}
                         >
                             <AppImage
                                 src={url}
@@ -177,21 +168,18 @@ function TestimonialImageStrip({
                                 event.stopPropagation();
                                 onOpen(visibleCount);
                             }}
-                            aria-label={inlineCopy(
-                                { de: `${moreCount} weitere Fotos ansehen`, en: `View ${moreCount} more photos` },
-                                locale,
-                            )}
+                            aria-label={t(locale, 'common', 'testimonial.viewMorePhotos', { moreCount })}
                         >
                             <AppImage src={imageUrls[visibleCount]!} alt="" className="size-full object-cover brightness-[0.45]" />
                             <span className="absolute inset-0 flex items-center justify-center text-sm font-medium text-white tabular-nums">
-                                {inlineCopy({ de: `+${moreCount} mehr`, en: `+${moreCount} more` }, locale)}
+                                {t(locale, 'common', 'testimonial.moreCount', { moreCount })}
                             </span>
                         </button>
                     ) : (
                         <div className="relative aspect-square w-full overflow-hidden rounded-md bg-muted">
                             <AppImage src={imageUrls[visibleCount]!} alt="" className="size-full object-cover brightness-[0.45]" />
                             <span className="absolute inset-0 flex items-center justify-center text-sm font-medium text-white tabular-nums">
-                                {inlineCopy({ de: `+${moreCount} mehr`, en: `+${moreCount} more` }, locale)}
+                                {t(locale, 'common', 'testimonial.moreCount', { moreCount })}
                             </span>
                         </div>
                     )}
@@ -231,7 +219,7 @@ function TestimonialGallery({
 
     const goPrev = () => onIndexChange((safeIndex - 1 + total) % total);
     const goNext = () => onIndexChange((safeIndex + 1) % total);
-    const ofLabel = inlineCopy({ de: `${safeIndex + 1} von ${total}`, en: `${safeIndex + 1} of ${total}` }, locale);
+    const ofLabel = t(locale, 'common', 'testimonial.ofN', { n: safeIndex + 1, total });
 
     const onScrollerScroll = (event: UIEvent<HTMLDivElement>) => {
         const scroller = event.currentTarget;
@@ -250,7 +238,7 @@ function TestimonialGallery({
                     className="flex size-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain no-scrollbar"
                     onScroll={onScrollerScroll}
                     aria-roledescription="carousel"
-                    aria-label={inlineCopy({ de: 'Fotos der Bewertung', en: 'Review photos' }, locale)}
+                    aria-label={t(locale, 'common', 'testimonial.reviewPhotos')}
                 >
                     {imageUrls.map((url, imageIndex) => (
                         <div
@@ -274,7 +262,7 @@ function TestimonialGallery({
                             type="button"
                             variant="secondary"
                             size="icon"
-                            aria-label={inlineCopy({ de: 'Vorheriges Foto', en: 'Previous photo' }, locale)}
+                            aria-label={t(locale, 'common', 'testimonial.previousPhoto')}
                             onClick={goPrev}
                             className="absolute top-1/2 left-3 z-10 -translate-y-1/2 shadow-md"
                         >
@@ -284,7 +272,7 @@ function TestimonialGallery({
                             type="button"
                             variant="secondary"
                             size="icon"
-                            aria-label={inlineCopy({ de: 'Nächstes Foto', en: 'Next photo' }, locale)}
+                            aria-label={t(locale, 'common', 'testimonial.nextPhoto')}
                             onClick={goNext}
                             className="absolute top-1/2 right-3 z-10 -translate-y-1/2 shadow-md"
                         >
@@ -300,7 +288,7 @@ function TestimonialGallery({
             {total > 1 ? (
                 <ul
                     className={cn('grid grid-cols-4 gap-1.5 @sm:grid-cols-5 @3xl:grid-cols-6', bleed && 'px-4 pt-3')}
-                    aria-label={inlineCopy({ de: 'Alle Fotos', en: 'All photos' }, locale)}
+                    aria-label={t(locale, 'common', 'testimonial.allPhotos')}
                 >
                     {imageUrls.map((url, thumbIndex) => {
                         const selected = thumbIndex === safeIndex;
@@ -315,7 +303,7 @@ function TestimonialGallery({
                                             : 'opacity-80 hover:opacity-100',
                                     )}
                                     aria-current={selected ? 'true' : undefined}
-                                    aria-label={inlineCopy({ de: `Foto ${thumbIndex + 1}`, en: `Photo ${thumbIndex + 1}` }, locale)}
+                                    aria-label={t(locale, 'common', 'testimonial.photoN', { n: thumbIndex + 1 })}
                                     onClick={() => onIndexChange(thumbIndex)}
                                 >
                                     <AppImage src={url} alt="" className="size-full object-cover" />
@@ -342,20 +330,8 @@ function TestimonialDetailCopy({
     const title = experienceTitle(testimonial.authorName, occasion, locale);
 
     const occasionQuestion = occasion
-        ? inlineCopy(
-              {
-                  de: `Auch auf der Suche nach einer Experience wie „${occasion}“?`,
-                  en: `Also looking for a ${occasion} experience?`,
-              },
-              locale,
-          )
-        : inlineCopy(
-              {
-                  de: 'Lust auf euren eigenen Abend mit Privatkoch?',
-                  en: 'Ready for your own private chef evening?',
-              },
-              locale,
-          );
+        ? t(locale, 'common', 'testimonial.alsoLookingFor', { occasion })
+        : t(locale, 'common', 'testimonial.ownEvening');
 
     return (
         <div className="flex flex-col gap-6">
@@ -363,7 +339,7 @@ function TestimonialDetailCopy({
                 <DialogTitle className="text-balance text-lg/snug font-medium text-foreground @md:text-2xl/snug">{title}</DialogTitle>
                 {testimonial.rating != null ? <TestimonialRating rating={testimonial.rating} /> : null}
                 <DialogDescription className="sr-only">
-                    {testimonial.location ?? inlineCopy({ de: 'Kundenbewertung', en: 'Customer review' }, locale)}
+                    {testimonial.location ?? t(locale, 'common', 'testimonial.customerReview')}
                 </DialogDescription>
             </DialogHeader>
 
@@ -386,11 +362,11 @@ function TestimonialDetailCopy({
                     <div className="flex flex-col items-center gap-2">
                         <Button asChild className="w-full @sm:w-auto">
                             <Link to="/{-$locale}/booking-request/form" search={occasion ? { occasion } : {}}>
-                                {inlineCopy({ de: 'Anfrage starten', en: 'Start a request' }, locale)}
+                                {t(locale, 'common', 'testimonial.startRequest')}
                             </Link>
                         </Button>
                         <p className="text-center text-sm text-muted-foreground">
-                            {inlineCopy({ de: 'Kostenlos und unverbindlich', en: 'Free and no obligation' }, locale)}
+                            {t(locale, 'common', 'testimonial.freeAndNoObligation')}
                         </p>
                     </div>
                 </div>
@@ -472,7 +448,7 @@ function TestimonialDetailSheet({
 }) {
     const locale = useLocale();
     const hasImages = imageUrls.length > 0;
-    const backLabel = inlineCopy({ de: 'Zurück', en: 'Back' }, locale);
+    const backLabel = t(locale, 'common', 'pagination.previous');
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
@@ -600,7 +576,7 @@ export function TestimonialCard({
     const locale = useLocale();
     const [open, setOpen] = useState(false);
     const [imageIndex, setImageIndex] = useState(0);
-    const viewLabel = inlineCopy({ de: 'Bewertung ansehen', en: 'View review' }, locale);
+    const viewLabel = t(locale, 'common', 'testimonial.viewReview');
 
     const openAt = (index: number) => {
         setImageIndex(index);

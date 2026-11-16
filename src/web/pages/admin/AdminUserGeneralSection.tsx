@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
 import { t } from '../../../i18n/t';
-import { formatDate, inlineCopy, userBirthDatePickerBounds, userDisplayName } from '../../../shared';
+import { formatDate, userBirthDatePickerBounds, userDisplayName } from '../../../shared';
 import { AccountNotificationSettings } from '../../components/AccountNotificationSettings';
 import {
     AlertDialog,
@@ -384,15 +384,7 @@ export function AdminUserGeneralSection({
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>
-                            {inlineCopy(
-                                {
-                                    de: `Als ${displayName} anmelden?`,
-                                    en: `Sign in as ${displayName}?`,
-                                },
-                                locale,
-                            )}
-                        </AlertDialogTitle>
+                        <AlertDialogTitle>{t(locale, 'admin', 'copy.signInAsNamed', { name: displayName })}</AlertDialogTitle>
                         <AlertDialogDescription>
                             {t(locale, 'admin', 'copy.youWillActAsThisUserAfterwardToReturnSignInAgainAsAnAdmin')}
                         </AlertDialogDescription>
@@ -601,15 +593,7 @@ export function AdminUserGeneralSection({
                                             <SelectItem value="en">English</SelectItem>
                                         </SelectContent>
                                     </Select>
-                                    <p className="text-xs text-muted-foreground">
-                                        {inlineCopy(
-                                            {
-                                                de: 'Oberfläche, E-Mails und WhatsApp dieser Person.',
-                                                en: "This person's interface, emails, and WhatsApp.",
-                                            },
-                                            locale,
-                                        )}
-                                    </p>
+                                    <p className="text-xs text-muted-foreground">{t(locale, 'admin', 'copy.localeAffectsInterface')}</p>
                                 </div>
                             )}
                         </form.Field>

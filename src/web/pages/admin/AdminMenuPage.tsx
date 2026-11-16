@@ -6,7 +6,7 @@ import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
 import { t } from '../../../i18n/t';
-import { formatDateTime, inlineCopy } from '../../../shared';
+import { formatDateTime } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import {
@@ -245,13 +245,14 @@ export function AdminMenuPage({ data, menuId }: { data: GqlCAdminMenuPageQuery; 
                         <h1 className="font-serif text-3xl/tight text-foreground">{menu.title}</h1>
                         {menu.generatedAt != null ? (
                             <p className="text-sm text-muted-foreground">
-                                {inlineCopy(
-                                    {
-                                        de: `Generiert am ${formatDateTime(menu.generatedAt, { locale, timeZone, dateStyle: 'medium', timeStyle: 'short' })}`,
-                                        en: `Generated on ${formatDateTime(menu.generatedAt, { locale, timeZone, dateStyle: 'medium', timeStyle: 'short' })}`,
-                                    },
-                                    locale,
-                                )}
+                                {t(locale, 'admin', 'copy.generatedOn', {
+                                    when: formatDateTime(menu.generatedAt, {
+                                        locale,
+                                        timeZone,
+                                        dateStyle: 'medium',
+                                        timeStyle: 'short',
+                                    }),
+                                })}
                             </p>
                         ) : null}
                         <p className="text-muted-foreground whitespace-pre-wrap">
@@ -269,17 +270,7 @@ export function AdminMenuPage({ data, menuId }: { data: GqlCAdminMenuPageQuery; 
                         {canEdit && incompleteCourseCount > 0 ? (
                             <StatusAlert
                                 tone="warning"
-                                title={
-                                    incompleteCourseCount === 1
-                                        ? t(locale, 'admin', 'copy.n1CourseIsIncomplete')
-                                        : inlineCopy(
-                                              {
-                                                  de: `${incompleteCourseCount} Gänge sind unvollständig`,
-                                                  en: `${incompleteCourseCount} courses are incomplete`,
-                                              },
-                                              locale,
-                                          )
-                                }
+                                title={t(locale, 'admin', 'copy.incompleteCourseCount', { count: incompleteCourseCount })}
                             >
                                 {t(locale, 'admin', 'copy.toPublishEveryCourseNeedsAtLeastOneMeal')}
                             </StatusAlert>
@@ -296,13 +287,7 @@ export function AdminMenuPage({ data, menuId }: { data: GqlCAdminMenuPageQuery; 
                                             </p>
                                             {isMultiSelect ? (
                                                 <Badge variant="outline">
-                                                    {inlineCopy(
-                                                        {
-                                                            de: `Bis zu ${selectionLimit} Gerichte auswählbar`,
-                                                            en: `Up to ${selectionLimit} dishes selectable`,
-                                                        },
-                                                        locale,
-                                                    )}
+                                                    {t(locale, 'admin', 'copy.upToDishesSelectable', { count: selectionLimit })}
                                                 </Badge>
                                             ) : course.mealOptions.length > 1 ? (
                                                 <span className="text-sm text-muted-foreground">

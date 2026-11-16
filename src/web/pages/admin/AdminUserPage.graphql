@@ -260,8 +260,7 @@ query AdminUserPage(
                     sessionEventId
                     sessionId
                     type
-                    descriptionDe
-                    descriptionEn
+                    description
                     createdAt
                     link
                     isImpersonation

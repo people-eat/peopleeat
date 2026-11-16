@@ -4,12 +4,11 @@ import { de as deLocale, enUS } from 'date-fns/locale';
 import { PaperclipIcon } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useMutation } from 'urql';
-import { inlineCopy } from '../../shared';
-
 import { FILE_UPLOAD_ACCEPT } from '../../shared/fileUploadMediaTypes';
 import { useComposerFileAttachments } from '../chat/useComposerFileAttachments';
 import { ProfileSupportRequestCreateDocument } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { AttachmentGroup } from './base/attachment';
 import { Button } from './base/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './base/card';
@@ -39,6 +38,7 @@ export function SupportRequestCreateForm({
     onCancel?: () => void;
 }) {
     const locale = useLocale();
+    const { t } = useT('common');
     const dateLocale = locale === 'de' ? deLocale : enUS;
     const [, createSupportRequest] = useMutation(ProfileSupportRequestCreateDocument);
     const [submitError, setSubmitError] = useState(false);
@@ -85,16 +85,8 @@ export function SupportRequestCreateForm({
     return (
         <Card>
             <CardHeader>
-                <CardTitle>{inlineCopy({ de: 'Neue Support-Anfrage', en: 'New support request' }, locale)}</CardTitle>
-                <CardDescription>
-                    {inlineCopy(
-                        {
-                            de: 'Beschreibe kurz dein Anliegen. Unser Team meldet sich im Chat.',
-                            en: 'Briefly describe your issue. Our team will reply in chat.',
-                        },
-                        locale,
-                    )}
-                </CardDescription>
+                <CardTitle>{t('supportRequest.newTitle')}</CardTitle>
+                <CardDescription>{t('supportRequest.newDescription')}</CardDescription>
             </CardHeader>
             <form
                 onSubmit={(event) => {
@@ -109,7 +101,7 @@ export function SupportRequestCreateForm({
                             {(field) => (
                                 <div className="grid gap-2">
                                     <label htmlFor={field.name} className="text-sm font-medium">
-                                        {inlineCopy({ de: 'Buchungsanfrage (optional)', en: 'Booking request (optional)' }, locale)}
+                                        {t('supportRequest.bookingOptional')}
                                     </label>
                                     <Select
                                         value={field.state.value || NO_BOOKING_VALUE}
@@ -119,9 +111,7 @@ export function SupportRequestCreateForm({
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value={NO_BOOKING_VALUE}>
-                                                {inlineCopy({ de: 'Keine / Allgemein', en: 'None / General' }, locale)}
-                                            </SelectItem>
+                                            <SelectItem value={NO_BOOKING_VALUE}>{t('supportRequest.noneGeneral')}</SelectItem>
                                             {availableBookings.map((option) => (
                                                 <SelectItem key={option.bookingRequestId} value={option.bookingRequestId}>
                                                     {option.occasion}
@@ -139,7 +129,7 @@ export function SupportRequestCreateForm({
                         {(field) => (
                             <div className="grid gap-2">
                                 <label htmlFor={field.name} className="text-sm font-medium">
-                                    {inlineCopy({ de: 'Betreff', en: 'Subject' }, locale)}
+                                    {t('supportRequest.subject')}
                                 </label>
                                 <Input
                                     id={field.name}
@@ -155,7 +145,7 @@ export function SupportRequestCreateForm({
                         {(field) => (
                             <div className="grid gap-2">
                                 <label htmlFor={field.name} className="text-sm font-medium">
-                                    {inlineCopy({ de: 'Nachricht', en: 'Message' }, locale)}
+                                    {t('supportRequest.message')}
                                 </label>
                                 <Textarea
                                     id={field.name}
@@ -172,7 +162,7 @@ export function SupportRequestCreateForm({
                         <div className="flex flex-wrap items-center gap-2">
                             <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
                                 <PaperclipIcon className="size-4" />
-                                {inlineCopy({ de: 'Datei anhängen', en: 'Attach file' }, locale)}
+                                {t('composer.attach')}
                             </Button>
                             <input
                                 ref={fileInputRef}
@@ -201,27 +191,17 @@ export function SupportRequestCreateForm({
                             </AttachmentGroup>
                         ) : null}
                     </div>
-                    {submitError ? (
-                        <p className="text-sm text-destructive">
-                            {inlineCopy(
-                                {
-                                    de: 'Anfrage konnte nicht gesendet werden. Bitte versuche es erneut.',
-                                    en: 'Could not send the request. Please try again.',
-                                },
-                                locale,
-                            )}
-                        </p>
-                    ) : null}
+                    {submitError ? <p className="text-sm text-destructive">{t('supportRequest.sendFailed')}</p> : null}
                     <div className="flex flex-wrap justify-end gap-2">
                         {onCancel ? (
                             <Button type="button" variant="outline" onClick={onCancel}>
-                                {inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, locale)}
+                                {t('cancel')}
                             </Button>
                         ) : null}
                         <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting] as const}>
                             {([canSubmit, isSubmitting]) => (
                                 <Button type="submit" disabled={!canSubmit || isSubmitting || hasUploading}>
-                                    {inlineCopy({ de: 'Absenden', en: 'Submit' }, locale)}
+                                    {t('submit')}
                                 </Button>
                             )}
                         </form.Subscribe>

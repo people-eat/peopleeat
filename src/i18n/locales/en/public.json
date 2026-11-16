@@ -421,7 +421,58 @@
         "expansionTitle": "peopleeat is coming to new countries",
         "expansionIntro": "Chefs in the Netherlands and Switzerland can join now. Hosts there book from early 2027.",
         "chefsNowHosts2027": "Chefs now. Hosts in early 2027.",
-        "learnMore": "Learn more"
+        "learnMore": "Learn more",
+        "cityListJoin": "{head}, and {last}",
+        "pageTitle": "peopleeat is coming {comingTo}",
+        "pageDescription": "Chefs can join now. Hosts book from early 2027. {cities}.",
+        "foundingTitle": "Become a founding chef {inCountry}",
+        "foundingDescription": "Join early as a private chef {inCountry}. Profile now, guest requests from early 2027.",
+        "markets": {
+            "netherlands": {
+                "comingTo": "to the Netherlands",
+                "inCountry": "in the Netherlands"
+            },
+            "switzerland": {
+                "comingTo": "to Switzerland",
+                "inCountry": "in Switzerland"
+            }
+        },
+        "faq": {
+            "canBook": {
+                "question": "Can I book a chef {inCountry} already?",
+                "answer": "No. peopleeat is not taking host booking requests {inCountry} yet. Guest booking starts in early 2027. Chefs can join now."
+            },
+            "registerNow": {
+                "question": "Can I register as a chef now?",
+                "answer": "Yes. Founding chefs in {cities} can set up a profile and first menu now. Guest requests follow in early 2027."
+            },
+            "whichCities": {
+                "question": "Which cities is peopleeat launching in?",
+                "answer": "At launch we name {cities}. Chefs with a matching travel radius can also cover nearby places."
+            },
+            "sendAnyway": {
+                "question": "What happens if I still send a request?",
+                "answer": "We cannot accept a booking request for an address {inCountry} yet. Please wait for the early 2027 launch, or register as a chef if you want to cook."
+            }
+        },
+        "foundingFaq": {
+            "requestsNow": {
+                "question": "Will I receive booking requests right away?",
+                "answer": "No. You can finish your profile and menu now. Guest requests {inCountry} start in early 2027. That way you are ready on day one."
+            },
+            "whyEarly": {
+                "question": "Why should I join early?",
+                "answer": "You join the first local chef network, your profile is live at launch, and you are featured on the first city pages. We support you directly during onboarding."
+            },
+            "whichCities": {
+                "question": "Which cities can I cover?",
+                "answer": "Set your travel origin and radius. Typical cities are {cities}."
+            },
+            "priceBenefit": {
+                "question": "Is there a price benefit for founding chefs?",
+                "answer": "The benefits now are your place at launch, visibility on the first city pages, and direct support. We do not name a separate fee arrangement here."
+            }
+        }
     },
     "howToBecome": {
         "line1": "Cook your menu.",

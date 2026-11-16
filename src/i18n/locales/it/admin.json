@@ -1511,7 +1511,61 @@
         "optional": "optional",
         "pendingReview2": "Pending review",
         "chefProfile2": "Chef profile",
-        "notUsedOnAnyPublicPageYet": "Not used on any public page yet."
+        "notUsedOnAnyPublicPageYet": "Not used on any public page yet.",
+        "userCount": "{count, plural, one {# utente} other {# utenti}}",
+        "chatCount": "{count, plural, one {# chat} other {# chat}}",
+        "requestCount": "{count, plural, one {# richiesta} other {# richieste}}",
+        "sessionCount": "{count, plural, one {# sessione} other {# sessioni}}",
+        "promoCodeCount": "{count, plural, one {# codice promo} other {# codici promo}}",
+        "giftCardCount": "{count, plural, one {# buono} other {# buoni}}",
+        "messageCount": "{count, plural, one {# messaggio} other {# messaggi}}",
+        "entryCount": "{count, plural, one {# voce} other {# voci}}",
+        "aiCallCount": "{count, plural, one {# chiamata} other {# chiamate}}",
+        "unreadMessageCount": "{count, plural, one {# messaggio non letto} other {# messaggi non letti}}",
+        "unreadNotificationCount": "{count, plural, one {# notifica non letta} other {# notifiche non lette}}",
+        "pendingReviewMessageCount": "{count, plural, one {# nuovo messaggio dall'ultima verifica.} other {# nuovi messaggi dall'ultima verifica.}}",
+        "incompleteCourseCount": "{count, plural, one {1 portata è incompleta} other {# portate sono incomplete}}",
+        "maxPhotosPerReview": "Al massimo {count} foto per recensione.",
+        "testimonialsVisibleOfTotal": "{visible} di {total} recensioni",
+        "signInAsNamed": "Accedere come {name}?",
+        "localeAffectsInterface": "Interfaccia, e-mail e WhatsApp di questa persona.",
+        "globalOn": "Globale: attivo",
+        "globalOff": "Globale: disattivo",
+        "joinedOn": "Registrato il {date}",
+        "cardN": "Scheda {n}",
+        "detailNDe": "Dettaglio {n} (DE)",
+        "detailNEn": "Dettaglio {n} (EN)",
+        "generatedOn": "Generato il {when}",
+        "offerForNamed": "Offerta per {name}",
+        "regeneratePdfs": "Rigenera i PDF",
+        "regenerate": "Rigenera",
+        "summarize": "Riassumi",
+        "hideTranscript": "Nascondi trascrizione",
+        "showTranscript": "Mostra trascrizione",
+        "callNotFound": "La chiamata {id} non è stata trovata.",
+        "scopedToBookingRequest": "Collegato alla richiesta di prenotazione ({id})",
+        "partnerDeletedNamed": "«{name}» verrà eliminato in modo permanente.",
+        "suggestedPrice": "Prezzo suggerito (€)",
+        "suggestedPricePerPerson": "Prezzo suggerito a persona (€)",
+        "upToDishesSelectable": "Fino a {count} piatti selezionabili",
+        "paymentStatusNoPriceChanges": "Lo stato di pagamento {status} non consente modifiche di prezzo (solo EMPTY, SETUP o PAYED).",
+        "paymentStatusNoChanges": "Lo stato di pagamento {status} non consente modifiche (solo EMPTY, SETUP o PAYED).",
+        "guestsWithRestrictions": "{guestCount, plural, one {# ospite} other {# ospiti}} · {restrictedCount} con restrizioni",
+        "hostPriceToCookPayout": "Prezzo ospite {from} → {to}. Pagamento cuoco {payoutFrom} → {payoutTo}.",
+        "giftCardCodeExpires": "Codice {code} · scade il {when}",
+        "defaultPlatformFees": "Predefinito: {cookPercent} % cuoco / {customerPercent} % cliente",
+        "platformFeeCookPercent": "Commissione piattaforma cuoco ({percent} %)",
+        "platformFeeCustomerPercent": "Commissione piattaforma cliente ({percent} %)",
+        "cookStripeAccountInactive": "Il conto Stripe del cuoco non è attivo.",
+        "callRequestPendingCustomerAwaitingChef": "Richiesta di chiamata in attesa: il cliente attende il cuoco",
+        "callRequestPendingChefAwaitingCustomer": "Richiesta di chiamata in attesa: il cuoco attende il cliente",
+        "payoutDueSince": "Dovuto dal {when} · {amount}",
+        "markedAsPaidOutOfSystemCheckStripe": "Contrassegnato come pagato fuori sistema. Controlla eventualmente se Stripe ha già versato.",
+        "stripeBankPayoutReleased": "Il bonifico Stripe sul conto del cuoco è stato avviato.",
+        "technicalStatus": "Tecnico: {status}",
+        "tokenUsage": "Input {input} · Output {output} · Totale {total} · Reasoning {reasoning} · Cache {cache}",
+        "callsInRangeRates": "Nel periodo: tasso di conferma {confirmRate}% · tasso di rifiuto {declineRate}% (su slot completati + rifiutati + annullati).",
+        "cookCallStats": "{rooms} stanze · {completed} completati · {declined} rifiutati · {awaiting} in attesa"
     },
     "analytics": {
         "funnels": {
@@ -1553,7 +1607,8 @@
                 "profile": "Profilo cuoco",
                 "created": "Account cuoco creato"
             }
-        }
+        },
+        "cookConversion": "Conversione da notifica a offerta: {percent}%."
     },
     "sessionEvents": {
         "static": {
@@ -1659,7 +1714,20 @@
             "COMPLETED": "Completed",
             "EXPIRED": "Expired",
             "CANCELED": "Cancelled"
-        }
+        },
+        "travelApprox": "Viaggio ca. {amount}",
+        "menuApprox": "Menu ~{amount}",
+        "approveCount": "Approva ({count})",
+        "notifyAgain": "Notificare di nuovo {name}?",
+        "suggestThis": "Proporre questa richiesta a {name}?",
+        "list": {
+            "unreadSuffix": " · {count} non letti",
+            "offerFrom": "Offerta di {name} · {status} · {createdAt}{unread}",
+            "moreOffers": "Mostra altre {count} offerte",
+            "offerCount": "{count, plural, one {# offerta} other {# offerte}}"
+        },
+        "selectedCount": "{count} selezionati",
+        "notifyCount": "Notifica ({count})"
     },
     "bookingRequestOffer": {
         "status": {
@@ -2001,7 +2069,13 @@
         },
         "bookingRequestEdit": {
             "title": "Edit request",
-            "description": "Edit occasion, date, venue, preferences, messages, price class, and restrictions."
+            "description": "Edit occasion, date, venue, preferences, messages, price class, and restrictions.",
+            "priceClass": {
+                "NONE": "Nessuna",
+                "LOW": "Bassa",
+                "MEDIUM": "Media",
+                "HIGH": "Alta"
+            }
         },
         "bookingRequestCreate": {
             "title": "Create booking request",
@@ -2096,7 +2170,12 @@
             "title": "Log list"
         },
         "legal": {
-            "description": "How privacy policy, terms, and imprint are versioned and published."
+            "description": "How privacy policy, terms, and imprint are versioned and published.",
+            "blurb": {
+                "privacy": "Gestisci bozza e versioni pubblicate. Le modifiche attivano l'obbligo di accettazione.",
+                "terms": "Gestisci bozza e versioni pubblicate. Le modifiche attivano l'obbligo di accettazione.",
+                "imprint": "Gestisci bozza e versioni pubblicate. Non fa parte dell'obbligo di accettazione."
+            }
         },
         "giftCards": {
             "title": "Gift card list",
@@ -2263,7 +2342,12 @@
             "default": "Default (global)",
             "user-on": "Enabled for user",
             "user-off": "Disabled for user"
-        }
+        },
+        "addOverrideFor": "Imposta un’eccezione per “{label}”.",
+        "overrideCount": "{count, plural, one {# eccezione} other {# eccezioni}}",
+        "enableNamed": "Attivare “{label}”?",
+        "disableNamed": "Disattivare “{label}”?",
+        "visibleOfTotal": "{visible} di {total}"
     },
     "giftCards": {
         "occasions": {
@@ -2324,7 +2408,9 @@
             "BOOKING_REQUEST_OFFER_CHAT_MESSAGE_TO_CUSTOMER": "Offer chat to customer",
             "BOOKING_REQUEST_OFFER_CHAT_MESSAGE_TO_COOK": "Offer chat to cook",
             "COOK_APPROVED_BY_ADMIN": "Cook approved"
-        }
+        },
+        "quotaReset": "Reset: {when}",
+        "emailCount": "{count, plural, one {# e-mail} other {# e-mail}}"
     },
     "queuedJobs": {
         "names": {
@@ -2406,5 +2492,29 @@
             "BOOKING_REQUEST_COOK_MENU_EVALUATION": "Menu evaluation (request)",
             "BOOKING_REQUEST_ADJUSTED_MESSAGE": "Adjusted booking-request message"
         }
+    },
+    "list": {
+        "pageOf": "Pagina {page} di {pageCount}",
+        "rangeOfTotal": "{from}–{to} di {total}"
+    },
+    "users": {
+        "countPercent": "{count} · {percent} %",
+        "turnsAge": "compie {age} anni"
+    },
+    "testimonials": {
+        "outOf5Stars": "{average} su 5 stelle",
+        "positionN": "Posizione {n}"
+    },
+    "fileStore": {
+        "bucket": "Bucket: {bucket}.",
+        "objectCount": "{count, plural, one {# oggetto} other {# oggetti}}"
+    },
+    "bookingRequests": {
+        "offersAndAccepts": "{offerCount} offerte · {conversionCount} accettazioni",
+        "acceptsAndOffers": "{conversionCount} accettazioni · {offerCount} offerte",
+        "guestCount": "{count, plural, one {# ospite} other {# ospiti}}"
+    },
+    "cookProfile": {
+        "previousPaths": "Percorsi precedenti: {paths}"
     }
 }

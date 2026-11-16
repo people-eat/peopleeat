@@ -579,8 +579,7 @@ export interface GqlCAdminAnalyticsFunnelStepStats {
     completedCount: Scalars['Int']['output'];
     enteredCount: Scalars['Int']['output'];
     id: Scalars['String']['output'];
-    labelDe: Scalars['String']['output'];
-    labelEn: Scalars['String']['output'];
+    label: Scalars['String']['output'];
 }
 
 export interface GqlCAdminAnalyticsSankeyLink {
@@ -593,8 +592,7 @@ export interface GqlCAdminAnalyticsSankeyLink {
 export interface GqlCAdminAnalyticsSankeyNode {
     __typename?: 'AdminAnalyticsSankeyNode';
     id: Scalars['String']['output'];
-    labelDe: Scalars['String']['output'];
-    labelEn: Scalars['String']['output'];
+    label: Scalars['String']['output'];
 }
 
 export interface GqlCAdminAnalyticsSessionFunnelFlow {
@@ -2326,8 +2324,7 @@ export type GqlCAdminSessionCriterion = {
 export interface GqlCAdminSessionEvent {
     __typename?: 'AdminSessionEvent';
     createdAt: Scalars['DateTime']['output'];
-    descriptionDe: Scalars['String']['output'];
-    descriptionEn: Scalars['String']['output'];
+    description: Scalars['String']['output'];
     isImpersonation: Scalars['Boolean']['output'];
     link?: Maybe<Scalars['String']['output']>;
     sessionEventId: Scalars['ID']['output'];
@@ -10356,39 +10353,39 @@ export type GqlCAdminAnalyticsPageQuery = {
                 bookingRequestFormFlow: {
                     sessionsWithCompletion: number;
                     bookingRequestsCreated: number;
-                    nodes: Array<{ id: string; labelDe: string; labelEn: string }>;
+                    nodes: Array<{ id: string; label: string }>;
                     links: Array<{ source: string; target: string; value: number }>;
-                    steps: Array<{ id: string; labelDe: string; labelEn: string; enteredCount: number; completedCount: number }>;
+                    steps: Array<{ id: string; label: string; enteredCount: number; completedCount: number }>;
                 };
                 giftCardFlow: {
                     sessionsWithCompletion: number;
                     terminalCount: number;
-                    nodes: Array<{ id: string; labelDe: string; labelEn: string }>;
+                    nodes: Array<{ id: string; label: string }>;
                     links: Array<{ source: string; target: string; value: number }>;
-                    steps: Array<{ id: string; labelDe: string; labelEn: string; enteredCount: number; completedCount: number }>;
+                    steps: Array<{ id: string; label: string; enteredCount: number; completedCount: number }>;
                 };
                 chefSignUpFlow: {
                     sessionsWithCompletion: number;
                     terminalCount: number;
-                    nodes: Array<{ id: string; labelDe: string; labelEn: string }>;
+                    nodes: Array<{ id: string; label: string }>;
                     links: Array<{ source: string; target: string; value: number }>;
-                    steps: Array<{ id: string; labelDe: string; labelEn: string; enteredCount: number; completedCount: number }>;
+                    steps: Array<{ id: string; label: string; enteredCount: number; completedCount: number }>;
                 };
                 bookingRequestCheckoutFlow: {
                     sessionsWithCompletion: number;
                     terminalCount: number;
-                    nodes: Array<{ id: string; labelDe: string; labelEn: string }>;
+                    nodes: Array<{ id: string; label: string }>;
                     links: Array<{ source: string; target: string; value: number }>;
-                    steps: Array<{ id: string; labelDe: string; labelEn: string; enteredCount: number; completedCount: number }>;
+                    steps: Array<{ id: string; label: string; enteredCount: number; completedCount: number }>;
                 };
                 cookBookingRequestOfferFlow: {
                     notifiedCount: number;
                     openedCount: number;
                     declinedCount: number;
                     offersCreatedCount: number;
-                    nodes: Array<{ id: string; labelDe: string; labelEn: string }>;
+                    nodes: Array<{ id: string; label: string }>;
                     links: Array<{ source: string; target: string; value: number }>;
-                    steps: Array<{ id: string; labelDe: string; labelEn: string; enteredCount: number; completedCount: number }>;
+                    steps: Array<{ id: string; label: string; enteredCount: number; completedCount: number }>;
                 };
                 formVisits: Array<{ bucketStart: string; count: number }>;
                 landingVisits: Array<{ bucketStart: string; count: number }>;
@@ -16797,8 +16794,7 @@ export type GqlCAdminSessionPageQuery = {
                     sessionEventId: string;
                     sessionId: string;
                     type: string;
-                    descriptionDe: string;
-                    descriptionEn: string;
+                    description: string;
                     createdAt: string;
                     link: string | null;
                     isImpersonation: boolean;
@@ -17736,8 +17732,7 @@ export type GqlCAdminUserPageQuery = {
                     sessionEventId: string;
                     sessionId: string;
                     type: string;
-                    descriptionDe: string;
-                    descriptionEn: string;
+                    description: string;
                     createdAt: string;
                     link: string | null;
                     isImpersonation: boolean;
@@ -49177,8 +49172,7 @@ export const AdminAnalyticsPageDocument = {
                                                                             kind: 'SelectionSet',
                                                                             selections: [
                                                                                 { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
                                                                             ],
                                                                         },
                                                                     },
@@ -49201,8 +49195,7 @@ export const AdminAnalyticsPageDocument = {
                                                                             kind: 'SelectionSet',
                                                                             selections: [
                                                                                 { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
                                                                                 {
                                                                                     kind: 'Field',
                                                                                     name: { kind: 'Name', value: 'enteredCount' },
@@ -49245,8 +49238,7 @@ export const AdminAnalyticsPageDocument = {
                                                                             kind: 'SelectionSet',
                                                                             selections: [
                                                                                 { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
                                                                             ],
                                                                         },
                                                                     },
@@ -49269,8 +49261,7 @@ export const AdminAnalyticsPageDocument = {
                                                                             kind: 'SelectionSet',
                                                                             selections: [
                                                                                 { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
                                                                                 {
                                                                                     kind: 'Field',
                                                                                     name: { kind: 'Name', value: 'enteredCount' },
@@ -49310,8 +49301,7 @@ export const AdminAnalyticsPageDocument = {
                                                                             kind: 'SelectionSet',
                                                                             selections: [
                                                                                 { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
                                                                             ],
                                                                         },
                                                                     },
@@ -49334,8 +49324,7 @@ export const AdminAnalyticsPageDocument = {
                                                                             kind: 'SelectionSet',
                                                                             selections: [
                                                                                 { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
                                                                                 {
                                                                                     kind: 'Field',
                                                                                     name: { kind: 'Name', value: 'enteredCount' },
@@ -49375,8 +49364,7 @@ export const AdminAnalyticsPageDocument = {
                                                                             kind: 'SelectionSet',
                                                                             selections: [
                                                                                 { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
                                                                             ],
                                                                         },
                                                                     },
@@ -49399,8 +49387,7 @@ export const AdminAnalyticsPageDocument = {
                                                                             kind: 'SelectionSet',
                                                                             selections: [
                                                                                 { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
                                                                                 {
                                                                                     kind: 'Field',
                                                                                     name: { kind: 'Name', value: 'enteredCount' },
@@ -49440,8 +49427,7 @@ export const AdminAnalyticsPageDocument = {
                                                                             kind: 'SelectionSet',
                                                                             selections: [
                                                                                 { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
                                                                             ],
                                                                         },
                                                                     },
@@ -49464,8 +49450,7 @@ export const AdminAnalyticsPageDocument = {
                                                                             kind: 'SelectionSet',
                                                                             selections: [
                                                                                 { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
                                                                                 {
                                                                                     kind: 'Field',
                                                                                     name: { kind: 'Name', value: 'enteredCount' },
@@ -70224,8 +70209,7 @@ export const AdminSessionPageDocument = {
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'sessionEventId' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'sessionId' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'type' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'link' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'isImpersonation' } },
@@ -73548,8 +73532,7 @@ export const AdminUserPageDocument = {
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'sessionEventId' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'sessionId' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'type' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'link' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'isImpersonation' } },

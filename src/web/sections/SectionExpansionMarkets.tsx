@@ -1,7 +1,6 @@
 import { Link } from '@tanstack/react-router';
 
-import { inlineCopy } from '../../shared';
-import { expansionMarketCityList, expansionMarketList } from '../../shared/expansionMarkets';
+import { expansionMarketCityList, expansionMarketComingToTitle, expansionMarketList } from '../../shared/expansionMarkets';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/base/card';
 import { ExpansionMarketFlag } from '../components/ExpansionMarketFlag';
 import { useLocale } from '../hooks/useLocale';
@@ -31,7 +30,7 @@ export function SectionExpansionMarkets() {
                                         {t('comingTo.newMarket')}
                                     </CardDescription>
                                     <CardTitle className="font-serif text-2xl font-light tracking-tight @md:text-3xl">
-                                        <h3>{inlineCopy(market.comingToTitle, locale)}</h3>
+                                        <h3>{expansionMarketComingToTitle(market, locale)}</h3>
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="flex flex-1 flex-col gap-2">

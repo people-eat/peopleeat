@@ -1,8 +1,7 @@
 import { Link } from '@tanstack/react-router';
 
-import { inlineCopy } from '../../shared';
+import { expansionMarketCityList, expansionMarketComingToTitle } from '../../shared/expansionMarkets';
 import type { ExpansionMarket } from '../../shared/expansionMarkets';
-import { expansionMarketCityList } from '../../shared/expansionMarkets';
 import { useLocale } from '../hooks/useLocale';
 import { useT } from '../hooks/useT';
 
@@ -41,7 +40,7 @@ export function SectionComingToCountryCities({
                         params={{ country: market.slug }}
                         className="text-sm font-medium text-foreground underline-offset-4 hover:underline"
                     >
-                        {inlineCopy(market.comingToTitle, locale)}
+                        {expansionMarketComingToTitle(market, locale)}
                     </Link>
                 </p>
             ) : null}

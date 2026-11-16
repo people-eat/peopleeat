@@ -6,7 +6,6 @@ import {
     BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_CUSTOMER,
     bookingRequestOfferPriceCalculate,
     formatCurrency,
-    inlineCopy,
 } from '../../../shared';
 import { cn } from '../../utils/cn';
 import type { Locale } from '../../utils/locale';
@@ -87,24 +86,17 @@ export function AdminBookingRequestOfferFeePreview({
             <div className="grid gap-0.5">
                 <p className="text-sm font-medium text-foreground">{t(locale, 'admin', 'copy.livePreview')}</p>
                 <p className="text-xs text-muted-foreground">
-                    {inlineCopy(
-                        {
-                            de: `Standard: ${BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_COOK} % Koch / ${BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_CUSTOMER} % Kunde`,
-                            en: `Default: ${BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_COOK}% cook / ${BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_CUSTOMER}% customer`,
-                        },
-                        locale,
-                    )}
+                    {t(locale, 'admin', 'copy.defaultPlatformFees', {
+                        cookPercent: BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_COOK,
+                        customerPercent: BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_CUSTOMER,
+                    })}
                 </p>
             </div>
             <dl className="grid gap-2 text-sm">
                 <PreviewRow
-                    label={inlineCopy(
-                        {
-                            de: `Plattformgebühr Koch (${preview.platformFeePercentCook} %)`,
-                            en: `Platform fee cook (${preview.platformFeePercentCook}%)`,
-                        },
-                        locale,
-                    )}
+                    label={t(locale, 'admin', 'copy.platformFeeCookPercent', {
+                        percent: preview.platformFeePercentCook,
+                    })}
                     value={money(preview.platformFeeCentsCook, locale)}
                     delta={
                         baseline ? (
@@ -113,13 +105,9 @@ export function AdminBookingRequestOfferFeePreview({
                     }
                 />
                 <PreviewRow
-                    label={inlineCopy(
-                        {
-                            de: `Plattformgebühr Kunde (${preview.platformFeePercentCustomer} %)`,
-                            en: `Platform fee customer (${preview.platformFeePercentCustomer}%)`,
-                        },
-                        locale,
-                    )}
+                    label={t(locale, 'admin', 'copy.platformFeeCustomerPercent', {
+                        percent: preview.platformFeePercentCustomer,
+                    })}
                     value={money(preview.platformFeeCentsCustomer, locale)}
                     delta={
                         baseline ? (

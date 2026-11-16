@@ -1,24 +1,19 @@
 import { useEffect, useId, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
-import { inlineCopy } from '../../shared';
 
-import type { InlineCopy } from '../../shared';
 import { ProfileCustomerBookingRequestOfferDeclineDocument } from '../graphql/generated';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 import { Button } from './base/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './base/dialog';
 import { Textarea } from './base/textarea';
 
-const DECLINE_REASONS: InlineCopy<readonly string[]> = {
-    de: [
-        '💰 Angebot war zu teuer',
-        '🍽️ Menüs waren nicht das, wonach ich gesucht habe',
-        '🧑‍🍳 Meine speziellen Wünsche wurden nicht berücksichtigt',
-    ],
-    en: ['💰 Offer was too expensive', '🍽️ Menus were not what I was looking for', '🧑‍🍳 My special requests were not considered'],
-};
+const DECLINE_REASON_KEYS = [
+    'declineOffer.reason.tooExpensive',
+    'declineOffer.reason.menusNotMatching',
+    'declineOffer.reason.requestsIgnored',
+] as const;
 
 export type CustomerBookingRequestOfferDeclineDialogProps = {
     bookingRequestOfferId: string;
@@ -33,7 +28,7 @@ export function CustomerBookingRequestOfferDeclineDialog({
     onClose,
     onCompleted,
 }: CustomerBookingRequestOfferDeclineDialogProps) {
-    const locale = useLocale();
+    const { t } = useT('profileCustomer');
     const reasonId = useId();
     const [reason, setReason] = useState('');
     const [busy, setBusy] = useState(false);
@@ -49,15 +44,7 @@ export function CustomerBookingRequestOfferDeclineDialog({
         if (busy) return;
         const trimmed = reason.trim();
         if (trimmed.length === 0) {
-            toast.error(
-                inlineCopy(
-                    {
-                        de: 'Bitte lass uns wissen, warum du dieses Angebot ablehnen möchtest.',
-                        en: 'Please let us know why you want to decline the offer.',
-                    },
-                    locale,
-                ),
-            );
+            toast.error(t('m.pleaseLetUsKnowWhyYouWant'));
             return;
         }
         setBusy(true);
@@ -68,9 +55,9 @@ export function CustomerBookingRequestOfferDeclineDialog({
             }
             onClose();
             onCompleted?.();
-            toast.success(inlineCopy({ de: 'Angebot abgelehnt.', en: 'Offer declined.' }, locale));
+            toast.success(t('m.offerDeclined'));
         } catch {
-            toast.error(inlineCopy({ de: 'Ablehnung fehlgeschlagen.', en: 'Could not decline the offer.' }, locale));
+            toast.error(t('m.couldNotDeclineTheOffer'));
         } finally {
             setBusy(false);
         }
@@ -85,32 +72,16 @@ export function CustomerBookingRequestOfferDeclineDialog({
         >
             <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
-                    <DialogTitle>{inlineCopy({ de: 'Angebot ablehnen', en: 'Decline offer' }, locale)}</DialogTitle>
-                    <DialogDescription>
-                        {inlineCopy(
-                            {
-                                de: 'Hilf uns gerne, unseren Service zu verbessern, und sag uns kurz, warum du dieses Angebot ablehnen möchtest.',
-                                en: 'Feel free to help us improve our service by briefly letting us know why you want to decline this offer.',
-                            },
-                            locale,
-                        )}
-                    </DialogDescription>
+                    <DialogTitle>{t('m.declineOffer')}</DialogTitle>
+                    <DialogDescription>{t('m.feelFreeToHelpUsImproveOur')}</DialogDescription>
                 </DialogHeader>
 
                 <div className="grid gap-3">
                     <div className="grid gap-1.5">
                         <label htmlFor={reasonId} className="text-sm font-medium text-foreground">
-                            {inlineCopy({ de: 'Grund', en: 'Reason' }, locale)}
+                            {t('bookingRequest.reason')}
                         </label>
-                        <p className="text-sm text-muted-foreground">
-                            {inlineCopy(
-                                {
-                                    de: 'Wähle einen der Vorschläge aus oder beschreibe kurz den Grund deiner Absage.',
-                                    en: 'Please choose one of the suggestions or briefly describe the reason for your decline.',
-                                },
-                                locale,
-                            )}
-                        </p>
+                        <p className="text-sm text-muted-foreground">{t('m.pleaseChooseOneOfTheSuggestionsOr')}</p>
                         <Textarea
                             id={reasonId}
                             rows={3}
@@ -119,16 +90,13 @@ export function CustomerBookingRequestOfferDeclineDialog({
                             onChange={(event) => setReason(event.target.value)}
                         />
                     </div>
-                    <div
-                        className="flex flex-wrap gap-2"
-                        role="group"
-                        aria-label={inlineCopy({ de: 'Vorgeschlagene Gründe', en: 'Suggested reasons' }, locale)}
-                    >
-                        {inlineCopy(DECLINE_REASONS, locale).map((option) => {
+                    <div className="flex flex-wrap gap-2" role="group" aria-label={t('m.suggestedReasons')}>
+                        {DECLINE_REASON_KEYS.map((key) => {
+                            const option = t(key);
                             const selected = reason === option;
                             return (
                                 <button
-                                    key={option}
+                                    key={key}
                                     type="button"
                                     disabled={busy}
                                     aria-pressed={selected}
@@ -149,7 +117,7 @@ export function CustomerBookingRequestOfferDeclineDialog({
 
                 <DialogFooter>
                     <Button type="button" variant="outline" disabled={busy} onClick={onClose}>
-                        {inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, locale)}
+                        {t('actions.cancel')}
                     </Button>
                     <Button
                         type="button"
@@ -157,7 +125,7 @@ export function CustomerBookingRequestOfferDeclineDialog({
                         disabled={busy || reason.trim().length === 0}
                         onClick={() => void onDecline()}
                     >
-                        {inlineCopy({ de: busy ? 'Wird abgelehnt…' : 'Ablehnen', en: busy ? 'Declining…' : 'Decline' }, locale)}
+                        {busy ? t('declineOffer.declining') : t('declineOffer.decline')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

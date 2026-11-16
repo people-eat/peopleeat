@@ -4096,8 +4096,8 @@ type AdminSessionEvent {
     sessionEventId: ID!
     sessionId: ID!
     type: String!
-    descriptionDe: String!
-    descriptionEn: String!
+    # Catalog copy in the viewing admin's Users.locale (generated UI, not CMS *De/*En).
+    description: String!
     createdAt: DateTime!
     # Optional admin-relative path for deep-linking (e.g. booking request).
     link: String
@@ -4118,8 +4118,8 @@ input AdminSessionEventCriterion {
 
 type AdminAnalyticsSankeyNode {
     id: String!
-    labelDe: String!
-    labelEn: String!
+    # Catalog copy in the viewing admin's Users.locale.
+    label: String!
 }
 
 type AdminAnalyticsSankeyLink {
@@ -4133,8 +4133,8 @@ type AdminAnalyticsSankeyLink {
 # `step_entered` (completedCount comes from BOOKING_REQUEST_CREATED).
 type AdminAnalyticsFunnelStepStats {
     id: String!
-    labelDe: String!
-    labelEn: String!
+    # Catalog copy in the viewing admin's Users.locale.
+    label: String!
     enteredCount: Int!
     completedCount: Int!
 }

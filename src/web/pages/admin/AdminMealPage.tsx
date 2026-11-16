@@ -7,7 +7,7 @@ import { pipe, subscribe } from 'wonka';
 
 import { t } from '../../../i18n/t';
 import type { Locale } from '../../../shared';
-import { formatDateTime, inlineCopy } from '../../../shared';
+import { formatDateTime } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import {
@@ -91,13 +91,7 @@ function MealRelationshipOfferCard({
                     <p className="text-sm text-muted-foreground">
                         {relationship.courseTitle}
                         {' · '}
-                        {inlineCopy(
-                            {
-                                de: `Angebot für ${relationship.bookingRequestUserName}`,
-                                en: `Offer for ${relationship.bookingRequestUserName}`,
-                            },
-                            locale,
-                        )}
+                        {t(locale, 'admin', 'copy.offerForNamed', { name: relationship.bookingRequestUserName })}
                         {' · '}
                         {formatBookingDateTime(relationship.bookingRequestDateTime, locale, timeZone)}
                     </p>
@@ -296,13 +290,14 @@ export function AdminMealPage({ data, mealId }: { data: GqlCAdminMealPageQuery; 
                             <h1 className="font-serif text-3xl/tight text-foreground">{meal.title}</h1>
                             {meal.generatedAt != null ? (
                                 <p className="text-sm text-muted-foreground">
-                                    {inlineCopy(
-                                        {
-                                            de: `Generiert am ${formatDateTime(meal.generatedAt, { locale, timeZone, dateStyle: 'medium', timeStyle: 'short' })}`,
-                                            en: `Generated on ${formatDateTime(meal.generatedAt, { locale, timeZone, dateStyle: 'medium', timeStyle: 'short' })}`,
-                                        },
-                                        locale,
-                                    )}
+                                    {t(locale, 'admin', 'copy.generatedOn', {
+                                        when: formatDateTime(meal.generatedAt, {
+                                            locale,
+                                            timeZone,
+                                            dateStyle: 'medium',
+                                            timeStyle: 'short',
+                                        }),
+                                    })}
                                 </p>
                             ) : null}
                             <p className="text-muted-foreground whitespace-pre-wrap">

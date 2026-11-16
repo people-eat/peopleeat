@@ -2,7 +2,7 @@ import { Link } from '@tanstack/react-router';
 import { MailIcon } from 'lucide-react';
 
 import { t } from '../../i18n/t';
-import { formatDate, inlineCopy, userDisplayName } from '../../shared';
+import { formatDate, userDisplayName } from '../../shared';
 import type { Locale } from '../../shared/locale';
 import type { GqlCAdminUserType, GqlCUserStatus } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
@@ -42,13 +42,9 @@ export function AdminUserListCard({ user }: { user: AdminUserListCardUser }) {
     const locale = useLocale();
     const timeZone = useTimeZone();
     const name = userDisplayName(user);
-    const createdLabel = inlineCopy(
-        {
-            de: `Registriert ${formatDate(user.createdAt, { locale, timeZone, dateStyle: 'medium' })}`,
-            en: `Joined ${formatDate(user.createdAt, { locale, timeZone, dateStyle: 'medium' })}`,
-        },
-        locale,
-    );
+    const createdLabel = t(locale, 'admin', 'copy.joinedOn', {
+        date: formatDate(user.createdAt, { locale, timeZone, dateStyle: 'medium' }),
+    });
 
     return (
         <article

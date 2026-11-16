@@ -3,7 +3,6 @@ import type { SortingState, Updater } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
 
 import { t } from '../../../i18n/t';
-import { inlineCopy } from '../../../shared';
 import { AdminListPaginationBar } from '../../components/AdminListPaginationBar';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
@@ -186,13 +185,7 @@ export function AdminSessionsPage({ data, search }: { data: GqlCAdminSessionsPag
                         aria-label={t(locale, 'admin', 'copy.searchSessions')}
                     />
                     <p className="text-sm text-muted-foreground tabular-nums">
-                        {inlineCopy(
-                            {
-                                de: `${total} ${total === 1 ? 'Sitzung' : 'Sitzungen'}`,
-                                en: `${total} ${total === 1 ? 'session' : 'sessions'}`,
-                            },
-                            locale,
-                        )}
+                        {t(locale, 'admin', 'copy.sessionCount', { count: total })}
                     </p>
                 </div>
 

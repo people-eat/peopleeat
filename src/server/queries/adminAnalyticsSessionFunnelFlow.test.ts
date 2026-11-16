@@ -6,21 +6,23 @@ import { admins, cooks, sessionEvents, sessions } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import { commandSetup, testDb } from '../test/commandTestUtils';
 import { sessionEventCreate } from '../utils/sessionEventCreate';
-import { adminAnalyticsSessionFunnelFlow } from './adminAnalyticsSessionFunnelFlow';
 import type { AdminAnalyticsSessionFunnelConfig } from './adminAnalyticsSessionFunnelFlow';
+import { adminAnalyticsSessionFunnelFlow } from './adminAnalyticsSessionFunnelFlow';
 
-const funnelConfig: AdminAnalyticsSessionFunnelConfig = {
-    area: 'query_test_funnel',
-    steps: ['configure', 'auth', 'checkout', 'paid'],
-    labels: {
-        configure: { de: 'Konfig DE', en: 'Configure EN' },
-        auth: { de: 'Auth DE', en: 'Auth EN' },
-        checkout: { de: 'Checkout DE', en: 'Checkout EN' },
-        paid: { de: 'Paid DE', en: 'Paid EN' },
-    },
-    lifecycleTypes: [{ type: 'GIFT_CARD_PAYED', step: 'paid' }],
-    excludeCooks: false,
-};
+function funnelConfigCreate(): AdminAnalyticsSessionFunnelConfig {
+    return {
+        area: `query_test_funnel_${idCreate()}`,
+        steps: ['configure', 'auth', 'checkout', 'paid'],
+        labels: {
+            configure: 'Konfig DE',
+            auth: 'Auth DE',
+            checkout: 'Checkout DE',
+            paid: 'Paid DE',
+        },
+        lifecycleTypes: [{ type: 'GIFT_CARD_PAYED', step: 'paid' }],
+        excludeCooks: false,
+    };
+}
 
 function windowCreate() {
     const startMs = Date.UTC(2400, 0, 1) + Math.floor(Math.random() * 1e12);
@@ -42,7 +44,7 @@ async function recordStep(
     step: 'configure' | 'auth' | 'checkout',
     interactionType: 'step_entered' | 'step_completed',
     createdAt: Date,
-    area = funnelConfig.area,
+    area: string,
 ) {
     const created = await sessionEventCreate(serverRuntime, {
         sessionId,
@@ -60,29 +62,29 @@ describe('adminAnalyticsSessionFunnelFlow', () => {
     it('counts entered and completed steps, forward links, and labels', async () => {
         // Arrange
         const setup = await commandSetup();
+        const config = funnelConfigCreate();
         const window = windowCreate();
         const sessionId = setup.requestingSession.sessionId;
-        await recordStep(setup.serverRuntime, sessionId, 'configure', 'step_entered', window.at(0));
-        await recordStep(setup.serverRuntime, sessionId, 'configure', 'step_completed', window.at(1));
-        await recordStep(setup.serverRuntime, sessionId, 'auth', 'step_entered', window.at(2));
-        await recordStep(setup.serverRuntime, sessionId, 'auth', 'step_completed', window.at(3));
+        await recordStep(setup.serverRuntime, sessionId, 'configure', 'step_entered', window.at(0), config.area);
+        await recordStep(setup.serverRuntime, sessionId, 'configure', 'step_completed', window.at(1), config.area);
+        await recordStep(setup.serverRuntime, sessionId, 'auth', 'step_entered', window.at(2), config.area);
+        await recordStep(setup.serverRuntime, sessionId, 'auth', 'step_completed', window.at(3), config.area);
 
         // Act
-        const flow = await adminAnalyticsSessionFunnelFlow(window.range, setup.requestingSession, setup.serverRuntime, funnelConfig);
+        const flow = await adminAnalyticsSessionFunnelFlow(window.range, setup.requestingSession, setup.serverRuntime, config);
 
         // Assert
         expect(flow.steps.map((step) => step.id)).toEqual(['configure', 'auth', 'checkout', 'paid']);
         expect(flow.steps.find((step) => step.id === 'configure')).toMatchObject({
-            labelDe: 'Konfig DE',
-            labelEn: 'Configure EN',
+            label: 'Konfig DE',
             enteredCount: 1,
             completedCount: 1,
         });
         expect(flow.steps.find((step) => step.id === 'auth')).toMatchObject({ enteredCount: 1, completedCount: 1 });
         expect(flow.steps.find((step) => step.id === 'checkout')).toMatchObject({ enteredCount: 0, completedCount: 0 });
         expect(flow.nodes).toEqual([
-            { id: 'configure', labelDe: 'Konfig DE', labelEn: 'Configure EN' },
-            { id: 'auth', labelDe: 'Auth DE', labelEn: 'Auth EN' },
+            { id: 'configure', label: 'Konfig DE' },
+            { id: 'auth', label: 'Auth DE' },
         ]);
         expect(flow.links).toEqual([{ source: 'configure', target: 'auth', value: 1 }]);
         expect(flow.sessionsWithCompletion).toBe(1);
@@ -92,11 +94,12 @@ describe('adminAnalyticsSessionFunnelFlow', () => {
     it('counts step_entered without creating sankey nodes', async () => {
         // Arrange
         const setup = await commandSetup();
+        const config = funnelConfigCreate();
         const window = windowCreate();
-        await recordStep(setup.serverRuntime, setup.requestingSession.sessionId, 'configure', 'step_entered', window.at(0));
+        await recordStep(setup.serverRuntime, setup.requestingSession.sessionId, 'configure', 'step_entered', window.at(0), config.area);
 
         // Act
-        const flow = await adminAnalyticsSessionFunnelFlow(window.range, setup.requestingSession, setup.serverRuntime, funnelConfig);
+        const flow = await adminAnalyticsSessionFunnelFlow(window.range, setup.requestingSession, setup.serverRuntime, config);
 
         // Assert
         expect(flow.steps.find((step) => step.id === 'configure')).toMatchObject({ enteredCount: 1, completedCount: 0 });
@@ -108,14 +111,15 @@ describe('adminAnalyticsSessionFunnelFlow', () => {
     it('returns a node without links for a single completed step', async () => {
         // Arrange
         const setup = await commandSetup();
+        const config = funnelConfigCreate();
         const window = windowCreate();
-        await recordStep(setup.serverRuntime, setup.requestingSession.sessionId, 'configure', 'step_completed', window.at(0));
+        await recordStep(setup.serverRuntime, setup.requestingSession.sessionId, 'configure', 'step_completed', window.at(0), config.area);
 
         // Act
-        const flow = await adminAnalyticsSessionFunnelFlow(window.range, setup.requestingSession, setup.serverRuntime, funnelConfig);
+        const flow = await adminAnalyticsSessionFunnelFlow(window.range, setup.requestingSession, setup.serverRuntime, config);
 
         // Assert
-        expect(flow.nodes).toEqual([{ id: 'configure', labelDe: 'Konfig DE', labelEn: 'Configure EN' }]);
+        expect(flow.nodes).toEqual([{ id: 'configure', label: 'Konfig DE' }]);
         expect(flow.links).toEqual([]);
         expect(flow.sessionsWithCompletion).toBe(1);
         expect(flow.terminalCount).toBe(0);
@@ -124,16 +128,17 @@ describe('adminAnalyticsSessionFunnelFlow', () => {
     it('collapses consecutive repeats of the same completed step', async () => {
         // Arrange
         const setup = await commandSetup();
+        const config = funnelConfigCreate();
         const window = windowCreate();
         const sessionId = setup.requestingSession.sessionId;
-        await recordStep(setup.serverRuntime, sessionId, 'configure', 'step_completed', window.at(0));
-        await recordStep(setup.serverRuntime, sessionId, 'configure', 'step_completed', window.at(1));
+        await recordStep(setup.serverRuntime, sessionId, 'configure', 'step_completed', window.at(0), config.area);
+        await recordStep(setup.serverRuntime, sessionId, 'configure', 'step_completed', window.at(1), config.area);
 
         // Act
-        const flow = await adminAnalyticsSessionFunnelFlow(window.range, setup.requestingSession, setup.serverRuntime, funnelConfig);
+        const flow = await adminAnalyticsSessionFunnelFlow(window.range, setup.requestingSession, setup.serverRuntime, config);
 
         // Assert
-        expect(flow.nodes).toEqual([{ id: 'configure', labelDe: 'Konfig DE', labelEn: 'Configure EN' }]);
+        expect(flow.nodes).toEqual([{ id: 'configure', label: 'Konfig DE' }]);
         expect(flow.links).toEqual([]);
         expect(flow.steps.find((step) => step.id === 'configure')?.completedCount).toBe(1);
     });
@@ -141,14 +146,15 @@ describe('adminAnalyticsSessionFunnelFlow', () => {
     it('drops backward step edges so the sankey stays a DAG', async () => {
         // Arrange
         const setup = await commandSetup();
+        const config = funnelConfigCreate();
         const window = windowCreate();
         const sessionId = setup.requestingSession.sessionId;
-        await recordStep(setup.serverRuntime, sessionId, 'configure', 'step_completed', window.at(0));
-        await recordStep(setup.serverRuntime, sessionId, 'checkout', 'step_completed', window.at(1));
-        await recordStep(setup.serverRuntime, sessionId, 'configure', 'step_completed', window.at(2));
+        await recordStep(setup.serverRuntime, sessionId, 'configure', 'step_completed', window.at(0), config.area);
+        await recordStep(setup.serverRuntime, sessionId, 'checkout', 'step_completed', window.at(1), config.area);
+        await recordStep(setup.serverRuntime, sessionId, 'configure', 'step_completed', window.at(2), config.area);
 
         // Act
-        const flow = await adminAnalyticsSessionFunnelFlow(window.range, setup.requestingSession, setup.serverRuntime, funnelConfig);
+        const flow = await adminAnalyticsSessionFunnelFlow(window.range, setup.requestingSession, setup.serverRuntime, config);
 
         // Assert
         expect(flow.links).toEqual([{ source: 'configure', target: 'checkout', value: 1 }]);
@@ -158,9 +164,10 @@ describe('adminAnalyticsSessionFunnelFlow', () => {
     it('maps lifecycle events onto the terminal step', async () => {
         // Arrange
         const setup = await commandSetup();
+        const config = funnelConfigCreate();
         const window = windowCreate();
         const sessionId = setup.requestingSession.sessionId;
-        await recordStep(setup.serverRuntime, sessionId, 'configure', 'step_completed', window.at(0));
+        await recordStep(setup.serverRuntime, sessionId, 'configure', 'step_completed', window.at(0), config.area);
         const paid = await sessionEventCreate(setup.serverRuntime, {
             sessionId,
             type: 'GIFT_CARD_PAYED',
@@ -175,12 +182,11 @@ describe('adminAnalyticsSessionFunnelFlow', () => {
         await stamp(ignored.sessionEventId, window.at(2));
 
         // Act
-        const flow = await adminAnalyticsSessionFunnelFlow(window.range, setup.requestingSession, setup.serverRuntime, funnelConfig);
+        const flow = await adminAnalyticsSessionFunnelFlow(window.range, setup.requestingSession, setup.serverRuntime, config);
 
         // Assert
         expect(flow.steps.find((step) => step.id === 'paid')).toMatchObject({
-            labelDe: 'Paid DE',
-            labelEn: 'Paid EN',
+            label: 'Paid DE',
             enteredCount: 0,
             completedCount: 1,
         });
@@ -192,15 +198,16 @@ describe('adminAnalyticsSessionFunnelFlow', () => {
     it('ignores steps outside the config and events from another area', async () => {
         // Arrange
         const setup = await commandSetup();
+        const config = funnelConfigCreate();
         const window = windowCreate();
         const sessionId = setup.requestingSession.sessionId;
-        await recordStep(setup.serverRuntime, sessionId, 'auth', 'step_completed', window.at(0));
+        await recordStep(setup.serverRuntime, sessionId, 'auth', 'step_completed', window.at(0), config.area);
         const otherStep = await sessionEventCreate(setup.serverRuntime, {
             sessionId,
             type: 'WEB_PAGE_INTERACTION',
             payload: {
                 webPageKey: 'CHEF_SIGN_UP',
-                area: funnelConfig.area,
+                area: config.area,
                 interaction: { type: 'step_completed', step: 'profile' },
             },
         });
@@ -210,7 +217,7 @@ describe('adminAnalyticsSessionFunnelFlow', () => {
             type: 'WEB_PAGE_INTERACTION',
             payload: {
                 webPageKey: 'GIFT_CARD',
-                area: funnelConfig.area,
+                area: config.area,
                 interaction: { type: 'click', key: 'cta' },
             },
         });
@@ -218,12 +225,12 @@ describe('adminAnalyticsSessionFunnelFlow', () => {
         await recordStep(setup.serverRuntime, sessionId, 'configure', 'step_completed', window.at(3), 'some_other_area');
 
         // Act
-        const flow = await adminAnalyticsSessionFunnelFlow(window.range, setup.requestingSession, setup.serverRuntime, funnelConfig);
+        const flow = await adminAnalyticsSessionFunnelFlow(window.range, setup.requestingSession, setup.serverRuntime, config);
 
         // Assert
         expect(flow.steps.find((step) => step.id === 'auth')?.completedCount).toBe(1);
         expect(flow.steps.find((step) => step.id === 'configure')?.completedCount).toBe(0);
-        expect(flow.nodes).toEqual([{ id: 'auth', labelDe: 'Auth DE', labelEn: 'Auth EN' }]);
+        expect(flow.nodes).toEqual([{ id: 'auth', label: 'Auth DE' }]);
         expect(flow.links).toEqual([]);
     });
 
@@ -232,13 +239,14 @@ describe('adminAnalyticsSessionFunnelFlow', () => {
         const human = await commandSetup();
         const cook = await commandSetup.withUser({ firstName: 'Chef', lastName: 'Excluded' });
         await testDb.insert(cooks).values({ cookId: cook.user.userId });
+        const config = funnelConfigCreate();
         const window = windowCreate();
-        await recordStep(human.serverRuntime, human.requestingSession.sessionId, 'configure', 'step_completed', window.at(0));
-        await recordStep(cook.serverRuntime, cook.requestingSession.sessionId, 'auth', 'step_completed', window.at(1));
+        await recordStep(human.serverRuntime, human.requestingSession.sessionId, 'configure', 'step_completed', window.at(0), config.area);
+        await recordStep(cook.serverRuntime, cook.requestingSession.sessionId, 'auth', 'step_completed', window.at(1), config.area);
 
         // Act
         const flow = await adminAnalyticsSessionFunnelFlow(window.range, human.requestingSession, human.serverRuntime, {
-            ...funnelConfig,
+            ...config,
             excludeCooks: true,
         });
 
@@ -252,11 +260,12 @@ describe('adminAnalyticsSessionFunnelFlow', () => {
         // Arrange
         const cook = await commandSetup.withUser({ firstName: 'Chef', lastName: 'Included' });
         await testDb.insert(cooks).values({ cookId: cook.user.userId });
+        const config = funnelConfigCreate();
         const window = windowCreate();
-        await recordStep(cook.serverRuntime, cook.requestingSession.sessionId, 'configure', 'step_completed', window.at(0));
+        await recordStep(cook.serverRuntime, cook.requestingSession.sessionId, 'configure', 'step_completed', window.at(0), config.area);
 
         // Act
-        const flow = await adminAnalyticsSessionFunnelFlow(window.range, cook.requestingSession, cook.serverRuntime, funnelConfig);
+        const flow = await adminAnalyticsSessionFunnelFlow(window.range, cook.requestingSession, cook.serverRuntime, config);
 
         // Assert
         expect(flow.steps.find((step) => step.id === 'configure')?.completedCount).toBe(1);
@@ -275,14 +284,22 @@ describe('adminAnalyticsSessionFunnelFlow', () => {
             .update(sessions)
             .set({ impersonationReturnSessionId: admin.requestingSession.sessionId })
             .where(eq(sessions.sessionId, impersonated.requestingSession.sessionId));
+        const config = funnelConfigCreate();
         const window = windowCreate();
-        await recordStep(human.serverRuntime, human.requestingSession.sessionId, 'auth', 'step_completed', window.at(0));
-        await recordStep(bot.serverRuntime, bot.requestingSession.sessionId, 'configure', 'step_completed', window.at(1));
-        await recordStep(admin.serverRuntime, admin.requestingSession.sessionId, 'configure', 'step_completed', window.at(2));
-        await recordStep(impersonated.serverRuntime, impersonated.requestingSession.sessionId, 'configure', 'step_completed', window.at(3));
+        await recordStep(human.serverRuntime, human.requestingSession.sessionId, 'auth', 'step_completed', window.at(0), config.area);
+        await recordStep(bot.serverRuntime, bot.requestingSession.sessionId, 'configure', 'step_completed', window.at(1), config.area);
+        await recordStep(admin.serverRuntime, admin.requestingSession.sessionId, 'configure', 'step_completed', window.at(2), config.area);
+        await recordStep(
+            impersonated.serverRuntime,
+            impersonated.requestingSession.sessionId,
+            'configure',
+            'step_completed',
+            window.at(3),
+            config.area,
+        );
 
         // Act
-        const flow = await adminAnalyticsSessionFunnelFlow(window.range, human.requestingSession, human.serverRuntime, funnelConfig);
+        const flow = await adminAnalyticsSessionFunnelFlow(window.range, human.requestingSession, human.serverRuntime, config);
 
         // Assert
         expect(flow.steps.find((step) => step.id === 'auth')?.completedCount).toBe(1);
@@ -293,10 +310,11 @@ describe('adminAnalyticsSessionFunnelFlow', () => {
     it('returns zero counts for an empty window', async () => {
         // Arrange
         const setup = await commandSetup();
+        const config = funnelConfigCreate();
         const window = windowCreate();
 
         // Act
-        const flow = await adminAnalyticsSessionFunnelFlow(window.range, setup.requestingSession, setup.serverRuntime, funnelConfig);
+        const flow = await adminAnalyticsSessionFunnelFlow(window.range, setup.requestingSession, setup.serverRuntime, config);
 
         // Assert
         expect(flow.nodes).toEqual([]);

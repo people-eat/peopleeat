@@ -1,7 +1,6 @@
 import { StarIcon } from 'lucide-react';
 
 import { t } from '../../i18n/t';
-import { inlineCopy } from '../../shared';
 import { useLocale } from '../hooks/useLocale';
 import { cn } from '../utils/cn';
 import { AppImage } from './AppImage';
@@ -9,7 +8,8 @@ import { AppImage } from './AppImage';
 function AdminTestimonialRating({ rating }: { rating: number }) {
     const locale = useLocale();
     const average = rating.toFixed(1);
-    const label = inlineCopy({ de: `${average.replace('.', ',')} von 5 Sternen`, en: `${average} out of 5 stars` }, locale);
+    const displayAverage = locale === 'en' ? average : average.replace('.', ',');
+    const label = t(locale, 'admin', 'testimonials.outOf5Stars', { average: displayAverage });
 
     return (
         <div className="flex items-center gap-1.5">

@@ -221,9 +221,9 @@ promo / gift (+ participant count) on the customer path. Never hardcode `de` / `
   `CookBookingRequest.suggestedOfferMessage` is the cook's `defaultOfferMessage` when set (including empty), otherwise a static DE/EN draft
   (`bookingRequestSuggestedOfferMessage`) from the customer's `Users.locale`
 
-- Customer offer: accept / decline / configured-menu create / unread reset. Accept keeps locked travel; it may still reprice selected
-  addons and emit `SYSTEM_CHANGED_PRICE` before `USER_ACCEPTED` when addon money moves. Travel only changes on venue edit (open-offer
-  auto-adjust), not on accept or cook menu-price update.
+- Customer offer: accept / decline / configured-menu create / unread reset. Accept keeps locked travel; it may still reprice selected addons
+  and emit `SYSTEM_CHANGED_PRICE` before `USER_ACCEPTED` when addon money moves. Travel only changes on venue edit (open-offer auto-adjust),
+  not on accept or cook menu-price update.
 - Admin: `bookingRequestOfferConfiguredMenuUpdate` replaces an existing configured-menu snapshot (preserves `menuId`) and emits
   `ADMIN_CONFIGURED_MENU_UPDATED` (admin-only in chat). `bookingRequestOfferUpdate` emits admin-only price / acceptance / payment-schedule
   milestones when those fields change.

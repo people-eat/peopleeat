@@ -6,6 +6,7 @@ import type { SessionEventKey } from '../domain/sessionEvent';
 import type { GqlSAdminSessionEvent, GqlSAdminSessionEventCriterion, GqlSSession } from '../graphql/generated';
 import { toGqlAdminSessionEvent } from '../mappers/toGqlAdminSessionEvent';
 import { findManySkip, findManyTake } from '../utils/findManyTake';
+import { userLocaleRequire } from '../utils/userLocaleRequire';
 
 const MAX_TAKE = 200;
 
@@ -16,6 +17,10 @@ export async function adminSessionEventFindMany(
     options?: { chronological?: boolean },
 ): Promise<GqlSAdminSessionEvent[]> {
     try {
+        if (!requestingSession.userId) {
+            throw new Error('adminSessionEventFindMany: requesting session has no userId');
+        }
+        const locale = await userLocaleRequire(serverRuntime, requestingSession.userId);
         const hasSessionIds = Boolean(criterion.sessionIds && criterion.sessionIds.length > 0);
         const hasUserIds = Boolean(criterion.userIds && criterion.userIds.length > 0);
         if (!hasSessionIds && !hasUserIds) {
@@ -47,7 +52,7 @@ export async function adminSessionEventFindMany(
                 .orderBy(order)
                 .offset(skip)
                 .limit(take);
-            return rows.map((row) => toGqlAdminSessionEvent(row.event, row.impersonationReturnSessionId != null));
+            return rows.map((row) => toGqlAdminSessionEvent(row.event, locale, row.impersonationReturnSessionId != null));
         }
 
         const rows = await serverRuntime.db
@@ -62,7 +67,7 @@ export async function adminSessionEventFindMany(
             .offset(skip)
             .limit(take);
 
-        return rows.map((row) => toGqlAdminSessionEvent(row.event, row.impersonationReturnSessionId != null));
+        return rows.map((row) => toGqlAdminSessionEvent(row.event, locale, row.impersonationReturnSessionId != null));
     } catch (error) {
         serverRuntime.log.error(error, requestingSession);
         throw error;

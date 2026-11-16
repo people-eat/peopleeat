@@ -2,10 +2,8 @@ import { Link } from '@tanstack/react-router';
 import { BookOpenIcon } from 'lucide-react';
 import { useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
-import { inlineCopy } from '../../shared';
-
 import { useFeatureToggleActive } from '../hooks/useFeatureToggleActive';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 import { AppImage } from './AppImage';
 import { Badge } from './base/badge';
@@ -106,24 +104,18 @@ export function CookMenuCard({
     density?: 'comfortable' | 'compact';
     dialogTitle?: string;
 }) {
-    const locale = useLocale();
+    const { t } = useT('profileCook');
     const publicationEnabled = useFeatureToggleActive('PUBLICATION_MENUS');
     const [detailsOpen, setDetailsOpen] = useState(false);
     const shellRef = useRef<HTMLDivElement>(null);
     const [mediaSizePx, setMediaSizePx] = useState<number | null>(null);
     const isDeleted = menu.deletedAt != null;
-    const priorPublishLabel = menu.publishedAt
-        ? inlineCopy({ de: 'War veröffentlicht', en: 'Was published' }, locale)
-        : inlineCopy({ de: 'War Entwurf', en: 'Was a draft' }, locale);
-    const courseLabel =
-        menu.courseCount === 1
-            ? inlineCopy({ de: '1 Gang', en: '1 course' }, locale)
-            : inlineCopy({ de: `${menu.courseCount} Gänge`, en: `${menu.courseCount} courses` }, locale);
+    const priorPublishLabel = menu.publishedAt ? t('meal.wasPublished') : t('meal.wasADraft');
+    const courseLabel = t('menus.coursesCount', { count: menu.courseCount });
     const renderDraftPublishedBadge = showStatusBadge && publicationEnabled && !isDeleted;
     const renderDeletedBadge = showStatusBadge && isDeleted;
     const images = menu.courseMealOptionImages ?? [];
-    const description =
-        menu.description.trim().length > 0 ? menu.description : inlineCopy({ de: 'Keine Beschreibung', en: 'No description' }, locale);
+    const description = menu.description.trim().length > 0 ? menu.description : t('actions.noDescription');
     const compact = density === 'compact';
     const mediaMinPx = compact ? 56 : 96;
 
@@ -167,19 +159,11 @@ export function CookMenuCard({
                 </h2>
                 <p className={cn('text-sm text-muted-foreground', compact ? 'line-clamp-1' : 'line-clamp-2 min-h-10')}>{description}</p>
                 <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1 pt-1">
-                    {renderDeletedBadge ? (
-                        <Badge variant="destructive">{inlineCopy({ de: 'Gelöscht', en: 'Deleted' }, locale)}</Badge>
-                    ) : null}
+                    {renderDeletedBadge ? <Badge variant="destructive">{t('meal.deletedBadge')}</Badge> : null}
                     {renderDraftPublishedBadge ? (
-                        <Badge variant="outline">
-                            {menu.publishedAt
-                                ? inlineCopy({ de: 'Veröffentlicht', en: 'Published' }, locale)
-                                : inlineCopy({ de: 'Entwurf', en: 'Draft' }, locale)}
-                        </Badge>
+                        <Badge variant="outline">{menu.publishedAt ? t('actions.published') : t('actions.draft')}</Badge>
                     ) : null}
-                    {menu.generatedAt != null ? (
-                        <Badge variant="outline">{inlineCopy({ de: 'Generiert', en: 'Generated' }, locale)}</Badge>
-                    ) : null}
+                    {menu.generatedAt != null ? <Badge variant="outline">{t('actions.generated')}</Badge> : null}
                     <span className="text-sm text-muted-foreground">{courseLabel}</span>
                     {isDeleted || meta != null ? (
                         <span className="text-sm text-muted-foreground">

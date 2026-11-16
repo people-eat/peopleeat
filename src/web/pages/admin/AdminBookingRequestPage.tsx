@@ -15,7 +15,6 @@ import {
     formatCurrency,
     formatDate,
     formatParticipants,
-    inlineCopy,
     userDisplayName,
 } from '../../../shared';
 import type { BookingRequestOfferStatus } from '../../../shared/bookingRequestOfferStatus';
@@ -489,20 +488,18 @@ function AdminBookingRequestPublicationApproveDialog({
                                                     city,
                                                     row.cook.cuisineStyle,
                                                     `${formatTravelDistanceKm(row.estimatedTravelDistanceKm, locale)} km`,
-                                                    inlineCopy(
-                                                        {
-                                                            de: `Reise ca. ${formatCurrency(row.estimatedTravelExpensesCents, { locale, maximumFractionDigits: 0 })}`,
-                                                            en: `Travel ~${formatCurrency(row.estimatedTravelExpensesCents, { locale, maximumFractionDigits: 0 })}`,
-                                                        },
-                                                        locale,
-                                                    ),
-                                                    inlineCopy(
-                                                        {
-                                                            de: `Menü ~${formatCurrency(row.suggestedMenuPriceCents, { locale, maximumFractionDigits: 0 })}`,
-                                                            en: `Menu ~${formatCurrency(row.suggestedMenuPriceCents, { locale, maximumFractionDigits: 0 })}`,
-                                                        },
-                                                        locale,
-                                                    ),
+                                                    t(locale, 'admin', 'bookingRequest.travelApprox', {
+                                                        amount: formatCurrency(row.estimatedTravelExpensesCents, {
+                                                            locale,
+                                                            maximumFractionDigits: 0,
+                                                        }),
+                                                    }),
+                                                    t(locale, 'admin', 'bookingRequest.menuApprox', {
+                                                        amount: formatCurrency(row.suggestedMenuPriceCents, {
+                                                            locale,
+                                                            maximumFractionDigits: 0,
+                                                        }),
+                                                    }),
                                                 ]
                                                     .filter(Boolean)
                                                     .join(' · ')}
@@ -523,10 +520,7 @@ function AdminBookingRequestPublicationApproveDialog({
                     <Button type="button" disabled={busy || (cooks.length > 0 && selectedCookIds.length === 0)} onClick={onConfirm}>
                         {busy
                             ? t(locale, 'admin', 'copy.approving')
-                            : inlineCopy(
-                                  { de: `Freigeben (${selectedCookIds.length})`, en: `Approve (${selectedCookIds.length})` },
-                                  locale,
-                              )}
+                            : t(locale, 'admin', 'bookingRequest.approveCount', { count: selectedCookIds.length })}
                     </Button>
                 </DialogFooter>
             </DialogContent>
@@ -790,10 +784,7 @@ function AdminBookingRequestDetailFields({ bookingRequest }: { bookingRequest: A
             <div className="border-t border-border pt-4">
                 <AdminQueuedJobsSection
                     jobs={bookingRequest.queuedJobs}
-                    emptyMessage={{
-                        de: 'Keine ausstehenden Jobs für diese Anfrage.',
-                        en: 'No pending jobs for this request.',
-                    }}
+                    emptyMessage={t(locale, 'admin', 'copy.noPendingJobsForThisRequest')}
                     offerLink={(bookingRequestOfferId) => (
                         <Link
                             to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId"
@@ -1001,20 +992,8 @@ function AdminBookingRequestOffersSection({
                     <AlertDialogHeader>
                         <AlertDialogTitle>
                             {pendingNotifyAlreadyNotified
-                                ? inlineCopy(
-                                      {
-                                          de: `${pendingNotifyCookName} erneut benachrichtigen?`,
-                                          en: `Notify ${pendingNotifyCookName} again?`,
-                                      },
-                                      locale,
-                                  )
-                                : inlineCopy(
-                                      {
-                                          de: `${pendingNotifyCookName} diese Anfrage vorschlagen?`,
-                                          en: `Suggest this request to ${pendingNotifyCookName}?`,
-                                      },
-                                      locale,
-                                  )}
+                                ? t(locale, 'admin', 'bookingRequest.notifyAgain', { name: pendingNotifyCookName })
+                                : t(locale, 'admin', 'bookingRequest.suggestThis', { name: pendingNotifyCookName })}
                         </AlertDialogTitle>
                         <AlertDialogDescription>
                             {pendingNotifyAlreadyNotified

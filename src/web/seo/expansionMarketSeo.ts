@@ -1,7 +1,12 @@
 import { t } from '../../i18n/t';
 import type { ExpansionMarket } from '../../shared/expansionMarkets';
-import { expansionMarketFaqEntries } from '../../shared/expansionMarkets';
-import { inlineCopy } from '../../shared/locale';
+import {
+    expansionMarketComingToDescription,
+    expansionMarketComingToTitle,
+    expansionMarketFaqEntries,
+    expansionMarketFoundingChefDescription,
+    expansionMarketFoundingChefTitle,
+} from '../../shared/expansionMarkets';
 import type { Locale } from '../../shared/locale';
 import { jsonLdBreadcrumbList, jsonLdCountryService, jsonLdFaqPage, jsonLdHeadScripts } from './jsonLd';
 import { SITE_NAME } from './seoConstants';
@@ -11,8 +16,8 @@ import { webPageUrlGet } from './webPageUrlGet';
 export function expansionMarketComingToHead(market: ExpansionMarket, locale: Locale) {
     const webPageUrl = webPageUrlGet();
     const path = market.comingToPath;
-    const title = inlineCopy(market.comingToTitle, locale);
-    const description = inlineCopy(market.comingToDescription, locale);
+    const title = expansionMarketComingToTitle(market, locale);
+    const description = expansionMarketComingToDescription(market, locale);
     return {
         ...seoMeta({ title, description, path, locale, webPageUrl }),
         scripts: jsonLdHeadScripts([
@@ -33,7 +38,7 @@ export function expansionMarketComingToHead(market: ExpansionMarket, locale: Loc
                     longitude: city.longitude,
                 })),
             }),
-            jsonLdFaqPage(expansionMarketFaqEntries(market.comingToFaqs, locale)),
+            jsonLdFaqPage(expansionMarketFaqEntries(market, 'comingTo', locale)),
         ]),
     };
 }
@@ -41,8 +46,8 @@ export function expansionMarketComingToHead(market: ExpansionMarket, locale: Loc
 export function expansionMarketFoundingChefHead(market: ExpansionMarket, locale: Locale) {
     const webPageUrl = webPageUrlGet();
     const path = market.foundingChefPath;
-    const title = inlineCopy(market.foundingChefTitle, locale);
-    const description = inlineCopy(market.foundingChefDescription, locale);
+    const title = expansionMarketFoundingChefTitle(market, locale);
+    const description = expansionMarketFoundingChefDescription(market, locale);
     return {
         ...seoMeta({ title, description, path, locale, webPageUrl }),
         scripts: jsonLdHeadScripts([
@@ -64,7 +69,7 @@ export function expansionMarketFoundingChefHead(market: ExpansionMarket, locale:
                     longitude: city.longitude,
                 })),
             }),
-            jsonLdFaqPage(expansionMarketFaqEntries(market.foundingChefFaqs, locale)),
+            jsonLdFaqPage(expansionMarketFaqEntries(market, 'foundingChef', locale)),
         ]),
     };
 }

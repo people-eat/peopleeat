@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 
-import { formatCurrency, formatDate, inlineCopy } from '../../shared';
+import { t } from '../../i18n/t';
+import { formatCurrency, formatDate } from '../../shared';
 import type { GqlCGiftCardPaymentStatus } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
 import { useTimeZone } from '../hooks/useTimeZone';
@@ -53,13 +54,7 @@ export function AdminGiftCardListCard({ giftCard }: { giftCard: AdminGiftCardLis
             </p>
             <p className="tabular-nums text-sm font-medium text-foreground">{amountLabel}</p>
             <p className="mt-auto text-xs text-muted-foreground">
-                {inlineCopy(
-                    {
-                        de: `Code ${giftCard.redeemCode} · gültig bis ${expiresLabel}`,
-                        en: `Code ${giftCard.redeemCode} · expires ${expiresLabel}`,
-                    },
-                    locale,
-                )}
+                {t(locale, 'admin', 'copy.giftCardCodeExpires', { code: giftCard.redeemCode, when: expiresLabel })}
             </p>
         </Link>
     );

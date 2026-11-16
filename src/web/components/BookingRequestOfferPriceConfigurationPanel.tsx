@@ -1,6 +1,7 @@
 import { useEffect, useId, useState } from 'react';
 
-import { bookingRequestOfferPriceCalculate, bookingRequestPaidParticipants, formatCurrency, inlineCopy } from '../../shared';
+import { t } from '../../i18n/t';
+import { bookingRequestOfferPriceCalculate, bookingRequestPaidParticipants, formatCurrency } from '../../shared';
 import type { Locale } from '../../shared';
 import { cn } from '../utils/cn';
 import { Input } from './base/input';
@@ -97,12 +98,12 @@ export function BookingRequestOfferCostOverviewPanel({
     if (priceCalculation == null) return null;
 
     const cookPayoutLabel = {
-        cook: inlineCopy({ de: 'Du erhältst', en: 'You earn' }, locale),
-        admin: inlineCopy({ de: 'Koch erhält', en: 'Cook earns' }, locale),
+        cook: t(locale, 'common', 'priceConfig.youEarn'),
+        admin: t(locale, 'common', 'priceConfig.cookEarns'),
     }[viewer];
     const customerTotalLabel = {
-        cook: inlineCopy({ de: 'Preis des Gastgebers', en: "Host's price" }, locale),
-        admin: inlineCopy({ de: 'Kundenpreis', en: 'Customer price' }, locale),
+        cook: t(locale, 'common', 'priceConfig.hostPrice'),
+        admin: t(locale, 'common', 'priceConfig.customerPrice'),
     }[viewer];
 
     return (
@@ -123,26 +124,20 @@ export function BookingRequestOfferCostOverviewPanel({
                     <dl className="grid gap-2 text-sm text-muted-foreground">
                         <div className="flex justify-between gap-4">
                             <dt>
-                                {inlineCopy(
-                                    {
-                                        de: `Erwachsene (${participantsAdult} × ${formatCurrency(pricePerPersonCents, { locale })})`,
-                                        en: `Adults (${participantsAdult} × ${formatCurrency(pricePerPersonCents, { locale })})`,
-                                    },
-                                    locale,
-                                )}
+                                {t(locale, 'common', 'priceConfig.adultsLine', {
+                                    count: participantsAdult,
+                                    amount: formatCurrency(pricePerPersonCents, { locale }),
+                                })}
                             </dt>
                             <dd>{formatCurrency(pricePerPersonCents * participantsAdult, { locale })}</dd>
                         </div>
                         {participantsDiscounted > 0 ? (
                             <div className="flex justify-between gap-4">
                                 <dt>
-                                    {inlineCopy(
-                                        {
-                                            de: `Kinder (${participantsDiscounted} × ${formatCurrency(roundCents(pricePerPersonCents * 0.5), { locale })})`,
-                                            en: `Children (${participantsDiscounted} × ${formatCurrency(roundCents(pricePerPersonCents * 0.5), { locale })})`,
-                                        },
-                                        locale,
-                                    )}
+                                    {t(locale, 'common', 'priceConfig.childrenLine', {
+                                        count: participantsDiscounted,
+                                        amount: formatCurrency(roundCents(pricePerPersonCents * 0.5), { locale }),
+                                    })}
                                 </dt>
                                 <dd>
                                     {formatCurrency(roundCents(pricePerPersonCents * 0.5 * participantsDiscounted), {
@@ -152,11 +147,11 @@ export function BookingRequestOfferCostOverviewPanel({
                             </div>
                         ) : null}
                         <div className="flex justify-between gap-4">
-                            <dt>{inlineCopy({ de: 'Reisekosten', en: 'Travel expenses' }, locale)}</dt>
+                            <dt>{t(locale, 'common', 'priceConfig.travelExpenses')}</dt>
                             <dd>{formatCurrency(priceCalculation.travelExpensesCents, { locale })}</dd>
                         </div>
                         <div className="flex justify-between gap-4">
-                            <dt>{inlineCopy({ de: 'Servicegebühren', en: 'Service fees' }, locale)}</dt>
+                            <dt>{t(locale, 'common', 'costBreakdown.serviceFees')}</dt>
                             <dd>-{formatCurrency(priceCalculation.platformFeeCentsCook, { locale })}</dd>
                         </div>
                     </dl>
@@ -179,26 +174,20 @@ export function BookingRequestOfferCostOverviewPanel({
                     <dl className="grid gap-2 text-sm text-muted-foreground">
                         <div className="flex justify-between gap-4">
                             <dt>
-                                {inlineCopy(
-                                    {
-                                        de: `Erwachsene (${participantsAdult} × ${formatCurrency(pricePerPersonCents, { locale })})`,
-                                        en: `Adults (${participantsAdult} × ${formatCurrency(pricePerPersonCents, { locale })})`,
-                                    },
-                                    locale,
-                                )}
+                                {t(locale, 'common', 'priceConfig.adultsLine', {
+                                    count: participantsAdult,
+                                    amount: formatCurrency(pricePerPersonCents, { locale }),
+                                })}
                             </dt>
                             <dd>{formatCurrency(pricePerPersonCents * participantsAdult, { locale })}</dd>
                         </div>
                         {participantsDiscounted > 0 ? (
                             <div className="flex justify-between gap-4">
                                 <dt>
-                                    {inlineCopy(
-                                        {
-                                            de: `Kinder (${participantsDiscounted} × ${formatCurrency(roundCents(pricePerPersonCents * 0.5), { locale })})`,
-                                            en: `Children (${participantsDiscounted} × ${formatCurrency(roundCents(pricePerPersonCents * 0.5), { locale })})`,
-                                        },
-                                        locale,
-                                    )}
+                                    {t(locale, 'common', 'priceConfig.childrenLine', {
+                                        count: participantsDiscounted,
+                                        amount: formatCurrency(roundCents(pricePerPersonCents * 0.5), { locale }),
+                                    })}
                                 </dt>
                                 <dd>
                                     {formatCurrency(roundCents(pricePerPersonCents * 0.5 * participantsDiscounted), {
@@ -208,11 +197,11 @@ export function BookingRequestOfferCostOverviewPanel({
                             </div>
                         ) : null}
                         <div className="flex justify-between gap-4">
-                            <dt>{inlineCopy({ de: 'Reisekosten', en: 'Travel expenses' }, locale)}</dt>
+                            <dt>{t(locale, 'common', 'priceConfig.travelExpenses')}</dt>
                             <dd>{formatCurrency(priceCalculation.travelExpensesCents, { locale })}</dd>
                         </div>
                         <div className="flex justify-between gap-4">
-                            <dt>{inlineCopy({ de: 'Servicegebühren', en: 'Service fees' }, locale)}</dt>
+                            <dt>{t(locale, 'common', 'costBreakdown.serviceFees')}</dt>
                             <dd>
                                 {formatCurrency(priceCalculation.platformFeeCentsCustomer + priceCalculation.paymentProviderFeeCents, {
                                     locale,
@@ -323,36 +312,21 @@ export function BookingRequestOfferPriceConfigurationPanel({
     return (
         <div className="grid gap-4">
             {viewer === 'cook' ? (
-                <StatusAlert
-                    tone="info"
-                    title={inlineCopy({ de: 'Du bestimmst deinen Preis selbst!', en: 'You set your own price!' }, locale)}
-                >
-                    {inlineCopy(
-                        {
-                            de: 'Der angezeigte Preis ist nur unser Vorschlag und liegt im empfohlenen Rahmen. Du kannst ihn jederzeit ändern und deinen eigenen Preis festlegen.',
-                            en: 'The shown price is only our suggestion and sits in the recommended range. You can change it anytime and set your own price.',
-                        },
-                        locale,
-                    )}
+                <StatusAlert tone="info" title={t(locale, 'common', 'priceConfig.youSetPrice')}>
+                    {t(locale, 'common', 'priceConfig.suggestionHint')}
                 </StatusAlert>
             ) : null}
 
             <div className="grid gap-2">
                 <label htmlFor={pricePerPersonId} className="text-base font-medium text-foreground">
-                    {inlineCopy({ de: 'Menüpreis pro Person', en: 'Menu price per person' }, locale)}
+                    {t(locale, 'common', 'priceConfig.menuPricePerPerson')}
                 </label>
                 <Input
                     id={pricePerPersonId}
                     inputMode="decimal"
                     value={pricePerPersonString}
                     disabled={disabled}
-                    placeholder={inlineCopy(
-                        {
-                            de: 'Dein Menüpreisvorschlag pro Person',
-                            en: 'Your menu price suggestion per person',
-                        },
-                        locale,
-                    )}
+                    placeholder={t(locale, 'common', 'priceConfig.suggestionPlaceholder')}
                     onChange={(event) => {
                         const next = event.target.value;
                         setPricePerPersonString(next);
@@ -361,52 +335,20 @@ export function BookingRequestOfferPriceConfigurationPanel({
                 />
             </div>
 
-            {isInSuggestedRange ? (
-                <StatusAlert tone="success">
-                    {inlineCopy(
-                        {
-                            de: 'Dieser Preis pro Person liegt in dem von uns vorgeschlagenen Rahmen.',
-                            en: 'This price per person is within the range we have suggested.',
-                        },
-                        locale,
-                    )}
-                </StatusAlert>
-            ) : null}
+            {isInSuggestedRange ? <StatusAlert tone="success">{t(locale, 'common', 'priceConfig.withinRange')}</StatusAlert> : null}
 
             {pricePerPersonTooHigh ? (
                 <StatusAlert tone="warning">
-                    {inlineCopy(
-                        {
-                            de: `Dieser Preis pro Person liegt über dem von uns vorgeschlagenen Rahmen. Unser Vorschlag ist ${formatCurrency(guidance.suggestedOfferAmountCents, { locale })} pro Person.`,
-                            en: `This price per person is above the range we have suggested. Our suggestion is ${formatCurrency(guidance.suggestedOfferAmountCents, { locale })} per person.`,
-                        },
-                        locale,
-                    )}
+                    {t(locale, 'common', 'priceConfig.aboveRange', {
+                        amount: formatCurrency(guidance.suggestedOfferAmountCents, { locale }),
+                    })}
                 </StatusAlert>
             ) : null}
 
-            {isHardMinimumNotMet ? (
-                <StatusAlert tone="error">
-                    {inlineCopy(
-                        {
-                            de: 'Der Preisvorschlag muss höher sein, da der Kunde einen Promocode mit Mindestpreis Regelung hinterlegt hat.',
-                            en: 'The price proposal must be higher because the customer has entered a promo code with a minimum price clause.',
-                        },
-                        locale,
-                    )}
-                </StatusAlert>
-            ) : null}
+            {isHardMinimumNotMet ? <StatusAlert tone="error">{t(locale, 'common', 'priceConfig.minPromo')}</StatusAlert> : null}
 
             {pricePerPersonTooLow && pricePerPersonString.trim() !== '' && !isHardMinimumNotMet ? (
-                <StatusAlert tone="success">
-                    {inlineCopy(
-                        {
-                            de: 'Das ist ein guter Preis, der Kunde wird wahrscheinlich buchen.',
-                            en: 'This is a good price, the customer will be likely to book.',
-                        },
-                        locale,
-                    )}
-                </StatusAlert>
+                <StatusAlert tone="success">{t(locale, 'common', 'priceConfig.goodPrice')}</StatusAlert>
             ) : null}
 
             {viewer === 'cook' && priceCalculation ? (

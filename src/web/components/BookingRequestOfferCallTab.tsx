@@ -2,9 +2,9 @@ import type { DocumentInput } from '@urql/core';
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 
-import { inlineCopy, isCallJoinable } from '../../shared';
+import { isCallJoinable } from '../../shared';
 import type { BookingWhenPeer } from '../../shared';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 import { Button } from './base/button';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from './base/card';
@@ -64,7 +64,7 @@ export function BookingRequestOfferCallTab({
     cancelDocument,
     children,
 }: BookingRequestOfferCallTabProps) {
-    const locale = useLocale();
+    const { t } = useT('common');
     const { inCall, busy, startOrJoin } = useBookingRequestOfferCallSession();
 
     const [now, setNow] = useState(() => new Date());
@@ -80,14 +80,8 @@ export function BookingRequestOfferCallTab({
     if (inCall) {
         return (
             <div className="grid gap-3">
-                <StatusAlert tone="info" title={inlineCopy({ de: 'Aufnahme aktiv', en: 'Recording on' }, locale)}>
-                    {inlineCopy(
-                        {
-                            de: 'Dieser Anruf wird für Qualität und Support aufgezeichnet. Nur Administratoren können die Aufnahme und das Transkript einsehen.',
-                            en: 'This call is recorded for quality and support. Only administrators can access the recording and transcript.',
-                        },
-                        locale,
-                    )}
+                <StatusAlert tone="info" title={t('callTab.recordingOn')}>
+                    {t('callTab.recordedForQuality')}
                 </StatusAlert>
                 <BookingRequestOfferCallVideo />
             </div>
@@ -98,78 +92,43 @@ export function BookingRequestOfferCallTab({
         <div className="grid max-w-xl gap-8">
             <div className="grid gap-4">
                 {/* Temporarily hidden — re-enable when we want the recording notice again (see docs/features/call-recordings.md).
-                <StatusAlert tone="info" title={inlineCopy({ de: 'Hinweis zur Aufnahme', en: 'Recording notice' }, locale)}>
-                    {
-                        inlineCopy({
-                            de: 'Discovery-Anrufe werden für Qualität und Support aufgezeichnet. Die Aufnahme und das Transkript sind nur für Administratoren sichtbar.',
-                            en: 'Discovery calls are recorded for quality and support. Recordings and transcripts are visible to administrators only.',
-                        }, locale)
-                    }
+                <StatusAlert tone="info" title={t('callTab.recordingNotice')}>
+                    {t('callTab.discoveryRecorded')}
                 </StatusAlert>
                 */}
                 {hasLiveRoom ? (
                     <StatusAlert
                         tone="info"
-                        title={inlineCopy({ de: 'Anruf läuft', en: 'Call in progress' }, locale)}
+                        title={t('callTab.inProgress')}
                         action={
                             <Button type="button" size="sm" disabled={busy} onClick={() => void startOrJoin('join', hasLiveRoom)}>
-                                {inlineCopy({ de: 'Beitreten', en: 'Join' }, locale)}
+                                {t('callTab.join')}
                             </Button>
                         }
                     >
-                        {inlineCopy(
-                            {
-                                de: 'Ein Videoanruf für dieses Angebot ist aktiv.',
-                                en: 'A video call for this offer is active.',
-                            },
-                            locale,
-                        )}
+                        {t('callTab.activeCall')}
                     </StatusAlert>
                 ) : null}
 
                 <Card className={bookingOfferCallCardClassName}>
                     <CardHeader className={bookingOfferCallCardSectionClassName}>
-                        <CardTitle>
-                            {inlineCopy(
-                                {
-                                    de: hasLiveRoom ? 'Aktiven Anruf beitreten' : 'Gespräch starten',
-                                    en: hasLiveRoom ? 'Join active call' : 'Start call',
-                                },
-                                locale,
-                            )}
-                        </CardTitle>
+                        <CardTitle>{hasLiveRoom ? t('callTab.joinActive') : t('callTab.startCall')}</CardTitle>
                         <CardDescription>
-                            {inlineCopy(
-                                {
-                                    de: hasLiveRoom
-                                        ? 'Tritt dem laufenden Videoanruf bei.'
-                                        : joinableBooking
-                                          ? 'Dein bestätigter Termin ist jetzt bereit. Du kannst beitreten.'
-                                          : 'Starte einen spontanen Videoanruf mit der anderen Partei.',
-                                    en: hasLiveRoom
-                                        ? 'Join the live video call.'
-                                        : joinableBooking
-                                          ? 'Your confirmed appointment is ready to join.'
-                                          : 'Start an ad-hoc video call with the other party.',
-                                },
-                                locale,
-                            )}
+                            {hasLiveRoom
+                                ? t('callTab.joinLive')
+                                : joinableBooking
+                                  ? t('callTab.readyToJoin')
+                                  : t('callTab.startSpontaneous')}
                         </CardDescription>
                     </CardHeader>
                     <CardFooter className={cn('justify-end', bookingOfferCallCardSectionClassName)}>
                         {hasLiveRoom ? (
                             <Button type="button" disabled={busy} onClick={() => void startOrJoin('join', hasLiveRoom)}>
-                                {inlineCopy({ de: 'Beitreten', en: 'Join' }, locale)}
+                                {t('callTab.join')}
                             </Button>
                         ) : (
                             <Button type="button" disabled={busy} onClick={() => void startOrJoin('create', hasLiveRoom)}>
-                                {inlineCopy(
-                                    {
-                                        de: joinableBooking ? 'Geplanten Anruf starten' : 'Spontanen Anruf starten',
-                                        en: joinableBooking ? 'Start scheduled call' : 'Start ad-hoc call',
-                                    },
-                                    locale,
-                                )}
+                                {joinableBooking ? t('callTab.startScheduled') : t('callTab.startAdHoc')}
                             </Button>
                         )}
                     </CardFooter>

@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
 import { t } from '../../../i18n/t';
-import { formatCurrency, formatDate, inlineCopy } from '../../../shared';
+import { formatCurrency, formatDate } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { Badge } from '../../components/base/badge';
 import { Button } from '../../components/base/button';
@@ -221,13 +221,7 @@ function AdminGiftCardDetailFields({ giftCard }: { giftCard: AdminGiftCardDetail
                                 disabled={regenerating}
                                 onClick={() => void onRegeneratePdfs()}
                             >
-                                {inlineCopy(
-                                    {
-                                        de: regenerating ? 'Wird erzeugt…' : 'PDFs neu erzeugen',
-                                        en: regenerating ? 'Generating…' : 'Regenerate PDFs',
-                                    },
-                                    locale,
-                                )}
+                                {regenerating ? t(locale, 'admin', 'copy.generating') : t(locale, 'admin', 'copy.regeneratePdfs')}
                             </Button>
                         </dd>
                     </div>

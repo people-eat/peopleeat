@@ -3,7 +3,7 @@ import { ListIcon, VideoIcon } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
 
 import { t } from '../../../i18n/t';
-import { formatIsoDate, inlineCopy } from '../../../shared';
+import { formatIsoDate } from '../../../shared';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { DateRangePicker } from '../../components/base/date-range-picker';
 import type { GqlCAdminCallListItemKind, GqlCAdminCallsOverviewPageQuery, GqlCAdminCallTrafficCriterion } from '../../graphql/generated';
@@ -188,13 +188,10 @@ export function AdminCallsOverviewPage({ data, search }: { data: GqlCAdminCallsO
                     </dl>
                     {confirmRate != null || declineRate != null ? (
                         <p className="text-sm text-muted-foreground">
-                            {inlineCopy(
-                                {
-                                    de: `Im Zeitraum: Bestätigungsquote ${confirmRate ?? '—'}% · Ablehnungsquote ${declineRate ?? '—'}% (bezogen auf erledigte + abgelehnte + stornierte Termine).`,
-                                    en: `In range: confirm rate ${confirmRate ?? '—'}% · decline rate ${declineRate ?? '—'}% (of completed + declined + canceled slots).`,
-                                },
-                                locale,
-                            )}
+                            {t(locale, 'admin', 'copy.callsInRangeRates', {
+                                confirmRate: confirmRate ?? t(locale, 'admin', 'copy.empty'),
+                                declineRate: declineRate ?? t(locale, 'admin', 'copy.empty'),
+                            })}
                         </p>
                     ) : null}
                 </section>
@@ -236,13 +233,12 @@ export function AdminCallsOverviewPage({ data, search }: { data: GqlCAdminCallsO
                                     >
                                         <span className="font-medium text-foreground">{stat.displayName}</span>
                                         <span className="text-sm text-muted-foreground tabular-nums">
-                                            {inlineCopy(
-                                                {
-                                                    de: `${stat.roomCount} Räume · ${stat.completedSlotCount} erledigt · ${stat.declinedCount} abgelehnt · ${stat.pendingAwaitingCookCount} wartend`,
-                                                    en: `${stat.roomCount} rooms · ${stat.completedSlotCount} completed · ${stat.declinedCount} declined · ${stat.pendingAwaitingCookCount} awaiting`,
-                                                },
-                                                locale,
-                                            )}
+                                            {t(locale, 'admin', 'copy.cookCallStats', {
+                                                rooms: stat.roomCount,
+                                                completed: stat.completedSlotCount,
+                                                declined: stat.declinedCount,
+                                                awaiting: stat.pendingAwaitingCookCount,
+                                            })}
                                         </span>
                                     </Link>
                                 </li>

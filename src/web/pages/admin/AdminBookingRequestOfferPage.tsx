@@ -24,7 +24,6 @@ import {
     formatCurrency,
     formatDate,
     formatDateTime,
-    inlineCopy,
     userDisplayName,
 } from '../../../shared';
 import { bookingRequestOfferStatusHue, bookingRequestOfferStatusLabel } from '../../../shared/bookingRequestOfferStatus';
@@ -328,23 +327,13 @@ function cookPayoutBlockedReasonMessage(reason: GqlCAdminCookPayoutBlockedReason
     if (reason == null) {
         return t(locale, 'admin', 'copy.cookCannotReceiveAPayoutRightNow');
     }
-    return inlineCopy(
-        {
-            MISSING_STRIPE_ACCOUNT: {
-                de: 'Der Koch hat noch kein Stripe-Konto verbunden.',
-                en: 'The cook has not connected a Stripe account yet.',
-            },
-            STRIPE_ACCOUNT_INACTIVE: {
-                de: 'Das Stripe-Konto des Kochs ist nicht aktiv.',
-                en: "The cook's Stripe account is not active.",
-            },
-            STRIPE_PAYOUTS_DISABLED: {
-                de: 'Stripe-Auszahlungen sind für dieses Konto noch nicht freigeschaltet.',
-                en: 'Stripe payouts are not enabled on this account yet.',
-            },
-        }[reason],
-        locale,
-    );
+    if (reason === 'MISSING_STRIPE_ACCOUNT') {
+        return t(locale, 'admin', 'copy.theCookHasNotConnectedAStripeAccountYet');
+    }
+    if (reason === 'STRIPE_PAYOUTS_DISABLED') {
+        return t(locale, 'admin', 'copy.stripePayoutsAreNotEnabledOnThisAccountYet');
+    }
+    return t(locale, 'admin', 'copy.cookStripeAccountInactive');
 }
 
 function offerPayoutDue(offer: GqlCAdminBookingRequestOfferPageOfferFragment, now: Date = new Date()): boolean {
@@ -553,18 +542,12 @@ export function AdminBookingRequestOfferPage({
                                         ) : null}
                                         {pendingCall && showSchedule ? (
                                             <BookingRequestOfferAttentionBanner
-                                                message={inlineCopy(
-                                                    {
-                                                        de:
-                                                            pendingCall.initiator === 'CUSTOMER'
-                                                                ? 'Terminanfrage ausstehend: Kunde wartet auf den Koch'
-                                                                : 'Terminanfrage ausstehend: Koch wartet auf den Kunden',
-                                                        en:
-                                                            pendingCall.initiator === 'CUSTOMER'
-                                                                ? 'Call request pending: customer awaiting chef'
-                                                                : 'Call request pending: chef awaiting customer',
-                                                    },
+                                                message={t(
                                                     locale,
+                                                    'admin',
+                                                    pendingCall.initiator === 'CUSTOMER'
+                                                        ? 'copy.callRequestPendingCustomerAwaitingChef'
+                                                        : 'copy.callRequestPendingChefAwaitingCustomer',
                                                 )}
                                                 actionLabel={t(locale, 'admin', 'copy.viewCall')}
                                                 actionLink={
@@ -1119,27 +1102,16 @@ function CostsTabPanel({
         <div className="@container grid max-w-4xl gap-4">
             {offer.priceAutoAdjustReason != null ? (
                 <StatusAlert tone="info" title={t(locale, 'admin', 'copy.priceAutoAdjusted')}>
-                    {inlineCopy(
-                        offer.priceAutoAdjustReason === 'PARTICIPANTS'
-                            ? {
-                                  de: 'Dieser Angebotspreis wurde automatisch an die neue Teilnehmerzahl angepasst.',
-                                  en: 'This offer price was adjusted automatically to the new guest count.',
-                              }
-                            : offer.priceAutoAdjustReason === 'PARTICIPANTS_AND_TRAVEL'
-                              ? {
-                                    de: 'Dieser Angebotspreis wurde automatisch angepasst (Teilnehmerzahl und Fahrtkosten).',
-                                    en: 'This offer price was adjusted automatically (guest count and travel costs).',
-                                }
-                              : offer.priceAutoAdjustReason === 'TRAVEL'
-                                ? {
-                                      de: 'Dieser Angebotspreis wurde automatisch angepasst (meist Fahrtkosten nach Adressänderung).',
-                                      en: 'This offer price was adjusted automatically (usually travel costs after an address change).',
-                                  }
-                                : {
-                                      de: 'Dieser Angebotspreis wurde automatisch angepasst (nach einer Anfrageänderung).',
-                                      en: 'This offer price was adjusted automatically after a request change.',
-                                  },
+                    {t(
                         locale,
+                        'admin',
+                        offer.priceAutoAdjustReason === 'PARTICIPANTS'
+                            ? 'copy.thisOfferPriceWasAdjustedAutomaticallyToTheNewGuestCount'
+                            : offer.priceAutoAdjustReason === 'PARTICIPANTS_AND_TRAVEL'
+                              ? 'copy.thisOfferPriceWasAdjustedAutomaticallyGuestCountAndTravelCos'
+                              : offer.priceAutoAdjustReason === 'TRAVEL'
+                                ? 'copy.thisOfferPriceWasAdjustedAutomaticallyUsuallyTravelCostsAfte'
+                                : 'copy.thisOfferPriceWasAdjustedAutomaticallyAfterARequestChange',
                     )}
                 </StatusAlert>
             ) : null}
@@ -1149,13 +1121,12 @@ function CostsTabPanel({
                     <CardHeader className="px-4 pb-0">
                         <CardTitle className="text-sm">{t(locale, 'admin', 'copy.cookPayout')}</CardTitle>
                         <CardDescription>
-                            {inlineCopy(
-                                {
-                                    de: `Fällig seit ${offer.plannedPayoutDateTime ? formatDate(offer.plannedPayoutDateTime, { locale, timeZone, dateStyle: 'medium' }) : '—'} · ${payoutAmountLabel}`,
-                                    en: `Due since ${offer.plannedPayoutDateTime ? formatDate(offer.plannedPayoutDateTime, { locale, timeZone, dateStyle: 'medium' }) : '—'} · ${payoutAmountLabel}`,
-                                },
-                                locale,
-                            )}
+                            {t(locale, 'admin', 'copy.payoutDueSince', {
+                                when: offer.plannedPayoutDateTime
+                                    ? formatDate(offer.plannedPayoutDateTime, { locale, timeZone, dateStyle: 'medium' })
+                                    : t(locale, 'admin', 'copy.empty'),
+                                amount: payoutAmountLabel,
+                            })}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="grid gap-3 px-4">
@@ -1213,17 +1184,7 @@ function CostsTabPanel({
                         ) : undefined
                     }
                 >
-                    {inlineCopy(
-                        {
-                            de: outOfSystem
-                                ? 'Als außerbetrieblich ausgezahlt markiert. Optional prüfen, ob Stripe bereits ausgezahlt hat.'
-                                : 'Stripe-Auszahlung auf das Koch-Konto ausgelöst.',
-                            en: outOfSystem
-                                ? 'Marked as paid out of system. Optionally check whether Stripe already paid out.'
-                                : 'Stripe bank payout to the cook was released.',
-                        },
-                        locale,
-                    )}
+                    {t(locale, 'admin', outOfSystem ? 'copy.markedAsPaidOutOfSystemCheckStripe' : 'copy.stripeBankPayoutReleased')}
                 </StatusAlert>
             ) : null}
 
@@ -1384,13 +1345,7 @@ function CostsTabPanel({
                                     })}
                                 </p>
                                 <p className="text-muted-foreground">
-                                    {inlineCopy(
-                                        {
-                                            de: `Technisch: ${offer.paymentStatus}`,
-                                            en: `Technical: ${offer.paymentStatus}`,
-                                        },
-                                        locale,
-                                    )}
+                                    {t(locale, 'admin', 'copy.technicalStatus', { status: offer.paymentStatus })}
                                 </p>
                             </StatusAlert>
                         </div>

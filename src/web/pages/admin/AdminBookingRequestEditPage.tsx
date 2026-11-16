@@ -13,15 +13,9 @@ import {
     bookingRequestSettingFromChoice,
     defaultBookingRequestOccasions,
     defaultBookingRequestPreferences,
-    inlineCopy,
     textNormalizeTitled,
 } from '../../../shared';
-import type {
-    BookingRequestKitchenDetailsDraft,
-    BookingRequestParticipantDraft,
-    BookingRequestSettingChoice,
-    InlineCopy,
-} from '../../../shared';
+import type { BookingRequestKitchenDetailsDraft, BookingRequestParticipantDraft, BookingRequestSettingChoice } from '../../../shared';
 import { AdminBookingRequestOfferAmendmentConfirmDialog } from '../../components/AdminBookingRequestOfferAmendmentConfirmDialog';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
@@ -111,12 +105,7 @@ type FormValues = {
     kitchenPhotos: BookingRequestKitchenDetailsPhoto[];
 };
 
-const PRICE_CLASS_OPTIONS: readonly ({ value: GqlCBookingRequestPriceClassType | 'NONE' } & InlineCopy)[] = [
-    { value: 'NONE', de: 'Keine', en: 'None' },
-    { value: 'LOW', de: 'Niedrig', en: 'Low' },
-    { value: 'MEDIUM', de: 'Mittel', en: 'Medium' },
-    { value: 'HIGH', de: 'Hoch', en: 'High' },
-];
+const PRICE_CLASS_OPTIONS: readonly (GqlCBookingRequestPriceClassType | 'NONE')[] = ['NONE', 'LOW', 'MEDIUM', 'HIGH'];
 
 function addressFromRequest(
     address: GqlCAdminBookingRequestEditPageRequestFragment['exactEventAddress'],
@@ -345,15 +334,7 @@ export function AdminBookingRequestEditPage({
                     dualAcceptedOffer.paymentStatus === 'SETUP' ||
                     dualAcceptedOffer.paymentStatus === 'PAYED';
                 if (!allowedPayment) {
-                    toast.error(
-                        inlineCopy(
-                            {
-                                de: `Zahlungsstatus ${dualAcceptedOffer.paymentStatus} erlaubt keine Änderung (nur EMPTY, SETUP oder PAYED).`,
-                                en: `Payment status ${dualAcceptedOffer.paymentStatus} does not allow changes (only EMPTY, SETUP, or PAYED).`,
-                            },
-                            locale,
-                        ),
-                    );
+                    toast.error(t(locale, 'admin', 'copy.paymentStatusNoChanges', { status: dualAcceptedOffer.paymentStatus }));
                     return;
                 }
                 setPendingSubmit({
@@ -745,9 +726,9 @@ export function AdminBookingRequestEditPage({
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {PRICE_CLASS_OPTIONS.map((option) => (
-                                            <SelectItem key={option.value} value={option.value}>
-                                                {inlineCopy(option, locale)}
+                                        {PRICE_CLASS_OPTIONS.map((value) => (
+                                            <SelectItem key={value} value={value}>
+                                                {t(locale, 'admin', `pages.bookingRequestEdit.priceClass.${value}`)}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
@@ -820,13 +801,10 @@ export function AdminBookingRequestEditPage({
                                 <span className="grid min-w-0 gap-0.5">
                                     <span className="text-sm font-medium">{t(locale, 'admin', 'copy.guestsRestrictions')}</span>
                                     <span className="text-sm text-muted-foreground">
-                                        {inlineCopy(
-                                            {
-                                                de: `${guestTotal} Gäste · ${restrictedGuestCount} mit Einschränkungen`,
-                                                en: `${guestTotal} guests · ${restrictedGuestCount} with restrictions`,
-                                            },
-                                            locale,
-                                        )}
+                                        {t(locale, 'admin', 'copy.guestsWithRestrictions', {
+                                            guestCount: guestTotal,
+                                            restrictedCount: restrictedGuestCount,
+                                        })}
                                     </span>
                                 </span>
                                 <ChevronDownIcon

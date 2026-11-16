@@ -45,6 +45,7 @@ function emailI18nCreateSync(locale: CatalogLocale): i18n {
         ns: [I18N_EMAIL_NAMESPACE],
         defaultNS: I18N_EMAIL_NAMESPACE,
         resources,
+        initAsync: false,
         interpolation: { escapeValue: false },
         returnNull: false,
         parseMissingKeyHandler: (_key, defaultValue) => defaultValue ?? '',

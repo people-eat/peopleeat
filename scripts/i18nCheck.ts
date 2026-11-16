@@ -5,6 +5,9 @@ const LOCALES_DIR = path.join(process.cwd(), 'src/i18n/locales');
 const SOURCE_LOCALE = 'de';
 const COMPLETE_LOCALES = ['en', 'fr', 'it'] as const;
 
+/** Values that look like TypeScript/JSX leaked into a catalog by a botched migrator. */
+const SOURCE_DUMP = /(?:function |export function |const [A-Za-z][\w]* = |className=|useState<|useRef<|as const|return \(|\{ de:|<\/[A-Z])/;
+
 function keysOf(value: unknown, prefix = ''): string[] {
     if (value && typeof value === 'object' && !Array.isArray(value)) {
         return Object.entries(value as Record<string, unknown>).flatMap(([key, nested]) =>
@@ -20,6 +23,17 @@ function extraKeys(source: Set<string>, other: Set<string>): string[] {
 
 function missingKeys(source: Set<string>, other: Set<string>): string[] {
     return [...source].filter((key) => !other.has(key)).sort();
+}
+
+function flatten(value: unknown, prefix = '', acc: Record<string, string> = {}): Record<string, string> {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+        for (const [key, nested] of Object.entries(value as Record<string, unknown>)) {
+            flatten(nested, prefix ? `${prefix}.${key}` : key, acc);
+        }
+        return acc;
+    }
+    if (prefix) acc[prefix] = typeof value === 'string' ? value : JSON.stringify(value);
+    return acc;
 }
 
 async function readJson(filePath: string): Promise<unknown> {
@@ -39,6 +53,16 @@ async function assertWebLoadersStaySplit(): Promise<string[]> {
     return errors;
 }
 
+function assertNoSourceDumps(locale: string, fileName: string, catalog: unknown): string[] {
+    const errors: string[] = [];
+    for (const [key, value] of Object.entries(flatten(catalog))) {
+        if (SOURCE_DUMP.test(value)) {
+            errors.push(`${locale}/${fileName} ${key} looks like source code, not copy`);
+        }
+    }
+    return errors;
+}
+
 async function main(): Promise<void> {
     const locales = (await readdir(LOCALES_DIR)).filter((name) => !name.startsWith('.'));
     const sourceDir = path.join(LOCALES_DIR, SOURCE_LOCALE);
@@ -48,10 +72,12 @@ async function main(): Promise<void> {
     for (const fileName of namespaces) {
         const source = await readJson(path.join(sourceDir, fileName));
         const sourceKeys = new Set(keysOf(source));
+        errors.push(...assertNoSourceDumps(SOURCE_LOCALE, fileName, source));
         for (const locale of locales) {
             if (locale === SOURCE_LOCALE) continue;
             const localePath = path.join(LOCALES_DIR, locale, fileName);
             const catalog = await readJson(localePath);
+            errors.push(...assertNoSourceDumps(locale, fileName, catalog));
             const localeKeys = new Set(keysOf(catalog));
             const extra = extraKeys(sourceKeys, localeKeys);
             if (extra.length > 0) {

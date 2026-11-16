@@ -11,8 +11,7 @@ export type AdminSessionEventTimelineItem = {
     sessionEventId: string;
     sessionId: string;
     type: string;
-    descriptionDe: string;
-    descriptionEn: string;
+    description: string;
     createdAt: string;
     link?: string | null;
     isImpersonation?: boolean;
@@ -52,11 +51,10 @@ export function AdminSessionEventTimeline({
     return (
         <ol className="divide-y divide-border overflow-hidden rounded-xl border">
             {events.map((event) => {
-                const description = locale === 'de' ? event.descriptionDe : event.descriptionEn;
                 return (
                     <li key={event.sessionEventId} className="flex items-center justify-between gap-4 px-4 py-3">
                         <div className="grid min-w-0 gap-0.5">
-                            <p className="truncate text-sm font-medium text-foreground">{description}</p>
+                            <p className="truncate text-sm font-medium text-foreground">{event.description}</p>
                             <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                                 <Badge variant="outline" className="font-mono">
                                     {event.type}

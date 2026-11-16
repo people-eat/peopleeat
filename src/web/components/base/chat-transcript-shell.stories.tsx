@@ -1,15 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { chatViewportDecorator } from '../../../../.storybook/decorators';
-import { inlineCopy } from '../../../shared';
 
-import { useLocale } from '../../hooks/useLocale';
+import { useT } from '../../hooks/useT';
 import { Bubble, MessageRow } from '../chat-message/shared';
 import { ChatTranscriptShell } from './chat-transcript-shell';
 import { MessageScrollerItem } from './message-scroller';
 
 function TranscriptDemo({ mode }: { mode: 'assistant' | 'human' }) {
-    const locale = useLocale();
-    const jumpLabel = inlineCopy({ de: 'Zum neuesten springen', en: 'Jump to latest' }, locale);
+    const { t } = useT('common');
+    const jumpLabel = t('chat.jumpToLatest');
 
     return (
         <ChatTranscriptShell mode={mode} jumpToLatestLabel={jumpLabel} contentClassName="w-full gap-3" className="min-h-0 flex-1">
@@ -38,14 +37,14 @@ function TranscriptDemo({ mode }: { mode: 'assistant' | 'human' }) {
 }
 
 function EmptyTranscript() {
-    const locale = useLocale();
-    const jumpLabel = inlineCopy({ de: 'Zum neuesten springen', en: 'Jump to latest' }, locale);
+    const { t } = useT('common');
+    const jumpLabel = t('chat.jumpToLatest');
 
     return (
         <ChatTranscriptShell mode="human" jumpToLatestLabel={jumpLabel} contentClassName="w-full gap-3" className="min-h-0 flex-1">
             <MessageScrollerItem>
                 <p className="flex min-h-48 flex-1 items-center justify-center px-4 text-center text-sm text-muted-foreground">
-                    {inlineCopy({ de: 'Noch keine Nachrichten.', en: 'No messages yet.' }, locale)}
+                    {t('chat.noMessages')}
                 </p>
             </MessageScrollerItem>
         </ChatTranscriptShell>

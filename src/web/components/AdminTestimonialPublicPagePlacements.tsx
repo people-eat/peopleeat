@@ -2,7 +2,7 @@ import { Link } from '@tanstack/react-router';
 import { ChevronRightIcon } from 'lucide-react';
 
 import { t } from '../../i18n/t';
-import { contentLocaleText, inlineCopy } from '../../shared';
+import { contentLocaleText } from '../../shared';
 import { useLocale } from '../hooks/useLocale';
 import { adminOverviewLinkCardChevronClassName, adminOverviewLinkCardClassName } from '../pages/admin/adminOverviewLinkCard';
 import { cn } from '../utils/cn';
@@ -84,7 +84,7 @@ function PlacementAdminCard({ placement }: { placement: AdminTestimonialPublicPa
     const meta = placement.pathName
         ? `/${placement.pathName}`
         : placement.index != null
-          ? inlineCopy({ de: `Position ${placement.index + 1}`, en: `Position ${placement.index + 1}` }, locale)
+          ? t(locale, 'admin', 'testimonials.positionN', { n: placement.index + 1 })
           : null;
 
     const body = (

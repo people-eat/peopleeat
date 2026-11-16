@@ -11,7 +11,20 @@
             "COMPLETED": "Stattgefunden",
             "EXPIRED": "Abgelaufen",
             "CANCELED": "Storniert"
-        }
+        },
+        "travelApprox": "Reise ca. {amount}",
+        "menuApprox": "Menü ~{amount}",
+        "approveCount": "Freigeben ({count})",
+        "notifyAgain": "{name} erneut benachrichtigen?",
+        "suggestThis": "{name} diese Anfrage vorschlagen?",
+        "list": {
+            "unreadSuffix": " · {count} ungelesen",
+            "offerFrom": "Angebot von {name} · {status} · {createdAt}{unread}",
+            "moreOffers": "{count} weitere Angebote anzeigen",
+            "offerCount": "{count, plural, one {# Angebot} other {# Angebote}}"
+        },
+        "selectedCount": "{count} ausgewählt",
+        "notifyCount": "Benachrichtigung ({count})"
     },
     "bookingRequestOffer": {
         "status": {
@@ -353,7 +366,13 @@
         },
         "bookingRequestEdit": {
             "title": "Anfrage bearbeiten",
-            "description": "Anlass, Termin, Ort, Präferenzen, Nachrichten, Preisklasse und Einschränkungen anpassen."
+            "description": "Anlass, Termin, Ort, Präferenzen, Nachrichten, Preisklasse und Einschränkungen anpassen.",
+            "priceClass": {
+                "NONE": "Keine",
+                "LOW": "Niedrig",
+                "MEDIUM": "Mittel",
+                "HIGH": "Hoch"
+            }
         },
         "bookingRequestCreate": {
             "title": "Buchungsanfrage anlegen",
@@ -448,7 +467,12 @@
             "title": "Log-Liste"
         },
         "legal": {
-            "description": "Wie Datenschutz, AGB und Impressum als Versionen gespeichert und veröffentlicht werden."
+            "description": "Wie Datenschutz, AGB und Impressum als Versionen gespeichert und veröffentlicht werden.",
+            "blurb": {
+                "privacy": "Entwurf und veröffentlichte Versionen verwalten. Änderungen lösen die Annahme-Pflicht aus.",
+                "terms": "Entwurf und veröffentlichte Versionen verwalten. Änderungen lösen die Annahme-Pflicht aus.",
+                "imprint": "Entwurf und veröffentlichte Versionen verwalten. Gehört nicht zur Annahme-Pflicht."
+            }
         },
         "giftCards": {
             "title": "Gutscheinliste",
@@ -2012,7 +2036,61 @@
         "optional": "optional",
         "pendingReview2": "Zur Prüfung",
         "chefProfile2": "Kochprofil",
-        "notUsedOnAnyPublicPageYet": "Noch auf keiner öffentlichen Seite verwendet."
+        "notUsedOnAnyPublicPageYet": "Noch auf keiner öffentlichen Seite verwendet.",
+        "userCount": "{count, plural, one {# Nutzer} other {# Nutzer}}",
+        "chatCount": "{count, plural, one {# Chat} other {# Chats}}",
+        "requestCount": "{count, plural, one {# Anfrage} other {# Anfragen}}",
+        "sessionCount": "{count, plural, one {# Sitzung} other {# Sitzungen}}",
+        "promoCodeCount": "{count, plural, one {# Promo-Code} other {# Promo-Codes}}",
+        "giftCardCount": "{count, plural, one {# Gutschein} other {# Gutscheine}}",
+        "messageCount": "{count, plural, one {# Nachricht} other {# Nachrichten}}",
+        "entryCount": "{count, plural, one {# Eintrag} other {# Einträge}}",
+        "aiCallCount": "{count, plural, one {# Aufruf} other {# Aufrufe}}",
+        "unreadMessageCount": "{count, plural, one {# ungelesene Nachricht} other {# ungelesene Nachrichten}}",
+        "unreadNotificationCount": "{count, plural, one {# ungelesene Benachrichtigung} other {# ungelesene Benachrichtigungen}}",
+        "pendingReviewMessageCount": "{count, plural, one {# neue Nachricht seit der letzten Prüfung.} other {# neue Nachrichten seit der letzten Prüfung.}}",
+        "incompleteCourseCount": "{count, plural, one {1 Gang ist unvollständig} other {# Gänge sind unvollständig}}",
+        "maxPhotosPerReview": "Höchstens {count} Bilder pro Bewertung.",
+        "testimonialsVisibleOfTotal": "{visible} von {total} Bewertungen",
+        "signInAsNamed": "Als {name} anmelden?",
+        "localeAffectsInterface": "Oberfläche, E-Mails und WhatsApp dieser Person.",
+        "globalOn": "Global: an",
+        "globalOff": "Global: aus",
+        "joinedOn": "Registriert {date}",
+        "cardN": "Karte {n}",
+        "detailNDe": "Detail {n} (DE)",
+        "detailNEn": "Detail {n} (EN)",
+        "generatedOn": "Generiert am {when}",
+        "offerForNamed": "Angebot für {name}",
+        "regeneratePdfs": "PDFs neu erzeugen",
+        "regenerate": "Neu erzeugen",
+        "summarize": "Zusammenfassen",
+        "hideTranscript": "Transkript ausblenden",
+        "showTranscript": "Transkript anzeigen",
+        "callNotFound": "Anruf {id} wurde nicht gefunden.",
+        "scopedToBookingRequest": "An Buchungsanfrage gebunden ({id})",
+        "partnerDeletedNamed": "„{name}“ wird dauerhaft gelöscht.",
+        "suggestedPrice": "Vorgeschlagener Preis (€)",
+        "suggestedPricePerPerson": "Vorgeschlagener Preis pro Person (€)",
+        "upToDishesSelectable": "Bis zu {count} Gerichte auswählbar",
+        "paymentStatusNoPriceChanges": "Zahlungsstatus {status} erlaubt keine Preisänderung (nur EMPTY, SETUP oder PAYED).",
+        "paymentStatusNoChanges": "Zahlungsstatus {status} erlaubt keine Änderung (nur EMPTY, SETUP oder PAYED).",
+        "guestsWithRestrictions": "{guestCount, plural, one {# Gast} other {# Gäste}} · {restrictedCount} mit Einschränkungen",
+        "hostPriceToCookPayout": "Gastgeberpreis {from} → {to}. Koch-Auszahlung {payoutFrom} → {payoutTo}.",
+        "giftCardCodeExpires": "Code {code} · gültig bis {when}",
+        "defaultPlatformFees": "Standard: {cookPercent} % Koch / {customerPercent} % Kunde",
+        "platformFeeCookPercent": "Plattformgebühr Koch ({percent} %)",
+        "platformFeeCustomerPercent": "Plattformgebühr Kunde ({percent} %)",
+        "cookStripeAccountInactive": "Das Stripe-Konto des Kochs ist nicht aktiv.",
+        "callRequestPendingCustomerAwaitingChef": "Terminanfrage ausstehend: Kunde wartet auf den Koch",
+        "callRequestPendingChefAwaitingCustomer": "Terminanfrage ausstehend: Koch wartet auf den Kunden",
+        "payoutDueSince": "Fällig seit {when} · {amount}",
+        "markedAsPaidOutOfSystemCheckStripe": "Als außerbetrieblich ausgezahlt markiert. Optional prüfen, ob Stripe bereits ausgezahlt hat.",
+        "stripeBankPayoutReleased": "Stripe-Auszahlung auf das Koch-Konto ausgelöst.",
+        "technicalStatus": "Technisch: {status}",
+        "tokenUsage": "Eingabe {input} · Ausgabe {output} · Gesamt {total} · Reasoning {reasoning} · Cache {cache}",
+        "callsInRangeRates": "Im Zeitraum: Bestätigungsquote {confirmRate}% · Ablehnungsquote {declineRate}% (bezogen auf erledigte + abgelehnte + stornierte Termine).",
+        "cookCallStats": "{rooms} Räume · {completed} erledigt · {declined} abgelehnt · {awaiting} wartend"
     },
     "analytics": {
         "funnels": {
@@ -2054,7 +2132,8 @@
                 "profile": "Koch-Profil",
                 "created": "Koch-Konto erstellt"
             }
-        }
+        },
+        "cookConversion": "Conversion benachrichtigt → Angebot: {percent}%."
     },
     "sessionEvents": {
         "static": {
@@ -2263,7 +2342,12 @@
             "default": "Standard (global)",
             "user-on": "Für Nutzer: an",
             "user-off": "Für Nutzer: aus"
-        }
+        },
+        "addOverrideFor": "Ausnahme für „{label}“ festlegen.",
+        "overrideCount": "{count, plural, one {# Ausnahme} other {# Ausnahmen}}",
+        "enableNamed": "„{label}“ aktivieren?",
+        "disableNamed": "„{label}“ deaktivieren?",
+        "visibleOfTotal": "{visible} von {total}"
     },
     "giftCards": {
         "occasions": {
@@ -2324,7 +2408,9 @@
             "BOOKING_REQUEST_OFFER_CHAT_MESSAGE_TO_CUSTOMER": "Angebots-Chat an Kunde",
             "BOOKING_REQUEST_OFFER_CHAT_MESSAGE_TO_COOK": "Angebots-Chat an Koch",
             "COOK_APPROVED_BY_ADMIN": "Koch freigeschaltet"
-        }
+        },
+        "quotaReset": "Reset: {when}",
+        "emailCount": "{count, plural, one {# E-Mail} other {# E-Mails}}"
     },
     "queuedJobs": {
         "names": {
@@ -2406,5 +2492,29 @@
             "BOOKING_REQUEST_COOK_MENU_EVALUATION": "Menübewertung (Anfrage)",
             "BOOKING_REQUEST_ADJUSTED_MESSAGE": "Angepasste Anfrage-Nachricht"
         }
+    },
+    "list": {
+        "pageOf": "Seite {page} von {pageCount}",
+        "rangeOfTotal": "{from}–{to} von {total}"
+    },
+    "users": {
+        "countPercent": "{count} · {percent} %",
+        "turnsAge": "wird {age}"
+    },
+    "testimonials": {
+        "outOf5Stars": "{average} von 5 Sternen",
+        "positionN": "Position {n}"
+    },
+    "fileStore": {
+        "bucket": "Bucket: {bucket}.",
+        "objectCount": "{count, plural, one {# Objekt} other {# Objekte}}"
+    },
+    "bookingRequests": {
+        "offersAndAccepts": "{offerCount} Angebote · {conversionCount} Zusagen",
+        "acceptsAndOffers": "{conversionCount} Zusagen · {offerCount} Angebote",
+        "guestCount": "{count, plural, one {# Gast} other {# Gäste}}"
+    },
+    "cookProfile": {
+        "previousPaths": "Frühere Pfade: {paths}"
     }
 }

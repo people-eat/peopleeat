@@ -421,7 +421,58 @@
         "expansionTitle": "peopleeat arriva in nuovi paesi",
         "expansionIntro": "Nei Paesi Bassi e in Svizzera gli chef possono iscriversi ora. Gli ospiti prenoteranno lì da inizio 2027.",
         "chefsNowHosts2027": "Chef ora. Ospiti a inizio 2027.",
-        "learnMore": "Scopri di più"
+        "learnMore": "Scopri di più",
+        "cityListJoin": "{head} e {last}",
+        "pageTitle": "peopleeat arriva {comingTo}",
+        "pageDescription": "Gli chef possono iscriversi ora. Gli ospiti prenotano da inizio 2027. {cities}.",
+        "foundingTitle": "Diventa chef fondatore {inCountry}",
+        "foundingDescription": "Iscriviti in anticipo come chef privato {inCountry}. Profilo ora, richieste degli ospiti da inizio 2027.",
+        "markets": {
+            "netherlands": {
+                "comingTo": "nei Paesi Bassi",
+                "inCountry": "nei Paesi Bassi"
+            },
+            "switzerland": {
+                "comingTo": "in Svizzera",
+                "inCountry": "in Svizzera"
+            }
+        },
+        "faq": {
+            "canBook": {
+                "question": "Posso già prenotare uno chef {inCountry}?",
+                "answer": "No. peopleeat non accetta ancora richieste di prenotazione degli ospiti {inCountry}. L’avvio per gli ospiti è inizio 2027. Gli chef possono iscriversi ora."
+            },
+            "registerNow": {
+                "question": "Posso registrarmi come chef ora?",
+                "answer": "Sì. Gli chef fondatori a {cities} possono già creare profilo e primo menu. Le richieste degli ospiti arriveranno a inizio 2027."
+            },
+            "whichCities": {
+                "question": "In quali città parte peopleeat?",
+                "answer": "Al lancio indichiamo {cities}. Gli chef con un raggio di spostamento adatto possono coprire anche i comuni vicini."
+            },
+            "sendAnyway": {
+                "question": "Cosa succede se invio comunque una richiesta?",
+                "answer": "Non possiamo ancora accettare una richiesta di prenotazione per un indirizzo {inCountry}. Attendi il lancio di inizio 2027, oppure registrati come chef se vuoi cucinare."
+            }
+        },
+        "foundingFaq": {
+            "requestsNow": {
+                "question": "Ricevo subito richieste di prenotazione?",
+                "answer": "No. Puoi completare profilo e menu ora. Le richieste degli ospiti {inCountry} partono a inizio 2027. Così sei pronto dal primo giorno."
+            },
+            "whyEarly": {
+                "question": "Perché iscrivermi in anticipo?",
+                "answer": "Entri nella prima rete di chef sul posto, il tuo profilo è online al lancio e sei in evidenza sulle prime pagine città. Ti accompagniamo personalmente nell’onboarding."
+            },
+            "whichCities": {
+                "question": "Quali città posso coprire?",
+                "answer": "Indica il punto di partenza e il raggio. Le città tipiche sono {cities}."
+            },
+            "priceBenefit": {
+                "question": "C’è un vantaggio di prezzo per gli chef fondatori?",
+                "answer": "I vantaggi ora sono il posto al lancio, la visibilità sulle prime pagine città e il supporto diretto. Qui non indichiamo una tariffa distinta."
+            }
+        }
     },
     "howToBecome": {
         "line1": "Cucina i tuoi menu.",

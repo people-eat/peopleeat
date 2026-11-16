@@ -3,7 +3,6 @@ import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { t } from '../../../i18n/t';
-import { inlineCopy } from '../../../shared';
 import { uploadErrorMessage, uploadFile } from '../../chat/fileUpload';
 import { Button } from '../../components/base/button';
 import { Spinner } from '../../components/base/spinner';
@@ -51,15 +50,7 @@ export function AdminTestimonialImageManager({
 
         const remaining = MAX_IMAGES - existingIds.length;
         if (remaining <= 0) {
-            toast.error(
-                inlineCopy(
-                    {
-                        de: `Höchstens ${MAX_IMAGES} Bilder pro Bewertung.`,
-                        en: `At most ${MAX_IMAGES} photos per review.`,
-                    },
-                    locale,
-                ),
-            );
+            toast.error(t(locale, 'admin', 'copy.maxPhotosPerReview', { count: MAX_IMAGES }));
             if (inputRef.current) inputRef.current.value = '';
             return;
         }
@@ -86,15 +77,7 @@ export function AdminTestimonialImageManager({
                 if (!(await onSave(nextIds))) throw new Error('save failed');
             }
             if (capped) {
-                toast.error(
-                    inlineCopy(
-                        {
-                            de: `Höchstens ${MAX_IMAGES} Bilder pro Bewertung.`,
-                            en: `At most ${MAX_IMAGES} photos per review.`,
-                        },
-                        locale,
-                    ),
-                );
+                toast.error(t(locale, 'admin', 'copy.maxPhotosPerReview', { count: MAX_IMAGES }));
             }
         } catch (error) {
             toast.error(uploadErrorMessage(error, locale));

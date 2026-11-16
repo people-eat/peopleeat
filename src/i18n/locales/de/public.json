@@ -421,7 +421,58 @@
         "expansionTitle": "peopleeat kommt in neue Länder",
         "expansionIntro": "In den Niederlanden und der Schweiz können sich Köche jetzt anmelden. Gastgeber buchen dort Anfang 2027.",
         "chefsNowHosts2027": "Köche jetzt. Gäste Anfang 2027.",
-        "learnMore": "Mehr erfahren"
+        "learnMore": "Mehr erfahren",
+        "cityListJoin": "{head} und {last}",
+        "pageTitle": "peopleeat kommt {comingTo}",
+        "pageDescription": "Köche können sich jetzt anmelden. Gastgeber buchen Anfang 2027. {cities}.",
+        "foundingTitle": "Gründungskoch {inCountry}",
+        "foundingDescription": "Melde dich früh als Privatkoch {inCountry} an. Profil jetzt, Gastanfragen ab Anfang 2027.",
+        "markets": {
+            "netherlands": {
+                "comingTo": "in die Niederlande",
+                "inCountry": "in den Niederlanden"
+            },
+            "switzerland": {
+                "comingTo": "in die Schweiz",
+                "inCountry": "in der Schweiz"
+            }
+        },
+        "faq": {
+            "canBook": {
+                "question": "Kann ich {inCountry} schon einen Koch buchen?",
+                "answer": "Nein. peopleeat nimmt {inCountry} noch keine Buchungsanfragen von Gastgebern entgegen. Der Start für Gäste ist Anfang 2027. Köche können sich jetzt anmelden."
+            },
+            "registerNow": {
+                "question": "Kann ich mich als Koch jetzt registrieren?",
+                "answer": "Ja. Gründungsköche in {cities} können Profil und erstes Menü jetzt anlegen. Gastanfragen folgen Anfang 2027."
+            },
+            "whichCities": {
+                "question": "In welchen Städten startet peopleeat?",
+                "answer": "Zum Start nennen wir {cities}. Köche mit passendem Reisegebiet können auch umliegende Orte abdecken."
+            },
+            "sendAnyway": {
+                "question": "Was passiert, wenn ich trotzdem eine Anfrage sende?",
+                "answer": "Eine Adresse {inCountry} können wir noch nicht als Buchungsanfrage annehmen. Bitte warte auf den Start Anfang 2027, oder registriere dich als Koch, wenn du kochen möchtest."
+            }
+        },
+        "foundingFaq": {
+            "requestsNow": {
+                "question": "Bekomme ich sofort Buchungsanfragen?",
+                "answer": "Nein. Du kannst Profil und Menü jetzt fertigstellen. Gastanfragen {inCountry} starten Anfang 2027. So bist du am ersten Tag bereit."
+            },
+            "whyEarly": {
+                "question": "Warum sollte ich mich früh anmelden?",
+                "answer": "Du gehörst zum ersten Koch-Netzwerk vor Ort, dein Profil ist zum Start live, und du wirst auf den ersten Stadtseiten hervorgehoben. Wir begleiten dich persönlich beim Onboarding."
+            },
+            "whichCities": {
+                "question": "Welche Städte kann ich abdecken?",
+                "answer": "Trage deinen Startort und Radius ein. Typische Städte sind {cities}."
+            },
+            "priceBenefit": {
+                "question": "Gibt es einen Preisvorteil für Gründungsköche?",
+                "answer": "Die Vorteile jetzt sind Startplatz, Sichtbarkeit auf den ersten Stadtseiten und direkte Betreuung. Eine gesonderte Gebührenregel nennen wir hier nicht."
+            }
+        }
     },
     "howToBecome": {
         "line1": "Koche deine Menüs.",

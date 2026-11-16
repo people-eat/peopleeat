@@ -2,7 +2,7 @@ import { Link } from '@tanstack/react-router';
 import { MapPinIcon } from 'lucide-react';
 
 import { t } from '../../i18n/t';
-import { formatCurrency, inlineCopy, userDisplayName } from '../../shared';
+import { formatCurrency, userDisplayName } from '../../shared';
 import type { BookingRequestOfferStatus } from '../../shared/bookingRequestOfferStatus';
 import { bookingRequestOfferStatusHue, bookingRequestOfferStatusLabel } from '../../shared/bookingRequestOfferStatus';
 import { useLocale } from '../hooks/useLocale';
@@ -77,16 +77,7 @@ export function AdminBookingRequestOfferCard({
                 bookingRequestCardInteractionClassName,
             )}
         >
-            <NotificationBadge
-                count={unreadCount}
-                label={inlineCopy(
-                    {
-                        de: `${unreadCount} ungelesene Benachrichtigungen`,
-                        en: `${unreadCount} unread notifications`,
-                    },
-                    locale,
-                )}
-            />
+            <NotificationBadge count={unreadCount} label={t(locale, 'admin', 'copy.unreadNotificationCount', { count: unreadCount })} />
 
             <div className="flex min-w-0 flex-col gap-3">
                 <BookingStatusPill hue={bookingRequestOfferStatusHue(offer.status)} className="w-fit self-end">

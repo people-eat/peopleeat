@@ -130,9 +130,9 @@ export {
 export { cookMenuDefaultCourseTitles, cookMenuDraftTitle } from './cookMenuDraftDefaults';
 export { cookMenuCoursesAreComplete, cookMenuIsPublicCatalogEligible } from './cookMenuCompleteness';
 export { COOK_MENU_SUGGESTION_FILE_MAX } from './cookMenuSuggestion';
-export { CATALOG_LOCALES, DEFAULT_LOCALE, inlineCopy, isLocale, languageTagFromLocale } from './locale';
+export { CATALOG_LOCALES, DEFAULT_LOCALE, isLocale, languageTagFromLocale } from './locale';
 export { DEFAULT_TIME_ZONE, formatTimeZonePlaceLabel, timeZoneFromCountry, timeZoneOffsetAt, timeZonesDifferAt } from './timeZone';
-export type { CatalogLocale, InlineCopy, Locale } from './locale';
+export type { CatalogLocale, Locale } from './locale';
 export {
     cityCountryCitiesHeading,
     cityCountryCodeAssert,
@@ -213,7 +213,11 @@ export {
     bookingRequestMarketClosedAssert,
     bookingRequestMarketClosedFromMessage,
     expansionMarketCityList,
+    expansionMarketComingToDescription,
+    expansionMarketComingToTitle,
     expansionMarketFaqEntries,
+    expansionMarketFoundingChefDescription,
+    expansionMarketFoundingChefTitle,
     expansionMarketFromCountry,
     expansionMarketFromParam,
     expansionMarketList,

@@ -1,7 +1,6 @@
 import { ScaleIcon } from 'lucide-react';
 
 import { t } from '../../../i18n/t';
-import { inlineCopy } from '../../../shared';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { useLocale } from '../../hooks/useLocale';
 import type { Locale } from '../../utils/locale';
@@ -16,25 +15,7 @@ export function adminLegalPageDescription(locale: Locale): string {
 }
 
 function adminLegalKindBlurb(kind: (typeof ADMIN_LEGAL_KINDS)[number], locale: Locale) {
-    return inlineCopy(
-        (
-            {
-                privacy: {
-                    de: 'Entwurf und veröffentlichte Versionen verwalten. Änderungen lösen die Annahme-Pflicht aus.',
-                    en: 'Manage draft and published versions. Changes trigger the acceptance gate.',
-                },
-                terms: {
-                    de: 'Entwurf und veröffentlichte Versionen verwalten. Änderungen lösen die Annahme-Pflicht aus.',
-                    en: 'Manage draft and published versions. Changes trigger the acceptance gate.',
-                },
-                imprint: {
-                    de: 'Entwurf und veröffentlichte Versionen verwalten. Gehört nicht zur Annahme-Pflicht.',
-                    en: 'Manage draft and published versions. Not part of the acceptance gate.',
-                },
-            } as const
-        )[kind],
-        locale,
-    );
+    return t(locale, 'admin', `pages.legal.blurb.${kind}`);
 }
 
 export function AdminLegalPage() {

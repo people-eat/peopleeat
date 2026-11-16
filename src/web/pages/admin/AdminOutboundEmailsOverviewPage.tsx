@@ -3,7 +3,7 @@ import { ListIcon, MailsIcon } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
 
 import { t } from '../../../i18n/t';
-import { formatDateTime, formatIsoDate, inlineCopy } from '../../../shared';
+import { formatDateTime, formatIsoDate } from '../../../shared';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { DateRangePicker } from '../../components/base/date-range-picker';
 import type {
@@ -111,13 +111,7 @@ function adminOutboundEmailsListSearch({
 }
 
 function emailsCountLabel(count: number, locale: Locale): string {
-    return inlineCopy(
-        {
-            de: count === 1 ? '1 E-Mail' : `${count} E-Mails`,
-            en: count === 1 ? '1 email' : `${count} emails`,
-        },
-        locale,
-    );
+    return t(locale, 'admin', 'outboundEmail.emailCount', { count });
 }
 
 function quotaPercent(used: number, limit: number | null | undefined): number | null {
@@ -141,7 +135,7 @@ function ResendQuotaCard({
     timeZone: string;
 }) {
     const percent = quotaPercent(used, limit);
-    const limitLabel = limit == null ? inlineCopy({ de: 'kein Limit', en: 'no limit' }, locale) : String(limit);
+    const limitLabel = limit == null ? t(locale, 'admin', 'copy.noLimit') : String(limit);
 
     return (
         <div className="grid gap-3 rounded-xl border border-border/60 p-4">
@@ -168,13 +162,9 @@ function ResendQuotaCard({
                 </div>
             ) : null}
             <p className="text-sm text-muted-foreground">
-                {inlineCopy(
-                    {
-                        de: `Reset: ${formatDateTime(resetsAt, { locale, timeZone, dateStyle: 'medium', timeStyle: 'short' })}`,
-                        en: `Resets: ${formatDateTime(resetsAt, { locale, timeZone, dateStyle: 'medium', timeStyle: 'short' })}`,
-                    },
-                    locale,
-                )}
+                {t(locale, 'admin', 'outboundEmail.quotaReset', {
+                    when: formatDateTime(resetsAt, { locale, timeZone, dateStyle: 'medium', timeStyle: 'short' }),
+                })}
                 {percent != null ? ` · ${percent}%` : null}
             </p>
         </div>
@@ -205,7 +195,7 @@ export function AdminOutboundEmailsOverviewPage({
         value: number;
         lifecycleStatus: GqlCAdminOutboundEmailLifecycleStatus | undefined;
     }[] = [
-        { key: 'total', label: inlineCopy({ de: 'Gesamt', en: 'Total' }, locale), value: counts[0] ?? 0, lifecycleStatus: undefined },
+        { key: 'total', label: t(locale, 'admin', 'copy.total'), value: counts[0] ?? 0, lifecycleStatus: undefined },
         {
             key: 'failed',
             label: adminOutboundEmailLifecycleStatusLabel('FAILED', locale),
@@ -259,11 +249,11 @@ export function AdminOutboundEmailsOverviewPage({
                 </div>
 
                 <section className="grid gap-3">
-                    <h2 className="text-lg font-medium">{inlineCopy({ de: 'Resend-Kontingent', en: 'Resend quota' }, locale)}</h2>
+                    <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.resendQuota')}</h2>
                     {resendUsage ? (
                         <div className="grid gap-3 sm:grid-cols-2">
                             <ResendQuotaCard
-                                title={inlineCopy({ de: 'Monatlich', en: 'Monthly' }, locale)}
+                                title={t(locale, 'admin', 'copy.monthly')}
                                 used={resendUsage.monthly.used}
                                 limit={resendUsage.monthly.limit}
                                 resetsAt={resendUsage.monthly.resetsAt}
@@ -272,7 +262,7 @@ export function AdminOutboundEmailsOverviewPage({
                             />
                             {resendUsage.daily.limit != null ? (
                                 <ResendQuotaCard
-                                    title={inlineCopy({ de: 'Täglich', en: 'Daily' }, locale)}
+                                    title={t(locale, 'admin', 'copy.daily')}
                                     used={resendUsage.daily.used}
                                     limit={resendUsage.daily.limit}
                                     resetsAt={resendUsage.daily.resetsAt}
@@ -283,13 +273,7 @@ export function AdminOutboundEmailsOverviewPage({
                         </div>
                     ) : (
                         <p className="text-sm text-muted-foreground">
-                            {inlineCopy(
-                                {
-                                    de: 'Kontingent nicht verfügbar (Konsolen-Transport oder Resend-API). Details bei Resend im Dashboard.',
-                                    en: 'Quota unavailable (console transport or Resend API). Check the Resend dashboard for details.',
-                                },
-                                locale,
-                            )}{' '}
+                            {t(locale, 'admin', 'copy.quotaUnavailableConsoleTransportOrResendApiCheckTheResendDas')}{' '}
                             <a
                                 href="https://resend.com"
                                 target="_blank"
@@ -303,7 +287,7 @@ export function AdminOutboundEmailsOverviewPage({
                 </section>
 
                 <section className="grid gap-3">
-                    <h2 className="text-lg font-medium">{inlineCopy({ de: 'Bereiche', en: 'Sections' }, locale)}</h2>
+                    <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.sections')}</h2>
                     <ul className="grid gap-2 sm:grid-cols-2">
                         <li>
                             <AdminOverviewNavCard
@@ -311,14 +295,14 @@ export function AdminOutboundEmailsOverviewPage({
                                 search={adminOutboundEmailsListSearch()}
                                 icon={ListIcon}
                             >
-                                {inlineCopy({ de: 'Liste', en: 'List' }, locale)}
+                                {t(locale, 'admin', 'copy.list')}
                             </AdminOverviewNavCard>
                         </li>
                     </ul>
                 </section>
 
                 <section className="grid gap-3">
-                    <h2 className="text-lg font-medium">{inlineCopy({ de: 'Zustellung', en: 'Delivery' }, locale)}</h2>
+                    <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.delivery')}</h2>
                     <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                         {distribution.map((entry) => (
                             <AdminOverviewStatCard
@@ -334,47 +318,33 @@ export function AdminOutboundEmailsOverviewPage({
 
                 <section className="grid gap-3">
                     <div className="flex flex-wrap items-end justify-between gap-3">
-                        <h2 className="text-lg font-medium">{inlineCopy({ de: 'Neuanlagen', en: 'Creations' }, locale)}</h2>
+                        <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.creations')}</h2>
                         <DateRangePicker
                             value={pickerValue}
                             onValueChange={onRangeChange}
                             locale={DATE_FNS_LOCALE[locale]}
-                            placeholder={inlineCopy({ de: 'Zeitraum wählen', en: 'Pick a date range' }, locale)}
+                            placeholder={t(locale, 'admin', 'copy.pickADateRange')}
                             className="w-auto"
-                            aria-label={inlineCopy({ de: 'Zeitraum für E-Mails', en: 'Date range for emails' }, locale)}
+                            aria-label={t(locale, 'admin', 'copy.dateRangeForEmails')}
                         />
                     </div>
                     <AdminOverviewBarChart
                         data={buckets.map((bucket) => ({ bucketStart: bucket.bucketStart, count: bucket.count }))}
                         locale={locale}
                         timeZone={timeZone}
-                        ariaLabel={inlineCopy(
-                            {
-                                de: 'Balkendiagramm der E-Mails im gewählten Zeitraum',
-                                en: 'Bar chart of emails in the selected range',
-                            },
-                            locale,
-                        )}
+                        ariaLabel={t(locale, 'admin', 'copy.barChartOfEmailsInTheSelectedRange')}
                     />
                 </section>
 
                 <section className="grid gap-3">
                     <p className="text-sm text-muted-foreground">
-                        {inlineCopy(
-                            {
-                                de: 'Top 5 über alle E-Mails (unabhängig vom Diagrammzeitraum).',
-                                en: 'Top 5 across all emails (independent of the chart range).',
-                            },
-                            locale,
-                        )}
+                        {t(locale, 'admin', 'copy.top5AcrossAllEmailsIndependentOfTheChartRange')}
                     </p>
                     <div className="grid gap-3 sm:grid-cols-2 sm:items-start">
                         <div className="grid gap-3">
-                            <h2 className="text-lg font-medium">{inlineCopy({ de: 'Top-5-Empfänger', en: 'Top 5 recipients' }, locale)}</h2>
+                            <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.top5Recipients')}</h2>
                             {recipientStats.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">
-                                    {inlineCopy({ de: 'Keine E-Mails.', en: 'No emails.' }, locale)}
-                                </p>
+                                <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noEmails')}</p>
                             ) : (
                                 <ul className="grid gap-2">
                                     {recipientStats.map((stat) => (
@@ -420,11 +390,9 @@ export function AdminOutboundEmailsOverviewPage({
                         </div>
 
                         <div className="grid gap-3">
-                            <h2 className="text-lg font-medium">{inlineCopy({ de: 'Top-5-Zwecke', en: 'Top 5 purposes' }, locale)}</h2>
+                            <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.top5Purposes')}</h2>
                             {purposeStats.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">
-                                    {inlineCopy({ de: 'Keine E-Mails.', en: 'No emails.' }, locale)}
-                                </p>
+                                <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noEmails')}</p>
                             ) : (
                                 <ul className="grid gap-2">
                                     {purposeStats.map((stat) => (

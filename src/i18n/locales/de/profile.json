@@ -82,7 +82,69 @@
         },
         "notifications": {
             "title": "Benachrichtigungen",
-            "description": "Lege fest, wobei wir dir schreiben. In der App bleibt alles sichtbar. Anmeldecodes, Zahlungen und Support gehen immer an deine E-Mail."
+            "description": "Lege fest, wobei wir dir schreiben. In der App bleibt alles sichtbar. Anmeldecodes, Zahlungen und Support gehen immer an deine E-Mail.",
+            "whatsAppNeedsNumber": "WhatsApp bleibt aus, solange keine Nummer hinterlegt ist.",
+            "bookedEvenings": "Gebuchte Abende",
+            "eveningsYouBook": "Für deine Abende",
+            "asACook": "Als Koch",
+            "whenYouCook": "Wenn du kochst",
+            "lastChannelTitle": "Keine E-Mail und kein WhatsApp mehr?",
+            "lastChannelBodyOperator": "Diese Person bekommt dann keine E-Mail und kein WhatsApp, wenn sich der Abend ändert oder abgesagt wird. In der App bleibt es sichtbar.",
+            "lastChannelBody": "Du bekommst dann keine E-Mail und kein WhatsApp, wenn sich der Abend ändert oder abgesagt wird. In der App siehst du es weiterhin.",
+            "turnOff": "Ausschalten",
+            "toastEmailOn": "{title} per E-Mail an.",
+            "toastEmailOff": "{title} per E-Mail aus.",
+            "toastWhatsAppOn": "{title} per WhatsApp an.",
+            "toastWhatsAppOff": "{title} per WhatsApp aus.",
+            "customer": {
+                "booking": {
+                    "title": "Änderungen am Abend",
+                    "description": "Anfrage, Menü, Gästezahl, Absage und Kennenlerngespräch."
+                },
+                "chat": {
+                    "title": "Nachrichten deines Kochs",
+                    "operatorTitle": "Nachrichten des Kochs",
+                    "description": "Wenn eine Nachricht noch ungelesen ist."
+                },
+                "review": {
+                    "title": "Nach dem Abend",
+                    "description": "Erinnerungen, eine Bewertung zu schreiben."
+                }
+            },
+            "cook": {
+                "newRequest": {
+                    "title": "Neue Anfragen in deiner Nähe",
+                    "operatorTitle": "Neue Anfragen in der Nähe",
+                    "description": "Kann häufig kommen."
+                },
+                "directRequest": {
+                    "title": "Direktanfragen an dich",
+                    "operatorTitle": "Direktanfragen an den Koch",
+                    "description": "Wenn ein Gast dich über dein Kochprofil anfragt."
+                },
+                "offer": {
+                    "title": "Deine Angebote",
+                    "operatorTitle": "Angebote",
+                    "description": "Änderungen, Zu- und Absagen, Menü, Gästezahl und Gespräche."
+                },
+                "chat": {
+                    "title": "Nachrichten deiner Gäste",
+                    "operatorTitle": "Nachrichten der Gäste",
+                    "description": "Wenn eine Nachricht noch ungelesen ist."
+                },
+                "review": {
+                    "title": "Nach dem Abend",
+                    "description": "Erinnerungen zur Bewertung deiner Gäste.",
+                    "operatorDescription": "Erinnerungen zur Bewertung der Gäste."
+                }
+            }
+        },
+        "picture": {
+            "invalidType": "Bitte ein Bild (JPEG, PNG, WebP oder GIF) wählen.",
+            "saved": "Profilbild gespeichert.",
+            "removed": "Profilbild entfernt.",
+            "select": "Bild auswählen",
+            "remove": "Bild entfernen"
         },
         "delete": {
             "title": "Konto löschen",

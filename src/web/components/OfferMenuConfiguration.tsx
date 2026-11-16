@@ -1,7 +1,6 @@
 import { CheckIcon, PlusIcon } from 'lucide-react';
-import { inlineCopy } from '../../shared';
 
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 import { Button } from './base/button';
 import { CustomerMealCard } from './CustomerMealCard';
@@ -44,7 +43,7 @@ export function OfferMenuConfiguration({
     onSelectionsChange: (selections: OfferMenuCourseSelection[]) => void;
     className?: string;
 }) {
-    const locale = useLocale();
+    const { t } = useT('profileCook');
 
     function setCourseMealIds(courseId: string, mealIds: string[]) {
         onSelectionsChange(selections.map((selection) => (selection.courseId === courseId ? { courseId, mealIds } : selection)));
@@ -70,25 +69,11 @@ export function OfferMenuConfiguration({
                             {isMultiSelect ? (
                                 <span className="text-sm text-muted-foreground">
                                     {isComplete
-                                        ? inlineCopy(
-                                              {
-                                                  de: `${selectedMealIds.length} / ${limit} gewählt`,
-                                                  en: `${selectedMealIds.length} / ${limit} selected`,
-                                              },
-                                              locale,
-                                          )
-                                        : inlineCopy(
-                                              {
-                                                  de: `Noch ${remaining} von ${limit} wählen`,
-                                                  en: `Select ${remaining} of ${limit}`,
-                                              },
-                                              locale,
-                                          )}
+                                        ? t('offerMenu.selectedCount', { selected: selectedMealIds.length, limit })
+                                        : t('offerMenu.selectRemaining', { remaining, limit })}
                                 </span>
                             ) : course.mealOptions.length > 1 ? (
-                                <span className="text-sm text-muted-foreground">
-                                    {inlineCopy({ de: '1 Gericht wählen', en: 'Choose 1 dish' }, locale)}
-                                </span>
+                                <span className="text-sm text-muted-foreground">{t('offerMenu.chooseOne')}</span>
                             ) : null}
                         </div>
                         <ul className="grid gap-2">
@@ -111,11 +96,7 @@ export function OfferMenuConfiguration({
                                                     variant={isSelected ? 'default' : 'outline'}
                                                     disabled={limitReached}
                                                     aria-pressed={isSelected}
-                                                    aria-label={
-                                                        isSelected
-                                                            ? inlineCopy({ de: 'Auswahl entfernen', en: 'Remove selection' }, locale)
-                                                            : inlineCopy({ de: 'Gericht wählen', en: 'Select meal' }, locale)
-                                                    }
+                                                    aria-label={isSelected ? t('offerMenu.removeSelection') : t('offerMenu.selectMeal')}
                                                     onClick={() => {
                                                         if (!isMultiSelect) {
                                                             setCourseMealIds(course.courseId, [meal.mealId]);

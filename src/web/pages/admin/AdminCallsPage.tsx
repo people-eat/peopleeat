@@ -3,7 +3,6 @@ import type { SortingState, Updater } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
 
 import { t } from '../../../i18n/t';
-import { inlineCopy } from '../../../shared';
 import { AdminListPaginationBar } from '../../components/AdminListPaginationBar';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
@@ -280,13 +279,7 @@ export function AdminCallsPage({ data, search }: { data: GqlCAdminCallsPageQuery
                             </Button>
                         ) : null}
                         <p className="text-sm text-muted-foreground tabular-nums xl:ml-auto">
-                            {inlineCopy(
-                                {
-                                    de: `${total} ${total === 1 ? 'Eintrag' : 'Einträge'}`,
-                                    en: `${total} ${total === 1 ? 'entry' : 'entries'}`,
-                                },
-                                locale,
-                            )}
+                            {t(locale, 'admin', 'copy.entryCount', { count: total })}
                         </p>
                     </div>
                 </div>

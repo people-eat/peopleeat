@@ -1,4 +1,4 @@
-import { inlineCopy } from './locale';
+import { t } from '../i18n/t';
 import type { Locale } from './locale';
 import { toStripeCountryCode } from './toStripeCountryCode';
 
@@ -12,11 +12,6 @@ type ExpansionMarketCity = {
     nameEn: string;
     latitude: number;
     longitude: number;
-};
-
-type ExpansionMarketFaq = {
-    question: { de: string; en: string };
-    answer: { de: string; en: string };
 };
 
 export type ExpansionMarket = {
@@ -35,13 +30,12 @@ export type ExpansionMarket = {
     comingToPath: string;
     foundingChefPath: string;
     cities: readonly ExpansionMarketCity[];
-    comingToTitle: { de: string; en: string };
-    comingToDescription: { de: string; en: string };
-    foundingChefTitle: { de: string; en: string };
-    foundingChefDescription: { de: string; en: string };
-    comingToFaqs: readonly ExpansionMarketFaq[];
-    foundingChefFaqs: readonly ExpansionMarketFaq[];
 };
+
+type ExpansionMarketFaqKind = 'comingTo' | 'foundingChef';
+
+const comingToFaqKeys = ['canBook', 'registerNow', 'whichCities', 'sendAnyway'] as const;
+const foundingChefFaqKeys = ['requestsNow', 'whyEarly', 'whichCities', 'priceBenefit'] as const;
 
 const netherlandsCities = [
     { nameDe: 'Amsterdam', nameEn: 'Amsterdam', latitude: 52.3676, longitude: 4.9041 },
@@ -59,13 +53,25 @@ const switzerlandCities = [
     { nameDe: 'Lausanne', nameEn: 'Lausanne', latitude: 46.5197, longitude: 6.6323 },
 ] as const satisfies readonly ExpansionMarketCity[];
 
+function cityName(city: ExpansionMarketCity, locale: Locale): string {
+    return locale === 'de' ? city.nameDe : city.nameEn;
+}
+
 function cityList(cities: readonly ExpansionMarketCity[], locale: Locale): string {
-    const names = cities.map((city) => (locale === 'de' ? city.nameDe : city.nameEn));
+    const names = cities.map((city) => cityName(city, locale));
     if (names.length === 0) return '';
     if (names.length === 1) return names[0] ?? '';
     const last = names.at(-1) ?? '';
     const head = names.slice(0, -1).join(', ');
-    return locale === 'de' ? `${head} und ${last}` : `${head}, and ${last}`;
+    return t(locale, 'public', 'comingTo.cityListJoin', { head, last });
+}
+
+function marketPhrases(market: ExpansionMarket, locale: Locale): { comingTo: string; inCountry: string; cities: string } {
+    return {
+        comingTo: t(locale, 'public', `comingTo.markets.${market.slug}.comingTo`),
+        inCountry: t(locale, 'public', `comingTo.markets.${market.slug}.inCountry`),
+        cities: cityList(market.cities, locale),
+    };
 }
 
 const netherlands: ExpansionMarket = {
@@ -82,106 +88,6 @@ const netherlands: ExpansionMarket = {
     comingToPath: '/coming-to/netherlands',
     foundingChefPath: '/how-to-become-a-chef/netherlands',
     cities: netherlandsCities,
-    comingToTitle: {
-        de: 'peopleeat kommt in die Niederlande',
-        en: 'peopleeat is coming to the Netherlands',
-    },
-    comingToDescription: {
-        de: 'Köche können sich jetzt anmelden. Gastgeber buchen Anfang 2027. Amsterdam, Rotterdam, Den Haag, Utrecht, Eindhoven.',
-        en: 'Chefs can join now. Hosts book from early 2027. Amsterdam, Rotterdam, The Hague, Utrecht, Eindhoven.',
-    },
-    foundingChefTitle: {
-        de: 'Gründungskoch in den Niederlanden',
-        en: 'Become a founding chef in the Netherlands',
-    },
-    foundingChefDescription: {
-        de: 'Melde dich früh als Privatkoch in den Niederlanden an. Profil jetzt, Gastanfragen ab Anfang 2027.',
-        en: 'Join early as a private chef in the Netherlands. Profile now, guest requests from early 2027.',
-    },
-    comingToFaqs: [
-        {
-            question: {
-                de: 'Kann ich in den Niederlanden schon einen Koch buchen?',
-                en: 'Can I book a chef in the Netherlands already?',
-            },
-            answer: {
-                de: 'Nein. peopleeat nimmt in den Niederlanden noch keine Buchungsanfragen von Gastgebern entgegen. Der Start für Gäste ist Anfang 2027. Köche können sich jetzt anmelden.',
-                en: 'No. peopleeat is not taking host booking requests in the Netherlands yet. Guest booking starts in early 2027. Chefs can join now.',
-            },
-        },
-        {
-            question: {
-                de: 'Kann ich mich als Koch jetzt registrieren?',
-                en: 'Can I register as a chef now?',
-            },
-            answer: {
-                de: 'Ja. Gründungsköche in Amsterdam, Rotterdam, Den Haag, Utrecht und Eindhoven können Profil und erstes Menü jetzt anlegen. Gastanfragen folgen Anfang 2027.',
-                en: 'Yes. Founding chefs in Amsterdam, Rotterdam, The Hague, Utrecht, and Eindhoven can set up a profile and first menu now. Guest requests follow in early 2027.',
-            },
-        },
-        {
-            question: {
-                de: 'In welchen Städten startet peopleeat?',
-                en: 'Which cities is peopleeat launching in?',
-            },
-            answer: {
-                de: 'Zum Start nennen wir Amsterdam, Rotterdam, Den Haag, Utrecht und Eindhoven. Köche mit passendem Reisegebiet können auch umliegende Orte abdecken.',
-                en: 'At launch we name Amsterdam, Rotterdam, The Hague, Utrecht, and Eindhoven. Chefs with a matching travel radius can also cover nearby places.',
-            },
-        },
-        {
-            question: {
-                de: 'Was passiert, wenn ich trotzdem eine Anfrage sende?',
-                en: 'What happens if I still send a request?',
-            },
-            answer: {
-                de: 'Eine Adresse in den Niederlanden können wir noch nicht als Buchungsanfrage annehmen. Bitte warte auf den Start Anfang 2027, oder registriere dich als Koch, wenn du kochen möchtest.',
-                en: 'We cannot accept a booking request for an address in the Netherlands yet. Please wait for the early 2027 launch, or register as a chef if you want to cook.',
-            },
-        },
-    ],
-    foundingChefFaqs: [
-        {
-            question: {
-                de: 'Bekomme ich sofort Buchungsanfragen?',
-                en: 'Will I receive booking requests right away?',
-            },
-            answer: {
-                de: 'Nein. Du kannst Profil und Menü jetzt fertigstellen. Gastanfragen in den Niederlanden starten Anfang 2027. So bist du am ersten Tag bereit.',
-                en: 'No. You can finish your profile and menu now. Guest requests in the Netherlands start in early 2027. That way you are ready on day one.',
-            },
-        },
-        {
-            question: {
-                de: 'Warum sollte ich mich früh anmelden?',
-                en: 'Why should I join early?',
-            },
-            answer: {
-                de: 'Du gehörst zum ersten Koch-Netzwerk vor Ort, dein Profil ist zum Start live, und du wirst auf den ersten Stadtseiten hervorgehoben. Wir begleiten dich persönlich beim Onboarding.',
-                en: 'You join the first local chef network, your profile is live at launch, and you are featured on the first city pages. We support you directly during onboarding.',
-            },
-        },
-        {
-            question: {
-                de: 'Welche Städte kann ich abdecken?',
-                en: 'Which cities can I cover?',
-            },
-            answer: {
-                de: 'Trage deinen Startort und Radius ein. Typische Städte sind Amsterdam, Rotterdam, Den Haag, Utrecht und Eindhoven.',
-                en: 'Set your travel origin and radius. Typical cities are Amsterdam, Rotterdam, The Hague, Utrecht, and Eindhoven.',
-            },
-        },
-        {
-            question: {
-                de: 'Gibt es einen Preisvorteil für Gründungsköche?',
-                en: 'Is there a price benefit for founding chefs?',
-            },
-            answer: {
-                de: 'Die Vorteile jetzt sind Startplatz, Sichtbarkeit auf den ersten Stadtseiten und direkte Betreuung. Eine gesonderte Gebührenregel nennen wir hier nicht.',
-                en: 'The benefits now are your place at launch, visibility on the first city pages, and direct support. We do not name a separate fee arrangement here.',
-            },
-        },
-    ],
 };
 
 const switzerland: ExpansionMarket = {
@@ -198,106 +104,6 @@ const switzerland: ExpansionMarket = {
     comingToPath: '/coming-to/switzerland',
     foundingChefPath: '/how-to-become-a-chef/switzerland',
     cities: switzerlandCities,
-    comingToTitle: {
-        de: 'peopleeat kommt in die Schweiz',
-        en: 'peopleeat is coming to Switzerland',
-    },
-    comingToDescription: {
-        de: 'Köche können sich jetzt anmelden. Gastgeber buchen Anfang 2027. Zürich, Genf, Basel, Bern, Lausanne.',
-        en: 'Chefs can join now. Hosts book from early 2027. Zurich, Geneva, Basel, Bern, Lausanne.',
-    },
-    foundingChefTitle: {
-        de: 'Gründungskoch in der Schweiz',
-        en: 'Become a founding chef in Switzerland',
-    },
-    foundingChefDescription: {
-        de: 'Melde dich früh als Privatkoch in der Schweiz an. Profil jetzt, Gastanfragen ab Anfang 2027.',
-        en: 'Join early as a private chef in Switzerland. Profile now, guest requests from early 2027.',
-    },
-    comingToFaqs: [
-        {
-            question: {
-                de: 'Kann ich in der Schweiz schon einen Koch buchen?',
-                en: 'Can I book a chef in Switzerland already?',
-            },
-            answer: {
-                de: 'Nein. peopleeat nimmt in der Schweiz noch keine Buchungsanfragen von Gastgebern entgegen. Der Start für Gäste ist Anfang 2027. Köche können sich jetzt anmelden.',
-                en: 'No. peopleeat is not taking host booking requests in Switzerland yet. Guest booking starts in early 2027. Chefs can join now.',
-            },
-        },
-        {
-            question: {
-                de: 'Kann ich mich als Koch jetzt registrieren?',
-                en: 'Can I register as a chef now?',
-            },
-            answer: {
-                de: 'Ja. Gründungsköche in Zürich, Genf, Basel, Bern und Lausanne können Profil und erstes Menü jetzt anlegen. Gastanfragen folgen Anfang 2027.',
-                en: 'Yes. Founding chefs in Zurich, Geneva, Basel, Bern, and Lausanne can set up a profile and first menu now. Guest requests follow in early 2027.',
-            },
-        },
-        {
-            question: {
-                de: 'In welchen Städten startet peopleeat?',
-                en: 'Which cities is peopleeat launching in?',
-            },
-            answer: {
-                de: 'Zum Start nennen wir Zürich, Genf, Basel, Bern und Lausanne. Köche mit passendem Reisegebiet können auch umliegende Orte abdecken.',
-                en: 'At launch we name Zurich, Geneva, Basel, Bern, and Lausanne. Chefs with a matching travel radius can also cover nearby places.',
-            },
-        },
-        {
-            question: {
-                de: 'Was passiert, wenn ich trotzdem eine Anfrage sende?',
-                en: 'What happens if I still send a request?',
-            },
-            answer: {
-                de: 'Eine Adresse in der Schweiz können wir noch nicht als Buchungsanfrage annehmen. Bitte warte auf den Start Anfang 2027, oder registriere dich als Koch, wenn du kochen möchtest.',
-                en: 'We cannot accept a booking request for an address in Switzerland yet. Please wait for the early 2027 launch, or register as a chef if you want to cook.',
-            },
-        },
-    ],
-    foundingChefFaqs: [
-        {
-            question: {
-                de: 'Bekomme ich sofort Buchungsanfragen?',
-                en: 'Will I receive booking requests right away?',
-            },
-            answer: {
-                de: 'Nein. Du kannst Profil und Menü jetzt fertigstellen. Gastanfragen in der Schweiz starten Anfang 2027. So bist du am ersten Tag bereit.',
-                en: 'No. You can finish your profile and menu now. Guest requests in Switzerland start in early 2027. That way you are ready on day one.',
-            },
-        },
-        {
-            question: {
-                de: 'Warum sollte ich mich früh anmelden?',
-                en: 'Why should I join early?',
-            },
-            answer: {
-                de: 'Du gehörst zum ersten Koch-Netzwerk vor Ort, dein Profil ist zum Start live, und du wirst auf den ersten Stadtseiten hervorgehoben. Wir begleiten dich persönlich beim Onboarding.',
-                en: 'You join the first local chef network, your profile is live at launch, and you are featured on the first city pages. We support you directly during onboarding.',
-            },
-        },
-        {
-            question: {
-                de: 'Welche Städte kann ich abdecken?',
-                en: 'Which cities can I cover?',
-            },
-            answer: {
-                de: 'Trage deinen Startort und Radius ein. Typische Städte sind Zürich, Genf, Basel, Bern und Lausanne.',
-                en: 'Set your travel origin and radius. Typical cities are Zurich, Geneva, Basel, Bern, and Lausanne.',
-            },
-        },
-        {
-            question: {
-                de: 'Gibt es einen Preisvorteil für Gründungsköche?',
-                en: 'Is there a price benefit for founding chefs?',
-            },
-            answer: {
-                de: 'Die Vorteile jetzt sind Startplatz, Sichtbarkeit auf den ersten Stadtseiten und direkte Betreuung. Eine gesonderte Gebührenregel nennen wir hier nicht.',
-                en: 'The benefits now are your place at launch, visibility on the first city pages, and direct support. We do not name a separate fee arrangement here.',
-            },
-        },
-    ],
 };
 
 const expansionMarkets: Record<ExpansionMarketSlug, ExpansionMarket> = {
@@ -325,13 +131,33 @@ export function expansionMarketCityList(market: ExpansionMarket, locale: Locale)
     return cityList(market.cities, locale);
 }
 
+export function expansionMarketComingToTitle(market: ExpansionMarket, locale: Locale): string {
+    return t(locale, 'public', 'comingTo.pageTitle', marketPhrases(market, locale));
+}
+
+export function expansionMarketComingToDescription(market: ExpansionMarket, locale: Locale): string {
+    return t(locale, 'public', 'comingTo.pageDescription', marketPhrases(market, locale));
+}
+
+export function expansionMarketFoundingChefTitle(market: ExpansionMarket, locale: Locale): string {
+    return t(locale, 'public', 'comingTo.foundingTitle', marketPhrases(market, locale));
+}
+
+export function expansionMarketFoundingChefDescription(market: ExpansionMarket, locale: Locale): string {
+    return t(locale, 'public', 'comingTo.foundingDescription', marketPhrases(market, locale));
+}
+
 export function expansionMarketFaqEntries(
-    faqs: readonly ExpansionMarketFaq[],
+    market: ExpansionMarket,
+    kind: ExpansionMarketFaqKind,
     locale: Locale,
 ): ReadonlyArray<{ question: string; answer: string }> {
-    return faqs.map((faq) => ({
-        question: inlineCopy(faq.question, locale),
-        answer: inlineCopy(faq.answer, locale),
+    const phrases = marketPhrases(market, locale);
+    const keys = kind === 'comingTo' ? comingToFaqKeys : foundingChefFaqKeys;
+    const prefix = kind === 'comingTo' ? 'comingTo.faq' : 'comingTo.foundingFaq';
+    return keys.map((key) => ({
+        question: t(locale, 'public', `${prefix}.${key}.question`, phrases),
+        answer: t(locale, 'public', `${prefix}.${key}.answer`, phrases),
     }));
 }
 

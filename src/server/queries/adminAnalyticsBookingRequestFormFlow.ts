@@ -1,18 +1,17 @@
 import { sql } from 'drizzle-orm';
 
 import { t } from '../../i18n/t';
-
-import { bookingRequestFormFunnelArea, bookingRequestFormFunnelSteps } from '../../shared/bookingRequestFormFunnel';
 import type { BookingRequestFormFunnelStep } from '../../shared/bookingRequestFormFunnel';
+import { bookingRequestFormFunnelArea, bookingRequestFormFunnelSteps } from '../../shared/bookingRequestFormFunnel';
+import { DEFAULT_LOCALE } from '../../shared/locale';
+import type { Locale } from '../../shared/locale';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminAnalyticsBookingRequestFormFlow, GqlSDateTimeRange, GqlSSession } from '../graphql/generated';
 import { dateTimeRangeNormalize } from '../utils/dateTimeRangeNormalize';
+import { userLocaleRequire } from '../utils/userLocaleRequire';
 
-function funnelLabel(step: BookingRequestFormFunnelStep): { de: string; en: string } {
-    return {
-        de: t('de', 'admin', `analytics.funnels.bookingRequestForm.${step}`),
-        en: t('en', 'admin', `analytics.funnels.bookingRequestForm.${step}`),
-    };
+function funnelLabel(locale: Locale, step: BookingRequestFormFunnelStep): string {
+    return t(locale, 'admin', `analytics.funnels.bookingRequestForm.${step}`);
 }
 
 type StepRow = {
@@ -33,6 +32,7 @@ export async function adminAnalyticsBookingRequestFormFlow(
     serverRuntime: ServerRuntime,
 ): Promise<GqlSAdminAnalyticsBookingRequestFormFlow> {
     try {
+        const locale = requestingSession.userId ? await userLocaleRequire(serverRuntime, requestingSession.userId) : DEFAULT_LOCALE;
         const { startDateTime, endDateTime } = dateTimeRangeNormalize(range);
 
         const result = await serverRuntime.db.execute<StepRow>(sql`
@@ -134,8 +134,7 @@ export async function adminAnalyticsBookingRequestFormFlow(
             .filter((step) => nodeIds.has(step))
             .map((step) => ({
                 id: step,
-                labelDe: funnelLabel(step).de,
-                labelEn: funnelLabel(step).en,
+                label: funnelLabel(locale, step),
             }));
 
         const links = [...edgeCounts.entries()].map(([key, value]) => {
@@ -145,8 +144,7 @@ export async function adminAnalyticsBookingRequestFormFlow(
 
         const steps = bookingRequestFormFunnelSteps.map((step) => ({
             id: step,
-            labelDe: funnelLabel(step).de,
-            labelEn: funnelLabel(step).en,
+            label: funnelLabel(locale, step),
             enteredCount: enteredByStep.get(step)?.size ?? 0,
             completedCount: completedByStep.get(step)?.size ?? 0,
         }));

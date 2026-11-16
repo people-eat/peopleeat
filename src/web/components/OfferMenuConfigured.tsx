@@ -1,5 +1,4 @@
-import { inlineCopy } from '../../shared';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 import { CustomerMealCard } from './CustomerMealCard';
 import { ExpandableText } from './ExpandableText';
@@ -22,7 +21,7 @@ export type OfferMenuConfiguredMenu = {
 };
 
 export function OfferMenuConfigured({ menu, className }: { menu: OfferMenuConfiguredMenu; className?: string }) {
-    const locale = useLocale();
+    const { t } = useT('profileCook');
 
     return (
         <div className={cn('grid gap-6', className)}>
@@ -47,11 +46,7 @@ export function OfferMenuConfigured({ menu, className }: { menu: OfferMenuConfig
                             </li>
                         ))}
                     </ul>
-                    {course.meals.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">
-                            {inlineCopy({ de: 'Keine Gerichte gewählt.', en: 'No meals selected.' }, locale)}
-                        </p>
-                    ) : null}
+                    {course.meals.length === 0 ? <p className="text-sm text-muted-foreground">{t('offerMenu.noMealsSelected')}</p> : null}
                 </section>
             ))}
         </div>

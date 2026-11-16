@@ -1,24 +1,18 @@
 import { t } from '../../i18n/t';
 import { chefSignUpFunnelArea, chefSignUpFunnelSteps } from '../../shared/chefSignUpFunnel';
 import type { ChefSignUpFunnelStep } from '../../shared/chefSignUpFunnel';
+import { DEFAULT_LOCALE } from '../../shared/locale';
+import type { Locale } from '../../shared/locale';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminAnalyticsSessionFunnelFlow, GqlSDateTimeRange, GqlSSession } from '../graphql/generated';
+import { userLocaleRequire } from '../utils/userLocaleRequire';
 import { adminAnalyticsSessionFunnelFlow } from './adminAnalyticsSessionFunnelFlow';
 
-function funnelLabels(): Record<ChefSignUpFunnelStep, { de: string; en: string }> {
+function funnelLabels(locale: Locale): Record<ChefSignUpFunnelStep, string> {
     return {
-        auth: {
-            de: t('de', 'admin', 'analytics.funnels.chefSignUp.auth'),
-            en: t('en', 'admin', 'analytics.funnels.chefSignUp.auth'),
-        },
-        profile: {
-            de: t('de', 'admin', 'analytics.funnels.chefSignUp.profile'),
-            en: t('en', 'admin', 'analytics.funnels.chefSignUp.profile'),
-        },
-        created: {
-            de: t('de', 'admin', 'analytics.funnels.chefSignUp.created'),
-            en: t('en', 'admin', 'analytics.funnels.chefSignUp.created'),
-        },
+        auth: t(locale, 'admin', 'analytics.funnels.chefSignUp.auth'),
+        profile: t(locale, 'admin', 'analytics.funnels.chefSignUp.profile'),
+        created: t(locale, 'admin', 'analytics.funnels.chefSignUp.created'),
     };
 }
 
@@ -27,10 +21,11 @@ export async function adminAnalyticsChefSignUpFlow(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSAdminAnalyticsSessionFunnelFlow> {
+    const locale = requestingSession.userId ? await userLocaleRequire(serverRuntime, requestingSession.userId) : DEFAULT_LOCALE;
     return adminAnalyticsSessionFunnelFlow(range, requestingSession, serverRuntime, {
         area: chefSignUpFunnelArea,
         steps: chefSignUpFunnelSteps,
-        labels: funnelLabels(),
+        labels: funnelLabels(locale),
         lifecycleTypes: [{ type: 'COOK_CREATED', step: 'created' }],
         excludeCooks: false,
     });

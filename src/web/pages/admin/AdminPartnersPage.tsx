@@ -6,7 +6,7 @@ import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
 import { t } from '../../../i18n/t';
-import { formatDate, inlineCopy } from '../../../shared';
+import { formatDate } from '../../../shared';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import {
     AlertDialog,
@@ -348,13 +348,7 @@ export function AdminPartnersPage({ data }: { data: GqlCAdminPartnersPageQuery }
                         <AlertDialogTitle>{t(locale, 'admin', 'copy.deleteThisPartner')}</AlertDialogTitle>
                         <AlertDialogDescription>
                             {partnerToDelete
-                                ? inlineCopy(
-                                      {
-                                          de: `„${partnerToDelete.name}“ wird dauerhaft gelöscht.`,
-                                          en: `“${partnerToDelete.name}” will be permanently deleted.`,
-                                      },
-                                      locale,
-                                  )
+                                ? t(locale, 'admin', 'copy.partnerDeletedNamed', { name: partnerToDelete.name })
                                 : t(locale, 'admin', 'copy.thisPartnerWillBePermanentlyDeleted')}
                         </AlertDialogDescription>
                     </AlertDialogHeader>

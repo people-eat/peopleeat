@@ -7,7 +7,7 @@ import { dateTimeRangeNormalize } from '../utils/dateTimeRangeNormalize';
 export type AdminAnalyticsSessionFunnelConfig = {
     area: string;
     steps: readonly string[];
-    labels: Record<string, { de: string; en: string }>;
+    labels: Record<string, string>;
     /** Lifecycle event types mapped to a terminal funnel step id. */
     lifecycleTypes: ReadonlyArray<{ type: string; step: string }>;
     /** When true, exclude sessions whose user is a cook (booking form / gift card). */
@@ -140,8 +140,7 @@ export async function adminAnalyticsSessionFunnelFlow(
             .filter((step) => nodeIds.has(step))
             .map((step) => ({
                 id: step,
-                labelDe: config.labels[step]?.de ?? step,
-                labelEn: config.labels[step]?.en ?? step,
+                label: config.labels[step] ?? step,
             }));
 
         const links = [...edgeCounts.entries()].map(([key, value]) => {
@@ -151,8 +150,7 @@ export async function adminAnalyticsSessionFunnelFlow(
 
         const steps = config.steps.map((step) => ({
             id: step,
-            labelDe: config.labels[step]?.de ?? step,
-            labelEn: config.labels[step]?.en ?? step,
+            label: config.labels[step] ?? step,
             enteredCount: enteredByStep.get(step)?.size ?? 0,
             completedCount: completedByStep.get(step)?.size ?? 0,
         }));

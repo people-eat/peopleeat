@@ -576,8 +576,7 @@ export interface GqlSAdminAnalyticsFunnelStepStats {
     completedCount: Scalars['Int']['output'];
     enteredCount: Scalars['Int']['output'];
     id: Scalars['String']['output'];
-    labelDe: Scalars['String']['output'];
-    labelEn: Scalars['String']['output'];
+    label: Scalars['String']['output'];
 }
 
 export interface GqlSAdminAnalyticsSankeyLink {
@@ -590,8 +589,7 @@ export interface GqlSAdminAnalyticsSankeyLink {
 export interface GqlSAdminAnalyticsSankeyNode {
     __typename?: 'AdminAnalyticsSankeyNode';
     id: Scalars['String']['output'];
-    labelDe: Scalars['String']['output'];
-    labelEn: Scalars['String']['output'];
+    label: Scalars['String']['output'];
 }
 
 export interface GqlSAdminAnalyticsSessionFunnelFlow {
@@ -2323,8 +2321,7 @@ export type GqlSAdminSessionCriterion = {
 export interface GqlSAdminSessionEvent {
     __typename?: 'AdminSessionEvent';
     createdAt: Scalars['DateTime']['output'];
-    descriptionDe: Scalars['String']['output'];
-    descriptionEn: Scalars['String']['output'];
+    description: Scalars['String']['output'];
     isImpersonation: Scalars['Boolean']['output'];
     link?: Maybe<Scalars['String']['output']>;
     sessionEventId: Scalars['ID']['output'];
@@ -7733,8 +7730,7 @@ export type GqlSAdminAnalyticsFunnelStepStatsResolvers<
     completedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     enteredCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     id?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
-    labelDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
-    labelEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    label?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type GqlSAdminAnalyticsSankeyLinkResolvers<
@@ -7751,8 +7747,7 @@ export type GqlSAdminAnalyticsSankeyNodeResolvers<
     ParentType extends GqlSResolversParentTypes['AdminAnalyticsSankeyNode'] = GqlSResolversParentTypes['AdminAnalyticsSankeyNode'],
 > = ResolversObject<{
     id?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
-    labelDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
-    labelEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    label?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type GqlSAdminAnalyticsSessionFunnelFlowResolvers<
@@ -9290,8 +9285,7 @@ export type GqlSAdminSessionEventResolvers<
     ParentType extends GqlSResolversParentTypes['AdminSessionEvent'] = GqlSResolversParentTypes['AdminSessionEvent'],
 > = ResolversObject<{
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
-    descriptionDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
-    descriptionEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    description?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     isImpersonation?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     link?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     sessionEventId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;

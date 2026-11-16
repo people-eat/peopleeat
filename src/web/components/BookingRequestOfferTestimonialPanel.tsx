@@ -4,7 +4,8 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
-import { fileUploadPublicUrl, inlineCopy, isTestimonialRating } from '../../shared';
+import { t } from '../../i18n/t';
+import { fileUploadPublicUrl, isTestimonialRating } from '../../shared';
 import { uploadErrorMessage, uploadFile } from '../chat/fileUpload';
 import { CookBookingRequestOfferTestimonialUpsertDocument, UserBookingRequestOfferTestimonialUpsertDocument } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
@@ -88,33 +89,21 @@ function fieldErrorText(errors: unknown[]): string | undefined {
 
 function requiredRating(value: number | null, locale: Locale): string | undefined {
     if (!isTestimonialRating(value)) {
-        return inlineCopy({ de: 'Bitte wähle deine Sterne.', en: 'Please choose your star rating.' }, locale);
+        return t(locale, 'common', 'testimonialReview.chooseStars');
     }
     return undefined;
 }
 
 function requiredCustomerBody(value: string, locale: Locale): string | undefined {
     if (value.trim().length === 0) {
-        return inlineCopy(
-            {
-                de: 'Bitte schreibe ein paar Worte zu deinem Event.',
-                en: 'Please write a few words about your event.',
-            },
-            locale,
-        );
+        return t(locale, 'common', 'testimonialReview.writeAboutEvent');
     }
     return undefined;
 }
 
 function requiredWhatWentWrong(value: string, locale: Locale): string | undefined {
     if (value.trim().length === 0) {
-        return inlineCopy(
-            {
-                de: 'Bitte beschreibe kurz, was nicht gut lief.',
-                en: 'Please briefly describe what did not go well.',
-            },
-            locale,
-        );
+        return t(locale, 'common', 'testimonialReview.describeWhatWentWrong');
     }
     return undefined;
 }
@@ -196,7 +185,7 @@ export function BookingRequestOfferTestimonialPanel({
                         },
                     });
                     if (result.error || !result.data?.user.bookingRequestOfferTestimonialUpsert.success) {
-                        toast.error(inlineCopy({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }, locale));
+                        toast.error(t(locale, 'common', 'saveFailed'));
                         return;
                     }
                 } else {
@@ -216,7 +205,7 @@ export function BookingRequestOfferTestimonialPanel({
                         },
                     });
                     if (result.error || !result.data?.user.cook.bookingRequestOfferTestimonialUpsert.success) {
-                        toast.error(inlineCopy({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }, locale));
+                        toast.error(t(locale, 'common', 'saveFailed'));
                         return;
                     }
                 }
@@ -232,9 +221,9 @@ export function BookingRequestOfferTestimonialPanel({
                 });
                 setLocalOverride(null);
                 onSubmitted?.();
-                toast.success(inlineCopy({ de: 'Danke für deine Bewertung!', en: 'Thanks for your review!' }, locale));
+                toast.success(t(locale, 'common', 'testimonialReview.thanks'));
             } catch {
-                toast.error(inlineCopy({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }, locale));
+                toast.error(t(locale, 'common', 'saveFailed'));
             }
         },
     });
@@ -263,12 +252,12 @@ export function BookingRequestOfferTestimonialPanel({
                         },
                     });
                     if (result.error || !result.data?.user.bookingRequestOfferTestimonialUpsert.success) {
-                        toast.error(inlineCopy({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }, locale));
+                        toast.error(t(locale, 'common', 'saveFailed'));
                         return;
                     }
                 } else {
                     if (needsLowRatingAnswers && !includeLowRatingAnswers) {
-                        toast.error(inlineCopy({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }, locale));
+                        toast.error(t(locale, 'common', 'saveFailed'));
                         return;
                     }
                     const result = await upsertCook({
@@ -287,7 +276,7 @@ export function BookingRequestOfferTestimonialPanel({
                         },
                     });
                     if (result.error || !result.data?.user.cook.bookingRequestOfferTestimonialUpsert.success) {
-                        toast.error(inlineCopy({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }, locale));
+                        toast.error(t(locale, 'common', 'saveFailed'));
                         return;
                     }
                 }
@@ -304,9 +293,9 @@ export function BookingRequestOfferTestimonialPanel({
                     publicationStatus: rating <= 3 ? 'PENDING_REVIEW' : 'PUBLISHED',
                 });
                 onEditingChange?.(false);
-                toast.success(inlineCopy({ de: 'Bewertung aktualisiert.', en: 'Review updated.' }, locale));
+                toast.success(t(locale, 'common', 'testimonialReview.updated'));
             } catch {
-                toast.error(inlineCopy({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }, locale));
+                toast.error(t(locale, 'common', 'saveFailed'));
             }
         },
     });
@@ -360,30 +349,14 @@ export function BookingRequestOfferTestimonialPanel({
 
         const images = Array.from(fileList).filter((file) => file.type.startsWith('image/'));
         if (images.length === 0) {
-            setUploadError(
-                inlineCopy(
-                    {
-                        de: 'Bitte ein Bild (JPEG, PNG, WebP oder GIF) wählen.',
-                        en: 'Please choose an image (JPEG, PNG, WebP, or GIF).',
-                    },
-                    locale,
-                ),
-            );
+            setUploadError(t(locale, 'common', 'contentSections.chooseImage'));
             if (inputRef.current) inputRef.current.value = '';
             return;
         }
 
         const remaining = MAX_IMAGES - currentIds.length;
         if (remaining <= 0) {
-            setUploadError(
-                inlineCopy(
-                    {
-                        de: `Du kannst bis zu ${MAX_IMAGES} Bilder hinzufügen.`,
-                        en: `You can add up to ${MAX_IMAGES} photos.`,
-                    },
-                    locale,
-                ),
-            );
+            setUploadError(t(locale, 'common', 'testimonialReview.maxPhotos', { max: MAX_IMAGES }));
             if (inputRef.current) inputRef.current.value = '';
             return;
         }
@@ -400,15 +373,7 @@ export function BookingRequestOfferTestimonialPanel({
                 setIds(nextIds);
             }
             if (capped) {
-                setUploadError(
-                    inlineCopy(
-                        {
-                            de: `Du kannst bis zu ${MAX_IMAGES} Bilder hinzufügen.`,
-                            en: `You can add up to ${MAX_IMAGES} photos.`,
-                        },
-                        locale,
-                    ),
-                );
+                setUploadError(t(locale, 'common', 'testimonialReview.maxPhotos', { max: MAX_IMAGES }));
             }
         } catch (error) {
             setUploadError(uploadErrorMessage(error, locale));
@@ -432,23 +397,12 @@ export function BookingRequestOfferTestimonialPanel({
         return (
             <div className="grid gap-2">
                 <div className="grid gap-0.5">
-                    <span className="text-sm font-medium text-foreground">
-                        {inlineCopy({ de: 'Teile deine Eindrücke', en: 'Share your impressions' }, locale)}
-                    </span>
+                    <span className="text-sm font-medium text-foreground">{t(locale, 'common', 'testimonialReview.shareImpressions')}</span>
                     <p className="text-xs text-muted-foreground">
-                        {inlineCopy(
-                            {
-                                de: `Optional. Bis zu ${MAX_IMAGES} Fotos vom Abend.`,
-                                en: `Optional. Up to ${MAX_IMAGES} photos from the evening.`,
-                            },
-                            locale,
-                        )}
+                        {t(locale, 'common', 'testimonialReview.photosHint', { max: MAX_IMAGES })}
                     </p>
                 </div>
-                <ul
-                    className="grid grid-cols-4 gap-1.5"
-                    aria-label={inlineCopy({ de: 'Fotos der Bewertung', en: 'Review photos' }, locale)}
-                >
+                <ul className="grid grid-cols-4 gap-1.5" aria-label={t(locale, 'common', 'testimonial.reviewPhotos')}>
                     {ids.map((fileUploadId) => {
                         const url = fileUploadPublicUrl(fileUploadId);
                         return (
@@ -460,7 +414,7 @@ export function BookingRequestOfferTestimonialPanel({
                                     size="icon-xs"
                                     disabled={busy}
                                     onClick={() => removeImage(fileUploadId, ids, setIds)}
-                                    aria-label={inlineCopy({ de: 'Bild entfernen', en: 'Remove image' }, locale)}
+                                    aria-label={t(locale, 'common', 'testimonialReview.removeImage')}
                                     className={cn(
                                         'absolute top-1 right-1 rounded-full opacity-0 shadow-sm group-hover:opacity-100',
                                         'pointer-fine:opacity-0 focus-visible:opacity-100',
@@ -479,7 +433,7 @@ export function BookingRequestOfferTestimonialPanel({
                                 disabled={busy}
                                 onClick={() => inputRef.current?.click()}
                                 className="aspect-square size-full min-h-0 min-w-16 border-dashed text-muted-foreground"
-                                aria-label={inlineCopy({ de: 'Bilder hinzufügen', en: 'Add photos' }, locale)}
+                                aria-label={t(locale, 'common', 'testimonialReview.addPhotos')}
                             >
                                 {uploadBusy ? <Spinner className="size-4" /> : <PlusIcon className="size-5" aria-hidden />}
                             </Button>
@@ -506,19 +460,9 @@ export function BookingRequestOfferTestimonialPanel({
     function renderLowRatingFields(activeForm: typeof form, attempts: number, requireAnswers: boolean) {
         return (
             <div className="grid gap-3 rounded-lg border border-border bg-muted/30 p-4">
-                <p className="text-sm font-medium text-foreground">
-                    {inlineCopy({ de: 'Was können wir besser machen?', en: 'What can we do better?' }, locale)}
-                </p>
+                <p className="text-sm font-medium text-foreground">{t(locale, 'common', 'testimonialReview.whatCanWeDoBetter')}</p>
                 {!requireAnswers ? (
-                    <p className="text-sm text-muted-foreground">
-                        {inlineCopy(
-                            {
-                                de: 'Optional: aktualisiere dein Feedback, oder lass die Felder leer, um deine bisherigen Antworten zu behalten.',
-                                en: 'Optional: update your feedback, or leave the fields blank to keep your previous answers.',
-                            },
-                            locale,
-                        )}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{t(locale, 'common', 'testimonialReview.keepPreviousOptional')}</p>
                 ) : null}
                 <activeForm.Field
                     name="whatWentWrong"
@@ -538,7 +482,7 @@ export function BookingRequestOfferTestimonialPanel({
                                     htmlFor={`${activeForm === form ? 'create' : 'edit'}-what-went-wrong`}
                                     className="text-sm text-muted-foreground"
                                 >
-                                    {inlineCopy({ de: 'Was ist nicht gut gelaufen?', en: 'What did not go well?' }, locale)}
+                                    {t(locale, 'common', 'testimonialReview.whatDidNotGoWell')}
                                 </label>
                                 <Textarea
                                     id={`${activeForm === form ? 'create' : 'edit'}-what-went-wrong`}
@@ -563,7 +507,7 @@ export function BookingRequestOfferTestimonialPanel({
                     {(field) => (
                         <div className="flex flex-wrap items-center gap-2">
                             <span className="text-sm text-muted-foreground">
-                                {inlineCopy({ de: 'Würdest du peopleeat weiterempfehlen?', en: 'Would you recommend peopleeat?' }, locale)}
+                                {t(locale, 'common', 'testimonialReview.wouldYouRecommend')}
                             </span>
                             <Button
                                 type="button"
@@ -571,7 +515,7 @@ export function BookingRequestOfferTestimonialPanel({
                                 variant={field.state.value === true ? 'default' : 'outline'}
                                 onClick={() => field.handleChange(true)}
                             >
-                                {inlineCopy({ de: 'Ja', en: 'Yes' }, locale)}
+                                {t(locale, 'common', 'yes')}
                             </Button>
                             <Button
                                 type="button"
@@ -579,7 +523,7 @@ export function BookingRequestOfferTestimonialPanel({
                                 variant={field.state.value === false ? 'default' : 'outline'}
                                 onClick={() => field.handleChange(false)}
                             >
-                                {inlineCopy({ de: 'Nein', en: 'No' }, locale)}
+                                {t(locale, 'common', 'no')}
                             </Button>
                         </div>
                     )}
@@ -591,7 +535,7 @@ export function BookingRequestOfferTestimonialPanel({
                                 htmlFor={`${activeForm === form ? 'create' : 'edit'}-additional-feedback`}
                                 className="text-sm text-muted-foreground"
                             >
-                                {inlineCopy({ de: 'Weiteres Feedback (optional)', en: 'Anything else (optional)' }, locale)}
+                                {t(locale, 'common', 'testimonialReview.additionalFeedback')}
                             </label>
                             <Textarea
                                 id={`${activeForm === form ? 'create' : 'edit'}-additional-feedback`}
@@ -621,18 +565,8 @@ export function BookingRequestOfferTestimonialPanel({
                 }}
             >
                 <div className="grid gap-1">
-                    <h2 className="text-base font-medium text-foreground">
-                        {inlineCopy({ de: 'Bewertung bearbeiten', en: 'Edit review' }, locale)}
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                        {inlineCopy(
-                            {
-                                de: 'Passe Sterne, Text und Fotos an, wenn sich etwas geändert hat.',
-                                en: 'Update stars, text, and photos if something changed.',
-                            },
-                            locale,
-                        )}
-                    </p>
+                    <h2 className="text-base font-medium text-foreground">{t(locale, 'common', 'testimonialReview.editReview')}</h2>
+                    <p className="text-sm text-muted-foreground">{t(locale, 'common', 'testimonialReview.updateIfChanged')}</p>
                 </div>
 
                 <editForm.Field
@@ -650,7 +584,7 @@ export function BookingRequestOfferTestimonialPanel({
                         return (
                             <div className="grid gap-2">
                                 <span className="text-sm font-medium text-foreground" id={`${field.name}-edit-label`}>
-                                    {inlineCopy({ de: 'Deine Sterne', en: 'Your rating' }, locale)}
+                                    {t(locale, 'common', 'testimonialReview.yourRating')}
                                 </span>
                                 <div aria-invalid={showError} aria-describedby={showError ? errorId : undefined}>
                                     <TestimonialRatingInput
@@ -688,8 +622,8 @@ export function BookingRequestOfferTestimonialPanel({
                             <div className="grid gap-2">
                                 <label htmlFor="testimonial-edit-body" className="text-sm font-medium text-foreground">
                                     {role === 'customer'
-                                        ? inlineCopy({ de: 'Dein Text', en: 'Your review' }, locale)
-                                        : inlineCopy({ de: 'Dein Kommentar', en: 'Your comment' }, locale)}
+                                        ? t(locale, 'common', 'testimonialReview.yourReview')
+                                        : t(locale, 'common', 'testimonialReview.yourComment')}
                                 </label>
                                 <Textarea
                                     id="testimonial-edit-body"
@@ -723,22 +657,12 @@ export function BookingRequestOfferTestimonialPanel({
 
     if (shown != null) {
         const card = toCardModel(shown, authorFallback);
-        const viewLabel = inlineCopy({ de: 'Bewertung ansehen', en: 'View review' }, locale);
+        const viewLabel = t(locale, 'common', 'testimonial.viewReview');
         return (
             <div className="grid max-w-xl gap-5">
                 <div className="grid gap-1">
-                    <h2 className="text-base font-medium text-foreground">
-                        {inlineCopy({ de: 'Danke für deine Stimme', en: 'Thank you for sharing' }, locale)}
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                        {inlineCopy(
-                            {
-                                de: 'Dein Feedback macht den nächsten Abend noch schöner für andere Gäste.',
-                                en: 'Your feedback helps the next guest look forward to their evening too.',
-                            },
-                            locale,
-                        )}
-                    </p>
+                    <h2 className="text-base font-medium text-foreground">{t(locale, 'common', 'testimonialReview.thankYou')}</h2>
+                    <p className="text-sm text-muted-foreground">{t(locale, 'common', 'testimonialReview.helpsNextGuest')}</p>
                 </div>
 
                 <TestimonialCardFace
@@ -748,7 +672,7 @@ export function BookingRequestOfferTestimonialPanel({
 
                 <div className="flex gap-2 flex-wrap *:flex-1">
                     <Button type="button" variant="outline" size="sm" onClick={() => onEditingChange?.(true)}>
-                        {inlineCopy({ de: 'Bewertung bearbeiten', en: 'Edit review' }, locale)}
+                        {t(locale, 'common', 'testimonialReview.editReview')}
                     </Button>
                     <Button type="button" variant="outline" size="sm" onClick={() => openDetail(0)}>
                         {viewLabel}
@@ -764,38 +688,16 @@ export function BookingRequestOfferTestimonialPanel({
                 />
 
                 {shown.publicationStatus === 'PENDING_REVIEW' ? (
-                    <p className="text-sm text-muted-foreground">
-                        {inlineCopy(
-                            {
-                                de: 'Wir schauen uns deine Bewertung noch kurz an, bevor sie sichtbar wird.',
-                                en: 'We are reviewing your feedback briefly before it goes live.',
-                            },
-                            locale,
-                        )}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{t(locale, 'common', 'testimonialReview.pendingReview')}</p>
                 ) : null}
 
                 {role === 'customer' && shown.body ? (
                     <div className="grid gap-3 border-t border-border pt-4">
                         <div className="grid gap-1">
                             <p className="text-sm font-medium text-foreground">
-                                {inlineCopy(
-                                    {
-                                        de: 'Magst du uns auch bei Google empfehlen?',
-                                        en: 'Want to recommend us on Google too?',
-                                    },
-                                    locale,
-                                )}
+                                {t(locale, 'common', 'testimonialReview.recommendGoogle')}
                             </p>
-                            <p className="text-sm text-muted-foreground">
-                                {inlineCopy(
-                                    {
-                                        de: 'Kopiere deinen Text und füge ihn bei Google ein. Das hilft uns enorm.',
-                                        en: 'Copy your text and paste it into Google. It means a lot to us.',
-                                    },
-                                    locale,
-                                )}
-                            </p>
+                            <p className="text-sm text-muted-foreground">{t(locale, 'common', 'testimonialReview.copyPasteGoogle')}</p>
                         </div>
                         <div className="flex gap-2 flex-wrap *:flex-1">
                             <Button
@@ -804,14 +706,14 @@ export function BookingRequestOfferTestimonialPanel({
                                 variant="outline"
                                 onClick={() => {
                                     void navigator.clipboard.writeText(shown.body);
-                                    toast.success(inlineCopy({ de: 'Text kopiert.', en: 'Text copied.' }, locale));
+                                    toast.success(t(locale, 'common', 'testimonialReview.textCopied'));
                                 }}
                             >
-                                {inlineCopy({ de: 'Text kopieren', en: 'Copy text' }, locale)}
+                                {t(locale, 'common', 'testimonialReview.copyText')}
                             </Button>
                             <Button asChild size="sm">
                                 <a href={GOOGLE_REVIEW_URL} target="_blank" rel="noreferrer">
-                                    {inlineCopy({ de: 'Google öffnen', en: 'Open Google' }, locale)}
+                                    {t(locale, 'common', 'testimonialReview.openGoogle')}
                                 </a>
                             </Button>
                         </div>
@@ -826,8 +728,8 @@ export function BookingRequestOfferTestimonialPanel({
     }
 
     const counterpartName = counterpart.displayName.trim();
-    const requiredHint = inlineCopy({ de: 'erforderlich', en: 'required' }, locale);
-    const optionalHint = inlineCopy({ de: 'optional', en: 'optional' }, locale);
+    const requiredHint = t(locale, 'common', 'testimonialReview.required');
+    const optionalHint = t(locale, 'common', 'testimonialReview.optional');
 
     return (
         <form
@@ -848,17 +750,15 @@ export function BookingRequestOfferTestimonialPanel({
                             <AvatarFallback className="text-[10px]">{initialsFromName(counterpartName)}</AvatarFallback>
                         </Avatar>
                         <div className="min-w-0">
-                            <p className="truncate text-sm text-muted-foreground">
-                                {inlineCopy({ de: 'Bewertung für', en: 'Review for' }, locale)}
-                            </p>
+                            <p className="truncate text-sm text-muted-foreground">{t(locale, 'common', 'testimonialReview.reviewFor')}</p>
                             <p className="truncate text-sm font-medium text-foreground">{counterpartName}</p>
                         </div>
                     </div>
                 ) : null}
                 <h2 className="text-base font-medium text-foreground">
                     {role === 'customer'
-                        ? inlineCopy({ de: 'Wie war dein Event?', en: 'How was your event?' }, locale)
-                        : inlineCopy({ de: 'Wie war der Abend?', en: 'How was the evening?' }, locale)}
+                        ? t(locale, 'common', 'testimonialReview.howWasEvent')
+                        : t(locale, 'common', 'testimonialReview.howWasEvening')}
                 </h2>
             </div>
 
@@ -877,7 +777,7 @@ export function BookingRequestOfferTestimonialPanel({
                     return (
                         <div className="grid gap-2">
                             <span className="text-sm font-medium text-foreground" id={`${field.name}-label`}>
-                                {inlineCopy({ de: 'Vergib deine Sterne', en: 'Give your stars' }, locale)}
+                                {t(locale, 'common', 'testimonialReview.giveStars')}
                                 <span className="font-normal text-muted-foreground"> ({requiredHint})</span>
                             </span>
                             <div aria-invalid={showError} aria-describedby={showError ? errorId : undefined}>
@@ -916,8 +816,8 @@ export function BookingRequestOfferTestimonialPanel({
                         <div className="grid gap-2">
                             <label htmlFor="testimonial-body" className="text-sm font-medium text-foreground">
                                 {role === 'customer'
-                                    ? inlineCopy({ de: 'Erzähl von dem Abend', en: 'Tell us about the evening' }, locale)
-                                    : inlineCopy({ de: 'Teile dein Feedback', en: 'Share your feedback' }, locale)}
+                                    ? t(locale, 'common', 'testimonialReview.tellAboutEvening')
+                                    : t(locale, 'common', 'testimonialReview.shareFeedback')}
                                 <span className="font-normal text-muted-foreground">
                                     {' '}
                                     ({role === 'customer' ? requiredHint : optionalHint})
@@ -935,20 +835,8 @@ export function BookingRequestOfferTestimonialPanel({
                                 aria-describedby={showError ? errorId : undefined}
                                 placeholder={
                                     role === 'customer'
-                                        ? inlineCopy(
-                                              {
-                                                  de: 'Essen, Atmosphäre, Service…',
-                                                  en: 'Food, atmosphere, service…',
-                                              },
-                                              locale,
-                                          )
-                                        : inlineCopy(
-                                              {
-                                                  de: 'Was soll der nächste Koch wissen?',
-                                                  en: 'What should the next cook know?',
-                                              },
-                                              locale,
-                                          )
+                                        ? t(locale, 'common', 'testimonialReview.foodAtmosphere')
+                                        : t(locale, 'common', 'testimonialReview.nextCookShouldKnow')
                                 }
                             />
                             {showError ? (

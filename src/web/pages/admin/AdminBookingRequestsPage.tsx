@@ -4,7 +4,7 @@ import { LayoutGridIcon, ListIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { t } from '../../../i18n/t';
-import { inlineCopy, userDisplayName } from '../../../shared';
+import { userDisplayName } from '../../../shared';
 import { bookingRequestPublicationReviewQueueStatuses, bookingRequestStatusLabel } from '../../../shared/bookingRequestStatus';
 import { AdminBookingRequestListCard } from '../../components/AdminBookingRequestListCard';
 import { AdminListPaginationBar } from '../../components/AdminListPaginationBar';
@@ -464,13 +464,7 @@ export function AdminBookingRequestsPage({
                         </div>
 
                         <p className="text-sm text-muted-foreground tabular-nums xl:ml-auto">
-                            {inlineCopy(
-                                {
-                                    de: `${total} ${total === 1 ? 'Anfrage' : 'Anfragen'}`,
-                                    en: `${total} ${total === 1 ? 'request' : 'requests'}`,
-                                },
-                                locale,
-                            )}
+                            {t(locale, 'admin', 'copy.requestCount', { count: total })}
                         </p>
                     </div>
                 </div>

@@ -81,13 +81,11 @@ describe('adminAnalyticsBookingRequestCheckoutFlow', () => {
         // Assert
         expect(flow.steps.map((step) => step.id)).toEqual(['checkout', 'paid']);
         expect(flow.steps.find((step) => step.id === 'checkout')).toMatchObject({
-            labelDe: 'Checkout',
-            labelEn: 'Checkout',
+            label: 'Checkout',
             completedCount: 1,
         });
         expect(flow.steps.find((step) => step.id === 'paid')).toMatchObject({
-            labelDe: 'Bezahlt',
-            labelEn: 'Paid',
+            label: 'Bezahlt',
             enteredCount: 0,
             completedCount: 1,
         });
@@ -132,13 +130,11 @@ describe('adminAnalyticsGiftCardFlow', () => {
         // Assert
         expect(flow.steps.map((step) => step.id)).toEqual(['configure', 'auth', 'created', 'checkout', 'paid']);
         expect(flow.steps.find((step) => step.id === 'configure')).toMatchObject({
-            labelDe: 'Konfiguration',
-            labelEn: 'Configure',
+            label: 'Konfiguration',
             completedCount: 1,
         });
         expect(flow.steps.find((step) => step.id === 'created')).toMatchObject({
-            labelDe: 'Geschenkkarte erstellt',
-            labelEn: 'Gift card created',
+            label: 'Geschenkkarte erstellt',
             completedCount: 1,
         });
         expect(flow.links).toEqual([{ source: 'configure', target: 'created', value: 1 }]);
@@ -176,18 +172,15 @@ describe('adminAnalyticsChefSignUpFlow', () => {
         // Assert
         expect(flow.steps.map((step) => step.id)).toEqual(['auth', 'profile', 'created']);
         expect(flow.steps.find((step) => step.id === 'auth')).toMatchObject({
-            labelDe: 'Anmeldung',
-            labelEn: 'Sign-in',
+            label: 'Anmeldung',
             completedCount: 1,
         });
         expect(flow.steps.find((step) => step.id === 'profile')).toMatchObject({
-            labelDe: 'Koch-Profil',
-            labelEn: 'Chef profile',
+            label: 'Koch-Profil',
             completedCount: 1,
         });
         expect(flow.steps.find((step) => step.id === 'created')).toMatchObject({
-            labelDe: 'Koch-Konto erstellt',
-            labelEn: 'Chef account created',
+            label: 'Koch-Konto erstellt',
             completedCount: 1,
         });
         expect(flow.links).toEqual([

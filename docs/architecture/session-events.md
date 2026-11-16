@@ -108,8 +108,8 @@ Admin descriptions mark these with “(Legacy)” / “(legacy)”.
   mid-steps still come from human cook sessions. Cook public-profile visit counts also drop impersonation sessions.
 - Admin timelines keep impersonation events but expose `AdminSessionEvent.isImpersonation` (and session-list badges) so operators can tell
   support browsing from real user traffic.
-- Admin descriptions are bilingual (`descriptionDe` / `descriptionEn`); raw payload stays off the GraphQL surface unless a deep link is
-  needed (`link`).
+- Admin descriptions are generated UI copy: GraphQL `AdminSessionEvent.description` is the viewing admin's `Users.locale` via `t()`. Raw
+  payload stays off the GraphQL surface unless a deep link is needed (`link`). CMS `*De` / `*En` columns are unrelated.
 - Historical keys stay in the domain map so imported timelines remain typed.
 - Webhook payment paths attach lifecycle events to the customer’s latest non-terminated session when no requesting session exists.
 

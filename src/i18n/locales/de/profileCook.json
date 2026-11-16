@@ -29,7 +29,8 @@
             "COMPLETED": "Stattgefunden",
             "EXPIRED": "Abgelaufen",
             "CANCELED": "Storniert"
-        }
+        },
+        "generatedMenuRecommended": "Von der Plattform für diese Anfrage empfohlen."
     },
     "callSlot": {
         "status": {
@@ -253,7 +254,8 @@
         "newMeal": "Neues Gericht",
         "newMenu": "Neues Menü",
         "newExtra": "Eigene Zusatzleistung",
-        "hideRequest": "Anfrage ausblenden"
+        "hideRequest": "Anfrage ausblenden",
+        "remove": "Entfernen"
     },
     "format": {
         "na": "k. A.",
@@ -326,7 +328,19 @@
         "cannotDeleteBody": "Dieses Gericht ist in mindestens einem Menü das einzige Gericht in einem Gang und kann darum nicht gelöscht werden. Aktualisiere die betroffenen Menüs, indem du den Gang löschst, ihm andere Gerichte hinzufügst oder das Gericht dort ersetzt.",
         "publishTitle": "Gericht veröffentlichen?",
         "publishNoPicture": "Das Gericht wird als veröffentlicht markiert. Ohne Bild erscheint es trotzdem nicht auf deiner öffentlichen Kochseite.",
-        "publishWithPicture": "Das Gericht wird als veröffentlicht markiert und erscheint auf deiner öffentlichen Kochseite."
+        "publishWithPicture": "Das Gericht wird als veröffentlicht markiert und erscheint auf deiner öffentlichen Kochseite.",
+        "wasPublished": "War veröffentlicht",
+        "wasADraft": "War Entwurf",
+        "deletedBadge": "Gelöscht",
+        "notOnProfile": "Nicht auf Profil",
+        "noPictureNote": "Hinweis: Gericht ohne Bild",
+        "chooseImageType": "Bitte ein Bild (JPEG, PNG, WebP oder GIF) wählen.",
+        "noPublicWithoutPicture": "Ohne Bild erscheint das Gericht nicht auf deiner öffentlichen Kochseite.",
+        "uploading": "Lädt…",
+        "selectImage": "Bild auswählen",
+        "removeImage": "Bild entfernen",
+        "removeImageTitle": "Bild entfernen?",
+        "removeImageBody": "Das Bild wird vom Gericht entfernt. Speichere danach, um die Änderung zu übernehmen. Ohne Bild erscheint das Gericht nicht auf deiner öffentlichen Kochseite."
     },
     "mealEdit": {
         "title": "Gericht bearbeiten",
@@ -436,7 +450,11 @@
         "defaultOfferNote": "Begrüßungstext für Angebote",
         "defaultOfferNoteHint": "Wird beim Erstellen eines Angebots vorausgefüllt. Gäste sehen ihn als erste Chat-Nachricht.",
         "otherProfiles": "Weitere Profile",
-        "otherProfilesHint": "Nur das peopleeat-Team sieht diese Links, um dein Profil zu prüfen. Kunden sehen sie nicht."
+        "otherProfilesHint": "Nur das peopleeat-Team sieht diese Links, um dein Profil zu prüfen. Kunden sehen sie nicht.",
+        "reviewTitle": "Biografie-Vorschlag prüfen",
+        "reviewHint": "Vergleiche den aktuellen Text mit dem KI-Vorschlag. Übernehmen füllt das Textfeld, Speichern schreibt die Biografie.",
+        "current": "Aktuell",
+        "suggestion": "Vorschlag"
     },
     "chefProfileEdit": {
         "title": "Kochprofil bearbeiten",
@@ -489,7 +507,9 @@
         "origin": "Startadresse für die Reisestrecke",
         "cityForCustomers": "Stadt für Kunden",
         "maxDistance": "Maximale Reisestrecke",
-        "expensesPerKm": "Reisekosten je km"
+        "expensesPerKm": "Reisekosten je km",
+        "originHostsHint": "Wird nicht für Gastgeber angezeigt. Sie sehen nur die Stadt.",
+        "hostsSee": "Gastgeber sehen {city}."
     },
     "travelEdit": {
         "title": "Reise bearbeiten",
@@ -618,7 +638,11 @@
         "emptyOpen": "Keine offenen Anfragen im Pool.",
         "emptyDeclined": "Keine ausgeblendeten Anfragen.",
         "requestedYou": "Hat dich angefragt",
-        "nearby": "In deiner Nähe"
+        "nearby": "In deiner Nähe",
+        "aboutKm": "ca. {km} km",
+        "requestedYouAlsoOpen": "Hat dich angefragt, auch für andere offen",
+        "newRequest": "Neue Anfrage",
+        "declinedAt": "Abgelehnt am"
     },
     "poolRequest": {
         "title": "Buchungsanfrage aus dem Pool",
@@ -737,7 +761,10 @@
         "statementBody": "Auszahlungsbetrag und einbehaltene Gebühr. Keine Rechnung. Die Rechnung an den Gast stellst du selbst.",
         "statementFailed": "Die Abrechnung konnte nicht erstellt werden.",
         "adjustPrice": "Preis anpassen",
-        "exactAddressHint": "Die genaue Adresse wird nach gemeinsamer Zusage freigegeben. Für die Reisekosten nutzen wir sie bereits."
+        "exactAddressHint": "Die genaue Adresse wird nach gemeinsamer Zusage freigegeben. Für die Reisekosten nutzen wir sie bereits.",
+        "payoutAmount": "Auszahlungsbetrag",
+        "orderValue": "Auftragswert",
+        "discoveryCallNote": "Hinweis zum Gesprächstermin"
     },
     "offerCreate": {
         "suggestMenus": "Menüs vorschlagen",
@@ -957,7 +984,6 @@
         "incompleteMenus": "Unvollständige Menüs ({incompleteMenusLength})",
         "theseMenusCannotBeSelectedYetEvery": "Diese Menüs können noch nicht ausgewählt werden. Jeder Gang braucht einen Titel und mindestens eine Speise. Tippe auf Fertigstellen, um sie zu vervollständigen.",
         "cookOnlyArea": "Dieser Bereich ist nur für Köche verfügbar.",
-        "readingYourFileAsConstReturn": "Deine Datei wird gelesen…",
         "discoveryCallNote": "Hinweis zum Gesprächstermin",
         "pleaseChooseAnImageJpegPng": "Bitte ein Bild (JPEG, PNG, WebP oder GIF) wählen.",
         "withoutAPictureTheMealDoes": "Ohne Bild erscheint das Gericht nicht auf deiner öffentlichen Kochseite.",
@@ -1003,7 +1029,11 @@
                 "description": "Dieser Text wird beim Erstellen eines Angebots vorausgefüllt."
             }
         },
-        "guestsSeeHint": "Gäste sehen ihn als erste Chat-Nachricht. Speichere leer, wenn du jedes Mal neu schreiben möchtest."
+        "guestsSeeHint": "Gäste sehen ihn als erste Chat-Nachricht. Speichere leer, wenn du jedes Mal neu schreiben möchtest.",
+        "notSet": "Noch nicht festgelegt. Neue Angebote starten mit einer kurzen peopleeat-Begrüßung.",
+        "emptyReadout": "Leer. Du schreibst für jedes Angebot eine neue Nachricht.",
+        "yourText": "Dein Text",
+        "phoneSharing": "Das Teilen von Telefonnummern ist nicht erlaubt. Bitte bleibe für Absprachen im Chat."
     },
     "presence": {
         "issue": {
@@ -1018,7 +1048,16 @@
             "labelTooLong": "Der Plattformname ist zu lang.",
             "duplicatePlatform": "Diese Plattform ist schon eingetragen.",
             "tooMany": "Höchstens fünf weitere Profile."
-        }
+        },
+        "anotherProfile": "Weiteres Profil",
+        "website": "Website",
+        "googleProfile": "Google-Profil",
+        "empty": "Noch keine Profile angegeben.",
+        "removeProfile": "Profil entfernen",
+        "platformName": "Name der Plattform",
+        "address": "Adresse",
+        "addAnother": "Weiteres Profil hinzufügen",
+        "other": "Andere"
     },
     "menuCreate": {
         "readingFile": "Deine Datei wird gelesen…",
@@ -1026,7 +1065,7 @@
         "findingDishes": "Wir suchen passende Gerichte aus deinen Gerichten…",
         "assemblingCourses": "Die Gänge werden zusammengestellt…",
         "fromDishes": "{count} aus deinen Gerichten",
-        "newDrafts": "{count} neue Entwürfe",
+        "newDrafts": "{count, plural, one {1 neuer Entwurf} other {# neue Entwürfe}}",
         "allFromDishes": "Alle {count} aus deinen Gerichten",
         "removedCourse": "Gang „{title}“ entfernt.",
         "couldNotCreate": "Menü konnte nicht angelegt werden.",
@@ -1079,7 +1118,10 @@
         "CookBookingRequestOfferAlreadyExists": {
             "title": "Du hast bereits ein Angebot erstellt",
             "body": "Für diese Anfrage hast du bereits ein Angebot. Öffne es in deinem Angebots-Posteingang."
-        }
+        },
+        "viewOpenRequests": "Offene Anfragen ansehen",
+        "allOffers": "Alle Angebote",
+        "backToPool": "Zum Anfragen-Pool"
     },
     "menuCourses": {
         "presets": {
@@ -1094,20 +1136,92 @@
             "8": "Weinbegleitung"
         },
         "removeMealNamed": "„{title}“ wird aus diesem Gang entfernt.",
-        "removeMeal": "Dieses Gericht wird aus dem Gang entfernt."
+        "removeMeal": "Dieses Gericht wird aus dem Gang entfernt.",
+        "mealsCount": "{count, plural, one {1 Gericht} other {# Gerichte}}",
+        "dragCourse": "Gang verschieben",
+        "untitled": "Ohne Titel",
+        "incomplete": "Unvollständig",
+        "moveUp": "Gang nach oben",
+        "moveDown": "Gang nach unten",
+        "removeCourse": "Gang entfernen",
+        "name": "Name",
+        "mealOptions": "Gerichtsoptionen",
+        "chooseMeals": "Gerichte wählen",
+        "allowMultiple": "Mehrere Gerichte erlauben",
+        "selectUpTo": "Auswahl bis zu",
+        "selectionLimit": "Auswahlgrenze",
+        "insertBelow": "Gang darunter einfügen",
+        "addCourse": "Gang hinzufügen",
+        "deleteTitle": "Gang löschen?",
+        "deleteBody": "Die Gerichtsoptionen in diesem Gang gehen verloren.",
+        "removeMealTitle": "Gericht entfernen?",
+        "dragMeal": "Gericht verschieben",
+        "moveMealUp": "Gericht nach oben",
+        "moveMealDown": "Gericht nach unten",
+        "editMeal": "Gericht bearbeiten",
+        "removeMealAria": "Gericht entfernen",
+        "titlePlaceholder": "z. B. Vorspeise",
+        "pickerHint": "Wähle die Gerichtsoptionen für diesen Gang oder erstelle ein neues Gericht.",
+        "emptyPicker": "Noch keine Gerichte. Erstelle eines oben.",
+        "selected": "Ausgewählt",
+        "select": "Auswählen",
+        "emptyCourse": "Noch keine Gerichte in diesem Gang."
     },
     "mealEditor": {
         "saving": "Speichern…",
         "saveMeal": "Gericht speichern",
-        "save": "Speichern"
+        "save": "Speichern",
+        "titleRequired": "Bitte gib einen Titel ein.",
+        "created": "Gericht erstellt.",
+        "saved": "Gericht gespeichert.",
+        "createFailed": "Gericht konnte nicht erstellt werden.",
+        "saveFailed": "Speichern fehlgeschlagen.",
+        "hint": "Titel, Beschreibung und Bild. Änderungen gelten für alle Menüs mit diesem Gericht."
     },
     "menuSelect": {
         "goodFit": "Passend",
         "weakerFit": "Weniger passend",
         "courseSuggestionOne": "1 Gang (Vorschlag)",
-        "courseSuggestionOther": "{count} Gänge (Vorschlag)"
+        "courseSuggestionOther": "{count} Gänge (Vorschlag)",
+        "incompleteCount": "Unvollständige Menüs ({count})",
+        "incompleteHint": "Diese Menüs können noch nicht ausgewählt werden. Jeder Gang braucht einen Titel und mindestens eine Speise. Tippe auf Fertigstellen, um sie zu vervollständigen.",
+        "evaluating": "Bewertung läuft…",
+        "refresh": "Empfehlungen aktualisieren",
+        "evaluatingBody": "Wir bewerten deine Menüs für diese Anfrage und bereiten eine Empfehlung vor.",
+        "emptyContinue": "Noch keine Menüs. Erstelle eines, um fortzufahren.",
+        "noneComplete": "Keine vollständigen Menüs zur Auswahl. Vervollständige eines unten.",
+        "recommendationLoading": "Empfehlung lädt",
+        "platformRecommendation": "Plattform-Empfehlung",
+        "useRecommendation": "Empfehlung übernehmen",
+        "finish": "Fertigstellen",
+        "showEvaluation": "{label}: Bewertung anzeigen"
     },
     "pathName": {
-        "previousPaths": "Frühere Pfade: {paths}"
+        "previousPaths": "Frühere Pfade: {paths}",
+        "checking": "Prüfe Verfügbarkeit…",
+        "available": "Dieser Pfad ist frei.",
+        "taken": "Dieser Pfad ist bereits vergeben.",
+        "invalid": "Bitte einen gültigen Pfad eingeben (Buchstaben, Zahlen, Bindestriche).",
+        "publicUrl": "Öffentliche URL",
+        "hint": "Steht unter /chefs/… . Ein Wechsel behält die alte Adresse als Weiterleitung. Der Nachname in der URL ist öffentlich, auch wenn die Seite den Vornamen oder Künstlernamen zeigt.",
+        "copiedToast": "In die Zwischenablage kopiert",
+        "copyFailed": "Kopieren in die Zwischenablage fehlgeschlagen"
+    },
+    "offerMenu": {
+        "selectedCount": "{selected} / {limit} gewählt",
+        "selectRemaining": "Noch {remaining} von {limit} wählen",
+        "chooseOne": "1 Gericht wählen",
+        "removeSelection": "Auswahl entfernen",
+        "selectMeal": "Gericht wählen",
+        "noMealsSelected": "Keine Gerichte gewählt."
+    },
+    "logo": {
+        "saved": "Zusätzliches Bild gespeichert.",
+        "removed": "Zusätzliches Bild entfernt.",
+        "empty": "Kein zusätzliches Bild",
+        "hint": "Querformat-Bild für den Über-mich-Bereich. Ohne zusätzliches Bild zeigen wir die peopleeat Vorteile.",
+        "select": "Bild auswählen",
+        "saving": "Speichert…",
+        "remove": "Bild entfernen"
     }
 }

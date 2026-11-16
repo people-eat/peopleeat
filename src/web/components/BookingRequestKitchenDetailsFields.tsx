@@ -2,6 +2,7 @@ import { XIcon } from 'lucide-react';
 import type { RefObject } from 'react';
 import { useRef, useState } from 'react';
 
+import { t } from '../../i18n/t';
 import {
     BOOKING_REQUEST_KITCHEN_DETAILS_PHOTO_MAX,
     bookingRequestKitchenDetailsAvailabilities,
@@ -11,7 +12,6 @@ import {
     bookingRequestKitchenDetailsGuestTablewareValues,
     bookingRequestKitchenDetailsSpaceLabel,
     bookingRequestKitchenDetailsSpaces,
-    inlineCopy,
 } from '../../shared';
 import type { BookingRequestKitchenDetailsDraft } from '../../shared';
 import { uploadErrorMessage, uploadFile } from '../chat/fileUpload';
@@ -91,15 +91,7 @@ export function BookingRequestKitchenDetailsFields({
         try {
             for (const file of files) {
                 if (!file.type.startsWith('image/')) {
-                    setUploadError(
-                        inlineCopy(
-                            {
-                                de: 'Bitte ein Bild (JPEG, PNG, WebP oder GIF) wählen.',
-                                en: 'Please choose an image (JPEG, PNG, WebP, or GIF).',
-                            },
-                            locale,
-                        ),
-                    );
+                    setUploadError(t(locale, 'common', 'contentSections.chooseImage'));
                     continue;
                 }
                 const compressed = await imageCompress(file, IMAGE_CROP_PRESETS.content);
@@ -121,7 +113,7 @@ export function BookingRequestKitchenDetailsFields({
     return (
         <div className="grid gap-6">
             <ChipRow
-                label={inlineCopy({ de: 'Küche für den Koch', en: 'Kitchen for the chef' }, locale)}
+                label={t(locale, 'common', 'bookingRequestKitchenUi.kitchenForChef')}
                 values={bookingRequestKitchenDetailsAvailabilities}
                 selected={value.availability}
                 disabled={disabled || uploading}
@@ -129,7 +121,7 @@ export function BookingRequestKitchenDetailsFields({
                 onChange={(availability) => onChange({ ...value, availability })}
             />
             <ChipRow
-                label={inlineCopy({ de: 'Platz im Kühlschrank', en: 'Fridge space' }, locale)}
+                label={t(locale, 'common', 'bookingRequestKitchenUi.fridgeSpace')}
                 values={bookingRequestKitchenDetailsSpaces}
                 selected={value.fridgeSpace}
                 disabled={disabled || uploading}
@@ -137,7 +129,7 @@ export function BookingRequestKitchenDetailsFields({
                 onChange={(fridgeSpace) => onChange({ ...value, fridgeSpace })}
             />
             <ChipRow
-                label={inlineCopy({ de: 'Platz zum Anrichten', en: 'Plating space' }, locale)}
+                label={t(locale, 'common', 'bookingRequestKitchenUi.platingSpace')}
                 values={bookingRequestKitchenDetailsSpaces}
                 selected={value.platingSpace}
                 disabled={disabled || uploading}
@@ -145,7 +137,7 @@ export function BookingRequestKitchenDetailsFields({
                 onChange={(platingSpace) => onChange({ ...value, platingSpace })}
             />
             <ChipRow
-                label={inlineCopy({ de: 'Geschirr und Besteck für die Gäste', en: 'Dishes and cutlery for the guests' }, locale)}
+                label={t(locale, 'common', 'bookingRequestKitchenUi.guestTableware')}
                 values={bookingRequestKitchenDetailsGuestTablewareValues}
                 selected={value.guestTableware}
                 disabled={disabled || uploading}
@@ -153,19 +145,13 @@ export function BookingRequestKitchenDetailsFields({
                 onChange={(guestTableware) => onChange({ ...value, guestTableware })}
             />
             <div className="grid gap-2">
-                <p className="text-sm">{inlineCopy({ de: 'Hinweise an den Koch', en: 'Notes for the chef' }, locale)}</p>
+                <p className="text-sm">{t(locale, 'common', 'bookingRequestKitchenUi.notes')}</p>
                 <Textarea
                     value={value.notes}
                     disabled={disabled || uploading}
                     rows={3}
                     onChange={(event) => onChange({ ...value, notes: event.target.value })}
-                    placeholder={inlineCopy(
-                        {
-                            de: 'Zum Beispiel den Herd oder besondere Einschränkungen.',
-                            en: 'For example cooktop type or special constraints.',
-                        },
-                        locale,
-                    )}
+                    placeholder={t(locale, 'common', 'bookingRequestKitchenUi.notesPlaceholder')}
                 />
             </div>
             <KitchenDetailsPhotoPicker
@@ -204,15 +190,9 @@ function KitchenDetailsPhotoPicker({
     const canAdd = photos.length < BOOKING_REQUEST_KITCHEN_DETAILS_PHOTO_MAX;
     return (
         <div className="grid gap-2">
-            <p className="text-sm">{inlineCopy({ de: 'Fotos der Küche', en: 'Kitchen photos' }, locale)}</p>
+            <p className="text-sm">{t(locale, 'common', 'bookingRequestKitchenUi.photos')}</p>
             <p className="text-sm text-muted-foreground">
-                {inlineCopy(
-                    {
-                        de: `Optional, höchstens ${BOOKING_REQUEST_KITCHEN_DETAILS_PHOTO_MAX} Bilder.`,
-                        en: `Optional, at most ${BOOKING_REQUEST_KITCHEN_DETAILS_PHOTO_MAX} photos.`,
-                    },
-                    locale,
-                )}
+                {t(locale, 'common', 'bookingRequestKitchenUi.photosHint', { max: BOOKING_REQUEST_KITCHEN_DETAILS_PHOTO_MAX })}
             </p>
             <input
                 ref={inputRef}
@@ -234,7 +214,7 @@ function KitchenDetailsPhotoPicker({
                                 variant="secondary"
                                 className="absolute top-1 right-1"
                                 disabled={disabled}
-                                aria-label={inlineCopy({ de: 'Foto entfernen', en: 'Remove photo' }, locale)}
+                                aria-label={t(locale, 'common', 'bookingRequestKitchenUi.removePhoto')}
                                 onClick={() => onRemove(photo.fileUploadId)}
                             >
                                 <XIcon />
@@ -245,7 +225,7 @@ function KitchenDetailsPhotoPicker({
             ) : null}
             {canAdd ? (
                 <Button type="button" variant="outline" disabled={disabled} onClick={onPick}>
-                    {inlineCopy({ de: 'Foto hinzufügen', en: 'Add photo' }, locale)}
+                    {t(locale, 'common', 'bookingRequestKitchenUi.addPhoto')}
                 </Button>
             ) : null}
             {error ? <p className="text-sm text-destructive">{error}</p> : null}
@@ -322,16 +302,8 @@ export function BookingRequestKitchenDetailsSaveCard({
     return (
         <Card>
             <CardHeader>
-                <CardTitle>{inlineCopy({ de: 'Über die Küche', en: 'About the kitchen' }, locale)}</CardTitle>
-                <p className="text-sm text-muted-foreground">
-                    {inlineCopy(
-                        {
-                            de: 'Optional. Du kannst das auch später in der Anfrage ergänzen. Wo ihr sitzt und wo der Koch kocht, kann sich unterscheiden.',
-                            en: 'Optional. You can also finish this later on the request. Where you dine and where the chef cooks can differ.',
-                        },
-                        locale,
-                    )}
-                </p>
+                <CardTitle>{t(locale, 'common', 'bookingRequestKitchenUi.aboutKitchen')}</CardTitle>
+                <p className="text-sm text-muted-foreground">{t(locale, 'common', 'bookingRequestKitchenUi.aboutHint')}</p>
             </CardHeader>
             <CardContent>
                 <BookingRequestKitchenDetailsFields
@@ -346,7 +318,7 @@ export function BookingRequestKitchenDetailsSaveCard({
             </CardContent>
             <CardFooter>
                 <Button type="button" disabled={disabled || busy || empty} onClick={onSave}>
-                    {inlineCopy({ de: 'Küchendetails speichern', en: 'Save kitchen details' }, locale)}
+                    {t(locale, 'common', 'bookingRequestKitchenUi.save')}
                 </Button>
             </CardFooter>
         </Card>

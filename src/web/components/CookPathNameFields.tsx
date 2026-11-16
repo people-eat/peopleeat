@@ -1,11 +1,11 @@
 import { CheckIcon, CopyIcon } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { inlineCopy } from '../../shared';
 
+import { t as translate } from '../../i18n/t';
 import { cookPathNameSlugify, cookPathNameTryNormalize } from '../../shared/cookPathName';
 import type { Locale } from '../../shared/locale';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { Button } from './base/button';
 import { Input } from './base/input';
 
@@ -32,35 +32,21 @@ export function CookPathNameFields({
 }) {
     const status =
         checking && availability == null
-            ? inlineCopy({ de: 'Prüfe Verfügbarkeit…', en: 'Checking availability…' }, locale)
+            ? translate(locale, 'profileCook', 'pathName.checking')
             : availability === 'AVAILABLE'
-              ? inlineCopy({ de: 'Dieser Pfad ist frei.', en: 'This path is available.' }, locale)
+              ? translate(locale, 'profileCook', 'pathName.available')
               : availability === 'TAKEN'
-                ? inlineCopy({ de: 'Dieser Pfad ist bereits vergeben.', en: 'This path is already taken.' }, locale)
+                ? translate(locale, 'profileCook', 'pathName.taken')
                 : availability === 'INVALID'
-                  ? inlineCopy(
-                        {
-                            de: 'Bitte einen gültigen Pfad eingeben (Buchstaben, Zahlen, Bindestriche).',
-                            en: 'Enter a valid path (letters, numbers, hyphens).',
-                        },
-                        locale,
-                    )
+                  ? translate(locale, 'profileCook', 'pathName.invalid')
                   : null;
 
     return (
         <div className="grid min-w-0 gap-2">
             <label htmlFor={id} className="text-sm font-medium">
-                {inlineCopy({ de: 'Öffentliche URL', en: 'Public URL' }, locale)}
+                {translate(locale, 'profileCook', 'pathName.publicUrl')}
             </label>
-            <p className="text-sm text-muted-foreground">
-                {inlineCopy(
-                    {
-                        de: 'Steht unter /chefs/… . Ein Wechsel behält die alte Adresse als Weiterleitung. Der Nachname in der URL ist öffentlich, auch wenn die Seite den Vornamen oder Künstlernamen zeigt.',
-                        en: 'Lives at /chefs/…. Changing it keeps the old address as a redirect. The last name in the URL is public even though the page shows the first name or stage name.',
-                    },
-                    locale,
-                )}
-            </p>
+            <p className="text-sm text-muted-foreground">{translate(locale, 'profileCook', 'pathName.hint')}</p>
             <div className="flex min-w-0 items-center gap-0">
                 <span className="shrink-0 rounded-l-md border border-r-0 border-input bg-muted px-3 py-1 text-sm text-muted-foreground">
                     /chefs/
@@ -96,11 +82,11 @@ export function CookPathNameFields({
 }
 
 function CookPathNameCopyButton({ text }: { text: string }) {
-    const locale = useLocale();
+    const { t } = useT('profileCook');
     const [copied, setCopied] = useState(false);
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const idleLabel = inlineCopy({ de: 'Kopieren', en: 'Copy' }, locale);
-    const ariaLabel = copied ? inlineCopy({ de: 'Kopiert', en: 'Copied' }, locale) : idleLabel;
+    const idleLabel = t('actions.copy');
+    const ariaLabel = copied ? t('invite.copied') : idleLabel;
 
     useEffect(() => {
         return () => {
@@ -111,14 +97,14 @@ function CookPathNameCopyButton({ text }: { text: string }) {
     const onCopy = useCallback(async () => {
         try {
             await navigator.clipboard.writeText(text);
-            toast.success(inlineCopy({ de: 'In die Zwischenablage kopiert', en: 'Copied to clipboard' }, locale));
+            toast.success(t('pathName.copiedToast'));
         } catch {
-            toast.error(inlineCopy({ de: 'Kopieren in die Zwischenablage fehlgeschlagen', en: 'Could not copy to clipboard' }, locale));
+            toast.error(t('pathName.copyFailed'));
         }
         setCopied(true);
         if (timerRef.current) clearTimeout(timerRef.current);
         timerRef.current = setTimeout(() => setCopied(false), 1500);
-    }, [text, locale]);
+    }, [text, t]);
 
     return (
         <Button type="button" variant="ghost" size="icon-xs" aria-label={ariaLabel} onClick={() => void onCopy()}>
@@ -140,7 +126,7 @@ export function CookPathNameReadout({
     return (
         <div className="grid min-w-0 gap-1">
             <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                {inlineCopy({ de: 'Öffentliche URL', en: 'Public URL' }, locale)}
+                {translate(locale, 'profileCook', 'pathName.publicUrl')}
             </dt>
             <dd className="flex min-w-0 items-center gap-1">
                 <span className="text-sm text-foreground">{href}</span>
@@ -148,13 +134,9 @@ export function CookPathNameReadout({
             </dd>
             {previousPathNames && previousPathNames.length > 0 ? (
                 <dd className="text-sm text-muted-foreground">
-                    {inlineCopy(
-                        {
-                            de: `Frühere Pfade: ${previousPathNames.map((name) => `/chefs/${name}`).join(', ')}`,
-                            en: `Previous paths: ${previousPathNames.map((name) => `/chefs/${name}`).join(', ')}`,
-                        },
-                        locale,
-                    )}
+                    {translate(locale, 'profileCook', 'pathName.previousPaths', {
+                        paths: previousPathNames.map((name) => `/chefs/${name}`).join(', '),
+                    })}
                 </dd>
             ) : null}
         </div>

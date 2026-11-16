@@ -1,12 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { perspectivesCanvasDecorator } from '../../../.storybook/decorators';
-import { inlineCopy } from '../../shared';
 
 import { CookMenuCardMedia } from '../components/CookMenuCard';
 import { CookProfileTags } from '../components/CookProfileTags';
 import { CustomerMealCard } from '../components/CustomerMealCard';
 import { PublicCookCard } from '../components/PublicCookCard';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { fixturePublicCook } from './fixtures/booking';
 import {
     fixtureCook,
@@ -29,16 +28,10 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 function DiscoveryCollage() {
-    const locale = useLocale();
+    const { t } = useT('common');
 
-    const mealTitle = inlineCopy({ de: 'Gebratene Ente mit Rotkohl', en: 'Roast duck with red cabbage' }, locale);
-    const mealDescription = inlineCopy(
-        {
-            de: 'Saftige Entenbrust mit Apfel-Rotkohl, Kartoffelklößen und Portwein-Jus.',
-            en: 'Juicy duck breast with apple red cabbage, potato dumplings, and port jus.',
-        },
-        locale,
-    );
+    const mealTitle = t('storybook.discovery.roastDuck');
+    const mealDescription = t('storybook.discovery.roastDuckDescription');
 
     const altCook = {
         cookId: fixtureCookAlt.cookId,
@@ -55,39 +48,21 @@ function DiscoveryCollage() {
 
     return (
         <WarmPage className="flex flex-col gap-10 p-0">
-            <GallerySection
-                title={inlineCopy({ de: 'Discovery-Flächen', en: 'Discovery surfaces' }, locale)}
-                caption={inlineCopy(
-                    {
-                        de: 'Öffentliche Kacheln nebeneinander: Dichte, Bildsprache und Tags auf dem warmen Canvas.',
-                        en: 'Public tiles side by side: density, imagery, and tags on the warm canvas.',
-                    },
-                    locale,
-                )}
-            >
+            <GallerySection title={t('storybook.discovery.title')} caption={t('storybook.discovery.caption')}>
                 <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
-                    <SurfaceColumn
-                        label={inlineCopy({ de: 'Köchin mit Rating', en: 'Cook with rating' }, locale)}
-                        contentClassName="max-w-sm"
-                    >
+                    <SurfaceColumn label={t('storybook.discovery.cookWithRating')} contentClassName="max-w-sm">
                         <PublicCookCard cook={fixturePublicCook} interactive={false} />
                     </SurfaceColumn>
-                    <SurfaceColumn
-                        label={inlineCopy({ de: 'Köchin ohne Rating', en: 'Cook without rating' }, locale)}
-                        contentClassName="max-w-sm"
-                    >
+                    <SurfaceColumn label={t('storybook.discovery.cookWithoutRating')} contentClassName="max-w-sm">
                         <PublicCookCard cook={altCook} interactive={false} />
                     </SurfaceColumn>
-                    <SurfaceColumn label={inlineCopy({ de: 'Gericht', en: 'Meal' }, locale)} contentClassName="max-w-xs">
+                    <SurfaceColumn label={t('storybook.discovery.meal')} contentClassName="max-w-xs">
                         <CustomerMealCard title={mealTitle} description={mealDescription} imageUrl={fixtureMealImage} />
                     </SurfaceColumn>
-                    <SurfaceColumn
-                        label={inlineCopy({ de: 'Gericht (Marketing)', en: 'Meal (marketing)' }, locale)}
-                        contentClassName="max-w-xs"
-                    >
+                    <SurfaceColumn label={t('storybook.discovery.mealMarketing')} contentClassName="max-w-xs">
                         <CustomerMealCard title={mealTitle} description={mealDescription} imageUrl={fixtureMealImage} variant="marketing" />
                     </SurfaceColumn>
-                    <SurfaceColumn label={inlineCopy({ de: 'Menü-Medien', en: 'Menu media' }, locale)}>
+                    <SurfaceColumn label={t('storybook.discovery.menuMedia')}>
                         <div className="grid gap-3">
                             <CookMenuCardMedia images={[fixtureMenuImageA, fixtureMenuImageB, fixtureMenuImageC, fixtureMenuImageD]} />
                             <CookProfileTags cuisineStyle={fixtureCook.cuisineStyle} cookingPhilosophy={fixtureCook.cookingPhilosophy} />

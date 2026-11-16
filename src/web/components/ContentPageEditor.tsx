@@ -3,11 +3,11 @@ import { MoreHorizontalIcon } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-import { inlineCopy } from '../../shared';
 import type { ContentSection, Locale } from '../../shared';
 import { fileUploadPublicUrl, pathNameSlugify } from '../../shared/contentSection';
 import { uploadErrorMessage, uploadFile } from '../chat/fileUpload';
 import { useContentPageEditorPreviewSync } from '../hooks/useContentPageEditorPreviewSync';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 import { DATE_FNS_LOCALE } from '../utils/dateFnsLocale';
 import {
@@ -173,6 +173,7 @@ export function ContentPageEditor({
     knownFrom?: ContentPageViewModel['knownFrom'];
 }) {
     const navigate = useNavigate();
+    const { t } = useT('common');
     const [editLocale, setEditLocale] = useState<Locale>('de');
     const [confirm, setConfirm] = useState<'publish' | 'unpublish' | 'delete' | null>(null);
     const [scheduleOpen, setScheduleOpen] = useState(false);
@@ -196,9 +197,9 @@ export function ContentPageEditor({
         onChange({ publishedAt: next.publishedAt });
         try {
             await onSave(next);
-            toast.success(inlineCopy({ de: 'Gespeichert', en: 'Saved' }, uiLocale));
+            toast.success(t('contentPage.saved'));
         } catch {
-            toast.error(inlineCopy({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }, uiLocale));
+            toast.error(t('saveFailed'));
             throw new Error('save failed');
         }
     }
@@ -206,9 +207,9 @@ export function ContentPageEditor({
     async function handleSave() {
         try {
             await onSave(values);
-            toast.success(inlineCopy({ de: 'Gespeichert', en: 'Saved' }, uiLocale));
+            toast.success(t('contentPage.saved'));
         } catch {
-            toast.error(inlineCopy({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }, uiLocale));
+            toast.error(t('saveFailed'));
         }
     }
 
@@ -244,22 +245,15 @@ export function ContentPageEditor({
         if (!onDelete) return;
         try {
             await onDelete();
-            toast.success(inlineCopy({ de: 'Gelöscht', en: 'Deleted' }, uiLocale));
+            toast.success(t('contentPage.deleted'));
             setConfirm(null);
             await navigate({ to: listTo });
         } catch {
-            toast.error(inlineCopy({ de: 'Löschen fehlgeschlagen.', en: 'Could not delete.' }, uiLocale));
+            toast.error(t('contentPage.couldNotDelete'));
         }
     }
 
-    const statusLabel = inlineCopy(
-        {
-            draft: { de: 'Entwurf', en: 'Draft' },
-            published: { de: 'Veröffentlicht', en: 'Published' },
-            scheduled: { de: 'Geplant', en: 'Scheduled' },
-        }[status],
-        uiLocale,
-    );
+    const statusLabel = t(`contentPage.status.${status}`);
 
     const pageView = (
         <ContentPageView
@@ -296,15 +290,15 @@ export function ContentPageEditor({
     return (
         <div className="flex flex-col gap-6">
             <Tabs value={tab}>
-                <TabsList variant="line" aria-label={inlineCopy({ de: 'Editor-Ansicht', en: 'Editor view' }, uiLocale)}>
+                <TabsList variant="line" aria-label={t('contentPage.editorView')}>
                     <TabsTrigger value="edit" asChild>
                         <Link to={detail.to} params={detail.params} search={{ tab: undefined }} replace>
-                            {inlineCopy({ de: 'Bearbeiten', en: 'Edit' }, uiLocale)}
+                            {t('contentPage.edit')}
                         </Link>
                     </TabsTrigger>
                     <TabsTrigger value="preview" asChild>
                         <Link to={detail.to} params={detail.params} search={{ tab: 'preview' }} replace>
-                            {inlineCopy({ de: 'Vorschau', en: 'Preview' }, uiLocale)}
+                            {t('contentPage.preview')}
                         </Link>
                     </TabsTrigger>
                 </TabsList>
@@ -318,7 +312,7 @@ export function ContentPageEditor({
                         <div className="flex flex-col gap-3">
                             <div className="flex flex-wrap items-center gap-2">
                                 <span className="w-full text-sm text-muted-foreground sm:w-auto">
-                                    {inlineCopy({ de: 'Status', en: 'Status' }, uiLocale)}: {statusLabel}
+                                    {t('contentPage.statusLabel')}: {statusLabel}
                                 </span>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
@@ -327,7 +321,7 @@ export function ContentPageEditor({
                                             variant="outline"
                                             size="icon"
                                             disabled={busy}
-                                            aria-label={inlineCopy({ de: 'Weitere Aktionen', en: 'More actions' }, uiLocale)}
+                                            aria-label={t('contentPage.moreActions')}
                                         >
                                             <MoreHorizontalIcon className="size-4" />
                                         </Button>
@@ -336,7 +330,7 @@ export function ContentPageEditor({
                                         {publicDetail ? (
                                             <DropdownMenuItem asChild>
                                                 <Link to={publicDetail.to} params={publicDetail.params} target="_blank">
-                                                    {inlineCopy({ de: 'Öffentliche Seite', en: 'Public page' }, uiLocale)}
+                                                    {t('contentPage.publicPage')}
                                                 </Link>
                                             </DropdownMenuItem>
                                         ) : null}
@@ -348,28 +342,28 @@ export function ContentPageEditor({
                                                     setScheduleOpen(true);
                                                 }}
                                             >
-                                                {inlineCopy({ de: 'Planen…', en: 'Schedule…' }, uiLocale)}
+                                                {t('contentPage.schedule')}
                                             </DropdownMenuItem>
                                         ) : null}
                                         {status !== 'draft' ? (
                                             <DropdownMenuItem disabled={busy} onSelect={() => setConfirm('unpublish')}>
-                                                {inlineCopy({ de: 'Zurückziehen', en: 'Unpublish' }, uiLocale)}
+                                                {t('contentPage.unpublish')}
                                             </DropdownMenuItem>
                                         ) : null}
                                         {onDelete ? (
                                             <DropdownMenuItem variant="destructive" disabled={busy} onSelect={() => setConfirm('delete')}>
-                                                {inlineCopy({ de: 'Löschen', en: 'Delete' }, uiLocale)}
+                                                {t('contentPage.delete')}
                                             </DropdownMenuItem>
                                         ) : null}
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                                 {status !== 'published' ? (
                                     <Button type="button" variant="outline" disabled={busy} onClick={() => setConfirm('publish')}>
-                                        {inlineCopy({ de: 'Veröffentlichen', en: 'Publish' }, uiLocale)}
+                                        {t('contentPage.publish')}
                                     </Button>
                                 ) : null}
                                 <Button type="button" disabled={busy} onClick={() => void handleSave()}>
-                                    {inlineCopy({ de: 'Speichern', en: 'Save' }, uiLocale)}
+                                    {t('save')}
                                 </Button>
                             </div>
                             <div className="flex flex-wrap gap-2">
@@ -394,17 +388,17 @@ export function ContentPageEditor({
 
                         <Card className="gap-4 py-4" data-content-editor-anchor="top">
                             <CardHeader className="px-4">
-                                <CardTitle>{inlineCopy({ de: 'SEO', en: 'SEO' }, uiLocale)}</CardTitle>
+                                <CardTitle>{t('contentPage.seo')}</CardTitle>
                             </CardHeader>
                             <CardContent className="flex flex-col gap-3 px-4">
-                                <Field label={inlineCopy({ de: 'Pfad (Slug)', en: 'Path (slug)' }, uiLocale)}>
+                                <Field label={t('contentPage.pathSlug')}>
                                     <Input
                                         value={values.pathName}
                                         onChange={(e) => patch({ pathName: pathNameSlugify(e.target.value) || e.target.value })}
                                         onBlur={() => patch({ pathName: pathNameSlugify(values.pathName) })}
                                     />
                                 </Field>
-                                <Field label={inlineCopy({ de: 'Titel', en: 'Title' }, uiLocale)}>
+                                <Field label={t('contentPage.title')}>
                                     <Input
                                         value={editLocale === 'en' ? values.titleEn : values.titleDe}
                                         onChange={(e) =>
@@ -412,7 +406,7 @@ export function ContentPageEditor({
                                         }
                                     />
                                 </Field>
-                                <Field label={inlineCopy({ de: 'Beschreibung', en: 'Description' }, uiLocale)}>
+                                <Field label={t('contentPage.description')}>
                                     <Textarea
                                         rows={3}
                                         value={editLocale === 'en' ? values.descriptionEn : values.descriptionDe}
@@ -430,10 +424,10 @@ export function ContentPageEditor({
 
                         <Card className="gap-4 py-4" data-content-editor-anchor="hero">
                             <CardHeader className="px-4">
-                                <CardTitle>{inlineCopy({ de: 'Hero', en: 'Hero' }, uiLocale)}</CardTitle>
+                                <CardTitle>{t('contentPage.hero')}</CardTitle>
                             </CardHeader>
                             <CardContent className="flex flex-col gap-3 px-4">
-                                <Field label={inlineCopy({ de: 'Überschrift', en: 'Headline' }, uiLocale)}>
+                                <Field label={t('contentPage.headline')}>
                                     <Input
                                         value={editLocale === 'en' ? values.headlineEn : values.headlineDe}
                                         onChange={(e) =>
@@ -441,13 +435,7 @@ export function ContentPageEditor({
                                         }
                                     />
                                 </Field>
-                                <Field
-                                    label={
-                                        heroVariant === 'article'
-                                            ? inlineCopy({ de: 'Einleitung', en: 'Lead' }, uiLocale)
-                                            : inlineCopy({ de: 'Unterüberschrift', en: 'Subheadline' }, uiLocale)
-                                    }
-                                >
+                                <Field label={heroVariant === 'article' ? t('contentPage.lead') : t('contentPage.subheadline')}>
                                     {heroVariant === 'article' ? (
                                         <Textarea
                                             rows={3}
@@ -511,21 +499,13 @@ export function ContentPageEditor({
             <AlertDialog open={confirm === 'publish'} onOpenChange={(open) => !open && setConfirm(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>{inlineCopy({ de: 'Jetzt veröffentlichen?', en: 'Publish now?' }, uiLocale)}</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {inlineCopy(
-                                {
-                                    de: 'Die Seite wird sofort öffentlich erreichbar (Listen und Detailseite) und in der Sitemap aufgenommen. Die Änderung wird sofort gespeichert.',
-                                    en: 'The page becomes publicly reachable (lists and detail) and is included in the sitemap. This change is saved immediately.',
-                                },
-                                uiLocale,
-                            )}
-                        </AlertDialogDescription>
+                        <AlertDialogTitle>{t('contentPage.publishNow')}</AlertDialogTitle>
+                        <AlertDialogDescription>{t('contentPage.publishNowBody')}</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>{inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, uiLocale)}</AlertDialogCancel>
+                        <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                         <AlertDialogAction disabled={busy} onClick={() => void confirmPublish()}>
-                            {inlineCopy({ de: 'Veröffentlichen', en: 'Publish' }, uiLocale)}
+                            {t('contentPage.publish')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -534,23 +514,13 @@ export function ContentPageEditor({
             <AlertDialog open={confirm === 'unpublish'} onOpenChange={(open) => !open && setConfirm(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>
-                            {inlineCopy({ de: 'Veröffentlichung zurückziehen?', en: 'Unpublish this page?' }, uiLocale)}
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {inlineCopy(
-                                {
-                                    de: 'Die Seite verschwindet von öffentlichen Listen und Detail-URLs und wird aus der Sitemap entfernt. Der Entwurf bleibt im Admin erhalten. Die Änderung wird sofort gespeichert.',
-                                    en: 'The page disappears from public lists and detail URLs and is removed from the sitemap. The draft remains available in admin. This change is saved immediately.',
-                                },
-                                uiLocale,
-                            )}
-                        </AlertDialogDescription>
+                        <AlertDialogTitle>{t('contentPage.unpublishTitle')}</AlertDialogTitle>
+                        <AlertDialogDescription>{t('contentPage.unpublishBody')}</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>{inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, uiLocale)}</AlertDialogCancel>
+                        <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                         <AlertDialogAction disabled={busy} onClick={() => void confirmUnpublish()}>
-                            {inlineCopy({ de: 'Zurückziehen', en: 'Unpublish' }, uiLocale)}
+                            {t('contentPage.unpublish')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -559,23 +529,13 @@ export function ContentPageEditor({
             <AlertDialog open={confirm === 'delete'} onOpenChange={(open) => !open && setConfirm(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>
-                            {inlineCopy({ de: 'Seite endgültig löschen?', en: 'Permanently delete this page?' }, uiLocale)}
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {inlineCopy(
-                                {
-                                    de: 'Löschen kann nicht rückgängig gemacht werden. Die Seite ist danach weder öffentlich noch im Admin verfügbar.',
-                                    en: 'Deletion cannot be undone. The page will no longer be available publicly or in admin.',
-                                },
-                                uiLocale,
-                            )}
-                        </AlertDialogDescription>
+                        <AlertDialogTitle>{t('contentPage.deleteTitle')}</AlertDialogTitle>
+                        <AlertDialogDescription>{t('contentPage.deleteBody')}</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>{inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, uiLocale)}</AlertDialogCancel>
+                        <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                         <AlertDialogAction variant="destructive" disabled={busy} onClick={() => void confirmDelete()}>
-                            {inlineCopy({ de: 'Löschen', en: 'Delete' }, uiLocale)}
+                            {t('contentPage.delete')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -584,33 +544,25 @@ export function ContentPageEditor({
             <Dialog open={scheduleOpen} onOpenChange={setScheduleOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>{inlineCopy({ de: 'Veröffentlichung planen', en: 'Schedule publication' }, uiLocale)}</DialogTitle>
-                        <DialogDescription>
-                            {inlineCopy(
-                                {
-                                    de: 'Wähle das Go-live-Datum. Ab diesem Tag (Mitternacht Ortszeit) ist die Seite öffentlich sichtbar. Die Änderung wird sofort gespeichert.',
-                                    en: 'Choose the go-live date. From that day (local midnight) the page becomes publicly visible. This change is saved immediately.',
-                                },
-                                uiLocale,
-                            )}
-                        </DialogDescription>
+                        <DialogTitle>{t('contentPage.scheduleTitle')}</DialogTitle>
+                        <DialogDescription>{t('contentPage.scheduleBody')}</DialogDescription>
                     </DialogHeader>
                     <div className="flex flex-col gap-2 py-2">
-                        <span className="text-sm font-medium">{inlineCopy({ de: 'Go-live-Datum', en: 'Go-live date' }, uiLocale)}</span>
+                        <span className="text-sm font-medium">{t('contentPage.goLiveDate')}</span>
                         <DatePicker
                             value={scheduleDate}
                             onValueChange={setScheduleDate}
-                            placeholder={inlineCopy({ de: 'Datum wählen', en: 'Pick a date' }, uiLocale)}
+                            placeholder={t('contentPage.pickADate')}
                             locale={DATE_FNS_LOCALE[uiLocale]}
                             className="w-full"
                         />
                     </div>
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={() => setScheduleOpen(false)}>
-                            {inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, uiLocale)}
+                            {t('cancel')}
                         </Button>
                         <Button type="button" disabled={busy || !scheduleDate} onClick={() => void confirmSchedule()}>
-                            {inlineCopy({ de: 'Planen', en: 'Schedule' }, uiLocale)}
+                            {t('contentPage.scheduleConfirm')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -646,21 +598,14 @@ function HeroImageField({
     removeTitle?: string;
     removeDescription?: string;
 }) {
+    const { t } = useT('common');
     const inputRef = useRef<HTMLInputElement>(null);
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [confirmRemove, setConfirmRemove] = useState(false);
-    const fieldLabel = label ?? inlineCopy({ de: 'Hero-Bild', en: 'Hero image' }, uiLocale);
-    const confirmTitle = removeTitle ?? inlineCopy({ de: 'Hero-Bild entfernen?', en: 'Remove hero image?' }, uiLocale);
-    const confirmDescription =
-        removeDescription ??
-        inlineCopy(
-            {
-                de: 'Das Hero-Bild wird aus dem Entwurf entfernt. Speichern übernimmt die Änderung.',
-                en: 'The hero image is removed from the draft. Saving applies the change.',
-            },
-            uiLocale,
-        );
+    const fieldLabel = label ?? t('contentPage.heroImage');
+    const confirmTitle = removeTitle ?? t('contentPage.removeHeroImage');
+    const confirmDescription = removeDescription ?? t('contentPage.removeHeroImageBody');
 
     return (
         <div className="flex flex-col gap-2">
@@ -703,11 +648,11 @@ function HeroImageField({
             />
             <div className="flex flex-wrap gap-2">
                 <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => inputRef.current?.click()}>
-                    {inlineCopy({ de: 'Hochladen', en: 'Upload' }, uiLocale)}
+                    {t('contentPage.upload')}
                 </Button>
                 {fileUploadId ? (
                     <Button type="button" variant="ghost" size="sm" onClick={() => setConfirmRemove(true)}>
-                        {inlineCopy({ de: 'Entfernen', en: 'Remove' }, uiLocale)}
+                        {t('contentPage.remove')}
                     </Button>
                 ) : null}
             </div>
@@ -720,7 +665,7 @@ function HeroImageField({
                         <AlertDialogDescription>{confirmDescription}</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>{inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, uiLocale)}</AlertDialogCancel>
+                        <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                         <AlertDialogAction
                             variant="destructive"
                             onClick={() => {
@@ -728,7 +673,7 @@ function HeroImageField({
                                 setConfirmRemove(false);
                             }}
                         >
-                            {inlineCopy({ de: 'Entfernen', en: 'Remove' }, uiLocale)}
+                            {t('contentPage.remove')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

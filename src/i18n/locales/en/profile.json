@@ -82,7 +82,69 @@
         },
         "notifications": {
             "title": "Notifications",
-            "description": "Choose what we write to you about. Everything still shows in the app. Sign-in codes, payments, and support always go to your email."
+            "description": "Choose what we write to you about. Everything still shows in the app. Sign-in codes, payments, and support always go to your email.",
+            "whatsAppNeedsNumber": "WhatsApp stays off until a number is on file.",
+            "bookedEvenings": "Booked evenings",
+            "eveningsYouBook": "Evenings you book",
+            "asACook": "As a cook",
+            "whenYouCook": "When you cook",
+            "lastChannelTitle": "No email or WhatsApp?",
+            "lastChannelBodyOperator": "This person will not get an email or a WhatsApp if the evening changes or is cancelled. It still shows in the app.",
+            "lastChannelBody": "You will not get an email or a WhatsApp if this evening changes or is cancelled. You can still see it in the app.",
+            "turnOff": "Turn off",
+            "toastEmailOn": "{title} by email turned on.",
+            "toastEmailOff": "{title} by email turned off.",
+            "toastWhatsAppOn": "{title} by WhatsApp turned on.",
+            "toastWhatsAppOff": "{title} by WhatsApp turned off.",
+            "customer": {
+                "booking": {
+                    "title": "Changes to the evening",
+                    "description": "Request, menu, guest count, cancellation, and the intro call."
+                },
+                "chat": {
+                    "title": "Messages from your cook",
+                    "operatorTitle": "Messages from the cook",
+                    "description": "When a message is still unread."
+                },
+                "review": {
+                    "title": "After the evening",
+                    "description": "Reminders to write a review."
+                }
+            },
+            "cook": {
+                "newRequest": {
+                    "title": "New requests near you",
+                    "operatorTitle": "New requests nearby",
+                    "description": "These can come often."
+                },
+                "directRequest": {
+                    "title": "Requests sent to you",
+                    "operatorTitle": "Direct requests to the cook",
+                    "description": "When a guest requests you from your chef profile."
+                },
+                "offer": {
+                    "title": "Your offers",
+                    "operatorTitle": "Offers",
+                    "description": "Changes, accepted or declined, menu, guest count, and calls."
+                },
+                "chat": {
+                    "title": "Messages from your guests",
+                    "operatorTitle": "Messages from guests",
+                    "description": "When a message is still unread."
+                },
+                "review": {
+                    "title": "After the evening",
+                    "description": "Reminders about your guests' reviews.",
+                    "operatorDescription": "Reminders about guests' reviews."
+                }
+            }
+        },
+        "picture": {
+            "invalidType": "Please choose an image (JPEG, PNG, WebP, or GIF).",
+            "saved": "Profile picture saved.",
+            "removed": "Profile picture removed.",
+            "select": "Select picture",
+            "remove": "Remove picture"
         },
         "delete": {
             "title": "Delete account",

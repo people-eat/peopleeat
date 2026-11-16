@@ -4,10 +4,9 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation, useQuery } from 'urql';
 
-import { inlineCopy } from '../../shared';
 import { chefSignUpFunnelArea } from '../../shared/chefSignUpFunnel';
 import type { ChefSignUpFunnelClientStep } from '../../shared/chefSignUpFunnel';
-import { expansionMarketFromParam } from '../../shared/expansionMarkets';
+import { expansionMarketFoundingChefTitle, expansionMarketFromParam } from '../../shared/expansionMarkets';
 import type { ExpansionMarketSlug } from '../../shared/expansionMarkets';
 import { AuthIdentityGate } from '../components/auth/AuthIdentityGate';
 import { AuthIdentityGateLogOnFooter } from '../components/auth/AuthIdentityGateLogOnFooter';
@@ -177,7 +176,7 @@ export function ChefSignUpPage({
                         </StatusAlert>
                     ) : null}
                     {market ? (
-                        <StatusAlert tone="info" title={inlineCopy(market.foundingChefTitle, locale)}>
+                        <StatusAlert tone="info" title={expansionMarketFoundingChefTitle(market, locale)}>
                             {t('chefSignUp.marketBody', { inCountry })}
                         </StatusAlert>
                     ) : null}

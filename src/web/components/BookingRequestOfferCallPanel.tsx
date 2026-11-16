@@ -22,9 +22,7 @@ import {
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 
-import { inlineCopy } from '../../shared';
-
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 import { Button } from './base/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './base/dropdown-menu';
@@ -149,7 +147,7 @@ function LeaveButton({ label }: { readonly label: string }) {
 
 /** Mic / camera / screenshare / leave — pinned offer-page footer while a call is active. */
 export function BookingRequestOfferCallControls() {
-    const locale = useLocale();
+    const { t } = useT('common');
 
     return (
         <div className="flex flex-wrap items-center justify-end gap-2">
@@ -157,28 +155,20 @@ export function BookingRequestOfferCallControls() {
                 deviceKind="audioinput"
                 disabledIcon={<MicOffIcon className="size-4" aria-hidden />}
                 enabledIcon={<MicIcon className="size-4" aria-hidden />}
-                emptyDevicesLabel={inlineCopy({ de: 'Kein Mikrofon gefunden', en: 'No microphone found' }, locale)}
-                label={inlineCopy({ de: 'Mikrofon', en: 'Microphone' }, locale)}
+                emptyDevicesLabel={t('callPanel.noMicrophone')}
+                label={t('callPanel.microphone')}
                 source={Track.Source.Microphone}
             />
             <DeviceToggle
                 deviceKind="videoinput"
                 disabledIcon={<CameraOffIcon className="size-4" aria-hidden />}
                 enabledIcon={<CameraIcon className="size-4" aria-hidden />}
-                emptyDevicesLabel={inlineCopy({ de: 'Keine Kamera gefunden', en: 'No camera found' }, locale)}
-                label={inlineCopy({ de: 'Kamera', en: 'Camera' }, locale)}
+                emptyDevicesLabel={t('callPanel.noCamera')}
+                label={t('callPanel.camera')}
                 source={Track.Source.Camera}
             />
-            <ScreenShareToggle
-                label={inlineCopy(
-                    {
-                        de: 'Bildschirm teilen',
-                        en: 'Share screen',
-                    },
-                    locale,
-                )}
-            />
-            <LeaveButton label={inlineCopy({ de: 'Verlassen', en: 'Leave' }, locale)} />
+            <ScreenShareToggle label={t('callPanel.shareScreen')} />
+            <LeaveButton label={t('callPanel.leave')} />
         </div>
     );
 }

@@ -2,14 +2,7 @@ import { Link } from '@tanstack/react-router';
 import { CalendarIcon, MapPinIcon, UserIcon, UsersIcon } from 'lucide-react';
 
 import { t } from '../../i18n/t';
-import {
-    formatBookingEventDateFromCountry,
-    formatDate,
-    formatDateTime,
-    formatParticipants,
-    inlineCopy,
-    userDisplayName,
-} from '../../shared';
+import { formatBookingEventDateFromCountry, formatDate, formatDateTime, formatParticipants, userDisplayName } from '../../shared';
 import type { BookingRequestOfferStatus } from '../../shared/bookingRequestOfferStatus';
 import { bookingRequestOfferStatusLabel } from '../../shared/bookingRequestOfferStatus';
 import { bookingRequestStatusHue, bookingRequestStatusLabel } from '../../shared/bookingRequestStatus';
@@ -117,23 +110,13 @@ function offerTooltipLabel(chip: OfferChipModel, locale: Locale, timeZone: strin
     const createdAtLabel = formatOfferCreatedAt(chip.createdAt, locale, timeZone);
     const statusTitle = bookingRequestOfferStatusLabel(chip.status, locale, 'admin');
     const name = userDisplayName({ firstName: chip.firstName, lastName: chip.lastName });
-    const unread =
-        chip.unreadCount > 0
-            ? inlineCopy(
-                  {
-                      de: ` · ${chip.unreadCount} ungelesen`,
-                      en: ` · ${chip.unreadCount} unread`,
-                  },
-                  locale,
-              )
-            : '';
-    return inlineCopy(
-        {
-            de: `Angebot von ${name} · ${statusTitle} · ${createdAtLabel}${unread}`,
-            en: `Offer from ${name} · ${statusTitle} · ${createdAtLabel}${unread}`,
-        },
-        locale,
-    );
+    const unread = chip.unreadCount > 0 ? t(locale, 'admin', 'bookingRequest.list.unreadSuffix', { count: chip.unreadCount }) : '';
+    return t(locale, 'admin', 'bookingRequest.list.offerFrom', {
+        name,
+        status: statusTitle,
+        createdAt: createdAtLabel,
+        unread,
+    });
 }
 
 function OfferChip({
@@ -213,13 +196,7 @@ function OfferChipStack({
                     to="/{-$locale}/admin/booking-requests/$bookingRequestId"
                     params={{ bookingRequestId: overflowHrefBookingRequestId }}
                     search={{ tab: 'offers' }}
-                    aria-label={inlineCopy(
-                        {
-                            de: `${overflowCount} weitere Angebote anzeigen`,
-                            en: `View ${overflowCount} more offers`,
-                        },
-                        locale,
-                    )}
+                    aria-label={t(locale, 'admin', 'bookingRequest.list.moreOffers', { count: overflowCount })}
                     className={cn(
                         '-ml-2 flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground ring-2 ring-card hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
                         muted && 'opacity-40 grayscale',
@@ -258,7 +235,7 @@ function OffersFooter({
     } else if (offerCount === 1) {
         offerLabel = t(locale, 'admin', 'copy.n1Offer');
     } else {
-        offerLabel = inlineCopy({ de: `${offerCount} Angebote`, en: `${offerCount} offers` }, locale);
+        offerLabel = t(locale, 'admin', 'bookingRequest.list.offerCount', { count: offerCount });
     }
 
     const offersLinkClassName = cn(

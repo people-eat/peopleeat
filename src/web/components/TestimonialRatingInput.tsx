@@ -1,8 +1,7 @@
 import { StarIcon } from 'lucide-react';
 import { useState } from 'react';
-import { inlineCopy } from '../../shared';
 
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 
 /**
@@ -25,7 +24,7 @@ export function TestimonialRatingInput({
     size?: 'sm' | 'md' | 'lg';
     className?: string;
 }) {
-    const locale = useLocale();
+    const { t } = useT('common');
     const [hover, setHover] = useState<number | null>(null);
     const active = hover ?? value ?? 0;
     const iconClass = size === 'lg' ? 'size-10' : size === 'sm' ? 'size-5' : 'size-7';
@@ -42,7 +41,7 @@ export function TestimonialRatingInput({
     return (
         <div
             role="radiogroup"
-            aria-label={inlineCopy({ de: 'Sternebewertung', en: 'Star rating' }, locale)}
+            aria-label={t('testimonial.starRating')}
             className={cn('inline-flex items-center gap-0.5', className)}
             onMouseLeave={() => setHover(null)}
         >
@@ -54,13 +53,7 @@ export function TestimonialRatingInput({
                         type="button"
                         role="radio"
                         aria-checked={value === position}
-                        aria-label={inlineCopy(
-                            {
-                                de: `${position} ${position === 1 ? 'Stern' : 'Sterne'}`,
-                                en: `${position} ${position === 1 ? 'star' : 'stars'}`,
-                            },
-                            locale,
-                        )}
+                        aria-label={t('testimonial.starsN', { count: position })}
                         disabled={disabled}
                         className={cn(
                             'rounded-sm p-0.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',

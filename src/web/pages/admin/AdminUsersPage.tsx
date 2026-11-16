@@ -3,7 +3,6 @@ import type { SortingState, Updater } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
 
 import { t } from '../../../i18n/t';
-import { inlineCopy } from '../../../shared';
 import { AdminListPaginationBar } from '../../components/AdminListPaginationBar';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
@@ -210,15 +209,7 @@ export function AdminUsersPage({ data, search }: { data: GqlCAdminUsersPageQuery
                         placeholder={t(locale, 'admin', 'copy.searchNameOrEmail')}
                         aria-label={t(locale, 'admin', 'copy.searchUsers2')}
                     />
-                    <p className="text-sm text-muted-foreground tabular-nums">
-                        {inlineCopy(
-                            {
-                                de: `${total} ${total === 1 ? 'Nutzer' : 'Nutzer'}`,
-                                en: `${total} ${total === 1 ? 'user' : 'users'}`,
-                            },
-                            locale,
-                        )}
-                    </p>
+                    <p className="text-sm text-muted-foreground tabular-nums">{t(locale, 'admin', 'copy.userCount', { count: total })}</p>
                 </div>
 
                 {search.type === 'cook' ? (

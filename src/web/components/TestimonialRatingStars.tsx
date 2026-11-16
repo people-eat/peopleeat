@@ -1,19 +1,14 @@
 import { StarIcon } from 'lucide-react';
-import { inlineCopy } from '../../shared';
 
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 
 /** Read-only 1–5 star rating display — list rows, detail pages. */
 export function TestimonialRatingStars({ rating, className }: { rating: number | null | undefined; className?: string }) {
-    const locale = useLocale();
+    const { t } = useT('common');
 
     if (rating == null) {
-        return (
-            <span className={cn('text-sm text-muted-foreground', className)}>
-                {inlineCopy({ de: 'Keine Bewertung', en: 'No rating' }, locale)}
-            </span>
-        );
+        return <span className={cn('text-sm text-muted-foreground', className)}>{t('testimonial.noRating')}</span>;
     }
 
     return (

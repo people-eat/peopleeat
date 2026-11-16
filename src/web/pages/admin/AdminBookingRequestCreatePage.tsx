@@ -12,7 +12,6 @@ import {
     bookingRequestSettingLabel,
     formatDateTime,
     formatParticipants,
-    inlineCopy,
     userDisplayName,
 } from '../../../shared';
 import type { BookingRequestParticipantDraft, BookingRequestSettingChoice, Locale } from '../../../shared';
@@ -132,8 +131,8 @@ function formatTravelDistanceKm(km: number, locale: Locale): string {
     }).format(km);
 }
 
-function requiredTrimmed(value: string, locale: Locale, labels: { de: string; en: string }): string | undefined {
-    if (value.trim().length === 0) return inlineCopy(labels, locale);
+function requiredTrimmed(value: string, locale: Locale, key: string): string | undefined {
+    if (value.trim().length === 0) return t(locale, 'admin', key);
     return undefined;
 }
 
@@ -174,15 +173,7 @@ export function AdminBookingRequestCreatePage({ search }: { search: AdminBooking
             const isLargeGroup = participantCount >= LARGE_GROUP_PARTICIPANT_THRESHOLD;
             const largeGroupNeedsCook = isLargeGroup && cooksInRadiusCountRef.current > 0 && selectedCookIdsRef.current.length === 0;
             if (largeGroupNeedsCook) {
-                setCookSelectionError(
-                    inlineCopy(
-                        {
-                            de: 'Bei Großgruppen bitte mindestens einen Koch auswählen.',
-                            en: 'For large groups, please select at least one chef.',
-                        },
-                        locale,
-                    ),
-                );
+                setCookSelectionError(t(locale, 'admin', 'copy.forLargeGroupsPleaseSelectAtLeastOneChef'));
                 return;
             }
 
@@ -347,10 +338,10 @@ export function AdminBookingRequestCreatePage({ search }: { search: AdminBooking
                 footer={
                     <>
                         <Button type="button" variant="outline" disabled={busy} asChild>
-                            <Link to="/{-$locale}/admin/booking-requests">{inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, locale)}</Link>
+                            <Link to="/{-$locale}/admin/booking-requests">{t(locale, 'admin', 'copy.cancel')}</Link>
                         </Button>
                         <Button type="submit" form={CREATE_FORM_ID} disabled={busy}>
-                            {inlineCopy({ de: 'Weiter zur Bestätigung', en: 'Continue to confirmation' }, locale)}
+                            {t(locale, 'admin', 'copy.continueToConfirmation')}
                         </Button>
                     </>
                 }
@@ -374,14 +365,8 @@ export function AdminBookingRequestCreatePage({ search }: { search: AdminBooking
                         <form.Field
                             name="customer"
                             validators={{
-                                onChange: ({ value }) =>
-                                    value
-                                        ? undefined
-                                        : inlineCopy({ de: 'Bitte einen Kunden auswählen.', en: 'Please choose a customer.' }, locale),
-                                onSubmit: ({ value }) =>
-                                    value
-                                        ? undefined
-                                        : inlineCopy({ de: 'Bitte einen Kunden auswählen.', en: 'Please choose a customer.' }, locale),
+                                onChange: ({ value }) => (value ? undefined : t(locale, 'admin', 'copy.pleaseChooseACustomer')),
+                                onSubmit: ({ value }) => (value ? undefined : t(locale, 'admin', 'copy.pleaseChooseACustomer')),
                             }}
                         >
                             {(field) => {
@@ -390,7 +375,7 @@ export function AdminBookingRequestCreatePage({ search }: { search: AdminBooking
                                 const errorId = `${field.name}-error`;
                                 return (
                                     <div className="grid gap-2">
-                                        <span className="text-sm font-medium">{inlineCopy({ de: 'Kunde', en: 'Customer' }, locale)}</span>
+                                        <span className="text-sm font-medium">{t(locale, 'admin', 'copy.customer')}</span>
                                         <Combobox
                                             items={customers.map((entry) => entry.userId)}
                                             value={field.state.value?.userId ?? null}
@@ -415,10 +400,7 @@ export function AdminBookingRequestCreatePage({ search }: { search: AdminBooking
                                         >
                                             <ComboboxInput
                                                 className="w-full"
-                                                placeholder={inlineCopy(
-                                                    { de: 'Name oder E-Mail suchen…', en: 'Search name or email…' },
-                                                    locale,
-                                                )}
+                                                placeholder={t(locale, 'admin', 'copy.searchNameOrEmail')}
                                                 showClear={false}
                                                 disabled={busy}
                                                 aria-invalid={showError || undefined}
@@ -427,8 +409,8 @@ export function AdminBookingRequestCreatePage({ search }: { search: AdminBooking
                                             <ComboboxContent>
                                                 <ComboboxEmpty>
                                                     {customersFetching
-                                                        ? inlineCopy({ de: 'Suche…', en: 'Searching…' }, locale)
-                                                        : inlineCopy({ de: 'Keine Treffer.', en: 'No matches.' }, locale)}
+                                                        ? t(locale, 'admin', 'copy.searching')
+                                                        : t(locale, 'admin', 'copy.noMatches')}
                                                 </ComboboxEmpty>
                                                 <ComboboxList>
                                                     {(userId: string) => {
@@ -455,21 +437,9 @@ export function AdminBookingRequestCreatePage({ search }: { search: AdminBooking
                         <form.Field
                             name="occasion"
                             validators={{
-                                onChange: ({ value }) =>
-                                    requiredTrimmed(value, locale, {
-                                        de: 'Anlass ist erforderlich.',
-                                        en: 'Occasion is required.',
-                                    }),
-                                onBlur: ({ value }) =>
-                                    requiredTrimmed(value, locale, {
-                                        de: 'Anlass ist erforderlich.',
-                                        en: 'Occasion is required.',
-                                    }),
-                                onSubmit: ({ value }) =>
-                                    requiredTrimmed(value, locale, {
-                                        de: 'Anlass ist erforderlich.',
-                                        en: 'Occasion is required.',
-                                    }),
+                                onChange: ({ value }) => requiredTrimmed(value, locale, 'copy.occasionIsRequired'),
+                                onBlur: ({ value }) => requiredTrimmed(value, locale, 'copy.occasionIsRequired'),
+                                onSubmit: ({ value }) => requiredTrimmed(value, locale, 'copy.occasionIsRequired'),
                             }}
                         >
                             {(field) => {
@@ -479,7 +449,7 @@ export function AdminBookingRequestCreatePage({ search }: { search: AdminBooking
                                 return (
                                     <div className="grid gap-2">
                                         <label htmlFor="admin-booking-occasion" className="text-sm font-medium">
-                                            {inlineCopy({ de: 'Anlass', en: 'Occasion' }, locale)}
+                                            {t(locale, 'admin', 'copy.occasion')}
                                         </label>
                                         <Input
                                             id="admin-booking-occasion"
@@ -504,26 +474,8 @@ export function AdminBookingRequestCreatePage({ search }: { search: AdminBooking
                         <form.Field
                             name="dateTime"
                             validators={{
-                                onChange: ({ value }) =>
-                                    value
-                                        ? undefined
-                                        : inlineCopy(
-                                              {
-                                                  de: 'Bitte Datum und Uhrzeit auswählen.',
-                                                  en: 'Please choose a date and time.',
-                                              },
-                                              locale,
-                                          ),
-                                onSubmit: ({ value }) =>
-                                    value
-                                        ? undefined
-                                        : inlineCopy(
-                                              {
-                                                  de: 'Bitte Datum und Uhrzeit auswählen.',
-                                                  en: 'Please choose a date and time.',
-                                              },
-                                              locale,
-                                          ),
+                                onChange: ({ value }) => (value ? undefined : t(locale, 'admin', 'copy.pleaseChooseADateAndTime')),
+                                onSubmit: ({ value }) => (value ? undefined : t(locale, 'admin', 'copy.pleaseChooseADateAndTime')),
                             }}
                         >
                             {(field) => {
@@ -533,13 +485,13 @@ export function AdminBookingRequestCreatePage({ search }: { search: AdminBooking
                                 return (
                                     <div className="grid gap-2">
                                         <span id="admin-booking-datetime-label" className="text-sm font-medium">
-                                            {inlineCopy({ de: 'Datum und Uhrzeit', en: 'Date and time' }, locale)}
+                                            {t(locale, 'admin', 'copy.dateAndTime')}
                                         </span>
                                         <DateTimePicker
                                             value={field.state.value}
                                             onValueChange={(dateTime) => field.handleChange(dateTime)}
-                                            placeholder={inlineCopy({ de: 'Datum und Uhrzeit wählen', en: 'Pick date and time' }, locale)}
-                                            timeAriaLabel={inlineCopy({ de: 'Uhrzeit', en: 'Time' }, locale)}
+                                            placeholder={t(locale, 'admin', 'copy.pickDateAndTime')}
+                                            timeAriaLabel={t(locale, 'admin', 'copy.time')}
                                             locale={DATE_FNS_LOCALE[locale]}
                                             className="w-full"
                                             aria-labelledby="admin-booking-datetime-label"
@@ -559,26 +511,8 @@ export function AdminBookingRequestCreatePage({ search }: { search: AdminBooking
                         <form.Field
                             name="exactEventAddress"
                             validators={{
-                                onChange: ({ value }) =>
-                                    value
-                                        ? undefined
-                                        : inlineCopy(
-                                              {
-                                                  de: 'Bitte einen Veranstaltungsort auswählen.',
-                                                  en: 'Please choose an event location.',
-                                              },
-                                              locale,
-                                          ),
-                                onSubmit: ({ value }) =>
-                                    value
-                                        ? undefined
-                                        : inlineCopy(
-                                              {
-                                                  de: 'Bitte einen Veranstaltungsort auswählen.',
-                                                  en: 'Please choose an event location.',
-                                              },
-                                              locale,
-                                          ),
+                                onChange: ({ value }) => (value ? undefined : t(locale, 'admin', 'copy.pleaseChooseAnEventLocation')),
+                                onSubmit: ({ value }) => (value ? undefined : t(locale, 'admin', 'copy.pleaseChooseAnEventLocation')),
                             }}
                         >
                             {(field) => {
@@ -587,9 +521,7 @@ export function AdminBookingRequestCreatePage({ search }: { search: AdminBooking
                                 const errorId = `${field.name}-error`;
                                 return (
                                     <div className="grid gap-2">
-                                        <span className="text-sm font-medium">
-                                            {inlineCopy({ de: 'Veranstaltungsort', en: 'Event location' }, locale)}
-                                        </span>
+                                        <span className="text-sm font-medium">{t(locale, 'admin', 'copy.eventLocation')}</span>
                                         <Combobox
                                             filter={null}
                                             items={suggestions.map((suggestion) => suggestion.displayText)}
@@ -601,15 +533,7 @@ export function AdminBookingRequestCreatePage({ search }: { search: AdminBooking
                                                 if (!match) return;
                                                 const address = addressFromSuggestion(match);
                                                 if (!address) {
-                                                    toast.error(
-                                                        inlineCopy(
-                                                            {
-                                                                de: 'Bitte eine vollständige Adresse wählen.',
-                                                                en: 'Please choose a full address.',
-                                                            },
-                                                            locale,
-                                                        ),
-                                                    );
+                                                    toast.error(t(locale, 'admin', 'copy.pleaseChooseAFullAddress'));
                                                     return;
                                                 }
                                                 field.handleChange(address);
@@ -625,7 +549,7 @@ export function AdminBookingRequestCreatePage({ search }: { search: AdminBooking
                                         >
                                             <ComboboxInput
                                                 className="w-full"
-                                                placeholder={inlineCopy({ de: 'Adresse suchen…', en: 'Search address…' }, locale)}
+                                                placeholder={t(locale, 'admin', 'copy.searchAddress')}
                                                 showClear={false}
                                                 disabled={busy}
                                                 aria-invalid={showError || undefined}
@@ -634,8 +558,8 @@ export function AdminBookingRequestCreatePage({ search }: { search: AdminBooking
                                             <ComboboxContent>
                                                 <ComboboxEmpty>
                                                     {suggestionsFetching
-                                                        ? inlineCopy({ de: 'Suche…', en: 'Searching…' }, locale)
-                                                        : inlineCopy({ de: 'Keine Treffer.', en: 'No matches.' }, locale)}
+                                                        ? t(locale, 'admin', 'copy.searching')
+                                                        : t(locale, 'admin', 'copy.noMatches')}
                                                 </ComboboxEmpty>
                                                 <ComboboxList>
                                                     {(item: string) => (
@@ -673,25 +597,9 @@ export function AdminBookingRequestCreatePage({ search }: { search: AdminBooking
                                 name="adultCount"
                                 validators={{
                                     onChange: ({ value }) =>
-                                        value >= 1
-                                            ? undefined
-                                            : inlineCopy(
-                                                  {
-                                                      de: 'Mindestens ein Erwachsener ist erforderlich.',
-                                                      en: 'At least one adult is required.',
-                                                  },
-                                                  locale,
-                                              ),
+                                        value >= 1 ? undefined : t(locale, 'admin', 'copy.atLeastOneAdultIsRequired'),
                                     onSubmit: ({ value }) =>
-                                        value >= 1
-                                            ? undefined
-                                            : inlineCopy(
-                                                  {
-                                                      de: 'Mindestens ein Erwachsener ist erforderlich.',
-                                                      en: 'At least one adult is required.',
-                                                  },
-                                                  locale,
-                                              ),
+                                        value >= 1 ? undefined : t(locale, 'admin', 'copy.atLeastOneAdultIsRequired'),
                                 }}
                             >
                                 {(field) => {
@@ -699,7 +607,7 @@ export function AdminBookingRequestCreatePage({ search }: { search: AdminBooking
                                     const showError = errorMessage != null && (field.state.meta.isBlurred || submissionAttempts > 0);
                                     return (
                                         <ParticipantCountField
-                                            label={inlineCopy({ de: 'Erwachsene', en: 'Adults' }, locale)}
+                                            label={t(locale, 'admin', 'copy.adults')}
                                             value={field.state.value}
                                             min={1}
                                             disabled={busy}
@@ -712,7 +620,7 @@ export function AdminBookingRequestCreatePage({ search }: { search: AdminBooking
                             <form.Field name="discountedCount">
                                 {(field) => (
                                     <ParticipantCountField
-                                        label={inlineCopy({ de: 'Kinder', en: 'Children' }, locale)}
+                                        label={t(locale, 'admin', 'copy.children')}
                                         value={field.state.value}
                                         min={0}
                                         disabled={busy}
@@ -725,17 +633,9 @@ export function AdminBookingRequestCreatePage({ search }: { search: AdminBooking
                         {restrictionsEnabled ? (
                             <div className="grid gap-3">
                                 <div className="grid gap-1">
-                                    <span className="text-sm font-medium">
-                                        {inlineCopy({ de: 'Einschränkungen', en: 'Restrictions' }, locale)}
-                                    </span>
+                                    <span className="text-sm font-medium">{t(locale, 'admin', 'copy.restrictions')}</span>
                                     <p className="text-sm text-muted-foreground">
-                                        {inlineCopy(
-                                            {
-                                                de: 'Wähle die zutreffenden Einschränkungen pro Gast.',
-                                                en: 'Select the applicable restrictions per guest.',
-                                            },
-                                            locale,
-                                        )}
+                                        {t(locale, 'admin', 'copy.selectTheApplicableRestrictionsPerGuest')}
                                     </p>
                                 </div>
                                 <BookingRequestParticipantsRestrictionsEditor
@@ -749,21 +649,9 @@ export function AdminBookingRequestCreatePage({ search }: { search: AdminBooking
                         <form.Field
                             name="originalMessage"
                             validators={{
-                                onChange: ({ value }) =>
-                                    requiredTrimmed(value, locale, {
-                                        de: 'Nachricht ist erforderlich.',
-                                        en: 'Message is required.',
-                                    }),
-                                onBlur: ({ value }) =>
-                                    requiredTrimmed(value, locale, {
-                                        de: 'Nachricht ist erforderlich.',
-                                        en: 'Message is required.',
-                                    }),
-                                onSubmit: ({ value }) =>
-                                    requiredTrimmed(value, locale, {
-                                        de: 'Nachricht ist erforderlich.',
-                                        en: 'Message is required.',
-                                    }),
+                                onChange: ({ value }) => requiredTrimmed(value, locale, 'copy.messageIsRequired'),
+                                onBlur: ({ value }) => requiredTrimmed(value, locale, 'copy.messageIsRequired'),
+                                onSubmit: ({ value }) => requiredTrimmed(value, locale, 'copy.messageIsRequired'),
                             }}
                         >
                             {(field) => {
@@ -773,7 +661,7 @@ export function AdminBookingRequestCreatePage({ search }: { search: AdminBooking
                                 return (
                                     <div className="grid gap-2">
                                         <label htmlFor="admin-booking-message" className="text-sm font-medium">
-                                            {inlineCopy({ de: 'Nachricht an die Köche', en: 'Message for the chefs' }, locale)}
+                                            {t(locale, 'admin', 'copy.messageForTheChefs')}
                                         </label>
                                         <Textarea
                                             id="admin-booking-message"
@@ -797,82 +685,39 @@ export function AdminBookingRequestCreatePage({ search }: { search: AdminBooking
 
                         {error ? (
                             <p className="text-sm text-destructive" role="alert">
-                                {inlineCopy(
-                                    {
-                                        de: 'Die Anfrage konnte nicht angelegt werden.',
-                                        en: 'Could not create the booking request.',
-                                    },
-                                    locale,
-                                )}
+                                {t(locale, 'admin', 'copy.couldNotCreateTheBookingRequest')}
                             </p>
                         ) : null}
                     </div>
 
                     <aside className="grid gap-4 lg:sticky lg:top-6">
                         {isLargeGroup ? (
-                            <StatusAlert
-                                tone="warning"
-                                title={inlineCopy({ de: 'Großgruppe · Cashcow', en: 'Large group · Cash cow' }, locale)}
-                            >
-                                {inlineCopy(
-                                    {
-                                        de: 'Ab 12 Teilnehmern wird die Anfrage beim Anlegen als admin-freigegeben. Wähle die Köche, die benachrichtigt werden und die Anfrage sehen dürfen. Slack landet im Cashcow-Kanal.',
-                                        en: 'From 12 participants the request is admin-approved on create. Choose which chefs are notified and can see it. Slack posts to the cash-cows channel.',
-                                    },
-                                    locale,
-                                )}
+                            <StatusAlert tone="warning" title={t(locale, 'admin', 'copy.largeGroupCashCow')}>
+                                {t(locale, 'admin', 'copy.from12ParticipantsTheRequestIsAdminApprovedOnCreateChooseWhi')}
                             </StatusAlert>
                         ) : (
-                            <StatusAlert tone="info" title={inlineCopy({ de: 'Auto-freigegeben', en: 'Auto-approved' }, locale)}>
-                                {inlineCopy(
-                                    {
-                                        de: 'Kleine Gruppen werden automatisch freigegeben. Alle Köche im Anfahrtsradius sind vorausgewählt. Du kannst einzelne abwählen.',
-                                        en: 'Small groups are auto-approved. All chefs in travel radius are preselected. You can deselect individuals.',
-                                    },
-                                    locale,
-                                )}
+                            <StatusAlert tone="info" title={t(locale, 'admin', 'copy.autoApproved')}>
+                                {t(locale, 'admin', 'copy.smallGroupsAreAutoApprovedAllChefsInTravelRadiusArePreselect')}
                             </StatusAlert>
                         )}
 
                         <div className="grid gap-3 rounded-md border border-border p-4">
                             <div className="flex flex-wrap items-center justify-between gap-2">
-                                <h2 className="text-sm font-medium">
-                                    {inlineCopy({ de: 'Köche benachrichtigen', en: 'Notify chefs' }, locale)}
-                                </h2>
+                                <h2 className="text-sm font-medium">{t(locale, 'admin', 'copy.notifyChefs')}</h2>
                                 <Badge variant="secondary">
-                                    {inlineCopy(
-                                        {
-                                            de: `${selectedCookIds.length} ausgewählt`,
-                                            en: `${selectedCookIds.length} selected`,
-                                        },
-                                        locale,
-                                    )}
+                                    {t(locale, 'admin', 'bookingRequest.selectedCount', { count: selectedCookIds.length })}
                                 </Badge>
                             </div>
 
                             {!exactEventAddress ? (
                                 <p className="text-sm text-muted-foreground">
-                                    {inlineCopy(
-                                        {
-                                            de: 'Zuerst einen Veranstaltungsort wählen, um Köche im Anfahrtsradius zu sehen.',
-                                            en: 'Choose an event location first to see chefs in travel radius.',
-                                        },
-                                        locale,
-                                    )}
+                                    {t(locale, 'admin', 'copy.chooseAnEventLocationFirstToSeeChefsInTravelRadius')}
                                 </p>
                             ) : cooksFetching ? (
-                                <p className="text-sm text-muted-foreground">
-                                    {inlineCopy({ de: 'Köche werden geladen…', en: 'Loading chefs…' }, locale)}
-                                </p>
+                                <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.loadingChefs')}</p>
                             ) : cooksInRadius.length === 0 ? (
                                 <p className="text-sm text-muted-foreground">
-                                    {inlineCopy(
-                                        {
-                                            de: 'Keine Köche im Anfahrtsradius. Die Anfrage wird ohne Benachrichtigung angelegt.',
-                                            en: 'No chefs in travel radius. The request will be created without notifying anyone.',
-                                        },
-                                        locale,
-                                    )}
+                                    {t(locale, 'admin', 'copy.noChefsInTravelRadiusTheRequestWillBeCreatedWithoutNotifying')}
                                 </p>
                             ) : (
                                 <div className="grid gap-3">
@@ -886,13 +731,7 @@ export function AdminBookingRequestCreatePage({ search }: { search: AdminBooking
                                             role={cookSelectionError != null || submissionAttempts > 0 ? 'alert' : 'status'}
                                         >
                                             {cookSelectionError ??
-                                                inlineCopy(
-                                                    {
-                                                        de: 'Mindestens einen Koch auswählen, damit die Anfrage sichtbar wird.',
-                                                        en: 'Select at least one chef so the request becomes visible.',
-                                                    },
-                                                    locale,
-                                                )}
+                                                t(locale, 'admin', 'copy.selectAtLeastOneChefSoTheRequestBecomesVisible')}
                                         </p>
                                     ) : null}
                                     <div className="flex flex-wrap gap-2">
@@ -906,7 +745,7 @@ export function AdminBookingRequestCreatePage({ search }: { search: AdminBooking
                                                 setSelectedCookIds(cookIdsInRadius);
                                             }}
                                         >
-                                            {inlineCopy({ de: 'Alle auswählen', en: 'Select all' }, locale)}
+                                            {t(locale, 'admin', 'copy.selectAll')}
                                         </Button>
                                         <Button
                                             type="button"
@@ -915,7 +754,7 @@ export function AdminBookingRequestCreatePage({ search }: { search: AdminBooking
                                             disabled={busy || selectedCookIds.length === 0}
                                             onClick={() => setSelectedCookIds([])}
                                         >
-                                            {inlineCopy({ de: 'Keine', en: 'Clear' }, locale)}
+                                            {t(locale, 'admin', 'copy.clear')}
                                         </Button>
                                     </div>
                                     <ul className="divide-y divide-border rounded-md border border-border">
@@ -1020,70 +859,49 @@ function AdminBookingRequestCreateConfirmDialog({
         },
         { locale },
     );
-    const publicationLabel = isLargeGroup
-        ? inlineCopy({ de: 'Admin-freigegeben', en: 'Admin-approved' }, locale)
-        : inlineCopy({ de: 'Auto-freigegeben', en: 'Auto-approved' }, locale);
+    const publicationLabel = isLargeGroup ? t(locale, 'admin', 'copy.adminApproved') : t(locale, 'admin', 'copy.autoApproved');
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
                 <DialogHeader>
-                    <DialogTitle>{inlineCopy({ de: 'Anfrage anlegen?', en: 'Create booking request?' }, locale)}</DialogTitle>
+                    <DialogTitle>{t(locale, 'admin', 'copy.createBookingRequest')}</DialogTitle>
                     <DialogDescription>
-                        {inlineCopy(
-                            {
-                                de: 'Prüfe die Zusammenfassung. Beim Bestätigen wird die Anfrage angelegt und die ausgewählten Köche benachrichtigt.',
-                                en: 'Review the summary. Confirming creates the request and notifies the selected chefs.',
-                            },
-                            locale,
-                        )}
+                        {t(locale, 'admin', 'copy.reviewTheSummaryConfirmingCreatesTheRequestAndNotifiesTheSel')}
                     </DialogDescription>
                 </DialogHeader>
 
                 <dl className="grid gap-3 text-sm">
                     <ConfirmRow
-                        label={inlineCopy({ de: 'Kunde', en: 'Customer' }, locale)}
+                        label={t(locale, 'admin', 'copy.customer')}
                         value={values.customer ? customerLabel(values.customer) : '—'}
                     />
-                    <ConfirmRow label={inlineCopy({ de: 'Anlass', en: 'Occasion' }, locale)} value={values.occasion.trim() || '—'} />
+                    <ConfirmRow label={t(locale, 'admin', 'copy.occasion')} value={values.occasion.trim() || '—'} />
                     <ConfirmRow
-                        label={inlineCopy({ de: 'Datum', en: 'Date' }, locale)}
+                        label={t(locale, 'admin', 'copy.date')}
                         value={
                             values.dateTime ? formatDateTime(values.dateTime.toISOString(), { locale, timeZone, dateStyle: 'full' }) : '—'
                         }
                     />
-                    <ConfirmRow
-                        label={inlineCopy({ de: 'Ort', en: 'Location' }, locale)}
-                        value={values.exactEventAddress?.displayText ?? '—'}
-                    />
+                    <ConfirmRow label={t(locale, 'admin', 'copy.location2')} value={values.exactEventAddress?.displayText ?? '—'} />
                     {values.settingChoice === 'INDOOR' || values.settingChoice === 'OUTDOOR' ? (
                         <ConfirmRow
-                            label={inlineCopy({ de: 'Wo sitzt ihr', en: 'Where you dine' }, locale)}
+                            label={t(locale, 'admin', 'copy.whereYouDine')}
                             value={bookingRequestSettingLabel(values.settingChoice, locale)}
                         />
                     ) : null}
-                    <ConfirmRow label={inlineCopy({ de: 'Teilnehmer', en: 'Participants' }, locale)} value={participantsLabel} />
+                    <ConfirmRow label={t(locale, 'admin', 'copy.participants')} value={participantsLabel} />
                     <ConfirmRow
-                        label={inlineCopy({ de: 'Veröffentlichung', en: 'Publication' }, locale)}
-                        value={
-                            isLargeGroup
-                                ? `${publicationLabel} · ${inlineCopy({ de: 'Großgruppe / Cashcow', en: 'Large group / cash cow' }, locale)}`
-                                : publicationLabel
-                        }
+                        label={t(locale, 'admin', 'copy.publication')}
+                        value={isLargeGroup ? `${publicationLabel} · ${t(locale, 'admin', 'copy.largeGroupCashCow2')}` : publicationLabel}
                     />
                     <div className="grid gap-1">
                         <dt className="text-muted-foreground">
-                            {inlineCopy(
-                                {
-                                    de: `Benachrichtigung (${selectedCooks.length})`,
-                                    en: `Notify (${selectedCooks.length})`,
-                                },
-                                locale,
-                            )}
+                            {t(locale, 'admin', 'bookingRequest.notifyCount', { count: selectedCooks.length })}
                         </dt>
                         <dd>
                             {selectedCooks.length === 0 ? (
-                                <span className="text-muted-foreground">{inlineCopy({ de: 'Keine Köche', en: 'No chefs' }, locale)}</span>
+                                <span className="text-muted-foreground">{t(locale, 'admin', 'copy.noChefs')}</span>
                             ) : (
                                 <ul className="list-inside list-disc">
                                     {selectedCooks.map((row) => (
@@ -1097,12 +915,10 @@ function AdminBookingRequestCreateConfirmDialog({
 
                 <DialogFooter>
                     <Button type="button" variant="outline" disabled={busy} onClick={() => onOpenChange(false)}>
-                        {inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, locale)}
+                        {t(locale, 'admin', 'copy.cancel')}
                     </Button>
                     <Button type="button" disabled={busy || confirmDisabled} onClick={onConfirm}>
-                        {busy
-                            ? inlineCopy({ de: 'Anlegen…', en: 'Creating…' }, locale)
-                            : inlineCopy({ de: 'Anfrage anlegen', en: 'Create request' }, locale)}
+                        {busy ? t(locale, 'admin', 'copy.creating') : t(locale, 'admin', 'copy.createRequest')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

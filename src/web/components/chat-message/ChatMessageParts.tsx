@@ -1,11 +1,12 @@
 import { Link } from '@tanstack/react-router';
 import { useEffect, useMemo, useState } from 'react';
-import { formatDate, inlineCopy } from '../../../shared';
+import { formatDate } from '../../../shared';
 import type { ChatAssistantInputSlot, SlotDraft } from '../../chat/chatAssistantInputKinds';
 import { serializeSlotAnswer, slotsFromToolInput, toAnswerPayload } from '../../chat/chatAssistantInputKinds';
 import { toolDisplay } from '../../chat/toolDisplay';
 import type { GqlCChatTurnFieldsFragment } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
+import { useT } from '../../hooks/useT';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { AdminBookingRequestListCard } from '../AdminBookingRequestListCard';
 import type { AdminBookingRequestListCardRequest } from '../AdminBookingRequestListCard';
@@ -75,16 +76,11 @@ interface ChatMessagePartsViewProps {
     onPromptUserForInputSubmit?: (chatTurnId: string, toolCallId: string, answers: unknown) => void;
 }
 
-const CHEF_PENDING = [
-    { de: 'Schaue in die Speisekammer…', en: 'Checking the pantry…' },
-    { de: 'Würze die Antwort…', en: 'Seasoning the answer…' },
-    { de: 'Lass es köcheln…', en: 'Simmering on that…' },
-    { de: 'Richte die Teller an…', en: 'Plating your options…' },
-] as const;
+const CHEF_PENDING = ['chat.pending.pantry', 'chat.pending.seasoning', 'chat.pending.simmering', 'chat.pending.plating'] as const;
 
 /** Render durable assistant parts (text / reasoning / tool / data). */
 export function ChatMessagePartsView({ message, chatTurnId, onApprovalRespond, onPromptUserForInputSubmit }: ChatMessagePartsViewProps) {
-    const locale = useLocale();
+    const { t } = useT('common');
     const [pendingIndex, setPendingIndex] = useState(0);
     const isPending = message.status === 'PENDING' || (message.status === 'STREAMING' && message.parts.length === 0);
 
@@ -97,7 +93,7 @@ export function ChatMessagePartsView({ message, chatTurnId, onApprovalRespond, o
     }, [isPending]);
 
     if (isPending) {
-        return <AssistantPendingStatus label={inlineCopy(CHEF_PENDING[pendingIndex]!, locale)} />;
+        return <AssistantPendingStatus label={t(CHEF_PENDING[pendingIndex]!)} />;
     }
 
     return (
@@ -127,6 +123,7 @@ function PartView({
     onPromptUserForInputSubmit?: ChatMessagePartsViewProps['onPromptUserForInputSubmit'];
 }) {
     const locale = useLocale();
+    const { t } = useT('common');
 
     switch (part.__typename) {
         case 'ChatMessageTextPart':
@@ -142,14 +139,14 @@ function PartView({
                             className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground"
                             onClick={() => onApprovalRespond(chatTurnId, part.approval!.approvalId, true)}
                         >
-                            {inlineCopy({ de: 'Erlauben', en: 'Approve' }, locale)}
+                            {t('chat.approve')}
                         </button>
                         <button
                             type="button"
                             className="rounded border px-3 py-1.5 text-sm"
                             onClick={() => onApprovalRespond(chatTurnId, part.approval!.approvalId, false)}
                         >
-                            {inlineCopy({ de: 'Ablehnen', en: 'Deny' }, locale)}
+                            {t('chat.deny')}
                         </button>
                     </div>
                 );
@@ -403,7 +400,7 @@ function PromptUserForInputForm({
     rawInput: unknown;
     onSubmit: (answers: { status: 'answered'; answers: ReturnType<typeof toAnswerPayload>[] }) => void;
 }) {
-    const locale = useLocale();
+    const { t } = useT('common');
     const { prompt, slots } = useMemo(() => slotsFromToolInput(rawInput), [rawInput]);
     const [drafts, setDrafts] = useState<Record<string, SlotDraft>>(() =>
         Object.fromEntries(slots.map((slot) => [slot.inputId, emptyDraft(slot)])),
@@ -442,7 +439,7 @@ function PromptUserForInputForm({
                 disabled={!canSubmit}
                 className="justify-self-start rounded bg-primary px-3 py-1.5 text-primary-foreground disabled:opacity-50"
             >
-                {inlineCopy({ de: 'Absenden', en: 'Submit' }, locale)}
+                {t('submit')}
             </button>
         </form>
     );

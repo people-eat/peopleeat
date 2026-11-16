@@ -3,7 +3,6 @@ import { createRequest, useClient } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
 import { t } from '../../../i18n/t';
-import { inlineCopy } from '../../../shared';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { AdminTestimonialListCard } from '../../components/AdminTestimonialListCard';
 import type { AdminTestimonialListCardTestimonial } from '../../components/AdminTestimonialListCard';
@@ -179,13 +178,10 @@ export function AdminTestimonialsPage({ data }: { data: GqlCAdminTestimonialsPag
                         </Button>
                     ) : null}
                     <p className="text-sm text-muted-foreground tabular-nums sm:ml-auto">
-                        {inlineCopy(
-                            {
-                                de: `${filtered.length} von ${rows.length} Bewertungen`,
-                                en: `${filtered.length} of ${rows.length} testimonials`,
-                            },
-                            locale,
-                        )}
+                        {t(locale, 'admin', 'copy.testimonialsVisibleOfTotal', {
+                            visible: filtered.length,
+                            total: rows.length,
+                        })}
                     </p>
                 </div>
 

@@ -1,6 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { inlineCopy } from '../../shared';
-
 import { bookingRequestOfferStatusHue, bookingRequestOfferStatusLabel } from '../../shared/bookingRequestOfferStatus';
 import { bookingRequestStatusHue, bookingRequestStatusLabel } from '../../shared/bookingRequestStatus';
 import type { StatusTone } from '../components/base/status';
@@ -9,6 +7,7 @@ import { StatusBadge } from '../components/base/status-badge';
 import { StatusIcon } from '../components/base/status-icon';
 import { BookingStatusPill } from '../components/BookingStatusPill';
 import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 import { GallerySection, WarmPage } from './gallery';
 
@@ -63,25 +62,16 @@ function Swatch({ name, className }: { name: string; className: string }) {
 
 function TokensBoard() {
     const locale = useLocale();
+    const { t } = useT('common');
 
     return (
         <WarmPage className="mx-auto flex max-w-5xl flex-col gap-12">
             <header className="grid max-w-2xl gap-2">
-                <h1 className="font-serif text-3xl font-semibold tracking-tight">
-                    {inlineCopy({ de: 'Design-Tokens', en: 'Design tokens' }, locale)}
-                </h1>
-                <p className="text-muted-foreground">
-                    {inlineCopy(
-                        {
-                            de: 'Flächen, Typografie-Skala, Status- und Buchungsfarben. Für die Produktstimmung siehe Foundations/Mood Board.',
-                            en: 'Surfaces, type scale, status and booking colors. For product mood see Foundations/Mood Board.',
-                        },
-                        locale,
-                    )}
-                </p>
+                <h1 className="font-serif text-3xl font-semibold tracking-tight">{t('storybook.tokens.title')}</h1>
+                <p className="text-muted-foreground">{t('storybook.tokens.intro')}</p>
             </header>
 
-            <GallerySection title={inlineCopy({ de: 'Flächen', en: 'Surfaces' }, locale)}>
+            <GallerySection title={t('storybook.tokens.surfaces')}>
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                     {surfaceTokens.map((token) => (
                         <Swatch key={token.name} name={token.name} className={token.className} />
@@ -89,13 +79,7 @@ function TokensBoard() {
                 </div>
             </GallerySection>
 
-            <GallerySection
-                title={inlineCopy({ de: 'Typografie-Skala', en: 'Type scale' }, locale)}
-                caption={inlineCopy(
-                    { de: 'font-serif für Überschriften, font-sans für UI.', en: 'font-serif for headings, font-sans for UI.' },
-                    locale,
-                )}
-            >
+            <GallerySection title={t('storybook.tokens.typeScale')} caption={t('storybook.tokens.typeScaleCaption')}>
                 <div className="grid gap-3 rounded-xl border border-border bg-secondary p-6 shadow-xs">
                     <p className="font-serif text-4xl font-semibold">text-4xl serif</p>
                     <p className="font-serif text-3xl font-semibold">text-3xl serif</p>
@@ -108,12 +92,10 @@ function TokensBoard() {
                 </div>
             </GallerySection>
 
-            <GallerySection title={inlineCopy({ de: 'Status-Töne', en: 'Status tones' }, locale)}>
+            <GallerySection title={t('storybook.tokens.statusTones')}>
                 <div className="grid gap-6 sm:grid-cols-2">
                     <div className="grid gap-3">
-                        <p className="text-sm font-medium text-muted-foreground">
-                            {inlineCopy({ de: 'Icons und Badges', en: 'Icons and badges' }, locale)}
-                        </p>
+                        <p className="text-sm font-medium text-muted-foreground">{t('storybook.tokens.iconsAndBadges')}</p>
                         <div className="flex flex-wrap items-center gap-3">
                             {tones.map((tone) => (
                                 <div key={tone} className="flex items-center gap-2">
@@ -134,9 +116,7 @@ function TokensBoard() {
                         </div>
                     </div>
                     <div className="grid gap-3">
-                        <p className="text-sm font-medium text-muted-foreground">
-                            {inlineCopy({ de: 'Token-Klassen (Referenz)', en: 'Token classes (reference)' }, locale)}
-                        </p>
+                        <p className="text-sm font-medium text-muted-foreground">{t('storybook.tokens.tokenClasses')}</p>
                         <ul className="grid gap-1 font-mono text-xs text-muted-foreground">
                             {tones.map((tone) => (
                                 <li key={`class-${tone}`}>
@@ -149,7 +129,7 @@ function TokensBoard() {
                 </div>
             </GallerySection>
 
-            <GallerySection title={inlineCopy({ de: 'Buchungspillen', en: 'Booking pills' }, locale)}>
+            <GallerySection title={t('storybook.tokens.bookingPills')}>
                 <div className="grid gap-4">
                     <div className="flex flex-wrap gap-2">
                         {requestStatuses.map((status) => (
@@ -168,23 +148,14 @@ function TokensBoard() {
                 </div>
             </GallerySection>
 
-            <GallerySection
-                title={inlineCopy({ de: 'Fokus und Accent', en: 'Focus and accent' }, locale)}
-                caption={inlineCopy(
-                    {
-                        de: 'Accent ist Markenorange und Fokusring, nicht Hover-Wash und nicht Statusgelb.',
-                        en: 'Accent is brand orange and the focus ring, not hover washes and not status yellow.',
-                    },
-                    locale,
-                )}
-            >
+            <GallerySection title={t('storybook.tokens.focusAndAccent')} caption={t('storybook.tokens.focusCaption')}>
                 <div className="flex flex-wrap items-center gap-4">
                     <button
                         type="button"
                         className="rounded-md border border-input bg-secondary px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                         autoFocus
                     >
-                        {inlineCopy({ de: 'Fokus sichtbar', en: 'Focus visible' }, locale)}
+                        {t('storybook.tokens.focusVisible')}
                     </button>
                     <span className="rounded-md bg-accent/15 px-3 py-2 text-sm">bg-accent/15</span>
                     <span className="rounded-md bg-muted px-3 py-2 text-sm">bg-muted (hover)</span>

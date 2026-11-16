@@ -1,7 +1,10 @@
 import { Link } from '@tanstack/react-router';
 import { MapPinIcon } from 'lucide-react';
+import { use } from 'react';
 
-import { formatCurrency, inlineCopy } from '../../shared';
+import { i18nResourcesLoadPromise } from '../../i18n/catalogCache';
+import { t } from '../../i18n/t';
+import { formatCurrency } from '../../shared';
 import type { BookingRequestOfferStatus } from '../../shared/bookingRequestOfferStatus';
 import { bookingRequestOfferStatusHue, bookingRequestOfferStatusLabel } from '../../shared/bookingRequestOfferStatus';
 import { useLocale } from '../hooks/useLocale';
@@ -60,20 +63,15 @@ export function CustomerBookingRequestOfferCard({
     className?: string;
 }) {
     const locale = useLocale();
+    use(i18nResourcesLoadPromise(locale, ['profileCustomer']));
     const timeZone = useTimeZone();
     const unreadCount = offer.userUnreadNotificationCount;
     const missingReviewCount = offer.testimonialMissing === true ? 1 : 0;
     const badgeCount = unreadCount > 0 ? unreadCount : missingReviewCount;
     const badgeLabel =
         unreadCount > 0
-            ? inlineCopy(
-                  {
-                      de: `${unreadCount} ungelesene Benachrichtigungen`,
-                      en: `${unreadCount} unread notifications`,
-                  },
-                  locale,
-              )
-            : inlineCopy({ de: '1 Bewertung ausstehend', en: '1 review outstanding' }, locale);
+            ? t(locale, 'profileCustomer', 'm.unreadNotifications', { unreadCount })
+            : t(locale, 'profileCustomer', 'bookingCard.reviewsOutstandingOne');
     const priceCents = offer.totalCentsCustomer ?? offer.totalWithoutDiscountsCentsCustomer;
     const hasMenu = offer.configuredMenu != null || offer.suggestedMenus.length > 0;
     const menuHint = offer.configuredMenu?.title
@@ -93,10 +91,10 @@ export function CustomerBookingRequestOfferCard({
     const search = callHint?.openCall ? { tab: 'call' as const } : reviewMissing ? { tab: 'testimonial' as const } : undefined;
     const city = offer.cook.city?.trim() ?? '';
     const ctaLabel = reviewIsPrimaryAction
-        ? inlineCopy({ de: 'Bewertung abgeben', en: 'Leave a review' }, locale)
+        ? t(locale, 'profileCustomer', 'attention.user.TESTIMONIAL_MISSING.action')
         : hasMenu
-          ? inlineCopy({ de: 'Menüvorschlag anzeigen', en: 'Show menu suggestion' }, locale)
-          : inlineCopy({ de: 'Angebot anzeigen', en: 'View offer' }, locale);
+          ? t(locale, 'profileCustomer', 'm.showMenuSuggestion')
+          : t(locale, 'profileCustomer', 'm.viewOffer');
 
     const cardClassName = cn(
         'relative flex h-full flex-col justify-between rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm',
@@ -137,7 +135,7 @@ export function CustomerBookingRequestOfferCard({
 
                 {menuHint ? <p className="line-clamp-2 text-sm text-foreground">{menuHint}</p> : null}
                 <p className="flex items-center justify-between gap-3 text-sm font-semibold">
-                    <span>{inlineCopy({ de: 'Gesamtpreis', en: 'Total' }, locale)}</span>
+                    <span>{t(locale, 'profileCustomer', 'm.total')}</span>
                     <span className="shrink-0">{formatCurrency(priceCents, { locale })}</span>
                 </p>
             </div>

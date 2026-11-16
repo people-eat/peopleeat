@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
 import { t } from '../../../i18n/t';
-import { formatDate, inlineCopy } from '../../../shared';
+import { formatDate } from '../../../shared';
 import { featureToggleKeys } from '../../../shared/featureToggle';
 import type { FeatureToggleKey } from '../../../shared/featureToggle';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/base/select';
@@ -109,13 +109,7 @@ export function AdminUserFeatureTogglesSection({
                                 <p className="text-xs text-muted-foreground">
                                     <span className="font-mono">{featureToggleKey}</span>
                                     {' · '}
-                                    {inlineCopy(
-                                        {
-                                            de: `Global: ${globalEnabled ? 'an' : 'aus'}`,
-                                            en: `Global: ${globalEnabled ? 'on' : 'off'}`,
-                                        },
-                                        locale,
-                                    )}
+                                    {t(locale, 'admin', globalEnabled ? 'copy.globalOn' : 'copy.globalOff')}
                                     {override?.updatedAt ? ` · ${formatDate(new Date(override.updatedAt), { locale, timeZone })}` : null}
                                 </p>
                             </div>

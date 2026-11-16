@@ -1,5 +1,4 @@
 import { t } from '../../i18n/t';
-import { inlineCopy } from '../../shared';
 import { useLocale } from '../hooks/useLocale';
 import { ADMIN_LIST_PAGE_SIZE_OPTIONS } from '../pages/admin/adminListPaginationSearch';
 import type { AdminListPageSize } from '../pages/admin/adminListPaginationSearch';
@@ -59,15 +58,7 @@ export function AdminListPaginationBar({
                     <span className="@xl:hidden">
                         {from}–{to}/{total}
                     </span>
-                    <span className="hidden @xl:inline">
-                        {inlineCopy(
-                            {
-                                de: `${from}–${to} von ${total}`,
-                                en: `${from}–${to} of ${total}`,
-                            },
-                            locale,
-                        )}
-                    </span>
+                    <span className="hidden @xl:inline">{t(locale, 'admin', 'list.rangeOfTotal', { from, to, total })}</span>
                 </p>
             </div>
 
@@ -94,9 +85,7 @@ export function AdminListPaginationBar({
                             <span className="@xl:hidden">
                                 {page}/{pageCount}
                             </span>
-                            <span className="hidden @xl:inline">
-                                {inlineCopy({ de: `Seite ${page} von ${pageCount}`, en: `Page ${page} of ${pageCount}` }, locale)}
-                            </span>
+                            <span className="hidden @xl:inline">{t(locale, 'admin', 'list.pageOf', { page, pageCount })}</span>
                         </span>
                     </PaginationItem>
                     <PaginationItem>

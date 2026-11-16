@@ -2,10 +2,9 @@ import { Link } from '@tanstack/react-router';
 import { format, parseISO } from 'date-fns';
 import { de as deLocale, enUS } from 'date-fns/locale';
 import { HeadsetIcon } from 'lucide-react';
-import { inlineCopy } from '../../shared';
-
 import { formatInboxListTimestamp } from '../chat/formatInboxListTimestamp';
 import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { useTimeZone } from '../hooks/useTimeZone';
 import { adminOverviewLinkCardClassName } from '../pages/admin/adminOverviewLinkCard';
 import { cn } from '../utils/cn';
@@ -56,19 +55,17 @@ export function SupportRequestSummaryCard({
     params: { supportRequestId: string };
 }) {
     const locale = useLocale();
+    const { t } = useT('common');
     const timeZone = useTimeZone();
     const dateLocale = locale === 'de' ? deLocale : enUS;
-    const statusLabel =
-        request.status === 'RESOLVED'
-            ? inlineCopy({ de: 'Erledigt', en: 'Resolved' }, locale)
-            : inlineCopy({ de: 'Offen', en: 'Open' }, locale);
+    const statusLabel = request.status === 'RESOLVED' ? t('supportRequest.resolved') : t('supportRequest.open');
     const unread = unreadCount ?? request.userUnreadNotificationCount ?? request.adminUnreadNotificationCount ?? 0;
     const hasUnread = unread > 0;
     const customerLabel = customerName?.trim() ?? '';
     const title = customerLabel.length > 0 ? customerLabel : request.subject;
     const contextLabel = request.bookingRequest
         ? `${request.bookingRequest.occasion} · ${format(parseISO(request.bookingRequest.dateTime), 'PP', { locale: dateLocale })}`
-        : inlineCopy({ de: 'Allgemeine Anfrage', en: 'General request' }, locale);
+        : t('supportRequest.generalRequest');
     const preview = customerLabel.length > 0 ? request.subject : contextLabel;
     const showContextUnderTitle = customerLabel.length > 0;
     const showConciergeAvatar = customerLabel.length === 0;
@@ -79,16 +76,7 @@ export function SupportRequestSummaryCard({
             params={params}
             className={adminOverviewLinkCardClassName('relative flex h-full items-center gap-3 p-3 text-foreground')}
         >
-            <NotificationBadge
-                count={unread}
-                label={inlineCopy(
-                    {
-                        de: `${unread} ungelesene Nachrichten`,
-                        en: `${unread} unread messages`,
-                    },
-                    locale,
-                )}
-            />
+            <NotificationBadge count={unread} label={t('supportRequest.unread', { count: unread })} />
             <span className="relative shrink-0">
                 <Avatar className="size-12">
                     {showConciergeAvatar ? (

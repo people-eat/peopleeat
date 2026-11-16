@@ -6,7 +6,7 @@ import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
 import { t } from '../../../i18n/t';
-import { formatDateTime, inlineCopy, userDisplayName } from '../../../shared';
+import { formatDateTime, userDisplayName } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import { Button } from '../../components/base/button';
@@ -106,16 +106,7 @@ export function AdminOfferChatReviewPage({
 
     const pendingHint =
         pendingCount > 0
-            ? inlineCopy(
-                  {
-                      de:
-                          pendingCount === 1
-                              ? '1 neue Nachricht seit der letzten Prüfung.'
-                              : `${pendingCount} neue Nachrichten seit der letzten Prüfung.`,
-                      en: pendingCount === 1 ? '1 new message since last review.' : `${pendingCount} new messages since last review.`,
-                  },
-                  locale,
-              )
+            ? t(locale, 'admin', 'copy.pendingReviewMessageCount', { count: pendingCount })
             : t(locale, 'admin', 'copy.noPendingMessagesYouCanStillAcknowledgeAndContinue');
 
     const respondInOfferLabel = t(locale, 'admin', 'copy.respondInOffer');

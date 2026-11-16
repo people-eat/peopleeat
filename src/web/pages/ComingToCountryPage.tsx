@@ -12,7 +12,7 @@ import { SectionQuestionsAndAnswers } from '../sections/SectionQuestionsAndAnswe
 
 export function ComingToCountryPage({ data, market }: { data: GqlCExpansionCountryPageQuery; market: ExpansionMarket }) {
     const locale = useLocale();
-    const faqs = expansionMarketFaqEntries(market.comingToFaqs, locale);
+    const faqs = expansionMarketFaqEntries(market, 'comingTo', locale);
 
     return (
         <>

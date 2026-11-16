@@ -15,7 +15,7 @@ import { SectionReadyToBecomeAChef } from '../sections/SectionReadyToBecomeAChef
 export function FoundingChefCountryPage({ data, market }: { data: GqlCExpansionCountryPageQuery; market: ExpansionMarket }) {
     const locale = useLocale();
     const isCook = Boolean(data.currentSession.user?.cook);
-    const faqs = expansionMarketFaqEntries(market.foundingChefFaqs, locale);
+    const faqs = expansionMarketFaqEntries(market, 'foundingChef', locale);
 
     return (
         <>

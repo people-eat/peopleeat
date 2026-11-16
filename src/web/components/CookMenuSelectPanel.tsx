@@ -1,12 +1,9 @@
 import { ChevronDownIcon, PencilIcon, PlusIcon, RefreshCwIcon, SparklesIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { inlineCopy } from '../../shared';
-
 import { cookMenuCoursesAreComplete } from '../../shared/cookMenuCompleteness';
 import { useFeatureToggleActive } from '../hooks/useFeatureToggleActive';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
-import type { Locale } from '../utils/locale';
 import { Button } from './base/button';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from './base/card';
 import { Popover, PopoverContent, PopoverTrigger } from './base/popover';
@@ -62,14 +59,9 @@ export function cookMenuSelectPanelMenusSortByEvaluation<T extends { menuId: str
     return [...menus].sort((a, b) => evaluationRank(byId.get(a.menuId)) - evaluationRank(byId.get(b.menuId)));
 }
 
-function CookMenuSelectPanelEvaluationBadge({ evaluation, locale }: { evaluation: CookMenuSelectPanelMenuEvaluation; locale: Locale }) {
-    const label = inlineCopy(
-        {
-            de: evaluation.isSuitable ? 'Passend' : 'Weniger passend',
-            en: evaluation.isSuitable ? 'Good fit' : 'Weak fit',
-        },
-        locale,
-    );
+function CookMenuSelectPanelEvaluationBadge({ evaluation }: { evaluation: CookMenuSelectPanelMenuEvaluation }) {
+    const { t } = useT('profileCook');
+    const label = evaluation.isSuitable ? t('menuSelect.goodFit') : t('menuSelect.weakerFit');
     const reason = evaluation.evaluationSummary.trim();
     const tone = evaluation.isSuitable ? 'success' : 'warning';
     const interactiveBadgeClassName = cn(
@@ -93,13 +85,7 @@ function CookMenuSelectPanelEvaluationBadge({ evaluation, locale }: { evaluation
                 <button
                     type="button"
                     className="group cursor-pointer rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    aria-label={inlineCopy(
-                        {
-                            de: `${label}: Bewertung anzeigen`,
-                            en: `${label}: show evaluation`,
-                        },
-                        locale,
-                    )}
+                    aria-label={t('menuSelect.showEvaluation', { label })}
                 >
                     <StatusBadge tone={tone} className={interactiveBadgeClassName}>
                         {label}
@@ -121,7 +107,6 @@ function CookMenuSelectPanelMenuCard({
     onEditMenu,
     editMenuDisabled,
     evaluation,
-    locale,
 }: {
     menu: CookMenuSelectPanelMenu;
     checked: boolean;
@@ -130,13 +115,9 @@ function CookMenuSelectPanelMenuCard({
     onEditMenu?: (menuId: string) => void;
     editMenuDisabled?: boolean;
     evaluation?: CookMenuSelectPanelMenuEvaluation;
-    locale: Locale;
 }) {
-    const courseCount = menu.courses.length;
-    const courseLabel =
-        courseCount === 1
-            ? inlineCopy({ de: '1 Gang', en: '1 course' }, locale)
-            : inlineCopy({ de: `${courseCount} Gänge`, en: `${courseCount} courses` }, locale);
+    const { t } = useT('profileCook');
+    const courseLabel = t('menus.coursesCount', { count: menu.courses.length });
     const canEdit = onEditMenu != null;
 
     return (
@@ -160,7 +141,7 @@ function CookMenuSelectPanelMenuCard({
                                 <span className="text-xs text-muted-foreground">{courseLabel}</span>
                                 {selectable ? null : (
                                     <StatusBadge tone="warning" className="font-normal">
-                                        {inlineCopy({ de: 'Unvollständig', en: 'Incomplete' }, locale)}
+                                        {t('menuCourses.incomplete')}
                                     </StatusBadge>
                                 )}
                             </div>
@@ -169,14 +150,12 @@ function CookMenuSelectPanelMenuCard({
                 </CardHeader>
                 <CardFooter className="flex flex-wrap items-center gap-2 px-4">
                     <div className="mr-auto min-w-0">
-                        {evaluation != null ? <CookMenuSelectPanelEvaluationBadge evaluation={evaluation} locale={locale} /> : null}
+                        {evaluation != null ? <CookMenuSelectPanelEvaluationBadge evaluation={evaluation} /> : null}
                     </div>
                     {canEdit ? (
                         <Button type="button" size="sm" variant="ghost" disabled={editMenuDisabled} onClick={() => onEditMenu(menu.menuId)}>
                             <PencilIcon className="size-4" />
-                            {selectable
-                                ? inlineCopy({ de: 'Bearbeiten', en: 'Edit' }, locale)
-                                : inlineCopy({ de: 'Fertigstellen', en: 'Finish' }, locale)}
+                            {selectable ? t('actions.edit') : t('menuSelect.finish')}
                         </Button>
                     ) : null}
                     {selectable ? (
@@ -187,9 +166,7 @@ function CookMenuSelectPanelMenuCard({
                             aria-pressed={checked}
                             onClick={() => onToggle(menu.menuId)}
                         >
-                            {checked
-                                ? inlineCopy({ de: 'Ausgewählt', en: 'Selected' }, locale)
-                                : inlineCopy({ de: 'Auswählen', en: 'Select' }, locale)}
+                            {checked ? t('menuCourses.selected') : t('menuCourses.select')}
                         </Button>
                     ) : null}
                 </CardFooter>
@@ -258,7 +235,7 @@ export function CookMenuSelectPanel({
     refreshEvaluationDisabled?: boolean;
     className?: string;
 }) {
-    const locale = useLocale();
+    const { t } = useT('profileCook');
     const aiMenuCreateEnabled = useFeatureToggleActive('AI_MENU_CREATE');
     const [createOpen, setCreateOpen] = useState(false);
     const [scrollToMenuId, setScrollToMenuId] = useState<string | null>(null);
@@ -266,7 +243,7 @@ export function CookMenuSelectPanel({
     const sortedMenus = cookMenuSelectPanelMenusSortByEvaluation(menus, menuEvaluations);
     const selectableMenus = sortedMenus.filter((menu) => cookMenuSelectPanelMenuIsComplete(menu.courses));
     const incompleteMenus = sortedMenus.filter((menu) => !cookMenuSelectPanelMenuIsComplete(menu.courses));
-    // Expand when returnTo draft includes an incomplete menu (new menu / Fertigstellen).
+    // Expand when returnTo draft includes an incomplete menu (new menu / Finish).
     const [incompleteExpanded, setIncompleteExpanded] = useState(() =>
         incompleteMenus.some((menu) => selectedMenuIds.includes(menu.menuId)),
     );
@@ -294,13 +271,7 @@ export function CookMenuSelectPanel({
                                 onClick={onRefreshEvaluation}
                             >
                                 <RefreshCwIcon className={cn('size-4', menuEvaluationLoading && 'animate-spin')} />
-                                {inlineCopy(
-                                    {
-                                        de: menuEvaluationLoading ? 'Bewertung läuft…' : 'Empfehlungen aktualisieren',
-                                        en: menuEvaluationLoading ? 'Evaluating…' : 'Refresh recommendations',
-                                    },
-                                    locale,
-                                )}
+                                {menuEvaluationLoading ? t('menuSelect.evaluating') : t('menuSelect.refresh')}
                             </Button>
                         ) : null}
                         {onCreateMenu != null ? (
@@ -318,40 +289,20 @@ export function CookMenuSelectPanel({
                                 }}
                             >
                                 <PlusIcon className="size-4" />
-                                {inlineCopy(
-                                    {
-                                        de: createMenuDisabled ? 'Wird angelegt…' : 'Neues Menü',
-                                        en: createMenuDisabled ? 'Creating…' : 'New menu',
-                                    },
-                                    locale,
-                                )}
+                                {createMenuDisabled ? t('menuCreate.creating') : t('actions.newMenu')}
                             </Button>
                         ) : null}
                     </div>
                 ) : null}
 
-                {showEvaluationUi && menuEvaluationLoading ? (
-                    <StatusAlert tone="info">
-                        {inlineCopy(
-                            {
-                                de: 'Wir bewerten deine Menüs für diese Anfrage und bereiten eine Empfehlung vor.',
-                                en: 'We are evaluating your menus for this request and preparing a recommendation.',
-                            },
-                            locale,
-                        )}
-                    </StatusAlert>
-                ) : null}
+                {showEvaluationUi && menuEvaluationLoading ? <StatusAlert tone="info">{t('menuSelect.evaluatingBody')}</StatusAlert> : null}
 
                 {showEvaluationUi && !menuEvaluationLoading && evaluationSummary != null && evaluationSummary.trim().length > 0 ? (
                     <StatusAlert tone="info">{evaluationSummary}</StatusAlert>
                 ) : null}
 
                 {menuEvaluationLoading ? (
-                    <ul
-                        className={menuGridClassName}
-                        aria-busy="true"
-                        aria-label={inlineCopy({ de: 'Empfehlung lädt', en: 'Recommendation loading' }, locale)}
-                    >
+                    <ul className={menuGridClassName} aria-busy="true" aria-label={t('menuSelect.recommendationLoading')}>
                         <CookMenuSelectPanelSkeletonCard />
                     </ul>
                 ) : null}
@@ -370,26 +321,16 @@ export function CookMenuSelectPanel({
                                     <div className="flex flex-wrap items-center gap-2">
                                         <CardTitle className="line-clamp-1 font-medium leading-snug">{generatedMenu.title}</CardTitle>
                                         <StatusBadge tone="success" className="font-normal">
-                                            {inlineCopy({ de: 'Plattform-Empfehlung', en: 'Platform recommendation' }, locale)}
+                                            {t('menuSelect.platformRecommendation')}
                                         </StatusBadge>
                                     </div>
                                     {generatedMenu.description.trim().length > 0 ? (
                                         <CardDescription className="line-clamp-3">{generatedMenu.description}</CardDescription>
                                     ) : null}
                                     <span className="text-xs text-muted-foreground">
-                                        {inlineCopy(
-                                            {
-                                                de:
-                                                    generatedMenu.courseCount === 1
-                                                        ? '1 Gang (Vorschlag)'
-                                                        : `${generatedMenu.courseCount} Gänge (Vorschlag)`,
-                                                en:
-                                                    generatedMenu.courseCount === 1
-                                                        ? '1 course (suggestion)'
-                                                        : `${generatedMenu.courseCount} courses (suggestion)`,
-                                            },
-                                            locale,
-                                        )}
+                                        {generatedMenu.courseCount === 1
+                                            ? t('menuSelect.courseSuggestionOne')
+                                            : t('menuSelect.courseSuggestionOther', { count: generatedMenu.courseCount })}
                                     </span>
                                 </div>
                             </div>
@@ -397,28 +338,14 @@ export function CookMenuSelectPanel({
                         <CardFooter className="justify-end px-4">
                             <Button type="button" size="sm" disabled={applyGeneratedMenuDisabled} onClick={onApplyGeneratedMenu}>
                                 <SparklesIcon className="size-4" />
-                                {inlineCopy(
-                                    {
-                                        de: applyGeneratedMenuDisabled ? 'Wird angelegt…' : 'Empfehlung übernehmen',
-                                        en: applyGeneratedMenuDisabled ? 'Creating…' : 'Use recommendation',
-                                    },
-                                    locale,
-                                )}
+                                {applyGeneratedMenuDisabled ? t('menuCreate.creating') : t('menuSelect.useRecommendation')}
                             </Button>
                         </CardFooter>
                     </Card>
                 ) : null}
 
                 {menus.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                        {inlineCopy(
-                            {
-                                de: 'Noch keine Menüs. Erstelle eines, um fortzufahren.',
-                                en: 'No menus yet. Create one to continue.',
-                            },
-                            locale,
-                        )}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{t('menuSelect.emptyContinue')}</p>
                 ) : (
                     <>
                         {selectableMenus.length > 0 ? (
@@ -433,20 +360,11 @@ export function CookMenuSelectPanel({
                                         onEditMenu={onEditMenu}
                                         editMenuDisabled={editMenuDisabled}
                                         evaluation={menuEvaluationLoading ? undefined : evaluationById.get(menu.menuId)}
-                                        locale={locale}
                                     />
                                 ))}
                             </ul>
                         ) : (
-                            <p className="text-sm text-muted-foreground">
-                                {inlineCopy(
-                                    {
-                                        de: 'Keine vollständigen Menüs zur Auswahl. Vervollständige eines unten.',
-                                        en: 'No complete menus to select. Finish one below.',
-                                    },
-                                    locale,
-                                )}
-                            </p>
+                            <p className="text-sm text-muted-foreground">{t('menuSelect.noneComplete')}</p>
                         )}
 
                         {incompleteMenus.length > 0 ? (
@@ -459,15 +377,7 @@ export function CookMenuSelectPanel({
                                     aria-expanded={incompleteExpanded}
                                     onClick={() => setIncompleteExpanded((current) => !current)}
                                 >
-                                    <span>
-                                        {inlineCopy(
-                                            {
-                                                de: `Unvollständige Menüs (${incompleteMenus.length})`,
-                                                en: `Incomplete menus (${incompleteMenus.length})`,
-                                            },
-                                            locale,
-                                        )}
-                                    </span>
+                                    <span>{t('menuSelect.incompleteCount', { count: incompleteMenus.length })}</span>
                                     <ChevronDownIcon
                                         className={cn('size-4 shrink-0 transition-transform', !incompleteExpanded && '-rotate-90')}
                                         aria-hidden
@@ -475,15 +385,7 @@ export function CookMenuSelectPanel({
                                 </Button>
                                 {incompleteExpanded ? (
                                     <div className="grid gap-3">
-                                        <StatusAlert tone="warning">
-                                            {inlineCopy(
-                                                {
-                                                    de: 'Diese Menüs können noch nicht ausgewählt werden. Jeder Gang braucht einen Titel und mindestens eine Speise. Tippe auf Fertigstellen, um sie zu vervollständigen.',
-                                                    en: 'These menus cannot be selected yet. Every course needs a title and at least one dish. Tap Finish to complete them.',
-                                                },
-                                                locale,
-                                            )}
-                                        </StatusAlert>
+                                        <StatusAlert tone="warning">{t('menuSelect.incompleteHint')}</StatusAlert>
                                         <ul className={menuGridClassName}>
                                             {incompleteMenus.map((menu) => (
                                                 <CookMenuSelectPanelMenuCard
@@ -495,7 +397,6 @@ export function CookMenuSelectPanel({
                                                     onEditMenu={onEditMenu}
                                                     editMenuDisabled={editMenuDisabled}
                                                     evaluation={menuEvaluationLoading ? undefined : evaluationById.get(menu.menuId)}
-                                                    locale={locale}
                                                 />
                                             ))}
                                         </ul>

@@ -1,8 +1,7 @@
 import { MicIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { inlineCopy } from '../../../shared';
 import type { GqlCFileUpload, GqlCPublicUser } from '../../graphql/generated';
-import { useLocale } from '../../hooks/useLocale';
+import { useT } from '../../hooks/useT';
 import { cn } from '../../utils/cn';
 import { AudioWaveformPlayer } from '../AudioWaveformPlayer';
 import { Avatar, AvatarFallback, AvatarImage } from '../base/avatar';
@@ -26,7 +25,7 @@ export function ChatVoiceMessagePlayer({
     /** Timestamp / delivery ticks on the same row as the duration (WhatsApp layout). */
     meta?: ReactNode;
 }) {
-    const locale = useLocale();
+    const { t } = useT('common');
 
     return (
         <AudioWaveformPlayer
@@ -36,10 +35,10 @@ export function ChatVoiceMessagePlayer({
             className="max-w-xs"
             meta={meta}
             labels={{
-                group: inlineCopy({ de: 'Sprachnachricht', en: 'Voice message' }, locale),
-                play: inlineCopy({ de: 'Sprachnachricht abspielen', en: 'Play voice message' }, locale),
-                pause: inlineCopy({ de: 'Sprachnachricht pausieren', en: 'Pause voice message' }, locale),
-                position: inlineCopy({ de: 'Wiedergabeposition', en: 'Playback position' }, locale),
+                group: t('chat.voice.group'),
+                play: t('chat.voice.play'),
+                pause: t('chat.voice.pause'),
+                position: t('chat.voice.position'),
             }}
             leading={
                 <div className="relative size-12">

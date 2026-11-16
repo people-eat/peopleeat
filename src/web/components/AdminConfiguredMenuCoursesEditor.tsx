@@ -1,7 +1,7 @@
 import { ArrowDownIcon, ArrowUpIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 
 import { t } from '../../i18n/t';
-import type { InlineCopy } from '../../shared';
+import type { Locale } from '../../shared';
 import { idCreate } from '../../shared/idCreate';
 import { useLocale } from '../hooks/useLocale';
 import { Button } from './base/button';
@@ -48,23 +48,23 @@ function isValidOptionalUrl(value: string): boolean {
     }
 }
 
-export function adminConfiguredMenuDraftValidate(courses: AdminConfiguredMenuCourseDraft[]): InlineCopy | null {
+export function adminConfiguredMenuDraftValidate(courses: AdminConfiguredMenuCourseDraft[], locale: Locale): string | null {
     if (courses.length < 1) {
-        return { de: 'Mindestens ein Gang ist erforderlich.', en: 'At least one course is required.' };
+        return t(locale, 'admin', 'copy.atLeastOneCourseIsRequired');
     }
     for (const course of courses) {
         if (course.title.trim() === '') {
-            return { de: 'Jeder Gang braucht einen Namen.', en: 'Every course needs a name.' };
+            return t(locale, 'admin', 'copy.pleaseEnterACourseName');
         }
         if (course.meals.length < 1) {
-            return { de: 'Jeder Gang braucht mindestens ein Gericht.', en: 'Every course needs at least one meal.' };
+            return t(locale, 'admin', 'copy.atLeastOneMealIsRequired');
         }
         for (const meal of course.meals) {
             if (meal.mealTitle.trim() === '') {
-                return { de: 'Jedes Gericht braucht einen Titel.', en: 'Every meal needs a title.' };
+                return t(locale, 'admin', 'copy.pleaseEnterAMealTitle');
             }
             if (!isValidOptionalUrl(meal.mealImageUrl)) {
-                return { de: 'Bitte eine gültige Bild-URL eingeben.', en: 'Please enter a valid image URL.' };
+                return t(locale, 'admin', 'copy.pleaseEnterAValidImageUrl');
             }
         }
     }

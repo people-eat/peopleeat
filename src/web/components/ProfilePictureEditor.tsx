@@ -1,8 +1,9 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, use, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { toast } from 'sonner';
-import { inlineCopy } from '../../shared';
 
+import { i18nResourcesLoadPromise } from '../../i18n/catalogCache';
+import { t } from '../../i18n/t';
 import { uploadErrorMessage, uploadFile } from '../chat/fileUpload';
 import { useLocale } from '../hooks/useLocale';
 import { IMAGE_CROP_ACCEPT } from '../utils/imageCropCompress';
@@ -39,6 +40,7 @@ export function ProfilePictureEditor({
     children?: ReactNode;
 }) {
     const locale = useLocale();
+    use(i18nResourcesLoadPromise(locale, ['profile']));
     const inputRef = useRef<HTMLInputElement>(null);
     const [error, setError] = useState<string | null>(null);
     const [busy, setBusy] = useState(false);
@@ -58,15 +60,7 @@ export function ProfilePictureEditor({
         if (file == null) return;
         setError(null);
         if (!file.type.startsWith('image/')) {
-            setError(
-                inlineCopy(
-                    {
-                        de: 'Bitte ein Bild (JPEG, PNG, WebP oder GIF) wählen.',
-                        en: 'Please choose an image (JPEG, PNG, WebP, or GIF).',
-                    },
-                    locale,
-                ),
-            );
+            setError(t(locale, 'profile', 'account.picture.invalidType'));
             if (inputRef.current) inputRef.current.value = '';
             return;
         }
@@ -83,7 +77,7 @@ export function ProfilePictureEditor({
         try {
             const uploaded = await uploadFile(file);
             await onLink(uploaded.fileUploadId);
-            toast.success(inlineCopy({ de: 'Profilbild gespeichert.', en: 'Profile picture saved.' }, locale));
+            toast.success(t(locale, 'profile', 'account.picture.saved'));
         } catch (uploadError) {
             setError(uploadErrorMessage(uploadError, locale));
             throw uploadError instanceof Error ? uploadError : new Error('Profile picture upload failed');
@@ -105,7 +99,7 @@ export function ProfilePictureEditor({
         setBusy(true);
         try {
             await onClear();
-            toast.success(inlineCopy({ de: 'Profilbild entfernt.', en: 'Profile picture removed.' }, locale));
+            toast.success(t(locale, 'profile', 'account.picture.removed'));
         } catch (clearError) {
             setError(uploadErrorMessage(clearError, locale));
         } finally {
@@ -139,17 +133,11 @@ export function ProfilePictureEditor({
                     />
                     <div className="flex flex-wrap gap-2">
                         <Button type="button" variant="outline" size="sm" disabled={actionBusy} onClick={() => inputRef.current?.click()}>
-                            {inlineCopy(
-                                {
-                                    de: busy ? 'Speichert…' : 'Bild auswählen',
-                                    en: busy ? 'Saving…' : 'Select picture',
-                                },
-                                locale,
-                            )}
+                            {busy ? t(locale, 'profile', 'actions.saving') : t(locale, 'profile', 'account.picture.select')}
                         </Button>
                         {profilePictureUrl != null ? (
                             <Button type="button" variant="outline" size="sm" disabled={actionBusy} onClick={() => void onClearClick()}>
-                                {inlineCopy({ de: 'Bild entfernen', en: 'Remove picture' }, locale)}
+                                {t(locale, 'profile', 'account.picture.remove')}
                             </Button>
                         ) : null}
                     </div>

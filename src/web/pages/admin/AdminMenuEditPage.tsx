@@ -6,7 +6,6 @@ import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
 import { t } from '../../../i18n/t';
-import { inlineCopy } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import { Button } from '../../components/base/button';
@@ -230,46 +229,26 @@ export function AdminMenuEditPage({ data, menuId, cookId }: { data: GqlCAdminMen
                         <div>
                             <h2 className="text-sm font-medium">{t(locale, 'admin', 'copy.courses')}</h2>
                             <p className="text-sm text-muted-foreground">
-                                {inlineCopy(
-                                    menu.bookingRequestOfferId != null
-                                        ? {
-                                              de: 'Jeder Gang braucht mindestens ein Gericht.',
-                                              en: 'Each course needs at least one meal.',
-                                          }
-                                        : {
-                                              de: 'Jeder Gang braucht mindestens ein Gericht zum Veröffentlichen.',
-                                              en: 'Each course needs at least one meal to publish.',
-                                          },
+                                {t(
                                     locale,
+                                    'admin',
+                                    menu.bookingRequestOfferId != null
+                                        ? 'copy.eachCourseNeedsAtLeastOneMeal'
+                                        : 'copy.eachCourseNeedsAtLeastOneMealToPublish',
                                 )}
                             </p>
                         </div>
                         {incompleteCourseCount > 0 ? (
                             <StatusAlert
                                 tone="warning"
-                                title={
-                                    incompleteCourseCount === 1
-                                        ? t(locale, 'admin', 'copy.n1CourseIsIncomplete')
-                                        : inlineCopy(
-                                              {
-                                                  de: `${incompleteCourseCount} Gänge sind unvollständig`,
-                                                  en: `${incompleteCourseCount} courses are incomplete`,
-                                              },
-                                              locale,
-                                          )
-                                }
+                                title={t(locale, 'admin', 'copy.incompleteCourseCount', { count: incompleteCourseCount })}
                             >
-                                {inlineCopy(
-                                    menu.bookingRequestOfferId != null
-                                        ? {
-                                              de: 'Unvollständige Gänge sind mit einem Warnhinweis markiert. Jeder Gang braucht mindestens ein Gericht.',
-                                              en: 'Incomplete courses are marked with a warning. Every course needs at least one meal.',
-                                          }
-                                        : {
-                                              de: 'Unvollständige Gänge sind mit einem Warnhinweis markiert. Zum Veröffentlichen braucht jeder Gang mindestens ein Gericht.',
-                                              en: 'Incomplete courses are marked with a warning. To publish, every course needs at least one meal.',
-                                          },
+                                {t(
                                     locale,
+                                    'admin',
+                                    menu.bookingRequestOfferId != null
+                                        ? 'copy.incompleteCoursesAreMarkedWithAWarningEveryCourseNeedsAtLeas'
+                                        : 'copy.incompleteCoursesAreMarkedWithAWarningToPublishEveryCourseNe',
                                 )}
                             </StatusAlert>
                         ) : null}

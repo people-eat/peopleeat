@@ -1,7 +1,6 @@
 import { SoupIcon } from 'lucide-react';
-import { inlineCopy } from '../../shared';
 
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { AppImage } from './AppImage';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './base/dialog';
 
@@ -20,7 +19,7 @@ export function MealDetailsDialog({
     imageUrl?: string | null;
     dialogTitle?: string;
 }) {
-    const locale = useLocale();
+    const { t } = useT('common');
     const headerTitle = dialogTitle?.trim() || title;
 
     return (
@@ -28,9 +27,7 @@ export function MealDetailsDialog({
             <DialogContent className="sm:max-w-3xl">
                 <DialogHeader>
                     <DialogTitle>{headerTitle}</DialogTitle>
-                    <DialogDescription className="sr-only">
-                        {inlineCopy({ de: 'Details zum Gericht', en: 'Meal details' }, locale)}
-                    </DialogDescription>
+                    <DialogDescription className="sr-only">{t('mealDetails.title')}</DialogDescription>
                 </DialogHeader>
                 <div className="flex flex-col justify-start gap-8 lg:flex-row">
                     {imageUrl ? (
@@ -40,7 +37,7 @@ export function MealDetailsDialog({
                     ) : (
                         <div className="flex aspect-square w-56 shrink-0 flex-col items-center justify-center gap-4 rounded-2xl bg-secondary p-8 text-muted-foreground lg:w-80">
                             <SoupIcon className="size-8" aria-hidden />
-                            <p>{inlineCopy({ de: 'Kein Bild', en: 'No image' }, locale)}</p>
+                            <p>{t('contentSections.missing.image')}</p>
                         </div>
                     )}
                     <div className="flex min-w-0 flex-col gap-4">

@@ -1,9 +1,9 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { inlineCopy } from '../../shared';
 
 import { uploadErrorMessage, uploadFile } from '../chat/fileUpload';
 import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { IMAGE_CROP_ACCEPT } from '../utils/imageCropCompress';
 import { Button } from './base/button';
 
@@ -26,6 +26,7 @@ export function CookLogoEditor({
     onBusyChange?: (busy: boolean) => void;
 }) {
     const locale = useLocale();
+    const { t } = useT('profileCook');
     const inputRef = useRef<HTMLInputElement>(null);
     const [error, setError] = useState<string | null>(null);
     const [busy, setBusy] = useState(false);
@@ -45,15 +46,7 @@ export function CookLogoEditor({
         if (file == null) return;
         setError(null);
         if (!file.type.startsWith('image/')) {
-            setError(
-                inlineCopy(
-                    {
-                        de: 'Bitte ein Bild (JPEG, PNG, WebP oder GIF) wählen.',
-                        en: 'Please choose an image (JPEG, PNG, WebP, or GIF).',
-                    },
-                    locale,
-                ),
-            );
+            setError(t('meal.chooseImageType'));
             if (inputRef.current) inputRef.current.value = '';
             return;
         }
@@ -70,7 +63,7 @@ export function CookLogoEditor({
         try {
             const uploaded = await uploadFile(file);
             await onLink(uploaded.fileUploadId);
-            toast.success(inlineCopy({ de: 'Zusätzliches Bild gespeichert.', en: 'Additional picture saved.' }, locale));
+            toast.success(t('logo.saved'));
         } catch (uploadError) {
             setError(uploadErrorMessage(uploadError, locale));
             throw uploadError instanceof Error ? uploadError : new Error('Cook logo upload failed');
@@ -92,7 +85,7 @@ export function CookLogoEditor({
         setBusy(true);
         try {
             await onClear();
-            toast.success(inlineCopy({ de: 'Zusätzliches Bild entfernt.', en: 'Additional picture removed.' }, locale));
+            toast.success(t('logo.removed'));
         } catch (clearError) {
             setError(uploadErrorMessage(clearError, locale));
         } finally {
@@ -109,21 +102,11 @@ export function CookLogoEditor({
                     {logoUrl != null ? (
                         <img src={logoUrl} alt="" className="size-full object-contain" />
                     ) : (
-                        <p className="text-center text-xs text-muted-foreground">
-                            {inlineCopy({ de: 'Kein zusätzliches Bild', en: 'No additional picture' }, locale)}
-                        </p>
+                        <p className="text-center text-xs text-muted-foreground">{t('logo.empty')}</p>
                     )}
                 </div>
                 <div className="grid min-w-0 flex-1 gap-2">
-                    <p className="text-sm text-muted-foreground">
-                        {inlineCopy(
-                            {
-                                de: 'Querformat-Bild für den Über-mich-Bereich. Ohne zusätzliches Bild zeigen wir die peopleeat Vorteile.',
-                                en: 'Landscape picture for the About section. Without an additional picture we show the peopleeat benefits.',
-                            },
-                            locale,
-                        )}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{t('logo.hint')}</p>
                     <input
                         ref={inputRef}
                         type="file"
@@ -133,17 +116,11 @@ export function CookLogoEditor({
                     />
                     <div className="flex flex-wrap gap-2">
                         <Button type="button" variant="outline" size="sm" disabled={actionBusy} onClick={() => inputRef.current?.click()}>
-                            {inlineCopy(
-                                {
-                                    de: busy ? 'Speichert…' : 'Bild auswählen',
-                                    en: busy ? 'Saving…' : 'Select picture',
-                                },
-                                locale,
-                            )}
+                            {busy ? t('logo.saving') : t('logo.select')}
                         </Button>
                         {logoUrl != null ? (
                             <Button type="button" variant="outline" size="sm" disabled={actionBusy} onClick={() => void onClearClick()}>
-                                {inlineCopy({ de: 'Bild entfernen', en: 'Remove picture' }, locale)}
+                                {t('logo.remove')}
                             </Button>
                         ) : null}
                     </div>

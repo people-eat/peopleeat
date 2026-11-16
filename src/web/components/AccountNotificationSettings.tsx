@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { use, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { inlineCopy } from '../../shared';
-import type { Locale } from '../../shared';
 
+import { i18nResourcesLoadPromise } from '../../i18n/catalogCache';
+import { t } from '../../i18n/t';
+import type { Locale } from '../../shared';
 import type { GqlCUserNotificationSettings, GqlCUserNotificationSettingsInput } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
 import {
@@ -20,15 +21,13 @@ import { Switch } from './base/switch';
 type NotificationDomain = keyof GqlCUserNotificationSettingsInput;
 type NotificationChannel = 'email' | 'whatsApp';
 
-type Copy = { de: string; en: string };
-
 type NotificationRow = {
     domain: NotificationDomain;
     confirmLastChannel: boolean;
-    title: Copy;
-    description: Copy;
-    operatorTitle?: Copy;
-    operatorDescription?: Copy;
+    titleKey: string;
+    descriptionKey: string;
+    operatorTitleKey?: string;
+    operatorDescriptionKey?: string;
 };
 
 export type AccountNotificationVoice = 'account' | 'operator';
@@ -37,24 +36,21 @@ const customerRows: NotificationRow[] = [
     {
         domain: 'customerBooking',
         confirmLastChannel: true,
-        title: { de: 'Änderungen am Abend', en: 'Changes to the evening' },
-        description: {
-            de: 'Anfrage, Menü, Gästezahl, Absage und Kennenlerngespräch.',
-            en: 'Request, menu, guest count, cancellation, and the intro call.',
-        },
+        titleKey: 'account.notifications.customer.booking.title',
+        descriptionKey: 'account.notifications.customer.booking.description',
     },
     {
         domain: 'customerChat',
         confirmLastChannel: false,
-        title: { de: 'Nachrichten deines Kochs', en: 'Messages from your cook' },
-        operatorTitle: { de: 'Nachrichten des Kochs', en: 'Messages from the cook' },
-        description: { de: 'Wenn eine Nachricht noch ungelesen ist.', en: 'When a message is still unread.' },
+        titleKey: 'account.notifications.customer.chat.title',
+        operatorTitleKey: 'account.notifications.customer.chat.operatorTitle',
+        descriptionKey: 'account.notifications.customer.chat.description',
     },
     {
         domain: 'customerReview',
         confirmLastChannel: false,
-        title: { de: 'Nach dem Abend', en: 'After the evening' },
-        description: { de: 'Erinnerungen, eine Bewertung zu schreiben.', en: 'Reminders to write a review.' },
+        titleKey: 'account.notifications.customer.review.title',
+        descriptionKey: 'account.notifications.customer.review.description',
     },
 ];
 
@@ -62,63 +58,53 @@ const cookRows: NotificationRow[] = [
     {
         domain: 'cookNewRequest',
         confirmLastChannel: false,
-        title: { de: 'Neue Anfragen in deiner Nähe', en: 'New requests near you' },
-        operatorTitle: { de: 'Neue Anfragen in der Nähe', en: 'New requests nearby' },
-        description: { de: 'Kann häufig kommen.', en: 'These can come often.' },
+        titleKey: 'account.notifications.cook.newRequest.title',
+        operatorTitleKey: 'account.notifications.cook.newRequest.operatorTitle',
+        descriptionKey: 'account.notifications.cook.newRequest.description',
     },
     {
         domain: 'cookDirectRequest',
         confirmLastChannel: false,
-        title: { de: 'Direktanfragen an dich', en: 'Requests sent to you' },
-        operatorTitle: { de: 'Direktanfragen an den Koch', en: 'Direct requests to the cook' },
-        description: {
-            de: 'Wenn ein Gast dich über dein Kochprofil anfragt.',
-            en: 'When a guest requests you from your chef profile.',
-        },
+        titleKey: 'account.notifications.cook.directRequest.title',
+        operatorTitleKey: 'account.notifications.cook.directRequest.operatorTitle',
+        descriptionKey: 'account.notifications.cook.directRequest.description',
     },
     {
         domain: 'cookOffer',
         confirmLastChannel: true,
-        title: { de: 'Deine Angebote', en: 'Your offers' },
-        operatorTitle: { de: 'Angebote', en: 'Offers' },
-        description: {
-            de: 'Änderungen, Zu- und Absagen, Menü, Gästezahl und Gespräche.',
-            en: 'Changes, accepted or declined, menu, guest count, and calls.',
-        },
+        titleKey: 'account.notifications.cook.offer.title',
+        operatorTitleKey: 'account.notifications.cook.offer.operatorTitle',
+        descriptionKey: 'account.notifications.cook.offer.description',
     },
     {
         domain: 'cookChat',
         confirmLastChannel: false,
-        title: { de: 'Nachrichten deiner Gäste', en: 'Messages from your guests' },
-        operatorTitle: { de: 'Nachrichten der Gäste', en: 'Messages from guests' },
-        description: { de: 'Wenn eine Nachricht noch ungelesen ist.', en: 'When a message is still unread.' },
+        titleKey: 'account.notifications.cook.chat.title',
+        operatorTitleKey: 'account.notifications.cook.chat.operatorTitle',
+        descriptionKey: 'account.notifications.cook.chat.description',
     },
     {
         domain: 'cookReview',
         confirmLastChannel: false,
-        title: { de: 'Nach dem Abend', en: 'After the evening' },
-        description: { de: 'Erinnerungen zur Bewertung deiner Gäste.', en: "Reminders about your guests' reviews." },
-        operatorDescription: { de: 'Erinnerungen zur Bewertung der Gäste.', en: "Reminders about guests' reviews." },
+        titleKey: 'account.notifications.cook.review.title',
+        descriptionKey: 'account.notifications.cook.review.description',
+        operatorDescriptionKey: 'account.notifications.cook.review.operatorDescription',
     },
 ];
 
 function notificationCopy(row: NotificationRow, voice: AccountNotificationVoice, part: 'title' | 'description', locale: Locale): string {
     if (voice === 'operator') {
-        const override = part === 'title' ? row.operatorTitle : row.operatorDescription;
-        if (override) return inlineCopy(override, locale);
+        const overrideKey = part === 'title' ? row.operatorTitleKey : row.operatorDescriptionKey;
+        if (overrideKey) return t(locale, 'profile', overrideKey);
     }
-    return inlineCopy(row[part], locale);
+    return t(locale, 'profile', part === 'title' ? row.titleKey : row.descriptionKey);
 }
 
 function channelToast(title: string, channel: NotificationChannel, enabled: boolean, locale: Locale): string {
     if (channel === 'email') {
-        return enabled
-            ? inlineCopy({ de: `${title} per E-Mail an.`, en: `${title} by email turned on.` }, locale)
-            : inlineCopy({ de: `${title} per E-Mail aus.`, en: `${title} by email turned off.` }, locale);
+        return t(locale, 'profile', enabled ? 'account.notifications.toastEmailOn' : 'account.notifications.toastEmailOff', { title });
     }
-    return enabled
-        ? inlineCopy({ de: `${title} per WhatsApp an.`, en: `${title} by WhatsApp turned on.` }, locale)
-        : inlineCopy({ de: `${title} per WhatsApp aus.`, en: `${title} by WhatsApp turned off.` }, locale);
+    return t(locale, 'profile', enabled ? 'account.notifications.toastWhatsAppOn' : 'account.notifications.toastWhatsAppOff', { title });
 }
 
 export function notificationWhatsAppSwitchChecked(hasPhoneNumber: boolean, storedWhatsApp: boolean): boolean {
@@ -170,6 +156,7 @@ export function AccountNotificationSettings({
     voice?: AccountNotificationVoice;
 }) {
     const locale = useLocale();
+    use(i18nResourcesLoadPromise(locale, ['profile']));
     const [settings, setSettings] = useState(value);
     const ignoreClose = useRef(false);
     const [pending, setPending] = useState<{
@@ -198,7 +185,7 @@ export function AccountNotificationSettings({
             }
         } catch {
             setSettings(previous);
-            toast.error(inlineCopy({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }, locale));
+            toast.error(t(locale, 'common', 'saveFailed'));
         }
     }
 
@@ -250,21 +237,15 @@ export function AccountNotificationSettings({
                     className="w-fit text-left text-sm text-foreground underline-offset-4 hover:underline disabled:pointer-events-none disabled:opacity-50"
                     onClick={onAddPhone}
                 >
-                    {inlineCopy(
-                        {
-                            de: 'WhatsApp bleibt aus, solange keine Nummer hinterlegt ist.',
-                            en: 'WhatsApp stays off until a number is on file.',
-                        },
-                        locale,
-                    )}
+                    {t(locale, 'profile', 'account.notifications.whatsAppNeedsNumber')}
                 </button>
             )}
             <NotificationGroup
-                heading={
-                    voice === 'operator'
-                        ? inlineCopy({ de: 'Gebuchte Abende', en: 'Booked evenings' }, locale)
-                        : inlineCopy({ de: 'Für deine Abende', en: 'Evenings you book' }, locale)
-                }
+                heading={t(
+                    locale,
+                    'profile',
+                    voice === 'operator' ? 'account.notifications.bookedEvenings' : 'account.notifications.eveningsYouBook',
+                )}
                 rows={customerRows}
                 voice={voice}
                 settings={settings}
@@ -274,11 +255,11 @@ export function AccountNotificationSettings({
             />
             {isCook ? (
                 <NotificationGroup
-                    heading={
-                        voice === 'operator'
-                            ? inlineCopy({ de: 'Als Koch', en: 'As a cook' }, locale)
-                            : inlineCopy({ de: 'Wenn du kochst', en: 'When you cook' }, locale)
-                    }
+                    heading={t(
+                        locale,
+                        'profile',
+                        voice === 'operator' ? 'account.notifications.asACook' : 'account.notifications.whenYouCook',
+                    )}
                     rows={cookRows}
                     voice={voice}
                     settings={settings}
@@ -295,35 +276,19 @@ export function AccountNotificationSettings({
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>
-                            {inlineCopy(
-                                {
-                                    de: 'Keine E-Mail und kein WhatsApp mehr?',
-                                    en: 'No email or WhatsApp?',
-                                },
-                                locale,
-                            )}
-                        </AlertDialogTitle>
+                        <AlertDialogTitle>{t(locale, 'profile', 'account.notifications.lastChannelTitle')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            {voice === 'operator'
-                                ? inlineCopy(
-                                      {
-                                          de: 'Diese Person bekommt dann keine E-Mail und kein WhatsApp, wenn sich der Abend ändert oder abgesagt wird. In der App bleibt es sichtbar.',
-                                          en: 'This person will not get an email or a WhatsApp if the evening changes or is cancelled. It still shows in the app.',
-                                      },
-                                      locale,
-                                  )
-                                : inlineCopy(
-                                      {
-                                          de: 'Du bekommst dann keine E-Mail und kein WhatsApp, wenn sich der Abend ändert oder abgesagt wird. In der App siehst du es weiterhin.',
-                                          en: 'You will not get an email or a WhatsApp if this evening changes or is cancelled. You can still see it in the app.',
-                                      },
-                                      locale,
-                                  )}
+                            {t(
+                                locale,
+                                'profile',
+                                voice === 'operator'
+                                    ? 'account.notifications.lastChannelBodyOperator'
+                                    : 'account.notifications.lastChannelBody',
+                            )}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel disabled={disabled}>{inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, locale)}</AlertDialogCancel>
+                        <AlertDialogCancel disabled={disabled}>{t(locale, 'common', 'cancel')}</AlertDialogCancel>
                         <AlertDialogAction
                             disabled={disabled}
                             onClick={(event) => {
@@ -331,7 +296,7 @@ export function AccountNotificationSettings({
                                 void confirmPending();
                             }}
                         >
-                            {inlineCopy({ de: 'Ausschalten', en: 'Turn off' }, locale)}
+                            {t(locale, 'profile', 'account.notifications.turnOff')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -371,7 +336,7 @@ function NotificationGroup({
                     <div className="flex flex-wrap gap-x-6 gap-y-2">
                         <ChannelSwitch
                             id={`${row.domain}-email`}
-                            label={inlineCopy({ de: 'E-Mail-Adresse', en: 'Email address' }, locale)}
+                            label={t(locale, 'profile', 'account.contact.email')}
                             checked={settings[row.domain].email}
                             disabled={disabled}
                             onCheckedChange={(enabled) => onToggle(row, 'email', enabled)}

@@ -5,7 +5,7 @@ import { pipe, subscribe } from 'wonka';
 
 import { t } from '../../../i18n/t';
 import type { OccasionFormatsSection } from '../../../shared';
-import { fileUploadPublicUrl, formatCurrency, inlineCopy, occasionFormatsSectionEmpty, userDisplayName } from '../../../shared';
+import { fileUploadPublicUrl, formatCurrency, occasionFormatsSectionEmpty, userDisplayName } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/base/card';
 import { Input } from '../../components/base/input';
@@ -514,15 +514,7 @@ export function AdminOccasionPage({
                                     const card = values.formatsSection.cards[index];
                                     return (
                                         <div key={index} className="flex flex-col gap-3 rounded-lg border p-4">
-                                            <p className="text-sm font-medium">
-                                                {inlineCopy(
-                                                    {
-                                                        de: `Karte ${index + 1}`,
-                                                        en: `Card ${index + 1}`,
-                                                    },
-                                                    locale,
-                                                )}
-                                            </p>
+                                            <p className="text-sm font-medium">{t(locale, 'admin', 'copy.cardN', { n: index + 1 })}</p>
                                             <ContentImageField
                                                 fileUploadId={card.imageFileUploadId}
                                                 uiLocale={locale}
@@ -593,13 +585,7 @@ export function AdminOccasionPage({
                                                     <div key={deKey} className="flex flex-col gap-3">
                                                         <label className="flex flex-col gap-1.5 text-sm">
                                                             <span className="font-medium">
-                                                                {inlineCopy(
-                                                                    {
-                                                                        de: `Detail ${factIndex + 1} (DE)`,
-                                                                        en: `Detail ${factIndex + 1} (DE)`,
-                                                                    },
-                                                                    locale,
-                                                                )}
+                                                                {t(locale, 'admin', 'copy.detailNDe', { n: factIndex + 1 })}
                                                             </span>
                                                             <Input
                                                                 value={card[deKey]}
@@ -612,13 +598,7 @@ export function AdminOccasionPage({
                                                         </label>
                                                         <label className="flex flex-col gap-1.5 text-sm">
                                                             <span className="font-medium">
-                                                                {inlineCopy(
-                                                                    {
-                                                                        de: `Detail ${factIndex + 1} (EN)`,
-                                                                        en: `Detail ${factIndex + 1} (EN)`,
-                                                                    },
-                                                                    locale,
-                                                                )}
+                                                                {t(locale, 'admin', 'copy.detailNEn', { n: factIndex + 1 })}
                                                             </span>
                                                             <Input
                                                                 value={card[enKey]}

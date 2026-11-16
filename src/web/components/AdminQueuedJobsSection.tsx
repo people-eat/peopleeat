@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react';
 
 import { t } from '../../i18n/t';
-import { formatDateTime, inlineCopy } from '../../shared';
-import type { InlineCopy } from '../../shared';
+import { formatDateTime } from '../../shared';
 import { useLocale } from '../hooks/useLocale';
 import { useTimeZone } from '../hooks/useTimeZone';
 import {
@@ -41,7 +40,7 @@ export function AdminQueuedJobsSection({
     offerLink,
 }: {
     readonly jobs: readonly AdminQueuedJobRow[];
-    readonly emptyMessage?: InlineCopy;
+    readonly emptyMessage?: string;
     /** When set, jobs with `bookingRequestOfferId` in data render an offer link. */
     readonly offerLink?: (bookingRequestOfferId: string) => ReactNode;
 }) {
@@ -49,17 +48,7 @@ export function AdminQueuedJobsSection({
     const timeZone = useTimeZone();
 
     if (jobs.length === 0) {
-        return (
-            <p className="text-sm text-muted-foreground">
-                {inlineCopy(
-                    emptyMessage ?? {
-                        de: 'Keine ausstehenden Jobs für dieses Angebot.',
-                        en: 'No pending jobs for this offer.',
-                    },
-                    locale,
-                )}
-            </p>
-        );
+        return <p className="text-sm text-muted-foreground">{emptyMessage ?? t(locale, 'admin', 'copy.noPendingJobsForThisOffer')}</p>;
     }
 
     return (

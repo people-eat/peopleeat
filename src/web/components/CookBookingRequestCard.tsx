@@ -1,8 +1,9 @@
 import { Link } from '@tanstack/react-router';
 import { CalendarIcon, MapPinIcon, UsersIcon } from 'lucide-react';
 
-import { formatBookingEventDateFromCountry, formatCurrency, formatDate, formatParticipants, inlineCopy } from '../../shared';
+import { formatBookingEventDateFromCountry, formatCurrency, formatDate, formatParticipants } from '../../shared';
 import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { useTimeZone } from '../hooks/useTimeZone';
 import { cn } from '../utils/cn';
 import { bookingRequestCardInteractionClassName } from './bookingRequestCardInteraction';
@@ -31,6 +32,7 @@ export type CookBookingRequestCardRequest = {
 
 export function CookBookingRequestCard({ request, variant }: { request: CookBookingRequestCardRequest; variant: 'open' | 'declined' }) {
     const locale = useLocale();
+    const { t } = useT('profileCook');
     const timeZone = useTimeZone();
     const isDeclined = variant === 'declined';
     const location =
@@ -42,18 +44,11 @@ export function CookBookingRequestCard({ request, variant }: { request: CookBook
                 <div className="flex flex-wrap items-center justify-end gap-2">
                     {request.requestedByCustomer ? (
                         <BookingStatusPill hue="purple" className="w-fit">
-                            {request.isExclusive
-                                ? inlineCopy({ de: 'Hat dich angefragt', en: 'Requested you' }, locale)
-                                : inlineCopy(
-                                      { de: 'Hat dich angefragt, auch für andere offen', en: 'Requested you, also open to others' },
-                                      locale,
-                                  )}
+                            {request.isExclusive ? t('pool.requestedYou') : t('pool.requestedYouAlsoOpen')}
                         </BookingStatusPill>
                     ) : null}
                     <BookingStatusPill hue={isDeclined ? 'red' : 'green'} className="w-fit">
-                        {isDeclined
-                            ? inlineCopy({ de: 'Ausgeblendet', en: 'Hidden' }, locale)
-                            : inlineCopy({ de: 'Neue Anfrage', en: 'New request' }, locale)}
+                        {isDeclined ? t('pool.declined') : t('pool.newRequest')}
                     </BookingStatusPill>
                 </div>
                 <h2 className="line-clamp-1 font-semibold leading-snug">{request.occasion}</h2>
@@ -78,19 +73,12 @@ export function CookBookingRequestCard({ request, variant }: { request: CookBook
                 </p>
                 {request.requestedByCustomer && request.estimatedTravelDistanceKm != null ? (
                     <p className="text-sm text-muted-foreground">
-                        {inlineCopy(
-                            {
-                                de: `ca. ${request.estimatedTravelDistanceKm.toFixed(0)} km`,
-                                en: `about ${request.estimatedTravelDistanceKm.toFixed(0)} km`,
-                            },
-                            locale,
-                        )}
+                        {t('pool.aboutKm', { km: request.estimatedTravelDistanceKm.toFixed(0) })}
                     </p>
                 ) : null}
                 {isDeclined && request.cookPoolDetails?.declinedAt ? (
                     <p className="truncate text-sm font-medium">
-                        {inlineCopy({ de: 'Abgelehnt am', en: 'Declined at' }, locale)}{' '}
-                        {formatDate(request.cookPoolDetails.declinedAt, { locale, timeZone, dateStyle: 'medium' })}
+                        {t('pool.declinedAt')} {formatDate(request.cookPoolDetails.declinedAt, { locale, timeZone, dateStyle: 'medium' })}
                     </p>
                 ) : null}
                 {isDeclined && request.cookPoolDetails?.declinationReason ? (
@@ -98,14 +86,14 @@ export function CookBookingRequestCard({ request, variant }: { request: CookBook
                 ) : null}
                 {!isDeclined ? (
                     <p className="flex items-center justify-between gap-3 text-sm font-semibold">
-                        <span>{inlineCopy({ de: 'Verdiene ca.', en: 'Make about' }, locale)}</span>
+                        <span>{t('poolRequest.makeAbout')}</span>
                         <span className="shrink-0">{formatCurrency(request.estimatedCookPayoutCents, { locale })}</span>
                     </p>
                 ) : null}
             </div>
             {!isDeclined ? (
                 <span className="mt-4 inline-flex h-9 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground">
-                    {inlineCopy({ de: 'Angebot erstellen', en: 'Make an offer' }, locale)}
+                    {t('bookingRequestOffer.create.title')}
                 </span>
             ) : null}
         </>

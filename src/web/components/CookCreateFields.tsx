@@ -1,11 +1,10 @@
 import type { Dispatch, SetStateAction } from 'react';
 import { useQuery } from 'urql';
-import { inlineCopy } from '../../shared';
 
 import type { GqlCCookCreate, GqlCLocationSuggestion } from '../graphql/generated';
 import { CookCreateLocationSuggestionsDocument } from '../graphql/generated';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
-import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from './base/combobox';
 import { Input } from './base/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './base/select';
@@ -85,7 +84,7 @@ export function CookCreateFields({
     disabled?: boolean;
     idPrefix?: string;
 }) {
-    const locale = useLocale();
+    const { t } = useT('profileCook');
     const debouncedLocationSearch = useDebouncedValue(value.locationSearchText, 300);
     const [{ data: suggestionsData, fetching: suggestionsFetching }] = useQuery({
         query: CookCreateLocationSuggestionsDocument,
@@ -98,18 +97,8 @@ export function CookCreateFields({
         <div className="grid gap-5">
             <div className="grid gap-3">
                 <div className="grid gap-1.5">
-                    <span className="text-sm font-medium">
-                        {inlineCopy({ de: 'Startadresse für die Reisestrecke', en: 'Travel origin address' }, locale)}
-                    </span>
-                    <p className="text-sm/relaxed text-muted-foreground">
-                        {inlineCopy(
-                            {
-                                de: 'Wird nicht für Gastgeber angezeigt. Sie sehen nur die Stadt.',
-                                en: 'Not shown to hosts. They only see the city.',
-                            },
-                            locale,
-                        )}
-                    </p>
+                    <span className="text-sm font-medium">{t('travel.origin')}</span>
+                    <p className="text-sm/relaxed text-muted-foreground">{t('travel.originHostsHint')}</p>
                 </div>
                 <Combobox
                     filter={null}
@@ -137,18 +126,9 @@ export function CookCreateFields({
                     }}
                     itemToStringLabel={(item: string) => item}
                 >
-                    <ComboboxInput
-                        className="w-full"
-                        disabled={disabled}
-                        placeholder={inlineCopy({ de: 'Adresse suchen…', en: 'Search address…' }, locale)}
-                        showClear={false}
-                    />
+                    <ComboboxInput className="w-full" disabled={disabled} placeholder={t('actions.searchAddress')} showClear={false} />
                     <ComboboxContent>
-                        <ComboboxEmpty>
-                            {suggestionsFetching
-                                ? inlineCopy({ de: 'Suche…', en: 'Searching…' }, locale)
-                                : inlineCopy({ de: 'Keine Treffer.', en: 'No matches.' }, locale)}
-                        </ComboboxEmpty>
+                        <ComboboxEmpty>{suggestionsFetching ? t('actions.searching') : t('actions.noMatches')}</ComboboxEmpty>
                         <ComboboxList>
                             {(item: string) => (
                                 <ComboboxItem key={item} value={item}>
@@ -160,22 +140,14 @@ export function CookCreateFields({
                 </Combobox>
                 {value.selectedLocation?.structuredAddress ? (
                     <p className="text-sm text-muted-foreground">
-                        {inlineCopy(
-                            {
-                                de: `Gastgeber sehen ${value.selectedLocation.structuredAddress.city}.`,
-                                en: `Hosts will see ${value.selectedLocation.structuredAddress.city}.`,
-                            },
-                            locale,
-                        )}
+                        {t('travel.hostsSee', { city: value.selectedLocation.structuredAddress.city })}
                     </p>
                 ) : null}
             </div>
 
             <div className="grid gap-5 sm:grid-cols-2">
                 <div className="grid gap-2">
-                    <span className="text-sm font-medium">
-                        {inlineCopy({ de: 'Maximale Reisestrecke', en: 'Maximum travel distance' }, locale)}
-                    </span>
+                    <span className="text-sm font-medium">{t('travel.maxDistance')}</span>
                     <Select
                         value={value.maximumTravelDistanceText}
                         disabled={disabled}
@@ -195,7 +167,7 @@ export function CookCreateFields({
                 </div>
                 <div className="grid gap-2">
                     <label htmlFor={`${idPrefix}-travel-expenses`} className="text-sm font-medium">
-                        {inlineCopy({ de: 'Reisekosten je km', en: 'Travel expenses per km' }, locale)}
+                        {t('travel.expensesPerKm')}
                     </label>
                     <div className="relative">
                         <Input

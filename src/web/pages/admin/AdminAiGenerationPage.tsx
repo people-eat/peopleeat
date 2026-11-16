@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 
 import { t } from '../../../i18n/t';
-import { formatDateTime, inlineCopy, userDisplayName } from '../../../shared';
+import { formatDateTime, userDisplayName } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { Badge } from '../../components/base/badge';
 import { Separator } from '../../components/base/separator';
@@ -76,13 +76,13 @@ function AdminAiGenerationDetailFields({ generation }: { generation: AdminAiGene
             <div className="grid gap-1">
                 <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t(locale, 'admin', 'copy.tokens')}</dt>
                 <dd className="text-sm text-foreground tabular-nums">
-                    {inlineCopy(
-                        {
-                            de: `Eingabe ${formatToken(generation.inputTokens, empty)} · Ausgabe ${formatToken(generation.outputTokens, empty)} · Gesamt ${formatToken(generation.totalTokens, empty)} · Reasoning ${formatToken(generation.reasoningTokens, empty)} · Cache ${formatToken(generation.cachedInputTokens, empty)}`,
-                            en: `Input ${formatToken(generation.inputTokens, empty)} · Output ${formatToken(generation.outputTokens, empty)} · Total ${formatToken(generation.totalTokens, empty)} · Reasoning ${formatToken(generation.reasoningTokens, empty)} · Cache ${formatToken(generation.cachedInputTokens, empty)}`,
-                        },
-                        locale,
-                    )}
+                    {t(locale, 'admin', 'copy.tokenUsage', {
+                        input: formatToken(generation.inputTokens, empty),
+                        output: formatToken(generation.outputTokens, empty),
+                        total: formatToken(generation.totalTokens, empty),
+                        reasoning: formatToken(generation.reasoningTokens, empty),
+                        cache: formatToken(generation.cachedInputTokens, empty),
+                    })}
                 </dd>
             </div>
             <Separator />

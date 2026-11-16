@@ -7,7 +7,7 @@ import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
 import { t } from '../../../i18n/t';
-import { centsToEuros, eurosToCents, inlineCopy } from '../../../shared';
+import { centsToEuros, eurosToCents } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import {
@@ -384,15 +384,10 @@ export function AdminOfferAddonTemplatePage({
                         {(field) => (
                             <div className="grid gap-1.5">
                                 <label htmlFor="addon-template-price" className="text-sm font-medium">
-                                    {inlineCopy(
-                                        {
-                                            de:
-                                                pricingUnit === 'PER_PERSON'
-                                                    ? 'Vorgeschlagener Preis pro Person (€)'
-                                                    : 'Vorgeschlagener Preis (€)',
-                                            en: pricingUnit === 'PER_PERSON' ? 'Suggested price per person (€)' : 'Suggested price (€)',
-                                        },
+                                    {t(
                                         locale,
+                                        'admin',
+                                        pricingUnit === 'PER_PERSON' ? 'copy.suggestedPricePerPerson' : 'copy.suggestedPrice',
                                     )}
                                 </label>
                                 <Input

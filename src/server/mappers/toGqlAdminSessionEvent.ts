@@ -4,32 +4,27 @@ import { bookingRequestFormFunnelArea } from '../../shared/bookingRequestFormFun
 import { chefSignUpFunnelArea } from '../../shared/chefSignUpFunnel';
 import { cookBookingRequestOfferFunnelArea } from '../../shared/cookBookingRequestOfferFunnel';
 import { giftCardFunnelArea } from '../../shared/giftCardFunnel';
+import type { Locale } from '../../shared/locale';
 import type { SessionEvent } from '../db/schema';
 import type { SessionEventKey, SessionEventPayload } from '../domain/sessionEvent';
 import { isSessionEventKey } from '../domain/sessionEvent';
 import type { GqlSAdminSessionEvent } from '../graphql/generated';
 
-function staticDescription(type: SessionEventKey): { de: string; en: string } {
-    return {
-        de: t('de', 'admin', `sessionEvents.static.${type}`),
-        en: t('en', 'admin', `sessionEvents.static.${type}`),
-    };
+function copy(locale: Locale, key: string, params?: Record<string, string | number>): string {
+    return t(locale, 'admin', key, params);
 }
 
-function bilingual(key: string, params?: Record<string, string | number>): { de: string; en: string } {
-    return {
-        de: t('de', 'admin', key, params),
-        en: t('en', 'admin', key, params),
-    };
+function staticDescription(locale: Locale, type: SessionEventKey): string {
+    return copy(locale, `sessionEvents.static.${type}`);
 }
 
-function visitDescription(payload: SessionEventPayload<'WEB_PAGE_VISITED'>): { de: string; en: string } {
+function visitDescription(locale: Locale, payload: SessionEventPayload<'WEB_PAGE_VISITED'>): string {
     const key = payload.webPageKey;
     const path = payload.path ? ` (${payload.path})` : '';
-    return bilingual('sessionEvents.templates.visit', { key, path });
+    return copy(locale, 'sessionEvents.templates.visit', { key, path });
 }
 
-function interactionDescription(payload: SessionEventPayload<'WEB_PAGE_INTERACTION'>): { de: string; en: string } {
+function interactionDescription(locale: Locale, payload: SessionEventPayload<'WEB_PAGE_INTERACTION'>): string {
     const interaction = payload.interaction;
     if (interaction.type === 'step_entered' || interaction.type === 'step_completed') {
         const isCookOfferFunnel = payload.area === cookBookingRequestOfferFunnelArea;
@@ -56,7 +51,7 @@ function interactionDescription(payload: SessionEventPayload<'WEB_PAGE_INTERACTI
                       : isBookingCheckoutFunnel
                         ? 'completedCheckout'
                         : 'completedForm';
-        const verb = bilingual(`sessionEvents.verbs.${verbKey}`);
+        const verb = copy(locale, `sessionEvents.verbs.${verbKey}`);
         const knownFunnelArea =
             payload.area === bookingRequestFormFunnelArea ||
             isCookOfferFunnel ||
@@ -66,103 +61,87 @@ function interactionDescription(payload: SessionEventPayload<'WEB_PAGE_INTERACTI
         const areaNote = knownFunnelArea ? '' : ` [${payload.area}]`;
         const requestNote =
             (isCookOfferFunnel || isBookingCheckoutFunnel) && payload.bookingRequestId != null ? ` (${payload.bookingRequestId})` : '';
-        return {
-            de: t('de', 'admin', 'sessionEvents.templates.stepLine', {
-                verb: verb.de,
-                step: interaction.step,
-                requestNote,
-                areaNote,
-            }),
-            en: t('en', 'admin', 'sessionEvents.templates.stepLine', {
-                verb: verb.en,
-                step: interaction.step,
-                requestNote,
-                areaNote,
-            }),
-        };
+        return copy(locale, 'sessionEvents.templates.stepLine', {
+            verb,
+            step: interaction.step,
+            requestNote,
+            areaNote,
+        });
     }
     if (interaction.type === 'click') {
-        return bilingual('sessionEvents.templates.click', { key: interaction.key, area: payload.area });
+        return copy(locale, 'sessionEvents.templates.click', { key: interaction.key, area: payload.area });
     }
-    return bilingual('sessionEvents.templates.change', { key: interaction.key, area: payload.area });
+    return copy(locale, 'sessionEvents.templates.change', { key: interaction.key, area: payload.area });
 }
 
-function bookingCreatedDescription(payload: SessionEventPayload<'BOOKING_REQUEST_CREATED'>): {
-    de: string;
-    en: string;
-    link: string;
-} {
+function bookingCreatedDescription(
+    locale: Locale,
+    payload: SessionEventPayload<'BOOKING_REQUEST_CREATED'>,
+): { description: string; link: string } {
     return {
-        ...bilingual('sessionEvents.templates.bookingCreated', { id: payload.bookingRequestId }),
+        description: copy(locale, 'sessionEvents.templates.bookingCreated', { id: payload.bookingRequestId }),
         link: `/admin/booking-requests/${payload.bookingRequestId}`,
     };
 }
 
-function bookingOpenedToOtherCooksDescription(payload: SessionEventPayload<'BOOKING_REQUEST_OPENED_TO_OTHER_COOKS'>): {
-    de: string;
-    en: string;
-    link: string;
-} {
+function bookingOpenedToOtherCooksDescription(
+    locale: Locale,
+    payload: SessionEventPayload<'BOOKING_REQUEST_OPENED_TO_OTHER_COOKS'>,
+): { description: string; link: string } {
     return {
-        ...bilingual('sessionEvents.templates.bookingOpened', { id: payload.bookingRequestId }),
+        description: copy(locale, 'sessionEvents.templates.bookingOpened', { id: payload.bookingRequestId }),
         link: `/admin/booking-requests/${payload.bookingRequestId}`,
     };
 }
 
-function bookingCanceledDescription(payload: SessionEventPayload<'BOOKING_REQUEST_CANCELED'>): {
-    de: string;
-    en: string;
-    link: string;
-} {
+function bookingCanceledDescription(
+    locale: Locale,
+    payload: SessionEventPayload<'BOOKING_REQUEST_CANCELED'>,
+): { description: string; link: string } {
     return {
-        ...bilingual('sessionEvents.templates.bookingCanceled', { id: payload.bookingRequestId }),
+        description: copy(locale, 'sessionEvents.templates.bookingCanceled', { id: payload.bookingRequestId }),
         link: `/admin/booking-requests/${payload.bookingRequestId}`,
     };
 }
 
 function bookingOfferActorDescription(
+    locale: Locale,
     payload: SessionEventPayload<'BOOKING_REQUEST_OFFER_ACCEPTED'> | SessionEventPayload<'BOOKING_REQUEST_OFFER_DECLINED'>,
     kind: 'accepted' | 'declined',
-): { de: string; en: string; link: string } {
-    const actorKey = payload.actor === 'cook' ? 'cook' : 'customer';
-    const actor = bilingual(`sessionEvents.actors.${actorKey}`);
+): { description: string; link: string } {
+    const actor = copy(locale, `sessionEvents.actors.${payload.actor === 'cook' ? 'cook' : 'customer'}`);
     const template = kind === 'accepted' ? 'sessionEvents.templates.offerAccepted' : 'sessionEvents.templates.offerDeclined';
     return {
-        de: t('de', 'admin', template, { actor: actor.de, offerId: payload.bookingRequestOfferId }),
-        en: t('en', 'admin', template, { actor: actor.en, offerId: payload.bookingRequestOfferId }),
+        description: copy(locale, template, { actor, offerId: payload.bookingRequestOfferId }),
         link: `/admin/booking-requests/${payload.bookingRequestId}`,
     };
 }
 
 function bookingOfferPaymentDescription(
+    locale: Locale,
     payload: SessionEventPayload<'BOOKING_REQUEST_OFFER_PAYMENT_SUCCEEDED'> | SessionEventPayload<'BOOKING_REQUEST_OFFER_PAYMENT_FAILED'>,
     kind: 'succeeded' | 'failed',
-): { de: string; en: string; link: string } {
+): { description: string; link: string } {
     const template = kind === 'succeeded' ? 'sessionEvents.templates.paymentSucceeded' : 'sessionEvents.templates.paymentFailed';
     return {
-        ...bilingual(template, { offerId: payload.bookingRequestOfferId }),
+        description: copy(locale, template, { offerId: payload.bookingRequestOfferId }),
         link: `/admin/booking-requests/${payload.bookingRequestId}`,
     };
 }
 
-function giftCardCreatedDescription(payload: SessionEventPayload<'GIFT_CARD_CREATED'>): {
-    de: string;
-    en: string;
-    link: string;
-} {
+function giftCardCreatedDescription(
+    locale: Locale,
+    payload: SessionEventPayload<'GIFT_CARD_CREATED'>,
+): { description: string; link: string } {
     return {
-        ...bilingual('sessionEvents.templates.giftCardCreated', { id: payload.giftCardId }),
+        description: copy(locale, 'sessionEvents.templates.giftCardCreated', { id: payload.giftCardId }),
         link: `/admin/gift-cards/${payload.giftCardId}`,
     };
 }
 
-function giftCardPayedDescription(payload: SessionEventPayload<'GIFT_CARD_PAYED'>): {
-    de: string;
-    en: string;
-    link: string;
-} {
+function giftCardPayedDescription(locale: Locale, payload: SessionEventPayload<'GIFT_CARD_PAYED'>): { description: string; link: string } {
     return {
-        ...bilingual('sessionEvents.templates.giftCardPayed', { id: payload.giftCardId }),
+        description: copy(locale, 'sessionEvents.templates.giftCardPayed', { id: payload.giftCardId }),
         link: `/admin/gift-cards/${payload.giftCardId}`,
     };
 }
@@ -171,175 +150,150 @@ function oauthProviderLabel(provider: SessionEventPayload<'AUTH_OAUTH_SIGN_IN_SU
     return { GOOGLE: 'Google' }[provider];
 }
 
-function authOauthSignInSucceededDescription(payload: SessionEventPayload<'AUTH_OAUTH_SIGN_IN_SUCCEEDED'>): {
-    de: string;
-    en: string;
-} {
+function authOauthSignInSucceededDescription(locale: Locale, payload: SessionEventPayload<'AUTH_OAUTH_SIGN_IN_SUCCEEDED'>): string {
     const provider = oauthProviderLabel(payload.provider);
     if (payload.outcome === 'registration_ticket') {
-        return bilingual('sessionEvents.templates.oauthRegistration', { provider });
+        return copy(locale, 'sessionEvents.templates.oauthRegistration', { provider });
     }
-    return bilingual('sessionEvents.templates.oauthSucceeded', { provider });
+    return copy(locale, 'sessionEvents.templates.oauthSucceeded', { provider });
 }
 
-function authOauthSignInFailedDescription(payload: SessionEventPayload<'AUTH_OAUTH_SIGN_IN_FAILED'>): { de: string; en: string } {
+function authOauthSignInFailedDescription(locale: Locale, payload: SessionEventPayload<'AUTH_OAUTH_SIGN_IN_FAILED'>): string {
     const provider = oauthProviderLabel(payload.provider);
-    return bilingual('sessionEvents.templates.oauthFailed', { provider, reason: payload.reason });
+    return copy(locale, 'sessionEvents.templates.oauthFailed', { provider, reason: payload.reason });
 }
 
-function authOauthAccountCreatedDescription(payload: SessionEventPayload<'AUTH_OAUTH_ACCOUNT_CREATED'>): { de: string; en: string } {
+function authOauthAccountCreatedDescription(locale: Locale, payload: SessionEventPayload<'AUTH_OAUTH_ACCOUNT_CREATED'>): string {
     const provider = oauthProviderLabel(payload.provider);
-    return bilingual('sessionEvents.templates.oauthAccountCreated', { provider });
+    return copy(locale, 'sessionEvents.templates.oauthAccountCreated', { provider });
 }
 
-function authEmailOtpVerifyDescription(payload: SessionEventPayload<'AUTH_EMAIL_OTP_VERIFY_SUCCEEDED'>): {
-    de: string;
-    en: string;
-} {
+function authEmailOtpVerifyDescription(locale: Locale, payload: SessionEventPayload<'AUTH_EMAIL_OTP_VERIFY_SUCCEEDED'>): string {
     if (payload.outcome === 'registration_ticket') {
-        return bilingual('sessionEvents.auth.emailOtpRegistration');
+        return copy(locale, 'sessionEvents.auth.emailOtpRegistration');
     }
-    return bilingual('sessionEvents.auth.emailOtpSignIn');
+    return copy(locale, 'sessionEvents.auth.emailOtpSignIn');
 }
 
-function authTotpVerifyDescription(payload: SessionEventPayload<'AUTH_TOTP_VERIFY_SUCCEEDED'>): { de: string; en: string } {
+function authTotpVerifyDescription(locale: Locale, payload: SessionEventPayload<'AUTH_TOTP_VERIFY_SUCCEEDED'>): string {
     if (payload.via === 'recovery') {
-        return bilingual('sessionEvents.auth.totpRecovery');
+        return copy(locale, 'sessionEvents.auth.totpRecovery');
     }
-    return bilingual('sessionEvents.auth.totpAuthenticator');
+    return copy(locale, 'sessionEvents.auth.totpAuthenticator');
 }
 
-export function toGqlAdminSessionEvent(event: SessionEvent, isImpersonation = false): GqlSAdminSessionEvent {
+export function toGqlAdminSessionEvent(event: SessionEvent, locale: Locale, isImpersonation = false): GqlSAdminSessionEvent {
     const rawType = event.type;
-    const fallback = isSessionEventKey(rawType)
-        ? staticDescription(rawType)
-        : bilingual('sessionEvents.templates.unknown', { type: rawType });
-
-    let descriptionDe = fallback.de;
-    let descriptionEn = fallback.en;
+    let description = isSessionEventKey(rawType)
+        ? staticDescription(locale, rawType)
+        : copy(locale, 'sessionEvents.templates.unknown', { type: rawType });
     let link: string | null = null;
 
     if (isSessionEventKey(rawType)) {
         switch (rawType) {
-            case 'WEB_PAGE_VISITED': {
-                const copy = visitDescription(event.payload as SessionEventPayload<'WEB_PAGE_VISITED'>);
-                descriptionDe = copy.de;
-                descriptionEn = copy.en;
+            case 'WEB_PAGE_VISITED':
+                description = visitDescription(locale, event.payload as SessionEventPayload<'WEB_PAGE_VISITED'>);
                 break;
-            }
-            case 'WEB_PAGE_INTERACTION': {
-                const copy = interactionDescription(event.payload as SessionEventPayload<'WEB_PAGE_INTERACTION'>);
-                descriptionDe = copy.de;
-                descriptionEn = copy.en;
+            case 'WEB_PAGE_INTERACTION':
+                description = interactionDescription(locale, event.payload as SessionEventPayload<'WEB_PAGE_INTERACTION'>);
                 break;
-            }
             case 'BOOKING_REQUEST_CREATED': {
-                const copy = bookingCreatedDescription(event.payload as SessionEventPayload<'BOOKING_REQUEST_CREATED'>);
-                descriptionDe = copy.de;
-                descriptionEn = copy.en;
-                link = copy.link;
+                const mapped = bookingCreatedDescription(locale, event.payload as SessionEventPayload<'BOOKING_REQUEST_CREATED'>);
+                description = mapped.description;
+                link = mapped.link;
                 break;
             }
             case 'BOOKING_REQUEST_OPENED_TO_OTHER_COOKS': {
-                const copy = bookingOpenedToOtherCooksDescription(
+                const mapped = bookingOpenedToOtherCooksDescription(
+                    locale,
                     event.payload as SessionEventPayload<'BOOKING_REQUEST_OPENED_TO_OTHER_COOKS'>,
                 );
-                descriptionDe = copy.de;
-                descriptionEn = copy.en;
-                link = copy.link;
+                description = mapped.description;
+                link = mapped.link;
                 break;
             }
             case 'BOOKING_REQUEST_CANCELED': {
-                const copy = bookingCanceledDescription(event.payload as SessionEventPayload<'BOOKING_REQUEST_CANCELED'>);
-                descriptionDe = copy.de;
-                descriptionEn = copy.en;
-                link = copy.link;
+                const mapped = bookingCanceledDescription(locale, event.payload as SessionEventPayload<'BOOKING_REQUEST_CANCELED'>);
+                description = mapped.description;
+                link = mapped.link;
                 break;
             }
             case 'BOOKING_REQUEST_OFFER_ACCEPTED': {
-                const copy = bookingOfferActorDescription(
+                const mapped = bookingOfferActorDescription(
+                    locale,
                     event.payload as SessionEventPayload<'BOOKING_REQUEST_OFFER_ACCEPTED'>,
                     'accepted',
                 );
-                descriptionDe = copy.de;
-                descriptionEn = copy.en;
-                link = copy.link;
+                description = mapped.description;
+                link = mapped.link;
                 break;
             }
             case 'BOOKING_REQUEST_OFFER_DECLINED': {
-                const copy = bookingOfferActorDescription(
+                const mapped = bookingOfferActorDescription(
+                    locale,
                     event.payload as SessionEventPayload<'BOOKING_REQUEST_OFFER_DECLINED'>,
                     'declined',
                 );
-                descriptionDe = copy.de;
-                descriptionEn = copy.en;
-                link = copy.link;
+                description = mapped.description;
+                link = mapped.link;
                 break;
             }
             case 'BOOKING_REQUEST_OFFER_PAYMENT_SUCCEEDED': {
-                const copy = bookingOfferPaymentDescription(
+                const mapped = bookingOfferPaymentDescription(
+                    locale,
                     event.payload as SessionEventPayload<'BOOKING_REQUEST_OFFER_PAYMENT_SUCCEEDED'>,
                     'succeeded',
                 );
-                descriptionDe = copy.de;
-                descriptionEn = copy.en;
-                link = copy.link;
+                description = mapped.description;
+                link = mapped.link;
                 break;
             }
             case 'BOOKING_REQUEST_OFFER_PAYMENT_FAILED': {
-                const copy = bookingOfferPaymentDescription(
+                const mapped = bookingOfferPaymentDescription(
+                    locale,
                     event.payload as SessionEventPayload<'BOOKING_REQUEST_OFFER_PAYMENT_FAILED'>,
                     'failed',
                 );
-                descriptionDe = copy.de;
-                descriptionEn = copy.en;
-                link = copy.link;
+                description = mapped.description;
+                link = mapped.link;
                 break;
             }
             case 'GIFT_CARD_CREATED': {
-                const copy = giftCardCreatedDescription(event.payload as SessionEventPayload<'GIFT_CARD_CREATED'>);
-                descriptionDe = copy.de;
-                descriptionEn = copy.en;
-                link = copy.link;
+                const mapped = giftCardCreatedDescription(locale, event.payload as SessionEventPayload<'GIFT_CARD_CREATED'>);
+                description = mapped.description;
+                link = mapped.link;
                 break;
             }
             case 'GIFT_CARD_PAYED': {
-                const copy = giftCardPayedDescription(event.payload as SessionEventPayload<'GIFT_CARD_PAYED'>);
-                descriptionDe = copy.de;
-                descriptionEn = copy.en;
-                link = copy.link;
+                const mapped = giftCardPayedDescription(locale, event.payload as SessionEventPayload<'GIFT_CARD_PAYED'>);
+                description = mapped.description;
+                link = mapped.link;
                 break;
             }
-            case 'AUTH_EMAIL_OTP_VERIFY_SUCCEEDED': {
-                const copy = authEmailOtpVerifyDescription(event.payload as SessionEventPayload<'AUTH_EMAIL_OTP_VERIFY_SUCCEEDED'>);
-                descriptionDe = copy.de;
-                descriptionEn = copy.en;
+            case 'AUTH_EMAIL_OTP_VERIFY_SUCCEEDED':
+                description = authEmailOtpVerifyDescription(
+                    locale,
+                    event.payload as SessionEventPayload<'AUTH_EMAIL_OTP_VERIFY_SUCCEEDED'>,
+                );
                 break;
-            }
-            case 'AUTH_OAUTH_SIGN_IN_SUCCEEDED': {
-                const copy = authOauthSignInSucceededDescription(event.payload as SessionEventPayload<'AUTH_OAUTH_SIGN_IN_SUCCEEDED'>);
-                descriptionDe = copy.de;
-                descriptionEn = copy.en;
+            case 'AUTH_OAUTH_SIGN_IN_SUCCEEDED':
+                description = authOauthSignInSucceededDescription(
+                    locale,
+                    event.payload as SessionEventPayload<'AUTH_OAUTH_SIGN_IN_SUCCEEDED'>,
+                );
                 break;
-            }
-            case 'AUTH_OAUTH_SIGN_IN_FAILED': {
-                const copy = authOauthSignInFailedDescription(event.payload as SessionEventPayload<'AUTH_OAUTH_SIGN_IN_FAILED'>);
-                descriptionDe = copy.de;
-                descriptionEn = copy.en;
+            case 'AUTH_OAUTH_SIGN_IN_FAILED':
+                description = authOauthSignInFailedDescription(locale, event.payload as SessionEventPayload<'AUTH_OAUTH_SIGN_IN_FAILED'>);
                 break;
-            }
-            case 'AUTH_OAUTH_ACCOUNT_CREATED': {
-                const copy = authOauthAccountCreatedDescription(event.payload as SessionEventPayload<'AUTH_OAUTH_ACCOUNT_CREATED'>);
-                descriptionDe = copy.de;
-                descriptionEn = copy.en;
+            case 'AUTH_OAUTH_ACCOUNT_CREATED':
+                description = authOauthAccountCreatedDescription(
+                    locale,
+                    event.payload as SessionEventPayload<'AUTH_OAUTH_ACCOUNT_CREATED'>,
+                );
                 break;
-            }
-            case 'AUTH_TOTP_VERIFY_SUCCEEDED': {
-                const copy = authTotpVerifyDescription(event.payload as SessionEventPayload<'AUTH_TOTP_VERIFY_SUCCEEDED'>);
-                descriptionDe = copy.de;
-                descriptionEn = copy.en;
+            case 'AUTH_TOTP_VERIFY_SUCCEEDED':
+                description = authTotpVerifyDescription(locale, event.payload as SessionEventPayload<'AUTH_TOTP_VERIFY_SUCCEEDED'>);
                 break;
-            }
             default:
                 break;
         }
@@ -349,8 +303,7 @@ export function toGqlAdminSessionEvent(event: SessionEvent, isImpersonation = fa
         sessionEventId: event.sessionEventId,
         sessionId: event.sessionId,
         type: rawType,
-        descriptionDe,
-        descriptionEn,
+        description,
         createdAt: event.createdAt,
         link,
         isImpersonation,

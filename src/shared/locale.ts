@@ -6,9 +6,6 @@ export type Locale = CatalogLocale;
 
 export const DEFAULT_LOCALE: Locale = 'de';
 
-/** Unmigrated inline copy. New strings belong in `src/i18n` catalogs. */
-export type InlineCopy<T = string> = { de: T; en: T };
-
 const LANGUAGE_TAGS = {
     de: 'de-DE',
     en: 'en-US',
@@ -22,9 +19,4 @@ export function isLocale(value: string | undefined): value is Locale {
 
 export function languageTagFromLocale(locale: CatalogLocale): (typeof LANGUAGE_TAGS)[CatalogLocale] {
     return LANGUAGE_TAGS[locale];
-}
-
-/** Read unmigrated `{ de, en }` copy. `fr` / `it` fall back to German. */
-export function inlineCopy<T>(messages: InlineCopy<T>, locale: CatalogLocale): T {
-    return locale === 'en' ? messages.en : messages.de;
 }

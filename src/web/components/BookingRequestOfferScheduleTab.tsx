@@ -4,7 +4,8 @@ import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
-import { formatBookingCallScheduleCaption, formatDate, formatTime, inlineCopy } from '../../shared';
+import { t } from '../../i18n/t';
+import { formatBookingCallScheduleCaption, formatDate, formatTime } from '../../shared';
 import type { BookingWhenPeer } from '../../shared';
 import { compareCookCallSlotBookings } from '../../shared/cookCallSlotBookingStatus';
 import { useLocale } from '../hooks/useLocale';
@@ -166,9 +167,7 @@ export function BookingRequestOfferScheduleTab({
     async function submitRequest(startAt: Date) {
         if (readOnly || !requestDocument || busy) return;
         if (startAt.getTime() <= Date.now()) {
-            toast.error(
-                inlineCopy({ de: 'Der gewählte Zeitpunkt liegt in der Vergangenheit.', en: 'The selected time is in the past.' }, locale),
-            );
+            toast.error(t(locale, 'common', 'schedule.timeInPast'));
             return;
         }
         setBusy(true);
@@ -192,25 +191,9 @@ export function BookingRequestOfferScheduleTab({
             }
             setSelectedSlotStartAt(null);
             setMessage('');
-            toast.success(
-                inlineCopy(
-                    {
-                        de: 'Terminanfrage gesendet.',
-                        en: 'Call request sent.',
-                    },
-                    locale,
-                ),
-            );
+            toast.success(t(locale, 'common', 'schedule.requestSent'));
         } catch {
-            toast.error(
-                inlineCopy(
-                    {
-                        de: 'Dieser Zeitpunkt ist nicht mehr verfügbar.',
-                        en: 'This slot is no longer available.',
-                    },
-                    locale,
-                ),
-            );
+            toast.error(t(locale, 'common', 'schedule.slotUnavailable'));
         } finally {
             setBusy(false);
         }
@@ -222,9 +205,9 @@ export function BookingRequestOfferScheduleTab({
         try {
             const result = await confirmMutation({ cookCallSlotBookingId });
             if (!mutationSucceeded(result.data)) throw new Error('confirm failed');
-            toast.success(inlineCopy({ de: 'Termin bestätigt.', en: 'Appointment confirmed.' }, locale));
+            toast.success(t(locale, 'common', 'schedule.confirmed'));
         } catch {
-            toast.error(inlineCopy({ de: 'Bestätigung fehlgeschlagen.', en: 'Could not confirm.' }, locale));
+            toast.error(t(locale, 'common', 'schedule.confirmFailed'));
         } finally {
             setBusy(false);
         }
@@ -253,9 +236,9 @@ export function BookingRequestOfferScheduleTab({
             if (!mutationSucceeded(result.data)) throw new Error('decline failed');
             setDecliningId(null);
             setDeclineReason('');
-            toast.success(inlineCopy({ de: 'Termin abgelehnt.', en: 'Appointment declined.' }, locale));
+            toast.success(t(locale, 'common', 'schedule.declined'));
         } catch {
-            toast.error(inlineCopy({ de: 'Ablehnung fehlgeschlagen.', en: 'Could not decline.' }, locale));
+            toast.error(t(locale, 'common', 'schedule.declineFailed'));
         } finally {
             setBusy(false);
         }
@@ -272,9 +255,9 @@ export function BookingRequestOfferScheduleTab({
             if (!mutationSucceeded(result.data)) throw new Error('cancel failed');
             setCancelingId(null);
             setCancelReason('');
-            toast.success(inlineCopy({ de: 'Termin abgesagt.', en: 'Appointment canceled.' }, locale));
+            toast.success(t(locale, 'common', 'schedule.canceled'));
         } catch {
-            toast.error(inlineCopy({ de: 'Absage fehlgeschlagen.', en: 'Could not cancel.' }, locale));
+            toast.error(t(locale, 'common', 'schedule.cancelFailed'));
         } finally {
             setBusy(false);
         }
@@ -285,28 +268,18 @@ export function BookingRequestOfferScheduleTab({
             <div className="grid max-w-xl gap-4">
                 <StatusAlert
                     tone="warning"
-                    title={inlineCopy({ de: 'Terminplanung deaktiviert', en: 'Call scheduling disabled' }, locale)}
+                    title={t(locale, 'common', 'schedule.disabledTitle')}
                     action={
                         <Button type="button" size="sm" variant="outline" asChild>
-                            <Link to="/{-$locale}/profile/calls">
-                                {inlineCopy({ de: 'Verfügbarkeit einrichten', en: 'Set up availability' }, locale)}
-                            </Link>
+                            <Link to="/{-$locale}/profile/calls">{t(locale, 'common', 'schedule.setUpAvailability')}</Link>
                         </Button>
                     }
                 >
-                    {inlineCopy(
-                        {
-                            de: 'Aktiviere deine Gesprächszeiten unter Profil → Anrufe, um Termine vorzuschlagen.',
-                            en: 'Enable your call hours under Profile → Calls to propose times.',
-                        },
-                        locale,
-                    )}
+                    {t(locale, 'common', 'schedule.enableHours')}
                 </StatusAlert>
                 {sortedBookings.length > 0 ? (
                     <div className="grid gap-3">
-                        <p className="text-sm text-muted-foreground">
-                            {inlineCopy({ de: 'Bisherige Termine', en: 'Existing appointments' }, locale)}
-                        </p>
+                        <p className="text-sm text-muted-foreground">{t(locale, 'common', 'schedule.existingAppointments')}</p>
                         {sortedBookings.map((booking) => (
                             <BookingRequestOfferCallBookingCard
                                 key={booking.cookCallSlotBookingId}
@@ -347,23 +320,11 @@ export function BookingRequestOfferScheduleTab({
 
     return (
         <div className="grid max-w-xl gap-6">
-            {role === 'admin' ? (
-                <p className="text-sm text-muted-foreground">
-                    {inlineCopy(
-                        {
-                            de: 'Ausstehende Anfragen kannst du im Namen von Kunde oder Koch ablehnen. Bestätigen und absagen bleiben bei den Parteien.',
-                            en: 'You can decline pending requests on behalf of the customer or chef. Confirm and cancel stay with the parties.',
-                        },
-                        locale,
-                    )}
-                </p>
-            ) : null}
+            {role === 'admin' ? <p className="text-sm text-muted-foreground">{t(locale, 'common', 'schedule.adminDeclineHint')}</p> : null}
 
             {sortedBookings.length > 0 ? (
                 <div className="grid gap-3">
-                    <p className="text-sm text-muted-foreground">
-                        {inlineCopy({ de: 'Beratungsgespräche', en: 'Discovery calls' }, locale)}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{t(locale, 'common', 'schedule.discoveryCalls')}</p>
                     {sortedBookings.map((booking) => (
                         <BookingRequestOfferCallBookingCard
                             key={booking.cookCallSlotBookingId}
@@ -393,40 +354,24 @@ export function BookingRequestOfferScheduleTab({
                     ))}
                 </div>
             ) : (
-                <p className="text-sm text-muted-foreground">
-                    {inlineCopy(
-                        { de: 'Bisher keine Terminanfragen für dieses Angebot.', en: 'No call requests for this offer yet.' },
-                        locale,
-                    )}
-                </p>
+                <p className="text-sm text-muted-foreground">{t(locale, 'common', 'schedule.noneYet')}</p>
             )}
 
             {!hasConfirmed && !readOnly && role === 'user' ? (
                 <Card className={bookingOfferCallCardClassName}>
                     <CardHeader className={bookingOfferCallCardSectionClassName}>
                         <CardTitle>
-                            {inlineCopy(
-                                {
-                                    de: `${callDurationMinutes}-Minuten-Gespräch${peerDisplayName ? ` mit ${peerDisplayName}` : ''}`,
-                                    en: `${callDurationMinutes}-minute call${peerDisplayName ? ` with ${peerDisplayName}` : ''}`,
-                                },
-                                locale,
-                            )}
+                            {t(locale, 'common', 'schedule.callDurationWithPeer', {
+                                minutes: callDurationMinutes,
+                                peerPart: peerDisplayName ? t(locale, 'common', 'schedule.peerPart', { name: peerDisplayName }) : '',
+                            })}
                         </CardTitle>
-                        <CardDescription>{inlineCopy({ de: 'Wähle einen Zeitpunkt', en: 'Pick a time' }, locale)}</CardDescription>
+                        <CardDescription>{t(locale, 'common', 'schedule.pickATime')}</CardDescription>
                     </CardHeader>
                     <CardContent className={cn('grid gap-4', bookingOfferCallCardSectionClassName)}>
                         {scheduleCaption ? <p className="text-sm text-muted-foreground">{scheduleCaption}</p> : null}
                         {dateBuckets.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">
-                                {inlineCopy(
-                                    {
-                                        de: 'Keine freien Termine in den nächsten 14 Tagen',
-                                        en: 'No available slots in the next 14 days',
-                                    },
-                                    locale,
-                                )}
-                            </p>
+                            <p className="text-sm text-muted-foreground">{t(locale, 'common', 'schedule.noSlots')}</p>
                         ) : (
                             <div className="grid gap-4">
                                 {dateBuckets.map((bucket) => (
@@ -459,9 +404,7 @@ export function BookingRequestOfferScheduleTab({
                         )}
                         {selectedSlotStartAt ? (
                             <label className="grid gap-1.5 text-sm">
-                                <span className="font-medium">
-                                    {inlineCopy({ de: 'Nachricht an den Koch (optional)', en: 'Message to the chef (optional)' }, locale)}
-                                </span>
+                                <span className="font-medium">{t(locale, 'common', 'schedule.messageToChef')}</span>
                                 <Textarea value={message} onChange={(event) => setMessage(event.target.value.slice(0, 500))} rows={3} />
                             </label>
                         ) : null}
@@ -469,7 +412,7 @@ export function BookingRequestOfferScheduleTab({
                     {selectedSlotStartAt ? (
                         <CardFooter className={cn('justify-end', bookingOfferCallCardSectionClassName)}>
                             <Button type="button" disabled={busy} onClick={() => void submitRequest(new Date(selectedSlotStartAt))}>
-                                {inlineCopy({ de: 'Anfrage senden', en: 'Send request' }, locale)}
+                                {t(locale, 'common', 'schedule.sendRequest')}
                             </Button>
                         </CardFooter>
                     ) : null}
@@ -479,72 +422,46 @@ export function BookingRequestOfferScheduleTab({
             {canPropose ? (
                 <Card className={bookingOfferCallCardClassName}>
                     <CardHeader className={bookingOfferCallCardSectionClassName}>
-                        <CardTitle>{inlineCopy({ de: 'Termin vorschlagen', en: 'Suggest a time' }, locale)}</CardTitle>
+                        <CardTitle>{t(locale, 'common', 'schedule.suggestATime')}</CardTitle>
                         <CardDescription>
-                            {inlineCopy(
-                                role === 'user'
-                                    ? {
-                                          de: `Schlage dem Koch einen ${callDurationMinutes}-Minuten-Termin vor, auch außerhalb der gelisteten Zeiten.`,
-                                          en: `Propose a ${callDurationMinutes}-minute call to the chef, including times outside the listed slots.`,
-                                      }
-                                    : {
-                                          de: `Schlage dem Kunden einen ${callDurationMinutes}-Minuten-Termin vor.`,
-                                          en: `Propose a ${callDurationMinutes}-minute call to the customer.`,
-                                      },
-                                locale,
-                            )}
+                            {t(locale, 'common', role === 'user' ? 'schedule.proposeToCook' : 'schedule.proposeToCustomer', {
+                                minutes: callDurationMinutes,
+                            })}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className={cn('grid gap-4', bookingOfferCallCardSectionClassName)}>
                         {scheduleCaption ? <p className="text-sm text-muted-foreground">{scheduleCaption}</p> : null}
                         <label className="grid gap-1.5 text-sm">
-                            <span className="font-medium">{inlineCopy({ de: 'Beginn', en: 'Start' }, locale)}</span>
+                            <span className="font-medium">{t(locale, 'common', 'schedule.start')}</span>
                             <DateTimePicker
                                 value={proposeStart}
                                 onValueChange={setProposeStart}
-                                placeholder={inlineCopy({ de: 'Datum und Uhrzeit wählen', en: 'Pick date and time' }, locale)}
-                                timeAriaLabel={inlineCopy({ de: 'Uhrzeit', en: 'Time' }, locale)}
+                                placeholder={t(locale, 'common', 'schedule.pickDateAndTime')}
+                                timeAriaLabel={t(locale, 'common', 'schedule.time')}
                                 locale={DATE_FNS_LOCALE[locale]}
                                 className="w-full"
                                 disabled={busy}
                             />
                         </label>
                         {proposeStartInPast ? (
-                            <p className="text-sm text-destructive">
-                                {inlineCopy(
-                                    {
-                                        de: 'Der gewählte Zeitpunkt liegt in der Vergangenheit.',
-                                        en: 'The selected time is in the past.',
-                                    },
-                                    locale,
-                                )}
-                            </p>
+                            <p className="text-sm text-destructive">{t(locale, 'common', 'schedule.timeInPast')}</p>
                         ) : (
                             <p className="text-sm text-muted-foreground">
-                                {inlineCopy(
-                                    {
-                                        de: `Endet um ${formatCallTime(proposeEndDate, locale, timeZone)} Uhr`,
-                                        en: `Ends at ${formatCallTime(proposeEndDate, locale, timeZone)}`,
-                                    },
-                                    locale,
-                                )}
+                                {t(locale, 'common', 'schedule.endsAt', {
+                                    time: formatCallTime(proposeEndDate, locale, timeZone),
+                                })}
                             </p>
                         )}
                         <label className="grid gap-1.5 text-sm">
                             <span className="font-medium">
-                                {inlineCopy(
-                                    role === 'user'
-                                        ? { de: 'Nachricht an den Koch (optional)', en: 'Message to the chef (optional)' }
-                                        : { de: 'Nachricht an den Kunden (optional)', en: 'Message to the customer (optional)' },
-                                    locale,
-                                )}
+                                {t(locale, 'common', role === 'user' ? 'schedule.messageToChef' : 'schedule.messageToCustomer')}
                             </span>
                             <Textarea value={message} onChange={(event) => setMessage(event.target.value.slice(0, 500))} rows={3} />
                         </label>
                     </CardContent>
                     <CardFooter className={cn('justify-end', bookingOfferCallCardSectionClassName)}>
                         <Button type="button" disabled={busy || proposeStartInPast} onClick={() => void submitRequest(proposeStartDate)}>
-                            {inlineCopy({ de: 'Vorschlag senden', en: 'Send suggestion' }, locale)}
+                            {t(locale, 'common', 'schedule.sendSuggestion')}
                         </Button>
                     </CardFooter>
                 </Card>

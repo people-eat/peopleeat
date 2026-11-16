@@ -3,7 +3,6 @@ import type { SortingState, Updater } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
 
 import { t } from '../../../i18n/t';
-import { inlineCopy } from '../../../shared';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { Input } from '../../components/base/input';
 import { Tabs, TabsList, TabsTrigger } from '../../components/base/tabs';
@@ -152,15 +151,7 @@ export function AdminAiGenerationsPage({ data, search }: { data: GqlCAdminAiGene
                         placeholder={t(locale, 'admin', 'copy.searchSystemPromptOrOutput')}
                         aria-label={t(locale, 'admin', 'copy.searchAiGenerations')}
                     />
-                    <p className="text-sm text-muted-foreground tabular-nums">
-                        {inlineCopy(
-                            {
-                                de: `${total} ${total === 1 ? 'Aufruf' : 'Aufrufe'}`,
-                                en: `${total} ${total === 1 ? 'call' : 'calls'}`,
-                            },
-                            locale,
-                        )}
-                    </p>
+                    <p className="text-sm text-muted-foreground tabular-nums">{t(locale, 'admin', 'copy.aiCallCount', { count: total })}</p>
                 </div>
 
                 <AdminAiGenerationsDataTable

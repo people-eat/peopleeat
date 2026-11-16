@@ -7,7 +7,6 @@ import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
 import { t } from '../../../i18n/t';
-import { inlineCopy } from '../../../shared';
 import { userBirthDatePickerBounds } from '../../../shared/userBirthDate';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
@@ -37,11 +36,11 @@ export function adminUserCreatePageDescription(locale: Locale): string {
 
 const CREATE_FORM_ID = 'admin-user-create-form';
 
-const preferredCommunicationOptions: { value: GqlCUserPreferredCommunication; de: string; en: string }[] = [
-    { value: 'SMS', de: 'Nachricht', en: 'Message' },
-    { value: 'WHATS_APP', de: 'WhatsApp', en: 'WhatsApp' },
-    { value: 'CALL', de: 'Anruf', en: 'Call' },
-    { value: 'E_MAIL', de: 'E-Mail', en: 'Email' },
+const preferredCommunicationOptions: { value: GqlCUserPreferredCommunication; key: string }[] = [
+    { value: 'SMS', key: 'copy.message' },
+    { value: 'WHATS_APP', key: 'copy.whatsapp' },
+    { value: 'CALL', key: 'copy.call2' },
+    { value: 'E_MAIL', key: 'copy.email' },
 ];
 
 export function AdminUserCreatePage() {
@@ -71,22 +70,14 @@ export function AdminUserCreatePage() {
             const built = cookCreateInputFromFields(cookFields);
             if ('error' in built) {
                 toast.error(
-                    inlineCopy(
-                        {
-                            travelExpenses: {
-                                de: 'Bitte gib gültige Reisekosten ein (mind. 0,25 €).',
-                                en: 'Please enter valid travel expenses (at least €0.25).',
-                            },
-                            travelDistance: {
-                                de: 'Die maximale Reisestrecke muss zwischen 5 und 250 km liegen.',
-                                en: 'Maximum travel distance must be between 5 and 250 km.',
-                            },
-                            incomplete: {
-                                de: 'Bitte vervollständige das Koch-Profil.',
-                                en: 'Please complete the chef profile.',
-                            },
-                        }[built.error],
+                    t(
                         locale,
+                        'admin',
+                        {
+                            travelExpenses: 'copy.pleaseEnterValidTravelExpensesAtLeast025',
+                            travelDistance: 'copy.maximumTravelDistanceMustBeBetween5And250Km',
+                            incomplete: 'copy.pleaseCompleteTheChefProfile',
+                        }[built.error],
                     ),
                 );
                 return;
@@ -142,12 +133,10 @@ export function AdminUserCreatePage() {
                 footer={
                     <>
                         <Button type="button" variant="outline" disabled={busy} asChild>
-                            <Link to="/{-$locale}/admin/users">{inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, locale)}</Link>
+                            <Link to="/{-$locale}/admin/users">{t(locale, 'admin', 'copy.cancel')}</Link>
                         </Button>
                         <Button type="submit" form={CREATE_FORM_ID} disabled={submitDisabled}>
-                            {busy
-                                ? inlineCopy({ de: 'Anlegen…', en: 'Creating…' }, locale)
-                                : inlineCopy({ de: 'Benutzer anlegen', en: 'Create user' }, locale)}
+                            {busy ? t(locale, 'admin', 'copy.creating') : t(locale, 'admin', 'copy.createUser')}
                         </Button>
                     </>
                 }
@@ -160,7 +149,7 @@ export function AdminUserCreatePage() {
                 <form id={CREATE_FORM_ID} className="grid gap-5" onSubmit={onSubmit}>
                     <div className="grid gap-2">
                         <label htmlFor="admin-user-first-name" className="text-sm font-medium">
-                            {inlineCopy({ de: 'Vorname', en: 'First name' }, locale)}
+                            {t(locale, 'admin', 'copy.firstName')}
                         </label>
                         <Input
                             id="admin-user-first-name"
@@ -174,7 +163,7 @@ export function AdminUserCreatePage() {
 
                     <div className="grid gap-2">
                         <label htmlFor="admin-user-last-name" className="text-sm font-medium">
-                            {inlineCopy({ de: 'Nachname', en: 'Last name' }, locale)}
+                            {t(locale, 'admin', 'copy.lastName')}
                         </label>
                         <Input
                             id="admin-user-last-name"
@@ -188,7 +177,7 @@ export function AdminUserCreatePage() {
 
                     <div className="grid gap-2">
                         <label htmlFor="admin-user-email" className="text-sm font-medium">
-                            {inlineCopy({ de: 'E-Mail', en: 'Email' }, locale)}
+                            {t(locale, 'admin', 'copy.email')}
                         </label>
                         <Input
                             id="admin-user-email"
@@ -203,7 +192,7 @@ export function AdminUserCreatePage() {
 
                     <div className="grid gap-2">
                         <label htmlFor="admin-user-phone" className="text-sm font-medium">
-                            {inlineCopy({ de: 'Telefonnummer', en: 'Phone number' }, locale)}
+                            {t(locale, 'admin', 'copy.phoneNumber')}
                         </label>
                         <Input
                             id="admin-user-phone"
@@ -218,12 +207,12 @@ export function AdminUserCreatePage() {
 
                     <div className="grid gap-2">
                         <span id="admin-user-birth-date-label" className="text-sm font-medium">
-                            {inlineCopy({ de: 'Geburtsdatum', en: 'Date of birth' }, locale)}
+                            {t(locale, 'admin', 'copy.dateOfBirth')}
                         </span>
                         <DatePicker
                             value={birthDate}
                             onValueChange={setBirthDate}
-                            placeholder={inlineCopy({ de: 'Geburtsdatum', en: 'Date of birth' }, locale)}
+                            placeholder={t(locale, 'admin', 'copy.dateOfBirth')}
                             className="w-full"
                             disabled={{ after: birthDateBounds.disabledAfter }}
                             locale={locale === 'de' ? dateFnsDe : dateFnsEn}
@@ -237,20 +226,18 @@ export function AdminUserCreatePage() {
                     </div>
 
                     <div className="grid gap-2">
-                        <span className="text-sm font-medium">
-                            {inlineCopy({ de: 'Bevorzugte Kommunikation', en: 'Preferred communication' }, locale)}
-                        </span>
+                        <span className="text-sm font-medium">{t(locale, 'admin', 'copy.preferredCommunication')}</span>
                         <Select
                             value={preferredCommunication || undefined}
                             onValueChange={(value) => setPreferredCommunication(value as GqlCUserPreferredCommunication)}
                         >
                             <SelectTrigger className="w-full">
-                                <SelectValue placeholder={inlineCopy({ de: 'Auswählen…', en: 'Select…' }, locale)} />
+                                <SelectValue placeholder={t(locale, 'admin', 'copy.select')} />
                             </SelectTrigger>
                             <SelectContent>
                                 {preferredCommunicationOptions.map((option) => (
                                     <SelectItem key={option.value} value={option.value}>
-                                        {inlineCopy({ de: option.de, en: option.en }, locale)}
+                                        {t(locale, 'admin', option.key)}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -258,42 +245,30 @@ export function AdminUserCreatePage() {
                     </div>
 
                     <fieldset className="grid gap-3">
-                        <legend className="text-sm font-medium">{inlineCopy({ de: 'Mitgliedschaft', en: 'Membership' }, locale)}</legend>
+                        <legend className="text-sm font-medium">{t(locale, 'admin', 'copy.membership')}</legend>
                         <p className="text-sm text-muted-foreground">
-                            {inlineCopy(
-                                {
-                                    de: 'Ohne Koch-Profil zählt das Konto als Kunde. Admin und Koch können kombiniert werden.',
-                                    en: 'Without a cook profile the account counts as a customer. Admin and cook can be combined.',
-                                },
-                                locale,
-                            )}
+                            {t(locale, 'admin', 'copy.withoutACookProfileTheAccountCountsAsACustomerAdminAndCookCa')}
                         </p>
                         <label className="flex items-center gap-2 text-sm">
                             <Checkbox checked={asAdmin} onCheckedChange={(checked) => setAsAdmin(checked === true)} />
-                            {inlineCopy({ de: 'Admin', en: 'Admin' }, locale)}
+                            {t(locale, 'admin', 'copy.admin')}
                         </label>
                         <label className="flex items-center gap-2 text-sm">
                             <Checkbox checked={asCook} onCheckedChange={(checked) => setAsCook(checked === true)} />
-                            {inlineCopy({ de: 'Koch', en: 'Cook' }, locale)}
+                            {t(locale, 'admin', 'copy.cook')}
                         </label>
                     </fieldset>
 
                     {asCook ? (
                         <div className="grid gap-3 border-t border-border pt-5">
-                            <p className="text-sm font-medium">{inlineCopy({ de: 'Koch-Profil', en: 'Chef profile' }, locale)}</p>
+                            <p className="text-sm font-medium">{t(locale, 'admin', 'copy.chefProfile')}</p>
                             <CookCreateFields value={cookFields} onChange={setCookFields} disabled={busy} idPrefix="admin-user-cook" />
                         </div>
                     ) : null}
 
                     {error ? (
                         <p className="text-sm text-destructive" role="alert">
-                            {inlineCopy(
-                                {
-                                    de: 'Anlegen fehlgeschlagen. Prüfe die Angaben (E-Mail oder Telefon ggf. bereits vergeben).',
-                                    en: 'Could not create. Check the fields (email or phone may already be registered).',
-                                },
-                                locale,
-                            )}
+                            {t(locale, 'admin', 'copy.couldNotCreateCheckTheFieldsEmailOrPhoneMayAlreadyBeRegister')}
                         </p>
                     ) : null}
                 </form>

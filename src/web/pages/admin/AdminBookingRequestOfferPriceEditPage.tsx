@@ -10,7 +10,6 @@ import {
     bookingRequestOfferPriceGuidance,
     bookingRequestPaidParticipants,
     centsToEuros,
-    inlineCopy,
     userDisplayName,
 } from '../../../shared';
 import { AdminBookingRequestOfferAmendmentConfirmDialog } from '../../components/AdminBookingRequestOfferAmendmentConfirmDialog';
@@ -50,13 +49,7 @@ function adminDualAcceptPriceEditBlockMessage(
         return t(locale, 'admin', 'copy.preparationsAreLockedClearTheLockOnTheOfferTabThenSaveAgain');
     }
     if (!AMENDMENT_PAYMENT_STATUSES.has(offer.paymentStatus)) {
-        return inlineCopy(
-            {
-                de: `Zahlungsstatus ${offer.paymentStatus} erlaubt keine Preisänderung (nur EMPTY, SETUP oder PAYED).`,
-                en: `Payment status ${offer.paymentStatus} does not allow price changes (only EMPTY, SETUP, or PAYED).`,
-            },
-            locale,
-        );
+        return t(locale, 'admin', 'copy.paymentStatusNoPriceChanges', { status: offer.paymentStatus });
     }
     return null;
 }

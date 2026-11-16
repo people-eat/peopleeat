@@ -2,7 +2,8 @@ import { useForm, useSelector } from '@tanstack/react-form';
 import { useEffect, useId, useState } from 'react';
 import { toast } from 'sonner';
 
-import { formatCurrency, inlineCopy } from '../../shared';
+import { t } from '../../i18n/t';
+import { formatCurrency } from '../../shared';
 import type { Locale } from '../utils/locale';
 import { Button } from './base/button';
 import { Input } from './base/input';
@@ -69,7 +70,7 @@ export function BookingRequestDiscountEditor({
                 form.reset();
                 setRedeemInvalid(false);
                 setAwaitingServer('applied');
-                toast.success(inlineCopy({ de: 'Code eingelöst.', en: 'Code redeemed.' }, locale));
+                toast.success(t(locale, 'common', 'discount.redeemed'));
             } catch {
                 setRedeemInvalid(true);
             }
@@ -97,17 +98,9 @@ export function BookingRequestDiscountEditor({
             form.reset();
             setRedeemInvalid(false);
             setAwaitingServer('cleared');
-            toast.success(inlineCopy({ de: 'Rabatt entfernt.', en: 'Discount removed.' }, locale));
+            toast.success(t(locale, 'common', 'discount.removed'));
         } catch {
-            toast.error(
-                inlineCopy(
-                    {
-                        de: 'Rabatt konnte nicht entfernt werden.',
-                        en: 'Could not remove the discount.',
-                    },
-                    locale,
-                ),
-            );
+            toast.error(t(locale, 'common', 'discount.removeFailed'));
         } finally {
             setRemoveBusy(false);
         }
@@ -118,42 +111,21 @@ export function BookingRequestDiscountEditor({
             {hasDiscount ? (
                 <StatusAlert
                     tone="success"
-                    title={inlineCopy(
-                        {
-                            de: appliedKind === 'giftCard' ? 'Gutschein gesichert' : 'Promocode gesichert',
-                            en: appliedKind === 'giftCard' ? 'Gift card secured' : 'Promo code secured',
-                        },
-                        locale,
-                    )}
+                    title={t(locale, 'common', appliedKind === 'giftCard' ? 'discount.giftCardSecured' : 'discount.promoSecured')}
                     action={
                         canEdit ? (
                             <Button type="button" variant="outline" size="sm" disabled={controlsBusy} onClick={() => void removeDiscount()}>
-                                {inlineCopy({ de: 'Entfernen', en: 'Remove' }, locale)}
+                                {t(locale, 'common', 'remove')}
                             </Button>
                         ) : undefined
                     }
                 >
-                    {inlineCopy(
-                        {
-                            de: (
-                                <p>
-                                    {appliedKind === 'giftCard' ? 'Gutschein' : 'Promocode'}{' '}
-                                    <span className="font-semibold text-foreground">{appliedRedeemCode}</span> (
-                                    <span className="font-semibold text-foreground">{formatCurrency(amountCents, { locale })}</span>) ist
-                                    gesichert und wird automatisch von den Angebotspreisen abgezogen.
-                                </p>
-                            ),
-                            en: (
-                                <p>
-                                    {appliedKind === 'giftCard' ? 'Gift card' : 'Promo code'}{' '}
-                                    <span className="font-semibold text-foreground">{appliedRedeemCode}</span> (
-                                    <span className="font-semibold text-foreground">{formatCurrency(amountCents, { locale })}</span>) is
-                                    secured and will be automatically deducted from offer prices.
-                                </p>
-                            ),
-                        },
-                        locale,
-                    )}
+                    <p>
+                        {t(locale, 'common', appliedKind === 'giftCard' ? 'discount.giftCard' : 'discount.promoCode')}{' '}
+                        <span className="font-semibold text-foreground">{appliedRedeemCode}</span> (
+                        <span className="font-semibold text-foreground">{formatCurrency(amountCents, { locale })}</span>){' '}
+                        {t(locale, 'common', 'discount.securedSuffix')}
+                    </p>
                 </StatusAlert>
             ) : null}
 
@@ -170,7 +142,7 @@ export function BookingRequestDiscountEditor({
                         {(field) => (
                             <div className="grid gap-1.5">
                                 <label htmlFor={redeemInputId} className="text-sm font-medium text-foreground">
-                                    {inlineCopy({ de: 'Gutschein oder Promocode einlösen', en: 'Redeem voucher or promo code' }, locale)}
+                                    {t(locale, 'common', 'discount.redeemTitle')}
                                 </label>
                                 <Input
                                     id={redeemInputId}
@@ -181,7 +153,7 @@ export function BookingRequestDiscountEditor({
                                         setRedeemInvalid(false);
                                     }}
                                     onBlur={field.handleBlur}
-                                    placeholder={inlineCopy({ de: 'Code eingeben', en: 'Enter code' }, locale)}
+                                    placeholder={t(locale, 'common', 'discount.enterCode')}
                                     autoComplete="off"
                                     spellCheck={false}
                                     aria-invalid={redeemInvalid || undefined}
@@ -189,7 +161,7 @@ export function BookingRequestDiscountEditor({
                                 />
                                 {redeemInvalid ? (
                                     <p id={redeemErrorId} className="text-sm text-destructive" role="alert">
-                                        {inlineCopy({ de: 'Rabattcode ungültig.', en: 'This code is invalid.' }, locale)}
+                                        {t(locale, 'common', 'discount.invalid')}
                                     </p>
                                 ) : null}
                             </div>
@@ -203,7 +175,7 @@ export function BookingRequestDiscountEditor({
                                     variant="outline"
                                     disabled={controlsBusy || !canSubmit || redeemCode.trim().length === 0}
                                 >
-                                    {inlineCopy({ de: 'Einlösen', en: 'Redeem' }, locale)}
+                                    {t(locale, 'common', 'discount.redeem')}
                                 </Button>
                             )}
                         </form.Subscribe>

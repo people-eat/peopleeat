@@ -6,7 +6,7 @@ import type { SubmitEventHandler } from 'react';
 import { useMutation } from 'urql';
 
 import { t } from '../../../i18n/t';
-import { formatCurrency, formatDate, inlineCopy } from '../../../shared';
+import { formatCurrency, formatDate } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { Badge } from '../../components/base/badge';
 import { Button } from '../../components/base/button';
@@ -174,13 +174,7 @@ function AdminPromoCodeDetailFields({ promoCode }: { promoCode: AdminPromoCodeDe
                 label={t(locale, 'admin', 'copy.scope')}
                 value={
                     promoCode.scopedBookingRequestId
-                        ? inlineCopy(
-                              {
-                                  de: `An Buchungsanfrage gebunden (${promoCode.scopedBookingRequestId})`,
-                                  en: `Scoped to booking request (${promoCode.scopedBookingRequestId})`,
-                              },
-                              locale,
-                          )
+                        ? t(locale, 'admin', 'copy.scopedToBookingRequest', { id: promoCode.scopedBookingRequestId })
                         : t(locale, 'admin', 'copy.global')
                 }
                 mono={Boolean(promoCode.scopedBookingRequestId)}

@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useMutation } from 'urql';
 
-import { formatCurrency, inlineCopy } from '../../shared';
+import { t } from '../../i18n/t';
+import { formatCurrency } from '../../shared';
 import {
     ProfileBookingRequestChurnPromoCodeCreateDocument,
     ProfileBookingRequestDiscountUpdateDocument,
@@ -102,10 +103,11 @@ export function UserBookingRequestChurnDialog({
         }
     }
 
+    const discountAmount = formatCurrency(CHURN_DISCOUNT_AMOUNT_CENTS, { locale });
     const buttonLabel = {
-        DISCOUNT: inlineCopy({ de: 'Rabatt einlösen', en: 'Apply discount' }, locale),
-        RECALL: inlineCopy({ de: 'Rückruf anfordern', en: 'Request a call back' }, locale),
-        CANCEL: inlineCopy({ de: 'Weiter', en: 'Continue' }, locale),
+        DISCOUNT: t(locale, 'profileCustomer', 'm.applyDiscount'),
+        RECALL: t(locale, 'profileCustomer', 'm.requestACallBack'),
+        CANCEL: t(locale, 'profileCustomer', 'm.continue'),
     }[selectedOption];
 
     return (
@@ -117,16 +119,8 @@ export function UserBookingRequestChurnDialog({
         >
             <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
-                    <DialogTitle>{inlineCopy({ de: 'Warte kurz, bevor du gehst.', en: 'Wait, before you go.' }, locale)}</DialogTitle>
-                    <DialogDescription>
-                        {inlineCopy(
-                            {
-                                de: 'Wir möchten sicherstellen, dass du das bestmögliche Erlebnis bekommst. Hier sind unsere Angebote für dich:',
-                                en: 'We want to make sure you get the best possible experience. Here are our offers for you:',
-                            },
-                            locale,
-                        )}
-                    </DialogDescription>
+                    <DialogTitle>{t(locale, 'profileCustomer', 'm.waitBeforeYouGo')}</DialogTitle>
+                    <DialogDescription>{t(locale, 'profileCustomer', 'm.weWantToMakeSureYou')}</DialogDescription>
                 </DialogHeader>
 
                 <div className="flex flex-col gap-3">
@@ -142,31 +136,13 @@ export function UserBookingRequestChurnDialog({
                                 <BadgePercentIcon className="size-5" />
                             </div>
                         }
-                        title={inlineCopy(
-                            {
-                                de: `${formatCurrency(CHURN_DISCOUNT_AMOUNT_CENTS, { locale })} Rabatt nur für dich`,
-                                en: `${formatCurrency(CHURN_DISCOUNT_AMOUNT_CENTS, { locale })} discount just for you`,
-                            },
-                            locale,
-                        )}
-                        badge={inlineCopy({ de: 'Empfohlen', en: 'Recommended' }, locale)}
-                        description={inlineCopy(
-                            {
-                                de: `Wir möchten, dass dein Abend unvergesslich wird. Deshalb schenken wir dir exklusiv für diese Buchung einen Rabatt von ${formatCurrency(CHURN_DISCOUNT_AMOUNT_CENTS, { locale })}.`,
-                                en: `We want your evening to be unforgettable. That's why we're giving you an exclusive ${formatCurrency(CHURN_DISCOUNT_AMOUNT_CENTS, { locale })} discount for this booking.`,
-                            },
-                            locale,
-                        )}
+                        title={t(locale, 'profileCustomer', 'm.discountJustForYou', { v1: discountAmount })}
+                        badge={t(locale, 'profileCustomer', 'm.recommended')}
+                        description={t(locale, 'profileCustomer', 'm.weWantYourEveningTo', { v1: discountAmount })}
                     >
                         {discountError ? (
                             <p className="text-sm text-destructive" role="alert">
-                                {inlineCopy(
-                                    {
-                                        de: 'Der Rabattcode ist leider nicht mehr gültig.',
-                                        en: 'The discount code is no longer valid.',
-                                    },
-                                    locale,
-                                )}
+                                {t(locale, 'profileCustomer', 'm.theDiscountCodeIsNoLonger')}
                             </p>
                         ) : null}
                     </ChurnOptionCard>
@@ -180,14 +156,8 @@ export function UserBookingRequestChurnDialog({
                                 <PhoneIcon className="size-5" />
                             </div>
                         }
-                        title={inlineCopy({ de: 'Rückruf anfordern', en: 'Request a call back' }, locale)}
-                        description={inlineCopy(
-                            {
-                                de: 'Wir rufen dich zurück und finden gemeinsam die beste Lösung für dich.',
-                                en: 'We will call you back and find the best solution together.',
-                            },
-                            locale,
-                        )}
+                        title={t(locale, 'profileCustomer', 'm.requestACallBack')}
+                        description={t(locale, 'profileCustomer', 'm.weWillCallYouBackAnd')}
                     />
 
                     <ChurnOptionCard
@@ -199,20 +169,14 @@ export function UserBookingRequestChurnDialog({
                                 <MinusCircleIcon className="size-5" />
                             </div>
                         }
-                        title={inlineCopy({ de: 'Anfrage trotzdem stornieren', en: 'Cancel request anyway' }, locale)}
-                        description={inlineCopy(
-                            {
-                                de: 'Schade, dass es nicht geklappt hat. Du kannst jederzeit neu anfragen.',
-                                en: "Sorry it didn't work out. You can always make a new request.",
-                            },
-                            locale,
-                        )}
+                        title={t(locale, 'profileCustomer', 'm.cancelRequestAnyway')}
+                        description={t(locale, 'profileCustomer', 'm.sorryItDidnTWorkOut')}
                     />
                 </div>
 
                 <DialogFooter>
                     <Button type="button" variant="outline" onClick={onClose} disabled={busy}>
-                        {inlineCopy({ de: 'Schließen', en: 'Close' }, locale)}
+                        {t(locale, 'profileCustomer', 'm.close')}
                     </Button>
                     <Button type="button" onClick={() => void handleContinue()} disabled={busy}>
                         {buttonLabel}

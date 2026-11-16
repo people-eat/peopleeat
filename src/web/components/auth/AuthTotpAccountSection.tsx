@@ -5,14 +5,13 @@ import type { SubmitEventHandler } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
-import { inlineCopy } from '../../../shared';
 import {
     AccountAuthTotpDisableDocument,
     AccountAuthTotpEnrollCancelDocument,
     AccountAuthTotpEnrollConfirmDocument,
     AccountAuthTotpEnrollStartDocument,
 } from '../../graphql/generated';
-import { useLocale } from '../../hooks/useLocale';
+import { useT } from '../../hooks/useT';
 import { Button } from '../base/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../base/dialog';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '../base/input-otp';
@@ -25,7 +24,8 @@ type TotpSummary = {
 } | null;
 
 export function AuthTotpAccountSection({ totp, actionBusy }: { totp: TotpSummary; actionBusy: boolean }) {
-    const locale = useLocale();
+    const { t } = useT('public');
+    const { t: tCommon } = useT('common');
     const [busy, setBusy] = useState(false);
     const [enrollOpen, setEnrollOpen] = useState(false);
     const [otpauthUrl, setOtpauthUrl] = useState<string | null>(null);
@@ -51,7 +51,7 @@ export function AuthTotpAccountSection({ totp, actionBusy }: { totp: TotpSummary
             const result = await enrollStart({});
             const payload = result.data?.user.authTotpEnrollStart;
             if (result.error || !payload) {
-                toast.error(inlineCopy({ de: 'Einrichtung fehlgeschlagen.', en: 'Could not start enrollment.' }, locale));
+                toast.error(t('auth.totpEnrollFailed'));
                 return;
             }
             setOtpauthUrl(payload.otpauthUrl);
@@ -73,7 +73,7 @@ export function AuthTotpAccountSection({ totp, actionBusy }: { totp: TotpSummary
             const result = await enrollConfirm({ code });
             const codes = result.data?.user.authTotpEnrollConfirm.recoveryCodes;
             if (result.error || !codes) {
-                toast.error(inlineCopy({ de: 'Code ungültig.', en: 'Invalid code.' }, locale));
+                toast.error(t('auth.totpCodeInvalid'));
                 confirmStarted.current = false;
                 return;
             }
@@ -81,7 +81,7 @@ export function AuthTotpAccountSection({ totp, actionBusy }: { totp: TotpSummary
             setOtpauthUrl(null);
             setSecret(null);
             setConfirmCode('');
-            toast.success(inlineCopy({ de: 'Zwei-Faktor-Authentifizierung aktiviert.', en: 'Two-factor authentication enabled.' }, locale));
+            toast.success(t('auth.totpEnabled'));
         } finally {
             setBusy(false);
         }
@@ -114,9 +114,9 @@ export function AuthTotpAccountSection({ totp, actionBusy }: { totp: TotpSummary
         if (!secret) return;
         try {
             await navigator.clipboard.writeText(secret);
-            toast.success(inlineCopy({ de: 'Geheimnis kopiert.', en: 'Secret copied.' }, locale));
+            toast.success(t('auth.secretCopied'));
         } catch {
-            toast.error(inlineCopy({ de: 'Kopieren fehlgeschlagen.', en: 'Could not copy.' }, locale));
+            toast.error(t('auth.copyFailed'));
         }
     }
 
@@ -124,9 +124,9 @@ export function AuthTotpAccountSection({ totp, actionBusy }: { totp: TotpSummary
         if (!recoveryCodes) return;
         try {
             await navigator.clipboard.writeText(recoveryCodes.join('\n'));
-            toast.success(inlineCopy({ de: 'Wiederherstellungscodes kopiert.', en: 'Recovery codes copied.' }, locale));
+            toast.success(t('auth.recoveryCopied'));
         } catch {
-            toast.error(inlineCopy({ de: 'Kopieren fehlgeschlagen.', en: 'Could not copy.' }, locale));
+            toast.error(t('auth.copyFailed'));
         }
     }
 
@@ -148,15 +148,13 @@ export function AuthTotpAccountSection({ totp, actionBusy }: { totp: TotpSummary
         try {
             const result = await disable({ code });
             if (result.error || !result.data?.user.authTotpDisable.success) {
-                toast.error(inlineCopy({ de: 'Code ungültig.', en: 'Invalid code.' }, locale));
+                toast.error(t('auth.totpCodeInvalid'));
                 disableStarted.current = false;
                 return;
             }
             setDisableOpen(false);
             setDisableCode('');
-            toast.success(
-                inlineCopy({ de: 'Zwei-Faktor-Authentifizierung deaktiviert.', en: 'Two-factor authentication disabled.' }, locale),
-            );
+            toast.success(t('auth.totpDisabled'));
         } finally {
             setBusy(false);
         }
@@ -175,41 +173,25 @@ export function AuthTotpAccountSection({ totp, actionBusy }: { totp: TotpSummary
                         <div className="grid gap-0.5">
                             <p className="flex items-center gap-2 text-sm text-foreground">
                                 <ShieldCheckIcon className="size-4" aria-hidden />
-                                {inlineCopy({ de: 'Authenticator-App aktiv', en: 'Authenticator app enabled' }, locale)}
+                                {t('auth.authenticatorActive')}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                                {inlineCopy(
-                                    {
-                                        de: `${totp.recoveryCodesRemaining} Wiederherstellungscodes übrig`,
-                                        en: `${totp.recoveryCodesRemaining} recovery codes remaining`,
-                                    },
-                                    locale,
-                                )}
+                                {t('auth.recoveryRemaining', { count: totp.recoveryCodesRemaining })}
                             </p>
                         </div>
                         <Button type="button" variant="destructive" size="sm" disabled={disabled} onClick={() => setDisableOpen(true)}>
-                            {inlineCopy({ de: 'Deaktivieren', en: 'Disable' }, locale)}
+                            {t('auth.disable')}
                         </Button>
                     </div>
                 </div>
             ) : (
                 <div className="flex items-center justify-between gap-4 rounded-xl border bg-card px-4 py-3">
                     <div className="grid gap-0.5">
-                        <p className="text-sm text-foreground">
-                            {inlineCopy({ de: 'Authenticator-App', en: 'Authenticator app' }, locale)}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                            {inlineCopy(
-                                {
-                                    de: 'Zusätzlicher Schutz beim Anmelden mit einer App wie Google Authenticator.',
-                                    en: 'Extra protection at sign-in with an app like Google Authenticator.',
-                                },
-                                locale,
-                            )}
-                        </p>
+                        <p className="text-sm text-foreground">{t('auth.authenticatorApp')}</p>
+                        <p className="text-xs text-muted-foreground">{t('auth.authenticatorBlurb')}</p>
                     </div>
                     <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={() => void onEnable()}>
-                        {inlineCopy({ de: 'Aktivieren', en: 'Enable' }, locale)}
+                        {t('auth.enable')}
                     </Button>
                 </div>
             )}
@@ -224,18 +206,8 @@ export function AuthTotpAccountSection({ totp, actionBusy }: { totp: TotpSummary
                     {recoveryCodes != null ? (
                         <>
                             <DialogHeader>
-                                <DialogTitle>
-                                    {inlineCopy({ de: 'Wiederherstellungscodes speichern', en: 'Save your recovery codes' }, locale)}
-                                </DialogTitle>
-                                <DialogDescription>
-                                    {inlineCopy(
-                                        {
-                                            de: 'Jeder Code funktioniert nur einmal. Speichere sie an einem sicheren Ort. Sie werden nicht erneut angezeigt.',
-                                            en: 'Each code works once. Store them somewhere safe. They will not be shown again.',
-                                        },
-                                        locale,
-                                    )}
-                                </DialogDescription>
+                                <DialogTitle>{t('auth.saveRecoveryTitle')}</DialogTitle>
+                                <DialogDescription>{t('auth.saveRecoveryBody')}</DialogDescription>
                             </DialogHeader>
                             <ul className="grid gap-1 rounded-xl border bg-muted/40 px-4 py-3 font-mono text-sm">
                                 {recoveryCodes.map((code) => (
@@ -245,32 +217,22 @@ export function AuthTotpAccountSection({ totp, actionBusy }: { totp: TotpSummary
                             <DialogFooter className="gap-2 sm:justify-between">
                                 <div className="flex flex-wrap gap-2">
                                     <Button type="button" variant="outline" onClick={() => void onCopyRecoveryCodes()}>
-                                        {inlineCopy({ de: 'Kopieren', en: 'Copy' }, locale)}
+                                        {t('auth.copy')}
                                     </Button>
                                     <Button type="button" variant="outline" onClick={onDownloadRecoveryCodes}>
-                                        {inlineCopy({ de: 'Download', en: 'Download' }, locale)}
+                                        {t('auth.download')}
                                     </Button>
                                 </div>
                                 <Button type="button" onClick={() => void onEnrollDismiss()}>
-                                    {inlineCopy({ de: 'Fertig', en: 'Done' }, locale)}
+                                    {t('auth.done')}
                                 </Button>
                             </DialogFooter>
                         </>
                     ) : (
                         <form className="grid gap-4" onSubmit={onConfirmSubmit}>
                             <DialogHeader>
-                                <DialogTitle>
-                                    {inlineCopy({ de: 'Authenticator-App einrichten', en: 'Set up authenticator app' }, locale)}
-                                </DialogTitle>
-                                <DialogDescription>
-                                    {inlineCopy(
-                                        {
-                                            de: 'Scanne den QR-Code mit deiner App und gib danach den aktuellen Code ein.',
-                                            en: 'Scan the QR code with your app, then enter the current code.',
-                                        },
-                                        locale,
-                                    )}
-                                </DialogDescription>
+                                <DialogTitle>{t('auth.setupAuthenticatorTitle')}</DialogTitle>
+                                <DialogDescription>{t('auth.setupAuthenticatorBody')}</DialogDescription>
                             </DialogHeader>
                             {otpauthUrl != null ? (
                                 <div className="flex justify-center rounded-xl border bg-white p-4">
@@ -279,15 +241,13 @@ export function AuthTotpAccountSection({ totp, actionBusy }: { totp: TotpSummary
                             ) : null}
                             {secret != null ? (
                                 <div className="grid gap-2">
-                                    <p className="text-xs text-muted-foreground">
-                                        {inlineCopy({ de: 'Oder manuell eingeben:', en: 'Or enter manually:' }, locale)}
-                                    </p>
+                                    <p className="text-xs text-muted-foreground">{t('auth.orEnterManually')}</p>
                                     <div className="flex items-center gap-2">
                                         <code className="min-w-0 flex-1 truncate rounded-md border bg-muted/40 px-3 py-2 font-mono text-xs">
                                             {secret}
                                         </code>
                                         <Button type="button" variant="outline" size="sm" onClick={() => void onCopySecret()}>
-                                            {inlineCopy({ de: 'Kopieren', en: 'Copy' }, locale)}
+                                            {t('auth.copy')}
                                         </Button>
                                     </div>
                                 </div>
@@ -307,7 +267,7 @@ export function AuthTotpAccountSection({ totp, actionBusy }: { totp: TotpSummary
                                     inputMode="numeric"
                                     pattern="[0-9]*"
                                     disabled={disabled}
-                                    aria-label={inlineCopy({ de: 'Authenticator-Code', en: 'Authenticator code' }, locale)}
+                                    aria-label={t('auth.authenticatorCode')}
                                 >
                                     <InputOTPGroup>
                                         <InputOTPSlot index={0} />
@@ -321,10 +281,10 @@ export function AuthTotpAccountSection({ totp, actionBusy }: { totp: TotpSummary
                             </div>
                             <DialogFooter className="gap-2 sm:justify-between">
                                 <Button type="button" variant="ghost" disabled={disabled} onClick={() => void onEnrollDismiss()}>
-                                    {inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, locale)}
+                                    {tCommon('cancel')}
                                 </Button>
                                 <Button type="submit" disabled={disabled || confirmCode.length !== 6}>
-                                    {inlineCopy({ de: 'Bestätigen', en: 'Confirm' }, locale)}
+                                    {t('auth.confirm')}
                                 </Button>
                             </DialogFooter>
                         </form>
@@ -345,18 +305,8 @@ export function AuthTotpAccountSection({ totp, actionBusy }: { totp: TotpSummary
                 <DialogContent className="sm:max-w-md">
                     <form className="grid gap-4" onSubmit={onDisableSubmit}>
                         <DialogHeader>
-                            <DialogTitle>
-                                {inlineCopy({ de: 'Zwei-Faktor deaktivieren?', en: 'Disable two-factor authentication?' }, locale)}
-                            </DialogTitle>
-                            <DialogDescription>
-                                {inlineCopy(
-                                    {
-                                        de: 'Danach reicht beim Anmelden die E-Mail oder ein Passkey. Der zusätzliche App-Code entfällt. Gib zur Bestätigung einen aktuellen Code aus deiner Authenticator-App ein.',
-                                        en: 'After this, sign-in only needs email or a passkey. The extra app code is no longer required. Enter a current authenticator code to confirm.',
-                                    },
-                                    locale,
-                                )}
-                            </DialogDescription>
+                            <DialogTitle>{t('auth.disableTotpTitle')}</DialogTitle>
+                            <DialogDescription>{t('auth.disableTotpBody')}</DialogDescription>
                         </DialogHeader>
                         <div className="flex justify-center py-1">
                             <InputOTP
@@ -386,10 +336,10 @@ export function AuthTotpAccountSection({ totp, actionBusy }: { totp: TotpSummary
                         </div>
                         <DialogFooter>
                             <Button type="button" variant="outline" disabled={disabled} onClick={() => setDisableOpen(false)}>
-                                {inlineCopy({ de: 'Abbrechen', en: 'Cancel' }, locale)}
+                                {tCommon('cancel')}
                             </Button>
                             <Button type="submit" variant="destructive" disabled={disabled || disableCode.length !== 6}>
-                                {inlineCopy({ de: 'Deaktivieren', en: 'Disable' }, locale)}
+                                {t('auth.disable')}
                             </Button>
                         </DialogFooter>
                     </form>
