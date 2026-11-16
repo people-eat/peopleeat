@@ -9387,7 +9387,10 @@ export type GqlCPublicCityPageQuery = {
 export type GqlCExpansionCountryPageQueryVariables = Exact<{ [key: string]: never }>;
 
 export type GqlCExpansionCountryPageQuery = {
-    currentSession: { user: { admin: { adminId: string } | null; cook: { cookId: string } | null } | null };
+    currentSession: {
+        activeFeatureToggleKeys: Array<Schema.GqlCFeatureToggleKey>;
+        user: { admin: { adminId: string } | null; cook: { cookId: string } | null } | null;
+    };
 };
 
 export type GqlCGiftCardCheckoutPageQueryVariables = Exact<{ [key: string]: never }>;
@@ -9652,7 +9655,10 @@ export type GqlCHomePageQuery = {
 export type GqlCHowToBecomeAChefPageQueryVariables = Exact<{ [key: string]: never }>;
 
 export type GqlCHowToBecomeAChefPageQuery = {
-    currentSession: { user: { admin: { adminId: string } | null; cook: { cookId: string } | null } | null };
+    currentSession: {
+        activeFeatureToggleKeys: Array<Schema.GqlCFeatureToggleKey>;
+        user: { admin: { adminId: string } | null; cook: { cookId: string } | null } | null;
+    };
     publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
 };
 
@@ -45602,6 +45608,7 @@ export const ExpansionCountryPageDocument = {
                         selectionSet: {
                             kind: 'SelectionSet',
                             selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'activeFeatureToggleKeys' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'user' },
@@ -46657,6 +46664,7 @@ export const HowToBecomeAChefPageDocument = {
                         selectionSet: {
                             kind: 'SelectionSet',
                             selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'activeFeatureToggleKeys' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'user' },

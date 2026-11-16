@@ -1,5 +1,6 @@
 import type { ExpansionMarket } from '../../shared/expansionMarkets';
 import { expansionMarketFaqEntries } from '../../shared/expansionMarkets';
+import { featureToggleIsActive } from '../../shared/featureToggle';
 import { Footer } from '../components/Footer';
 import { Header } from '../components/Header';
 import type { GqlCExpansionCountryPageQuery } from '../graphql/generated';
@@ -8,6 +9,7 @@ import { SectionBenefitsForChefs } from '../sections/SectionBenefitsForChefs';
 import { SectionChefOnboardingProcess } from '../sections/SectionChefOnboardingProcess';
 import { SectionChefTestimonials } from '../sections/SectionChefTestimonials';
 import { SectionComingToCountryCities } from '../sections/SectionComingToCountryCities';
+import { SectionCookInvitePromo } from '../sections/SectionCookInvitePromo';
 import { SectionHowToBecomeAChefMain } from '../sections/SectionHowToBecomeAChefMain';
 import { SectionQuestionsAndAnswers } from '../sections/SectionQuestionsAndAnswers';
 import { SectionReadyToBecomeAChef } from '../sections/SectionReadyToBecomeAChef';
@@ -15,6 +17,7 @@ import { SectionReadyToBecomeAChef } from '../sections/SectionReadyToBecomeAChef
 export function FoundingChefCountryPage({ data, market }: { data: GqlCExpansionCountryPageQuery; market: ExpansionMarket }) {
     const locale = useLocale();
     const isCook = Boolean(data.currentSession.user?.cook);
+    const inviteEnabled = featureToggleIsActive(data.currentSession.activeFeatureToggleKeys, 'COOK_INVITE');
     const faqs = expansionMarketFaqEntries(market, 'foundingChef', locale);
 
     return (
@@ -26,6 +29,7 @@ export function FoundingChefCountryPage({ data, market }: { data: GqlCExpansionC
                 <SectionChefOnboardingProcess market={market} />
                 <SectionBenefitsForChefs market={market} />
                 <SectionReadyToBecomeAChef isCook={isCook} market={market} />
+                {inviteEnabled ? <SectionCookInvitePromo isCook={isCook} /> : null}
                 <SectionChefTestimonials />
                 <SectionQuestionsAndAnswers faqs={faqs.map((faq) => ({ question: faq.question, answer: faq.answer }))} />
             </main>

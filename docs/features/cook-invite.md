@@ -203,8 +203,10 @@ v1 live program writes `unlockKind: 'FIRST_EVENT'` and `benefit.kind: 'COOK_PLAT
 - Fee apply: `cookBookingRequestOfferCreate` stamps open fee-booking credit; consume on `PAYED` via `bookingRequestOfferPaymentFinalize`
 - GraphQL: `Cook.invitees`, `Cook.inviteOpenFeeCreditRemainingBookings`; `AdminCook.invitedByCookId` / `inviteReward` / `inviteRewards`;
   `AdminMutation.cookInviteRewardRevoke`
-- Toggle `COOK_INVITE`: entry only (sidebar + `/profile/invite`). Attribution/rewards stay on when off
+- Toggle `COOK_INVITE`: entry only (sidebar + `/profile/invite` + recruitment promo on how-to-become-a-chef / founding-chef country pages).
+  Attribution/rewards stay on when off
 - UI: [`ProfileCookInvitePage`](../../src/web/pages/profile/ProfileCookInvitePage.tsx) (hero illustration
-  `public/illustrations/cook-invite.png`); chef-sign-up `?invite=`
+  `public/illustrations/cook-invite.png`); public [`SectionCookInvitePromo`](../../src/web/sections/SectionCookInvitePromo.tsx);
+  chef-sign-up `?invite=`
 - See [booking.md](../architecture/booking.md), [booking-payment.md](./booking-payment.md),
   [admin-feature-toggles.md](./admin-feature-toggles.md)

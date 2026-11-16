@@ -1,5 +1,6 @@
 query ExpansionCountryPage {
     currentSession {
+        activeFeatureToggleKeys
         user {
             ...PublicHeaderUser
         }
