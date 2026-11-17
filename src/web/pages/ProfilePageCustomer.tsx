@@ -129,7 +129,7 @@ export function ProfilePageCustomer({ name, user }: { name: string; user: GqlCPr
     const nextDinnerCardAttention = inlineAttention == null ? undefined : (cardAttentionFromOverview(inlineAttention, locale) ?? undefined);
 
     return (
-        <main id="main-content" className="mx-auto grid min-h-0 w-full max-w-3xl flex-1 content-start gap-8">
+        <main id="main-content" className="@container mx-auto grid min-h-0 w-full max-w-3xl flex-1 content-start gap-8">
             <div className="grid gap-2">
                 <h1 className="font-serif text-2xl/tight text-foreground">{t(locale, 'profile', 'overview.hello', { name })}</h1>
                 <p className="text-muted-foreground">{t(locale, 'profile', 'overview.subtitle')}</p>
@@ -188,7 +188,11 @@ export function ProfilePageCustomer({ name, user }: { name: string; user: GqlCPr
                             </Button>
                         ) : null}
                     </div>
-                    <CustomerBookingRequestCard request={nextDinnerRequest} attention={nextDinnerCardAttention} />
+                    <ul className="grid auto-rows-fr grid-cols-1 items-stretch gap-4 @md:grid-cols-2 @2xl:grid-cols-3 @5xl:grid-cols-4 @7xl:grid-cols-5 @8xl:grid-cols-6">
+                        <li className="grid min-h-0 min-w-0">
+                            <CustomerBookingRequestCard request={nextDinnerRequest} attention={nextDinnerCardAttention} />
+                        </li>
+                    </ul>
                 </section>
             ) : null}
 

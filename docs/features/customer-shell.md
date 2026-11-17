@@ -34,8 +34,10 @@ Customer home answers “what should I do next?”, not a second booking-request
    Attention (`kind: requests`) stays standalone.
 2. **Create booking request:** primary empty-state alert when the customer has no requests; quiet secondary row when they have requests and
    nothing needs attention; omitted while Attention is showing so accept/pay wins.
-3. **Next dinner:** soonest active request rendered with `CustomerBookingRequestCard` (same card as `/profile/booking-requests`). “View all”
-   when more than one active request. Full grids stay on `/profile/booking-requests`.
+3. **Next dinner:** soonest active request rendered with `CustomerBookingRequestCard` (same card as `/profile/booking-requests`), in the
+   same container-query card grid. Overview stays a centered `max-w-3xl` column and marks that column as the `@container`, so the grid
+   columns follow the readable column, not the viewport. “View all” when more than one active request. Full request lists stay on
+   `/profile/booking-requests`.
 4. **All clear** when Attention is empty and at least one request exists.
 
 Booking journeys under this shell are documented in [booking.md](./booking.md), [booking-request-create.md](./booking-request-create.md),
@@ -93,7 +95,8 @@ booking requests (full subtree), gift cards, and support. Other `/profile/*` pat
   `userUpdates`. See [attention.md](../architecture/attention.md).
 - Overview model: `User.attention` (`userAttentionFindMany` → `userAttentionDerive`) supplies the ranked items; wording, tone, and card
   badge labels come from `src/shared/attentionCopy.ts`. `src/web/pages/profilePageCustomerOverview.ts` attaches routes, caps at three, folds
-  into Next dinner, and picks the create mode → `ProfilePageCustomer` (Next dinner uses `CustomerBookingRequestCard`). See
+  into Next dinner, and picks the create mode → `ProfilePageCustomer` (Next dinner uses `CustomerBookingRequestCard` in the same
+  container-query card grid as `ProfileCustomerBookingRequestsPage`, with `@container` on the centered overview column). See
   [attention.md](../architecture/attention.md).
 - Key files: `src/web/pages/profile/ProfileLayout.tsx` (`CustomerShell`, `ProfileAssistantPane`), `src/web/components/CustomerSidebar.tsx`,
   `CustomerBreadcrumbs.tsx`, `CustomerBookingRequestCard.tsx`, `AssistantTriggerButton.tsx`, `ProfileAssistantSidebar.tsx`,

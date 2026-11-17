@@ -19,8 +19,9 @@ Signed-in users land on `/profile`, which routes customers and cooks into the ri
    surfaces Attention items and a Getting started checklist (not a permanent “approved” banner) — [cook-profile.md](./cook-profile.md).
    **Customer** overview mirrors that job: Attention (offers to review, payment due, unread chat with `?tab=chat`, upcoming call, missing
    review), a create-request CTA that is primary when empty / secondary when calm / hidden when Attention wins, a single Next dinner
-   snapshot with light status counts, and Getting started only for the first request (UI uses the primary empty-state alert instead of
-   duplicating the checklist). Full request grids stay on `/profile/booking-requests`.
+   snapshot with light status counts (the card sits in the same container-query grid as `/profile/booking-requests`, queried against the
+   overview’s centered column), and Getting started only for the first request (UI uses the primary empty-state alert instead of duplicating
+   the checklist). Full request lists stay on `/profile/booking-requests`.
 
 ## Decisions
 
