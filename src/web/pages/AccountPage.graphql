@@ -48,6 +48,7 @@ fragment AccountPageUser on User {
     locale
     timeZone
     createdAt
+    accountDeletionScheduledFor
     profilePicture {
         fileUploadId
         url
@@ -174,6 +175,15 @@ mutation AccountTerminateSessions($sessionIds: [ID!]!) {
     }
 }
 
+mutation AccountUserAccountDeletionIntent {
+    user {
+        userAccountDeletionIntent {
+            success
+            referenceId
+        }
+    }
+}
+
 mutation AccountUserAnonymizeOtpRequest($locale: Locale!) {
     user {
         userAnonymizeOtpRequest(locale: $locale) {
@@ -186,6 +196,15 @@ mutation AccountUserAnonymizeOtpRequest($locale: Locale!) {
 mutation AccountUserAnonymize($code: String!) {
     user {
         userAnonymize(code: $code) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AccountUserAccountDeletionCancel {
+    user {
+        userAccountDeletionCancel {
             success
             referenceId
         }

@@ -45,20 +45,32 @@ verify rejects when already signed in so the two flows stay separate. A successf
 Customer-facing copy is **delete account**. The server **anonymizes** the `Users` row so relational history (bookings, offers, chats keyed
 by `userId`) stays joinable for chefs and operations.
 
-Self-serve deletion is two steps. **Send code** emails a one-time code to the current address (`userAnonymizeOtpRequest`). **Delete
-account** checks that code and then anonymizes (`userAnonymize(code)`). Closing the dialog before the code is entered leaves the code
-unused. Admin deletion stays `AdminMutation.userAnonymize(userId)` without the email step. Success toasts, then hard-navigates via
-`redirectAfterSignOut`. On the user detail general tab, admins can also see and remove that account’s passkeys and authenticator
-(`userPasskeyDelete`, `userTotpDelete`) and edit notification settings. See [admin-users.md](./admin-users.md).
+Self-serve deletion is a **scheduled** waiting period, not an immediate scrub:
 
-On success the command:
+1. Clicking **Konto löschen** / **Delete account** opens the confirm dialog and fires `userAccountDeletionIntent` (Slack sign-ups: deletion
+   started).
+2. **Send code** emails a one-time code (`userAnonymizeOtpRequest`).
+3. Confirming the code (`userAnonymize(code)`) sets `Users.accountDeletionScheduledFor` to
+   `max(now + 7 days, lastDualAcceptedEvent.dateTime + 7 days)` and enqueues `user-account-deletion-apply` (Slack: deletion requested). The
+   account stays fully usable; the user can cancel via `userAccountDeletionCancel`.
+4. When the job runs it cancels cancelable booking requests, declines open cook offers, scrubs PII, emails `ACCOUNT_DELETED`, and Slack
+   posts deletion took place.
 
-1. Sets `Users.status = ANONYMIZED`, nulls `emailAddress`, clears `previousEmailAddresses`, blanks names, clears phone / birth date /
-   preferred communication / notification settings / profile picture.
-2. Terminates all sessions for the user (and clears pending TOTP session state).
-3. Deletes passkeys, TOTP secrets, WebAuthn challenges, and linked OAuth identities (`AuthOauthIdentities`).
-4. Sets `Cooks.isVisible = false` when a cook row exists (biography, travel address, Stripe ids retained for now).
-5. Publishes `userUpdates` + `adminUpdates` (self-serve also refreshes the current session).
+Admin anonymize is `AdminMutation.userAnonymize(userId, mode)` with `IMMEDIATE` (cool-off gated, then scrub now) or `SCHEDULE` (same formula
+as self-serve). Ban is cool-off gated and runs the same marketplace cleanup. See [admin-users.md](./admin-users.md).
+
+On scrub (`userAnonymizeApply`):
+
+1. Cancels cancelable owned booking requests and declines open non dual-accepted cook offers.
+2. Sets `Users.status = ANONYMIZED`, nulls `emailAddress`, clears `previousEmailAddresses`, blanks names, clears phone / birth date /
+   preferred communication / notification settings / profile picture / `accountDeletionScheduledFor`.
+3. Terminates all sessions for the user (and clears pending TOTP session state).
+4. Deletes passkeys, TOTP secrets, WebAuthn challenges, and linked OAuth identities (`AuthOauthIdentities`).
+5. Sets `Cooks.isVisible = false` when a cook row exists (biography, travel address, Stripe ids retained for now).
+6. Publishes `userUpdates` + `adminUpdates`.
+
+`PublicUser.status` is exposed so UIs can label anonymized authors; hydrate sets `display` to a deleted-account label when status is
+`ANONYMIZED`. Cook pool / offer create require the customer to be `ACTIVE`.
 
 `Users.emailAddress` is nullable for this reason: null is the explicit “do not email” signal so lifecycle jobs and outbound mail skip the
 row instead of sending to a placeholder. GraphQL `User.emailAddress` / `AdminUser.emailAddress` are nullable accordingly. Auth (email OTP
@@ -114,21 +126,24 @@ with a null email.
 - Page: `src/web/pages/AccountPage.tsx` + `AccountPage.graphql`.
 - Live state: `useUserUpdatesSeed` + `userUpdates`; session OTP via `useSessionUpdatesSeed` + `sessionUpdates`. Mutations must not
   `router.invalidate()` — passkey register and preferred communication publish `userUpdates` after commit.
-- GraphQL: `User.sessions` / `passkeys` / `timeBasedOneTimePassword` / `createdAt`; `Session.authEmailOtp`; `emailAddressUpdateOtpRequest` /
-  `emailAddressUpdateOtpVerify`; TOTP enroll/confirm/cancel/disable; `userAnonymizeOtpRequest` then `userAnonymize(code)`; reuse
-  `authEmailOtpDelete`, `terminateSessions`, passkey mutations. Admin: `AdminMutation.userAnonymize`.
+- GraphQL: `User.sessions` / `passkeys` / `timeBasedOneTimePassword` / `createdAt` / `accountDeletionScheduledFor`; `Session.authEmailOtp`;
+  `emailAddressUpdateOtpRequest` / `emailAddressUpdateOtpVerify`; TOTP enroll/confirm/cancel/disable; `userAccountDeletionIntent`,
+  `userAnonymizeOtpRequest`, `userAnonymize(code)`, `userAccountDeletionCancel`; reuse `authEmailOtpDelete`, `terminateSessions`, passkey
+  mutations. Admin: `AdminMutation.userAnonymize(userId, mode)`, `userAccountDeletionCancel(userId)`.
 - Delete confirmation uses `AuthEmailOtps.purpose = ACCOUNT_DELETE` so the code does not open the email-change dialog. Email-change rows use
   `EMAIL_ADDRESS_UPDATE`. Log-on rows stay `LOG_ON`.
 - TOTP UI: `AuthTotpAccountSection` (large QR via `qrcode.react`, manual secret, recovery codes copy/download).
-- Sign-out / post-delete: terminate or anonymize then hard-navigate to `/log-on` so a fresh anonymous session remounts root probes (cookie
-  banner, legal gate).
+- Sign-out: terminate then hard-navigate to `/log-on`. Self-serve delete schedules and stays signed in until the job scrubs.
 - Email skip helper: `emailAddressPresent` used by lifecycle/job send paths.
 
-Commands: `userAnonymizeApply.ts`, `userAnonymize.ts`, `userAnonymizeOtpRequest.ts`, `adminUserAnonymize.ts`,
-`emailAddressUpdateOtpRequest.ts`, `emailAddressUpdateOtpVerify.ts`. Email templates: `EmailAddressUpdateOtpRequestForUserEmail.tsx`,
-`AccountDeleteOtpRequestForUserEmail.tsx`. UI: `PreferredCommunicationField.tsx`, `AuthEmailOtpSpamHint` on the email-change OTP dialog;
-`LanguageSwitcher` + `LocaleMismatchGate` (profile language on `Users.locale`); `TimeZoneField` + `Users.timeZone` / `useTimeZone`. Klaviyo
-upsert job: `userKlaviyoProfileSync` (see [klaviyo-profile-sync.md](./klaviyo-profile-sync.md)).
+Commands: `userAnonymizeApply.ts`, `userAnonymize.ts`, `userAnonymizeOtpRequest.ts`, `userAccountDeletionIntent.ts`,
+`userAccountDeletionCancel.ts`, `adminUserAnonymize.ts`, `adminUserAccountDeletionCancel.ts`, `emailAddressUpdateOtpRequest.ts`,
+`emailAddressUpdateOtpVerify.ts`. Utils: `userDualAcceptedEventCoolOff.ts`, `userAccountDeletionSchedule.ts`,
+`userMarketplaceOpenCleanup.ts`. Job: `userAccountDeletionApply`. Slack: `slackNotifyAccountDeletion.ts` → sign-ups channel. Email
+templates: `EmailAddressUpdateOtpRequestForUserEmail.tsx`, `AccountDeleteOtpRequestForUserEmail.tsx`, `AccountDeletedForUserEmail.tsx`. UI:
+`PreferredCommunicationField.tsx`, `AuthEmailOtpSpamHint` on the email-change OTP dialog; `LanguageSwitcher` + `LocaleMismatchGate` (profile
+language on `Users.locale`); `TimeZoneField` + `Users.timeZone` / `useTimeZone`. Klaviyo upsert job: `userKlaviyoProfileSync` (see
+[klaviyo-profile-sync.md](./klaviyo-profile-sync.md)).
 
 See also [profile.md](./profile.md), [customer-shell.md](./customer-shell.md), [cook-shell.md](./cook-shell.md), [sign-in.md](./sign-in.md),
 [profile-pictures.md](./profile-pictures.md), [authentication.md](../architecture/authentication.md), [i18n.md](../architecture/i18n.md).

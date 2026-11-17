@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
 import { t } from '../../i18n/t';
-import { DEFAULT_TIME_ZONE, formatDate, phoneNumberNormalize, userDisplayName } from '../../shared';
+import { DEFAULT_TIME_ZONE, formatDate, formatDateTime, phoneNumberNormalize, userDisplayName } from '../../shared';
 import type { Locale } from '../../shared';
 import { AccountNotificationSettings } from '../components/AccountNotificationSettings';
 import { AuthEmailOtpSpamHint } from '../components/auth/AuthEmailOtpSpamHint';
@@ -45,6 +45,8 @@ import {
     AccountPageSessionUpdatesDocument,
     AccountPageUserUpdatesDocument,
     AccountTerminateSessionsDocument,
+    AccountUserAccountDeletionCancelDocument,
+    AccountUserAccountDeletionIntentDocument,
     AccountUserAnonymizeDocument,
     AccountUserAnonymizeOtpRequestDocument,
     AccountUserUpdateDocument,
@@ -112,6 +114,8 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
     const [, terminateSessions] = useMutation(AccountTerminateSessionsDocument);
     const [, anonymizeOtpRequest] = useMutation(AccountUserAnonymizeOtpRequestDocument);
     const [, anonymizeUser] = useMutation(AccountUserAnonymizeDocument);
+    const [, accountDeletionIntent] = useMutation(AccountUserAccountDeletionIntentDocument);
+    const [, accountDeletionCancel] = useMutation(AccountUserAccountDeletionCancelDocument);
 
     const seedSession = loaderData.currentSession;
     const session = useSessionUpdatesSeed(seedSession, AccountPageSessionUpdatesDocument);
@@ -364,6 +368,7 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
         setDeleteCode('');
         setDeleteError(null);
         setDeleteDialogOpen(true);
+        void accountDeletionIntent({});
     }
 
     async function onAccountDeleteOtpRequest() {
@@ -378,7 +383,12 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
             setDeleteStep('code');
             toast.success(t(locale, 'profile', 'account.toasts.codeSent'));
         } catch (error) {
-            setDeleteError(emailAddressUpdateErrorMessage(error, locale));
+            const message = error instanceof Error ? error.message : String(error ?? '');
+            if (/already scheduled/i.test(message)) {
+                setDeleteError(t(locale, 'profile', 'account.errors.deleteAlreadyScheduled'));
+            } else {
+                setDeleteError(emailAddressUpdateErrorMessage(error, locale));
+            }
         } finally {
             setBusy(false);
         }
@@ -393,15 +403,33 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
             if (result.error || !result.data?.user.userAnonymize.success) {
                 throw result.error ?? new Error('Could not save.');
             }
-            toast.success(t(locale, 'profile', 'account.toasts.accountDeleted'));
-            redirectAfterSignOut(locale);
+            toast.success(t(locale, 'profile', 'account.toasts.accountDeletionScheduled'));
+            setDeleteDialogOpen(false);
+            setDeleteStep('confirm');
+            setDeleteCode('');
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error ?? '');
             if (/invalid or expired|too many attempt/i.test(message)) {
                 setDeleteError(t(locale, 'profile', 'account.errors.invalidOrExpiredCode'));
+            } else if (/already scheduled/i.test(message)) {
+                setDeleteError(t(locale, 'profile', 'account.errors.deleteAlreadyScheduled'));
             } else {
                 setDeleteError(t(locale, 'profile', 'account.errors.deleteFailed'));
             }
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    async function onAccountDeletionCancel() {
+        setBusy(true);
+        try {
+            const result = await accountDeletionCancel({});
+            if (result.error || !result.data?.user.userAccountDeletionCancel.success) {
+                toast.error(t(locale, 'profile', 'account.errors.deleteCancelFailed'));
+                return;
+            }
+            toast.success(t(locale, 'profile', 'account.toasts.accountDeletionCanceled'));
         } finally {
             setBusy(false);
         }
@@ -533,12 +561,45 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
 
             <AccountCard
                 title={t(locale, 'profile', 'account.delete.action')}
-                description={t(locale, 'profile', 'account.delete.description')}
+                description={
+                    user.accountDeletionScheduledFor != null
+                        ? t(locale, 'profile', 'account.delete.scheduledDescription', {
+                              date: formatDateTime(user.accountDeletionScheduledFor, {
+                                  locale,
+                                  timeZone,
+                                  dateStyle: 'long',
+                                  timeStyle: 'short',
+                              }),
+                          })
+                        : t(locale, 'profile', 'account.delete.description')
+                }
             >
-                <div className="flex justify-end">
-                    <Button type="button" variant="destructive" size="sm" disabled={actionBusy} onClick={openDeleteDialog}>
-                        {t(locale, 'profile', 'account.delete.action')}
-                    </Button>
+                <div className="flex justify-end gap-2">
+                    {user.accountDeletionScheduledFor != null ? (
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button type="button" variant="outline" size="sm" disabled={actionBusy}>
+                                    {t(locale, 'profile', 'account.delete.cancelAction')}
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>{t(locale, 'profile', 'account.delete.cancelTitle')}</AlertDialogTitle>
+                                    <AlertDialogDescription>{t(locale, 'profile', 'account.delete.cancelBody')}</AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel disabled={actionBusy}>{t(locale, 'common', 'cancel')}</AlertDialogCancel>
+                                    <AlertDialogAction disabled={actionBusy} onClick={() => void onAccountDeletionCancel()}>
+                                        {t(locale, 'profile', 'account.delete.cancelAction')}
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    ) : (
+                        <Button type="button" variant="destructive" size="sm" disabled={actionBusy} onClick={openDeleteDialog}>
+                            {t(locale, 'profile', 'account.delete.action')}
+                        </Button>
+                    )}
                 </div>
             </AccountCard>
 

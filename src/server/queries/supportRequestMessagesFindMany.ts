@@ -37,7 +37,7 @@ export async function supportRequestMessagesFindMany(
 
     const authorIds = [...new Set([...messageRows.map((row) => row.authorUserId), supportRequest.userId])];
     const authorRows = await serverRuntime.db
-        .select({ userId: users.userId, firstName: users.firstName, createdAt: users.createdAt })
+        .select({ userId: users.userId, firstName: users.firstName, createdAt: users.createdAt, status: users.status })
         .from(users)
         .where(inArray(users.userId, authorIds));
 
@@ -45,7 +45,7 @@ export async function supportRequestMessagesFindMany(
     const customerRow = authorsByUserId.get(supportRequest.userId);
     const customer: GqlSPublicUser = customerRow
         ? toGqlPublicUser(customerRow, null)
-        : { display: 'Customer', createdAt: new Date(0), profilePicture: null };
+        : { display: 'Customer', status: 'ACTIVE', createdAt: new Date(0), profilePicture: null };
 
     const attachmentsByMessageId = await supportMessageAttachmentsByMessageIdLoad(
         serverRuntime.db,

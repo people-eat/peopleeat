@@ -35,6 +35,7 @@ src/server/jobs/
 ├── jobDefinitions.ts           Central registry (all jobs imported here)
 └── handlers/
     ├── userKlaviyoProfileSync.ts Queued — Klaviyo marketing profile upsert
+    ├── userAccountDeletionApply.ts Queued — scheduled account anonymize after cool-off
     ├── chatTitleGenerate.ts    Queued — LLM chat title after assistant turns
     ├── cookBiographySummaryGenerate.ts Queued — LLM cook biography summary after cook bio save
     ├── bookingRequestAdjustedMessageGenerate.ts Queued — LLM cook-facing booking-request message rewrite after create

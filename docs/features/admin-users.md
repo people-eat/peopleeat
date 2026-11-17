@@ -69,18 +69,21 @@ confirmed, plus recovery codes left). **Remove** confirms, then `AdminMutation.u
 does not ask for the user’s code, and it clears an in-progress second-factor sign-in. Email sign-in stays. Admins cannot add a passkey,
 enroll an authenticator, or unlink Google for someone else.
 
-Ban keeps sessions bound so the private profile restriction banner can appear live; open cook offers are auto-declined; public cook listing
-already excludes non-`ACTIVE`. **Sign in as** mints a **new** cookie session bound to that ACTIVE account (`AdminMutation.sessionUserBind`),
-leaving the admin session intact. The new session stores `Sessions.impersonationReturnSessionId` pointing at the admin session. The client
-then hits `GET /api/session/switch?toSessionId=…&redirect=…` so **Set-Cookie and the redirect are the same response** (mutation `Set-Cookie`
-then `location.assign` can race and leave the admin cookie in place). Redirect lands on `/profile` (or `/en/profile`) after setting the
-locale cookie to that user’s `Users.locale` so the locale-mismatch gate does not open on the way in. The legal-acceptance and
-locale-mismatch gates are also skipped for the impersonation session, so the operator is not asked to accept privacy/terms or change that
-user’s language — see [admin-legal.md](./admin-legal.md). **Return to administration** lives in the header session nav (and profile sidebar
-footer) in place of the normal Administration entry (`Session.impersonation` + `sessionImpersonationEnd` + the same switch URL); it restores
-the admin cookie (or mints a fresh admin session if the return session was terminated). Impersonation sessions are excluded from product
-funnels and badged on admin timelines / session lists. Already-anonymized users cannot be edited, banned, or impersonated. Same scrub as
-self-serve delete — see [account.md](./account.md).
+Ban keeps sessions bound so the private profile restriction banner can appear live; ban is blocked while a dual-accepted event is upcoming
+or within 7 days after the last one; on ban, cancelable booking requests owned by the user are canceled and open non dual-accepted cook
+offers are declined. Public cook listing already excludes non-`ACTIVE`. **Anonymize** offers Immediate (same cool-off gate, then scrub) or
+Schedule (same waiting-period formula as self-serve account delete). Pending schedules show on the general tab with cancel. **Sign in as**
+mints a **new** cookie session bound to that ACTIVE account (`AdminMutation.sessionUserBind`), leaving the admin session intact. The new
+session stores `Sessions.impersonationReturnSessionId` pointing at the admin session. The client then hits
+`GET /api/session/switch?toSessionId=…&redirect=…` so **Set-Cookie and the redirect are the same response** (mutation `Set-Cookie` then
+`location.assign` can race and leave the admin cookie in place). Redirect lands on `/profile` (or `/en/profile`) after setting the locale
+cookie to that user’s `Users.locale` so the locale-mismatch gate does not open on the way in. The legal-acceptance and locale-mismatch gates
+are also skipped for the impersonation session, so the operator is not asked to accept privacy/terms or change that user’s language — see
+[admin-legal.md](./admin-legal.md). **Return to administration** lives in the header session nav (and profile sidebar footer) in place of
+the normal Administration entry (`Session.impersonation` + `sessionImpersonationEnd` + the same switch URL); it restores the admin cookie
+(or mints a fresh admin session if the return session was terminated). Impersonation sessions are excluded from product funnels and badged
+on admin timelines / session lists. Already-anonymized users cannot be edited, banned, or impersonated. Same scrub as self-serve delete —
+see [account.md](./account.md).
 
 **Cook profile** defaults to a read-only detail: approval/visibility/Stripe-active badges, optional rating summary, stage name, travel,
 Stripe account + Dashboard link, call scheduling + weekly windows, About logo, tags, biography/summary (with generating hint), default offer

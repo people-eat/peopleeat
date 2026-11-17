@@ -27,6 +27,7 @@ const MESSAGE_SIMPLE_TYPES = new Set<BookingRequestOfferEventType>(['USER_MESSAG
 
 const ADMIN_PUBLIC_USER: GqlSPublicUser = {
     display: 'Admin',
+    status: 'ACTIVE',
     createdAt: new Date(0),
     profilePicture: null,
 };
@@ -165,6 +166,7 @@ function authorAndIsOwnForMessageSimple(
                 return {
                     author: {
                         display: payload.handedOverFrom.cookDisplayName,
+                        status: 'ACTIVE',
                         createdAt: new Date(0),
                         profilePicture: null,
                     },

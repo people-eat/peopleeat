@@ -88,6 +88,7 @@ import { adminSessionUserBind } from '../commands/adminSessionUserBind';
 import { adminSupportRequestMessageCreate } from '../commands/adminSupportRequestMessageCreate';
 import { adminSupportRequestResolve } from '../commands/adminSupportRequestResolve';
 import { adminSupportRequestUnreadNotificationCountReset } from '../commands/adminSupportRequestUnreadNotificationCountReset';
+import { adminUserAccountDeletionCancel } from '../commands/adminUserAccountDeletionCancel';
 import { adminUserAdminNoteUpdate } from '../commands/adminUserAdminNoteUpdate';
 import { adminUserAnonymize } from '../commands/adminUserAnonymize';
 import { adminUserCreate } from '../commands/adminUserCreate';
@@ -182,6 +183,8 @@ import { sessionImpersonationEnd as sessionImpersonationEndCommand } from '../co
 import { sessionNewsletterSubscriptionCreate } from '../commands/sessionNewsletterSubscriptionCreate';
 import { sessionWebPageInteractionCreate } from '../commands/sessionWebPageInteractionCreate';
 import { sessionWebPageVisitCreate } from '../commands/sessionWebPageVisitCreate';
+import { userAccountDeletionCancel } from '../commands/userAccountDeletionCancel';
+import { userAccountDeletionIntent } from '../commands/userAccountDeletionIntent';
 import { userAnonymize } from '../commands/userAnonymize';
 import { userAnonymizeOtpRequest } from '../commands/userAnonymizeOtpRequest';
 import { userBookingRequestCancel } from '../commands/userBookingRequestCancel';
@@ -617,6 +620,7 @@ import type {
     GqlSAdminMutationSupportRequestResolveArgs,
     GqlSAdminMutationSupportRequestUnreadNotificationCountResetArgs,
     GqlSAdminMutationTerminateSessionsArgs,
+    GqlSAdminMutationUserAccountDeletionCancelArgs,
     GqlSAdminMutationUserAdminNoteUpdateArgs,
     GqlSAdminMutationUserAnonymizeArgs,
     GqlSAdminMutationUserCreateArgs,
@@ -2175,6 +2179,13 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             userAnonymize(parent: GqlSAdminMutation, args: GqlSAdminMutationUserAnonymizeArgs, requestingSession: GqlSSession) {
                 return adminUserAnonymize(parent, args, requestingSession, serverRuntime);
             },
+            userAccountDeletionCancel(
+                parent: GqlSAdminMutation,
+                args: GqlSAdminMutationUserAccountDeletionCancelArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return adminUserAccountDeletionCancel(parent, args, requestingSession, serverRuntime);
+            },
             userStatusUpdate(parent: GqlSAdminMutation, args: GqlSAdminMutationUserStatusUpdateArgs, requestingSession: GqlSSession) {
                 return adminUserStatusUpdate(parent, args, requestingSession, serverRuntime);
             },
@@ -2685,6 +2696,12 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
                 requestingSession: GqlSSession,
             ) {
                 return userAnonymizeOtpRequest(parent, args, requestingSession, serverRuntime);
+            },
+            userAccountDeletionIntent(parent: GqlSUserMutation, _: unknown, requestingSession: GqlSSession) {
+                return userAccountDeletionIntent(parent, {}, requestingSession, serverRuntime);
+            },
+            userAccountDeletionCancel(parent: GqlSUserMutation, _: unknown, requestingSession: GqlSSession) {
+                return userAccountDeletionCancel(parent, {}, requestingSession, serverRuntime);
             },
             terminateSessions(parent: GqlSUserMutation, args: GqlSUserMutationTerminateSessionsArgs, requestingSession: GqlSSession) {
                 return userSessionTerminateMany(parent, args, requestingSession, serverRuntime);

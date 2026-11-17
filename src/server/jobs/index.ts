@@ -77,4 +77,5 @@ export { bookingRequestOfferPullPayment } from './handlers/bookingRequestOfferPu
 export { bookingRequestOfferPullPaymentAnnouncement } from './handlers/bookingRequestOfferPullPaymentAnnouncement';
 export { giftCardPreparedExpire } from './handlers/giftCardPreparedExpire';
 export { supportRequestCustomerReplyNotify } from './handlers/supportRequestCustomerReplyNotify';
+export { userAccountDeletionApply } from './handlers/userAccountDeletionApply';
 export { userKlaviyoProfileSync } from './handlers/userKlaviyoProfileSync';

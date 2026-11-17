@@ -4,8 +4,8 @@ import type { BookingRequestOfferEvent } from '../db/schema';
 import type { BookingRequestOfferEventType } from '../domain/bookingRequest';
 import { toGqlOfferChatMessages } from './toGqlOfferChatMessages';
 
-const customer = { display: 'Guest', createdAt: new Date('2020-01-01'), profilePicture: null };
-const cook = { display: 'Chef', createdAt: new Date('2020-01-01'), profilePicture: null };
+const customer = { display: 'Guest', status: 'ACTIVE' as const, createdAt: new Date('2020-01-01'), profilePicture: null };
+const cook = { display: 'Chef', status: 'ACTIVE' as const, createdAt: new Date('2020-01-01'), profilePicture: null };
 
 function offerEvent(
     type: BookingRequestOfferEventType,

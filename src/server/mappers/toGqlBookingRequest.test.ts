@@ -94,7 +94,7 @@ const offer = {
 const publicCook = {
     cookId: 'cook-1',
     pathName: 'anna-mueller',
-    user: { display: 'Anna', createdAt: new Date('2026-01-01T00:00:00.000Z'), profilePicture: null },
+    user: { display: 'Anna', status: 'ACTIVE' as const, createdAt: new Date('2026-01-01T00:00:00.000Z'), profilePicture: null },
     hasPublicProfile: true,
     stageName: null,
     biography: 'Bio',
@@ -151,7 +151,12 @@ describe('toGqlCookBookingRequestOffer', () => {
                 expiresAt: null,
                 canceledAt: null,
                 participants: [],
-                user: { display: 'Customer', createdAt: new Date('2026-01-01T00:00:00.000Z'), profilePicture: null },
+                user: {
+                    display: 'Customer',
+                    status: 'ACTIVE',
+                    createdAt: new Date('2026-01-01T00:00:00.000Z'),
+                    profilePicture: null,
+                },
                 customerTimeZone: 'Europe/Berlin',
             },
         });

@@ -20,11 +20,13 @@ import { giftCardPreparedExpire } from './handlers/giftCardPreparedExpire';
 import { observabilityOpsAlert } from './handlers/observabilityOpsAlert';
 import { resendUsageSlackAlert } from './handlers/resendUsageSlackAlert';
 import { supportRequestCustomerReplyNotify } from './handlers/supportRequestCustomerReplyNotify';
+import { userAccountDeletionApply } from './handlers/userAccountDeletionApply';
 import { userKlaviyoProfileSync } from './handlers/userKlaviyoProfileSync';
 import type { JobDefinition } from './types';
 
 export const jobDefinitions: JobDefinition[] = [
     userKlaviyoProfileSync,
+    userAccountDeletionApply,
     chatTitleGenerate,
     cookBiographySummaryGenerate,
     bookingRequestAdjustedMessageGenerate,

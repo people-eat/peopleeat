@@ -36,7 +36,9 @@
             "invalidOrExpiredCode": "Codice non valido o scaduto.",
             "phoneTaken": "Questo numero è già in uso.",
             "invalidPhone": "Inserisci un numero con prefisso internazionale, ad esempio +49…",
-            "deleteFailed": "Impossibile eliminare l’account."
+            "deleteFailed": "Impossibile eliminare l’account.",
+            "deleteAlreadyScheduled": "Account deletion is already scheduled.",
+            "deleteCancelFailed": "Could not cancel account deletion."
         },
         "toasts": {
             "phoneSaved": "Numero di telefono salvato.",
@@ -56,7 +58,9 @@
             "deviceSignedOut": "Dispositivo disconnesso.",
             "accountDeleted": "Account eliminato.",
             "signOutFailed": "Disconnessione non riuscita.",
-            "deviceSignOutFailed": "Impossibile disconnettere quel dispositivo."
+            "deviceSignOutFailed": "Impossibile disconnettere quel dispositivo.",
+            "accountDeletionScheduled": "Account deletion scheduled.",
+            "accountDeletionCanceled": "Account deletion canceled."
         },
         "noPhone": "Nessun numero registrato",
         "notSet": "Non indicato",
@@ -148,10 +152,14 @@
         },
         "delete": {
             "title": "Elimina account",
-            "description": "I dati personali verranno rimossi. Dopo non potrai più accedere.",
+            "description": "Personal profile data will be removed after a waiting period. You will not be able to sign in afterwards.",
             "action": "Elimina account",
-            "confirmTitle": "Eliminare davvero l’account?",
-            "confirmBody": "Questa azione non può essere annullata. I tuoi dati personali verranno rimossi e tutti i dispositivi disconnessi. Lo storico delle prenotazioni resta disponibile per cuochi e operazioni, ma non è più collegato alla tua identità. Inviamo un codice al tuo indirizzo e-mail."
+            "confirmTitle": "Schedule account deletion?",
+            "confirmBody": "We will send a code to your email address. After you confirm, deletion is scheduled for at least seven days from now, or seven days after your last confirmed event if that is later. You can cancel until then. Booking history stays available for chefs and operations, but will no longer be linked to your identity.",
+            "scheduledDescription": "Your account is scheduled for deletion on {date}. You can keep using peopleeat until then, or cancel.",
+            "cancelAction": "Cancel deletion",
+            "cancelTitle": "Cancel scheduled deletion?",
+            "cancelBody": "Your account stays active and will not be deleted automatically."
         },
         "security": {
             "title": "Accesso e sicurezza",

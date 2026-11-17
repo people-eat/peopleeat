@@ -4,15 +4,16 @@ import { authEmailOtps, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSMutationResult, GqlSSession, GqlSUserMutation, GqlSUserMutationUserAnonymizeArgs } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { slackNotifyAccountDeletionRequested } from '../slack/slackNotifyAccountDeletion';
 import { authEmailOtpAttemptTake } from '../utils/authEmailOtpLimits';
 import { authOtpCodeMatches, authOtpPepperRequire } from '../utils/authOtpUtils';
-import { userAnonymizeApply } from './userAnonymizeApply';
+import { userAccountDeletionSchedule } from '../utils/userAccountDeletionSchedule';
 
 const PURPOSE = 'ACCOUNT_DELETE';
 
 /**
- * Self-serve account deletion. The code must match an unconsumed account-delete
- * OTP emailed to the current address. See docs/features/account.md.
+ * Self-serve account deletion. Verifies the emailed code, then schedules
+ * anonymization (does not scrub immediately). See docs/features/account.md.
  */
 export async function userAnonymize(
     { userId }: GqlSUserMutation,
@@ -49,17 +50,31 @@ export async function userAnonymize(
             throw new Error('userAnonymize: invalid or expired code');
         }
 
-        const [currentUser] = await serverRuntime.db
-            .select({ emailAddress: users.emailAddress })
-            .from(users)
-            .where(eq(users.userId, userId))
-            .limit(1);
-        if (currentUser?.emailAddress != null && currentUser.emailAddress !== otp.emailAddress) {
+        const [currentUser] = await serverRuntime.db.select().from(users).where(eq(users.userId, userId)).limit(1);
+        if (!currentUser) {
+            throw new Error('userAnonymize: user not found');
+        }
+        if (currentUser.status === 'ANONYMIZED') {
+            throw new Error('userAnonymize: already anonymized');
+        }
+        if (currentUser.emailAddress != null && currentUser.emailAddress !== otp.emailAddress) {
             throw new Error('userAnonymize: invalid or expired code');
         }
+        if (currentUser.accountDeletionScheduledFor != null) {
+            throw new Error('userAnonymize: already scheduled');
+        }
 
-        await userAnonymizeApply(userId, serverRuntime);
+        const scheduledFor = await userAccountDeletionSchedule(userId, serverRuntime);
         await serverRuntime.db.update(authEmailOtps).set({ consumedAt: now }).where(eq(authEmailOtps.authEmailOtpId, otp.authEmailOtpId));
+
+        await slackNotifyAccountDeletionRequested(serverRuntime, {
+            userId,
+            firstName: currentUser.firstName,
+            lastName: currentUser.lastName,
+            emailAddress: currentUser.emailAddress,
+            scheduledFor,
+            source: 'self-serve',
+        });
 
         await Promise.all([
             serverRuntime.publish.userUpdates({ userId }),

@@ -135,6 +135,7 @@ query AdminUserPage(
                     firstName
                     lastName
                     status
+                    accountDeletionScheduledFor
                     phoneNumber
                     birthDate
                     preferredCommunication
@@ -506,9 +507,18 @@ mutation AdminUserAdminNoteUpdate($userId: ID!, $adminNote: String!) {
     }
 }
 
-mutation AdminUserAnonymize($userId: ID!) {
+mutation AdminUserAnonymize($userId: ID!, $mode: AdminUserAnonymizeMode!) {
     admin {
-        userAnonymize(userId: $userId) {
+        userAnonymize(userId: $userId, mode: $mode) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminUserAccountDeletionCancel($userId: ID!) {
+    admin {
+        userAccountDeletionCancel(userId: $userId) {
             success
             referenceId
         }

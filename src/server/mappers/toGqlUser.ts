@@ -16,6 +16,7 @@ export function toGqlUser(user: User): GqlSUser {
         locale: user.locale,
         timeZone: user.timeZone,
         createdAt: user.createdAt,
+        accountDeletionScheduledFor: user.accountDeletionScheduledFor ?? null,
         lastAcceptedPrivacyPolicy: user.lastAcceptedPrivacyPolicy,
         lastAcceptedTerms: user.lastAcceptedTerms,
 

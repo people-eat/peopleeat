@@ -84,7 +84,7 @@ export function ChatMessage({ message, chatTurnId, onApprovalRespond, onPromptUs
                     hiddenByAuthor: false,
                     canHardDelete: false,
                     canSoftDelete: false,
-                    author: { display: 'You', createdAt: message.createdAt, profilePicture: null },
+                    author: { display: 'You', status: 'ACTIVE', createdAt: message.createdAt, profilePicture: null },
                     attachments: message.attachments,
                     reactions: [],
                 }}

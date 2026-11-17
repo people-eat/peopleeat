@@ -1562,6 +1562,7 @@ export interface GqlCAdminMutation {
     supportRequestResolve: GqlCMutationResult;
     supportRequestUnreadNotificationCountReset: GqlCMutationResult;
     terminateSessions: GqlCMutationResult;
+    userAccountDeletionCancel: GqlCMutationResult;
     userAdminNoteUpdate: GqlCMutationResult;
     userAnonymize: GqlCMutationResult;
     userCreate: GqlCMutationResult;
@@ -1937,12 +1938,17 @@ export type GqlCAdminMutationTerminateSessionsArgs = {
     sessionIds: Array<Scalars['ID']['input']>;
 };
 
+export type GqlCAdminMutationUserAccountDeletionCancelArgs = {
+    userId: Scalars['ID']['input'];
+};
+
 export type GqlCAdminMutationUserAdminNoteUpdateArgs = {
     adminNote: Scalars['String']['input'];
     userId: Scalars['ID']['input'];
 };
 
 export type GqlCAdminMutationUserAnonymizeArgs = {
+    mode: GqlCAdminUserAnonymizeMode;
     userId: Scalars['ID']['input'];
 };
 
@@ -2111,6 +2117,7 @@ export type GqlCAdminOutboundEmailLifecycleStatus = 'BOUNCED' | 'FAILED' | 'OPEN
 export type GqlCAdminOutboundEmailProvider = 'console' | 'resend';
 
 export type GqlCAdminOutboundEmailPurpose =
+    | 'ACCOUNT_DELETED'
     | 'ACCOUNT_DELETE_CONFIRM'
     | 'AUTH_EMAIL_OTP'
     | 'BOOKING_EVENT_CALENDAR'
@@ -2426,6 +2433,7 @@ export type GqlCAdminTimeBucketGranularity = 'day' | 'month' | 'week';
 
 export interface GqlCAdminUser {
     __typename?: 'AdminUser';
+    accountDeletionScheduledFor?: Maybe<Scalars['DateTime']['output']>;
     adminNote: Scalars['String']['output'];
     birthDate?: Maybe<Scalars['Date']['output']>;
     cook?: Maybe<GqlCAdminCook>;
@@ -2462,6 +2470,8 @@ export interface GqlCAdminUserAgeStat {
     birthDateSampleSize: Scalars['Int']['output'];
     medianAge?: Maybe<Scalars['Float']['output']>;
 }
+
+export type GqlCAdminUserAnonymizeMode = 'IMMEDIATE' | 'SCHEDULE';
 
 export type GqlCAdminUserCreate = {
     asAdmin?: Scalars['Boolean']['input'];
@@ -5124,6 +5134,7 @@ export interface GqlCPublicUser {
     createdAt: Scalars['DateTime']['output'];
     display: Scalars['String']['output'];
     profilePicture?: Maybe<GqlCFileUpload>;
+    status: GqlCUserStatus;
 }
 
 export interface GqlCPublicWebPage {
@@ -5265,6 +5276,7 @@ export type GqlCTestimonialType = 'COOK' | 'CUSTOMER';
 
 export interface GqlCUser {
     __typename?: 'User';
+    accountDeletionScheduledFor?: Maybe<Scalars['DateTime']['output']>;
     admin?: Maybe<GqlCAdmin>;
     assistantChat?: Maybe<GqlCChat>;
     assistantChats?: Maybe<Array<GqlCChat>>;
@@ -5608,6 +5620,8 @@ export interface GqlCUserMutation {
     supportRequestMessageCreate: GqlCMutationResult;
     supportRequestUnreadNotificationCountReset: GqlCMutationResult;
     terminateSessions: GqlCMutationResult;
+    userAccountDeletionCancel: GqlCMutationResult;
+    userAccountDeletionIntent: GqlCMutationResult;
     userAnonymize: GqlCMutationResult;
     userAnonymizeOtpRequest: GqlCMutationResult;
     userLegalAccept: GqlCMutationResult;
@@ -6198,6 +6212,7 @@ type GqlCHumanChatMessageFields_ChatMessageUser_Fragment = {
     reactions: Array<{ emoji: string; isOwn: boolean }>;
     author: {
         display: string;
+        status: Schema.GqlCUserStatus;
         createdAt: string;
         profilePicture: { fileUploadId: string; filename: string; mediaType: string; size: number; url: string } | null;
     };
@@ -8319,6 +8334,7 @@ export type GqlCAccountPageUserFragment = {
     locale: Schema.GqlCLocale;
     timeZone: string;
     createdAt: string;
+    accountDeletionScheduledFor: string | null;
     notificationSettings: {
         customerBooking: { email: boolean; whatsApp: boolean };
         customerChat: { email: boolean; whatsApp: boolean };
@@ -8362,6 +8378,7 @@ export type GqlCAccountPageSessionFragment = {
         locale: Schema.GqlCLocale;
         timeZone: string;
         createdAt: string;
+        accountDeletionScheduledFor: string | null;
         notificationSettings: {
             customerBooking: { email: boolean; whatsApp: boolean };
             customerChat: { email: boolean; whatsApp: boolean };
@@ -8415,6 +8432,7 @@ export type GqlCAccountPageQuery = {
             locale: Schema.GqlCLocale;
             timeZone: string;
             createdAt: string;
+            accountDeletionScheduledFor: string | null;
             notificationSettings: {
                 customerBooking: { email: boolean; whatsApp: boolean };
                 customerChat: { email: boolean; whatsApp: boolean };
@@ -8460,6 +8478,7 @@ export type GqlCAccountPageUserUpdatesSubscription = {
         locale: Schema.GqlCLocale;
         timeZone: string;
         createdAt: string;
+        accountDeletionScheduledFor: string | null;
         notificationSettings: {
             customerBooking: { email: boolean; whatsApp: boolean };
             customerChat: { email: boolean; whatsApp: boolean };
@@ -8513,6 +8532,7 @@ export type GqlCAccountPageSessionUpdatesSubscription = {
             locale: Schema.GqlCLocale;
             timeZone: string;
             createdAt: string;
+            accountDeletionScheduledFor: string | null;
             notificationSettings: {
                 customerBooking: { email: boolean; whatsApp: boolean };
                 customerChat: { email: boolean; whatsApp: boolean };
@@ -8595,6 +8615,12 @@ export type GqlCAccountTerminateSessionsMutationVariables = Exact<{
 
 export type GqlCAccountTerminateSessionsMutation = { user: { terminateSessions: { success: boolean } } };
 
+export type GqlCAccountUserAccountDeletionIntentMutationVariables = Exact<{ [key: string]: never }>;
+
+export type GqlCAccountUserAccountDeletionIntentMutation = {
+    user: { userAccountDeletionIntent: { success: boolean; referenceId: string | null } };
+};
+
 export type GqlCAccountUserAnonymizeOtpRequestMutationVariables = Exact<{
     locale: Schema.GqlCLocale;
 }>;
@@ -8608,6 +8634,12 @@ export type GqlCAccountUserAnonymizeMutationVariables = Exact<{
 }>;
 
 export type GqlCAccountUserAnonymizeMutation = { user: { userAnonymize: { success: boolean; referenceId: string | null } } };
+
+export type GqlCAccountUserAccountDeletionCancelMutationVariables = Exact<{ [key: string]: never }>;
+
+export type GqlCAccountUserAccountDeletionCancelMutation = {
+    user: { userAccountDeletionCancel: { success: boolean; referenceId: string | null } };
+};
 
 export type GqlCAccountAuthTotpEnrollStartMutationVariables = Exact<{ [key: string]: never }>;
 
@@ -11562,6 +11594,7 @@ export type GqlCAdminBookingRequestOfferPageOfferFragment = {
               reactions: Array<{ emoji: string; isOwn: boolean }>;
               author: {
                   display: string;
+                  status: Schema.GqlCUserStatus;
                   createdAt: string;
                   profilePicture: { fileUploadId: string; filename: string; mediaType: string; size: number; url: string } | null;
               };
@@ -11831,6 +11864,7 @@ export type GqlCAdminBookingRequestOfferPageQuery = {
                               reactions: Array<{ emoji: string; isOwn: boolean }>;
                               author: {
                                   display: string;
+                                  status: Schema.GqlCUserStatus;
                                   createdAt: string;
                                   profilePicture: {
                                       fileUploadId: string;
@@ -12078,6 +12112,7 @@ export type GqlCAdminBookingRequestOfferPageUpdatesSubscription = {
                       reactions: Array<{ emoji: string; isOwn: boolean }>;
                       author: {
                           display: string;
+                          status: Schema.GqlCUserStatus;
                           createdAt: string;
                           profilePicture: { fileUploadId: string; filename: string; mediaType: string; size: number; url: string } | null;
                       };
@@ -15760,6 +15795,7 @@ export type GqlCAdminOfferChatReviewPageOfferFragment = {
               reactions: Array<{ emoji: string; isOwn: boolean }>;
               author: {
                   display: string;
+                  status: Schema.GqlCUserStatus;
                   createdAt: string;
                   profilePicture: { fileUploadId: string; filename: string; mediaType: string; size: number; url: string } | null;
               };
@@ -15826,6 +15862,7 @@ export type GqlCAdminOfferChatReviewPageQuery = {
                               reactions: Array<{ emoji: string; isOwn: boolean }>;
                               author: {
                                   display: string;
+                                  status: Schema.GqlCUserStatus;
                                   createdAt: string;
                                   profilePicture: {
                                       fileUploadId: string;
@@ -15894,6 +15931,7 @@ export type GqlCAdminOfferChatReviewPageUpdatesSubscription = {
                       reactions: Array<{ emoji: string; isOwn: boolean }>;
                       author: {
                           display: string;
+                          status: Schema.GqlCUserStatus;
                           createdAt: string;
                           profilePicture: { fileUploadId: string; filename: string; mediaType: string; size: number; url: string } | null;
                       };
@@ -16953,6 +16991,7 @@ export type GqlCAdminSupportRequestDetailFieldsFragment = {
               reactions: Array<{ emoji: string; isOwn: boolean }>;
               author: {
                   display: string;
+                  status: Schema.GqlCUserStatus;
                   createdAt: string;
                   profilePicture: { fileUploadId: string; filename: string; mediaType: string; size: number; url: string } | null;
               };
@@ -17010,6 +17049,7 @@ export type GqlCAdminSupportRequestPageQuery = {
                               reactions: Array<{ emoji: string; isOwn: boolean }>;
                               author: {
                                   display: string;
+                                  status: Schema.GqlCUserStatus;
                                   createdAt: string;
                                   profilePicture: {
                                       fileUploadId: string;
@@ -17069,6 +17109,7 @@ export type GqlCAdminSupportRequestPageUpdatesSubscription = {
                       reactions: Array<{ emoji: string; isOwn: boolean }>;
                       author: {
                           display: string;
+                          status: Schema.GqlCUserStatus;
                           createdAt: string;
                           profilePicture: { fileUploadId: string; filename: string; mediaType: string; size: number; url: string } | null;
                       };
@@ -17641,6 +17682,7 @@ export type GqlCAdminUserPageQuery = {
                     firstName: string;
                     lastName: string;
                     status: Schema.GqlCUserStatus;
+                    accountDeletionScheduledFor: string | null;
                     phoneNumber: string | null;
                     birthDate: string | null;
                     preferredCommunication: Schema.GqlCUserPreferredCommunication | null;
@@ -17994,9 +18036,18 @@ export type GqlCAdminUserAdminNoteUpdateMutation = { admin: { userAdminNoteUpdat
 
 export type GqlCAdminUserAnonymizeMutationVariables = Exact<{
     userId: string;
+    mode: Schema.GqlCAdminUserAnonymizeMode;
 }>;
 
 export type GqlCAdminUserAnonymizeMutation = { admin: { userAnonymize: { success: boolean; referenceId: string | null } } };
+
+export type GqlCAdminUserAccountDeletionCancelMutationVariables = Exact<{
+    userId: string;
+}>;
+
+export type GqlCAdminUserAccountDeletionCancelMutation = {
+    admin: { userAccountDeletionCancel: { success: boolean; referenceId: string | null } };
+};
 
 export type GqlCAdminUserStatusUpdateMutationVariables = Exact<{
     userId: string;
@@ -18275,6 +18326,7 @@ export type GqlCAdminWhatsAppChatDetailFieldsFragment = {
               reactions: Array<{ emoji: string; isOwn: boolean }>;
               author: {
                   display: string;
+                  status: Schema.GqlCUserStatus;
                   createdAt: string;
                   profilePicture: { fileUploadId: string; filename: string; mediaType: string; size: number; url: string } | null;
               };
@@ -18325,6 +18377,7 @@ export type GqlCAdminWhatsAppChatPageAdminFragment = {
                   reactions: Array<{ emoji: string; isOwn: boolean }>;
                   author: {
                       display: string;
+                      status: Schema.GqlCUserStatus;
                       createdAt: string;
                       profilePicture: { fileUploadId: string; filename: string; mediaType: string; size: number; url: string } | null;
                   };
@@ -18384,6 +18437,7 @@ export type GqlCAdminWhatsAppChatPageQuery = {
                               reactions: Array<{ emoji: string; isOwn: boolean }>;
                               author: {
                                   display: string;
+                                  status: Schema.GqlCUserStatus;
                                   createdAt: string;
                                   profilePicture: {
                                       fileUploadId: string;
@@ -18449,6 +18503,7 @@ export type GqlCAdminWhatsAppChatPageUpdatesSubscription = {
                       reactions: Array<{ emoji: string; isOwn: boolean }>;
                       author: {
                           display: string;
+                          status: Schema.GqlCUserStatus;
                           createdAt: string;
                           profilePicture: { fileUploadId: string; filename: string; mediaType: string; size: number; url: string } | null;
                       };
@@ -19270,6 +19325,7 @@ export type GqlCProfileCookBookingRequestOfferPageUserFragment = {
                       reactions: Array<{ emoji: string; isOwn: boolean }>;
                       author: {
                           display: string;
+                          status: Schema.GqlCUserStatus;
                           createdAt: string;
                           profilePicture: { fileUploadId: string; filename: string; mediaType: string; size: number; url: string } | null;
                       };
@@ -19475,6 +19531,7 @@ export type GqlCProfileCookBookingRequestOfferPageQuery = {
                               reactions: Array<{ emoji: string; isOwn: boolean }>;
                               author: {
                                   display: string;
+                                  status: Schema.GqlCUserStatus;
                                   createdAt: string;
                                   profilePicture: {
                                       fileUploadId: string;
@@ -19687,6 +19744,7 @@ export type GqlCProfileCookBookingRequestOfferPageUpdatesSubscription = {
                           reactions: Array<{ emoji: string; isOwn: boolean }>;
                           author: {
                               display: string;
+                              status: Schema.GqlCUserStatus;
                               createdAt: string;
                               profilePicture: {
                                   fileUploadId: string;
@@ -22667,6 +22725,7 @@ export type GqlCProfileCustomerBookingRequestOfferPageUserFragment = {
                       reactions: Array<{ emoji: string; isOwn: boolean }>;
                       author: {
                           display: string;
+                          status: Schema.GqlCUserStatus;
                           createdAt: string;
                           profilePicture: { fileUploadId: string; filename: string; mediaType: string; size: number; url: string } | null;
                       };
@@ -22874,6 +22933,7 @@ export type GqlCProfileCustomerBookingRequestOfferPageQuery = {
                               reactions: Array<{ emoji: string; isOwn: boolean }>;
                               author: {
                                   display: string;
+                                  status: Schema.GqlCUserStatus;
                                   createdAt: string;
                                   profilePicture: {
                                       fileUploadId: string;
@@ -23088,6 +23148,7 @@ export type GqlCProfileCustomerBookingRequestOfferPageUpdatesSubscription = {
                           reactions: Array<{ emoji: string; isOwn: boolean }>;
                           author: {
                               display: string;
+                              status: Schema.GqlCUserStatus;
                               createdAt: string;
                               profilePicture: {
                                   fileUploadId: string;
@@ -23850,6 +23911,7 @@ export type GqlCProfileCustomerSupportRequestPageUserFragment = {
                   reactions: Array<{ emoji: string; isOwn: boolean }>;
                   author: {
                       display: string;
+                      status: Schema.GqlCUserStatus;
                       createdAt: string;
                       profilePicture: { fileUploadId: string; filename: string; mediaType: string; size: number; url: string } | null;
                   };
@@ -23900,6 +23962,7 @@ export type GqlCProfileCustomerSupportRequestPageQuery = {
                           reactions: Array<{ emoji: string; isOwn: boolean }>;
                           author: {
                               display: string;
+                              status: Schema.GqlCUserStatus;
                               createdAt: string;
                               profilePicture: {
                                   fileUploadId: string;
@@ -23957,6 +24020,7 @@ export type GqlCProfileCustomerSupportRequestPageUpdatesSubscription = {
                       reactions: Array<{ emoji: string; isOwn: boolean }>;
                       author: {
                           display: string;
+                          status: Schema.GqlCUserStatus;
                           createdAt: string;
                           profilePicture: { fileUploadId: string; filename: string; mediaType: string; size: number; url: string } | null;
                       };
@@ -27976,6 +28040,7 @@ export const AccountPageUserFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'locale' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'accountDeletionScheduledFor' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'profilePicture' },
@@ -28192,6 +28257,7 @@ export const AccountPageSessionFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'locale' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'accountDeletionScheduledFor' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'profilePicture' },
@@ -29049,6 +29115,7 @@ export const HumanChatMessageFieldsFragmentDoc = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             {
                                                 kind: 'Field',
@@ -29565,6 +29632,7 @@ export const AdminBookingRequestOfferPageOfferFragmentDoc = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             {
                                                 kind: 'Field',
@@ -31415,6 +31483,7 @@ export const AdminOfferChatReviewPageOfferFragmentDoc = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             {
                                                 kind: 'Field',
@@ -31934,6 +32003,7 @@ export const AdminSupportRequestDetailFieldsFragmentDoc = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             {
                                                 kind: 'Field',
@@ -32456,6 +32526,7 @@ export const AdminWhatsAppChatDetailFieldsFragmentDoc = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             {
                                                 kind: 'Field',
@@ -32582,6 +32653,7 @@ export const AdminWhatsAppChatPageAdminFragmentDoc = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             {
                                                 kind: 'Field',
@@ -34257,6 +34329,7 @@ export const ProfileCookBookingRequestOfferPageUserFragmentDoc = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             {
                                                 kind: 'Field',
@@ -37469,6 +37542,7 @@ export const ProfileCustomerBookingRequestOfferPageUserFragmentDoc = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             {
                                                 kind: 'Field',
@@ -38134,6 +38208,7 @@ export const ProfileCustomerSupportRequestPageUserFragmentDoc = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             {
                                                 kind: 'Field',
@@ -41626,6 +41701,7 @@ export const AccountPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'locale' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'accountDeletionScheduledFor' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'profilePicture' },
@@ -41860,6 +41936,7 @@ export const AccountPageUserUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'locale' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'accountDeletionScheduledFor' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'profilePicture' },
@@ -42061,6 +42138,7 @@ export const AccountPageSessionUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'locale' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'accountDeletionScheduledFor' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'profilePicture' },
@@ -42518,6 +42596,41 @@ export const AccountTerminateSessionsDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAccountTerminateSessionsMutation, GqlCAccountTerminateSessionsMutationVariables>;
+export const AccountUserAccountDeletionIntentDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AccountUserAccountDeletionIntent' },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'userAccountDeletionIntent' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAccountUserAccountDeletionIntentMutation, GqlCAccountUserAccountDeletionIntentMutationVariables>;
 export const AccountUserAnonymizeOtpRequestDocument = {
     kind: 'Document',
     definitions: [
@@ -42616,6 +42729,41 @@ export const AccountUserAnonymizeDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAccountUserAnonymizeMutation, GqlCAccountUserAnonymizeMutationVariables>;
+export const AccountUserAccountDeletionCancelDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AccountUserAccountDeletionCancel' },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'userAccountDeletionCancel' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAccountUserAccountDeletionCancelMutation, GqlCAccountUserAccountDeletionCancelMutationVariables>;
 export const AccountAuthTotpEnrollStartDocument = {
     kind: 'Document',
     definitions: [
@@ -53412,6 +53560,7 @@ export const AdminBookingRequestOfferPageDocument = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             {
                                                 kind: 'Field',
@@ -54088,6 +54237,7 @@ export const AdminBookingRequestOfferPageUpdatesDocument = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             {
                                                 kind: 'Field',
@@ -66436,6 +66586,7 @@ export const AdminOfferChatReviewPageDocument = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             {
                                                 kind: 'Field',
@@ -66665,6 +66816,7 @@ export const AdminOfferChatReviewPageUpdatesDocument = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             {
                                                 kind: 'Field',
@@ -71106,6 +71258,7 @@ export const AdminSupportRequestPageDocument = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             {
                                                 kind: 'Field',
@@ -71309,6 +71462,7 @@ export const AdminSupportRequestPageUpdatesDocument = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             {
                                                 kind: 'Field',
@@ -73396,6 +73550,10 @@ export const AdminUserPageDocument = {
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'accountDeletionScheduledFor' },
+                                                                    },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
                                                                     {
@@ -75302,6 +75460,11 @@ export const AdminUserAnonymizeDocument = {
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'userId' } },
                     type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
                 },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'mode' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminUserAnonymizeMode' } } },
+                },
             ],
             selectionSet: {
                 kind: 'SelectionSet',
@@ -75315,6 +75478,60 @@ export const AdminUserAnonymizeDocument = {
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'userAnonymize' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'userId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'userId' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'mode' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'mode' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminUserAnonymizeMutation, GqlCAdminUserAnonymizeMutationVariables>;
+export const AdminUserAccountDeletionCancelDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AdminUserAccountDeletionCancel' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'userId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'userAccountDeletionCancel' },
                                     arguments: [
                                         {
                                             kind: 'Argument',
@@ -75337,7 +75554,7 @@ export const AdminUserAnonymizeDocument = {
             },
         },
     ],
-} as unknown as DocumentNode<GqlCAdminUserAnonymizeMutation, GqlCAdminUserAnonymizeMutationVariables>;
+} as unknown as DocumentNode<GqlCAdminUserAccountDeletionCancelMutation, GqlCAdminUserAccountDeletionCancelMutationVariables>;
 export const AdminUserStatusUpdateDocument = {
     kind: 'Document',
     definitions: [
@@ -76768,6 +76985,7 @@ export const AdminWhatsAppChatPageDocument = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             {
                                                 kind: 'Field',
@@ -76968,6 +77186,7 @@ export const AdminWhatsAppChatPageUpdatesDocument = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             {
                                                 kind: 'Field',
@@ -79391,6 +79610,7 @@ export const ProfileCookBookingRequestOfferPageDocument = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             {
                                                 kind: 'Field',
@@ -79977,6 +80197,7 @@ export const ProfileCookBookingRequestOfferPageUpdatesDocument = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             {
                                                 kind: 'Field',
@@ -89004,6 +89225,7 @@ export const ProfileCustomerBookingRequestOfferPageDocument = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             {
                                                 kind: 'Field',
@@ -89653,6 +89875,7 @@ export const ProfileCustomerBookingRequestOfferPageUpdatesDocument = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             {
                                                 kind: 'Field',
@@ -93139,6 +93362,7 @@ export const ProfileCustomerSupportRequestPageDocument = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             {
                                                 kind: 'Field',
@@ -93319,6 +93543,7 @@ export const ProfileCustomerSupportRequestPageUpdatesDocument = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             {
                                                 kind: 'Field',

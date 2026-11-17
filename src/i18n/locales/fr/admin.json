@@ -1565,7 +1565,15 @@
         "technicalStatus": "Technique: {status}",
         "tokenUsage": "Entrée {input} · Sortie {output} · Total {total} · Raisonnement {reasoning} · Cache {cache}",
         "callsInRangeRates": "Sur la période: taux de confirmation {confirmRate}% · taux de refus {declineRate}% (sur les créneaux terminés + refusés + annulés).",
-        "cookCallStats": "{rooms} salles · {completed} terminés · {declined} refusés · {awaiting} en attente"
+        "cookCallStats": "{rooms} salles · {completed} terminés · {declined} refusés · {awaiting} en attente",
+        "accountDeletionScheduledFor": "Deletion scheduled for {date}.",
+        "anonymizeModeImmediate": "Immediate",
+        "anonymizeModeSchedule": "Schedule (7-day wait)",
+        "cancelScheduledDeletion": "Cancel scheduled deletion",
+        "couldNotCancelScheduledDeletion": "Could not cancel scheduled deletion.",
+        "dualAcceptedEventCoolOff": "Not allowed until 7 days after the last confirmed event.",
+        "scheduledDeletionCanceled": "Scheduled deletion canceled.",
+        "userAnonymizeScheduled": "User anonymization scheduled."
     },
     "analytics": {
         "funnels": {
@@ -2428,7 +2436,8 @@
             "SUPPORT_REQUEST_RESOLVED": "Support request resolved",
             "BOOKING_REQUEST_OFFER_CHAT_MESSAGE_TO_CUSTOMER": "Offer chat to customer",
             "BOOKING_REQUEST_OFFER_CHAT_MESSAGE_TO_COOK": "Offer chat to cook",
-            "COOK_APPROVED_BY_ADMIN": "Cook approved"
+            "COOK_APPROVED_BY_ADMIN": "Cook approved",
+            "ACCOUNT_DELETED": "Account deleted"
         },
         "quotaReset": "Réinitialisation : {when}",
         "emailCount": "{count, plural, one {# e-mail} other {# e-mails}}"

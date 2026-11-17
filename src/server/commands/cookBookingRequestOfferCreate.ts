@@ -80,6 +80,14 @@ export async function cookBookingRequestOfferCreate(
         if (existingOffer) {
             throw new Error('cookBookingRequestOfferCreate: offer already exists');
         }
+        const [customer] = await serverRuntime.db
+            .select({ status: users.status })
+            .from(users)
+            .where(eq(users.userId, bookingRequest.userId))
+            .limit(1);
+        if (!customer || customer.status !== 'ACTIVE') {
+            throw new Error('cookBookingRequestOfferCreate: customer is not active');
+        }
         if (bookingRequest.userId === cookId) {
             throw new Error('cookBookingRequestOfferCreate: cannot offer on own request');
         }

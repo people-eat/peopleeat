@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
 import { t } from '../../../i18n/t';
-import { formatDate, userBirthDatePickerBounds, userDisplayName } from '../../../shared';
+import { formatDate, formatDateTime, userBirthDatePickerBounds, userDisplayName } from '../../../shared';
 import { AccountNotificationSettings } from '../../components/AccountNotificationSettings';
 import {
     AlertDialog,
@@ -33,8 +33,15 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/base/t
 import { PreferredCommunicationField } from '../../components/PreferredCommunicationField';
 import { ProfilePictureEditor } from '../../components/ProfilePictureEditor';
 import { TimeZoneField } from '../../components/TimeZoneField';
-import type { GqlCAdminUserPageQuery, GqlCLocale, GqlCUserPreferredCommunication, GqlCUserStatus } from '../../graphql/generated';
+import type {
+    GqlCAdminUserAnonymizeMode,
+    GqlCAdminUserPageQuery,
+    GqlCLocale,
+    GqlCUserPreferredCommunication,
+    GqlCUserStatus,
+} from '../../graphql/generated';
 import {
+    AdminUserAccountDeletionCancelDocument,
     AdminUserAnonymizeDocument,
     AdminUserEmailAddressUpdateDocument,
     AdminUserSessionUserBindDocument,
@@ -233,19 +240,30 @@ export function AdminUserGeneralSection({
     const [, updateEmail] = useMutation(AdminUserEmailAddressUpdateDocument);
     const [, bindSession] = useMutation(AdminUserSessionUserBindDocument);
     const [, anonymizeUser] = useMutation(AdminUserAnonymizeDocument);
+    const [, cancelAccountDeletion] = useMutation(AdminUserAccountDeletionCancelDocument);
     const [, updateStatus] = useMutation(AdminUserStatusUpdateDocument);
     const [editing, setEditing] = useState(false);
     const [profilePictureBusy, setProfilePictureBusy] = useState(false);
     const [impersonateBusy, setImpersonateBusy] = useState(false);
     const [anonymizeBusy, setAnonymizeBusy] = useState(false);
     const [statusBusy, setStatusBusy] = useState(false);
+    const [anonymizeMode, setAnonymizeMode] = useState<GqlCAdminUserAnonymizeMode>('IMMEDIATE');
     const alreadyAnonymized = user.status === 'ANONYMIZED';
     const isBanned = user.status === 'BANNED';
     const canImpersonate = user.status === 'ACTIVE';
     const canToggleBan = user.status === 'ACTIVE' || user.status === 'BANNED';
+    const deletionScheduledFor = user.accountDeletionScheduledFor;
     const birthDateBounds = userBirthDatePickerBounds();
-    const displayName = userDisplayName(user);
+    const displayName = userDisplayName(user, t(locale, 'common', 'deletedAccount'));
     const empty = t(locale, 'admin', 'copy.notSet');
+
+    function mutationErrorMessage(error: unknown): string {
+        return error instanceof Error ? error.message : String(error ?? '');
+    }
+
+    function isCoolOffError(error: unknown): boolean {
+        return /dual-accepted event cool-off/i.test(mutationErrorMessage(error));
+    }
 
     const form = useForm({
         defaultValues: formFromUser(user),
@@ -336,13 +354,36 @@ export function AdminUserGeneralSection({
     async function onAnonymize() {
         setAnonymizeBusy(true);
         try {
-            const result = await anonymizeUser({ userId: user.userId });
+            const result = await anonymizeUser({ userId: user.userId, mode: anonymizeMode });
             if (result.error || !result.data?.admin.userAnonymize.success) {
-                toast.error(t(locale, 'admin', 'copy.couldNotAnonymizeTheUser'));
+                toast.error(
+                    isCoolOffError(result.error)
+                        ? t(locale, 'admin', 'copy.dualAcceptedEventCoolOff')
+                        : t(locale, 'admin', 'copy.couldNotAnonymizeTheUser'),
+                );
                 return;
             }
-            toast.success(t(locale, 'admin', 'copy.userAnonymized'));
+            toast.success(
+                anonymizeMode === 'SCHEDULE'
+                    ? t(locale, 'admin', 'copy.userAnonymizeScheduled')
+                    : t(locale, 'admin', 'copy.userAnonymized'),
+            );
             setEditing(false);
+            await router.invalidate();
+        } finally {
+            setAnonymizeBusy(false);
+        }
+    }
+
+    async function onCancelScheduledDeletion() {
+        setAnonymizeBusy(true);
+        try {
+            const result = await cancelAccountDeletion({ userId: user.userId });
+            if (result.error || !result.data?.admin.userAccountDeletionCancel.success) {
+                toast.error(t(locale, 'admin', 'copy.couldNotCancelScheduledDeletion'));
+                return;
+            }
+            toast.success(t(locale, 'admin', 'copy.scheduledDeletionCanceled'));
             await router.invalidate();
         } finally {
             setAnonymizeBusy(false);
@@ -355,9 +396,11 @@ export function AdminUserGeneralSection({
             const result = await updateStatus({ userId: user.userId, status: nextStatus });
             if (result.error || !result.data?.admin.userStatusUpdate.success) {
                 toast.error(
-                    nextStatus === 'BANNED'
-                        ? t(locale, 'admin', 'copy.couldNotBanTheUser')
-                        : t(locale, 'admin', 'copy.couldNotUnbanTheUser'),
+                    nextStatus === 'BANNED' && isCoolOffError(result.error)
+                        ? t(locale, 'admin', 'copy.dualAcceptedEventCoolOff')
+                        : nextStatus === 'BANNED'
+                          ? t(locale, 'admin', 'copy.couldNotBanTheUser')
+                          : t(locale, 'admin', 'copy.couldNotUnbanTheUser'),
                 );
                 return;
             }
@@ -787,12 +830,31 @@ export function AdminUserGeneralSection({
                             <p className="text-xs text-muted-foreground">
                                 {alreadyAnonymized
                                     ? t(locale, 'admin', 'copy.thisAccountIsAlreadyAnonymized')
-                                    : t(locale, 'admin', 'copy.removePersonalDataNullTheEmailEndSessionsBookingHistoryIsKep')}
+                                    : deletionScheduledFor != null
+                                      ? t(locale, 'admin', 'copy.accountDeletionScheduledFor', {
+                                            date: formatDateTime(deletionScheduledFor, {
+                                                locale,
+                                                timeZone,
+                                                dateStyle: 'medium',
+                                                timeStyle: 'short',
+                                            }),
+                                        })
+                                      : t(locale, 'admin', 'copy.removePersonalDataNullTheEmailEndSessionsBookingHistoryIsKep')}
                             </p>
                         </div>
                         {alreadyAnonymized ? (
                             <Button type="button" variant="destructive" size="sm" disabled>
                                 {t(locale, 'admin', 'copy.anonymized')}
+                            </Button>
+                        ) : deletionScheduledFor != null ? (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled={anonymizeBusy}
+                                onClick={() => void onCancelScheduledDeletion()}
+                            >
+                                {t(locale, 'admin', 'copy.cancelScheduledDeletion')}
                             </Button>
                         ) : (
                             <AlertDialog>
@@ -808,6 +870,23 @@ export function AdminUserGeneralSection({
                                             {t(locale, 'admin', 'copy.thisCannotBeUndonePersonalDataWillBeRemovedAllSessionsEndedA')}
                                         </AlertDialogDescription>
                                     </AlertDialogHeader>
+                                    <div className="grid gap-2 py-2">
+                                        <p className="text-sm font-medium text-foreground">{t(locale, 'admin', 'copy.anonymize')}</p>
+                                        <Select
+                                            value={anonymizeMode}
+                                            onValueChange={(value) => setAnonymizeMode(value as GqlCAdminUserAnonymizeMode)}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="IMMEDIATE">
+                                                    {t(locale, 'admin', 'copy.anonymizeModeImmediate')}
+                                                </SelectItem>
+                                                <SelectItem value="SCHEDULE">{t(locale, 'admin', 'copy.anonymizeModeSchedule')}</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                     <AlertDialogFooter>
                                         <AlertDialogCancel disabled={anonymizeBusy}>{t(locale, 'admin', 'copy.cancel')}</AlertDialogCancel>
                                         <AlertDialogAction

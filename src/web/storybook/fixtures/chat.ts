@@ -77,6 +77,7 @@ export function chatMessageUserFixture(input: ChatMessageUserFixtureInput = {}):
         author: {
             __typename: 'PublicUser',
             display,
+            status: 'ACTIVE',
             createdAt: '2025-01-01T00:00:00.000Z',
             profilePicture:
                 pictureUrl != null
@@ -127,6 +128,7 @@ export function humanChatMessageUserFragment(
         reactions: message.reactions.map((reaction) => ({ emoji: reaction.emoji, isOwn: reaction.isOwn })),
         author: {
             display: message.author.display,
+            status: message.author.status,
             createdAt: message.author.createdAt,
             profilePicture: message.author.profilePicture
                 ? {

@@ -1,5 +1,6 @@
 import { eq, inArray } from 'drizzle-orm';
 
+import { t } from '../../i18n/t';
 import type { Locale } from '../../shared/locale';
 import type { Database } from '../db';
 import { fileUploadMetadataColumns } from '../db/fileUploadMetadata';
@@ -25,6 +26,7 @@ export async function publicUsersByIdFindMany(db: Database, userIds: string[]): 
     const rows = await db
         .select({
             firstName: users.firstName,
+            status: users.status,
             createdAt: users.createdAt,
             userId: users.userId,
             locale: users.locale,
@@ -37,7 +39,7 @@ export async function publicUsersByIdFindMany(db: Database, userIds: string[]): 
 
     for (const row of rows) {
         const profilePicture = row.profilePicture ? toGqlFileUpload(row.profilePicture) : null;
-        byId.set(row.userId, toGqlPublicUser(row, profilePicture));
+        byId.set(row.userId, toGqlPublicUser(row, profilePicture, t(row.locale, 'common', 'deletedAccount')));
         localeById.set(row.userId, row.locale);
         timeZoneById.set(row.userId, row.timeZone);
     }

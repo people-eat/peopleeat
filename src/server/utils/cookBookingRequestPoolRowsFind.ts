@@ -1,6 +1,6 @@
 import { and, desc, eq, isNotNull, isNull, ne, or, sql } from 'drizzle-orm';
 
-import { bookingRequestCooks, bookingRequestOffers, bookingRequests } from '../db/schema';
+import { bookingRequestCooks, bookingRequestOffers, bookingRequests, users } from '../db/schema';
 import type { BookingRequest, BookingRequestCook, Cook } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import { cookIsEligibleForBookingRequestPool } from './cookBookingRequestPoolEligibility';
@@ -35,6 +35,7 @@ export async function cookBookingRequestPoolRowsFind(
             )`.as('hasAcceptedOffer'),
         })
         .from(bookingRequests)
+        .innerJoin(users, and(eq(users.userId, bookingRequests.userId), eq(users.status, 'ACTIVE')))
         .leftJoin(
             bookingRequestOffers,
             and(eq(bookingRequestOffers.bookingRequestId, bookingRequests.bookingRequestId), eq(bookingRequestOffers.cookId, cookId)),

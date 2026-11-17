@@ -5,6 +5,7 @@ import { toGqlFileUpload } from './toGqlFileUpload';
 
 const ADMIN_PUBLIC_USER: GqlSPublicUser = {
     display: 'Admin',
+    status: 'ACTIVE',
     createdAt: new Date(0),
     profilePicture: null,
 };

@@ -75,7 +75,7 @@ async function createOffer(cook: Awaited<ReturnType<typeof setupCookReadyToOffer
     return created.referenceId!;
 }
 
-const publicUser = { display: 'Someone', createdAt: new Date(0), profilePicture: null };
+const publicUser = { display: 'Someone', status: 'ACTIVE' as const, createdAt: new Date(0), profilePicture: null };
 
 describe('adminBookingRequestOfferChatMessageVisibilityUpdate', () => {
     it('hides a simple message for peers and publishes updates', async () => {

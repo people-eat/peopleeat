@@ -36,7 +36,9 @@
             "invalidOrExpiredCode": "Invalid or expired code.",
             "phoneTaken": "This number is already in use.",
             "invalidPhone": "Enter a number with a country code, for example +49…",
-            "deleteFailed": "Could not delete the account."
+            "deleteFailed": "Could not delete the account.",
+            "deleteAlreadyScheduled": "Account deletion is already scheduled.",
+            "deleteCancelFailed": "Could not cancel account deletion."
         },
         "toasts": {
             "phoneSaved": "Phone number saved.",
@@ -55,6 +57,8 @@
             "signedOut": "Signed out.",
             "deviceSignedOut": "Device signed out.",
             "accountDeleted": "Account deleted.",
+            "accountDeletionScheduled": "Account deletion scheduled.",
+            "accountDeletionCanceled": "Account deletion canceled.",
             "signOutFailed": "Sign-out failed.",
             "deviceSignOutFailed": "Could not sign out that device."
         },
@@ -148,10 +152,14 @@
         },
         "delete": {
             "title": "Delete account",
-            "description": "Personal profile data will be removed. You will not be able to sign in afterwards.",
+            "description": "Personal profile data will be removed after a waiting period. You will not be able to sign in afterwards.",
             "action": "Delete account",
-            "confirmTitle": "Delete your account permanently?",
-            "confirmBody": "This cannot be undone. Your personal data will be removed and all devices signed out. Booking history stays available for chefs and operations, but is no longer linked to your identity. We will send a code to your email address."
+            "confirmTitle": "Schedule account deletion?",
+            "confirmBody": "We will send a code to your email address. After you confirm, deletion is scheduled for at least seven days from now, or seven days after your last confirmed event if that is later. You can cancel until then. Booking history stays available for chefs and operations, but will no longer be linked to your identity.",
+            "scheduledDescription": "Your account is scheduled for deletion on {date}. You can keep using peopleeat until then, or cancel.",
+            "cancelAction": "Cancel deletion",
+            "cancelTitle": "Cancel scheduled deletion?",
+            "cancelBody": "Your account stays active and will not be deleted automatically."
         },
         "security": {
             "title": "Sign-in and security",

@@ -1,0 +1,2 @@
+ALTER TABLE "Users" ADD COLUMN "accountDeletionScheduledFor" timestamp with time zone;--> statement-breakpoint
+CREATE INDEX "Users_accountDeletionScheduledFor_idx" ON "Users" USING btree ("accountDeletionScheduledFor");

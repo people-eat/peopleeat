@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { WhatsAppMessage } from '../db/schema';
 import { toGqlWhatsAppMessages } from './toGqlWhatsAppMessages';
 
-const customer = { display: 'Customer', createdAt: new Date(0), profilePicture: null };
+const customer = { display: 'Customer', status: 'ACTIVE' as const, createdAt: new Date(0), profilePicture: null };
 
 function messageCreate(overrides: Partial<WhatsAppMessage> = {}): WhatsAppMessage {
     return {

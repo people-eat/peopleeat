@@ -19,6 +19,7 @@ export function toGqlAdminUser(user: User, types: GqlSAdminUserType[]): GqlSAdmi
         adminNote: user.adminNote,
         types,
         createdAt: user.createdAt,
+        accountDeletionScheduledFor: user.accountDeletionScheduledFor ?? null,
 
         // resolved fields
         passkeys: [],

@@ -92,6 +92,37 @@ describe('adminUserStatusUpdate', () => {
         expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalled();
     });
 
+    it('customer ban cancels open booking requests', async () => {
+        const admin = await commandSetup.withUser({ firstName: 'Status', lastName: 'AdminCustomer' });
+        await testDb.insert(admins).values({ adminId: admin.user.userId });
+        const customer = await commandSetup.withUser({ firstName: 'Open', lastName: 'Request' });
+        const bookingRequestId = idCreate();
+        await testDb.insert(bookingRequests).values({
+            bookingRequestId,
+            userId: customer.user.userId,
+            occasion: 'Birthday',
+            dateTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            exactEventAddress: { ...berlin, latitude: 52.53, longitude: 13.41 },
+            priceClassType: 'MEDIUM',
+            originalMessage: 'Looking for a chef',
+            publicationStatus: 'PUBLICATION_AUTO_APPROVED',
+            preferences: [],
+            expiresAt: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
+        });
+
+        const result = await adminUserStatusUpdate(
+            adminMutationParent(admin.user.userId),
+            { userId: customer.user.userId, status: 'BANNED' },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+        expect(result.success).toBe(true);
+
+        const [request] = await testDb.select().from(bookingRequests).where(eq(bookingRequests.bookingRequestId, bookingRequestId));
+        expect(request?.canceledAt).not.toBeNull();
+        expect(request?.cancellationReason).toBe('Nutzer wurde gesperrt');
+    });
+
     it('rejects ANONYMIZED as a target status and anonymized rows', async () => {
         const admin = await commandSetup.withUser({ firstName: 'Status', lastName: 'Admin2' });
         await testDb.insert(admins).values({ adminId: admin.user.userId });

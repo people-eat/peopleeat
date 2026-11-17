@@ -134,6 +134,7 @@ fragment HumanChatMessageFields on HumanChatMessage {
         }
         author {
             display
+            status
             createdAt
             profilePicture {
                 fileUploadId

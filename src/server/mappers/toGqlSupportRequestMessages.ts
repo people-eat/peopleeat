@@ -8,6 +8,7 @@ export type SupportChatViewerRole = 'user' | 'admin';
 
 const ADMIN_PUBLIC_USER: GqlSPublicUser = {
     display: 'Admin',
+    status: 'ACTIVE',
     createdAt: new Date(0),
     profilePicture: null,
 };
@@ -18,7 +19,7 @@ export function toGqlSupportRequestMessages(input: {
     customerUserId: string;
     customer: GqlSPublicUser;
     viewerRole: SupportChatViewerRole;
-    authorsByUserId?: ReadonlyMap<string, Pick<User, 'firstName' | 'createdAt'>>;
+    authorsByUserId?: ReadonlyMap<string, Pick<User, 'firstName' | 'createdAt' | 'status'>>;
     /** Send-ordered file metadata keyed by supportRequestMessageId (no bytes). */
     attachmentsByMessageId?: ReadonlyMap<string, ReadonlyArray<FileUploadMetadata>>;
 }): GqlSHumanChatMessage[] {

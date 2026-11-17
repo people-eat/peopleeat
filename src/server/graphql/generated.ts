@@ -1559,6 +1559,7 @@ export interface GqlSAdminMutation {
     supportRequestResolve: GqlSMutationResult;
     supportRequestUnreadNotificationCountReset: GqlSMutationResult;
     terminateSessions: GqlSMutationResult;
+    userAccountDeletionCancel: GqlSMutationResult;
     userAdminNoteUpdate: GqlSMutationResult;
     userAnonymize: GqlSMutationResult;
     userCreate: GqlSMutationResult;
@@ -1934,12 +1935,17 @@ export type GqlSAdminMutationTerminateSessionsArgs = {
     sessionIds: Array<Scalars['ID']['input']>;
 };
 
+export type GqlSAdminMutationUserAccountDeletionCancelArgs = {
+    userId: Scalars['ID']['input'];
+};
+
 export type GqlSAdminMutationUserAdminNoteUpdateArgs = {
     adminNote: Scalars['String']['input'];
     userId: Scalars['ID']['input'];
 };
 
 export type GqlSAdminMutationUserAnonymizeArgs = {
+    mode: GqlSAdminUserAnonymizeMode;
     userId: Scalars['ID']['input'];
 };
 
@@ -2108,6 +2114,7 @@ export type GqlSAdminOutboundEmailLifecycleStatus = 'BOUNCED' | 'FAILED' | 'OPEN
 export type GqlSAdminOutboundEmailProvider = 'console' | 'resend';
 
 export type GqlSAdminOutboundEmailPurpose =
+    | 'ACCOUNT_DELETED'
     | 'ACCOUNT_DELETE_CONFIRM'
     | 'AUTH_EMAIL_OTP'
     | 'BOOKING_EVENT_CALENDAR'
@@ -2423,6 +2430,7 @@ export type GqlSAdminTimeBucketGranularity = 'day' | 'month' | 'week';
 
 export interface GqlSAdminUser {
     __typename?: 'AdminUser';
+    accountDeletionScheduledFor?: Maybe<Scalars['DateTime']['output']>;
     adminNote: Scalars['String']['output'];
     birthDate?: Maybe<Scalars['Date']['output']>;
     cook?: Maybe<GqlSAdminCook>;
@@ -2459,6 +2467,8 @@ export interface GqlSAdminUserAgeStat {
     birthDateSampleSize: Scalars['Int']['output'];
     medianAge?: Maybe<Scalars['Float']['output']>;
 }
+
+export type GqlSAdminUserAnonymizeMode = 'IMMEDIATE' | 'SCHEDULE';
 
 export type GqlSAdminUserCreate = {
     asAdmin?: Scalars['Boolean']['input'];
@@ -5121,6 +5131,7 @@ export interface GqlSPublicUser {
     createdAt: Scalars['DateTime']['output'];
     display: Scalars['String']['output'];
     profilePicture?: Maybe<GqlSFileUpload>;
+    status: GqlSUserStatus;
 }
 
 export interface GqlSPublicWebPage {
@@ -5262,6 +5273,7 @@ export type GqlSTestimonialType = 'COOK' | 'CUSTOMER';
 
 export interface GqlSUser {
     __typename?: 'User';
+    accountDeletionScheduledFor?: Maybe<Scalars['DateTime']['output']>;
     admin?: Maybe<GqlSAdmin>;
     assistantChat?: Maybe<GqlSChat>;
     assistantChats?: Maybe<Array<GqlSChat>>;
@@ -5605,6 +5617,8 @@ export interface GqlSUserMutation {
     supportRequestMessageCreate: GqlSMutationResult;
     supportRequestUnreadNotificationCountReset: GqlSMutationResult;
     terminateSessions: GqlSMutationResult;
+    userAccountDeletionCancel: GqlSMutationResult;
+    userAccountDeletionIntent: GqlSMutationResult;
     userAnonymize: GqlSMutationResult;
     userAnonymizeOtpRequest: GqlSMutationResult;
     userLegalAccept: GqlSMutationResult;
@@ -6300,6 +6314,7 @@ export type GqlSResolversTypes = ResolversObject<{
     AdminUser: ResolverTypeWrapper<GqlSAdminUser>;
     AdminUserAgeBySegment: ResolverTypeWrapper<GqlSAdminUserAgeBySegment>;
     AdminUserAgeStat: ResolverTypeWrapper<GqlSAdminUserAgeStat>;
+    AdminUserAnonymizeMode: GqlSAdminUserAnonymizeMode;
     AdminUserCreate: GqlSAdminUserCreate;
     AdminUserCriterion: GqlSAdminUserCriterion;
     AdminUserInsights: ResolverTypeWrapper<GqlSAdminUserInsights>;
@@ -9011,6 +9026,12 @@ export type GqlSAdminMutationResolvers<
         ContextType,
         RequireFields<GqlSAdminMutationTerminateSessionsArgs, 'sessionIds'>
     >;
+    userAccountDeletionCancel?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminMutationUserAccountDeletionCancelArgs, 'userId'>
+    >;
     userAdminNoteUpdate?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
@@ -9021,7 +9042,7 @@ export type GqlSAdminMutationResolvers<
         GqlSResolversTypes['MutationResult'],
         ParentType,
         ContextType,
-        RequireFields<GqlSAdminMutationUserAnonymizeArgs, 'userId'>
+        RequireFields<GqlSAdminMutationUserAnonymizeArgs, 'mode' | 'userId'>
     >;
     userCreate?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -9431,6 +9452,7 @@ export type GqlSAdminUserResolvers<
     ContextType = any,
     ParentType extends GqlSResolversParentTypes['AdminUser'] = GqlSResolversParentTypes['AdminUser'],
 > = ResolversObject<{
+    accountDeletionScheduledFor?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     adminNote?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     birthDate?: Resolver<Maybe<GqlSResolversTypes['Date']>, ParentType, ContextType>;
     cook?: Resolver<Maybe<GqlSResolversTypes['AdminCook']>, ParentType, ContextType>;
@@ -11885,6 +11907,7 @@ export type GqlSPublicUserResolvers<
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     display?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     profilePicture?: Resolver<Maybe<GqlSResolversTypes['FileUpload']>, ParentType, ContextType>;
+    status?: Resolver<GqlSResolversTypes['UserStatus'], ParentType, ContextType>;
 }>;
 
 export type GqlSPublicWebPageResolvers<
@@ -12029,6 +12052,7 @@ export type GqlSUserResolvers<
     ContextType = any,
     ParentType extends GqlSResolversParentTypes['User'] = GqlSResolversParentTypes['User'],
 > = ResolversObject<{
+    accountDeletionScheduledFor?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     admin?: Resolver<Maybe<GqlSResolversTypes['Admin']>, ParentType, ContextType>;
     assistantChat?: Resolver<
         Maybe<GqlSResolversTypes['Chat']>,
@@ -12575,6 +12599,8 @@ export type GqlSUserMutationResolvers<
         ContextType,
         RequireFields<GqlSUserMutationTerminateSessionsArgs, 'sessionIds'>
     >;
+    userAccountDeletionCancel?: Resolver<GqlSResolversTypes['MutationResult'], ParentType, ContextType>;
+    userAccountDeletionIntent?: Resolver<GqlSResolversTypes['MutationResult'], ParentType, ContextType>;
     userAnonymize?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
@@ -13044,6 +13070,7 @@ export const GqlSAdminOutboundEmailLifecycleStatusSchema: z.ZodType<
 export const GqlSAdminOutboundEmailProviderSchema: z.ZodType<'console' | 'resend', 'console' | 'resend'> = z.enum(['console', 'resend']);
 
 export const GqlSAdminOutboundEmailPurposeSchema: z.ZodType<
+    | 'ACCOUNT_DELETED'
     | 'ACCOUNT_DELETE_CONFIRM'
     | 'AUTH_EMAIL_OTP'
     | 'BOOKING_EVENT_CALENDAR'
@@ -13083,6 +13110,7 @@ export const GqlSAdminOutboundEmailPurposeSchema: z.ZodType<
     | 'TESTIMONIAL_REMINDER_EVENING_CUSTOMER'
     | 'TESTIMONIAL_REMINDER_MORNING_COOK'
     | 'TESTIMONIAL_REMINDER_MORNING_CUSTOMER',
+    | 'ACCOUNT_DELETED'
     | 'ACCOUNT_DELETE_CONFIRM'
     | 'AUTH_EMAIL_OTP'
     | 'BOOKING_EVENT_CALENDAR'
@@ -13123,6 +13151,7 @@ export const GqlSAdminOutboundEmailPurposeSchema: z.ZodType<
     | 'TESTIMONIAL_REMINDER_MORNING_COOK'
     | 'TESTIMONIAL_REMINDER_MORNING_CUSTOMER'
 > = z.enum([
+    'ACCOUNT_DELETED',
     'ACCOUNT_DELETE_CONFIRM',
     'AUTH_EMAIL_OTP',
     'BOOKING_EVENT_CALENDAR',
@@ -13210,6 +13239,11 @@ export const GqlSAdminTimeBucketGranularitySchema: z.ZodType<'day' | 'month' | '
     'day',
     'month',
     'week',
+]);
+
+export const GqlSAdminUserAnonymizeModeSchema: z.ZodType<'IMMEDIATE' | 'SCHEDULE', 'IMMEDIATE' | 'SCHEDULE'> = z.enum([
+    'IMMEDIATE',
+    'SCHEDULE',
 ]);
 
 export const GqlSAdminUserSortFieldSchema: z.ZodType<

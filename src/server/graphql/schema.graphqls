@@ -494,6 +494,9 @@ type User {
     timeZone: TimeZone!
     # When the account was created. Shown on the account page.
     createdAt: DateTime!
+    # When set, a queued job will anonymize at this time. Cleared on cancel or
+    # after scrub. See docs/features/account.md.
+    accountDeletionScheduledFor: DateTime
     # Current profile picture. Bytes live in FileUploads; this field resolves
     # the linked upload (url → /api/file-uploads/:id). Public GET when this FK
     # points at the upload. See docs/features/profile-pictures.md.
@@ -1936,6 +1939,8 @@ enum AdminCallCookStatSortField {
 # `stageName` wins. No email / last name / phone.
 type PublicUser {
     display: String!
+    # ACTIVE | BANNED | ANONYMIZED — UI shows a deleted-account label when ANONYMIZED.
+    status: UserStatus!
     createdAt: DateTime!
     profilePicture: FileUpload
 }
@@ -3266,14 +3271,24 @@ input UserBookingRequestCreate {
     requestedMenuId: ID
 }
 
+# Admin anonymize: run scrub now (cool-off gated) or schedule like self-serve.
+enum AdminUserAnonymizeMode {
+    IMMEDIATE
+    SCHEDULE
+}
+
 type UserMutation {
     userUpdate(user: UserUpdate!): MutationResult!
-    # Verifies the emailed code, then anonymizes the signed-in user (scrubs PII,
-    # nulls email, revokes auth, hides cook profile, keeps relational history).
-    # Customer-facing copy is "delete account". See docs/features/account.md.
+    # Verifies the emailed code, then schedules anonymization (does not scrub
+    # immediately). Customer-facing copy is "delete account". See docs/features/account.md.
     userAnonymize(code: String!): MutationResult!
     # Emails a code to the current address before `userAnonymize`.
     userAnonymizeOtpRequest(locale: Locale!): MutationResult!
+    # Fired when the user clicks "delete account" on the account page (opens the
+    # confirm dialog). Posts Slack to the sign-ups channel only.
+    userAccountDeletionIntent: MutationResult!
+    # Cancels a pending scheduled account deletion.
+    userAccountDeletionCancel: MutationResult!
     terminateSessions(sessionIds: [ID!]!): MutationResult!
     # Stamps lastAcceptedPrivacyPolicy + lastAcceptedTerms to now(). Always
     # allowed while acceptance is pending (hard-gate exception).
@@ -3671,6 +3686,8 @@ type AdminUser {
     # (`admin` + `customer`, or `admin` + `cook`). See `AdminUserType`.
     types: [AdminUserType!]!
     createdAt: DateTime!
+    # When set, a queued job will anonymize at this time. Same as `User.accountDeletionScheduledFor`.
+    accountDeletionScheduledFor: DateTime
     # Present when the user has a `Cooks` row; null otherwise.
     cook: AdminCook
     # Persisted per-user feature toggle overrides (force on/off). Absent keys
@@ -4821,6 +4838,7 @@ enum AdminOutboundEmailPurpose {
     AUTH_EMAIL_OTP
     EMAIL_ADDRESS_UPDATE_CONFIRM
     ACCOUNT_DELETE_CONFIRM
+    ACCOUNT_DELETED
     CALL_SLOT_BOOKING_REQUEST
     CALL_SLOT_BOOKING_CONFIRM
     CALL_SLOT_BOOKING_DECLINE
@@ -5111,13 +5129,17 @@ type AdminMutation {
     # Direct email change (no OTP). Archives the previous address. Returns
     # `userId` as `referenceId`.
     userEmailAddressUpdate(userId: ID!, emailAddress: EmailAddress!): MutationResult!
-    # Anonymize any user (same scrub as self-serve delete). Returns `userId` as
+    # Anonymize any user. `IMMEDIATE` cool-off gated then scrub; `SCHEDULE` uses
+    # the same waiting-period formula as self-serve. Returns `userId` as
     # `referenceId`. See docs/features/account.md.
-    userAnonymize(userId: ID!): MutationResult!
+    userAnonymize(userId: ID!, mode: AdminUserAnonymizeMode!): MutationResult!
+    # Cancel a pending scheduled account deletion for any user.
+    userAccountDeletionCancel(userId: ID!): MutationResult!
     # Ban or unban (`ACTIVE` ↔ `BANNED` only). Rejects `ANONYMIZED` and any
-    # transition involving an anonymized row. On ban, open cook offers are
-    # auto-declined. Sessions stay bound so the profile restriction banner can
-    # appear live. Returns `userId` as `referenceId`. See docs/features/admin-users.md.
+    # transition involving an anonymized row. Ban is cool-off gated; on ban,
+    # open booking requests are canceled and open offers declined. Sessions stay
+    # bound so the profile restriction banner can appear live. Returns `userId`
+    # as `referenceId`. See docs/features/admin-users.md.
     userStatusUpdate(userId: ID!, status: UserStatus!): MutationResult!
     # Mint a new cookie session bound to a target ACTIVE user (impersonation).
     # Admin session stays intact; client gets Set-Cookie for the new session.

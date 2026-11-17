@@ -77,7 +77,7 @@ async function createOffer(cook: Awaited<ReturnType<typeof setupCookReadyToOffer
     return created.referenceId!;
 }
 
-const publicUser = { display: 'Someone', createdAt: new Date(0), profilePicture: null };
+const publicUser = { display: 'Someone', status: 'ACTIVE' as const, createdAt: new Date(0), profilePicture: null };
 
 describe('bookingRequestOfferChatMessageDelete', () => {
     it('soft-deletes a customer message for peers and keeps it for admin', async () => {

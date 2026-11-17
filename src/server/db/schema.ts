@@ -404,12 +404,17 @@ export const users = pgTable(
         // SQL migration only (circular with FileUploads.userId → Users). See
         // docs/architecture/file-storage.md and docs/features/profile-pictures.md.
         profilePictureFileUploadId: nanoId(),
+        // When set, a queued job will anonymize at this time (self-serve or
+        // admin schedule). Cleared on cancel or after scrub. See
+        // docs/features/account.md.
+        accountDeletionScheduledFor: timestamp({ withTimezone: true }),
         createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
     },
     (table) => [
         uniqueIndex('Users_emailAddress_uidx').on(table.emailAddress),
         uniqueIndex('Users_phoneNumber_uidx').on(table.phoneNumber),
         index('Users_profilePictureFileUploadId_idx').on(table.profilePictureFileUploadId),
+        index('Users_accountDeletionScheduledFor_idx').on(table.accountDeletionScheduledFor),
         index('Users_createdAt_idx').on(table.createdAt),
     ],
 );

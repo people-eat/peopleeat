@@ -10,6 +10,12 @@
             "subject": "Code zum Löschen deines Kontos",
             "body": "Gib diesen Code auf der Kontoseite ein, um das Löschen zu bestätigen. Er ist zehn Minuten gültig. Wenn du das nicht warst, ignoriere diese E-Mail."
         },
+        "accountDeleted": {
+            "preview": "Dein peopleeat Konto wurde gelöscht",
+            "subject": "Dein peopleeat Konto wurde gelöscht",
+            "body": "Dein Konto wurde gelöscht. Personenbezogene Daten wurden entfernt und du kannst dich nicht mehr anmelden. Wenn du das nicht angefordert hast, kontaktiere den Support."
+        },
+
         "emailUpdate": {
             "preview": "Bestätige deine neue E-Mail-Adresse. Code: {code}",
             "subject": "Bestätige deine neue E-Mail-Adresse",

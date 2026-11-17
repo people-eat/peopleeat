@@ -35,7 +35,12 @@ export async function userAnonymizeOtpRequest(
 
     try {
         const [currentUser] = await serverRuntime.db
-            .select({ emailAddress: users.emailAddress, firstName: users.firstName, status: users.status })
+            .select({
+                emailAddress: users.emailAddress,
+                firstName: users.firstName,
+                status: users.status,
+                accountDeletionScheduledFor: users.accountDeletionScheduledFor,
+            })
             .from(users)
             .where(eq(users.userId, userId))
             .limit(1);
@@ -44,6 +49,9 @@ export async function userAnonymizeOtpRequest(
         }
         if (currentUser.status === 'ANONYMIZED') {
             throw new Error('userAnonymizeOtpRequest: already anonymized');
+        }
+        if (currentUser.accountDeletionScheduledFor != null) {
+            throw new Error('userAnonymizeOtpRequest: already scheduled');
         }
         if (!currentUser.emailAddress) {
             throw new Error('userAnonymizeOtpRequest: user not found');

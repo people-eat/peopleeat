@@ -78,6 +78,7 @@ export async function whatsAppMessagesFindMany(
 
     let customer: GqlSPublicUser = {
         display: conversation.displayName?.trim() || conversation.phoneNumber,
+        status: 'ACTIVE',
         createdAt: conversation.createdAt,
         profilePicture: null,
     };

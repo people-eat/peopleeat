@@ -36,7 +36,9 @@
             "invalidOrExpiredCode": "Code ungültig oder abgelaufen.",
             "phoneTaken": "Diese Nummer ist bereits vergeben.",
             "invalidPhone": "Bitte eine Nummer mit Ländervorwahl eingeben, zum Beispiel +49…",
-            "deleteFailed": "Konto konnte nicht gelöscht werden."
+            "deleteFailed": "Konto konnte nicht gelöscht werden.",
+            "deleteAlreadyScheduled": "Die Kontolöschung ist bereits geplant.",
+            "deleteCancelFailed": "Die Kontolöschung konnte nicht abgebrochen werden."
         },
         "toasts": {
             "phoneSaved": "Telefonnummer gespeichert.",
@@ -55,6 +57,8 @@
             "signedOut": "Abgemeldet.",
             "deviceSignedOut": "Gerät abgemeldet.",
             "accountDeleted": "Konto gelöscht.",
+            "accountDeletionScheduled": "Kontolöschung geplant.",
+            "accountDeletionCanceled": "Kontolöschung abgebrochen.",
             "signOutFailed": "Abmelden fehlgeschlagen.",
             "deviceSignOutFailed": "Gerät konnte nicht abgemeldet werden."
         },
@@ -148,10 +152,14 @@
         },
         "delete": {
             "title": "Konto löschen",
-            "description": "Personenbezogene Daten werden entfernt. Du kannst dich danach nicht mehr anmelden.",
+            "description": "Personenbezogene Daten werden nach einer Wartezeit entfernt. Du kannst dich danach nicht mehr anmelden.",
             "action": "Konto löschen",
-            "confirmTitle": "Konto wirklich löschen?",
-            "confirmBody": "Diese Aktion kann nicht rückgängig gemacht werden. Deine persönlichen Daten werden entfernt und alle Geräte abgemeldet. Buchungsverläufe bleiben für Köche und den Betrieb erhalten, sind aber nicht mehr mit deiner Identität verknüpft. Wir senden einen Code an deine E-Mail-Adresse."
+            "confirmTitle": "Kontolöschung planen?",
+            "confirmBody": "Wir senden einen Code an deine E-Mail-Adresse. Nach der Bestätigung wird die Löschung frühestens in sieben Tagen geplant, oder sieben Tage nach deinem letzten bestätigten Event, falls das später ist. Bis dahin kannst du abbrechen. Buchungsverläufe bleiben für Köche und den Betrieb erhalten, sind dann aber nicht mehr mit deiner Identität verknüpft.",
+            "scheduledDescription": "Dein Konto wird am {date} gelöscht. Bis dahin kannst du peopleeat weiter nutzen oder abbrechen.",
+            "cancelAction": "Löschung abbrechen",
+            "cancelTitle": "Geplante Löschung abbrechen?",
+            "cancelBody": "Dein Konto bleibt aktiv und wird nicht automatisch gelöscht."
         },
         "security": {
             "title": "Anmeldung und Sicherheit",
