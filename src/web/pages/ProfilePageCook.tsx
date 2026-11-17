@@ -112,7 +112,7 @@ export function ProfilePageCook({ name, cook }: { name: string; cook: GqlCProfil
     const overview = profilePageCookOverview(cook, locale, timeZone);
 
     return (
-        <main id="main-content" className="mx-auto grid min-h-0 w-full max-w-3xl flex-1 content-start gap-8">
+        <main id="main-content" className="mx-auto grid w-full max-w-3xl content-start gap-8">
             <div className="grid gap-2">
                 <h1 className="font-serif text-2xl/tight text-foreground">{t(locale, 'profile', 'overview.hello', { name })}</h1>
                 <p className="text-muted-foreground">{t(locale, 'profile', 'overview.subtitle')}</p>
