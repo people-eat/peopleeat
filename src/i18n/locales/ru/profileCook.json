@@ -177,7 +177,7 @@
         "meal": "Блюдо",
         "menu": "Меню",
         "request": "Заявка",
-        "walletIncomplete": "Настройка кошелька не завершена",
+        "walletIncomplete": "Кошелёк требует внимания",
         "poolReviewCount": "{count} заявок на рассмотрении",
         "offersUnreadCount": "{count} непрочитанных уведомлений"
     },

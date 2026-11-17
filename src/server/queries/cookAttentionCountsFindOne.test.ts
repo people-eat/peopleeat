@@ -111,10 +111,37 @@ describe('cookAttentionCountsFindOne', () => {
         expect(counts.bookingRequestPoolCount).toBe(poolList.length);
     });
 
-    it('returns zeros and no wallet flag for an unapproved cook without activity', async () => {
+    it('flags wallet attention for a missing invoice address even when unapproved', async () => {
         // Arrange
         const setup = await commandSetup.withUser({ firstName: 'New', lastName: 'Chef' });
         await testDb.insert(cooks).values({ cookId: setup.user.userId, isApprovedByAdmin: false });
+
+        // Act
+        const counts = await cookAttentionCountsFindOne(cookParent(setup.user.userId), setup.requestingSession, setup.serverRuntime);
+
+        // Assert
+        expect(counts).toEqual({ bookingRequestPoolCount: 0, bookingRequestOfferUnreadCount: 0, walletNeedsAttention: true });
+    });
+
+    it('clears the wallet flag once invoice address and Stripe are complete', async () => {
+        // Arrange
+        const setup = await commandSetup.withUser({ firstName: 'Done', lastName: 'Chef' });
+        await testDb.insert(cooks).values({
+            cookId: setup.user.userId,
+            isApprovedByAdmin: true,
+            stripeAccountId: 'acct_done',
+            stripeAccountActive: true,
+            invoiceAddress: {
+                companyName: null,
+                firstName: 'Done',
+                lastName: 'Chef',
+                country: 'DE',
+                city: 'Berlin',
+                postalCode: '10117',
+                line1: 'Street 1',
+                line2: '',
+            },
+        });
 
         // Act
         const counts = await cookAttentionCountsFindOne(cookParent(setup.user.userId), setup.requestingSession, setup.serverRuntime);

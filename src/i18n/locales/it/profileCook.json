@@ -577,7 +577,7 @@
         "meal": "Piatto",
         "menu": "Menu",
         "request": "Richiesta",
-        "walletIncomplete": "Configurazione wallet incompleta",
+        "walletIncomplete": "Il wallet richiede attenzione",
         "poolReviewCount": "{count} richieste da esaminare",
         "offersUnreadCount": "{count} notifiche non lette"
     },

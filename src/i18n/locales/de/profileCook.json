@@ -182,7 +182,7 @@
         "meal": "Gericht",
         "menu": "Menü",
         "request": "Anfrage",
-        "walletIncomplete": "Wallet-Einrichtung unvollständig",
+        "walletIncomplete": "Wallet erfordert Aufmerksamkeit",
         "poolReviewCount": "{count} Anfragen zur Prüfung",
         "offersUnreadCount": "{count} ungelesene Benachrichtigungen"
     },

@@ -182,7 +182,7 @@
         "meal": "Meal",
         "menu": "Menu",
         "request": "Request",
-        "walletIncomplete": "Wallet setup incomplete",
+        "walletIncomplete": "Wallet needs attention",
         "poolReviewCount": "{count} requests to review",
         "offersUnreadCount": "{count} unread notifications"
     },

@@ -1107,7 +1107,8 @@ type CookAttentionCounts {
     bookingRequestPoolCount: Int!
     # Sum of `cookUnreadNotificationCount` across the cook's offers.
     bookingRequestOfferUnreadCount: Int!
-    # Approved by admin and the Stripe wallet is not `COMPLETED` yet.
+    # Wallet nav needs attention: missing `Cooks.invoiceAddress`, or approved
+    # cook whose Stripe wallet is not `COMPLETED` yet.
     walletNeedsAttention: Boolean!
 }
 

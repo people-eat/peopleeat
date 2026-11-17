@@ -37,7 +37,9 @@ export function cookStripeStatusDerive(cook: CookStripeColumns): CookStripeStatu
     return 'PREPARED';
 }
 
-export function cookWalletNeedsAttentionDerive(cook: { isApprovedByAdmin: boolean } & CookStripeColumns): boolean {
+/** Wallet nav badge: missing invoice address, or approved cook with incomplete Stripe. */
+export function cookWalletNeedsAttentionDerive(cook: { isApprovedByAdmin: boolean; invoiceAddress: unknown } & CookStripeColumns): boolean {
+    if (cook.invoiceAddress == null) return true;
     return cook.isApprovedByAdmin && cookStripeStatusDerive(cook) !== 'COMPLETED';
 }
 

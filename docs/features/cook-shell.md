@@ -12,9 +12,10 @@ Visiting `/profile/*` as a cook shows:
   [cook-analytics.md](./cook-analytics.md)), Invite chefs (when `COOK_INVITE` is on — see [cook-invite.md](./cook-invite.md)), Chef profile,
   Public profile, Travel settings, Meals, Menus, Offer extras (when `BOOKING_REQUEST_OFFER_ADDONS` is on — see
   [booking-offer-addons.md](./booking-offer-addons.md)), Wallet, Gesprächstermine (call appointments). Wallet shows a warning `StatusBadge`
-  when the cook is approved and payout setup is incomplete — see [status-messaging.md](../styles/status-messaging.md). Pool, offer counts,
-  and wallet attention are computed by the server (the pool badge always matches the pool list), seed from the profile loader, and stay live
-  via real-time user updates.
+  when the invoice address is missing or (once approved) payout setup is incomplete — see
+  [status-messaging.md](../styles/status-messaging.md) and [cook-profile.md](./cook-profile.md). Pool, offer counts, and wallet attention
+  are computed by the server (the pool badge always matches the pool list), seed from the profile loader, and stay live via real-time user
+  updates.
 - **Footer:** Account at `/profile/account`. When the cook is also an admin, an Admin link appears above Account (same escape-hatch pattern
   as Admin → Profile).
 - **Main pane header:** sidebar trigger + path breadcrumbs (no leading “Profile”) + accent assistant trigger on the right (soft orange pill,

@@ -177,7 +177,7 @@
         "meal": "Gerecht",
         "menu": "Menu",
         "request": "Aanvraag",
-        "walletIncomplete": "Wallet niet volledig ingesteld",
+        "walletIncomplete": "Wallet vraagt om aandacht",
         "poolReviewCount": "{count} aanvragen om te bekijken",
         "offersUnreadCount": "{count} ongelezen meldingen"
     },

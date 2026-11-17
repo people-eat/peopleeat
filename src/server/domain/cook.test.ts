@@ -45,12 +45,44 @@ describe('cookStripeStatusDerive', () => {
 });
 
 describe('cookWalletNeedsAttentionDerive', () => {
-    it('flags approved cooks until Stripe is completed, never unapproved cooks', () => {
+    const invoiceAddress = {
+        companyName: null,
+        firstName: 'Ada',
+        lastName: 'Smith',
+        country: 'DE',
+        city: 'Berlin',
+        postalCode: '10117',
+        line1: 'Unter den Linden 1',
+        line2: '',
+    };
+
+    it('flags every cook until an invoice address is saved', () => {
+        const empty = { stripeAccountId: null, stripeAccountActive: false, stripeAccountActiveWasReset: false, invoiceAddress: null };
+        expect(cookWalletNeedsAttentionDerive({ isApprovedByAdmin: false, ...empty })).toBe(true);
+        expect(cookWalletNeedsAttentionDerive({ isApprovedByAdmin: true, ...empty })).toBe(true);
+    });
+
+    it('flags approved cooks until Stripe is completed once an invoice address exists', () => {
         // Arrange
-        const prepared = { stripeAccountId: 'acct_1', stripeAccountActive: false, stripeAccountActiveWasReset: false };
-        const completed = { stripeAccountId: 'acct_1', stripeAccountActive: true, stripeAccountActiveWasReset: false };
-        const wasReset = { stripeAccountId: 'acct_1', stripeAccountActive: true, stripeAccountActiveWasReset: true };
-        const empty = { stripeAccountId: null, stripeAccountActive: false, stripeAccountActiveWasReset: false };
+        const prepared = {
+            stripeAccountId: 'acct_1',
+            stripeAccountActive: false,
+            stripeAccountActiveWasReset: false,
+            invoiceAddress,
+        };
+        const completed = {
+            stripeAccountId: 'acct_1',
+            stripeAccountActive: true,
+            stripeAccountActiveWasReset: false,
+            invoiceAddress,
+        };
+        const wasReset = {
+            stripeAccountId: 'acct_1',
+            stripeAccountActive: true,
+            stripeAccountActiveWasReset: true,
+            invoiceAddress,
+        };
+        const empty = { stripeAccountId: null, stripeAccountActive: false, stripeAccountActiveWasReset: false, invoiceAddress };
 
         // Act / Assert
         expect(cookWalletNeedsAttentionDerive({ isApprovedByAdmin: true, ...empty })).toBe(true);
