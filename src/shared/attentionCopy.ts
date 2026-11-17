@@ -21,7 +21,15 @@ export type UserAttentionKind =
 export type CookAttentionKind = 'APPROVAL_PENDING' | 'WALLET_RESET' | 'DIRECT_BOOKING_REQUEST' | 'OFFER_CHAT_UNREAD' | 'CALL_UPCOMING';
 
 export type CookOnboardingStep =
-    'WALLET' | 'TRAVEL' | 'PROFILE_PICTURE' | 'CHEF_PROFILE' | 'FIRST_MEAL' | 'FIRST_MENU' | 'DEFAULT_OFFER_MESSAGE' | 'FIRST_OFFER';
+    | 'INVOICE_ADDRESS'
+    | 'WALLET'
+    | 'TRAVEL'
+    | 'PROFILE_PICTURE'
+    | 'CHEF_PROFILE'
+    | 'FIRST_MEAL'
+    | 'FIRST_MENU'
+    | 'DEFAULT_OFFER_MESSAGE'
+    | 'FIRST_OFFER';
 
 export type AttentionCopy = {
     title: string;

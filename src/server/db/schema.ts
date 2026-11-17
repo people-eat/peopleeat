@@ -466,6 +466,10 @@ export const cooks = pgTable(
             .$defaultFn(() => idCreate()),
         previousPathNames: text().array().notNull().default([]),
         exactTravelOriginAddress: jsonb().$type<CookTravelOriginAddress>(),
+        // Billing address for peopleeat→cook invoices. Separate from travel origin.
+        // Null until the cook saves one (Getting started + Wallet). Same shape as
+        // gift-card / booking-request checkout addresses.
+        invoiceAddress: jsonb().$type<GiftCardInvoiceAddress>(),
         biography: text().notNull().default(''),
         biographySummary: text().notNull().default(''),
         // Landscape brand mark on the public chef About section. Null → marketing

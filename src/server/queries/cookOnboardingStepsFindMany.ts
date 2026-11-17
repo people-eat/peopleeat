@@ -32,6 +32,7 @@ export async function cookOnboardingStepsFindMany(
         return cookOnboardingStepsDerive({
             isApprovedByAdmin: row.cook.isApprovedByAdmin,
             stripeStatus: cookStripeStatusDerive(row.cook),
+            hasInvoiceAddress: row.cook.invoiceAddress != null,
             hasTravelOrigin: row.cook.exactTravelOriginAddress != null,
             hasProfilePicture: row.profilePictureFileUploadId != null,
             biography: row.cook.biography,

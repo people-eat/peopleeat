@@ -274,6 +274,13 @@
             "when": 1794906554677,
             "tag": "0038_deep_tarot",
             "breakpoints": true
+        },
+        {
+            "idx": 39,
+            "version": "7",
+            "when": 1794920196476,
+            "tag": "0039_luxuriant_professor_monster",
+            "breakpoints": true
         }
     ]
 }

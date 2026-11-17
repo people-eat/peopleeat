@@ -8,12 +8,12 @@ Signed-in cooks manage these areas under `/profile/*`:
 
 1. **Overview** (`/profile`) has two lanes: **Attention** (approval pending, Stripe wallet reset when Connect needs updated details, unread
    offer-chat messages deep-linking the busiest offer with `?tab=chat`, upcoming discovery calls in the next 14 days) and **Getting
-   started** (incomplete setup only — wallet for `EMPTY` / `PREPARED`, travel origin, profile picture, chef bio/cuisine/philosophy, first
-   meal, first menu, default offer note, first offer). When `COOK_ANALYTICS` is on and the cook already has marketplace or discovery
-   activity, a compact past-month **Analytics** strip appears (profile views, time to open, offers, conversion) with a link to
-   `/profile/analytics` — see [cook-analytics.md](./cook-analytics.md). Brand-new cooks see no analytics zeros. `ACTIVE_WAS_RESET` is
-   Attention (not Getting started). Completed steps disappear. When both lanes are empty, a calm “you’re all set” note points to the
-   sidebar.
+   started** (incomplete setup only — invoice address first for every cook until saved, wallet for `EMPTY` / `PREPARED`, travel origin,
+   profile picture, chef bio/cuisine/philosophy, first meal, first menu, default offer note, first offer). When `COOK_ANALYTICS` is on and
+   the cook already has marketplace or discovery activity, a compact past-month **Analytics** strip appears (profile views, time to open,
+   offers, conversion) with a link to `/profile/analytics` — see [cook-analytics.md](./cook-analytics.md). Brand-new cooks see no analytics
+   zeros. `ACTIVE_WAS_RESET` is Attention (not Getting started). Completed steps disappear. When both lanes are empty, a calm “you’re all
+   set” note points to the sidebar.
 2. **Chef profile** (`/profile/chef-profile`) is a read-only view of biography, biography summary, and cuisine style / cooking philosophy as
    the shared `CookProfileTags` pills, plus a private **default offer note** (customers never see this on the public chef page). When
    `COOK_PUBLIC_PROFILE_PATH_NAME` is on, the same view and edit page include **Public URL** (`/chefs/<pathName>` with copy, slug input,
@@ -54,18 +54,23 @@ Signed-in cooks manage these areas under `/profile/*`:
    `Cook.rating` for the star row; the testimonials section stays omitted (no cook-scoped public testimonial list on this page yet). Share /
    Copy / Open are gated on visible + admin-approved.
 
-5. **Wallet** (`/profile/wallet`) is the Stripe Connect onboarding surface. CTAs require admin approval. Coarse status uses info / warning /
-   success alerts — see [status-messaging.md](../styles/status-messaging.md). Connect flags (`stripeAccountActive` /
-   `stripeAccountActiveWasReset`) also update from the Stripe `account.updated` webhook via `cookStripeAccountStatusApply`, so status can
-   change before the cook opens the wallet. When a Connect account exists, the page also loads a **live** Stripe requirements snapshot
-   (`Cook.stripeAccountDetails`) and shows a short checklist of what’s still needed (identity verification, bank account, pending review,
-   overdue details). When setup is complete, an info CTA points cooks to the booking request pool to make offers. When
-   `COOK_WALLET_STRIPE_BALANCE` is on, it also loads **live Connect balance + recent balance transactions** (`Cook.stripeWallet`:
-   available/pending EUR cents and up to 20 newest movements) so cooks see money without opening the Express dashboard. Bank payouts remain
-   admin-gated after the event — the page copy says so. Those live Stripe fields are requested only on the wallet page query (and refetched
-   after status sync), never on `userUpdates`. On **first** Express account create, onboarding prefills phone and date of birth from the
-   user profile and address from travel origin when present (Stripe still asks the cook to confirm; bank/ID docs are never prefilled).
-   Webhook endpoint + event catalog: [stripe-payment.md](../architecture/stripe-payment.md#webhooks--dashboard-setup).
+5. **Wallet** (`/profile/wallet`) is the Stripe Connect onboarding surface and the place cooks save their **invoice / billing address**
+   (separate from travel origin; used later for peopleeat→cook invoices). When `Cook.invoiceAddress` is null, a warning `StatusAlert` asks
+   them to add it (stacked in the same `gap-4` alert column as Stripe status banners); when set, the page shows the address with Edit. Both
+   open an editor that saves via `CookUpdate.invoiceAddress` (full-page sheet below `md`, two-column dialog from `md` up), with Places
+   autocomplete and a one-click **Use travel origin** fill when a travel origin exists. Getting started links here for `INVOICE_ADDRESS`.
+   Stripe CTAs still require admin approval. Coarse Stripe status uses info / warning / success alerts — see
+   [status-messaging.md](../styles/status-messaging.md). Connect flags (`stripeAccountActive` / `stripeAccountActiveWasReset`) also update
+   from the Stripe `account.updated` webhook via `cookStripeAccountStatusApply`, so status can change before the cook opens the wallet. When
+   a Connect account exists, the page also loads a **live** Stripe requirements snapshot (`Cook.stripeAccountDetails`) and shows a short
+   checklist of what’s still needed (identity verification, bank account, pending review, overdue details). When setup is complete, an info
+   CTA points cooks to the booking request pool to make offers. When `COOK_WALLET_STRIPE_BALANCE` is on, it also loads **live Connect
+   balance + recent balance transactions** (`Cook.stripeWallet`: available/pending EUR cents and up to 20 newest movements) so cooks see
+   money without opening the Express dashboard. Bank payouts remain admin-gated after the event — the page copy says so. Those live Stripe
+   fields are requested only on the wallet page query (and refetched after status sync), never on `userUpdates`. On **first** Express
+   account create, onboarding prefills phone and date of birth from the user profile and address from travel origin when present (Stripe
+   still asks the cook to confirm; bank/ID docs are never prefilled). Webhook endpoint + event catalog:
+   [stripe-payment.md](../architecture/stripe-payment.md#webhooks--dashboard-setup).
 6. **Calls** (`/profile/calls`) toggles call scheduling and duration, weekly windows, and date exceptions — see
    [cook-call-availability.md](./cook-call-availability.md). Live call booking happens from the offer Call tab, not here.
 7. Admins manage cooks on the user admin surface: approve/revoke with a confirm dialog (approve sends a transactional email with a CTA to
@@ -159,6 +164,9 @@ reviews stay out of the cook-facing summary until published, matching public rul
   greeting on create); `''` = start blank each offer; non-empty = prefill. `Cook.defaultOfferMessage` / `AdminCook.defaultOfferMessage` /
   `CookUpdate.defaultOfferMessage` (omit = no change; empty string is stored; GraphQL `null` is ignored). Not on `PublicCook`. UI
   `CookDefaultOfferMessageFields` / `CookDefaultOfferMessageReadout`. Phone numbers rejected; max 2000 chars; `textNormalizeProse`
+- Invoice / billing address: `Cooks.invoiceAddress` JSON (`GiftCardInvoiceAddress` shape); `Cook.invoiceAddress` /
+  `AdminCook.invoiceAddress`; `CookUpdate.invoiceAddress` (omit = no change; normalized via `invoiceAddressNormalize`). Not on `PublicCook`.
+  Onboarding `INVOICE_ADDRESS` while null (all cooks). Wallet UI: warning `StatusAlert` + `CookInvoiceAddressDialog`
 - Catalogs: `src/shared/cookProfile.ts` — validated in `cookUpdate`
 - Display pills: `CookProfileTags` / `CookProfileTag` in `src/web/components/CookProfileTags.tsx` — shared muted chips for cuisine style +
   cooking philosophy on chef-profile read, public/hero/offer/featured surfaces (not `Badge secondary`, which is white-on-card)

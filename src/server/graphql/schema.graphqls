@@ -926,6 +926,9 @@ type Cook {
     # Full address for the cook; public surfaces should only expose `city` (and
     # optionally city-level coords derived from it) — see cook-profile.md.
     exactTravelOriginAddress: CookTravelOriginAddress
+    # Billing address for peopleeat→cook invoices. Separate from travel origin.
+    # Null until saved. Never on `PublicCook`.
+    invoiceAddress: InvoiceAddress
     biography: String!
     biographySummary: String!
     # True while a pending cook-biography-summary-generate job exists for this
@@ -1086,6 +1089,7 @@ type CookAttentionItem {
 }
 
 enum CookOnboardingStep {
+    INVOICE_ADDRESS
     WALLET
     TRAVEL
     PROFILE_PICTURE
@@ -1339,6 +1343,8 @@ input CookUpdate {
     # configured blank. Null is ignored (cannot reopen onboarding).
     defaultOfferMessage: String
     exactTravelOriginAddress: String
+    # Billing address for peopleeat→cook invoices. Omit = no change.
+    invoiceAddress: InvoiceAddressInput
     travelExpensesAmount: Int
     maximumTravelDistance: Int
     minimumPriceAmount: Int
@@ -3723,6 +3729,8 @@ type AdminCook {
     # Stripe retrieve fails. Request only on the admin cook-profile tab — hits Stripe.
     stripeWallet: CookStripeWallet
     exactTravelOriginAddress: CookTravelOriginAddress
+    # Billing address for peopleeat→cook invoices. Separate from travel origin.
+    invoiceAddress: InvoiceAddress
     biography: String!
     biographySummary: String!
     # True while a pending cook-biography-summary-generate job exists for this

@@ -4,6 +4,7 @@ import { and, eq } from 'drizzle-orm';
 import { isCookCallDurationMinutes } from '../../shared/cookCallAvailability';
 import { cookDefaultOfferMessageNormalize } from '../../shared/cookDefaultOfferMessage';
 import { isCookingPhilosophy, isCuisineStyle } from '../../shared/cookProfile';
+import { invoiceAddressNormalize } from '../../shared/invoiceAddressNormalize';
 import { textNormalizeProse, textNormalizeTitled } from '../../shared/textNormalize';
 import type { Cook } from '../db/schema';
 import { cooks, fileUploads } from '../db/schema';
@@ -41,6 +42,7 @@ export async function cookUpdate(
         cookingPhilosophy,
         defaultOfferMessage,
         exactTravelOriginAddress,
+        invoiceAddress,
         travelExpensesAmount,
         maximumTravelDistance,
         minimumPriceAmount,
@@ -63,6 +65,7 @@ export async function cookUpdate(
         cookingPhilosophy !== undefined ||
         defaultOfferMessage !== undefined ||
         exactTravelOriginAddress !== undefined ||
+        invoiceAddress !== undefined ||
         travelExpensesAmount !== undefined ||
         maximumTravelDistance !== undefined ||
         minimumPriceAmount !== undefined ||
@@ -163,6 +166,9 @@ export async function cookUpdate(
             previousOrigin.latitude !== resolvedAddress.latitude ||
             previousOrigin.longitude !== resolvedAddress.longitude;
         patch.exactTravelOriginAddress = resolvedAddress;
+    }
+    if (invoiceAddress !== undefined && invoiceAddress !== null) {
+        patch.invoiceAddress = invoiceAddressNormalize(invoiceAddress);
     }
     if (travelExpensesAmount !== undefined && travelExpensesAmount !== null) {
         patch.travelExpensesAmount = travelExpensesAmount;
@@ -277,11 +283,12 @@ export function toolCookUpdate({
 }) {
     return tool({
         description: [
-            'Update the signed-in cook profile (visibility, stage name, public path name, biography, logo, cuisine, travel, pricing, call settings, default offer note).',
+            'Update the signed-in cook profile (visibility, stage name, public path name, biography, logo, cuisine, travel, pricing, call settings, default offer note, invoice address).',
             'Only include fields that should change. cuisineStyle / cookingPhilosophy must be catalog values (or null to clear).',
             'stageName is an optional public display name (null / blank clears).',
             'defaultOfferMessage is the offer-create personal note (empty string starts each offer blank; omit to leave unchanged; null is ignored).',
             'logoFileUploadId links a previously uploaded square image (null clears). Use exactTravelOriginAddress as a free-text address.',
+            'invoiceAddress is the billing address for peopleeat invoices (omit to leave unchanged).',
         ].join(' '),
         // Codegen Zod schemas are runtime-compatible; AI SDK brands differ across Zod majors.
         inputSchema: GqlSCookUpdateSchema() as never,

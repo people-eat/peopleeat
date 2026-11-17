@@ -1064,6 +1064,7 @@ export interface GqlCAdminCook {
     inviteReward?: Maybe<Scalars['JSON']['output']>;
     inviteRewards: Array<GqlCAdminCookInviteReward>;
     invitedByCookId?: Maybe<Scalars['ID']['output']>;
+    invoiceAddress?: Maybe<GqlCInvoiceAddress>;
     isApprovedByAdmin: Scalars['Boolean']['output'];
     isVisible: Scalars['Boolean']['output'];
     lastModifiedAt: Scalars['DateTime']['output'];
@@ -3393,6 +3394,7 @@ export interface GqlCCook {
     exactTravelOriginAddress?: Maybe<GqlCCookTravelOriginAddress>;
     inviteOpenFeeCreditRemainingBookings: Scalars['Int']['output'];
     invitees: Array<GqlCCookInvitee>;
+    invoiceAddress?: Maybe<GqlCInvoiceAddress>;
     isApprovedByAdmin: Scalars['Boolean']['output'];
     isVisible: Scalars['Boolean']['output'];
     lastModifiedAt: Scalars['DateTime']['output'];
@@ -4274,7 +4276,15 @@ export type GqlCCookOfferAddonUpsert = {
 };
 
 export type GqlCCookOnboardingStep =
-    'CHEF_PROFILE' | 'DEFAULT_OFFER_MESSAGE' | 'FIRST_MEAL' | 'FIRST_MENU' | 'FIRST_OFFER' | 'PROFILE_PICTURE' | 'TRAVEL' | 'WALLET';
+    | 'CHEF_PROFILE'
+    | 'DEFAULT_OFFER_MESSAGE'
+    | 'FIRST_MEAL'
+    | 'FIRST_MENU'
+    | 'FIRST_OFFER'
+    | 'INVOICE_ADDRESS'
+    | 'PROFILE_PICTURE'
+    | 'TRAVEL'
+    | 'WALLET';
 
 export type GqlCCookPathNameAvailability = 'AVAILABLE' | 'INVALID' | 'TAKEN';
 
@@ -4412,6 +4422,7 @@ export type GqlCCookUpdate = {
     cuisineStyle?: InputMaybe<Scalars['String']['input']>;
     defaultOfferMessage?: InputMaybe<Scalars['String']['input']>;
     exactTravelOriginAddress?: InputMaybe<Scalars['String']['input']>;
+    invoiceAddress?: InputMaybe<GqlCInvoiceAddressInput>;
     isVisible?: InputMaybe<Scalars['Boolean']['input']>;
     logoFileUploadId?: InputMaybe<Scalars['ID']['input']>;
     maximumParticipants?: InputMaybe<Scalars['Int']['input']>;
@@ -22149,11 +22160,49 @@ export type GqlCProfileTravelLocationSuggestionsQuery = {
     };
 };
 
+export type GqlCProfileWalletInvoiceAddressFragment = {
+    companyName: string | null;
+    firstName: string;
+    lastName: string;
+    country: string;
+    city: string;
+    postalCode: string;
+    line1: string;
+    line2: string;
+};
+
+export type GqlCProfileWalletTravelOriginFragment = {
+    displayText: string;
+    addressLine1: string;
+    addressLine2: string;
+    city: string;
+    postCode: string;
+    country: string;
+};
+
 export type GqlCProfileWalletCookFragment = {
     cookId: string;
     isApprovedByAdmin: boolean;
     stripeStatus: Schema.GqlCCookStripeStatus;
     canCreateOffers: boolean;
+    exactTravelOriginAddress: {
+        displayText: string;
+        addressLine1: string;
+        addressLine2: string;
+        city: string;
+        postCode: string;
+        country: string;
+    } | null;
+    invoiceAddress: {
+        companyName: string | null;
+        firstName: string;
+        lastName: string;
+        country: string;
+        city: string;
+        postalCode: string;
+        line1: string;
+        line2: string;
+    } | null;
 };
 
 export type GqlCProfileWalletStripeAccountDetailsFragment = {
@@ -22182,7 +22231,32 @@ export type GqlCProfileWalletStripeWalletFragment = {
 
 export type GqlCProfileWalletUserFragment = {
     userId: string;
-    cook: { cookId: string; isApprovedByAdmin: boolean; stripeStatus: Schema.GqlCCookStripeStatus; canCreateOffers: boolean } | null;
+    firstName: string;
+    lastName: string;
+    cook: {
+        cookId: string;
+        isApprovedByAdmin: boolean;
+        stripeStatus: Schema.GqlCCookStripeStatus;
+        canCreateOffers: boolean;
+        exactTravelOriginAddress: {
+            displayText: string;
+            addressLine1: string;
+            addressLine2: string;
+            city: string;
+            postCode: string;
+            country: string;
+        } | null;
+        invoiceAddress: {
+            companyName: string | null;
+            firstName: string;
+            lastName: string;
+            country: string;
+            city: string;
+            postalCode: string;
+            line1: string;
+            line2: string;
+        } | null;
+    } | null;
 };
 
 export type GqlCProfileCookWalletPageQueryVariables = Exact<{ [key: string]: never }>;
@@ -22192,6 +22266,8 @@ export type GqlCProfileCookWalletPageQuery = {
         sessionId: string;
         user: {
             userId: string;
+            firstName: string;
+            lastName: string;
             cook: {
                 cookId: string;
                 isApprovedByAdmin: boolean;
@@ -22218,6 +22294,24 @@ export type GqlCProfileCookWalletPageQuery = {
                         availableOn: string;
                         description: string | null;
                     }>;
+                } | null;
+                exactTravelOriginAddress: {
+                    displayText: string;
+                    addressLine1: string;
+                    addressLine2: string;
+                    city: string;
+                    postCode: string;
+                    country: string;
+                } | null;
+                invoiceAddress: {
+                    companyName: string | null;
+                    firstName: string;
+                    lastName: string;
+                    country: string;
+                    city: string;
+                    postalCode: string;
+                    line1: string;
+                    line2: string;
                 } | null;
             } | null;
         } | null;
@@ -22262,7 +22356,58 @@ export type GqlCProfileCookWalletPageUpdatesSubscriptionVariables = Exact<{ [key
 export type GqlCProfileCookWalletPageUpdatesSubscription = {
     userUpdates: {
         userId: string;
-        cook: { cookId: string; isApprovedByAdmin: boolean; stripeStatus: Schema.GqlCCookStripeStatus; canCreateOffers: boolean } | null;
+        firstName: string;
+        lastName: string;
+        cook: {
+            cookId: string;
+            isApprovedByAdmin: boolean;
+            stripeStatus: Schema.GqlCCookStripeStatus;
+            canCreateOffers: boolean;
+            exactTravelOriginAddress: {
+                displayText: string;
+                addressLine1: string;
+                addressLine2: string;
+                city: string;
+                postCode: string;
+                country: string;
+            } | null;
+            invoiceAddress: {
+                companyName: string | null;
+                firstName: string;
+                lastName: string;
+                country: string;
+                city: string;
+                postalCode: string;
+                line1: string;
+                line2: string;
+            } | null;
+        } | null;
+    };
+};
+
+export type GqlCProfileCookWalletLocationSuggestionsQueryVariables = Exact<{
+    searchText: string;
+    onlyFullAddresses?: boolean;
+}>;
+
+export type GqlCProfileCookWalletLocationSuggestionsQuery = {
+    currentSession: {
+        locationSuggestions: Array<{
+            displayText: string;
+            latitude: number;
+            longitude: number;
+            structuredAddress: {
+                latitude: number;
+                longitude: number;
+                state: string;
+                displayText: string;
+                addressLine1: string;
+                addressLine2: string;
+                city: string;
+                postCode: string;
+                country: string;
+            } | null;
+        }>;
     };
 };
 
@@ -22284,6 +22429,14 @@ export type GqlCProfileCookStripeStatusSyncMutation = {
 export type GqlCProfileCookStripeDashboardUrlCreateMutationVariables = Exact<{ [key: string]: never }>;
 
 export type GqlCProfileCookStripeDashboardUrlCreateMutation = { user: { cook: { stripeDashboardUrlCreate: { url: string | null } } } };
+
+export type GqlCProfileCookWalletInvoiceAddressUpdateMutationVariables = Exact<{
+    input: Schema.GqlCCookUpdate;
+}>;
+
+export type GqlCProfileCookWalletInvoiceAddressUpdateMutation = {
+    user: { cook: { update: { success: boolean; referenceId: string | null } } };
+};
 
 export type GqlCProfileCustomerBookingRequestEditLocationSuggestionsQueryVariables = Exact<{
     searchText: string;
@@ -36709,6 +36862,50 @@ export const ProfileWalletStripeWalletFragmentDoc = {
         },
     ],
 } as unknown as DocumentNode<GqlCProfileWalletStripeWalletFragment, unknown>;
+export const ProfileWalletTravelOriginFragmentDoc = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileWalletTravelOrigin' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookTravelOriginAddress' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileWalletTravelOriginFragment, unknown>;
+export const ProfileWalletInvoiceAddressFragmentDoc = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileWalletInvoiceAddress' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'InvoiceAddress' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'companyName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'postalCode' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'line1' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'line2' } },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileWalletInvoiceAddressFragment, unknown>;
 export const ProfileWalletCookFragmentDoc = {
     kind: 'Document',
     definitions: [
@@ -36723,6 +36920,56 @@ export const ProfileWalletCookFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'stripeStatus' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'canCreateOffers' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'exactTravelOriginAddress' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileWalletTravelOrigin' } }],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'invoiceAddress' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileWalletInvoiceAddress' } }],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileWalletTravelOrigin' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookTravelOriginAddress' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileWalletInvoiceAddress' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'InvoiceAddress' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'companyName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'postalCode' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'line1' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'line2' } },
                 ],
             },
         },
@@ -36739,6 +36986,8 @@ export const ProfileWalletUserFragmentDoc = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'cook' },
@@ -36747,6 +36996,40 @@ export const ProfileWalletUserFragmentDoc = {
                             selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileWalletCook' } }],
                         },
                     },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileWalletTravelOrigin' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookTravelOriginAddress' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileWalletInvoiceAddress' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'InvoiceAddress' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'companyName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'postalCode' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'line1' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'line2' } },
                 ],
             },
         },
@@ -36761,6 +37044,22 @@ export const ProfileWalletUserFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'stripeStatus' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'canCreateOffers' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'exactTravelOriginAddress' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileWalletTravelOrigin' } }],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'invoiceAddress' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileWalletInvoiceAddress' } }],
+                        },
+                    },
                 ],
             },
         },
@@ -87862,6 +88161,40 @@ export const ProfileCookWalletPageDocument = {
         },
         {
             kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileWalletTravelOrigin' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookTravelOriginAddress' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileWalletInvoiceAddress' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'InvoiceAddress' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'companyName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'postalCode' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'line1' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'line2' } },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
             name: { kind: 'Name', value: 'ProfileWalletCook' },
             typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Cook' } },
             selectionSet: {
@@ -87871,6 +88204,22 @@ export const ProfileCookWalletPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'stripeStatus' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'canCreateOffers' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'exactTravelOriginAddress' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileWalletTravelOrigin' } }],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'invoiceAddress' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileWalletInvoiceAddress' } }],
+                        },
+                    },
                 ],
             },
         },
@@ -87882,6 +88231,8 @@ export const ProfileCookWalletPageDocument = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'cook' },
@@ -88076,6 +88427,40 @@ export const ProfileCookWalletPageUpdatesDocument = {
         },
         {
             kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileWalletTravelOrigin' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookTravelOriginAddress' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileWalletInvoiceAddress' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'InvoiceAddress' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'companyName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'postalCode' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'line1' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'line2' } },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
             name: { kind: 'Name', value: 'ProfileWalletCook' },
             typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Cook' } },
             selectionSet: {
@@ -88085,6 +88470,22 @@ export const ProfileCookWalletPageUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'stripeStatus' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'canCreateOffers' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'exactTravelOriginAddress' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileWalletTravelOrigin' } }],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'invoiceAddress' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileWalletInvoiceAddress' } }],
+                        },
+                    },
                 ],
             },
         },
@@ -88096,6 +88497,8 @@ export const ProfileCookWalletPageUpdatesDocument = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'cook' },
@@ -88109,6 +88512,99 @@ export const ProfileCookWalletPageUpdatesDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCProfileCookWalletPageUpdatesSubscription, GqlCProfileCookWalletPageUpdatesSubscriptionVariables>;
+export const ProfileCookWalletLocationSuggestionsDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'ProfileCookWalletLocationSuggestions' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'searchText' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'onlyFullAddresses' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } } },
+                    defaultValue: { kind: 'BooleanValue', value: true },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'locationSuggestions' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'searchText' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'searchText' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'onlyFullAddresses' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'onlyFullAddresses' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'structuredAddress' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'FragmentSpread',
+                                                            name: { kind: 'Name', value: 'ProfileWalletTravelOrigin' },
+                                                        },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'state' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileWalletTravelOrigin' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookTravelOriginAddress' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCookWalletLocationSuggestionsQuery, GqlCProfileCookWalletLocationSuggestionsQueryVariables>;
 export const ProfileCookStripeOnboardingStartDocument = {
     kind: 'Document',
     definitions: [
@@ -88262,6 +88758,64 @@ export const ProfileCookStripeDashboardUrlCreateDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCProfileCookStripeDashboardUrlCreateMutation, GqlCProfileCookStripeDashboardUrlCreateMutationVariables>;
+export const ProfileCookWalletInvoiceAddressUpdateDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'ProfileCookWalletInvoiceAddressUpdate' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'CookUpdate' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cook' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'update' },
+                                                arguments: [
+                                                    {
+                                                        kind: 'Argument',
+                                                        name: { kind: 'Name', value: 'input' },
+                                                        value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                                                    },
+                                                ],
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCookWalletInvoiceAddressUpdateMutation, GqlCProfileCookWalletInvoiceAddressUpdateMutationVariables>;
 export const ProfileCustomerBookingRequestEditLocationSuggestionsDocument = {
     kind: 'Document',
     definitions: [

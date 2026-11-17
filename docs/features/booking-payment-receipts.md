@@ -56,7 +56,8 @@ Three invoices per held event:
 
 First build, before any invoice numbers:
 
-1. Collect a billing address from each cook, separate from the travel origin, as a popup.
+1. ~~Collect a billing address from each cook, separate from the travel origin.~~ Shipped: `Cooks.invoiceAddress`, Getting started step
+   `INVOICE_ADDRESS` → `/profile/wallet` (warning alert + dialog; always editable). See [cook-profile.md](./cook-profile.md).
 2. Let an admin upload the peopleeat-to-cook invoice PDF on each event that took place. The cook can download that file on the offer.
 
 The peopleeat-to-guest invoice is the same kind of file later. Sequential invoice numbers and credit notes come after these two steps.

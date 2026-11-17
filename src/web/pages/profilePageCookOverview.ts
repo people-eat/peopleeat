@@ -47,6 +47,7 @@ type CookOverviewModel = {
 };
 
 const onboardingStepHref: Record<CookOnboardingStep, CookOverviewGettingStartedHref> = {
+    INVOICE_ADDRESS: '/{-$locale}/profile/wallet',
     WALLET: '/{-$locale}/profile/wallet',
     TRAVEL: '/{-$locale}/profile/travel',
     PROFILE_PICTURE: '/{-$locale}/profile/chef-profile/edit',

@@ -211,6 +211,47 @@ describe('cookUpdate', () => {
         expect(row!.cookingPhilosophy).toBeNull();
     });
 
+    it('saves a normalized invoice address', async () => {
+        // Arrange
+        const { serverRuntime, requestingSession, user } = await setupCook();
+
+        // Act
+        const result = await cookUpdate(
+            cookMutationParent(user.userId),
+            {
+                input: {
+                    invoiceAddress: {
+                        companyName: '  peopleeat kitchen  ',
+                        firstName: '  ada  ',
+                        lastName: '  smith  ',
+                        country: ' de ',
+                        city: '  berlin  ',
+                        postalCode: ' 10117 ',
+                        line1: '  Unter den Linden 1  ',
+                        line2: '  ',
+                    },
+                },
+            },
+            requestingSession,
+            serverRuntime,
+        );
+
+        // Assert
+        expect(result).toEqual({ success: true, referenceId: user.userId });
+        const [row] = await testDb.select().from(cooks).where(eq(cooks.cookId, user.userId));
+        expect(row!.invoiceAddress).toEqual({
+            companyName: 'Peopleeat kitchen',
+            firstName: 'Ada',
+            lastName: 'Smith',
+            country: 'DE',
+            city: 'Berlin',
+            postalCode: '10117',
+            line1: 'Unter den Linden 1',
+            line2: '',
+        });
+        expect(serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: user.userId });
+    });
+
     it('rejects an empty patch without publishing', async () => {
         // Arrange
         const { serverRuntime, requestingSession, user } = await setupCook();

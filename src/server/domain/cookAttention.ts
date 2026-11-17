@@ -78,6 +78,7 @@ export function cookAttentionDerive(input: {
 export function cookOnboardingStepsDerive(input: {
     isApprovedByAdmin: boolean;
     stripeStatus: CookStripeStatus;
+    hasInvoiceAddress: boolean;
     hasTravelOrigin: boolean;
     hasProfilePicture: boolean;
     biography: string;
@@ -96,6 +97,7 @@ export function cookOnboardingStepsDerive(input: {
         input.cookingPhilosophy != null &&
         input.cookingPhilosophy !== '';
 
+    if (!input.hasInvoiceAddress) steps.push('INVOICE_ADDRESS');
     if (input.isApprovedByAdmin && (input.stripeStatus === 'EMPTY' || input.stripeStatus === 'PREPARED')) steps.push('WALLET');
     if (!input.hasTravelOrigin) steps.push('TRAVEL');
     if (!input.hasProfilePicture) steps.push('PROFILE_PICTURE');

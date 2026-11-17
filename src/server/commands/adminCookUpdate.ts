@@ -3,6 +3,7 @@ import { and, eq } from 'drizzle-orm';
 import { isCookCallDurationMinutes } from '../../shared/cookCallAvailability';
 import { cookDefaultOfferMessageNormalize } from '../../shared/cookDefaultOfferMessage';
 import { isCookingPhilosophy, isCuisineStyle } from '../../shared/cookProfile';
+import { invoiceAddressNormalize } from '../../shared/invoiceAddressNormalize';
 import { textNormalizeProse, textNormalizeTitled } from '../../shared/textNormalize';
 import type { Cook } from '../db/schema';
 import { cooks, fileUploads } from '../db/schema';
@@ -62,6 +63,7 @@ async function cookUpdateAdminApply(
         cookingPhilosophy,
         defaultOfferMessage,
         exactTravelOriginAddress,
+        invoiceAddress,
         travelExpensesAmount,
         maximumTravelDistance,
         minimumPriceAmount,
@@ -84,6 +86,7 @@ async function cookUpdateAdminApply(
         cookingPhilosophy !== undefined ||
         defaultOfferMessage !== undefined ||
         exactTravelOriginAddress !== undefined ||
+        invoiceAddress !== undefined ||
         travelExpensesAmount !== undefined ||
         maximumTravelDistance !== undefined ||
         minimumPriceAmount !== undefined ||
@@ -172,6 +175,9 @@ async function cookUpdateAdminApply(
     }
     if (resolvedAddress) {
         patch.exactTravelOriginAddress = resolvedAddress;
+    }
+    if (invoiceAddress !== undefined && invoiceAddress !== null) {
+        patch.invoiceAddress = invoiceAddressNormalize(invoiceAddress);
     }
     if (travelExpensesAmount !== undefined && travelExpensesAmount !== null) {
         patch.travelExpensesAmount = travelExpensesAmount;

@@ -1061,6 +1061,7 @@ export interface GqlSAdminCook {
     inviteReward?: Maybe<Scalars['JSON']['output']>;
     inviteRewards: Array<GqlSAdminCookInviteReward>;
     invitedByCookId?: Maybe<Scalars['ID']['output']>;
+    invoiceAddress?: Maybe<GqlSInvoiceAddress>;
     isApprovedByAdmin: Scalars['Boolean']['output'];
     isVisible: Scalars['Boolean']['output'];
     lastModifiedAt: Scalars['DateTime']['output'];
@@ -3390,6 +3391,7 @@ export interface GqlSCook {
     exactTravelOriginAddress?: Maybe<GqlSCookTravelOriginAddress>;
     inviteOpenFeeCreditRemainingBookings: Scalars['Int']['output'];
     invitees: Array<GqlSCookInvitee>;
+    invoiceAddress?: Maybe<GqlSInvoiceAddress>;
     isApprovedByAdmin: Scalars['Boolean']['output'];
     isVisible: Scalars['Boolean']['output'];
     lastModifiedAt: Scalars['DateTime']['output'];
@@ -4271,7 +4273,15 @@ export type GqlSCookOfferAddonUpsert = {
 };
 
 export type GqlSCookOnboardingStep =
-    'CHEF_PROFILE' | 'DEFAULT_OFFER_MESSAGE' | 'FIRST_MEAL' | 'FIRST_MENU' | 'FIRST_OFFER' | 'PROFILE_PICTURE' | 'TRAVEL' | 'WALLET';
+    | 'CHEF_PROFILE'
+    | 'DEFAULT_OFFER_MESSAGE'
+    | 'FIRST_MEAL'
+    | 'FIRST_MENU'
+    | 'FIRST_OFFER'
+    | 'INVOICE_ADDRESS'
+    | 'PROFILE_PICTURE'
+    | 'TRAVEL'
+    | 'WALLET';
 
 export type GqlSCookPathNameAvailability = 'AVAILABLE' | 'INVALID' | 'TAKEN';
 
@@ -4409,6 +4419,7 @@ export type GqlSCookUpdate = {
     cuisineStyle?: InputMaybe<Scalars['String']['input']>;
     defaultOfferMessage?: InputMaybe<Scalars['String']['input']>;
     exactTravelOriginAddress?: InputMaybe<Scalars['String']['input']>;
+    invoiceAddress?: InputMaybe<GqlSInvoiceAddressInput>;
     isVisible?: InputMaybe<Scalars['Boolean']['input']>;
     logoFileUploadId?: InputMaybe<Scalars['ID']['input']>;
     maximumParticipants?: InputMaybe<Scalars['Int']['input']>;
@@ -8186,6 +8197,7 @@ export type GqlSAdminCookResolvers<
     inviteReward?: Resolver<Maybe<GqlSResolversTypes['JSON']>, ParentType, ContextType>;
     inviteRewards?: Resolver<Array<GqlSResolversTypes['AdminCookInviteReward']>, ParentType, ContextType>;
     invitedByCookId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
+    invoiceAddress?: Resolver<Maybe<GqlSResolversTypes['InvoiceAddress']>, ParentType, ContextType>;
     isApprovedByAdmin?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     isVisible?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     lastModifiedAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
@@ -10319,6 +10331,7 @@ export type GqlSCookResolvers<
     exactTravelOriginAddress?: Resolver<Maybe<GqlSResolversTypes['CookTravelOriginAddress']>, ParentType, ContextType>;
     inviteOpenFeeCreditRemainingBookings?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     invitees?: Resolver<Array<GqlSResolversTypes['CookInvitee']>, ParentType, ContextType>;
+    invoiceAddress?: Resolver<Maybe<GqlSResolversTypes['InvoiceAddress']>, ParentType, ContextType>;
     isApprovedByAdmin?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     isVisible?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     lastModifiedAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
@@ -13649,9 +13662,35 @@ export const GqlSCookMenuSuggestionMealOptionTypeSchema: z.ZodType<'EXISTING_MEA
 ]);
 
 export const GqlSCookOnboardingStepSchema: z.ZodType<
-    'CHEF_PROFILE' | 'DEFAULT_OFFER_MESSAGE' | 'FIRST_MEAL' | 'FIRST_MENU' | 'FIRST_OFFER' | 'PROFILE_PICTURE' | 'TRAVEL' | 'WALLET',
-    'CHEF_PROFILE' | 'DEFAULT_OFFER_MESSAGE' | 'FIRST_MEAL' | 'FIRST_MENU' | 'FIRST_OFFER' | 'PROFILE_PICTURE' | 'TRAVEL' | 'WALLET'
-> = z.enum(['CHEF_PROFILE', 'DEFAULT_OFFER_MESSAGE', 'FIRST_MEAL', 'FIRST_MENU', 'FIRST_OFFER', 'PROFILE_PICTURE', 'TRAVEL', 'WALLET']);
+    | 'CHEF_PROFILE'
+    | 'DEFAULT_OFFER_MESSAGE'
+    | 'FIRST_MEAL'
+    | 'FIRST_MENU'
+    | 'FIRST_OFFER'
+    | 'INVOICE_ADDRESS'
+    | 'PROFILE_PICTURE'
+    | 'TRAVEL'
+    | 'WALLET',
+    | 'CHEF_PROFILE'
+    | 'DEFAULT_OFFER_MESSAGE'
+    | 'FIRST_MEAL'
+    | 'FIRST_MENU'
+    | 'FIRST_OFFER'
+    | 'INVOICE_ADDRESS'
+    | 'PROFILE_PICTURE'
+    | 'TRAVEL'
+    | 'WALLET'
+> = z.enum([
+    'CHEF_PROFILE',
+    'DEFAULT_OFFER_MESSAGE',
+    'FIRST_MEAL',
+    'FIRST_MENU',
+    'FIRST_OFFER',
+    'INVOICE_ADDRESS',
+    'PROFILE_PICTURE',
+    'TRAVEL',
+    'WALLET',
+]);
 
 export const GqlSCookPathNameAvailabilitySchema: z.ZodType<'AVAILABLE' | 'INVALID' | 'TAKEN', 'AVAILABLE' | 'INVALID' | 'TAKEN'> = z.enum([
     'AVAILABLE',
@@ -14725,6 +14764,7 @@ export function GqlSCookUpdateSchema(): z.ZodObject<Properties<GqlSCookUpdate>> 
         cuisineStyle: z.string().nullish(),
         defaultOfferMessage: z.string().nullish(),
         exactTravelOriginAddress: z.string().nullish(),
+        invoiceAddress: GqlSInvoiceAddressInputSchema().nullish(),
         isVisible: z.boolean().nullish(),
         logoFileUploadId: z.string().nullish(),
         maximumParticipants: z.number().nullish(),
@@ -14735,7 +14775,7 @@ export function GqlSCookUpdateSchema(): z.ZodObject<Properties<GqlSCookUpdate>> 
         pathName: z.string().nullish(),
         stageName: z.string().nullish(),
         travelExpensesAmount: z.number().nullish(),
-    });
+    }) as z.ZodObject<Properties<GqlSCookUpdate>>;
 }
 
 export function GqlSDateTimeRangeSchema(): z.ZodObject<Properties<GqlSDateTimeRange>> {

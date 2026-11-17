@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { useClient, useMutation } from 'urql';
 
 import { t } from '../../../i18n/t';
-import { formatCurrency, formatDate } from '../../../shared';
+import { formatCountryName, formatCurrency, formatDate } from '../../../shared';
 import {
     cookStripeAccountDetailsCategories,
     cookStripeAccountDetailsHasActionableContent,
@@ -21,7 +21,13 @@ import {
 import { Button } from '../../components/base/button';
 import { StatusAlert } from '../../components/base/status-alert';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/base/table';
-import type { GqlCCookStripeAccountDetails, GqlCCookStripeWallet, GqlCProfileCookWalletPageQuery } from '../../graphql/generated';
+import { CookInvoiceAddressDialog } from '../../components/CookInvoiceAddressDialog';
+import type {
+    GqlCCookStripeAccountDetails,
+    GqlCCookStripeWallet,
+    GqlCInvoiceAddress,
+    GqlCProfileCookWalletPageQuery,
+} from '../../graphql/generated';
 import {
     ProfileCookStripeDashboardUrlCreateDocument,
     ProfileCookStripeOnboardingStartDocument,
@@ -80,11 +86,13 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
     const [, syncStatus] = useMutation(ProfileCookStripeStatusSyncDocument);
     const [, dashboardUrlCreate] = useMutation(ProfileCookStripeDashboardUrlCreateDocument);
     const [busy, setBusy] = useState(false);
+    const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false);
     const [stripeDetails, setStripeDetails] = useState<GqlCCookStripeAccountDetails | null>(seedDetails);
     const [stripeWallet, setStripeWallet] = useState<GqlCCookStripeWallet | null>(seedWallet);
     const handledSearchRef = useRef<string | null>(null);
 
     const cook = user?.cook ?? null;
+    const invoiceAddress = cook?.invoiceAddress ?? null;
 
     useEffect(() => {
         setStripeDetails(seedDetails);
@@ -231,6 +239,11 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
             <Link to="/{-$locale}/profile/booking-request-pool">{t(locale, 'profileCook', 'wallet.goToPool')}</Link>
         </Button>
     );
+    const invoiceAddressCta = (
+        <Button type="button" size="sm" onClick={() => setInvoiceDialogOpen(true)}>
+            {t(locale, 'profileCook', 'wallet.invoiceAddress.addAction')}
+        </Button>
+    );
 
     return (
         <main id="main-content" className="mx-auto grid w-full max-w-3xl content-start gap-6">
@@ -239,67 +252,96 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
                 <p className="text-muted-foreground">{route.description(locale)}</p>
             </div>
 
-            {!cook.isApprovedByAdmin ? (
-                <StatusAlert tone="info" title={t(locale, 'profileCook', 'wallet.approvalPending')}>
-                    {t(locale, 'profileCook', 'wallet.approvalPendingBody')}
-                </StatusAlert>
-            ) : (
-                <div className="grid gap-4">
-                    <StatusAlert tone={cookStripeStatusTone(cook.stripeStatus)} title={cookStripeStatusLabel(cook.stripeStatus, locale)}>
-                        {cookStripeStatusDescription(cook.stripeStatus, locale, 'cook')}
-                    </StatusAlert>
-                    {detailsChecklist ? (
-                        <StatusAlert
-                            tone={cookStripeAccountDetailsTone(detailsChecklist.details)}
-                            title={cookStripeAccountDetailsTitle(detailsChecklist.details, locale)}
-                        >
-                            <div className="grid gap-2">
-                                {detailsChecklist.details.disabledReason != null ? (
-                                    <p>{cookStripeDisabledReasonLabel(detailsChecklist.details.disabledReason, locale, 'cook')}</p>
-                                ) : null}
-                                {detailsChecklist.categories.length > 0 ? (
-                                    <ul className="list-disc pl-5">
-                                        {detailsChecklist.categories.map((category) => (
-                                            <li key={category}>{cookStripeRequirementCategoryLabel(category, locale)}</li>
-                                        ))}
-                                    </ul>
-                                ) : null}
-                                {detailsChecklist.details.pendingVerification.length > 0 &&
-                                detailsChecklist.details.currentlyDue.length === 0 &&
-                                detailsChecklist.details.pastDue.length === 0 ? (
-                                    <p>{t(locale, 'profileCook', 'wallet.waitingStripe')}</p>
-                                ) : null}
-                                {detailsChecklist.details.detailsSubmitted &&
-                                (!detailsChecklist.details.chargesEnabled || !detailsChecklist.details.payoutsEnabled) &&
-                                cook.stripeStatus !== 'COMPLETED' ? (
-                                    <p>{t(locale, 'profileCook', 'wallet.chargesNotEnabled')}</p>
-                                ) : null}
-                            </div>
-                        </StatusAlert>
-                    ) : null}
-                    {cook.stripeStatus === 'COMPLETED' ? (
-                        <StatusAlert tone="info" title={t(locale, 'profileCook', 'wallet.readyTitle')} action={poolCta}>
-                            {t(locale, 'profileCook', 'wallet.readyBody')}
-                        </StatusAlert>
-                    ) : null}
-                    <div className="flex flex-wrap gap-2">
-                        {cook.stripeStatus === 'COMPLETED' ? (
-                            <Button type="button" variant="outline" disabled={busy} onClick={() => void onOpenDashboard()}>
-                                {primaryLabel}
-                            </Button>
-                        ) : (
-                            <Button type="button" disabled={busy} onClick={() => void onStartOnboarding()}>
-                                {primaryLabel}
-                            </Button>
-                        )}
-                        {cook.stripeStatus !== 'EMPTY' && cook.stripeStatus !== 'COMPLETED' ? (
-                            <Button type="button" variant="outline" disabled={busy} onClick={() => void onSync()}>
-                                {t(locale, 'profileCook', 'wallet.notUpdatedYet')}
-                            </Button>
-                        ) : null}
+            {invoiceAddress != null ? (
+                <section className="grid gap-3" aria-labelledby="wallet-invoice-address-heading">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                        <h2 id="wallet-invoice-address-heading" className="font-serif text-2xl/tight text-foreground">
+                            {t(locale, 'profileCook', 'wallet.invoiceAddress.sectionTitle')}
+                        </h2>
+                        <Button type="button" variant="outline" size="sm" onClick={() => setInvoiceDialogOpen(true)}>
+                            {t(locale, 'profileCook', 'wallet.invoiceAddress.editAction')}
+                        </Button>
                     </div>
-                </div>
-            )}
+                    <CookInvoiceAddressSummary address={invoiceAddress} locale={locale} />
+                </section>
+            ) : null}
+
+            <div className="grid gap-4">
+                {invoiceAddress == null ? (
+                    <StatusAlert
+                        tone="warning"
+                        title={t(locale, 'profileCook', 'wallet.invoiceAddress.missingTitle')}
+                        action={invoiceAddressCta}
+                    >
+                        {t(locale, 'profileCook', 'wallet.invoiceAddress.missingBody')}
+                    </StatusAlert>
+                ) : null}
+
+                {!cook.isApprovedByAdmin ? (
+                    <StatusAlert tone="info" title={t(locale, 'profileCook', 'wallet.approvalPending')}>
+                        {t(locale, 'profileCook', 'wallet.approvalPendingBody')}
+                    </StatusAlert>
+                ) : (
+                    <>
+                        <StatusAlert
+                            tone={cookStripeStatusTone(cook.stripeStatus)}
+                            title={cookStripeStatusLabel(cook.stripeStatus, locale)}
+                        >
+                            {cookStripeStatusDescription(cook.stripeStatus, locale, 'cook')}
+                        </StatusAlert>
+                        {detailsChecklist ? (
+                            <StatusAlert
+                                tone={cookStripeAccountDetailsTone(detailsChecklist.details)}
+                                title={cookStripeAccountDetailsTitle(detailsChecklist.details, locale)}
+                            >
+                                <div className="grid gap-2">
+                                    {detailsChecklist.details.disabledReason != null ? (
+                                        <p>{cookStripeDisabledReasonLabel(detailsChecklist.details.disabledReason, locale, 'cook')}</p>
+                                    ) : null}
+                                    {detailsChecklist.categories.length > 0 ? (
+                                        <ul className="list-disc pl-5">
+                                            {detailsChecklist.categories.map((category) => (
+                                                <li key={category}>{cookStripeRequirementCategoryLabel(category, locale)}</li>
+                                            ))}
+                                        </ul>
+                                    ) : null}
+                                    {detailsChecklist.details.pendingVerification.length > 0 &&
+                                    detailsChecklist.details.currentlyDue.length === 0 &&
+                                    detailsChecklist.details.pastDue.length === 0 ? (
+                                        <p>{t(locale, 'profileCook', 'wallet.waitingStripe')}</p>
+                                    ) : null}
+                                    {detailsChecklist.details.detailsSubmitted &&
+                                    (!detailsChecklist.details.chargesEnabled || !detailsChecklist.details.payoutsEnabled) &&
+                                    cook.stripeStatus !== 'COMPLETED' ? (
+                                        <p>{t(locale, 'profileCook', 'wallet.chargesNotEnabled')}</p>
+                                    ) : null}
+                                </div>
+                            </StatusAlert>
+                        ) : null}
+                        {cook.stripeStatus === 'COMPLETED' ? (
+                            <StatusAlert tone="info" title={t(locale, 'profileCook', 'wallet.readyTitle')} action={poolCta}>
+                                {t(locale, 'profileCook', 'wallet.readyBody')}
+                            </StatusAlert>
+                        ) : null}
+                        <div className="flex flex-wrap gap-2">
+                            {cook.stripeStatus === 'COMPLETED' ? (
+                                <Button type="button" variant="outline" disabled={busy} onClick={() => void onOpenDashboard()}>
+                                    {primaryLabel}
+                                </Button>
+                            ) : (
+                                <Button type="button" disabled={busy} onClick={() => void onStartOnboarding()}>
+                                    {primaryLabel}
+                                </Button>
+                            )}
+                            {cook.stripeStatus !== 'EMPTY' && cook.stripeStatus !== 'COMPLETED' ? (
+                                <Button type="button" variant="outline" disabled={busy} onClick={() => void onSync()}>
+                                    {t(locale, 'profileCook', 'wallet.notUpdatedYet')}
+                                </Button>
+                            ) : null}
+                        </div>
+                    </>
+                )}
+            </div>
 
             {showWalletBalance ? (
                 <section className="grid gap-6" aria-labelledby="wallet-balance-heading">
@@ -367,6 +409,32 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
                     </div>
                 </section>
             ) : null}
+
+            <CookInvoiceAddressDialog
+                open={invoiceDialogOpen}
+                onOpenChange={setInvoiceDialogOpen}
+                invoiceAddress={invoiceAddress}
+                travelOrigin={cook.exactTravelOriginAddress ?? null}
+                seed={{ firstName: user?.firstName ?? '', lastName: user?.lastName ?? '' }}
+            />
         </main>
+    );
+}
+
+function CookInvoiceAddressSummary({ address, locale }: { address: GqlCInvoiceAddress; locale: Locale }) {
+    const country = formatCountryName(address.country, { locale });
+    return (
+        <address className="grid gap-0.5 text-sm/relaxed text-foreground not-italic">
+            {address.companyName ? <span>{address.companyName}</span> : null}
+            <span>
+                {address.firstName} {address.lastName}
+            </span>
+            <span>{address.line1}</span>
+            {address.line2 ? <span>{address.line2}</span> : null}
+            <span>
+                {address.postalCode} {address.city}
+            </span>
+            {country ? <span>{country}</span> : <span>{address.country}</span>}
+        </address>
     );
 }

@@ -4,6 +4,7 @@ import type { BookingRequestExactEventAddress } from '../domain/bookingRequest';
 import { cookCanCreateOffersDerive, cookStripeStatusDerive } from '../domain/cook';
 import type { UserStatus } from '../domain/user';
 import type { GqlSCook, GqlSCookAttentionCounts, GqlSCookTravelOriginAddress, GqlSPublicCookRating } from '../graphql/generated';
+import { toGqlInvoiceAddress } from './toGqlInvoiceAddress';
 
 export function toGqlCookTravelOriginAddress(address: NonNullable<Cook['exactTravelOriginAddress']>): GqlSCookTravelOriginAddress {
     return {
@@ -67,6 +68,7 @@ export function toGqlCook(row: Cook, userStatus: UserStatus): GqlSCook {
         stripeWallet: null,
         stageName: row.stageName ?? null,
         exactTravelOriginAddress: row.exactTravelOriginAddress ? toGqlCookTravelOriginAddress(row.exactTravelOriginAddress) : null,
+        invoiceAddress: row.invoiceAddress ? toGqlInvoiceAddress(row.invoiceAddress) : null,
         biography: row.biography,
         biographySummary: row.biographySummary,
         // Field resolver derives live pg-boss state (deterministic job id).

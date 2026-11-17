@@ -81,6 +81,11 @@
             }
         },
         "onboarding": {
+            "INVOICE_ADDRESS": {
+                "title": "Add your invoice address",
+                "body": "We need a billing address so peopleeat can invoice you for platform fees.",
+                "action": "Go to wallet"
+            },
             "WALLET": {
                 "title": "Set up your wallet",
                 "body": "Set up Stripe Connect to receive payouts.",
@@ -634,7 +639,31 @@
         "pending": "Pending",
         "balanceHint": "Available means ready for bank payout. Pending clears after the Stripe hold period. Our team releases the transfer to your bank after the event.",
         "recentActivity": "Recent activity",
-        "noActivity": "No activity yet. Credits appear here once customers pay."
+        "noActivity": "No activity yet. Credits appear here once customers pay.",
+        "invoiceAddress": {
+            "missingTitle": "Invoice address missing",
+            "missingBody": "Add a billing address so peopleeat can invoice you for platform fees. This is separate from your travel origin.",
+            "addAction": "Add invoice address",
+            "sectionTitle": "Invoice address",
+            "editAction": "Edit",
+            "addTitle": "Add invoice address",
+            "editTitle": "Edit invoice address",
+            "dialogBody": "This address appears on peopleeat invoices to you. It is not your travel origin.",
+            "firstName": "First name",
+            "lastName": "Last name",
+            "line1": "Street and number",
+            "line2": "Address line 2 (optional)",
+            "postalCode": "Postal code",
+            "city": "City",
+            "country": "Country",
+            "countryHelp": "Two-letter country code, for example DE or AT.",
+            "back": "Back",
+            "reuseTravelOrigin": "Use travel origin",
+            "reuseTravelOriginHint": "Fills the street fields from your travel origin. You can still edit them.",
+            "travelOriginApplied": "Travel origin copied into the form.",
+            "searchAddress": "Search address",
+            "searchAddressHint": "Pick a suggestion to fill the street fields, or type them manually."
+        }
     },
     "invite": {
         "rewardUnlocked": "Reward unlocked",

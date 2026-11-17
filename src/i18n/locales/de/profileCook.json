@@ -81,6 +81,11 @@
             }
         },
         "onboarding": {
+            "INVOICE_ADDRESS": {
+                "title": "Rechnungsadresse hinterlegen",
+                "body": "Wir brauchen eine Rechnungsadresse, damit peopleeat dir Plattformgebühren in Rechnung stellen kann.",
+                "action": "Zum Wallet"
+            },
             "WALLET": {
                 "title": "Wallet einrichten",
                 "body": "Richte Stripe Connect ein, um Auszahlungen zu erhalten.",
@@ -634,7 +639,31 @@
         "pending": "Ausstehend",
         "balanceHint": "Verfügbar bedeutet bereit für die Bankauszahlung. Ausstehend wird nach der Stripe-Frist freigegeben. Die Überweisung auf dein Konto löst unser Team nach dem Event aus.",
         "recentActivity": "Letzte Bewegungen",
-        "noActivity": "Noch keine Bewegungen. Sobald Kunden zahlen, erscheinen Gutschriften hier."
+        "noActivity": "Noch keine Bewegungen. Sobald Kunden zahlen, erscheinen Gutschriften hier.",
+        "invoiceAddress": {
+            "missingTitle": "Rechnungsadresse fehlt",
+            "missingBody": "Hinterlege eine Rechnungsadresse, damit peopleeat dir Plattformgebühren in Rechnung stellen kann. Das ist getrennt von deiner Reiseadresse.",
+            "addAction": "Rechnungsadresse hinzufügen",
+            "sectionTitle": "Rechnungsadresse",
+            "editAction": "Bearbeiten",
+            "addTitle": "Rechnungsadresse hinzufügen",
+            "editTitle": "Rechnungsadresse bearbeiten",
+            "dialogBody": "Diese Adresse erscheint auf peopleeat-Rechnungen an dich. Sie ist nicht deine Reiseadresse.",
+            "firstName": "Vorname",
+            "lastName": "Nachname",
+            "line1": "Straße und Hausnummer",
+            "line2": "Adresszeile 2 (optional)",
+            "postalCode": "Postleitzahl",
+            "city": "Stadt",
+            "country": "Land",
+            "countryHelp": "Zweistelliger Ländercode, zum Beispiel DE oder AT.",
+            "back": "Zurück",
+            "reuseTravelOrigin": "Reiseadresse übernehmen",
+            "reuseTravelOriginHint": "Übernimmt die Straßenfelder aus deiner Reiseadresse. Du kannst sie danach noch anpassen.",
+            "travelOriginApplied": "Reiseadresse in das Formular übernommen.",
+            "searchAddress": "Adresse suchen",
+            "searchAddressHint": "Wähle einen Vorschlag, um die Straßenfelder zu füllen, oder tippe sie selbst ein."
+        }
     },
     "invite": {
         "rewardUnlocked": "Belohnung freigeschaltet",

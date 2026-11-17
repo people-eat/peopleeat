@@ -6,6 +6,7 @@ import type { UserStatus } from '../domain/user';
 import { environmentVariables } from '../env/environmentVariablesCreate';
 import type { GqlSAdminCook, GqlSAdminUser, GqlSPublicCookRating } from '../graphql/generated';
 import { toGqlCookTravelOriginAddress } from './toGqlCook';
+import { toGqlInvoiceAddress } from './toGqlInvoiceAddress';
 
 export function toGqlAdminCook(row: Cook, userStatus: UserStatus): GqlSAdminCook {
     const stripeAccountId = row.stripeAccountId ?? null;
@@ -28,6 +29,7 @@ export function toGqlAdminCook(row: Cook, userStatus: UserStatus): GqlSAdminCook
         stripeAccountDetails: null,
         stripeWallet: null,
         exactTravelOriginAddress: row.exactTravelOriginAddress ? toGqlCookTravelOriginAddress(row.exactTravelOriginAddress) : null,
+        invoiceAddress: row.invoiceAddress ? toGqlInvoiceAddress(row.invoiceAddress) : null,
         biography: row.biography,
         biographySummary: row.biographySummary,
         // Field resolver derives live pg-boss state (deterministic job id).

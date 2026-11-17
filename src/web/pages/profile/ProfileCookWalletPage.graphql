@@ -1,11 +1,38 @@
 # Wallet / Stripe Connect. Return/refresh land here with search params.
+# Invoice address collection lives here too (Getting started → Wallet).
 # See docs/features/cook-profile.md.
+
+fragment ProfileWalletInvoiceAddress on InvoiceAddress {
+    companyName
+    firstName
+    lastName
+    country
+    city
+    postalCode
+    line1
+    line2
+}
+
+fragment ProfileWalletTravelOrigin on CookTravelOriginAddress {
+    displayText
+    addressLine1
+    addressLine2
+    city
+    postCode
+    country
+}
 
 fragment ProfileWalletCook on Cook {
     cookId
     isApprovedByAdmin
     stripeStatus
     canCreateOffers
+    exactTravelOriginAddress {
+        ...ProfileWalletTravelOrigin
+    }
+    invoiceAddress {
+        ...ProfileWalletInvoiceAddress
+    }
 }
 
 fragment ProfileWalletStripeAccountDetails on CookStripeAccountDetails {
@@ -34,6 +61,8 @@ fragment ProfileWalletStripeWallet on CookStripeWallet {
 
 fragment ProfileWalletUser on User {
     userId
+    firstName
+    lastName
     cook {
         ...ProfileWalletCook
     }
@@ -78,6 +107,22 @@ subscription ProfileCookWalletPageUpdates {
     }
 }
 
+query ProfileCookWalletLocationSuggestions($searchText: String!, $onlyFullAddresses: Boolean! = true) {
+    currentSession {
+        locationSuggestions(searchText: $searchText, onlyFullAddresses: $onlyFullAddresses) {
+            displayText
+            latitude
+            longitude
+            structuredAddress {
+                ...ProfileWalletTravelOrigin
+                latitude
+                longitude
+                state
+            }
+        }
+    }
+}
+
 mutation ProfileCookStripeOnboardingStart($returnUrl: String!, $refreshUrl: String!) {
     user {
         cook {
@@ -105,6 +150,17 @@ mutation ProfileCookStripeDashboardUrlCreate {
         cook {
             stripeDashboardUrlCreate {
                 url
+            }
+        }
+    }
+}
+
+mutation ProfileCookWalletInvoiceAddressUpdate($input: CookUpdate!) {
+    user {
+        cook {
+            update(input: $input) {
+                success
+                referenceId
             }
         }
     }

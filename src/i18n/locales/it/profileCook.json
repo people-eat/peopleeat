@@ -476,6 +476,11 @@
             }
         },
         "onboarding": {
+            "INVOICE_ADDRESS": {
+                "title": "Aggiungi l’indirizzo di fatturazione",
+                "body": "Ci serve un indirizzo di fatturazione così peopleeat può fatturarti le commissioni di piattaforma.",
+                "action": "Vai al wallet"
+            },
             "WALLET": {
                 "title": "Configura il wallet",
                 "body": "Configura Stripe Connect per ricevere i pagamenti.",
@@ -1029,7 +1034,31 @@
         "pending": "In sospeso",
         "balanceHint": "Disponibile significa pronto per il bonifico. In sospeso si sblocca dopo il periodo di hold Stripe. Il team rilascia il trasferimento dopo l’evento.",
         "recentActivity": "Attività recente",
-        "noActivity": "Nessuna attività ancora. I crediti compaiono qui quando i clienti pagano."
+        "noActivity": "Nessuna attività ancora. I crediti compaiono qui quando i clienti pagano.",
+        "invoiceAddress": {
+            "missingTitle": "Indirizzo di fatturazione mancante",
+            "missingBody": "Aggiungi un indirizzo di fatturazione così peopleeat può fatturarti le commissioni di piattaforma. Non è l’indirizzo di viaggio.",
+            "addAction": "Aggiungi indirizzo di fatturazione",
+            "sectionTitle": "Indirizzo di fatturazione",
+            "editAction": "Modifica",
+            "addTitle": "Aggiungi indirizzo di fatturazione",
+            "editTitle": "Modifica indirizzo di fatturazione",
+            "dialogBody": "Questo indirizzo compare sulle fatture peopleeat a te. Non è l’origine di viaggio.",
+            "firstName": "Nome",
+            "lastName": "Cognome",
+            "line1": "Via e numero",
+            "line2": "Seconda riga (facoltativo)",
+            "postalCode": "CAP",
+            "city": "Città",
+            "country": "Paese",
+            "countryHelp": "Codice paese a due lettere, ad esempio DE o AT.",
+            "back": "Indietro",
+            "reuseTravelOrigin": "Usa indirizzo di viaggio",
+            "reuseTravelOriginHint": "Compila i campi strada con l’indirizzo di viaggio. Puoi ancora modificarli.",
+            "travelOriginApplied": "Indirizzo di viaggio copiato nel modulo.",
+            "searchAddress": "Cerca indirizzo",
+            "searchAddressHint": "Scegli un suggerimento per compilare i campi strada, oppure inseriscili a mano."
+        }
     },
     "invite": {
         "rewardUnlocked": "Ricompensa sbloccata",

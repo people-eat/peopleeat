@@ -12,6 +12,11 @@ source = source.replace(
 );
 
 source = source.replace(
+    'invoiceAddress: z.lazy(() => GqlSInvoiceAddressInputSchema().nullish()),',
+    'invoiceAddress: GqlSInvoiceAddressInputSchema().nullish(),',
+);
+
+source = source.replace(
     'exactEventAddress: z.lazy(() => GqlSUserBookingRequestExactEventAddressInputSchema()),',
     'exactEventAddress: GqlSUserBookingRequestExactEventAddressInputSchema(),',
 );
@@ -107,6 +112,7 @@ for (const name of [
     'GqlSOccasionFormatsSectionInput',
     'GqlSBlogPostUpsert',
     'GqlSContentSectionInput',
+    'GqlSCookUpdate',
     'GqlSCookMenuUpdate',
     'GqlSCookMenuUpsert',
     'GqlSCookMenuSuggestionDraftInput',

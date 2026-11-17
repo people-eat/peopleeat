@@ -20,6 +20,7 @@ function onboardingInput(overrides: Partial<OnboardingInput> = {}): OnboardingIn
     return {
         isApprovedByAdmin: true,
         stripeStatus: 'COMPLETED',
+        hasInvoiceAddress: true,
         hasTravelOrigin: true,
         hasProfilePicture: true,
         biography: 'A long enough bio',
@@ -120,6 +121,7 @@ describe('cookOnboardingStepsDerive', () => {
     it('lists missing steps in display order', () => {
         // Arrange
         const input = onboardingInput({
+            hasInvoiceAddress: false,
             stripeStatus: 'EMPTY',
             hasTravelOrigin: false,
             hasProfilePicture: false,
@@ -134,7 +136,24 @@ describe('cookOnboardingStepsDerive', () => {
         const steps = cookOnboardingStepsDerive(input);
 
         // Assert
-        expect(steps).toEqual(['WALLET', 'TRAVEL', 'PROFILE_PICTURE', 'CHEF_PROFILE', 'FIRST_MEAL', 'FIRST_MENU', 'DEFAULT_OFFER_MESSAGE']);
+        expect(steps).toEqual([
+            'INVOICE_ADDRESS',
+            'WALLET',
+            'TRAVEL',
+            'PROFILE_PICTURE',
+            'CHEF_PROFILE',
+            'FIRST_MEAL',
+            'FIRST_MENU',
+            'DEFAULT_OFFER_MESSAGE',
+        ]);
+    });
+
+    it('asks for an invoice address for every cook until saved', () => {
+        expect(cookOnboardingStepsDerive(onboardingInput({ hasInvoiceAddress: false }))).toEqual(['INVOICE_ADDRESS']);
+        expect(
+            cookOnboardingStepsDerive(onboardingInput({ isApprovedByAdmin: false, stripeStatus: 'EMPTY', hasInvoiceAddress: false })),
+        ).toContain('INVOICE_ADDRESS');
+        expect(cookOnboardingStepsDerive(onboardingInput({ hasInvoiceAddress: true }))).not.toContain('INVOICE_ADDRESS');
     });
 
     it('holds wallet and first offer until approval', () => {

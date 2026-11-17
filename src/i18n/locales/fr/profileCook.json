@@ -476,6 +476,11 @@
             }
         },
         "onboarding": {
+            "INVOICE_ADDRESS": {
+                "title": "Ajouter ton adresse de facturation",
+                "body": "Nous avons besoin d’une adresse de facturation pour que peopleeat puisse te facturer les frais de plateforme.",
+                "action": "Aller au wallet"
+            },
             "WALLET": {
                 "title": "Configurer ton wallet",
                 "body": "Configure Stripe Connect pour recevoir des paiements.",
@@ -1029,7 +1034,31 @@
         "pending": "En attente",
         "balanceHint": "Disponible signifie prêt pour le virement bancaire. En attente est libéré après la période de rétention Stripe. Notre équipe déclenche le virement après l’événement.",
         "recentActivity": "Activité récente",
-        "noActivity": "Pas encore d’activité. Les crédits apparaissent ici une fois que les clients paient."
+        "noActivity": "Pas encore d’activité. Les crédits apparaissent ici une fois que les clients paient.",
+        "invoiceAddress": {
+            "missingTitle": "Adresse de facturation manquante",
+            "missingBody": "Ajoute une adresse de facturation pour que peopleeat puisse te facturer les frais de plateforme. Elle est distincte de ton adresse de départ.",
+            "addAction": "Ajouter l’adresse de facturation",
+            "sectionTitle": "Adresse de facturation",
+            "editAction": "Modifier",
+            "addTitle": "Ajouter l’adresse de facturation",
+            "editTitle": "Modifier l’adresse de facturation",
+            "dialogBody": "Cette adresse apparaît sur les factures peopleeat qui te sont adressées. Ce n’est pas ton adresse de départ.",
+            "firstName": "Prénom",
+            "lastName": "Nom",
+            "line1": "Rue et numéro",
+            "line2": "Complément d’adresse (facultatif)",
+            "postalCode": "Code postal",
+            "city": "Ville",
+            "country": "Pays",
+            "countryHelp": "Code pays à deux lettres, par exemple DE ou AT.",
+            "back": "Retour",
+            "reuseTravelOrigin": "Utiliser l’adresse de départ",
+            "reuseTravelOriginHint": "Remplit les champs de rue avec ton adresse de départ. Tu peux encore les modifier.",
+            "travelOriginApplied": "Adresse de départ copiée dans le formulaire.",
+            "searchAddress": "Rechercher une adresse",
+            "searchAddressHint": "Choisis une suggestion pour remplir les champs de rue, ou saisis-les toi-même."
+        }
     },
     "invite": {
         "rewardUnlocked": "Récompense débloquée",
