@@ -1,3 +1,5 @@
+import { Suspense } from 'react';
+
 import type { ContentSection } from '../../shared/contentSection';
 import { contentLocaleText } from '../../shared/contentSection';
 import type { Locale } from '../../shared/locale';
@@ -23,7 +25,11 @@ import { ContentSectionsRenderer } from './ContentSectionsRenderer';
 import { Footer } from './Footer';
 import { Header } from './Header';
 import type { PublicHeaderUser } from './Header';
+import { I18nProvider } from './I18nProvider';
 import type { PublicCookCardCook } from './PublicCookCard';
+
+/** Public chrome + section copy used by `ContentPageView` (admin preview may diverge from route locale). */
+const CONTENT_PAGE_I18N_NAMESPACES = ['common', 'public'] as const;
 
 type ContentPageHeroVariant = 'fullBleed' | 'article';
 
@@ -85,6 +91,29 @@ export type ContentPageViewModel = {
 };
 
 export function ContentPageView({
+    page,
+    locale,
+    onLocaleChange,
+    user,
+}: {
+    page: ContentPageViewModel;
+    locale: Locale;
+    onLocaleChange?: (locale: Locale) => void;
+    user: PublicHeaderUser;
+}) {
+    // Admin ContentPageEditor can flip `locale` to EN without navigating `/en/…`,
+    // so route loaders never fetched `en/common` + `en/public`. Sections call sync
+    // `t(locale, …)` and throw without this nested provider (Suspense-waits catalogs).
+    return (
+        <Suspense fallback={null}>
+            <I18nProvider locale={locale} namespaces={CONTENT_PAGE_I18N_NAMESPACES}>
+                <ContentPageViewBody page={page} locale={locale} onLocaleChange={onLocaleChange} user={user} />
+            </I18nProvider>
+        </Suspense>
+    );
+}
+
+function ContentPageViewBody({
     page,
     locale,
     onLocaleChange,

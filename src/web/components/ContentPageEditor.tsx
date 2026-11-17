@@ -1,8 +1,9 @@
 import { Link, useNavigate } from '@tanstack/react-router';
 import { MoreHorizontalIcon } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import { i18nResourcesLoadPromise } from '../../i18n/catalogCache';
 import type { ContentSection, Locale } from '../../shared';
 import { fileUploadPublicUrl, pathNameSlugify } from '../../shared/contentSection';
 import { uploadErrorMessage, uploadFile } from '../chat/fileUpload';
@@ -182,6 +183,12 @@ export function ContentPageEditor({
     const previewScrollRef = useRef<HTMLDivElement>(null);
     const status = publishStatusFrom(values.publishedAt);
     const publicDetail = values.pathName.trim() ? contentPagePublicDetail(listTo, values.pathName.trim()) : null;
+
+    // Warm EN catalogs while the editor is still on DE so the first DE→EN preview
+    // flip does not blank the pane waiting on Suspense inside ContentPageView.
+    useEffect(() => {
+        void i18nResourcesLoadPromise('en', ['common', 'public']);
+    }, []);
 
     useContentPageEditorPreviewSync({
         editorColumnRef,

@@ -42,20 +42,23 @@ section stack per entity.
    Occasion `formatsSection` is entity-owned typed jsonb chrome (exactly three cards), not a free-form `ContentSection` kind — see
    [`occasions.md`](../features/occasions.md). Preview passes an explicit `locale` (+ `onLocaleChange`) into Header / Footer /
    `LanguageSwitcher` so the editor DE/EN control and the preview footer switcher share `editLocale` without navigating the admin route.
-   `SectionHero` shows an `ImageOffIcon` + bilingual “no hero image” label when media is missing. `ContentSectionsEditor` seeds new blocks
-   with empty required fields (nil UUID for unset images); it does not write German filler copy into the draft. `ContentSectionsRenderer`
-   always mounts every section in the list; empty required fields and unset image uploads render muted italic / `ImageOffIcon` empty states
-   so draft preview keeps layout instead of collapsing to blank space. Content blocks with an image use equal `@md:flex-1` columns,
-   `items-start` so the image stays square at the top (flex stretch must not override `aspect-square`), `rounded-lg` + `object-cover`, and
-   `flex-col-reverse` when `imageFirst` is false so mobile order matches the author toggle. Standalone image sections use `aspect-video`.
-   Section image pickers open `ImageCropDialog` before upload (`content` 1:1 for content blocks, `contentWide` 16:9 for image sections);
-   editor previews use the same aspect frames. Hero upload keeps a wide preview frame without a crop step. Zod still rejects empty required
-   fields on save. CTA blocks render as a soft accent panel (`bg-accent/10`, `border-l-4 border-accent`, `rounded-xl`) so they read as a
-   distinct action moment against the warm page canvas (`--secondary` white wash is invisible there). CTA body and quote text keep textarea
-   newlines via `whitespace-pre-wrap` (content body and Q&A answers are markdown via `MarkdownBody`). Q&A blocks (`kind: 'qa'`) render
-   through [`SectionQuestionsAndAnswers`](../../src/web/sections/SectionQuestionsAndAnswers.tsx) (height expand via `grid-template-rows`
-   0fr↔1fr, 200 ms `ease-out`). Cook/testimonial saves share the entity subscription with page upserts — detail pages keep a dirty ref so
-   those side saves do not wipe unsaved page form state.
+   `ContentPageView` nests an `I18nProvider` for that preview locale (`common` + `public`) so DE→EN flips load `en/*` catalogs before sync
+   `t(locale, …)` in sections; the editor also warms EN on mount. Without that, admin on `/admin/…` (route locale `de` only) throws
+   `i18n catalog not loaded: en/common` on the first English preview. `SectionHero` shows an `ImageOffIcon` + bilingual “no hero image”
+   label when media is missing. `ContentSectionsEditor` seeds new blocks with empty required fields (nil UUID for unset images); it does not
+   write German filler copy into the draft. `ContentSectionsRenderer` always mounts every section in the list; empty required fields and
+   unset image uploads render muted italic / `ImageOffIcon` empty states so draft preview keeps layout instead of collapsing to blank space.
+   Content blocks with an image use equal `@md:flex-1` columns, `items-start` so the image stays square at the top (flex stretch must not
+   override `aspect-square`), `rounded-lg` + `object-cover`, and `flex-col-reverse` when `imageFirst` is false so mobile order matches the
+   author toggle. Standalone image sections use `aspect-video`. Section image pickers open `ImageCropDialog` before upload (`content` 1:1
+   for content blocks, `contentWide` 16:9 for image sections); editor previews use the same aspect frames. Hero upload keeps a wide preview
+   frame without a crop step. Zod still rejects empty required fields on save. CTA blocks render as a soft accent panel (`bg-accent/10`,
+   `border-l-4 border-accent`, `rounded-xl`) so they read as a distinct action moment against the warm page canvas (`--secondary` white wash
+   is invisible there). CTA body and quote text keep textarea newlines via `whitespace-pre-wrap` (content body and Q&A answers are markdown
+   via `MarkdownBody`). Q&A blocks (`kind: 'qa'`) render through
+   [`SectionQuestionsAndAnswers`](../../src/web/sections/SectionQuestionsAndAnswers.tsx) (height expand via `grid-template-rows` 0fr↔1fr,
+   200 ms `ease-out`). Cook/testimonial saves share the entity subscription with page upserts — detail pages keep a dirty ref so those side
+   saves do not wipe unsaved page form state.
 5. **Publish** — unified nullable `publishedAt` on all four entities (`null` = draft; public requires `publishedAt <= now()`). Admin detail
    editor exposes status (Draft / Published / Scheduled). Primary actions are **Save** and **Publish** (draft / scheduled only; confirm
    dialog, persists immediately). Secondary actions live in an ellipsis overflow menu: **Public page** (opens the public detail route in a
