@@ -270,6 +270,13 @@
             display: none;
         }
     }
+
+    /* Pinned-footer pages own the top inset on their inner scrollport so the
+     * gap under the breadcrumb bar scrolls away. Leaving `pt-2 sm:pt-4` here
+     * freezes a clip edge 8–16px below the header. */
+    &:has([data-pinned-footer-layout]) {
+        padding-top: 0;
+    }
 }
 
 @keyframes nav-progress-grow {

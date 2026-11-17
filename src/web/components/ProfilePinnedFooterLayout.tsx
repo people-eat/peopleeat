@@ -39,7 +39,9 @@ export function ProfilePinnedFooterLayout({
                     'min-h-0',
                     // Nested tab/chat scrollports must own horizontal padding — a padded
                     // parent leaves the scrollbar inset from the pane edge (obvious on mobile).
-                    contentScroll ? 'overflow-y-auto overscroll-contain px-4 scrollbar-gutter-stable' : 'overflow-hidden px-0',
+                    contentScroll
+                        ? 'overflow-y-auto overscroll-contain px-4 pt-2 sm:pt-4 scrollbar-gutter-stable'
+                        : 'overflow-hidden px-0 pt-2 sm:pt-4',
                     // Keep `pb-*` on this block scrollport — Chromium drops padding-bottom when
                     // the same node is also `display: grid` / `flex` (via contentClassName).
                     contentScroll ? (footer != null ? 'pb-10' : 'pb-6') : 'pb-0',

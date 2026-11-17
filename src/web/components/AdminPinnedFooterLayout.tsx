@@ -39,10 +39,13 @@ export function AdminPinnedFooterLayout({
                     'min-h-0',
                     // Nested tab/chat scrollports must own horizontal padding — a padded
                     // parent leaves the scrollbar inset from the pane edge (obvious on mobile).
-                    contentScroll ? 'overflow-y-auto overscroll-contain px-4 pt-1 scrollbar-gutter-stable' : 'overflow-hidden px-0',
+                    contentScroll
+                        ? 'overflow-y-auto overscroll-contain px-4 pt-2 sm:pt-4 scrollbar-gutter-stable'
+                        : 'overflow-hidden px-0 pt-2 sm:pt-4',
                     // Keep vertical padding on this block scrollport — Chromium drops
                     // padding-bottom when the same node is also `display: grid` / `flex`
-                    // (via contentClassName). `pt-1` clears focus rings on the first row.
+                    // (via contentClassName). Top pad matches shell chrome and scrolls
+                    // away; it also clears focus rings on the first row.
                     contentScroll ? (footer != null ? 'pb-10' : 'pb-6') : 'pb-0',
                 )}
             >

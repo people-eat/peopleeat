@@ -207,6 +207,8 @@ export function CookTravelRadiusMap({ latitude, longitude, radiusKm, className }
             style: BASEMAP_STYLE_URL,
             center: [longitude, latitude],
             zoom: 8,
+            // Embedded in a shell scroller: wheel should pan the page, not zoom the map.
+            scrollZoom: false,
         });
         map.addControl(new NavigationControl({ showCompass: false }), 'bottom-right');
         mapRef.current = map;
@@ -255,12 +257,13 @@ export function CookTravelRadiusMap({ latitude, longitude, radiusKm, className }
 
     return (
         <div
+            ref={containerRef}
             className={cn(
-                'relative min-h-[50vh] overflow-hidden rounded-lg border border-border bg-muted/30 [&_.maplibregl-ctrl-attrib]:text-[10px]',
+                // MapLibre sets `position: relative` on this node and reads its client box.
+                // A nested `absolute inset-0` child is overwritten to relative and collapses to 0 height.
+                'min-h-[50vh] w-full overflow-hidden rounded-lg border border-border bg-muted/30 [&_.maplibregl-ctrl-attrib]:text-[10px]',
                 className,
             )}
-        >
-            <div ref={containerRef} className="absolute inset-0" />
-        </div>
+        />
     );
 }

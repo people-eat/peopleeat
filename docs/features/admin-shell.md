@@ -80,13 +80,13 @@ kind/draft/version, Promo codes, Assistant chats, etc.
 Paginated admin lists pin controls in an `AdminPinnedFooterLayout` footer via `AdminListPaginationBar` (prev/next, “Page X of Y”, range, and
 per-page size). Density follows a **container query** on the bar (`@container` / `@xl`), not the viewport, so a narrow admin inset (sidebar
 open) stays condensed: the “Per page” label hides (select keeps an `aria-label`), range/page copy shortens to `from–to/total` and
-`page/pageCount`, and prev/next compress to icon buttons. The body scrollport keeps a small top pad (`pt-1`) so focus rings on the first
-control row are not clipped. Page and size live in the URL (`page`, `pageSize`; default size 25, omitted when default). Shared parse/skip
-helpers: `adminListPaginationSearch.ts`. List routes that load from search params must declare `loaderDeps: ({ search }) => search` so page
-/ filter / debounced `q` changes re-run the loader (see [api-layer.md](../architecture/api-layer.md#filter-state-in-the-url)); omitting it
-leaves the URL ahead of stale loader data. Migrated: users, booking requests, calls, assistant chats, gift cards, meals, menus, promo codes,
-outbound emails, WhatsApp chats, support requests, sessions, jobs (client-side over the pending snapshot), logs. Remaining admin tables
-still use in-table pagination until migrated.
+`page/pageCount`, and prev/next compress to icon buttons. The body scrollport keeps the shell top pad (`pt-2 sm:pt-4`) so the gap under the
+breadcrumbs scrolls away and focus rings on the first control row are not clipped. Page and size live in the URL (`page`, `pageSize`;
+default size 25, omitted when default). Shared parse/skip helpers: `adminListPaginationSearch.ts`. List routes that load from search params
+must declare `loaderDeps: ({ search }) => search` so page / filter / debounced `q` changes re-run the loader (see
+[api-layer.md](../architecture/api-layer.md#filter-state-in-the-url)); omitting it leaves the URL ahead of stale loader data. Migrated:
+users, booking requests, calls, assistant chats, gift cards, meals, menus, promo codes, outbound emails, WhatsApp chats, support requests,
+sessions, jobs (client-side over the pending snapshot), logs. Remaining admin tables still use in-table pagination until migrated.
 
 ## Decisions
 

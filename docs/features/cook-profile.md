@@ -189,7 +189,10 @@ reviews stay out of the cook-facing summary until published, matching public rul
   [attention.md](../architecture/attention.md))
 - Travel radius map: `CookTravelRadiusMap` on `/profile/travel` + live preview on `/profile/travel/edit` (MapLibre + OpenFreeMap Positron,
   same stack as [admin-map.md](./admin-map.md)); circle via shared `mapCirclePolygon` in `src/web/utils/mapCirclePolygon.ts` (admin
-  `adminMapCirclePolygon` re-exports it). Shown only when origin lat/lng are set; `null`/≤0 radius paints the pin only.
+  `adminMapCirclePolygon` re-exports it). Shown only when origin lat/lng are set; `null`/≤0 radius paints the pin only. The view page uses
+  the standard pinned-footer content scroller (`content-start` grid, not a fill-height nested pane). MapLibre mounts on the sized box itself
+  (`min-h-[50vh]`); a nested `absolute inset-0` child is restyled to `position: relative` and collapses. `scrollZoom` is off so wheel events
+  scroll the shell, not the map.
 - Cook GraphQL: `mealsCounts` / `menusCounts` (`CookMealCriterion` / `CookMenuCriterion`);
   `callSlotBookings(criterion: CookCallSlotBookingCriterion)` for status + `startAt` window
 - Admin: pending-approval queue on `/admin`; cook-profile tab (read-only + approval/visibility; edit at

@@ -37,8 +37,7 @@ export function ProfileCookTravelPage({ data }: { data: GqlCProfileCookTravelPag
 
     return (
         <ProfilePinnedFooterLayout
-            contentScroll={false}
-            contentClassName="flex h-full min-h-0 min-w-0 flex-col gap-6 overflow-y-auto overscroll-contain px-4 pb-4"
+            contentClassName="grid w-full min-w-0 content-start gap-6"
             footer={
                 <Button asChild>
                     <Link to="/{-$locale}/profile/travel/edit">{t(locale, 'profileCook', 'actions.edit')}</Link>
@@ -46,7 +45,6 @@ export function ProfileCookTravelPage({ data }: { data: GqlCProfileCookTravelPag
             }
         >
             <StatusAlert
-                className="shrink-0"
                 tone="info"
                 title={t(locale, 'profileCook', 'travel.poolIntro')}
                 action={
@@ -56,7 +54,7 @@ export function ProfileCookTravelPage({ data }: { data: GqlCProfileCookTravelPag
                 }
             />
 
-            <section className="grid min-w-0 shrink-0 gap-4">
+            <section className="grid min-w-0 gap-4">
                 <dl className="grid min-w-0 gap-4 sm:grid-cols-2">
                     <DetailField
                         label={t(locale, 'profileCook', 'travelEdit.origin')}
@@ -86,12 +84,11 @@ export function ProfileCookTravelPage({ data }: { data: GqlCProfileCookTravelPag
             {cook.exactTravelOriginAddress &&
             Number.isFinite(cook.exactTravelOriginAddress.latitude) &&
             Number.isFinite(cook.exactTravelOriginAddress.longitude) ? (
-                <section className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
-                    <p className="shrink-0 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                <section className="grid min-w-0 gap-2">
+                    <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                         {t(locale, 'profileCook', 'travel.mapHint')}
                     </p>
                     <CookTravelRadiusMap
-                        className="w-full flex-1"
                         latitude={cook.exactTravelOriginAddress.latitude}
                         longitude={cook.exactTravelOriginAddress.longitude}
                         radiusKm={cook.maximumTravelDistance}

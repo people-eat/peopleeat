@@ -49,8 +49,11 @@ that muted outline pill.
 ## Workspace chrome density
 
 Profile and admin inset chrome keep the breadcrumb bar close to the page body on small viewports: header `h-12` / `sm:h-14` (not `h-16`),
-and content `pt-2` / `sm:pt-4` with `px-4 pb-4` (pinned-footer breakouts still cancel `-mx-4 -mb-4` against that horizontal / bottom pad).
-Do not restore a tall header plus equal `p-4` on all sides — on mobile that reads as a large empty band under the trail.
+and content `pt-2` / `sm:pt-4` with `px-4 pb-4`. Pinned-footer breakouts cancel `-mx-4` against the horizontal pad and, via
+`workspace-inset-scroll:has([data-pinned-footer-layout]) { padding-top: 0 }`, take the top pad too — the inner scroller reapplies
+`pt-2 sm:pt-4` so the gap under the trail scrolls away like a content-sized page. Do not leave that top pad on the outer shell: it freezes a
+clip edge below the breadcrumbs. Do not restore a tall header plus equal `p-4` on all sides — on mobile that reads as a large empty band
+under the trail.
 
 ## Scroll edge fades (`scroll-fade-*`)
 
@@ -109,7 +112,9 @@ Pinned-footer layouts (`[data-pinned-footer-layout]`) and other nested-scroll ow
 scrollport. Shell panes marked `workspace-inset-scroll` use `:has([data-pinned-footer-layout])` / `:has([data-workspace-fill])` (descendant,
 not only direct child) to drop their own bottom spacer, `overflow-y-auto`, and `scrollbar-gutter: stable` while that owner is mounted —
 otherwise the idle outer gutter shows as empty space to the right of the `w-[calc(100%+2rem)] -mx-4` breakout, and the `::after` 1rem spacer
-leaves a gap under the action bar when a `display: contents` wrapper (e.g. LiveKit room) sits in between. Offer/chat pages that scroll
+leaves a gap under the action bar when a `display: contents` wrapper (e.g. LiveKit room) sits in between. Pinned-footer also zeroes the
+shell `padding-top` so the inner scroller (which reapplies `pt-2 sm:pt-4`) reaches the breadcrumb bar: content-sized pages already scroll
+that pad away on `workspace-inset-scroll`; leaving it on the outer pane freezes a clip strip under the trail. Offer/chat pages that scroll
 inside tabs pass `contentScroll={false}` so the pinned-footer body does not reserve a second idle gutter either.
 
 Content-sized shell pages must not use `flex-1` / `min-h-0` on the page root: the inset is a flex column, and a flex-grown child prevents
