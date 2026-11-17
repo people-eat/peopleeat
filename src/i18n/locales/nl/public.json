@@ -3,6 +3,8 @@
         "title": "Inloggen",
         "description": "Log in met een e-mailcode of een passkey. Nieuwe accounts maak je hier ook aan.",
         "descriptionWithGoogle": "Log in met een e-mailcode, Google of een passkey. Nieuwe accounts maak je hier ook aan.",
+        "descriptionWithFacebook": "Log in met een e-mailcode, Facebook of een passkey. Nieuwe accounts maak je hier ook aan.",
+        "descriptionWithGoogleAndFacebook": "Log in met een e-mailcode, Google, Facebook of een passkey. Nieuwe accounts maak je hier ook aan.",
         "seo": {
             "title": "Inloggen",
             "description": "Log in met een e-mailcode of een passkey. Nieuwe accounts maak je hier ook aan."
@@ -596,6 +598,7 @@
     },
     "auth": {
         "googleFailed": "Inloggen met Google is mislukt. Probeer het opnieuw in Safari of Chrome, niet in de in-appbrowser van Instagram of Facebook.",
+        "facebookFailed": "Inloggen met Facebook mislukt. Probeer het opnieuw in Safari of Chrome, niet in een in-app browser.",
         "registerFailed": "De registratie kon niet worden afgerond.",
         "discardOauthFailed": "De geverifieerde aanmelding kon niet worden verwijderd.",
         "discardEmailFailed": "Het geverifieerde e-mailadres kon niet worden verwijderd.",
@@ -632,6 +635,7 @@
         "birthDate": "Geboortedatum",
         "cookProfile": "Chefprofiel",
         "continueGoogle": "Doorgaan met Google",
+        "continueFacebook": "Doorgaan met Facebook",
         "passkeyFailed": "Inloggen met passkey is mislukt. Passkeys werken alleen voor bestaande accounts. Nieuwe gebruikers gebruiken e-mail.",
         "passkeyCancelled": "Inloggen met passkey geannuleerd. Passkeys werken alleen voor bestaande accounts. Nieuwe gebruikers gebruiken e-mail.",
         "continuePasskey": "Inloggen met passkey",

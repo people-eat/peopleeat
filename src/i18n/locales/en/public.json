@@ -3,6 +3,8 @@
         "title": "Log on",
         "description": "Log on with an email code or a passkey. New accounts are created here too.",
         "descriptionWithGoogle": "Log on with an email code, Google, or a passkey. New accounts are created here too.",
+        "descriptionWithFacebook": "Log on with an email code, Facebook, or a passkey. New accounts are created here too.",
+        "descriptionWithGoogleAndFacebook": "Log on with an email code, Google, Facebook, or a passkey. New accounts are created here too.",
         "seo": {
             "title": "Log on",
             "description": "Log on with an email code or a passkey. New accounts are created here too."
@@ -596,6 +598,7 @@
     },
     "auth": {
         "googleFailed": "Google sign-in failed. Please try again in Safari or Chrome, not in an Instagram or Facebook in-app browser.",
+        "facebookFailed": "Facebook sign-in failed. Please try again in Safari or Chrome, not in an in-app browser.",
         "registerFailed": "Could not complete registration.",
         "discardOauthFailed": "Could not discard verified sign-in.",
         "discardEmailFailed": "Could not discard verified email.",
@@ -632,6 +635,7 @@
         "birthDate": "Date of birth",
         "cookProfile": "Chef profile",
         "continueGoogle": "Continue with Google",
+        "continueFacebook": "Continue with Facebook",
         "passkeyFailed": "Passkey sign-in failed. Passkeys only work for existing accounts. New users should use email.",
         "passkeyCancelled": "Passkey sign-in cancelled. Passkeys only work for existing accounts. New users should use email.",
         "continuePasskey": "Log on with passkey",

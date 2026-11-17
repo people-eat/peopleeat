@@ -660,6 +660,7 @@
         "preferredCommunication": "Preferred communication",
         "locale": "Locale",
         "googleLinked": "Google linked",
+        "facebookLinked": "Facebook linked",
         "chooseCook": "Choose cook…",
         "expires2": "Expires",
         "noEmails": "No emails.",
@@ -930,7 +931,7 @@
         "dateRangeForRegistrations": "Date range for registrations",
         "barChartOfUserRegistrationsInTheSelectedRange": "Bar chart of user registrations in the selected range",
         "acrossAllNonAnonymizedAccountsIndependentOfTheChartRange": "Across all non-anonymized accounts (independent of the chart range).",
-        "overlappingOneAccountCanHaveGoogleAndAPasskey": "Overlapping: one account can have Google and a passkey.",
+        "overlappingOneAccountCanHaveGoogleAndAPasskey": "Overlapping: one account can have Google, Facebook, and a passkey.",
         "passkeyPresent": "Passkey present",
         "authenticatorApp": "Authenticator app",
         "ageAndBirthdays": "Age and birthdays",
@@ -1297,6 +1298,8 @@
         "passkeysTheAuthenticatorAppAndLinkedSocialLoginsRemovalAppli": "Passkeys, the authenticator app, and linked social logins. Removal applies immediately. Sign-in with an email code stays available.",
         "google": "Google",
         "noGoogleAccountLinked": "No Google account linked.",
+        "facebook": "Facebook",
+        "noFacebookAccountLinked": "No Facebook account linked.",
         "passkeys": "Passkeys",
         "noPasskeysOnThisAccount": "No passkeys on this account.",
         "backedUp": " · backed up",
@@ -2328,6 +2331,7 @@
             "LANDING_TESTIMONIAL_CARDS": "Landing: testimonial cards",
             "VENUE_PAGE_VENUES_EXPLORE": "Venue page: more venues",
             "SIGN_IN_GOOGLE": "Sign-in: Google",
+            "SIGN_IN_FACEBOOK": "Sign-in: Facebook",
             "LAST_VISITED_COOK_PROFILES": "Last visited chefs"
         },
         "descriptions": {
@@ -2361,6 +2365,7 @@
             "LANDING_TESTIMONIAL_CARDS": "Shows the shared review cards on the home page instead of the scrolling quote columns. The quotes stay the fixed marketing copy.",
             "VENUE_PAGE_VENUES_EXPLORE": "Shows the “More venues” CTA on public venue pages (/venues/…).",
             "SIGN_IN_GOOGLE": "Shows Continue with Google on sign-in gates. Before enabling in production, confirm the Google consent screen (test users or verified People scopes).",
+            "SIGN_IN_FACEBOOK": "Shows Continue with Facebook on sign-in gates. Before enabling in production, confirm the Meta app is Live with privacy, terms, and data deletion configured.",
             "LAST_VISITED_COOK_PROFILES": "Shows the last viewed chef profiles (max 4) at the bottom of public chef and blog post pages."
         },
         "overrideModes": {

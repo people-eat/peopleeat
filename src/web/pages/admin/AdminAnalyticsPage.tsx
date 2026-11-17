@@ -145,13 +145,17 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
     const giftCardVisits = admin?.giftCardVisits ?? [];
     const signInMethodStats = admin?.signInMethodStats;
     const signInMethods = signInMethodStats?.methods ?? [];
-    const signInBucketsByDate = new Map<string, { bucketStart: string; EMAIL_OTP: number; PASSKEY: number; GOOGLE: number }>();
+    const signInBucketsByDate = new Map<
+        string,
+        { bucketStart: string; EMAIL_OTP: number; PASSKEY: number; GOOGLE: number; FACEBOOK: number }
+    >();
     for (const bucket of signInMethodStats?.buckets ?? []) {
         const row = signInBucketsByDate.get(bucket.date) ?? {
             bucketStart: bucket.date,
             EMAIL_OTP: 0,
             PASSKEY: 0,
             GOOGLE: 0,
+            FACEBOOK: 0,
         };
         row[bucket.method] = bucket.signInCount;
         signInBucketsByDate.set(bucket.date, row);
@@ -163,6 +167,7 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
             EMAIL_OTP: t(locale, 'admin', 'copy.emailCode'),
             PASSKEY: t(locale, 'admin', 'copy.passkey'),
             GOOGLE: t(locale, 'admin', 'copy.google'),
+            FACEBOOK: t(locale, 'admin', 'copy.facebook'),
         } as const;
         return method in labels ? labels[method as keyof typeof labels] : method;
     }
@@ -311,6 +316,7 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
                             { dataKey: 'EMAIL_OTP', label: signInMethodLabel('EMAIL_OTP'), color: 'var(--chart-2)' },
                             { dataKey: 'PASSKEY', label: signInMethodLabel('PASSKEY'), color: 'var(--chart-3)' },
                             { dataKey: 'GOOGLE', label: signInMethodLabel('GOOGLE'), color: 'var(--chart-1)' },
+                            { dataKey: 'FACEBOOK', label: signInMethodLabel('FACEBOOK'), color: 'var(--chart-4)' },
                         ]}
                     />
                 </section>

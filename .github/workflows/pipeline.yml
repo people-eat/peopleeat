@@ -223,6 +223,8 @@ jobs:
       GOOGLE_OAUTH_CLIENT_ID: test-google-oauth-client-id
       GOOGLE_OAUTH_CLIENT_SECRET: test-google-oauth-client-secret
       GOOGLE_OAUTH_PEOPLE_SCOPES: 'false'
+      FACEBOOK_OAUTH_CLIENT_ID: test-facebook-oauth-client-id
+      FACEBOOK_OAUTH_CLIENT_SECRET: test-facebook-oauth-client-secret
       STRIPE_SECRET_KEY: sk_test_ci_placeholder
       STRIPE_WEBHOOK_SECRET: whsec_ci_placeholder
       STRIPE_PUBLISHABLE_KEY: pk_test_ci
@@ -310,6 +312,8 @@ jobs:
       GOOGLE_OAUTH_CLIENT_ID: test-google-oauth-client-id
       GOOGLE_OAUTH_CLIENT_SECRET: test-google-oauth-client-secret
       GOOGLE_OAUTH_PEOPLE_SCOPES: 'false'
+      FACEBOOK_OAUTH_CLIENT_ID: test-facebook-oauth-client-id
+      FACEBOOK_OAUTH_CLIENT_SECRET: test-facebook-oauth-client-secret
       # Placeholder selects the in-memory Stripe fixture (dual-accept e2e). A real
       # test secret, when present, talks to Stripe instead.
       STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY || 'sk_test_ci_placeholder' }}

@@ -3,6 +3,8 @@
         "title": "Вход",
         "description": "Войди по коду из письма или через passkey. Если аккаунта ещё нет, он создастся автоматически.",
         "descriptionWithGoogle": "Войди по коду из письма, через Google или passkey. Если аккаунта ещё нет, он создастся автоматически.",
+        "descriptionWithFacebook": "Войди по коду из письма, через Facebook или passkey. Если аккаунта ещё нет, он создастся автоматически.",
+        "descriptionWithGoogleAndFacebook": "Войди по коду из письма, через Google, Facebook или passkey. Если аккаунта ещё нет, он создастся автоматически.",
         "seo": {
             "title": "Вход",
             "description": "Войди по коду из письма или через passkey. Если аккаунта ещё нет, он создастся автоматически."
@@ -596,6 +598,7 @@
     },
     "auth": {
         "googleFailed": "Вход через Google не удался. Попробуй ещё раз в Safari или Chrome, а не во встроенном браузере Instagram или Facebook.",
+        "facebookFailed": "Вход через Facebook не удался. Попробуй снова в Safari или Chrome, не во встроенном браузере.",
         "registerFailed": "Не удалось завершить регистрацию.",
         "discardOauthFailed": "Не удалось отменить подтверждённый вход.",
         "discardEmailFailed": "Не удалось отменить подтверждённый email.",
@@ -632,6 +635,7 @@
         "birthDate": "Дата рождения",
         "cookProfile": "Профиль шефа",
         "continueGoogle": "Продолжить с Google",
+        "continueFacebook": "Продолжить с Facebook",
         "passkeyFailed": "Вход через passkey не удался. Passkey работает только для существующих аккаунтов. Новым пользователям следует использовать email.",
         "passkeyCancelled": "Вход через passkey отменён. Passkey работает только для существующих аккаунтов. Новым пользователям следует использовать email.",
         "continuePasskey": "Войти с помощью passkey",

@@ -660,6 +660,7 @@
         "preferredCommunication": "Предпочитаемый способ связи",
         "locale": "Локаль",
         "googleLinked": "Привязан Google",
+        "facebookLinked": "Facebook связан",
         "chooseCook": "Выберите повара…",
         "expires2": "Истекает",
         "noEmails": "Нет писем.",
@@ -922,7 +923,7 @@
         "dateRangeForRegistrations": "Период для регистраций",
         "barChartOfUserRegistrationsInTheSelectedRange": "Столбчатая диаграмма регистраций пользователей за выбранный период",
         "acrossAllNonAnonymizedAccountsIndependentOfTheChartRange": "По всем неанонимизированным аккаунтам (не зависит от периода диаграммы).",
-        "overlappingOneAccountCanHaveGoogleAndAPasskey": "Пересечение: у одного аккаунта может быть и Google, и ключ доступа.",
+        "overlappingOneAccountCanHaveGoogleAndAPasskey": "Overlapping: one account can have Google, Facebook and a passkey.",
         "passkeyPresent": "Есть ключ доступа",
         "authenticatorApp": "Приложение-аутентификатор",
         "ageAndBirthdays": "Возраст и дни рождения",
@@ -1289,6 +1290,8 @@
         "passkeysTheAuthenticatorAppAndLinkedSocialLoginsRemovalAppli": "Ключи доступа, приложение-аутентификатор и привязанные соцсети. Удаление применяется немедленно. Вход по коду из email остаётся доступным.",
         "google": "Google",
         "noGoogleAccountLinked": "Аккаунт Google не привязан.",
+        "facebook": "Facebook",
+        "noFacebookAccountLinked": "Аккаунт Facebook не связан.",
         "passkeys": "Ключи доступа",
         "noPasskeysOnThisAccount": "У этого аккаунта нет ключей доступа.",
         "backedUp": " · с резервной копией",
@@ -2320,6 +2323,7 @@
             "LANDING_TESTIMONIAL_CARDS": "Главная: карточки отзывов",
             "VENUE_PAGE_VENUES_EXPLORE": "Страница площадки: другие площадки",
             "SIGN_IN_GOOGLE": "Вход: Google",
+            "SIGN_IN_FACEBOOK": "Вход: Facebook",
             "LAST_VISITED_COOK_PROFILES": "Недавно просмотренные повара"
         },
         "descriptions": {
@@ -2353,6 +2357,7 @@
             "LANDING_TESTIMONIAL_CARDS": "Показывает общие карточки отзывов на главной странице вместо прокручивающихся колонок с цитатами. Цитаты остаются фиксированным маркетинговым текстом.",
             "VENUE_PAGE_VENUES_EXPLORE": "Показывает кнопку CTA «Другие площадки» на публичных страницах площадок (/venues/…).",
             "SIGN_IN_GOOGLE": "Показывает кнопку «Продолжить с Google» на экранах входа. Перед включением в продакшене подтвердите экран согласия Google (тестовые пользователи или проверенные People scopes).",
+            "SIGN_IN_FACEBOOK": "Показывает кнопку «Продолжить с Facebook» на экранах входа. Перед включением в продакшене подтвердите, что Meta-приложение в режиме Live с политикой, условиями и удалением данных.",
             "LAST_VISITED_COOK_PROFILES": "Показывает последние просмотренные профили поваров (максимум 4) в нижней части публичных страниц поваров и статей блога."
         },
         "overrideModes": {

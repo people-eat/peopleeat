@@ -1,4 +1,4 @@
-export const authOauthProviders = ['GOOGLE'] as const;
+export const authOauthProviders = ['GOOGLE', 'FACEBOOK'] as const;
 export type AuthOauthProvider = (typeof authOauthProviders)[number];
 
 export const authOauthSignInFailReasons = [

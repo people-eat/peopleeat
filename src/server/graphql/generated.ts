@@ -2348,7 +2348,7 @@ export type GqlSAdminSessionKind = 'bot' | 'human';
 
 export type GqlSAdminSessionSortField = 'createdAt' | 'lastInteractionAt' | 'user' | 'userAgent';
 
-export type GqlSAdminSignInMethod = 'EMAIL_OTP' | 'GOOGLE' | 'PASSKEY';
+export type GqlSAdminSignInMethod = 'EMAIL_OTP' | 'FACEBOOK' | 'GOOGLE' | 'PASSKEY';
 
 export interface GqlSAdminSignInMethodBucket {
     __typename?: 'AdminSignInMethodBucket';
@@ -2499,6 +2499,7 @@ export interface GqlSAdminUserInsights {
     __typename?: 'AdminUserInsights';
     accountCount: Scalars['Int']['output'];
     ageBySegment: GqlSAdminUserAgeBySegment;
+    facebookLinkedAccountCount: Scalars['Int']['output'];
     googleLinkedAccountCount: Scalars['Int']['output'];
     locales: Array<GqlSAdminUserLocaleStat>;
     passkeyAccountCount: Scalars['Int']['output'];
@@ -2589,7 +2590,7 @@ export interface GqlSAuthEmailOtp {
     verifiedAt?: Maybe<Scalars['DateTime']['output']>;
 }
 
-export type GqlSAuthOauthProvider = 'GOOGLE';
+export type GqlSAuthOauthProvider = 'FACEBOOK' | 'GOOGLE';
 
 export interface GqlSAuthOauthTicket {
     __typename?: 'AuthOauthTicket';
@@ -4484,6 +4485,7 @@ export type GqlSFeatureToggleKey =
     | 'LAST_VISITED_COOK_PROFILES'
     | 'PUBLICATION_MEALS'
     | 'PUBLICATION_MENUS'
+    | 'SIGN_IN_FACEBOOK'
     | 'SIGN_IN_GOOGLE'
     | 'VENUE_PAGE_VENUES_EXPLORE';
 
@@ -9500,6 +9502,7 @@ export type GqlSAdminUserInsightsResolvers<
 > = ResolversObject<{
     accountCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     ageBySegment?: Resolver<GqlSResolversTypes['AdminUserAgeBySegment'], ParentType, ContextType>;
+    facebookLinkedAccountCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     googleLinkedAccountCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     locales?: Resolver<Array<GqlSResolversTypes['AdminUserLocaleStat']>, ParentType, ContextType>;
     passkeyAccountCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
@@ -13219,11 +13222,10 @@ export const GqlSAdminSessionSortFieldSchema: z.ZodType<
     'createdAt' | 'lastInteractionAt' | 'user' | 'userAgent'
 > = z.enum(['createdAt', 'lastInteractionAt', 'user', 'userAgent']);
 
-export const GqlSAdminSignInMethodSchema: z.ZodType<'EMAIL_OTP' | 'GOOGLE' | 'PASSKEY', 'EMAIL_OTP' | 'GOOGLE' | 'PASSKEY'> = z.enum([
-    'EMAIL_OTP',
-    'GOOGLE',
-    'PASSKEY',
-]);
+export const GqlSAdminSignInMethodSchema: z.ZodType<
+    'EMAIL_OTP' | 'FACEBOOK' | 'GOOGLE' | 'PASSKEY',
+    'EMAIL_OTP' | 'FACEBOOK' | 'GOOGLE' | 'PASSKEY'
+> = z.enum(['EMAIL_OTP', 'FACEBOOK', 'GOOGLE', 'PASSKEY']);
 
 export const GqlSAdminSupportRequestSortFieldSchema: z.ZodType<
     'bookingDateTime' | 'createdAt' | 'lastMessageAt',
@@ -13257,7 +13259,7 @@ export const GqlSAdminUserTypeSchema: z.ZodType<'admin' | 'cook' | 'customer', '
     'customer',
 ]);
 
-export const GqlSAuthOauthProviderSchema: z.ZodType<'GOOGLE', 'GOOGLE'> = z.enum(['GOOGLE']);
+export const GqlSAuthOauthProviderSchema: z.ZodType<'FACEBOOK' | 'GOOGLE', 'FACEBOOK' | 'GOOGLE'> = z.enum(['FACEBOOK', 'GOOGLE']);
 
 export const GqlSBookingRequestKitchenDetailsAvailabilitySchema: z.ZodType<
     'FULL' | 'LIMITED' | 'NONE' | 'UNKNOWN',
@@ -13722,6 +13724,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'LAST_VISITED_COOK_PROFILES'
     | 'PUBLICATION_MEALS'
     | 'PUBLICATION_MENUS'
+    | 'SIGN_IN_FACEBOOK'
     | 'SIGN_IN_GOOGLE'
     | 'VENUE_PAGE_VENUES_EXPLORE',
     | 'AI_BOOKING_REQUEST_MESSAGE'
@@ -13753,6 +13756,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'LAST_VISITED_COOK_PROFILES'
     | 'PUBLICATION_MEALS'
     | 'PUBLICATION_MENUS'
+    | 'SIGN_IN_FACEBOOK'
     | 'SIGN_IN_GOOGLE'
     | 'VENUE_PAGE_VENUES_EXPLORE'
 > = z.enum([
@@ -13785,6 +13789,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     'LAST_VISITED_COOK_PROFILES',
     'PUBLICATION_MEALS',
     'PUBLICATION_MENUS',
+    'SIGN_IN_FACEBOOK',
     'SIGN_IN_GOOGLE',
     'VENUE_PAGE_VENUES_EXPLORE',
 ]);

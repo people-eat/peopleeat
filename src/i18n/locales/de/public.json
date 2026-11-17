@@ -3,6 +3,8 @@
         "title": "Anmelden",
         "description": "Melde dich mit E-Mail-Code oder Passkey an. Neue Konten werden hier ebenfalls erstellt.",
         "descriptionWithGoogle": "Melde dich mit E-Mail-Code, Google oder Passkey an. Neue Konten werden hier ebenfalls erstellt.",
+        "descriptionWithFacebook": "Melde dich mit E-Mail-Code, Facebook oder Passkey an. Neue Konten werden hier ebenfalls erstellt.",
+        "descriptionWithGoogleAndFacebook": "Melde dich mit E-Mail-Code, Google, Facebook oder Passkey an. Neue Konten werden hier ebenfalls erstellt.",
         "seo": {
             "title": "Anmelden",
             "description": "Melde dich mit E-Mail-Code oder Passkey an. Neue Konten werden hier ebenfalls erstellt."
@@ -596,6 +598,7 @@
     },
     "auth": {
         "googleFailed": "Google-Anmeldung fehlgeschlagen. Bitte in Safari oder Chrome erneut versuchen, nicht in der In-App-Ansicht von Instagram oder Facebook.",
+        "facebookFailed": "Facebook-Anmeldung fehlgeschlagen. Bitte in Safari oder Chrome erneut versuchen, nicht in einer In-App-Ansicht.",
         "registerFailed": "Registrierung fehlgeschlagen.",
         "discardOauthFailed": "Bestätigte Anmeldung konnte nicht verworfen werden.",
         "discardEmailFailed": "Bestätigte E-Mail konnte nicht verworfen werden.",
@@ -632,6 +635,7 @@
         "birthDate": "Geburtsdatum",
         "cookProfile": "Koch-Profil",
         "continueGoogle": "Mit Google anmelden",
+        "continueFacebook": "Mit Facebook anmelden",
         "passkeyFailed": "Passkey-Anmeldung fehlgeschlagen. Passkeys funktionieren nur für bestehende Konten. Neue Nutzer bitte E-Mail nutzen.",
         "passkeyCancelled": "Passkey-Anmeldung abgebrochen. Passkeys funktionieren nur für bestehende Konten. Neue Nutzer bitte E-Mail nutzen.",
         "continuePasskey": "Mit Passkey anmelden",

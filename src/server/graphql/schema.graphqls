@@ -3023,9 +3023,10 @@ type AuthEmailOtp {
 
 enum AuthOauthProvider {
     GOOGLE
+    FACEBOOK
 }
 
-# Session-owned Google (later Apple) registration ticket. Profile snapshot is
+# Session-owned Google / Facebook (later Apple) registration ticket. Profile snapshot is
 # prefill only; the user still submits `userCreate`. Never exposes `subject`.
 type AuthOauthTicket {
     authOauthTicketId: ID!
@@ -3047,6 +3048,7 @@ enum AdminSignInMethod {
     EMAIL_OTP
     PASSKEY
     GOOGLE
+    FACEBOOK
 }
 
 type AdminSignInMethodStat {
@@ -3632,6 +3634,7 @@ type AdminUserInsights {
     timeZones: [AdminUserTimeZoneStat!]!
     # Overlapping linked-method counts among non-anonymized accounts.
     googleLinkedAccountCount: Int!
+    facebookLinkedAccountCount: Int!
     passkeyAccountCount: Int!
     totpAccountCount: Int!
 }
@@ -6352,6 +6355,7 @@ enum FeatureToggleKey {
     VENUE_PAGE_VENUES_EXPLORE
     # Google social log-on on AuthIdentityGate. Missing row is off.
     SIGN_IN_GOOGLE
+    SIGN_IN_FACEBOOK
     # Last-visited chef cards on public chef + blog post pages. Missing row is off.
     LAST_VISITED_COOK_PROFILES
 }

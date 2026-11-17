@@ -660,6 +660,7 @@
         "preferredCommunication": "Voorkeurscommunicatie",
         "locale": "Taal",
         "googleLinked": "Google gekoppeld",
+        "facebookLinked": "Facebook gekoppeld",
         "chooseCook": "Chef kiezen…",
         "expires2": "Verloopt",
         "noEmails": "Geen e-mails.",
@@ -922,7 +923,7 @@
         "dateRangeForRegistrations": "Datumbereik voor registraties",
         "barChartOfUserRegistrationsInTheSelectedRange": "Staafdiagram van gebruikersregistraties in het gekozen bereik",
         "acrossAllNonAnonymizedAccountsIndependentOfTheChartRange": "Over alle niet-geanonimiseerde accounts (los van het diagrambereik).",
-        "overlappingOneAccountCanHaveGoogleAndAPasskey": "Overlappend: één account kan Google en een passkey hebben.",
+        "overlappingOneAccountCanHaveGoogleAndAPasskey": "Overlapping: one account can have Google, Facebook en een passkey.",
         "passkeyPresent": "Passkey aanwezig",
         "authenticatorApp": "Authenticator-app",
         "ageAndBirthdays": "Leeftijd en verjaardagen",
@@ -1289,6 +1290,8 @@
         "passkeysTheAuthenticatorAppAndLinkedSocialLoginsRemovalAppli": "Passkeys, de authenticator-app en gekoppelde social logins. Verwijderen geldt meteen. Inloggen met een e-mailcode blijft beschikbaar.",
         "google": "Google",
         "noGoogleAccountLinked": "Geen Google-account gekoppeld.",
+        "facebook": "Facebook",
+        "noFacebookAccountLinked": "Geen Facebook-account gekoppeld.",
         "passkeys": "Passkeys",
         "noPasskeysOnThisAccount": "Geen passkeys op dit account.",
         "backedUp": " · geback-upt",
@@ -2320,6 +2323,7 @@
             "LANDING_TESTIMONIAL_CARDS": "Landing: testimonialkaarten",
             "VENUE_PAGE_VENUES_EXPLORE": "Locatiepagina: meer locaties",
             "SIGN_IN_GOOGLE": "Inloggen: Google",
+            "SIGN_IN_FACEBOOK": "Sign-in: Facebook",
             "LAST_VISITED_COOK_PROFILES": "Laatst bezochte chefs"
         },
         "descriptions": {
@@ -2353,6 +2357,7 @@
             "LANDING_TESTIMONIAL_CARDS": "Toont de gedeelde reviewkaarten op de homepage in plaats van de scrollende citatenkolommen. De citaten blijven de vaste marketingtekst.",
             "VENUE_PAGE_VENUES_EXPLORE": "Toont de CTA “Meer locaties” op openbare locatiepagina's (/venues/…).",
             "SIGN_IN_GOOGLE": "Toont Doorgaan met Google op inloggates. Bevestig vóór productie de Google-toestemmingsscherm (testgebruikers of geverifieerde People-scopes).",
+            "SIGN_IN_FACEBOOK": "Shows Continue with Facebook on sign-in gates. Before enabling in production, confirm the Meta app is Live with privacy, terms, and data deletion configured.",
             "LAST_VISITED_COOK_PROFILES": "Toont de laatst bekeken chefprofielen (max. 4) onderaan openbare chef- en blogpagina's."
         },
         "overrideModes": {

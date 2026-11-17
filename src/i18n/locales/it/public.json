@@ -3,6 +3,8 @@
         "title": "Accedi",
         "description": "Accedi con un codice e-mail o una passkey. Anche i nuovi account si creano qui.",
         "descriptionWithGoogle": "Accedi con un codice e-mail, Google o una passkey. Anche i nuovi account si creano qui.",
+        "descriptionWithFacebook": "Accedi con un codice e-mail, Facebook o una passkey. Anche i nuovi account si creano qui.",
+        "descriptionWithGoogleAndFacebook": "Accedi con un codice e-mail, Google, Facebook o una passkey. Anche i nuovi account si creano qui.",
         "seo": {
             "title": "Accedi",
             "description": "Accedi con un codice e-mail o una passkey. Anche i nuovi account si creano qui."
@@ -596,6 +598,7 @@
     },
     "auth": {
         "googleFailed": "Accesso Google non riuscito. Riprova in Safari o Chrome, non nel browser in-app di Instagram o Facebook.",
+        "facebookFailed": "Accesso con Facebook non riuscito. Riprova in Safari o Chrome, non in un browser in-app.",
         "registerFailed": "Impossibile completare la registrazione.",
         "discardOauthFailed": "Impossibile scartare l’accesso verificato.",
         "discardEmailFailed": "Impossibile scartare l’e-mail verificata.",
@@ -632,6 +635,7 @@
         "birthDate": "Data di nascita",
         "cookProfile": "Profilo chef",
         "continueGoogle": "Continua con Google",
+        "continueFacebook": "Continua con Facebook",
         "passkeyFailed": "Accesso con passkey non riuscito. Le passkey funzionano solo per account esistenti. I nuovi utenti usino l’e-mail.",
         "passkeyCancelled": "Accesso con passkey annullato. Le passkey funzionano solo per account esistenti. I nuovi utenti usino l’e-mail.",
         "continuePasskey": "Accedi con passkey",

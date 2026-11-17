@@ -13,7 +13,12 @@ type EventRow = {
     value: number | string;
 };
 
-const METHODS: GqlSAdminSignInMethod[] = ['EMAIL_OTP', 'PASSKEY', 'GOOGLE'];
+const METHODS: GqlSAdminSignInMethod[] = ['EMAIL_OTP', 'PASSKEY', 'GOOGLE', 'FACEBOOK'];
+
+function oauthSignInMethod(provider: string | null): 'GOOGLE' | 'FACEBOOK' | null {
+    if (provider === 'GOOGLE' || provider === 'FACEBOOK') return provider;
+    return null;
+}
 
 export async function adminAnalyticsSignInMethodStats(
     range: GqlSDateTimeRange,
@@ -58,11 +63,12 @@ export async function adminAnalyticsSignInMethodStats(
             EMAIL_OTP: { signInCount: 0, registrationTicketCount: 0, accountCreatedCount: 0, failedCount: 0 },
             PASSKEY: { signInCount: 0, registrationTicketCount: 0, accountCreatedCount: 0, failedCount: 0 },
             GOOGLE: { signInCount: 0, registrationTicketCount: 0, accountCreatedCount: 0, failedCount: 0 },
+            FACEBOOK: { signInCount: 0, registrationTicketCount: 0, accountCreatedCount: 0, failedCount: 0 },
         };
         const signInByDay = new Map<string, Record<GqlSAdminSignInMethod, number>>();
 
         function addSignIn(method: GqlSAdminSignInMethod, date: string, count: number) {
-            const day = signInByDay.get(date) ?? { EMAIL_OTP: 0, PASSKEY: 0, GOOGLE: 0 };
+            const day = signInByDay.get(date) ?? { EMAIL_OTP: 0, PASSKEY: 0, GOOGLE: 0, FACEBOOK: 0 };
             day[method] += count;
             signInByDay.set(date, day);
         }
@@ -89,26 +95,32 @@ export async function adminAnalyticsSignInMethodStats(
                 case 'AUTH_PASSKEY_SIGN_IN_FAILED':
                     totals.PASSKEY.failedCount += count;
                     break;
-                case 'AUTH_OAUTH_SIGN_IN_SUCCEEDED':
-                    if (row.provider === 'GOOGLE') {
+                case 'AUTH_OAUTH_SIGN_IN_SUCCEEDED': {
+                    const oauthMethod = oauthSignInMethod(row.provider);
+                    if (oauthMethod) {
                         if (row.outcome === 'registration_ticket') {
-                            totals.GOOGLE.registrationTicketCount += count;
+                            totals[oauthMethod].registrationTicketCount += count;
                         } else {
-                            totals.GOOGLE.signInCount += count;
-                            addSignIn('GOOGLE', row.bucket_date, count);
+                            totals[oauthMethod].signInCount += count;
+                            addSignIn(oauthMethod, row.bucket_date, count);
                         }
                     }
                     break;
-                case 'AUTH_OAUTH_SIGN_IN_FAILED':
-                    if (row.provider === 'GOOGLE') {
-                        totals.GOOGLE.failedCount += count;
+                }
+                case 'AUTH_OAUTH_SIGN_IN_FAILED': {
+                    const oauthMethod = oauthSignInMethod(row.provider);
+                    if (oauthMethod) {
+                        totals[oauthMethod].failedCount += count;
                     }
                     break;
-                case 'AUTH_OAUTH_ACCOUNT_CREATED':
-                    if (row.provider === 'GOOGLE') {
-                        totals.GOOGLE.accountCreatedCount += count;
+                }
+                case 'AUTH_OAUTH_ACCOUNT_CREATED': {
+                    const oauthMethod = oauthSignInMethod(row.provider);
+                    if (oauthMethod) {
+                        totals[oauthMethod].accountCreatedCount += count;
                     }
                     break;
+                }
                 case 'USER_CREATE_SUCCESSFUL':
                     totals.EMAIL_OTP.accountCreatedCount += count;
                     break;
@@ -117,14 +129,17 @@ export async function adminAnalyticsSignInMethodStats(
             }
         }
 
-        totals.EMAIL_OTP.accountCreatedCount = Math.max(0, totals.EMAIL_OTP.accountCreatedCount - totals.GOOGLE.accountCreatedCount);
+        totals.EMAIL_OTP.accountCreatedCount = Math.max(
+            0,
+            totals.EMAIL_OTP.accountCreatedCount - totals.GOOGLE.accountCreatedCount - totals.FACEBOOK.accountCreatedCount,
+        );
 
         const buckets: GqlSAdminSignInMethodStats['buckets'] = [];
         const cursor = new Date(`${formatIsoDate(startDateTime)}T00:00:00`);
         const end = new Date(`${formatIsoDate(endDateTime)}T00:00:00`);
         while (cursor < end) {
             const date = formatIsoDate(cursor);
-            const day = signInByDay.get(date) ?? { EMAIL_OTP: 0, PASSKEY: 0, GOOGLE: 0 };
+            const day = signInByDay.get(date) ?? { EMAIL_OTP: 0, PASSKEY: 0, GOOGLE: 0, FACEBOOK: 0 };
             for (const method of METHODS) {
                 buckets.push({ date, method, signInCount: day[method] });
             }

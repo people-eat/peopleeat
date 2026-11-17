@@ -61,8 +61,8 @@ consent is not the HttpOnly session cookie — see [cookie-consent.md](../featur
 ## Alternatives Considered
 
 - **JWT tokens**: Stateless but harder to revoke, no server-side session state for real-time tracking
-- **Third-party auth (OAuth providers)**: Adds a second session model. Google is layered on the existing cookie session with fetch + PKCE
-  (no Auth.js / arctic). Apple can reuse the same tables later.
+- **Third-party auth (OAuth providers)**: Adds a second session model. Google and Facebook are layered on the existing cookie session with
+  fetch (Google also uses PKCE; no Auth.js / arctic). Apple can reuse the same tables later.
 - **Email + password**: Rejected for runtime log-on — see [Why passwordless](#why-passwordless-not-email--password)
 
 ## Consequences
@@ -71,14 +71,14 @@ consent is not the HttpOnly session cookie — see [cookie-consent.md](../featur
 - Sessions start anonymous, so user identity requires a separate linking step
 - Soft-delete means the sessions table grows over time — may need a cleanup job eventually
 
-## User sign-in (email OTP + Google + passkeys)
+## User sign-in (email OTP + Google + Facebook + passkeys)
 
 Anonymous sessions become authenticated when a sign-in mutation binds `Sessions.userId`.
 
 ### Why passwordless (not email + password)
 
-We previously supported email + password (with reset and confirmation edge cases). Runtime log-on is now **email OTP**, optional **Google**,
-plus **passkeys** for returning users and optional **TOTP** as a second factor.
+We previously supported email + password (with reset and confirmation edge cases). Runtime log-on is now **email OTP**, optional **Google**
+and **Facebook**, plus **passkeys** for returning users and optional **TOTP** as a second factor.
 
 | Why we switched                   | Detail                                                                                         |
 | --------------------------------- | ---------------------------------------------------------------------------------------------- |
@@ -87,9 +87,9 @@ plus **passkeys** for returning users and optional **TOTP** as a second factor.
 | Same session model                | Bind `Sessions.userId` after verify; no separate password credential store on the hot path     |
 | Better fit for marketplace embeds | Booking form, gift-card purchase, and chef sign-up reuse one identity gate without password UI |
 
-Imported accounts may still carry `Users.legacyPasswordHash` (bcrypt). That column is **not** verified at log-on — OTP / Google / passkeys /
-TOTP are the only runtime paths. We **keep** the column so email+password can be re-enabled later without another data recovery. Product
-surface: [sign-in.md](../features/sign-in.md).
+Imported accounts may still carry `Users.legacyPasswordHash` (bcrypt). That column is **not** verified at log-on — OTP / Google / Facebook /
+passkeys / TOTP are the only runtime paths. We **keep** the column so email+password can be re-enabled later without another data recovery.
+Product surface: [sign-in.md](../features/sign-in.md).
 
 ### Email OTP (passwordless)
 
@@ -164,24 +164,28 @@ summary on `AdminUser`.
 
 ### Env
 
-| Variable                     | Used by                                                                                        |
-| ---------------------------- | ---------------------------------------------------------------------------------------------- |
-| `EMAIL_TRANSPORT`            | `serverRuntime.email.send` — `resend` (default) or `console` (dev: log plaintext to terminal)  |
-| `RESEND_API_KEY`             | Required at boot when `EMAIL_TRANSPORT=resend`                                                 |
-| `RESEND_FROM_EMAIL`          | Required at boot when `EMAIL_TRANSPORT=resend` (display name = `SITE_NAME`)                    |
-| `RESEND_WEBHOOK_SECRET`      | Required at boot when `EMAIL_TRANSPORT=resend`                                                 |
-| `AUTH_OTP_PEPPER`            | OTP hash / verify; encrypt/decrypt for OTP reuse; TOTP recovery-code hashes — required at boot |
-| `AUTH_TOTP_ENCRYPTION_KEY`   | AES-256-GCM key (64 hex chars) for TOTP secrets — required at boot                             |
-| `GOOGLE_OAUTH_CLIENT_ID`     | Google OAuth client id — required at boot. Product switch is `SIGN_IN_GOOGLE`, not missing env |
-| `GOOGLE_OAUTH_CLIENT_SECRET` | Google OAuth client secret — required at boot                                                  |
-| `GOOGLE_OAUTH_PEOPLE_SCOPES` | `true` / `false`. When true, authorize also requests People phone + birthday scopes            |
+| Variable                       | Used by                                                                                        |
+| ------------------------------ | ---------------------------------------------------------------------------------------------- |
+| `EMAIL_TRANSPORT`              | `serverRuntime.email.send` — `resend` (default) or `console` (dev: log plaintext to terminal)  |
+| `RESEND_API_KEY`               | Required at boot when `EMAIL_TRANSPORT=resend`                                                 |
+| `RESEND_FROM_EMAIL`            | Required at boot when `EMAIL_TRANSPORT=resend` (display name = `SITE_NAME`)                    |
+| `RESEND_WEBHOOK_SECRET`        | Required at boot when `EMAIL_TRANSPORT=resend`                                                 |
+| `AUTH_OTP_PEPPER`              | OTP hash / verify; encrypt/decrypt for OTP reuse; TOTP recovery-code hashes — required at boot |
+| `AUTH_TOTP_ENCRYPTION_KEY`     | AES-256-GCM key (64 hex chars) for TOTP secrets — required at boot                             |
+| `GOOGLE_OAUTH_CLIENT_ID`       | Google OAuth client id — required at boot. Product switch is `SIGN_IN_GOOGLE`, not missing env |
+| `GOOGLE_OAUTH_CLIENT_SECRET`   | Google OAuth client secret — required at boot                                                  |
+| `GOOGLE_OAUTH_PEOPLE_SCOPES`   | `true` / `false`. When true, authorize also requests People phone + birthday scopes            |
+| `FACEBOOK_OAUTH_CLIENT_ID`     | Meta App ID — required at boot. Product switch is `SIGN_IN_FACEBOOK`, not missing env          |
+| `FACEBOOK_OAUTH_CLIENT_SECRET` | Meta App Secret — required at boot                                                             |
 
 ### Key files
 
 - `src/server/commands/authEmailOtpRequest.ts` / `authEmailOtpVerify.ts` / `authEmailOtpDelete.ts` / `authGoogleStart.ts` /
-  `authGoogleCallback.ts` / `authOauthTicketDelete.ts` / `userCreate.ts`
+  `authGoogleCallback.ts` / `authFacebookStart.ts` / `authFacebookCallback.ts` / `authOauthTicketDelete.ts` / `userCreate.ts`
 - `src/server/utils/authGoogleOauth.ts` — PKCE, token exchange, userinfo, People, profile merge
+- `src/server/utils/authFacebookOauth.ts` — state CSRF, token exchange, Graph `/me` (+ `appsecret_proof`), profile snapshot
 - `src/routes/api/auth/google.ts` / `src/routes/api/auth/google.callback.ts`
+- `src/routes/api/auth/facebook.ts` / `src/routes/api/auth/facebook.callback.ts`
 - `src/server/email/templates/AuthEmailOtpRequestForUserEmail.tsx` (React Email template; bilingual + component previews via
   `npm run email:dev` — see [`docs/styles/emails.md`](../styles/emails.md))
 - `src/server/commands/authPasskeyRegisterOptions.ts` / `authPasskeyRegisterVerify.ts` / `authPasskeyAuthenticateOptions.ts` /
@@ -194,9 +198,9 @@ summary on `AdminUser`.
 - `src/routes/api/session.switch.ts` — cookie swap + redirect after Sign in as / Return to admin
 - `src/web/pages/LogOnPage.tsx` (route: `src/routes/{-$locale}/log-on.tsx`; `/sign-in` redirects)
 - `src/web/components/auth/` — shared email/OTP/profile gate used by log-on, booking form, chef sign-up, gift-card purchase;
-  `AuthEmailOtpSpamHint` on email OTP dialogs; `AuthIdentityGateLogOnFooter` (Google then passkey) on log-on, booking form, booking plan,
-  gift-card, and chef sign-up; `AuthTotpChallenge` when `sessionAuthPhase === 'totpPending'`; inline `LegalAcceptancePanel` when
-  `sessionAuthPhase === 'legalPending'` (stale privacy/terms; `onReady` waits); `AuthTotpAccountSection` on the account page
+  `AuthEmailOtpSpamHint` on email OTP dialogs; `AuthIdentityGateLogOnFooter` (Google then Facebook then passkey) on log-on, booking form,
+  booking plan, gift-card, and chef sign-up; `AuthTotpChallenge` when `sessionAuthPhase === 'totpPending'`; inline `LegalAcceptancePanel`
+  when `sessionAuthPhase === 'legalPending'` (stale privacy/terms; `onReady` waits); `AuthTotpAccountSection` on the account page
 - `src/web/pages/AccountPage.tsx` (routes: `profile/account.tsx`, `admin/account.tsx`) — profile fields, phone number, passkeys, TOTP,
   email-address change (OTP), session revoke / sign-out, account deletion (OTP to the current address)
 - `docs/features/sign-in.md` / `docs/features/account.md`
@@ -220,6 +224,16 @@ validates `id_token` (`aud` / `iss` / `exp` / `nonce` / `email_verified`), fetch
 `Session.authOauthTicket` without the Google `sub`. Identity vs email conflict is refused. Starting Google dismisses pending OTP and vice
 versa. Feature toggle `SIGN_IN_GOOGLE` gates the button, start, and callback (per-user override after identity resolve). Redirect URI is
 `${WEB_PAGE_URL}/api/auth/google/callback`.
+
+### Facebook OAuth
+
+`GET /api/auth/facebook?returnTo=` stores CSRF `state` on `AuthOauthStates` (about 10 minutes; `codeVerifier` / `nonce` columns filled but
+unused by Meta Login) and 302s to Facebook Login (`email,public_profile`). The callback restores the session cookie from state, exchanges
+the code with App ID + App Secret, and loads Graph `/me` (`id,email,first_name,last_name`) with `appsecret_proof`. Tokens are not stored.
+Missing email fails (`unverified_email` / `authError=facebook`). Existing users bind via `sessionPrimaryAuthComplete`; new emails get
+`AuthOauthTickets` with `provider: FACEBOOK` (names only). Feature toggle `SIGN_IN_FACEBOOK` gates the button, start, and callback (per-user
+override after identity resolve). Redirect URI is `${WEB_PAGE_URL}/api/auth/facebook/callback`. Use a consumer Meta app with Facebook Login,
+not the WhatsApp / Messenger Business app.
 
 ### Planned next
 

@@ -180,6 +180,10 @@ Wired today:
   is off (anonymous uses the global row; after Google identity resolve, a per-user override can still deny). Missing row stays off. Confirm
   the Google consent screen (test users or verified People scopes) before enabling in an environment with real users. See
   [sign-in.md](./sign-in.md)
+- **Sign-in: Facebook** (`SIGN_IN_FACEBOOK`) — shows Continue with Facebook on identity gates; start and callback reject when the effective
+  toggle is off (anonymous uses the global row; after Facebook identity resolve, a per-user override can still deny). Missing row stays off.
+  Confirm the Meta consumer app is Live with privacy, terms, and data deletion configured before enabling with real users. See
+  [sign-in.md](./sign-in.md)
 - **Last visited cook profiles** (`LAST_VISITED_COOK_PROFILES`) — shows the Recently viewed chef card strip on public chef and blog post
   pages; `Session.lastVisitedCookProfiles` returns [] when off. Missing row stays off. See
   [last-visited-cook-profiles.md](./last-visited-cook-profiles.md)

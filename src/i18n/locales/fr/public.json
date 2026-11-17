@@ -3,6 +3,8 @@
         "title": "Connexion",
         "description": "Connecte-toi avec un code e-mail ou une passkey. Les nouveaux comptes se créent ici aussi.",
         "descriptionWithGoogle": "Connecte-toi avec un code e-mail, Google ou une passkey. Les nouveaux comptes se créent ici aussi.",
+        "descriptionWithFacebook": "Connecte-toi avec un code e-mail, Facebook ou une passkey. Les nouveaux comptes se créent ici aussi.",
+        "descriptionWithGoogleAndFacebook": "Connecte-toi avec un code e-mail, Google, Facebook ou une passkey. Les nouveaux comptes se créent ici aussi.",
         "seo": {
             "title": "Connexion",
             "description": "Connecte-toi avec un code e-mail ou une passkey. Les nouveaux comptes se créent ici aussi."
@@ -596,6 +598,7 @@
     },
     "auth": {
         "googleFailed": "Connexion Google échouée. Réessaie dans Safari ou Chrome, pas dans le navigateur intégré d’Instagram ou Facebook.",
+        "facebookFailed": "Connexion Facebook échouée. Réessaie dans Safari ou Chrome, pas dans un navigateur intégré.",
         "registerFailed": "Impossible de terminer l’inscription.",
         "discardOauthFailed": "Impossible d’abandonner la connexion vérifiée.",
         "discardEmailFailed": "Impossible d’abandonner l’e-mail vérifié.",
@@ -632,6 +635,7 @@
         "birthDate": "Date de naissance",
         "cookProfile": "Profil chef",
         "continueGoogle": "Continuer avec Google",
+        "continueFacebook": "Continuer avec Facebook",
         "passkeyFailed": "Connexion passkey échouée. Les passkeys ne fonctionnent que pour les comptes existants. Les nouveaux utilisateurs doivent utiliser l’e-mail.",
         "passkeyCancelled": "Connexion passkey annulée. Les passkeys ne fonctionnent que pour les comptes existants. Les nouveaux utilisateurs doivent utiliser l’e-mail.",
         "continuePasskey": "Se connecter avec un passkey",

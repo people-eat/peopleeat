@@ -92,6 +92,7 @@ export async function adminUserInsightsFindOne(
             localeRows,
             timeZoneRows,
             googleLinkedRow,
+            facebookLinkedRow,
             passkeyRow,
             totpRow,
         ] = await Promise.all([
@@ -138,6 +139,12 @@ export async function adminUserInsightsFindOne(
                 .where(and(notAnonymized, eq(authOauthIdentities.provider, 'GOOGLE')))
                 .then((rows) => rows[0]),
             db
+                .select({ value: count() })
+                .from(authOauthIdentities)
+                .innerJoin(users, eq(users.userId, authOauthIdentities.userId))
+                .where(and(notAnonymized, eq(authOauthIdentities.provider, 'FACEBOOK')))
+                .then((rows) => rows[0]),
+            db
                 .select({ value: sql<number>`count(distinct ${authPasskeys.userId})` })
                 .from(authPasskeys)
                 .innerJoin(users, eq(users.userId, authPasskeys.userId))
@@ -171,6 +178,7 @@ export async function adminUserInsightsFindOne(
                 count: row.value,
             })),
             googleLinkedAccountCount: Number(googleLinkedRow?.value ?? 0),
+            facebookLinkedAccountCount: Number(facebookLinkedRow?.value ?? 0),
             passkeyAccountCount: Number(passkeyRow?.value ?? 0),
             totpAccountCount: Number(totpRow?.value ?? 0),
         };

@@ -660,6 +660,7 @@
         "preferredCommunication": "Bevorzugte Kommunikation",
         "locale": "Sprache",
         "googleLinked": "Google verbunden",
+        "facebookLinked": "Facebook verbunden",
         "chooseCook": "Koch wählen…",
         "expires2": "Gültig bis",
         "noEmails": "Keine E-Mails.",
@@ -930,7 +931,7 @@
         "dateRangeForRegistrations": "Zeitraum für Registrierungen",
         "barChartOfUserRegistrationsInTheSelectedRange": "Balkendiagramm der Benutzer-Registrierungen im gewählten Zeitraum",
         "acrossAllNonAnonymizedAccountsIndependentOfTheChartRange": "Über alle nicht anonymisierten Konten (unabhängig vom Diagrammzeitraum).",
-        "overlappingOneAccountCanHaveGoogleAndAPasskey": "Überlappend: ein Konto kann Google und einen Passkey haben.",
+        "overlappingOneAccountCanHaveGoogleAndAPasskey": "Überlappend: ein Konto kann Google, Facebook und einen Passkey haben.",
         "passkeyPresent": "Passkey hinterlegt",
         "authenticatorApp": "Authenticator-App",
         "ageAndBirthdays": "Alter und Geburtstage",
@@ -1297,6 +1298,8 @@
         "passkeysTheAuthenticatorAppAndLinkedSocialLoginsRemovalAppli": "Passkeys, Authenticator-App und verbundene Social-Logins. Entfernen gilt sofort. Die Anmeldung per E-Mail-Code bleibt.",
         "google": "Google",
         "noGoogleAccountLinked": "Kein Google-Konto verbunden.",
+        "facebook": "Facebook",
+        "noFacebookAccountLinked": "Kein Facebook-Konto verbunden.",
         "passkeys": "Passkeys",
         "noPasskeysOnThisAccount": "Keine Passkeys hinterlegt.",
         "backedUp": " · gesichert",
@@ -2328,6 +2331,7 @@
             "LANDING_TESTIMONIAL_CARDS": "Startseite: Bewertungskarten",
             "VENUE_PAGE_VENUES_EXPLORE": "Locationseite: Weitere Locations",
             "SIGN_IN_GOOGLE": "Anmeldung: Google",
+            "SIGN_IN_FACEBOOK": "Anmeldung: Facebook",
             "LAST_VISITED_COOK_PROFILES": "Zuletzt angesehene Köche"
         },
         "descriptions": {
@@ -2361,6 +2365,7 @@
             "LANDING_TESTIMONIAL_CARDS": "Zeigt auf der Startseite die gemeinsamen Bewertungskarten statt der laufenden Zitat-Spalten. Die Texte bleiben die festen Marketing-Zitate.",
             "VENUE_PAGE_VENUES_EXPLORE": "Zeigt den CTA „Weitere Locations“ auf öffentlichen Locationseiten (/venues/…).",
             "SIGN_IN_GOOGLE": "Zeigt „Mit Google anmelden“ an den Anmeldemasken. Vor dem Einschalten in Produktion den Google-Consent-Screen prüfen (Testnutzer oder verifizierte People-Scopes).",
+            "SIGN_IN_FACEBOOK": "Zeigt „Mit Facebook anmelden“ an den Anmeldemasken. Vor dem Einschalten in Produktion die Meta-App auf Live prüfen (Datenschutz, Nutzungsbedingungen und Datenlöschung).",
             "LAST_VISITED_COOK_PROFILES": "Zeigt die zuletzt angesehenen Kochprofile (max. 4) unten auf öffentlichen Koch- und Blog-Seiten."
         },
         "overrideModes": {

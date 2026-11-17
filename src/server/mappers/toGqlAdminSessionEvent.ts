@@ -149,7 +149,7 @@ function giftCardPayedDescription(locale: Locale, payload: SessionEventPayload<'
 }
 
 function oauthProviderLabel(provider: SessionEventPayload<'AUTH_OAUTH_SIGN_IN_SUCCEEDED'>['provider']): string {
-    return { GOOGLE: 'Google' }[provider];
+    return { GOOGLE: 'Google', FACEBOOK: 'Facebook' }[provider];
 }
 
 function authOauthSignInSucceededDescription(locale: Locale, payload: SessionEventPayload<'AUTH_OAUTH_SIGN_IN_SUCCEEDED'>): string {

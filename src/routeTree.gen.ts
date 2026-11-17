@@ -43,6 +43,7 @@ import { Route as Char123LocaleChar125ProfileRouteImport } from './routes/{-$loc
 import { Route as Char123LocaleChar125SignInRouteImport } from './routes/{-$locale}/sign-in'
 import { Route as Char123LocaleChar125TermsAndConditionsRouteImport } from './routes/{-$locale}/terms-and-conditions'
 import { Route as Char123LocaleChar125VenuesRouteImport } from './routes/{-$locale}/venues'
+import { Route as ApiAuthFacebookRouteImport } from './routes/api/auth/facebook'
 import { Route as ApiAuthGoogleRouteImport } from './routes/api/auth/google'
 import { Route as ApiFileUploadsFileUploadIdRouteImport } from './routes/api/file-uploads_.$fileUploadId'
 import { Route as ApiSessionSwitchRouteImport } from './routes/api/session.switch'
@@ -112,6 +113,7 @@ import { Route as Char123LocaleChar125ProfileSupportRequestsRouteImport } from '
 import { Route as Char123LocaleChar125ProfileTravelRouteImport } from './routes/{-$locale}/profile/travel'
 import { Route as Char123LocaleChar125ProfileWalletRouteImport } from './routes/{-$locale}/profile/wallet'
 import { Route as Char123LocaleChar125VenuesPathNameRouteImport } from './routes/{-$locale}/venues_.$pathName'
+import { Route as ApiAuthFacebookCallbackRouteImport } from './routes/api/auth/facebook.callback'
 import { Route as ApiAuthGoogleCallbackRouteImport } from './routes/api/auth/google.callback'
 import { Route as ApiWhatsappLinksTokenRouteImport } from './routes/api/whatsapp/links/$token'
 import { Route as ServerBookingRequestOffersBookingRequestOfferIdCookStatementRouteImport } from './routes/server.booking-request-offers.$bookingRequestOfferId.cook-statement'
@@ -379,6 +381,11 @@ const Char123LocaleChar125VenuesRoute =
     path: '/venues',
     getParentRoute: () => Char123LocaleChar125Route,
   } as any)
+const ApiAuthFacebookRoute = ApiAuthFacebookRouteImport.update({
+  id: '/api/auth/facebook',
+  path: '/api/auth/facebook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthGoogleRoute = ApiAuthGoogleRouteImport.update({
   id: '/api/auth/google',
   path: '/api/auth/google',
@@ -787,6 +794,11 @@ const Char123LocaleChar125VenuesPathNameRoute =
     path: '/venues/$pathName',
     getParentRoute: () => Char123LocaleChar125Route,
   } as any)
+const ApiAuthFacebookCallbackRoute = ApiAuthFacebookCallbackRouteImport.update({
+  id: '/callback',
+  path: '/callback',
+  getParentRoute: () => ApiAuthFacebookRoute,
+} as any)
 const ApiAuthGoogleCallbackRoute = ApiAuthGoogleCallbackRouteImport.update({
   id: '/callback',
   path: '/callback',
@@ -1327,6 +1339,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/terms-and-conditions': typeof Char123LocaleChar125TermsAndConditionsRoute
   '/{-$locale}/venues': typeof Char123LocaleChar125VenuesRoute
   '/{-$locale}/': typeof Char123LocaleChar125IndexRoute
+  '/api/auth/facebook': typeof ApiAuthFacebookRouteWithChildren
   '/api/auth/google': typeof ApiAuthGoogleRouteWithChildren
   '/api/file-uploads/$fileUploadId': typeof ApiFileUploadsFileUploadIdRoute
   '/api/session/switch': typeof ApiSessionSwitchRoute
@@ -1396,6 +1409,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/venues/$pathName': typeof Char123LocaleChar125VenuesPathNameRoute
   '/{-$locale}/admin/': typeof Char123LocaleChar125AdminIndexRoute
   '/{-$locale}/profile/': typeof Char123LocaleChar125ProfileIndexRoute
+  '/api/auth/facebook/callback': typeof ApiAuthFacebookCallbackRoute
   '/api/auth/google/callback': typeof ApiAuthGoogleCallbackRoute
   '/api/whatsapp/links/$token': typeof ApiWhatsappLinksTokenRoute
   '/server/booking-request-offers/$bookingRequestOfferId/cook-statement': typeof ServerBookingRequestOffersBookingRequestOfferIdCookStatementRoute
@@ -1506,6 +1520,7 @@ export interface FileRoutesByTo {
   '/{-$locale}/terms-and-conditions': typeof Char123LocaleChar125TermsAndConditionsRoute
   '/{-$locale}/venues': typeof Char123LocaleChar125VenuesRoute
   '/{-$locale}': typeof Char123LocaleChar125IndexRoute
+  '/api/auth/facebook': typeof ApiAuthFacebookRouteWithChildren
   '/api/auth/google': typeof ApiAuthGoogleRouteWithChildren
   '/api/file-uploads/$fileUploadId': typeof ApiFileUploadsFileUploadIdRoute
   '/api/session/switch': typeof ApiSessionSwitchRoute
@@ -1575,6 +1590,7 @@ export interface FileRoutesByTo {
   '/{-$locale}/venues/$pathName': typeof Char123LocaleChar125VenuesPathNameRoute
   '/{-$locale}/admin': typeof Char123LocaleChar125AdminIndexRoute
   '/{-$locale}/profile': typeof Char123LocaleChar125ProfileIndexRoute
+  '/api/auth/facebook/callback': typeof ApiAuthFacebookCallbackRoute
   '/api/auth/google/callback': typeof ApiAuthGoogleCallbackRoute
   '/api/whatsapp/links/$token': typeof ApiWhatsappLinksTokenRoute
   '/server/booking-request-offers/$bookingRequestOfferId/cook-statement': typeof ServerBookingRequestOffersBookingRequestOfferIdCookStatementRoute
@@ -1689,6 +1705,7 @@ export interface FileRoutesById {
   '/{-$locale}/terms-and-conditions': typeof Char123LocaleChar125TermsAndConditionsRoute
   '/{-$locale}/venues': typeof Char123LocaleChar125VenuesRoute
   '/{-$locale}/': typeof Char123LocaleChar125IndexRoute
+  '/api/auth/facebook': typeof ApiAuthFacebookRouteWithChildren
   '/api/auth/google': typeof ApiAuthGoogleRouteWithChildren
   '/api/file-uploads_/$fileUploadId': typeof ApiFileUploadsFileUploadIdRoute
   '/api/session/switch': typeof ApiSessionSwitchRoute
@@ -1758,6 +1775,7 @@ export interface FileRoutesById {
   '/{-$locale}/venues_/$pathName': typeof Char123LocaleChar125VenuesPathNameRoute
   '/{-$locale}/admin/': typeof Char123LocaleChar125AdminIndexRoute
   '/{-$locale}/profile/': typeof Char123LocaleChar125ProfileIndexRoute
+  '/api/auth/facebook/callback': typeof ApiAuthFacebookCallbackRoute
   '/api/auth/google/callback': typeof ApiAuthGoogleCallbackRoute
   '/api/whatsapp/links/$token': typeof ApiWhatsappLinksTokenRoute
   '/server/booking-request-offers/$bookingRequestOfferId/cook-statement': typeof ServerBookingRequestOffersBookingRequestOfferIdCookStatementRoute
@@ -1873,6 +1891,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/terms-and-conditions'
     | '/{-$locale}/venues'
     | '/{-$locale}/'
+    | '/api/auth/facebook'
     | '/api/auth/google'
     | '/api/file-uploads/$fileUploadId'
     | '/api/session/switch'
@@ -1942,6 +1961,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/venues/$pathName'
     | '/{-$locale}/admin/'
     | '/{-$locale}/profile/'
+    | '/api/auth/facebook/callback'
     | '/api/auth/google/callback'
     | '/api/whatsapp/links/$token'
     | '/server/booking-request-offers/$bookingRequestOfferId/cook-statement'
@@ -2052,6 +2072,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/terms-and-conditions'
     | '/{-$locale}/venues'
     | '/{-$locale}'
+    | '/api/auth/facebook'
     | '/api/auth/google'
     | '/api/file-uploads/$fileUploadId'
     | '/api/session/switch'
@@ -2121,6 +2142,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/venues/$pathName'
     | '/{-$locale}/admin'
     | '/{-$locale}/profile'
+    | '/api/auth/facebook/callback'
     | '/api/auth/google/callback'
     | '/api/whatsapp/links/$token'
     | '/server/booking-request-offers/$bookingRequestOfferId/cook-statement'
@@ -2234,6 +2256,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/terms-and-conditions'
     | '/{-$locale}/venues'
     | '/{-$locale}/'
+    | '/api/auth/facebook'
     | '/api/auth/google'
     | '/api/file-uploads_/$fileUploadId'
     | '/api/session/switch'
@@ -2303,6 +2326,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/venues_/$pathName'
     | '/{-$locale}/admin/'
     | '/{-$locale}/profile/'
+    | '/api/auth/facebook/callback'
     | '/api/auth/google/callback'
     | '/api/whatsapp/links/$token'
     | '/server/booking-request-offers/$bookingRequestOfferId/cook-statement'
@@ -2398,6 +2422,7 @@ export interface RootRouteChildren {
   ApiGraphqlRoute: typeof ApiGraphqlRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiStreamRoute: typeof ApiStreamRoute
+  ApiAuthFacebookRoute: typeof ApiAuthFacebookRouteWithChildren
   ApiAuthGoogleRoute: typeof ApiAuthGoogleRouteWithChildren
   ApiFileUploadsFileUploadIdRoute: typeof ApiFileUploadsFileUploadIdRoute
   ApiSessionSwitchRoute: typeof ApiSessionSwitchRoute
@@ -2652,6 +2677,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/{-$locale}/venues'
       preLoaderRoute: typeof Char123LocaleChar125VenuesRouteImport
       parentRoute: typeof Char123LocaleChar125Route
+    }
+    '/api/auth/facebook': {
+      id: '/api/auth/facebook'
+      path: '/api/auth/facebook'
+      fullPath: '/api/auth/facebook'
+      preLoaderRoute: typeof ApiAuthFacebookRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/auth/google': {
       id: '/api/auth/google'
@@ -3135,6 +3167,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/{-$locale}/venues/$pathName'
       preLoaderRoute: typeof Char123LocaleChar125VenuesPathNameRouteImport
       parentRoute: typeof Char123LocaleChar125Route
+    }
+    '/api/auth/facebook/callback': {
+      id: '/api/auth/facebook/callback'
+      path: '/callback'
+      fullPath: '/api/auth/facebook/callback'
+      preLoaderRoute: typeof ApiAuthFacebookCallbackRouteImport
+      parentRoute: typeof ApiAuthFacebookRoute
     }
     '/api/auth/google/callback': {
       id: '/api/auth/google/callback'
@@ -4139,6 +4178,18 @@ const Char123LocaleChar125RouteChildren: Char123LocaleChar125RouteChildren = {
 const Char123LocaleChar125RouteWithChildren =
   Char123LocaleChar125Route._addFileChildren(Char123LocaleChar125RouteChildren)
 
+interface ApiAuthFacebookRouteChildren {
+  ApiAuthFacebookCallbackRoute: typeof ApiAuthFacebookCallbackRoute
+}
+
+const ApiAuthFacebookRouteChildren: ApiAuthFacebookRouteChildren = {
+  ApiAuthFacebookCallbackRoute: ApiAuthFacebookCallbackRoute,
+}
+
+const ApiAuthFacebookRouteWithChildren = ApiAuthFacebookRoute._addFileChildren(
+  ApiAuthFacebookRouteChildren,
+)
+
 interface ApiAuthGoogleRouteChildren {
   ApiAuthGoogleCallbackRoute: typeof ApiAuthGoogleCallbackRoute
 }
@@ -4167,6 +4218,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGraphqlRoute: ApiGraphqlRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiStreamRoute: ApiStreamRoute,
+  ApiAuthFacebookRoute: ApiAuthFacebookRouteWithChildren,
   ApiAuthGoogleRoute: ApiAuthGoogleRouteWithChildren,
   ApiFileUploadsFileUploadIdRoute: ApiFileUploadsFileUploadIdRoute,
   ApiSessionSwitchRoute: ApiSessionSwitchRoute,

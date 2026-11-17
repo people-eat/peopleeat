@@ -22,6 +22,10 @@ export interface EnvironmentVariables {
     // When true, the authorize URL also requests People API phone + birthday
     // scopes (Google-sensitive; production needs consent-screen verification).
     googleOauthPeopleScopes: boolean;
+    // Facebook (Meta) OAuth App ID / App Secret for social log-on. Redirect URI is
+    // `${webPageUrl}/api/auth/facebook/callback`. See docs/architecture/authentication.md.
+    facebookOauthClientId: string;
+    facebookOauthClientSecret: string;
     // HMAC secret for short-lived tokens that authenticate server-side renders
     // against `/server/*` routes. See `docs/architecture/browser-capture.md`.
     serverTokenSecret: string;

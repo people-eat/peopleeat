@@ -64,9 +64,14 @@ export function LogOnPage({ loaderData, returnTo }: { loaderData: GqlCLogOnPageQ
                 <div className="grid gap-2">
                     <h1 className="font-serif text-3xl tracking-tight">{t('logOn.title')}</h1>
                     <p className="text-muted-foreground">
-                        {featureToggleIsActive(session.activeFeatureToggleKeys, 'SIGN_IN_GOOGLE')
-                            ? t('logOn.descriptionWithGoogle')
-                            : t('logOn.description')}
+                        {(() => {
+                            const googleOn = featureToggleIsActive(session.activeFeatureToggleKeys, 'SIGN_IN_GOOGLE');
+                            const facebookOn = featureToggleIsActive(session.activeFeatureToggleKeys, 'SIGN_IN_FACEBOOK');
+                            if (googleOn && facebookOn) return t('logOn.descriptionWithGoogleAndFacebook');
+                            if (googleOn) return t('logOn.descriptionWithGoogle');
+                            if (facebookOn) return t('logOn.descriptionWithFacebook');
+                            return t('logOn.description');
+                        })()}
                     </p>
                 </div>
 

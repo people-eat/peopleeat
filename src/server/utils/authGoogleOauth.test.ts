@@ -66,7 +66,7 @@ describe('authGooglePkceCreate', () => {
         expect(AUTH_GOOGLE_TOKEN_URL).toContain('oauth2.googleapis.com');
         expect(AUTH_GOOGLE_USERINFO_URL).toContain('userinfo');
         expect(AUTH_GOOGLE_PEOPLE_URL).toContain('people.googleapis.com');
-        expect(authOauthProviders).toEqual(['GOOGLE']);
+        expect(authOauthProviders).toEqual(['GOOGLE', 'FACEBOOK']);
         expect(authOauthSignInFailReasons).toContain('denied');
     });
 });

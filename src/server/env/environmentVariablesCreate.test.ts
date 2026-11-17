@@ -30,6 +30,8 @@ describe('environmentVariablesCreate', () => {
             googleOauthClientId: 'test-google-oauth-client-id',
             googleOauthClientSecret: 'test-google-oauth-client-secret',
             googleOauthPeopleScopes: false,
+            facebookOauthClientId: 'test-facebook-oauth-client-id',
+            facebookOauthClientSecret: 'test-facebook-oauth-client-secret',
             googlePlacesApiKey: 'test-google-places',
             serverTokenSecret: 'test-server-token-secret',
             visitorIpHashSalt: 'test-salt',

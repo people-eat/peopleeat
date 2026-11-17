@@ -321,13 +321,18 @@ export function AdminUsersOverviewPage({ data, search }: { data: GqlCAdminUsersO
                         <p className="text-sm text-muted-foreground">
                             {t(locale, 'admin', 'copy.overlappingOneAccountCanHaveGoogleAndAPasskey')}
                         </p>
-                        <ul className="grid gap-2 sm:grid-cols-3">
+                        <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
                             {(
                                 [
                                     {
                                         key: 'google',
                                         label: t(locale, 'admin', 'copy.googleLinked'),
                                         count: insights?.googleLinkedAccountCount ?? 0,
+                                    },
+                                    {
+                                        key: 'facebook',
+                                        label: t(locale, 'admin', 'copy.facebookLinked'),
+                                        count: insights?.facebookLinkedAccountCount ?? 0,
                                     },
                                     {
                                         key: 'passkey',

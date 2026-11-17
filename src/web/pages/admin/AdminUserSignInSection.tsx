@@ -122,6 +122,26 @@ export function AdminUserSignInSection({
             </div>
 
             <div className="grid gap-3">
+                <h4 className="text-sm font-medium text-foreground">{t(locale, 'admin', 'copy.facebook')}</h4>
+                {oauthIdentities.filter((identity) => identity.provider === 'FACEBOOK').length === 0 ? (
+                    <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noFacebookAccountLinked')}</p>
+                ) : (
+                    <ul className="divide-y divide-border overflow-hidden rounded-xl border bg-card">
+                        {oauthIdentities
+                            .filter((identity) => identity.provider === 'FACEBOOK')
+                            .map((identity) => (
+                                <li key={`${identity.provider}-${identity.createdAt}`} className="grid gap-0.5 bg-card px-4 py-3">
+                                    <p className="text-sm text-foreground">{t(locale, 'admin', 'copy.facebookLinked')}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {formatDate(identity.createdAt, { locale, timeZone, dateStyle: 'medium' })}
+                                    </p>
+                                </li>
+                            ))}
+                    </ul>
+                )}
+            </div>
+
+            <div className="grid gap-3">
                 <h4 className="text-sm font-medium text-foreground">{t(locale, 'admin', 'copy.passkeys')}</h4>
                 {passkeys.length === 0 ? (
                     <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noPasskeysOnThisAccount')}</p>

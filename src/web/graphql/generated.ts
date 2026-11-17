@@ -2351,7 +2351,7 @@ export type GqlCAdminSessionKind = 'bot' | 'human';
 
 export type GqlCAdminSessionSortField = 'createdAt' | 'lastInteractionAt' | 'user' | 'userAgent';
 
-export type GqlCAdminSignInMethod = 'EMAIL_OTP' | 'GOOGLE' | 'PASSKEY';
+export type GqlCAdminSignInMethod = 'EMAIL_OTP' | 'FACEBOOK' | 'GOOGLE' | 'PASSKEY';
 
 export interface GqlCAdminSignInMethodBucket {
     __typename?: 'AdminSignInMethodBucket';
@@ -2502,6 +2502,7 @@ export interface GqlCAdminUserInsights {
     __typename?: 'AdminUserInsights';
     accountCount: Scalars['Int']['output'];
     ageBySegment: GqlCAdminUserAgeBySegment;
+    facebookLinkedAccountCount: Scalars['Int']['output'];
     googleLinkedAccountCount: Scalars['Int']['output'];
     locales: Array<GqlCAdminUserLocaleStat>;
     passkeyAccountCount: Scalars['Int']['output'];
@@ -2592,7 +2593,7 @@ export interface GqlCAuthEmailOtp {
     verifiedAt?: Maybe<Scalars['DateTime']['output']>;
 }
 
-export type GqlCAuthOauthProvider = 'GOOGLE';
+export type GqlCAuthOauthProvider = 'FACEBOOK' | 'GOOGLE';
 
 export interface GqlCAuthOauthTicket {
     __typename?: 'AuthOauthTicket';
@@ -4487,6 +4488,7 @@ export type GqlCFeatureToggleKey =
     | 'LAST_VISITED_COOK_PROFILES'
     | 'PUBLICATION_MEALS'
     | 'PUBLICATION_MENUS'
+    | 'SIGN_IN_FACEBOOK'
     | 'SIGN_IN_GOOGLE'
     | 'VENUE_PAGE_VENUES_EXPLORE';
 
@@ -18154,6 +18156,7 @@ export type GqlCAdminUsersOverviewPageQuery = {
                 userInsights: {
                     accountCount: number;
                     googleLinkedAccountCount: number;
+                    facebookLinkedAccountCount: number;
                     passkeyAccountCount: number;
                     totpAccountCount: number;
                     ageBySegment: {
@@ -76460,6 +76463,10 @@ export const AdminUsersOverviewPageDocument = {
                                                                     {
                                                                         kind: 'Field',
                                                                         name: { kind: 'Name', value: 'googleLinkedAccountCount' },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'facebookLinkedAccountCount' },
                                                                     },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'passkeyAccountCount' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'totpAccountCount' } },

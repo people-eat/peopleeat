@@ -13,13 +13,13 @@ upcoming birthdays. Date range in URL drives zero-filled daily buckets for regis
 with `type` preselected (Total clears the filter).
 
 **Insights** (all non-anonymized accounts, independent of the chart range): ranked breakdowns for preferred communication, locale, and top
-time zones (count + share of non-anonymized accounts), plus overlapping linked-method counts (Google linked, passkey present, authenticator
-app enrolled). Copy must not imply a partition: one account can have Google and a passkey. **Age and birthdays** follows with median +
-average age and birth-date sample size **split by segment** (cooks, potential customers, actual customers), then upcoming birthdays (name
-links to the user detail; type badges for cook / customer / admin; shows next date and age they turn). Segments are mutually exclusive among
-non-anonymized accounts with a birth date: **cooks** (cook row), **actual customers** (no cook row + ≥1 dual-accepted offer on a booking
-request they own), **potential customers** (no cook row + no dual-accepted offer). Median is the primary age signal per segment; average
-stays for comparison when the distribution is skewed.
+time zones (count + share of non-anonymized accounts), plus overlapping linked-method counts (Google linked, Facebook linked, passkey
+present, authenticator app enrolled). Copy must not imply a partition: one account can have Google, Facebook, and a passkey. **Age and
+birthdays** follows with median + average age and birth-date sample size **split by segment** (cooks, potential customers, actual
+customers), then upcoming birthdays (name links to the user detail; type badges for cook / customer / admin; shows next date and age they
+turn). Segments are mutually exclusive among non-anonymized accounts with a birth date: **cooks** (cook row), **actual customers** (no cook
+row + ≥1 dual-accepted offer on a booking request they own), **potential customers** (no cook row + no dual-accepted offer). Median is the
+primary age signal per segment; average stays for comparison when the distribution is skewed.
 
 ### List — `/admin/users/list`
 
@@ -64,10 +64,10 @@ topics only when the account has a cook profile). Switches save immediately via 
 **Save**. With no phone number, WhatsApp stays off and the hint opens the phone field. Anonymized accounts show that no messages are sent.
 See [notification-settings.md](./notification-settings.md).
 
-**Sign-in** lists linked Google (read-only `createdAt`, no unlink in v1), passkeys, and authenticator-app two-factor (pending enrollment or
-confirmed, plus recovery codes left). **Remove** confirms, then `AdminMutation.userPasskeyDelete` or `userTotpDelete`. Removing two-factor
-does not ask for the user’s code, and it clears an in-progress second-factor sign-in. Email sign-in stays. Admins cannot add a passkey,
-enroll an authenticator, or unlink Google for someone else.
+**Sign-in** lists linked Google and Facebook (read-only `createdAt`, no unlink in v1), passkeys, and authenticator-app two-factor (pending
+enrollment or confirmed, plus recovery codes left). **Remove** confirms, then `AdminMutation.userPasskeyDelete` or `userTotpDelete`.
+Removing two-factor does not ask for the user’s code, and it clears an in-progress second-factor sign-in. Email sign-in stays. Admins cannot
+add a passkey, enroll an authenticator, or unlink Google / Facebook for someone else.
 
 Ban keeps sessions bound so the private profile restriction banner can appear live; ban is blocked while a dual-accepted event is upcoming
 or within 7 days after the last one; on ban, cancelable booking requests owned by the user are canceled and open non dual-accepted cook

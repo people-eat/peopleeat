@@ -51,6 +51,7 @@ query AdminUsersOverviewPage(
                         count
                     }
                     googleLinkedAccountCount
+                    facebookLinkedAccountCount
                     passkeyAccountCount
                     totpAccountCount
                 }

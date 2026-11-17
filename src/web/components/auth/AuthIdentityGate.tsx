@@ -113,7 +113,7 @@ export function AuthIdentityGate({
     const [session, setSession] = useState(initialSession);
     const [busy, setBusyState] = useState(false);
     const readyNotified = useRef(false);
-    const googleAuthErrorToasted = useRef(false);
+    const oauthAuthErrorToasted = useRef(false);
     const onReadyRef = useRef(onReady);
     onReadyRef.current = onReady;
     const onSessionChangeRef = useRef(onSessionChange);
@@ -146,11 +146,12 @@ export function AuthIdentityGate({
     }
 
     useEffect(() => {
-        if (googleAuthErrorToasted.current || typeof window === 'undefined') return;
+        if (oauthAuthErrorToasted.current || typeof window === 'undefined') return;
         const url = new URL(window.location.href);
-        if (url.searchParams.get('authError') !== 'google') return;
-        googleAuthErrorToasted.current = true;
-        toast.error(t('auth.googleFailed'));
+        const authError = url.searchParams.get('authError');
+        if (authError !== 'google' && authError !== 'facebook') return;
+        oauthAuthErrorToasted.current = true;
+        toast.error(authError === 'facebook' ? t('auth.facebookFailed') : t('auth.googleFailed'));
         url.searchParams.delete('authError');
         const next = `${url.pathname}${url.search}${url.hash}`;
         window.history.replaceState(window.history.state, '', next);
