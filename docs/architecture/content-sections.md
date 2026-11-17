@@ -30,31 +30,32 @@ section stack per entity.
    [`Tabs`](../../src/web/components/base/tabs.tsx) with `TabsList variant="line"` (**Edit** / **Preview**) with the active tab in the
    `?tab=` search param (`edit` default when omitted; `preview` for the full chrome preview). **Edit** is form controls + sticky live
    preview on `lg+` (mobile uses the Preview tab for full chrome). The preview column stretches with the form so `sticky` keeps the pane
-   pinned; a `max-h` inner scrollport holds the full-height (`h-dvh`) hero. `useContentPageEditorPreviewSync` scrolls that pane to the
-   `data-content-preview-anchor` matching the form block in view (`data-content-editor-anchor`). Hero image upload uses a button +
-   programmatic file-input click (not a `<label>` wrapper) so focusing an `sr-only` input cannot jump the admin workspace scroller. Form
-   fields (DE/EN field locale; cards in page order: SEO → optional `identityFields` → Hero → optional `extraFields` → configurable sections;
-   each section item its own sibling `Card`) and primary publish / save actions (with secondary actions in an overflow menu) render only on
-   **Edit**, in a row under the tabs (not in the tab trailing slot). `identityFields` hold entity identity (partner/occasion/city name);
-   `extraFields` hold page-body extras after the hero (partner / occasion first section / promo, occasion formats showcase, featured cooks,
-   testimonials) so the editor matches public stack order. Occasion `formatsSection` is entity-owned typed jsonb chrome (exactly three
-   cards), not a free-form `ContentSection` kind — see [`occasions.md`](../features/occasions.md). Preview passes an explicit `locale` (+
-   `onLocaleChange`) into Header / Footer / `LanguageSwitcher` so the editor DE/EN control and the preview footer switcher share
-   `editLocale` without navigating the admin route. `SectionHero` shows an `ImageOffIcon` + bilingual “no hero image” label when media is
-   missing. `ContentSectionsEditor` seeds new blocks with empty required fields (nil UUID for unset images); it does not write German filler
-   copy into the draft. `ContentSectionsRenderer` always mounts every section in the list; empty required fields and unset image uploads
-   render muted italic / `ImageOffIcon` empty states so draft preview keeps layout instead of collapsing to blank space. Content blocks with
-   an image use equal `@md:flex-1` columns, `items-start` so the image stays square at the top (flex stretch must not override
-   `aspect-square`), `rounded-lg` + `object-cover`, and `flex-col-reverse` when `imageFirst` is false so mobile order matches the author
-   toggle. Standalone image sections use `aspect-video`. Section image pickers open `ImageCropDialog` before upload (`content` 1:1 for
-   content blocks, `contentWide` 16:9 for image sections); editor previews use the same aspect frames. Hero upload keeps a wide preview
-   frame without a crop step. Zod still rejects empty required fields on save. CTA blocks render as a soft accent panel (`bg-accent/10`,
-   `border-l-4 border-accent`, `rounded-xl`) so they read as a distinct action moment against the warm page canvas (`--secondary` white wash
-   is invisible there). CTA body and quote text keep textarea newlines via `whitespace-pre-wrap` (content body and Q&A answers are markdown
-   via `MarkdownBody`). Q&A blocks (`kind: 'qa'`) render through
-   [`SectionQuestionsAndAnswers`](../../src/web/sections/SectionQuestionsAndAnswers.tsx) (height expand via `grid-template-rows` 0fr↔1fr,
-   200 ms `ease-out`). Cook/testimonial saves share the entity subscription with page upserts — detail pages keep a dirty ref so those side
-   saves do not wipe unsaved page form state.
+   pinned; a `max-h` inner scrollport holds the full-height (`h-dvh`) hero. That scrollport (and the full Preview-tab wrapper) uses
+   `transform: translateZ(0)` so Header’s over-media `position: fixed` is contained to the preview pane instead of the admin viewport.
+   `useContentPageEditorPreviewSync` scrolls that pane to the `data-content-preview-anchor` matching the form block in view
+   (`data-content-editor-anchor`). Hero image upload uses a button + programmatic file-input click (not a `<label>` wrapper) so focusing an
+   `sr-only` input cannot jump the admin workspace scroller. Form fields (DE/EN field locale; cards in page order: SEO → optional
+   `identityFields` → Hero → optional `extraFields` → configurable sections; each section item its own sibling `Card`) and primary publish /
+   save actions (with secondary actions in an overflow menu) render only on **Edit**, in a row under the tabs (not in the tab trailing
+   slot). `identityFields` hold entity identity (partner/occasion/city name); `extraFields` hold page-body extras after the hero (partner /
+   occasion first section / promo, occasion formats showcase, featured cooks, testimonials) so the editor matches public stack order.
+   Occasion `formatsSection` is entity-owned typed jsonb chrome (exactly three cards), not a free-form `ContentSection` kind — see
+   [`occasions.md`](../features/occasions.md). Preview passes an explicit `locale` (+ `onLocaleChange`) into Header / Footer /
+   `LanguageSwitcher` so the editor DE/EN control and the preview footer switcher share `editLocale` without navigating the admin route.
+   `SectionHero` shows an `ImageOffIcon` + bilingual “no hero image” label when media is missing. `ContentSectionsEditor` seeds new blocks
+   with empty required fields (nil UUID for unset images); it does not write German filler copy into the draft. `ContentSectionsRenderer`
+   always mounts every section in the list; empty required fields and unset image uploads render muted italic / `ImageOffIcon` empty states
+   so draft preview keeps layout instead of collapsing to blank space. Content blocks with an image use equal `@md:flex-1` columns,
+   `items-start` so the image stays square at the top (flex stretch must not override `aspect-square`), `rounded-lg` + `object-cover`, and
+   `flex-col-reverse` when `imageFirst` is false so mobile order matches the author toggle. Standalone image sections use `aspect-video`.
+   Section image pickers open `ImageCropDialog` before upload (`content` 1:1 for content blocks, `contentWide` 16:9 for image sections);
+   editor previews use the same aspect frames. Hero upload keeps a wide preview frame without a crop step. Zod still rejects empty required
+   fields on save. CTA blocks render as a soft accent panel (`bg-accent/10`, `border-l-4 border-accent`, `rounded-xl`) so they read as a
+   distinct action moment against the warm page canvas (`--secondary` white wash is invisible there). CTA body and quote text keep textarea
+   newlines via `whitespace-pre-wrap` (content body and Q&A answers are markdown via `MarkdownBody`). Q&A blocks (`kind: 'qa'`) render
+   through [`SectionQuestionsAndAnswers`](../../src/web/sections/SectionQuestionsAndAnswers.tsx) (height expand via `grid-template-rows`
+   0fr↔1fr, 200 ms `ease-out`). Cook/testimonial saves share the entity subscription with page upserts — detail pages keep a dirty ref so
+   those side saves do not wipe unsaved page form state.
 5. **Publish** — unified nullable `publishedAt` on all four entities (`null` = draft; public requires `publishedAt <= now()`). Admin detail
    editor exposes status (Draft / Published / Scheduled). Primary actions are **Save** and **Publish** (draft / scheduled only; confirm
    dialog, persists immediately). Secondary actions live in an ellipsis overflow menu: **Public page** (opens the public detail route in a

@@ -56,13 +56,6 @@ describe('cookOnboardingStepsFindMany', () => {
         const steps = await cookOnboardingStepsFindMany(cookParent(setup.user.userId), setup.requestingSession, setup.serverRuntime);
 
         // Assert
-        expect(steps).toEqual([
-            'INVOICE_ADDRESS',
-            'WALLET',
-            'PROFILE_PICTURE',
-            'FIRST_MEAL',
-            'FIRST_MENU',
-            'DEFAULT_OFFER_MESSAGE',
-        ]);
+        expect(steps).toEqual(['INVOICE_ADDRESS', 'WALLET', 'PROFILE_PICTURE', 'FIRST_MEAL', 'FIRST_MENU', 'DEFAULT_OFFER_MESSAGE']);
     });
 });

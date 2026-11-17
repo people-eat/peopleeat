@@ -305,7 +305,9 @@ export function ContentPageEditor({
             </Tabs>
 
             {tab === 'preview' ? (
-                <div className="overflow-hidden border border-border">{pageView}</div>
+                // `translateZ(0)` makes Header's over-media `fixed` relative to this
+                // pane so chrome stays inside the preview instead of the viewport.
+                <div className="overflow-hidden border border-border transform-[translateZ(0)]">{pageView}</div>
             ) : (
                 <div className="grid gap-8 lg:grid-cols-2">
                     <div ref={editorColumnRef} className="flex min-w-0 flex-col gap-6">
@@ -483,14 +485,18 @@ export function ContentPageEditor({
                     {/*
                       Stretch this column to the form height so `sticky` keeps the
                       preview pinned while editing lower sections. Cap + inner scroll
-                      so the h-dvh hero does not inflate the pane.
+                      so the h-dvh hero does not inflate the pane. Transform stays on
+                      the scrollport (not the sticky wrapper) so Header `fixed` over
+                      media is contained here instead of bleeding into admin chrome.
                     */}
                     <div className="relative hidden min-w-0 lg:block">
-                        <div
-                            ref={previewScrollRef}
-                            className="sticky top-4 max-h-[calc(100svh-5rem)] overflow-x-hidden overflow-y-auto border border-border"
-                        >
-                            {pageView}
+                        <div className="sticky top-4 max-h-[calc(100svh-5rem)]">
+                            <div
+                                ref={previewScrollRef}
+                                className="max-h-[calc(100svh-5rem)] overflow-x-hidden overflow-y-auto border border-border transform-[translateZ(0)]"
+                            >
+                                {pageView}
+                            </div>
                         </div>
                     </div>
                 </div>
