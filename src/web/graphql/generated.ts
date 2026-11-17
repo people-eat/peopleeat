@@ -3415,6 +3415,7 @@ export interface GqlCCook {
 }
 
 export type GqlCCookAnalyticsArgs = {
+    channel?: GqlCCookAnalyticsChannel;
     period?: GqlCCookAnalyticsPeriod;
 };
 
@@ -3480,12 +3481,15 @@ export interface GqlCCookAnalytics {
     __typename?: 'CookAnalytics';
     averageMenuPriceCents?: Maybe<Scalars['Int']['output']>;
     averageParticipants?: Maybe<Scalars['Float']['output']>;
+    channel: GqlCCookAnalyticsChannel;
     declineRate?: Maybe<Scalars['Float']['output']>;
+    funnels: Array<GqlCCookAnalyticsFunnel>;
     hasInsights: Scalars['Boolean']['output'];
     medianNotifyToOfferMinutes?: Maybe<Scalars['Float']['output']>;
     medianNotifyToOpenMinutes?: Maybe<Scalars['Float']['output']>;
     offerConversionRate?: Maybe<Scalars['Float']['output']>;
     offerCreateRate?: Maybe<Scalars['Float']['output']>;
+    offerCreateStages: Array<GqlCCookAnalyticsOfferCreateStage>;
     offersAcceptedCount: Scalars['Int']['output'];
     offersCreatedCount: Scalars['Int']['output'];
     offersPaidCount: Scalars['Int']['output'];
@@ -3497,6 +3501,31 @@ export interface GqlCCookAnalytics {
     requestsDeclinedCount: Scalars['Int']['output'];
     requestsNotifiedCount: Scalars['Int']['output'];
     requestsOpenedCount: Scalars['Int']['output'];
+    trend: Array<GqlCCookAnalyticsTrendPoint>;
+}
+
+export type GqlCCookAnalyticsChannel = 'ALL' | 'DIRECT' | 'POOL';
+
+export interface GqlCCookAnalyticsFunnel {
+    __typename?: 'CookAnalyticsFunnel';
+    channel: GqlCCookAnalyticsChannel;
+    entryCount: Scalars['Int']['output'];
+    stages: Array<GqlCCookAnalyticsFunnelStage>;
+}
+
+export interface GqlCCookAnalyticsFunnelStage {
+    __typename?: 'CookAnalyticsFunnelStage';
+    count: Scalars['Int']['output'];
+    id: Scalars['String']['output'];
+    stepRate?: Maybe<Scalars['Float']['output']>;
+}
+
+export interface GqlCCookAnalyticsOfferCreateStage {
+    __typename?: 'CookAnalyticsOfferCreateStage';
+    completedCount: Scalars['Int']['output'];
+    enteredCount: Scalars['Int']['output'];
+    id: Scalars['String']['output'];
+    stepRate?: Maybe<Scalars['Float']['output']>;
 }
 
 export type GqlCCookAnalyticsPeriod = 'PAST_MONTH' | 'PAST_QUARTER' | 'PAST_WEEK' | 'PAST_YEAR';
@@ -3505,6 +3534,14 @@ export interface GqlCCookAnalyticsRange {
     __typename?: 'CookAnalyticsRange';
     endDateTime: Scalars['DateTime']['output'];
     startDateTime: Scalars['DateTime']['output'];
+}
+
+export interface GqlCCookAnalyticsTrendPoint {
+    __typename?: 'CookAnalyticsTrendPoint';
+    bucketStart: Scalars['DateTime']['output'];
+    offersCreatedCount: Scalars['Int']['output'];
+    offersPaidCount: Scalars['Int']['output'];
+    publicProfileViewCount: Scalars['Int']['output'];
 }
 
 export interface GqlCCookAttentionCounts {
@@ -18547,8 +18584,31 @@ export type GqlCCookBookingRequestOfferFunnelTrackMutation = {
     sessionWebPageInteractionCreate: { success: boolean; referenceId: string | null };
 };
 
+export type GqlCProfileCookAnalyticsFunnelStageFragment = { id: string; count: number; stepRate: number | null };
+
+export type GqlCProfileCookAnalyticsFunnelFragment = {
+    channel: Schema.GqlCCookAnalyticsChannel;
+    entryCount: number;
+    stages: Array<{ id: string; count: number; stepRate: number | null }>;
+};
+
+export type GqlCProfileCookAnalyticsOfferCreateStageFragment = {
+    id: string;
+    enteredCount: number;
+    completedCount: number;
+    stepRate: number | null;
+};
+
+export type GqlCProfileCookAnalyticsTrendPointFragment = {
+    bucketStart: string;
+    publicProfileViewCount: number;
+    offersCreatedCount: number;
+    offersPaidCount: number;
+};
+
 export type GqlCProfileCookAnalyticsFragment = {
     period: Schema.GqlCCookAnalyticsPeriod;
+    channel: Schema.GqlCCookAnalyticsChannel;
     hasInsights: boolean;
     publicProfileViewCount: number;
     requestsNotifiedCount: number;
@@ -18564,9 +18624,14 @@ export type GqlCProfileCookAnalyticsFragment = {
     offerConversionRate: number | null;
     offersPaidCount: number;
     paidPayoutCentsCookTotal: number;
-    averageMenuPriceCents: number | null;
-    averageParticipants: number | null;
     range: { startDateTime: string; endDateTime: string };
+    funnels: Array<{
+        channel: Schema.GqlCCookAnalyticsChannel;
+        entryCount: number;
+        stages: Array<{ id: string; count: number; stepRate: number | null }>;
+    }>;
+    offerCreateStages: Array<{ id: string; enteredCount: number; completedCount: number; stepRate: number | null }>;
+    trend: Array<{ bucketStart: string; publicProfileViewCount: number; offersCreatedCount: number; offersPaidCount: number }>;
 };
 
 export type GqlCProfileCookAnalyticsPageUserFragment = {
@@ -18575,6 +18640,7 @@ export type GqlCProfileCookAnalyticsPageUserFragment = {
         cookId: string;
         analytics: {
             period: Schema.GqlCCookAnalyticsPeriod;
+            channel: Schema.GqlCCookAnalyticsChannel;
             hasInsights: boolean;
             publicProfileViewCount: number;
             requestsNotifiedCount: number;
@@ -18590,15 +18656,21 @@ export type GqlCProfileCookAnalyticsPageUserFragment = {
             offerConversionRate: number | null;
             offersPaidCount: number;
             paidPayoutCentsCookTotal: number;
-            averageMenuPriceCents: number | null;
-            averageParticipants: number | null;
             range: { startDateTime: string; endDateTime: string };
+            funnels: Array<{
+                channel: Schema.GqlCCookAnalyticsChannel;
+                entryCount: number;
+                stages: Array<{ id: string; count: number; stepRate: number | null }>;
+            }>;
+            offerCreateStages: Array<{ id: string; enteredCount: number; completedCount: number; stepRate: number | null }>;
+            trend: Array<{ bucketStart: string; publicProfileViewCount: number; offersCreatedCount: number; offersPaidCount: number }>;
         } | null;
     } | null;
 };
 
 export type GqlCProfileCookAnalyticsPageQueryVariables = Exact<{
     period: Schema.GqlCCookAnalyticsPeriod;
+    channel: Schema.GqlCCookAnalyticsChannel;
 }>;
 
 export type GqlCProfileCookAnalyticsPageQuery = {
@@ -18611,6 +18683,7 @@ export type GqlCProfileCookAnalyticsPageQuery = {
                 cookId: string;
                 analytics: {
                     period: Schema.GqlCCookAnalyticsPeriod;
+                    channel: Schema.GqlCCookAnalyticsChannel;
                     hasInsights: boolean;
                     publicProfileViewCount: number;
                     requestsNotifiedCount: number;
@@ -18626,9 +18699,19 @@ export type GqlCProfileCookAnalyticsPageQuery = {
                     offerConversionRate: number | null;
                     offersPaidCount: number;
                     paidPayoutCentsCookTotal: number;
-                    averageMenuPriceCents: number | null;
-                    averageParticipants: number | null;
                     range: { startDateTime: string; endDateTime: string };
+                    funnels: Array<{
+                        channel: Schema.GqlCCookAnalyticsChannel;
+                        entryCount: number;
+                        stages: Array<{ id: string; count: number; stepRate: number | null }>;
+                    }>;
+                    offerCreateStages: Array<{ id: string; enteredCount: number; completedCount: number; stepRate: number | null }>;
+                    trend: Array<{
+                        bucketStart: string;
+                        publicProfileViewCount: number;
+                        offersCreatedCount: number;
+                        offersPaidCount: number;
+                    }>;
                 } | null;
             } | null;
         } | null;
@@ -32679,6 +32762,100 @@ export const AdminWhatsAppChatsPageAdminFragmentDoc = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminWhatsAppChatsPageAdminFragment, unknown>;
+export const ProfileCookAnalyticsFunnelStageFragmentDoc = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookAnalyticsFunnelStage' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookAnalyticsFunnelStage' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'stepRate' } },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCookAnalyticsFunnelStageFragment, unknown>;
+export const ProfileCookAnalyticsFunnelFragmentDoc = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookAnalyticsFunnel' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookAnalyticsFunnel' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'channel' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'entryCount' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'stages' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookAnalyticsFunnelStage' } }],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookAnalyticsFunnelStage' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookAnalyticsFunnelStage' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'stepRate' } },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCookAnalyticsFunnelFragment, unknown>;
+export const ProfileCookAnalyticsOfferCreateStageFragmentDoc = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookAnalyticsOfferCreateStage' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookAnalyticsOfferCreateStage' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'enteredCount' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'completedCount' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'stepRate' } },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCookAnalyticsOfferCreateStageFragment, unknown>;
+export const ProfileCookAnalyticsTrendPointFragmentDoc = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookAnalyticsTrendPoint' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookAnalyticsTrendPoint' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'bucketStart' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'publicProfileViewCount' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'offersCreatedCount' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'offersPaidCount' } },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCookAnalyticsTrendPointFragment, unknown>;
 export const ProfileCookAnalyticsFragmentDoc = {
     kind: 'Document',
     definitions: [
@@ -32690,6 +32867,7 @@ export const ProfileCookAnalyticsFragmentDoc = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'period' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'channel' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'hasInsights' } },
                     {
                         kind: 'Field',
@@ -32716,8 +32894,91 @@ export const ProfileCookAnalyticsFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'offerConversionRate' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'offersPaidCount' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'paidPayoutCentsCookTotal' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'averageMenuPriceCents' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'averageParticipants' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'funnels' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookAnalyticsFunnel' } }],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'offerCreateStages' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookAnalyticsOfferCreateStage' } }],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'trend' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookAnalyticsTrendPoint' } }],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookAnalyticsFunnelStage' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookAnalyticsFunnelStage' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'stepRate' } },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookAnalyticsFunnel' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookAnalyticsFunnel' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'channel' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'entryCount' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'stages' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookAnalyticsFunnelStage' } }],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookAnalyticsOfferCreateStage' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookAnalyticsOfferCreateStage' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'enteredCount' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'completedCount' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'stepRate' } },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookAnalyticsTrendPoint' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookAnalyticsTrendPoint' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'bucketStart' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'publicProfileViewCount' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'offersCreatedCount' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'offersPaidCount' } },
                 ],
             },
         },
@@ -32750,6 +33011,11 @@ export const ProfileCookAnalyticsPageUserFragmentDoc = {
                                             name: { kind: 'Name', value: 'period' },
                                             value: { kind: 'Variable', name: { kind: 'Name', value: 'period' } },
                                         },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'channel' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'channel' } },
+                                        },
                                     ],
                                     selectionSet: {
                                         kind: 'SelectionSet',
@@ -32764,12 +33030,74 @@ export const ProfileCookAnalyticsPageUserFragmentDoc = {
         },
         {
             kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookAnalyticsFunnelStage' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookAnalyticsFunnelStage' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'stepRate' } },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookAnalyticsFunnel' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookAnalyticsFunnel' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'channel' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'entryCount' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'stages' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookAnalyticsFunnelStage' } }],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookAnalyticsOfferCreateStage' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookAnalyticsOfferCreateStage' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'enteredCount' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'completedCount' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'stepRate' } },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookAnalyticsTrendPoint' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookAnalyticsTrendPoint' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'bucketStart' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'publicProfileViewCount' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'offersCreatedCount' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'offersPaidCount' } },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
             name: { kind: 'Name', value: 'ProfileCookAnalytics' },
             typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookAnalytics' } },
             selectionSet: {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'period' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'channel' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'hasInsights' } },
                     {
                         kind: 'Field',
@@ -32796,8 +33124,30 @@ export const ProfileCookAnalyticsPageUserFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'offerConversionRate' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'offersPaidCount' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'paidPayoutCentsCookTotal' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'averageMenuPriceCents' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'averageParticipants' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'funnels' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookAnalyticsFunnel' } }],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'offerCreateStages' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookAnalyticsOfferCreateStage' } }],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'trend' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookAnalyticsTrendPoint' } }],
+                        },
+                    },
                 ],
             },
         },
@@ -77267,6 +77617,11 @@ export const ProfileCookAnalyticsPageDocument = {
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'period' } },
                     type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'CookAnalyticsPeriod' } } },
                 },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'channel' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'CookAnalyticsChannel' } } },
+                },
             ],
             selectionSet: {
                 kind: 'SelectionSet',
@@ -77297,12 +77652,74 @@ export const ProfileCookAnalyticsPageDocument = {
         },
         {
             kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookAnalyticsFunnelStage' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookAnalyticsFunnelStage' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'stepRate' } },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookAnalyticsFunnel' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookAnalyticsFunnel' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'channel' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'entryCount' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'stages' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookAnalyticsFunnelStage' } }],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookAnalyticsOfferCreateStage' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookAnalyticsOfferCreateStage' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'enteredCount' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'completedCount' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'stepRate' } },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookAnalyticsTrendPoint' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookAnalyticsTrendPoint' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'bucketStart' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'publicProfileViewCount' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'offersCreatedCount' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'offersPaidCount' } },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
             name: { kind: 'Name', value: 'ProfileCookAnalytics' },
             typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookAnalytics' } },
             selectionSet: {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'period' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'channel' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'hasInsights' } },
                     {
                         kind: 'Field',
@@ -77329,8 +77746,30 @@ export const ProfileCookAnalyticsPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'offerConversionRate' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'offersPaidCount' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'paidPayoutCentsCookTotal' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'averageMenuPriceCents' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'averageParticipants' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'funnels' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookAnalyticsFunnel' } }],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'offerCreateStages' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookAnalyticsOfferCreateStage' } }],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'trend' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookAnalyticsTrendPoint' } }],
+                        },
+                    },
                 ],
             },
         },
@@ -77357,6 +77796,11 @@ export const ProfileCookAnalyticsPageDocument = {
                                             kind: 'Argument',
                                             name: { kind: 'Name', value: 'period' },
                                             value: { kind: 'Variable', name: { kind: 'Name', value: 'period' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'channel' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'channel' } },
                                         },
                                     ],
                                     selectionSet: {

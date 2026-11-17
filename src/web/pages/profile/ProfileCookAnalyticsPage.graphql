@@ -1,8 +1,37 @@
 # Cook analytics. Gated by COOK_ANALYTICS (null when off).
 # See docs/features/cook-analytics.md.
 
+fragment ProfileCookAnalyticsFunnelStage on CookAnalyticsFunnelStage {
+    id
+    count
+    stepRate
+}
+
+fragment ProfileCookAnalyticsFunnel on CookAnalyticsFunnel {
+    channel
+    entryCount
+    stages {
+        ...ProfileCookAnalyticsFunnelStage
+    }
+}
+
+fragment ProfileCookAnalyticsOfferCreateStage on CookAnalyticsOfferCreateStage {
+    id
+    enteredCount
+    completedCount
+    stepRate
+}
+
+fragment ProfileCookAnalyticsTrendPoint on CookAnalyticsTrendPoint {
+    bucketStart
+    publicProfileViewCount
+    offersCreatedCount
+    offersPaidCount
+}
+
 fragment ProfileCookAnalytics on CookAnalytics {
     period
+    channel
     hasInsights
     range {
         startDateTime
@@ -22,21 +51,28 @@ fragment ProfileCookAnalytics on CookAnalytics {
     offerConversionRate
     offersPaidCount
     paidPayoutCentsCookTotal
-    averageMenuPriceCents
-    averageParticipants
+    funnels {
+        ...ProfileCookAnalyticsFunnel
+    }
+    offerCreateStages {
+        ...ProfileCookAnalyticsOfferCreateStage
+    }
+    trend {
+        ...ProfileCookAnalyticsTrendPoint
+    }
 }
 
 fragment ProfileCookAnalyticsPageUser on User {
     userId
     cook {
         cookId
-        analytics(period: $period) {
+        analytics(period: $period, channel: $channel) {
             ...ProfileCookAnalytics
         }
     }
 }
 
-query ProfileCookAnalyticsPage($period: CookAnalyticsPeriod!) {
+query ProfileCookAnalyticsPage($period: CookAnalyticsPeriod!, $channel: CookAnalyticsChannel!) {
     currentSession {
         sessionId
         activeFeatureToggleKeys

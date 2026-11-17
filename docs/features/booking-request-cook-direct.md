@@ -29,8 +29,8 @@ Guests can send a booking request from a public chef page to that cook only, the
 6. After a dead path, the customer also gets an email that this chef cannot make it this time, with the same expand CTA on the request.
 7. Expand under 12 guests flips to auto-approved and notifies other offer-ready cooks in travel radius (skips already notified or declined).
    Expand at 12+ waits for admin review. `requestedCookId` survives. The requested cook stays in the pool even outside their usual radius.
-8. That cook sees a pinned **Requested you** pool section, a yellow **Requested you** pool-card pill with `UserExclamationPointIcon`
-   (after expand: also open to others; no green **New request** pill, menu title, or travel-distance line on the card), overview attention
+8. That cook sees a pinned **Requested you** pool section, a yellow **Requested you** pool-card pill with `UserExclamationPointIcon` (after
+   expand: also open to others; no green **New request** pill, menu title, or travel-distance line on the card), overview attention
    (`DIRECT_BOOKING_REQUEST`), and a distinct email (menu title when frozen). Request detail still names the requested menu. Offer create
    preselects that library menu when it still exists and is complete, with a banner; the cook can add or swap. After expand the badge stays
    and radius cooks do not inherit the menu. Attention and the pin clear on decline or offer create.

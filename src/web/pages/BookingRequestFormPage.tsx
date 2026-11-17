@@ -693,9 +693,7 @@ export function BookingRequestFormPage({
                             notice={
                                 leftoverCookId || (honorDirect && requestedCook) || (leftoverMenuId && requestedCook) ? (
                                     <div className="flex flex-col gap-3">
-                                        {leftoverCookId ? (
-                                            <StatusAlert tone="info">{tBooking('form.leftoverCook')}</StatusAlert>
-                                        ) : null}
+                                        {leftoverCookId ? <StatusAlert tone="info">{tBooking('form.leftoverCook')}</StatusAlert> : null}
                                         {honorDirect && requestedCook ? (
                                             <StatusAlert
                                                 tone="info"

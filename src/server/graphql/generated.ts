@@ -3412,6 +3412,7 @@ export interface GqlSCook {
 }
 
 export type GqlSCookAnalyticsArgs = {
+    channel?: GqlSCookAnalyticsChannel;
     period?: GqlSCookAnalyticsPeriod;
 };
 
@@ -3477,12 +3478,15 @@ export interface GqlSCookAnalytics {
     __typename?: 'CookAnalytics';
     averageMenuPriceCents?: Maybe<Scalars['Int']['output']>;
     averageParticipants?: Maybe<Scalars['Float']['output']>;
+    channel: GqlSCookAnalyticsChannel;
     declineRate?: Maybe<Scalars['Float']['output']>;
+    funnels: Array<GqlSCookAnalyticsFunnel>;
     hasInsights: Scalars['Boolean']['output'];
     medianNotifyToOfferMinutes?: Maybe<Scalars['Float']['output']>;
     medianNotifyToOpenMinutes?: Maybe<Scalars['Float']['output']>;
     offerConversionRate?: Maybe<Scalars['Float']['output']>;
     offerCreateRate?: Maybe<Scalars['Float']['output']>;
+    offerCreateStages: Array<GqlSCookAnalyticsOfferCreateStage>;
     offersAcceptedCount: Scalars['Int']['output'];
     offersCreatedCount: Scalars['Int']['output'];
     offersPaidCount: Scalars['Int']['output'];
@@ -3494,6 +3498,31 @@ export interface GqlSCookAnalytics {
     requestsDeclinedCount: Scalars['Int']['output'];
     requestsNotifiedCount: Scalars['Int']['output'];
     requestsOpenedCount: Scalars['Int']['output'];
+    trend: Array<GqlSCookAnalyticsTrendPoint>;
+}
+
+export type GqlSCookAnalyticsChannel = 'ALL' | 'DIRECT' | 'POOL';
+
+export interface GqlSCookAnalyticsFunnel {
+    __typename?: 'CookAnalyticsFunnel';
+    channel: GqlSCookAnalyticsChannel;
+    entryCount: Scalars['Int']['output'];
+    stages: Array<GqlSCookAnalyticsFunnelStage>;
+}
+
+export interface GqlSCookAnalyticsFunnelStage {
+    __typename?: 'CookAnalyticsFunnelStage';
+    count: Scalars['Int']['output'];
+    id: Scalars['String']['output'];
+    stepRate?: Maybe<Scalars['Float']['output']>;
+}
+
+export interface GqlSCookAnalyticsOfferCreateStage {
+    __typename?: 'CookAnalyticsOfferCreateStage';
+    completedCount: Scalars['Int']['output'];
+    enteredCount: Scalars['Int']['output'];
+    id: Scalars['String']['output'];
+    stepRate?: Maybe<Scalars['Float']['output']>;
 }
 
 export type GqlSCookAnalyticsPeriod = 'PAST_MONTH' | 'PAST_QUARTER' | 'PAST_WEEK' | 'PAST_YEAR';
@@ -3502,6 +3531,14 @@ export interface GqlSCookAnalyticsRange {
     __typename?: 'CookAnalyticsRange';
     endDateTime: Scalars['DateTime']['output'];
     startDateTime: Scalars['DateTime']['output'];
+}
+
+export interface GqlSCookAnalyticsTrendPoint {
+    __typename?: 'CookAnalyticsTrendPoint';
+    bucketStart: Scalars['DateTime']['output'];
+    offersCreatedCount: Scalars['Int']['output'];
+    offersPaidCount: Scalars['Int']['output'];
+    publicProfileViewCount: Scalars['Int']['output'];
 }
 
 export interface GqlSCookAttentionCounts {
@@ -6397,8 +6434,13 @@ export type GqlSResolversTypes = ResolversObject<{
         }
     >;
     CookAnalytics: ResolverTypeWrapper<GqlSCookAnalytics>;
+    CookAnalyticsChannel: GqlSCookAnalyticsChannel;
+    CookAnalyticsFunnel: ResolverTypeWrapper<GqlSCookAnalyticsFunnel>;
+    CookAnalyticsFunnelStage: ResolverTypeWrapper<GqlSCookAnalyticsFunnelStage>;
+    CookAnalyticsOfferCreateStage: ResolverTypeWrapper<GqlSCookAnalyticsOfferCreateStage>;
     CookAnalyticsPeriod: GqlSCookAnalyticsPeriod;
     CookAnalyticsRange: ResolverTypeWrapper<GqlSCookAnalyticsRange>;
+    CookAnalyticsTrendPoint: ResolverTypeWrapper<GqlSCookAnalyticsTrendPoint>;
     CookAttentionCounts: ResolverTypeWrapper<GqlSCookAttentionCounts>;
     CookAttentionItem: ResolverTypeWrapper<GqlSCookAttentionItem>;
     CookAttentionKind: GqlSCookAttentionKind;
@@ -6964,7 +7006,11 @@ export type GqlSResolversParentTypes = ResolversObject<{
         bookingRequests: Array<GqlSResolversParentTypes['CookBookingRequest']>;
     };
     CookAnalytics: GqlSCookAnalytics;
+    CookAnalyticsFunnel: GqlSCookAnalyticsFunnel;
+    CookAnalyticsFunnelStage: GqlSCookAnalyticsFunnelStage;
+    CookAnalyticsOfferCreateStage: GqlSCookAnalyticsOfferCreateStage;
     CookAnalyticsRange: GqlSCookAnalyticsRange;
+    CookAnalyticsTrendPoint: GqlSCookAnalyticsTrendPoint;
     CookAttentionCounts: GqlSCookAttentionCounts;
     CookAttentionItem: GqlSCookAttentionItem;
     CookBookingRequest: Omit<GqlSCookBookingRequest, 'cookPoolDetails' | 'offers'> & {
@@ -10182,7 +10228,7 @@ export type GqlSCookResolvers<
         Maybe<GqlSResolversTypes['CookAnalytics']>,
         ParentType,
         ContextType,
-        RequireFields<GqlSCookAnalyticsArgs, 'period'>
+        RequireFields<GqlSCookAnalyticsArgs, 'channel' | 'period'>
     >;
     attention?: Resolver<Array<GqlSResolversTypes['CookAttentionItem']>, ParentType, ContextType>;
     attentionCounts?: Resolver<GqlSResolversTypes['CookAttentionCounts'], ParentType, ContextType>;
@@ -10296,12 +10342,15 @@ export type GqlSCookAnalyticsResolvers<
 > = ResolversObject<{
     averageMenuPriceCents?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
     averageParticipants?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
+    channel?: Resolver<GqlSResolversTypes['CookAnalyticsChannel'], ParentType, ContextType>;
     declineRate?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
+    funnels?: Resolver<Array<GqlSResolversTypes['CookAnalyticsFunnel']>, ParentType, ContextType>;
     hasInsights?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     medianNotifyToOfferMinutes?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
     medianNotifyToOpenMinutes?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
     offerConversionRate?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
     offerCreateRate?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
+    offerCreateStages?: Resolver<Array<GqlSResolversTypes['CookAnalyticsOfferCreateStage']>, ParentType, ContextType>;
     offersAcceptedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     offersCreatedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     offersPaidCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
@@ -10313,6 +10362,36 @@ export type GqlSCookAnalyticsResolvers<
     requestsDeclinedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     requestsNotifiedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     requestsOpenedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    trend?: Resolver<Array<GqlSResolversTypes['CookAnalyticsTrendPoint']>, ParentType, ContextType>;
+}>;
+
+export type GqlSCookAnalyticsFunnelResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['CookAnalyticsFunnel'] = GqlSResolversParentTypes['CookAnalyticsFunnel'],
+> = ResolversObject<{
+    channel?: Resolver<GqlSResolversTypes['CookAnalyticsChannel'], ParentType, ContextType>;
+    entryCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    stages?: Resolver<Array<GqlSResolversTypes['CookAnalyticsFunnelStage']>, ParentType, ContextType>;
+}>;
+
+export type GqlSCookAnalyticsFunnelStageResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['CookAnalyticsFunnelStage'] = GqlSResolversParentTypes['CookAnalyticsFunnelStage'],
+> = ResolversObject<{
+    count?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    id?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    stepRate?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
+}>;
+
+export type GqlSCookAnalyticsOfferCreateStageResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['CookAnalyticsOfferCreateStage'] =
+        GqlSResolversParentTypes['CookAnalyticsOfferCreateStage'],
+> = ResolversObject<{
+    completedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    enteredCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    id?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    stepRate?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
 }>;
 
 export type GqlSCookAnalyticsRangeResolvers<
@@ -10321,6 +10400,16 @@ export type GqlSCookAnalyticsRangeResolvers<
 > = ResolversObject<{
     endDateTime?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     startDateTime?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
+}>;
+
+export type GqlSCookAnalyticsTrendPointResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['CookAnalyticsTrendPoint'] = GqlSResolversParentTypes['CookAnalyticsTrendPoint'],
+> = ResolversObject<{
+    bucketStart?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
+    offersCreatedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    offersPaidCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    publicProfileViewCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
 export type GqlSCookAttentionCountsResolvers<
@@ -12699,7 +12788,11 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     ContentSectionQuote?: GqlSContentSectionQuoteResolvers<ContextType>;
     Cook?: GqlSCookResolvers<ContextType>;
     CookAnalytics?: GqlSCookAnalyticsResolvers<ContextType>;
+    CookAnalyticsFunnel?: GqlSCookAnalyticsFunnelResolvers<ContextType>;
+    CookAnalyticsFunnelStage?: GqlSCookAnalyticsFunnelStageResolvers<ContextType>;
+    CookAnalyticsOfferCreateStage?: GqlSCookAnalyticsOfferCreateStageResolvers<ContextType>;
     CookAnalyticsRange?: GqlSCookAnalyticsRangeResolvers<ContextType>;
+    CookAnalyticsTrendPoint?: GqlSCookAnalyticsTrendPointResolvers<ContextType>;
     CookAttentionCounts?: GqlSCookAttentionCountsResolvers<ContextType>;
     CookAttentionItem?: GqlSCookAttentionItemResolvers<ContextType>;
     CookBookingRequest?: GqlSCookBookingRequestResolvers<ContextType>;
@@ -13483,6 +13576,12 @@ export const GqlSContentSectionKindSchema: z.ZodType<
     'content' | 'cta' | 'image' | 'list' | 'qa' | 'quote',
     'content' | 'cta' | 'image' | 'list' | 'qa' | 'quote'
 > = z.enum(['content', 'cta', 'image', 'list', 'qa', 'quote']);
+
+export const GqlSCookAnalyticsChannelSchema: z.ZodType<'ALL' | 'DIRECT' | 'POOL', 'ALL' | 'DIRECT' | 'POOL'> = z.enum([
+    'ALL',
+    'DIRECT',
+    'POOL',
+]);
 
 export const GqlSCookAnalyticsPeriodSchema: z.ZodType<
     'PAST_MONTH' | 'PAST_QUARTER' | 'PAST_WEEK' | 'PAST_YEAR',

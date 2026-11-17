@@ -40,6 +40,7 @@ describe('cookAnalyticsFind', () => {
 
         expect(result).toMatchObject({
             period: 'PAST_WEEK',
+            channel: 'ALL',
             hasInsights: false,
             publicProfileViewCount: 0,
             requestsNotifiedCount: 0,
@@ -60,5 +61,20 @@ describe('cookAnalyticsFind', () => {
         });
         expect(result?.range.startDateTime).toBeTruthy();
         expect(result?.range.endDateTime).toBeTruthy();
+        expect(result?.funnels).toHaveLength(2);
+        expect(result?.funnels.map((funnel) => funnel.channel)).toEqual(['DIRECT', 'POOL']);
+        expect(result?.offerCreateStages.map((stage) => stage.id)).toEqual(['offer_create', 'menus', 'price', 'message', 'created']);
+        expect(result?.trend.length).toBeGreaterThan(0);
+        expect(result?.trend.every((point) => point.publicProfileViewCount === 0)).toBe(true);
+    });
+
+    it('returns a single funnel when channel is DIRECT', async () => {
+        const { requestingSession, serverRuntime, cook } = await setupCook();
+
+        const result = await cookAnalyticsFind(cook, { period: 'PAST_MONTH', channel: 'DIRECT' }, requestingSession, serverRuntime);
+
+        expect(result?.channel).toBe('DIRECT');
+        expect(result?.funnels).toHaveLength(1);
+        expect(result?.funnels[0]?.channel).toBe('DIRECT');
     });
 });

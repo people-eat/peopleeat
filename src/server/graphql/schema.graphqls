@@ -994,7 +994,7 @@ type Cook {
     bookingRequestOffer(bookingRequestOfferId: ID!): CookBookingRequestOffer
     # Cook-facing marketplace / discovery KPIs. Null when `COOK_ANALYTICS` is off
     # for this cook. See docs/features/cook-analytics.md.
-    analytics(period: CookAnalyticsPeriod! = PAST_MONTH): CookAnalytics
+    analytics(period: CookAnalyticsPeriod! = PAST_MONTH, channel: CookAnalyticsChannel! = ALL): CookAnalytics
     # Badge counts for the cook shell. See docs/features/cook-shell.md.
     attentionCounts: CookAttentionCounts!
     # Overview to-dos, highest priority first. Copy lives in
@@ -1112,17 +1112,63 @@ enum CookAnalyticsPeriod {
     PAST_YEAR
 }
 
+# Lead channel filter for `Cook.analytics`. Direct = chef-page requested-you
+# (`BookingRequests.requestedCookId`); Pool = other notified affinities.
+enum CookAnalyticsChannel {
+    ALL
+    DIRECT
+    POOL
+}
+
 # Resolved rolling window for `CookAnalytics` (output; distinct from input `DateTimeRange`).
 type CookAnalyticsRange {
     startDateTime: DateTime!
     endDateTime: DateTime!
 }
 
+# One stage in a cook request → booking stepped funnel.
+type CookAnalyticsFunnelStage {
+    # Stable id: requested_you | in_pool | opened | declined | offer_sent | both_accepted | paid
+    id: String!
+    count: Int!
+    # Rate vs parent stage; null when parent count is 0.
+    stepRate: Float
+}
+
+# Cook × booking-request funnel for one channel (DIRECT or POOL).
+type CookAnalyticsFunnel {
+    channel: CookAnalyticsChannel!
+    entryCount: Int!
+    stages: [CookAnalyticsFunnelStage!]!
+}
+
+# Create-UI mid-step reach for offer drafts (session interactions).
+type CookAnalyticsOfferCreateStage {
+    # Stable id: offer_create | menus | price | message | created
+    id: String!
+    enteredCount: Int!
+    completedCount: Int!
+    # Rate vs previous completed; null when previous completed is 0.
+    stepRate: Float
+}
+
+# Zero-filled time bucket for cook analytics trend charts.
+# Day buckets for PAST_WEEK / PAST_MONTH; week buckets for PAST_QUARTER / PAST_YEAR.
+type CookAnalyticsTrendPoint {
+    bucketStart: DateTime!
+    publicProfileViewCount: Int!
+    offersCreatedCount: Int!
+    offersPaidCount: Int!
+}
+
 # Aggregates for `/profile/analytics` and the cook overview strip.
 # Counts and rates are period-scoped unless noted. Nullable averages / rates
 # mean the denominator was zero (or no usable timestamp pairs for latencies).
+# Hero economics and rates respect `channel`; profile views always ignore it.
+# `funnels` is length 2 when channel=ALL (DIRECT then POOL), else length 1.
 type CookAnalytics {
     period: CookAnalyticsPeriod!
+    channel: CookAnalyticsChannel!
     range: CookAnalyticsRange!
     # Lifetime: any notified request, any offer, or any public chef-page visit.
     # Overview hides the strip when false.
@@ -1151,6 +1197,9 @@ type CookAnalytics {
     averageMenuPriceCents: Int
     # Average participant count on booking requests for offers created in range.
     averageParticipants: Float
+    funnels: [CookAnalyticsFunnel!]!
+    offerCreateStages: [CookAnalyticsOfferCreateStage!]!
+    trend: [CookAnalyticsTrendPoint!]!
 }
 
 # Result of `Cook.bookingRequestLookup` — stale email deep-links and live

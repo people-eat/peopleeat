@@ -44,8 +44,8 @@ future surfaces can stay in sync. The `StatusTone` type itself lives in `src/sha
 2. **Unread counts (cards + sidebar)** → `NotificationBadge` with bilingual `label`. Cards use default `placement="corner"` (full disc,
    overhangs `-top-2 -right-2`) on a `relative` parent; sidebar rows nest `placement="inline"` (compact disc) inside `SidebarMenuBadge`
    (neutralize host text colour the same way as `StatusBadge`). Single digits stay circular; counts `≥ 10` add horizontal padding so the
-   badge stretches into a pill instead of looking overfilled. Corner overhang needs scrollport paint room — profile/admin content panes
-   keep full `p-4` (do not zero `pt-0`) so the disc is not clipped at the top.
+   badge stretches into a pill instead of looking overfilled. Corner overhang needs scrollport paint room — profile/admin content panes keep
+   full `p-4` (do not zero `pt-0`) so the disc is not clipped at the top.
 3. **Row / card meta** → `StatusBadge` with a short label (`Incomplete`, `Pending`).
 4. **Explain a state** → `StatusAlert` with title + one short sentence. Put buttons in the `action` slot or beside the alert, not inside the
    title.

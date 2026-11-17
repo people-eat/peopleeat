@@ -207,6 +207,13 @@ export type {
     BookingRequestKitchenDetailsSpace,
 } from './bookingRequestKitchenDetails';
 export {
+    COOK_ANALYTICS_CHANNEL_DEFAULT,
+    cookAnalyticsChannelParse,
+    cookAnalyticsChannels,
+    cookAnalyticsFunnelChannels,
+} from './cookAnalyticsChannel';
+export type { CookAnalyticsChannel, CookAnalyticsFunnelChannel } from './cookAnalyticsChannel';
+export {
     COOK_ANALYTICS_PERIOD_DEFAULT,
     cookAnalyticsPeriodParse,
     cookAnalyticsPeriodRange,

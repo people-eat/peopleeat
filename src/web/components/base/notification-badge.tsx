@@ -33,7 +33,7 @@ function NotificationBadge({ count, label, placement = 'corner', className, ...p
             className={cn(
                 'flex shrink-0 items-center justify-center rounded-full bg-red-400 font-bold text-white tabular-nums',
                 placement === 'corner' && 'absolute -top-2 -right-2 h-6 min-w-6 text-xs shadow-lg',
-                placement === 'inline' && 'h-5 min-w-5 text-[10px] leading-none shadow-sm',
+                placement === 'inline' && 'h-5 min-w-5 text-[10px]/none shadow-sm',
                 isPill && 'px-1.5',
                 className,
             )}
