@@ -19,7 +19,15 @@ describe('cookOnboardingStepsFindMany', () => {
         const steps = await cookOnboardingStepsFindMany(cookParent(setup.user.userId), setup.requestingSession, setup.serverRuntime);
 
         // Assert
-        expect(steps).toEqual(['TRAVEL', 'PROFILE_PICTURE', 'CHEF_PROFILE', 'FIRST_MEAL', 'FIRST_MENU', 'DEFAULT_OFFER_MESSAGE']);
+        expect(steps).toEqual([
+            'INVOICE_ADDRESS',
+            'TRAVEL',
+            'PROFILE_PICTURE',
+            'CHEF_PROFILE',
+            'FIRST_MEAL',
+            'FIRST_MENU',
+            'DEFAULT_OFFER_MESSAGE',
+        ]);
     });
 
     it('asks an approved cook to set up the wallet and drops completed steps', async () => {
@@ -48,6 +56,13 @@ describe('cookOnboardingStepsFindMany', () => {
         const steps = await cookOnboardingStepsFindMany(cookParent(setup.user.userId), setup.requestingSession, setup.serverRuntime);
 
         // Assert
-        expect(steps).toEqual(['WALLET', 'PROFILE_PICTURE', 'FIRST_MEAL', 'FIRST_MENU', 'DEFAULT_OFFER_MESSAGE']);
+        expect(steps).toEqual([
+            'INVOICE_ADDRESS',
+            'WALLET',
+            'PROFILE_PICTURE',
+            'FIRST_MEAL',
+            'FIRST_MENU',
+            'DEFAULT_OFFER_MESSAGE',
+        ]);
     });
 });
