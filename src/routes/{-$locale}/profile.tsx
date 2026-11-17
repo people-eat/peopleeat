@@ -28,7 +28,7 @@ export const Route = createFileRoute('/{-$locale}/profile')({
         const locale = localeFromParam(params);
         await Promise.all([
             profileShellPreload(isCook),
-            i18nResourcesLoad(locale, ['common', 'profile', isCook ? 'profileCook' : 'profileCustomer']),
+            i18nResourcesLoad(locale, ['common', 'public', 'profile', isCook ? 'profileCook' : 'profileCustomer']),
         ]);
         return data;
     },
@@ -41,7 +41,7 @@ export const Route = createFileRoute('/{-$locale}/profile')({
         const user = loaderData?.currentSession.user;
         if (user) {
             const isCook = Boolean(user.cook);
-            await i18nResourcesLoad(locale, ['common', 'profile', isCook ? 'profileCook' : 'profileCustomer']);
+            await i18nResourcesLoad(locale, ['common', 'public', 'profile', isCook ? 'profileCook' : 'profileCustomer']);
         }
         const webPage = loaderData?.publicWebPage.findOne;
         if (!webPage) {

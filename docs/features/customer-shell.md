@@ -98,6 +98,8 @@ booking requests (full subtree), gift cards, and support. Other `/profile/*` pat
   into Next dinner, and picks the create mode → `ProfilePageCustomer` (Next dinner uses `CustomerBookingRequestCard` in the same
   container-query card grid as `ProfileCustomerBookingRequestsPage`, with `@container` on the centered overview column). See
   [attention.md](../architecture/attention.md).
+- i18n: same `/profile` loader + `ProfileLayout` `I18nProvider` as the cook shell (`common`+`public`+`profile`+`profileCustomer`) — see
+  [cook-shell.md](./cook-shell.md) and [i18n.md](../architecture/i18n.md).
 - Key files: `src/web/pages/profile/ProfileLayout.tsx` (`CustomerShell`, `ProfileAssistantPane`), `src/web/components/CustomerSidebar.tsx`,
   `CustomerBreadcrumbs.tsx`, `CustomerBookingRequestCard.tsx`, `AssistantTriggerButton.tsx`, `ProfileAssistantSidebar.tsx`,
   `ProfilePinnedFooterLayout.tsx`, `customerCatalog.ts`, `ProfilePageCustomer.tsx`.

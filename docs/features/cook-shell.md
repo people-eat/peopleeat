@@ -108,6 +108,9 @@ destinations share a catalog until real pages replace them. `/profile/account` i
   `ProfileAssistantSidebar` ships a close control (required on mobile full-screen) and a pinned composer (local draft only until chat is
   wired). See [assistants.md](./assistants.md).
 - Admin footer link: `isAdmin` from profile / account loaders.
+- i18n: `/profile` loader + `head()` `await i18nResourcesLoad(…, ['common', 'public', 'profile', 'profileCook'|'profileCustomer'])`;
+  `ProfileLayout` nests `I18nProvider` with those namespaces. `public` is required so `/profile/public` Preview (`Header` / `Footer` /
+  `ChefProfileView` / `PublicCookCard`) can call `useT('public')` — see [i18n.md](../architecture/i18n.md).
 - Key files: `src/web/pages/profile/ProfileLayout.tsx` (`CookShell`, `ProfileAssistantPane`), `src/web/components/CookSidebar.tsx`,
   `CookBreadcrumbs.tsx`, `CookAccessDenied.tsx`, `AssistantTriggerButton.tsx`, `ProfileAssistantSidebar.tsx`,
   `ProfilePinnedFooterLayout.tsx`.
