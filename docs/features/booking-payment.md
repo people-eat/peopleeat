@@ -67,6 +67,11 @@ same webhook endpoint but their own finalize (`giftCardPayFinalize`), not the bo
   and pull / testimonial / event-tomorrow jobs. A second matching call is silent; mismatched amount / intent ids → `log.warn` + Slack
   "Zahlung Hinweis: Abweichung". Event catalog + Dashboard setup:
   [stripe-payment.md](../architecture/stripe-payment.md#webhooks--dashboard-setup)
+- **Checkout sad path:** `FAILED` is recoverable, not “event pending”. Derived offer/request status stays `USER_NEEDS_DEPOSIT_PAYMENT` /
+  `DEPOSIT_PAYMENT_PENDING` so the customer still has a checkout CTA and overview to-do. GraphQL still exposes the Stripe client secret. 3-D
+  Secure / card failures reuse the same SetupIntent or PaymentIntent (`requires_payment_method`). Canceled intents are replaced with a fresh
+  SI/PI while `paymentStatus` stays `FAILED`. Slack ops copy maps Stripe event types (never dump `setup_intent.setup_failed` as if it were
+  an i18n key). A late `setup_failed` after `SETUP` is ignored so an out-of-order webhook cannot un-save a card.
 - Offer chat milestones (visible to customer, cook, and admin): `SYSTEM_PAYMENT_SETUP` (SI saved), `SYSTEM_PAYMENT_SUCCEEDED` (checkout / €0
   accept / pull / amendment; pull uses `source: PULL` for card-charge detail copy), `SYSTEM_PAYMENT_FAILED` (webhook or pull),
   `ADMIN_PAYOUT_RELEASED` (release or already-took-place → `TRANSFERRED`), `ADMIN_PAYED_OUT_OF_SYSTEM` (mark OOS, admin dual-accept, or

@@ -423,6 +423,7 @@
         "insufficientFunds": "Insufficient funds.",
         "processingError": "Payment processing failed. Please try again.",
         "authenticationRequired": "Additional authentication required.",
+        "authenticationFailed": "Card verification failed. Please try again or use another card.",
         "failed": "Payment failed.",
         "billingIncomplete": "Please enter a complete billing address.",
         "companyOptional": "Company (optional)",

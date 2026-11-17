@@ -226,6 +226,7 @@ export function ProfileCustomerBookingRequestOfferCheckoutPage({
     const liveOffer = offer;
 
     const needsDepositPayment = liveOffer.status === 'USER_NEEDS_DEPOSIT_PAYMENT';
+    const paymentFailed = liveOffer.paymentStatus === 'FAILED';
     // Also covers PAYED offers with `pendingDeltaPayment` (amendment increase without reusable PM).
     const canPay = liveOffer.payment != null && (needsDepositPayment || liveOffer.status === 'EVENT_PENDING');
     const paymentUnavailable = needsDepositPayment && liveOffer.payment == null;
@@ -332,7 +333,13 @@ export function ProfileCustomerBookingRequestOfferCheckoutPage({
                         {canPay ? <p className="text-muted-foreground">{description}</p> : null}
                     </div>
 
-                    {!needsDepositPayment ? (
+                    {paymentFailed ? (
+                        <StatusAlert tone="error" title={t(locale, 'profileCustomer', 'checkout.paymentAttemptFailed')}>
+                            {t(locale, 'profileCustomer', 'checkout.paymentAttemptFailedBody')}
+                        </StatusAlert>
+                    ) : null}
+
+                    {!canPay && !paymentUnavailable && !paymentFailed ? (
                         <StatusAlert tone="info" title={t(locale, 'profileCustomer', 'checkout.noPaymentNeeded')}>
                             {t(locale, 'profileCustomer', 'checkout.noPaymentNeededBody')}
                         </StatusAlert>

@@ -159,11 +159,11 @@ cards run only when no offer claims the id.
 | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `payment_intent.succeeded`      | Finalize matching offer → `PAYED`, or clear `pendingDeltaPayment` + cook top-up (`bookingRequestOfferPaymentIntentSucceededApply`). Shared helper claims status once (checkout mutation may race); only the winner Slack/emails. If no offer matches, finalize a gift card with that PaymentIntent id (`giftCardPaymentIntentSucceededApply` → `giftCardPayFinalize`). |
 | `payment_intent.processing`     | Same as succeeded (async methods such as SEPA, and gift cards)                                                                                                                                                                                                                                                                                                         |
-| `payment_intent.payment_failed` | Mark matching offer `FAILED` if not already paid/transferred; Slack fail notify                                                                                                                                                                                                                                                                                        |
-| `payment_intent.canceled`       | Same as payment_failed                                                                                                                                                                                                                                                                                                                                                 |
+| `payment_intent.payment_failed` | Mark matching offer `FAILED` if not already paid / setup / transferred; Slack fail notify. Customer checkout stays open (`USER_NEEDS_DEPOSIT_PAYMENT`) with the same PaymentIntent when it is still retryable.                                                                                                                                                         |
+| `payment_intent.canceled`       | Same as payment_failed, then replace the canceled PaymentIntent so checkout can retry                                                                                                                                                                                                                                                                                  |
 | `setup_intent.succeeded`        | Finalize matching offer → `SETUP` (`bookingRequestOfferSetupIntentSucceededApply`); same single-winner claim as PI success                                                                                                                                                                                                                                             |
-| `setup_intent.setup_failed`     | Mark matching offer `FAILED` if not terminal-paid                                                                                                                                                                                                                                                                                                                      |
-| `setup_intent.canceled`         | Same as setup_failed                                                                                                                                                                                                                                                                                                                                                   |
+| `setup_intent.setup_failed`     | Mark matching offer `FAILED` if not already paid / setup / transferred; keep the SetupIntent for retry (3-D Secure / card failure). Slack body is German ops copy, not the raw event type.                                                                                                                                                                             |
+| `setup_intent.canceled`         | Same as setup_failed, then replace the canceled SetupIntent so checkout can retry                                                                                                                                                                                                                                                                                      |
 | `account.updated`               | Lookup cook by `stripeAccountId`; sync `stripeAccountActive` / `stripeAccountActiveWasReset` via `cookStripeAccountStatusApply` (no wallet visit required)                                                                                                                                                                                                             |
 
 **Subscribe, ack only** (no DB write — unused product paths: no manual capture, no `customer_balance`):
@@ -198,7 +198,8 @@ Attention lane — see [cook-profile.md](../features/cook-profile.md).
 - Callers must persist Connect `accountId` after `accountCreate`.
 - Split top-ups need a two-step command/webhook flow using `pendingExtraTransferAmount`.
 - Connect readiness can update from `account.updated` before the cook opens the wallet; payment/setup failure webhooks keep offer
-  `paymentStatus` in sync when the client mutation does not run.
+  `paymentStatus` in sync when the client mutation does not run. `FAILED` stays a checkout-needed state (not `EVENT_PENDING`); the customer
+  can retry from the offer / checkout pages.
 
 ## Key files
 
@@ -220,7 +221,7 @@ Attention lane — see [cook-profile.md](../features/cook-profile.md).
 - `src/server/utils/giftCardPayFinalize.ts` — shared gift-card pay claim (client + webhook)
 - `src/server/commands/bookingRequestOfferSetupIntentSucceededApply.ts` — SI success finalize
 - `src/server/utils/bookingRequestOfferPaymentFinalize.ts` — shared SI/PI finalize; atomic `paymentStatus` claim; mismatch Slack warn
-- `src/server/commands/bookingRequestOfferPaymentFailedApply.ts` — PI/SI fail or cancel → `FAILED`
+- `src/server/commands/bookingRequestOfferPaymentFailedApply.ts` — PI/SI fail or cancel → `FAILED` (canceled intents are replaced)
 - `src/server/domain/ServerRuntime.ts` — `stripe: StripePayment`
 - `src/server/domain/serverRuntimeCreate.ts` — wires the factory
 

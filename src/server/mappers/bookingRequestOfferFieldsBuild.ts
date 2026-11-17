@@ -1,6 +1,6 @@
 import type { Locale } from '../../shared/locale';
 import type { BookingRequest, BookingRequestOffer, BookingRequestParticipant, CookCallSlotBooking } from '../db/schema';
-import { bookingRequestOfferStatusDerive } from '../domain/bookingRequest';
+import { bookingRequestOfferPaymentNeedsCheckout, bookingRequestOfferStatusDerive } from '../domain/bookingRequest';
 import { bookingRequestOfferCostBreakdownBuild } from '../domain/bookingRequestOfferCostBreakdown';
 import { environmentVariables } from '../env/environmentVariablesCreate';
 import type {
@@ -146,7 +146,10 @@ export function bookingRequestOfferFieldsBuild(input: BookingRequestOfferFieldsI
         : offer.paymentData && 'clientSecret' in offer.paymentData
           ? offer.paymentData.clientSecret
           : null;
-    const paymentEligible = clientSecret != null && paymentType != null && (offer.paymentStatus === 'EMPTY' || pendingDelta != null);
+    const paymentEligible =
+        clientSecret != null &&
+        paymentType != null &&
+        (bookingRequestOfferPaymentNeedsCheckout(offer.paymentStatus) || pendingDelta != null);
     const publishableKey = environmentVariables.stripePublishableKey;
     if (paymentEligible && !publishableKey) {
         // Accept prepared Stripe SI/PI, but Elements cannot mount without the publishable key.

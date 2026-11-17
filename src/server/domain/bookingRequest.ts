@@ -118,6 +118,11 @@ export function bookingRequestOfferPaymentIsPaid(paymentStatus: BookingRequestOf
     return paymentStatus === 'PAYED' || paymentStatus === 'TRANSFERRED' || paymentStatus === 'PAYED_OUT_OF_SYSTEM';
 }
 
+/** Dual-accepted offers that still need customer checkout (first attempt or retry after failure). */
+export function bookingRequestOfferPaymentNeedsCheckout(paymentStatus: BookingRequestOfferPaymentStatus): boolean {
+    return paymentStatus === 'EMPTY' || paymentStatus === 'FAILED';
+}
+
 /** Statuses where a customer may still cancel. */
 export const bookingRequestCancelableStatuses: ReadonlySet<BookingRequestStatus> = new Set([
     'WAITING_FOR_OFFERS',
@@ -158,7 +163,7 @@ export function bookingRequestStatusDerive(input: BookingRequestStatusDeriveInpu
         return 'WAITING_FOR_OFFERS';
     }
 
-    if (acceptedOfferPaymentStatus === 'EMPTY') {
+    if (bookingRequestOfferPaymentNeedsCheckout(acceptedOfferPaymentStatus)) {
         return 'DEPOSIT_PAYMENT_PENDING';
     }
 
@@ -228,7 +233,7 @@ export function bookingRequestOfferStatusDerive(input: BookingRequestOfferStatus
         return 'USER_NEEDS_DEPOSIT_PAYMENT';
     }
 
-    if (dualAccepted && input.paymentDataPresent && input.paymentStatus === 'EMPTY') {
+    if (dualAccepted && input.paymentDataPresent && bookingRequestOfferPaymentNeedsCheckout(input.paymentStatus)) {
         return 'USER_NEEDS_DEPOSIT_PAYMENT';
     }
 
@@ -236,11 +241,11 @@ export function bookingRequestOfferStatusDerive(input: BookingRequestOfferStatus
         return 'PAYMENT_PULL_PENDING';
     }
 
-    if (dualAccepted && input.paymentStatus !== 'EMPTY' && input.paymentStatus !== 'SETUP' && now <= eventDate) {
+    if (dualAccepted && bookingRequestOfferPaymentIsPaid(input.paymentStatus) && now <= eventDate) {
         return 'EVENT_PENDING';
     }
 
-    if (dualAccepted && input.paymentDataPresent && now >= eventDate) {
+    if (dualAccepted && bookingRequestOfferPaymentIsPaid(input.paymentStatus) && now >= eventDate) {
         return 'COMPLETED';
     }
 

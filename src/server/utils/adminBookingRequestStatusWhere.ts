@@ -22,7 +22,7 @@ export function adminBookingRequestStatusWhere(
     return or(...clauses);
 }
 
-function dualAcceptedOfferExists(db: ServerRuntime['db'], paymentStatus?: 'EMPTY' | 'SETUP' | 'paidLike'): SQL {
+function dualAcceptedOfferExists(db: ServerRuntime['db'], paymentStatus?: 'EMPTY' | 'SETUP' | 'depositPending' | 'paidLike'): SQL {
     const parts: SQL[] = [
         eq(bookingRequestOffers.bookingRequestId, bookingRequests.bookingRequestId),
         eq(bookingRequestOffers.userAccepted, true),
@@ -30,8 +30,10 @@ function dualAcceptedOfferExists(db: ServerRuntime['db'], paymentStatus?: 'EMPTY
     ];
     if (paymentStatus === 'EMPTY' || paymentStatus === 'SETUP') {
         parts.push(eq(bookingRequestOffers.paymentStatus, paymentStatus));
+    } else if (paymentStatus === 'depositPending') {
+        parts.push(inArray(bookingRequestOffers.paymentStatus, ['EMPTY', 'FAILED']));
     } else if (paymentStatus === 'paidLike') {
-        parts.push(not(inArray(bookingRequestOffers.paymentStatus, ['EMPTY', 'SETUP'])));
+        parts.push(inArray(bookingRequestOffers.paymentStatus, ['PAYED', 'TRANSFERRED', 'PAYED_OUT_OF_SYSTEM']));
     }
 
     return exists(
@@ -85,7 +87,7 @@ function adminBookingRequestStatusClause(status: BookingRequestStatus, db: Serve
         case 'OFFERS_WAITING_FOR_REVIEW':
             return and(isNull(bookingRequests.canceledAt), noAcceptedOffer(db), notExpired(now), anyOfferExists(db))!;
         case 'DEPOSIT_PAYMENT_PENDING':
-            return and(isNull(bookingRequests.canceledAt), dualAcceptedOfferExists(db, 'EMPTY'))!;
+            return and(isNull(bookingRequests.canceledAt), dualAcceptedOfferExists(db, 'depositPending'))!;
         case 'PAYMENT_PULL_PENDING':
             return and(isNull(bookingRequests.canceledAt), dualAcceptedOfferExists(db, 'SETUP'))!;
         case 'EVENT_PENDING':

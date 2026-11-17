@@ -423,6 +423,7 @@
         "insufficientFunds": "Nicht genügend Guthaben.",
         "processingError": "Zahlungsabwicklung fehlgeschlagen. Bitte erneut versuchen.",
         "authenticationRequired": "Zusätzliche Authentifizierung erforderlich.",
+        "authenticationFailed": "Kartenprüfung fehlgeschlagen. Bitte erneut versuchen oder eine andere Karte nutzen.",
         "failed": "Zahlung fehlgeschlagen.",
         "billingIncomplete": "Bitte vollständige Rechnungsadresse angeben.",
         "companyOptional": "Firma (optional)",

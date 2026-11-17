@@ -29,6 +29,7 @@ async function seedOffer(options: {
     paymentStatus?: 'EMPTY' | 'SETUP' | 'PAYED' | 'FAILED';
     paymentData: BookingRequestOfferPaymentData;
     stripeAccountId?: string;
+    eventOffsetDays?: number;
 }) {
     const cookSetup = await commandSetup.withUser({ firstName: 'Chef', lastName: 'Hook' });
     await testDb.insert(cooks).values({
@@ -48,7 +49,7 @@ async function seedOffer(options: {
         bookingRequestId,
         userId: customer.user.userId,
         occasion: 'Dinner',
-        dateTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        dateTime: new Date(Date.now() + (options.eventOffsetDays ?? 7) * 24 * 60 * 60 * 1000),
         exactEventAddress: berlin,
         priceClassType: 'MEDIUM',
         originalMessage: 'Hi',
@@ -170,6 +171,82 @@ describe('stripeWebhookApply', () => {
             .from(bookingRequestOffers)
             .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
         expect(offer!.paymentStatus).toBe('SETUP');
+    });
+
+    it('marks FAILED on setup_intent.setup_failed and keeps the SetupIntent for retry', async () => {
+        const setupIntentId = `si_${idCreate()}`;
+        const { serverRuntime, bookingRequestOfferId, bookingRequestId } = await seedOffer({
+            paymentData: { setupIntentId, clientSecret: 'sec' },
+        });
+
+        await stripeWebhookApply(
+            {
+                id: 'evt_si_fail',
+                type: 'setup_intent.setup_failed',
+                dataObject: {
+                    id: setupIntentId,
+                    last_setup_error: { code: 'payment_intent_authentication_failure' },
+                },
+            },
+            serverRuntime,
+        );
+
+        const [offer] = await testDb
+            .select()
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+        expect(offer!.paymentStatus).toBe('FAILED');
+        expect(offer!.paymentData).toEqual({ setupIntentId, clientSecret: 'sec' });
+        expect(serverRuntime.stripe.setupIntentCreate).not.toHaveBeenCalled();
+        expect(slackNotifyPaymentFailed).toHaveBeenCalledWith(serverRuntime, {
+            bookingRequestId,
+            bookingRequestOfferId,
+            detail: 'setup_intent.setup_failed payment_intent_authentication_failure',
+        });
+    });
+
+    it('does not downgrade SETUP on a late setup_intent.setup_failed', async () => {
+        const setupIntentId = `si_${idCreate()}`;
+        const { serverRuntime, bookingRequestOfferId } = await seedOffer({
+            paymentStatus: 'SETUP',
+            paymentData: { setupIntentId, clientSecret: 'sec' },
+        });
+
+        await stripeWebhookApply(
+            { id: 'evt_si_late', type: 'setup_intent.setup_failed', dataObject: { id: setupIntentId } },
+            serverRuntime,
+        );
+
+        const [offer] = await testDb
+            .select()
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+        expect(offer!.paymentStatus).toBe('SETUP');
+        expect(slackNotifyPaymentFailed).not.toHaveBeenCalled();
+    });
+
+    it('replaces a canceled SetupIntent so checkout can retry', async () => {
+        const setupIntentId = `si_${idCreate()}`;
+        const { serverRuntime, bookingRequestOfferId } = await seedOffer({
+            paymentData: { setupIntentId, clientSecret: 'sec' },
+            eventOffsetDays: 30,
+        });
+        vi.mocked(serverRuntime.stripe.setupIntentCancel).mockResolvedValue(undefined);
+        vi.mocked(serverRuntime.stripe.setupIntentCreate).mockResolvedValue({
+            setupIntentId: 'si_retry',
+            clientSecret: 'sec_retry',
+        });
+
+        await stripeWebhookApply({ id: 'evt_si_cancel', type: 'setup_intent.canceled', dataObject: { id: setupIntentId } }, serverRuntime);
+
+        const [offer] = await testDb
+            .select()
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+        expect(offer!.paymentStatus).toBe('FAILED');
+        expect(offer!.paymentData).toEqual({ setupIntentId: 'si_retry', clientSecret: 'sec_retry' });
+        expect(serverRuntime.stripe.setupIntentCancel).toHaveBeenCalledWith(setupIntentId);
+        expect(serverRuntime.stripe.setupIntentCreate).toHaveBeenCalled();
     });
 
     it('syncs Connect flags on account.updated', async () => {

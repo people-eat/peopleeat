@@ -423,6 +423,7 @@
         "insufficientFunds": "Onvoldoende saldo.",
         "processingError": "Betaling kon niet worden verwerkt. Probeer het opnieuw.",
         "authenticationRequired": "Extra verificatie nodig.",
+        "authenticationFailed": "Kaartverificatie mislukt. Probeer het opnieuw of gebruik een andere kaart.",
         "failed": "Betaling mislukt.",
         "billingIncomplete": "Vul een compleet factuuradres in.",
         "companyOptional": "Bedrijf (optioneel)",

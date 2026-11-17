@@ -56,8 +56,9 @@ cook, or admin only. See [booking-request-create.md](../features/booking-request
 Nullable booleans on the offer: `null` = pending, `true` = accepted, `false` = declined. Typical create path sets `cookAccepted: true` and
 leaves `userAccepted` null. Customer edits can clear cook acceptance back to null. **Statuses are derived** (`bookingRequestStatusDerive` /
 `bookingRequestOfferStatusDerive`), not stored. Paid lifecycle statuses (`EVENT_PENDING`, `COMPLETED`, deposit / pull pending) require both
-accept flags `true`. Admin handover also clears payment columns on the closed offer (`EMPTY` / null schedule timestamps) so it derives
-`USER_CHOOSE_DIFFERENT_OFFER`, not a paid status.
+accept flags `true`. `paymentStatus: FAILED` is not paid: it derives `USER_NEEDS_DEPOSIT_PAYMENT` / `DEPOSIT_PAYMENT_PENDING` so the
+customer can retry checkout. Admin handover also clears payment columns on the closed offer (`EMPTY` / null schedule timestamps) so it
+derives `USER_CHOOSE_DIFFERENT_OFFER`, not a paid status.
 
 ### One accepted offer
 

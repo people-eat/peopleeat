@@ -24,6 +24,22 @@ function objectId(dataObject: unknown): string | undefined {
     return undefined;
 }
 
+function stripeIntentErrorCode(dataObject: unknown): string | undefined {
+    if (!dataObject || typeof dataObject !== 'object') return undefined;
+    const record = dataObject as Record<string, unknown>;
+    const error = record.last_setup_error ?? record.last_payment_error;
+    if (!error || typeof error !== 'object') return undefined;
+    const err = error as Record<string, unknown>;
+    if (typeof err.decline_code === 'string' && err.decline_code.length > 0) return err.decline_code;
+    if (typeof err.code === 'string' && err.code.length > 0) return err.code;
+    return undefined;
+}
+
+function stripeIntentFailureDetail(event: StripeWebhookEvent): string {
+    const code = stripeIntentErrorCode(event.dataObject);
+    return code ? `${event.type} ${code}` : event.type;
+}
+
 /**
  * Dispatches a verified Stripe webhook event. Ack-only types are silent no-ops
  * (caller still returns 200). Unexpected types and handled events missing an
@@ -51,7 +67,7 @@ export async function stripeWebhookApply(event: StripeWebhookEvent, serverRuntim
                 serverRuntime.log.warn(`stripeWebhookApply: missing object id for type=${event.type}`);
                 return;
             }
-            await bookingRequestOfferPaymentFailedApply(id, 'paymentIntentId', serverRuntime, event.type);
+            await bookingRequestOfferPaymentFailedApply(id, 'paymentIntentId', serverRuntime, stripeIntentFailureDetail(event));
             return;
         }
         case 'setup_intent.succeeded': {
@@ -68,7 +84,7 @@ export async function stripeWebhookApply(event: StripeWebhookEvent, serverRuntim
                 serverRuntime.log.warn(`stripeWebhookApply: missing object id for type=${event.type}`);
                 return;
             }
-            await bookingRequestOfferPaymentFailedApply(id, 'setupIntentId', serverRuntime, event.type);
+            await bookingRequestOfferPaymentFailedApply(id, 'setupIntentId', serverRuntime, stripeIntentFailureDetail(event));
             return;
         }
         case 'account.updated': {

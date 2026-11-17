@@ -79,6 +79,8 @@ function stripeConfirmErrorMessage(error: { code?: string; decline_code?: string
         insufficient_funds: 'stripePayment.insufficientFunds',
         processing_error: 'stripePayment.processingError',
         authentication_required: 'stripePayment.authenticationRequired',
+        payment_intent_authentication_failure: 'stripePayment.authenticationFailed',
+        setup_intent_authentication_failure: 'stripePayment.authenticationFailed',
     } as const;
     const key = code && code in byCode ? byCode[code as keyof typeof byCode] : 'stripePayment.failed';
     return t(locale, 'common', key);

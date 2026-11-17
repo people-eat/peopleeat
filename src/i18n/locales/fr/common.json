@@ -363,6 +363,7 @@
         "insufficientFunds": "Fonds insuffisants.",
         "processingError": "Échec du traitement du paiement. Réessaie.",
         "authenticationRequired": "Authentification supplémentaire requise.",
+        "authenticationFailed": "La vérification de la carte a échoué. Réessaie ou utilise une autre carte.",
         "failed": "Paiement échoué.",
         "billingIncomplete": "Indique une adresse de facturation complète.",
         "companyOptional": "Entreprise (optionnel)",

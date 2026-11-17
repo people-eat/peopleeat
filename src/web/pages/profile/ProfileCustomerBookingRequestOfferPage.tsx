@@ -261,6 +261,7 @@ export function ProfileCustomerBookingRequestOfferPage({
         offer.suggestedMenus.length > 0 &&
         offer.configuredMenu == null;
     const needsDepositPayment = offer?.status === 'USER_NEEDS_DEPOSIT_PAYMENT';
+    const paymentFailed = offer?.paymentStatus === 'FAILED';
     const needsAmendmentDeltaPayment = offer != null && offer.paymentStatus === 'PAYED' && offer.payment != null;
     const canPay = offer != null && offer.payment != null && (offer.status === 'USER_NEEDS_DEPOSIT_PAYMENT' || needsAmendmentDeltaPayment);
     const paymentUnavailable = offer != null && offer.status === 'USER_NEEDS_DEPOSIT_PAYMENT' && offer.payment == null;
@@ -442,11 +443,13 @@ export function ProfileCustomerBookingRequestOfferPage({
                         {needsDepositPayment ? (
                             <BookingRequestOfferAttentionBanner
                                 message={
-                                    isSetupIntent
-                                        ? pullIsPast
-                                            ? t(locale, 'profileCustomer', 'offer.paymentDetailsPendingChargeSoon')
-                                            : t(locale, 'profileCustomer', 'offer.paymentDetailsPending')
-                                        : t(locale, 'profileCustomer', 'offer.paymentPendingCheckout')
+                                    paymentFailed
+                                        ? t(locale, 'profileCustomer', 'offer.paymentAttemptFailedBanner')
+                                        : isSetupIntent
+                                          ? pullIsPast
+                                              ? t(locale, 'profileCustomer', 'offer.paymentDetailsPendingChargeSoon')
+                                              : t(locale, 'profileCustomer', 'offer.paymentDetailsPending')
+                                          : t(locale, 'profileCustomer', 'offer.paymentPendingCheckout')
                                 }
                                 actionLabel={t(locale, 'profileCustomer', 'offer.goToCheckout')}
                                 actionLink={
@@ -780,6 +783,7 @@ function OfferTabPanel({
     const hasMenu = offer.configuredMenu != null || canConfigure || offer.suggestedMenus.length > 0;
     const pullIsPast = bookingPaymentPullIsPast(offer.plannedPaymentPullDateTime);
     const isSetupIntent = offer.payment?.type === 'SETUP_INTENT';
+    const paymentFailed = offer.paymentStatus === 'FAILED';
     const timeZone = useTimeZone();
     const receiptsEnabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS');
     const [{ fetching: receiptBusy }, regenerateReceipt] = useMutation(ProfileCustomerBookingRequestOfferCustomerReceiptRegenerateDocument);
@@ -979,8 +983,12 @@ function OfferTabPanel({
 
                 {canPay ? (
                     <StatusAlert
-                        tone="warning"
-                        title={t(locale, 'profileCustomer', 'offer.paymentPending')}
+                        tone={paymentFailed ? 'error' : 'warning'}
+                        title={
+                            paymentFailed
+                                ? t(locale, 'profileCustomer', 'offer.paymentAttemptFailed')
+                                : t(locale, 'profileCustomer', 'offer.paymentPending')
+                        }
                         action={
                             <Button type="button" size="sm" asChild>
                                 <Link
@@ -994,11 +1002,13 @@ function OfferTabPanel({
                             </Button>
                         }
                     >
-                        {isSetupIntent
-                            ? pullIsPast
-                                ? t(locale, 'profileCustomer', 'offer.setupChargeSoonBody')
-                                : t(locale, 'profileCustomer', 'offer.setupReserveBody')
-                            : t(locale, 'profileCustomer', 'offer.completePaymentBody')}
+                        {paymentFailed
+                            ? t(locale, 'profileCustomer', 'offer.paymentAttemptFailedBody')
+                            : isSetupIntent
+                              ? pullIsPast
+                                  ? t(locale, 'profileCustomer', 'offer.setupChargeSoonBody')
+                                  : t(locale, 'profileCustomer', 'offer.setupReserveBody')
+                              : t(locale, 'profileCustomer', 'offer.completePaymentBody')}
                     </StatusAlert>
                 ) : null}
 

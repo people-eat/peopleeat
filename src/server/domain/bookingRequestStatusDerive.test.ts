@@ -99,6 +99,17 @@ describe('bookingRequestStatusDerive', () => {
                 now: new Date('2026-10-02T00:00:00.000Z'),
             }),
         ).toBe('COMPLETED');
+
+        expect(
+            bookingRequestStatusDerive({
+                offerCount: 1,
+                acceptedOfferPaymentStatus: 'FAILED',
+                canceledAt: null,
+                expiresAt: null,
+                eventDate,
+                now,
+            }),
+        ).toBe('DEPOSIT_PAYMENT_PENDING');
     });
 });
 
@@ -207,6 +218,18 @@ describe('bookingRequestOfferStatusDerive', () => {
                 paymentDataPresent: true,
             }),
         ).toBe('EVENT_PENDING');
+    });
+
+    it('returns USER_NEEDS_DEPOSIT_PAYMENT when dual-accepted payment failed', () => {
+        expect(
+            bookingRequestOfferStatusDerive({
+                ...base,
+                userAccepted: true,
+                cookAccepted: true,
+                paymentStatus: 'FAILED',
+                paymentDataPresent: true,
+            }),
+        ).toBe('USER_NEEDS_DEPOSIT_PAYMENT');
     });
 });
 

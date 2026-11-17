@@ -255,6 +255,30 @@ export async function slackNotifyPaymentFinalizeMismatch(
     });
 }
 
+const SLACK_PAYMENT_FAILED_EVENT_LABELS: Record<string, string> = {
+    'setup_intent.setup_failed': 'Karten-Einrichtung fehlgeschlagen. Der Kunde kann den Checkout erneut versuchen.',
+    'setup_intent.canceled': 'SetupIntent abgebrochen. Der Kunde kann den Checkout erneut versuchen.',
+    'payment_intent.payment_failed': 'Zahlung fehlgeschlagen. Der Kunde kann den Checkout erneut versuchen.',
+    'payment_intent.canceled': 'PaymentIntent abgebrochen. Der Kunde kann den Checkout erneut versuchen.',
+};
+
+const SLACK_PAYMENT_FAILED_CODE_LABELS: Record<string, string> = {
+    payment_intent_authentication_failure: '3-D Secure fehlgeschlagen',
+    setup_intent_authentication_failure: '3-D Secure fehlgeschlagen',
+    authentication_required: 'Zusätzliche Authentifizierung erforderlich',
+};
+
+/** Map Stripe event types / error codes to ops German. Unknown detail is passed through. */
+export function slackPaymentFailedDetail(detail?: string): string | undefined {
+    if (!detail?.trim()) return undefined;
+    const [eventType, ...rest] = detail.trim().split(/\s+/);
+    const eventLabel = eventType ? SLACK_PAYMENT_FAILED_EVENT_LABELS[eventType] : undefined;
+    const extraRaw = rest.join(' ');
+    const extraLabel = extraRaw.length > 0 ? (SLACK_PAYMENT_FAILED_CODE_LABELS[extraRaw] ?? extraRaw) : undefined;
+    if (eventLabel && extraLabel) return `${eventLabel} ${extraLabel}`;
+    return eventLabel ?? detail.trim();
+}
+
 export async function slackNotifyPaymentFailed(
     serverRuntime: ServerRuntime,
     args: { bookingRequestId: string; bookingRequestOfferId: string; detail?: string },
@@ -262,7 +286,7 @@ export async function slackNotifyPaymentFailed(
     await bookingRequestSlackThreadReply(serverRuntime, {
         bookingRequestId: args.bookingRequestId,
         header: 'Zahlung fehlgeschlagen',
-        body: args.detail,
+        body: slackPaymentFailedDetail(args.detail),
         adminOfferId: args.bookingRequestOfferId,
     });
 }
