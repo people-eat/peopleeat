@@ -593,7 +593,10 @@
         "maxDistance": "Maximale reisafstand",
         "expensesPerKm": "Reiskosten per km",
         "originHostsHint": "Niet zichtbaar voor gastgevers. Zij zien alleen de stad.",
-        "hostsSee": "Gastgevers zien {city}."
+        "hostsSee": "Gastgevers zien {city}.",
+        "mapHint": "De pin is alleen voor jou. Gastgevers zien alleen de stad.",
+        "poolIntro": "Aanvragen in je reisradius verschijnen in de aanvraagpool.",
+        "goToPool": "Naar de aanvraagpool"
     },
     "travelEdit": {
         "title": "Reizen bewerken",
@@ -726,7 +729,8 @@
         "aboutKm": "ongeveer {km} km",
         "requestedYouAlsoOpen": "Heeft jou aangevraagd, ook open voor anderen",
         "newRequest": "Nieuwe aanvraag",
-        "declinedAt": "Afgewezen op"
+        "declinedAt": "Afgewezen op",
+        "adjustTravelRadius": "Reisradius aanpassen"
     },
     "poolRequest": {
         "title": "Boekingsaanvraag uit de pool",

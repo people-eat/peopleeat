@@ -1,7 +1,7 @@
-export type AdminMapPolygon = {
-    type: 'Polygon';
-    coordinates: [number, number][][];
-};
+import type { MapCirclePolygon } from '../../utils/mapCirclePolygon';
+import { mapCirclePolygon } from '../../utils/mapCirclePolygon';
+
+export type AdminMapPolygon = MapCirclePolygon;
 
 export type AdminMapFeatureCollection = {
     type: 'FeatureCollection';
@@ -14,19 +14,7 @@ export type AdminMapFeatureCollection = {
 
 /** Approximate circle polygon for MapLibre fill (planar km approximation). */
 export function adminMapCirclePolygon(longitude: number, latitude: number, radiusKm: number, steps = 64): AdminMapPolygon {
-    const coords: [number, number][] = [];
-    const latRad = (latitude * Math.PI) / 180;
-    const kmPerDegLat = 110.574;
-    const kmPerDegLng = 111.32 * Math.cos(latRad);
-
-    for (let i = 0; i <= steps; i++) {
-        const angle = (i / steps) * 2 * Math.PI;
-        const dLat = (radiusKm * Math.sin(angle)) / kmPerDegLat;
-        const dLng = (radiusKm * Math.cos(angle)) / kmPerDegLng;
-        coords.push([longitude + dLng, latitude + dLat]);
-    }
-
-    return { type: 'Polygon', coordinates: [coords] };
+    return mapCirclePolygon(longitude, latitude, radiusKm, steps);
 }
 
 export function adminMapEmptyFeatureCollection(): AdminMapFeatureCollection {

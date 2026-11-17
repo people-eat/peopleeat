@@ -3,6 +3,8 @@ import { Link } from '@tanstack/react-router';
 import { t } from '../../../i18n/t';
 import { formatCurrency } from '../../../shared';
 import { Button } from '../../components/base/button';
+import { StatusAlert } from '../../components/base/status-alert';
+import { CookTravelRadiusMap } from '../../components/CookTravelRadiusMap';
 import { ProfilePinnedFooterLayout } from '../../components/ProfilePinnedFooterLayout';
 import type { GqlCProfileCookTravelPageQuery } from '../../graphql/generated';
 import { ProfileCookTravelPageUpdatesDocument } from '../../graphql/generated';
@@ -35,20 +37,27 @@ export function ProfileCookTravelPage({ data }: { data: GqlCProfileCookTravelPag
 
     return (
         <ProfilePinnedFooterLayout
-            contentClassName="grid min-w-0 content-start gap-8"
+            contentScroll={false}
+            contentClassName="flex h-full min-h-0 min-w-0 flex-col gap-6 overflow-y-auto overscroll-contain px-4 pb-4"
             footer={
                 <Button asChild>
                     <Link to="/{-$locale}/profile/travel/edit">{t(locale, 'profileCook', 'actions.edit')}</Link>
                 </Button>
             }
         >
-            <div className="grid gap-2">
-                <h1 className="font-serif text-3xl/tight text-foreground">{route.title(locale)}</h1>
-                <p className="text-muted-foreground">{route.description(locale)}</p>
-            </div>
+            <StatusAlert
+                className="shrink-0"
+                tone="info"
+                title={t(locale, 'profileCook', 'travel.poolIntro')}
+                action={
+                    <Button asChild variant="outline" size="sm">
+                        <Link to="/{-$locale}/profile/booking-request-pool">{t(locale, 'profileCook', 'travel.goToPool')}</Link>
+                    </Button>
+                }
+            />
 
-            <section className="grid min-w-0 gap-4">
-                <dl className="grid min-w-0 gap-4">
+            <section className="grid min-w-0 shrink-0 gap-4">
+                <dl className="grid min-w-0 gap-4 sm:grid-cols-2">
                     <DetailField
                         label={t(locale, 'profileCook', 'travelEdit.origin')}
                         value={
@@ -73,6 +82,22 @@ export function ProfileCookTravelPage({ data }: { data: GqlCProfileCookTravelPag
                     />
                 </dl>
             </section>
+
+            {cook.exactTravelOriginAddress &&
+            Number.isFinite(cook.exactTravelOriginAddress.latitude) &&
+            Number.isFinite(cook.exactTravelOriginAddress.longitude) ? (
+                <section className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
+                    <p className="shrink-0 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                        {t(locale, 'profileCook', 'travel.mapHint')}
+                    </p>
+                    <CookTravelRadiusMap
+                        className="w-full flex-1"
+                        latitude={cook.exactTravelOriginAddress.latitude}
+                        longitude={cook.exactTravelOriginAddress.longitude}
+                        radiusKm={cook.maximumTravelDistance}
+                    />
+                </section>
+            ) : null}
         </ProfilePinnedFooterLayout>
     );
 }

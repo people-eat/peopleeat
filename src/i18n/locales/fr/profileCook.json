@@ -988,7 +988,10 @@
         "maxDistance": "Distance de déplacement maximale",
         "expensesPerKm": "Frais de déplacement par km",
         "originHostsHint": "Non affiché aux hôtes. Ils voient uniquement la ville.",
-        "hostsSee": "Les hôtes verront {city}."
+        "hostsSee": "Les hôtes verront {city}.",
+        "mapHint": "L'épingle est réservée à vous. Les hôtes voient uniquement la ville.",
+        "poolIntro": "Les demandes dans ton rayon de déplacement apparaissent dans le pool de demandes.",
+        "goToPool": "Aller au pool de demandes"
     },
     "travelEdit": {
         "title": "Modifier les déplacements",
@@ -1121,7 +1124,8 @@
         "aboutKm": "env. {km} km",
         "requestedYouAlsoOpen": "T’a demandé, aussi ouvert aux autres",
         "newRequest": "Nouvelle demande",
-        "declinedAt": "Refusé le"
+        "declinedAt": "Refusé le",
+        "adjustTravelRadius": "Ajuster le rayon de déplacement"
     },
     "poolRequest": {
         "title": "Demande de réservation du pool",

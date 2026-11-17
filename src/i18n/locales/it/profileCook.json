@@ -988,7 +988,10 @@
         "maxDistance": "Distanza di viaggio massima",
         "expensesPerKm": "Spese di viaggio per km",
         "originHostsHint": "Non mostrato agli ospiti. Vedono solo la città.",
-        "hostsSee": "Gli ospiti vedranno {city}."
+        "hostsSee": "Gli ospiti vedranno {city}.",
+        "mapHint": "Il pin è solo per te. Gli ospiti vedono solo la città.",
+        "poolIntro": "Le richieste nel tuo raggio di viaggio compaiono nel pool richieste.",
+        "goToPool": "Vai al pool richieste"
     },
     "travelEdit": {
         "title": "Modifica viaggio",
@@ -1121,7 +1124,8 @@
         "aboutKm": "circa {km} km",
         "requestedYouAlsoOpen": "Ti ha richiesto, aperto anche ad altri",
         "newRequest": "Nuova richiesta",
-        "declinedAt": "Rifiutata il"
+        "declinedAt": "Rifiutata il",
+        "adjustTravelRadius": "Modifica raggio di viaggio"
     },
     "poolRequest": {
         "title": "Richiesta di prenotazione dal pool",

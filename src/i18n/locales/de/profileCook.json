@@ -593,7 +593,10 @@
         "maxDistance": "Maximale Reisestrecke",
         "expensesPerKm": "Reisekosten je km",
         "originHostsHint": "Wird nicht für Gastgeber angezeigt. Sie sehen nur die Stadt.",
-        "hostsSee": "Gastgeber sehen {city}."
+        "hostsSee": "Gastgeber sehen {city}.",
+        "mapHint": "Der Pin ist nur für dich. Gastgeber sehen nur die Stadt.",
+        "poolIntro": "Anfragen in deinem Reiseradius erscheinen im Anfragen-Pool.",
+        "goToPool": "Zum Anfragen-Pool"
     },
     "travelEdit": {
         "title": "Reise bearbeiten",
@@ -726,7 +729,8 @@
         "aboutKm": "ca. {km} km",
         "requestedYouAlsoOpen": "Hat dich angefragt, auch für andere offen",
         "newRequest": "Neue Anfrage",
-        "declinedAt": "Abgelehnt am"
+        "declinedAt": "Abgelehnt am",
+        "adjustTravelRadius": "Reiseradius anpassen"
     },
     "poolRequest": {
         "title": "Buchungsanfrage aus dem Pool",

@@ -1,7 +1,9 @@
-import { useNavigate } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 
 import { t } from '../../../i18n/t';
 import { Badge } from '../../components/base/badge';
+import { Button } from '../../components/base/button';
+import { StatusAlert } from '../../components/base/status-alert';
 import { Tabs, TabsList, TabsTrigger } from '../../components/base/tabs';
 import { CookBookingRequestCard } from '../../components/CookBookingRequestCard';
 import type { GqlCProfileCookBookingRequestPoolPageQuery } from '../../graphql/generated';
@@ -49,7 +51,15 @@ export function ProfileCookBookingRequestPoolPage({
 
     return (
         <main id="main-content" className="@container grid w-full min-w-0 content-start gap-6">
-            <p className="text-sm text-muted-foreground">{route.description(locale)}</p>
+            <StatusAlert
+                tone="info"
+                title={route.description(locale)}
+                action={
+                    <Button asChild variant="outline" size="sm">
+                        <Link to="/{-$locale}/profile/travel">{t(locale, 'profileCook', 'pool.adjustTravelRadius')}</Link>
+                    </Button>
+                }
+            />
 
             <Tabs
                 value={view}

@@ -593,7 +593,10 @@
         "maxDistance": "Maximum travel distance",
         "expensesPerKm": "Travel expenses per km",
         "originHostsHint": "Not shown to hosts. They only see the city.",
-        "hostsSee": "Hosts will see {city}."
+        "hostsSee": "Hosts will see {city}.",
+        "mapHint": "The pin is only for you. Hosts only see the city.",
+        "poolIntro": "Requests in your travel radius show up in the booking request pool.",
+        "goToPool": "Go to booking request pool"
     },
     "travelEdit": {
         "title": "Edit travel",
@@ -726,7 +729,8 @@
         "aboutKm": "about {km} km",
         "requestedYouAlsoOpen": "Requested you, also open to others",
         "newRequest": "New request",
-        "declinedAt": "Declined at"
+        "declinedAt": "Declined at",
+        "adjustTravelRadius": "Adjust travel radius"
     },
     "poolRequest": {
         "title": "Booking request from the pool",

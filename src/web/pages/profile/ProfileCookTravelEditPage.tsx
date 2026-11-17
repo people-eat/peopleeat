@@ -10,6 +10,7 @@ import { Button } from '../../components/base/button';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '../../components/base/combobox';
 import { Input } from '../../components/base/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/base/select';
+import { CookTravelRadiusMap } from '../../components/CookTravelRadiusMap';
 import { ProfilePinnedFooterLayout } from '../../components/ProfilePinnedFooterLayout';
 import type { GqlCLocationSuggestion, GqlCProfileCookTravelPageQuery, GqlCProfileTravelCookFragment } from '../../graphql/generated';
 import {
@@ -129,6 +130,9 @@ export function ProfileCookTravelEditPage({ data }: { data: GqlCProfileCookTrave
     const isDirty = useSelector(form.store, (state) => state.isDirty);
     const locationSearchText = useSelector(form.store, (state) => state.values.locationSearchText);
     const selectedLocation = useSelector(form.store, (state) => state.values.selectedLocation);
+    const maximumTravelDistanceText = useSelector(form.store, (state) => state.values.maximumTravelDistanceText);
+    const previewRadiusKm = Number(maximumTravelDistanceText);
+    const mapRadiusKm = Number.isFinite(previewRadiusKm) && previewRadiusKm > 0 ? previewRadiusKm : null;
 
     useEffect(() => {
         if (!cook) return;
@@ -279,6 +283,16 @@ export function ProfileCookTravelEditPage({ data }: { data: GqlCProfileCookTrave
                             )}
                         </form.Field>
                     </div>
+                    {selectedLocation && Number.isFinite(selectedLocation.latitude) && Number.isFinite(selectedLocation.longitude) ? (
+                        <div className="grid min-w-0 gap-2">
+                            <CookTravelRadiusMap
+                                latitude={selectedLocation.latitude}
+                                longitude={selectedLocation.longitude}
+                                radiusKm={mapRadiusKm}
+                            />
+                            <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'travel.mapHint')}</p>
+                        </div>
+                    ) : null}
                 </section>
             </form>
         </ProfilePinnedFooterLayout>

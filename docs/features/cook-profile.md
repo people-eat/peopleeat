@@ -37,9 +37,11 @@ Signed-in cooks manage these areas under `/profile/*`:
    platform). The copy says the peopleeat team uses the links to review the profile and customers never see them. Blank fields clear the
    document. The cook mutation rejects when the toggle is off for that cook. Admins always see and edit the same links on the user
    cook-profile tab, including while the toggle is off. Nothing is copied onto the public chef page.
-3. **Travel settings** (`/profile/travel`) shows travel origin, max distance, and €/km expenses. **Edit** opens the travel form. Customers
-   only see the **city** from the travel origin — never the full street address. Overview and the booking request pool deep-link here when
-   travel origin is missing.
+3. **Travel settings** (`/profile/travel`) shows travel origin, max distance, and €/km expenses, plus a map centered on the origin with the
+   max-distance radius drawn as a circle so cooks can see which area their booking-request pool covers. An info `StatusAlert` explains that
+   radius traffic lands in the pool and links there with **Go to booking request pool**. **Edit** opens the travel form and updates the
+   circle live when origin or max distance changes. Customers only see the **city** from the travel origin — never the full street address
+   or the pin. Overview and the booking request pool deep-link here when travel origin is missing.
 4. **Public profile** (`/profile/public`) has two tabs: **Preview** (default) and **Manage** (`?tab=manage`). Preview is a full-height
    customer WYSIWYG: static `PublicCookCard` (same column width as the public listing grid) plus detail preview of the saved profile and
    published meals that have images and published complete menus that have a meal picture — even when customers would not see the page yet —
@@ -134,12 +136,6 @@ Give cooks a calm overview of how customers have rated them: average stars, revi
 surfaced from the cook home / overview (or a dedicated profile entry) rather than only on the public chef page. Low-star or still-pending
 reviews stay out of the cook-facing summary until published, matching public rules — see [testimonials.md](./testimonials.md).
 
-### Travel radius map
-
-On **Travel settings** (`/profile/travel`), show a map centered on the travel origin with the max-distance radius drawn as a circle so cooks
-can see at a glance which area their booking-request pool covers. Edit mode should update the circle live when max distance or origin
-changes. Customers still only see city, never the pin or street.
-
 ## Implementation
 
 - Analytics overview strip: `Cook.analytics` on `ProfilePage` (past month); full page in [cook-analytics.md](./cook-analytics.md)
@@ -191,6 +187,9 @@ changes. Customers still only see city, never the pin or street.
 - Profile UI: chef profile view/edit, travel view/edit, public page (Preview / Manage tabs via `?tab=manage`), wallet, calls, overview
   Attention + Getting started on cook home (server `Cook.attention` / `Cook.onboardingSteps`, routed by `profilePageCookOverview`; see
   [attention.md](../architecture/attention.md))
+- Travel radius map: `CookTravelRadiusMap` on `/profile/travel` + live preview on `/profile/travel/edit` (MapLibre + OpenFreeMap Positron,
+  same stack as [admin-map.md](./admin-map.md)); circle via shared `mapCirclePolygon` in `src/web/utils/mapCirclePolygon.ts` (admin
+  `adminMapCirclePolygon` re-exports it). Shown only when origin lat/lng are set; `null`/≤0 radius paints the pin only.
 - Cook GraphQL: `mealsCounts` / `menusCounts` (`CookMealCriterion` / `CookMenuCriterion`);
   `callSlotBookings(criterion: CookCallSlotBookingCriterion)` for status + `startAt` window
 - Admin: pending-approval queue on `/admin`; cook-profile tab (read-only + approval/visibility; edit at
