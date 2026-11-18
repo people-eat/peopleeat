@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { ProfileCookChefProfilePageDocument } from '../../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../../web/graphql/routeLoaderGraphqlClient';
 import {
+    parseProfileCookChefProfileSearch,
     ProfileCookChefProfilePage,
     profileCookChefProfilePageDescription,
     profileCookChefProfilePageTitle,
@@ -12,6 +13,7 @@ import { webPageUrlGet } from '../../../web/seo/webPageUrlGet';
 import { localeFromParam } from '../../../web/utils/locale';
 
 export const Route = createFileRoute('/{-$locale}/profile/chef-profile')({
+    validateSearch: (search: Record<string, unknown>) => parseProfileCookChefProfileSearch(search),
     loader: routeLoaderGraphqlClient(ProfileCookChefProfilePageDocument),
     staleTime: 0,
     head: ({ params }) => {
@@ -26,6 +28,6 @@ export const Route = createFileRoute('/{-$locale}/profile/chef-profile')({
         });
     },
     component() {
-        return <ProfileCookChefProfilePage data={Route.useLoaderData()} />;
+        return <ProfileCookChefProfilePage data={Route.useLoaderData()} search={Route.useSearch()} />;
     },
 });

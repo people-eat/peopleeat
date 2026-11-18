@@ -58,7 +58,7 @@ it as invalid object type for `<parent_node>`. Visible star ratings on the hero 
 Section padding matches other public bands (`px-4` → `@lg:px-6`).
 
 Missing or non-public cooks return not found. Detail does not require a catalog-eligible meal (direct links still work). Cooks preview the
-same layout under profile public preview (preview meal and menu lists also omit unpublished / incomplete / no-picture items and surface
+same layout under `/profile/chef-profile` (preview meal and menu lists also omit unpublished / incomplete / no-picture items and surface
 warning counts); live URL sharing is gated on visibility.
 
 Canonical public URL is `/chefs/<pathName>` (and `/en/chefs/<pathName>`). The platform auto-assigns a slug from first name + last name
@@ -116,11 +116,12 @@ None for public slug URLs. Cook self-serve slug editing stays behind `COOK_PUBLI
   hero Share only from `ChefPage` (discovery `chefsDiscoveryShareKey`, secondary variant); cook Preview toolbar Share / Copy / Open when
   live
 - Menus: `SectionCookMenus` on `ChefPage` and cook Preview gated by `COOK_PUBLIC_PROFILE_MENUS` (empty list when off; meal tiles stay)
-- Cook preview: `ProfileCookPublicPage` at `/profile/public` — Preview tab (default; Share / Copy / Open + static `PublicCookCard` + detail
-  WYSIWYG) and Manage tab (`?tab=manage`; visibility + additional picture); both previews use `Cook.rating`; testimonials section still
-  omitted on preview
+- Cook preview: `ProfileCookChefProfilePage` at `/profile/chef-profile` — line tabs Overview / Public card / Public page (identity readout
+  on Overview with links to travel / meals / menus / edit; listing card on Public card; framed guest WYSIWYG on Public page with Live badge
+  - Share / Copy / Open in the URL chrome). Visibility switch and additional picture on edit. Preview uses `Cook.rating`; testimonials
+    section still omitted. `/profile/public` redirects here (`?tab=preview` → Public page tab).
 - Routes: `chefs.tsx`, `chefs_.$pathName.tsx` (loader `findOneByPathName`, 301 when the segment is a previous slug or cookId, `chefPageSeo`
-  title/description, `Person` + FAQ + breadcrumb JSON-LD), `profile/public.tsx`
+  title/description, `Person` + FAQ + breadcrumb JSON-LD), `profile/chef-profile.tsx`, `profile/public.tsx` (redirect)
 - Path names: `Cooks.pathName` unique + `previousPathNames`; helpers `src/shared/cookPathName.ts` / `src/server/utils/cookPathName.ts`;
   GraphQL `pathName` on `PublicCook` / `Cook` / `AdminCook`, `findOneByPathName`, `Cook.pathNameAvailable` / `Admin.cookPathNameAvailable`;
   auto-assign on `userCreate` / `userCookCreate` / `adminUserCreate`; SQL backfill in `drizzle/0031_same_dorian_gray.sql`. Cook self-serve

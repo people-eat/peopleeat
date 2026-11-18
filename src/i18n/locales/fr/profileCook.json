@@ -466,7 +466,7 @@
             },
             "DIRECT_BOOKING_REQUEST": {
                 "title": "{count, plural, one {Quelqu’un t’a demandé directement} other {# demandes directes}}",
-                "body": "Un hôte t’a demandé via ton profil de chef.",
+                "body": "Un hôte t’a demandé via ta page chef.",
                 "action": "Ouvrir la demande"
             },
             "CALL_UPCOMING": {
@@ -493,13 +493,13 @@
             },
             "PROFILE_PICTURE": {
                 "title": "Ajouter une photo de profil",
-                "body": "Une photo aide les clients à te reconnaître sur ton profil public.",
+                "body": "Une photo aide les clients à te reconnaître sur ta page chef.",
                 "action": "Ajouter une photo"
             },
             "CHEF_PROFILE": {
-                "title": "Compléter ton profil de chef",
+                "title": "Compléter ta page chef",
                 "body": "Ajoute une bio et choisis ton style de cuisine et ta philosophie.",
-                "action": "Modifier le profil"
+                "action": "Modifier la page"
             },
             "FIRST_MEAL": {
                 "title": "Créer ton premier plat",
@@ -541,12 +541,8 @@
             "description": "Invite des chefs que tu connais et suis leur progression."
         },
         "chefProfile": {
-            "title": "Profil de chef",
-            "description": "Ce que les hôtes voient sur toi, plus les outils d’offre privés."
-        },
-        "public": {
-            "title": "Profil public",
-            "description": "Visibilité, aperçu et lien vers ton profil de chef public."
+            "title": "Page chef",
+            "description": "Ta page chef publique: aperçu, mise en ligne et modification de ce que les hôtes voient."
         },
         "travel": {
             "title": "Paramètres de déplacement",
@@ -928,6 +924,23 @@
         "cuisineAndPhilosophy": "Style de cuisine et philosophie",
         "identityLabel": "Identité du chef",
         "seePublicProfile": "Voir le profil public",
+        "live": "En ligne",
+        "hidden": "Masquée",
+        "pendingApproval": "En attente de validation par l’équipe",
+        "tabsAria": "Sections de la page chef",
+        "tabs": {
+            "overview": "Aperçu",
+            "card": "Carte publique",
+            "page": "Page publique"
+        },
+        "guestName": "Nom visible par les hôtes",
+        "added": "Ajoutée",
+        "mealsOnPageLabel": "Plats",
+        "mealsOnPage": "{count, plural, one {1 sur la page publique} other {# sur la page publique}}",
+        "menusOnPageLabel": "Menus",
+        "menusOnPage": "{count, plural, one {1 sur la page publique} other {# sur la page publique}}",
+        "pageHint": "C’est ta page chef publique. Les hôtes y arrivent depuis la recherche, les pages ville et le lien que tu partages.",
+        "extraPictureMissing": "Sans photo supplémentaire, la section À propos affiche les avantages peopleeat.",
         "photoMissingHint": "Les clients voient cette photo en premier.",
         "readinessNeedsPhotoAndBio": "Ton histoire publique a encore besoin d’une photo et d’une biographie.",
         "readinessNeedsPhoto": "Ton histoire publique a encore besoin d’une photo.",
@@ -952,11 +965,14 @@
         "suggestion": "Suggestion"
     },
     "chefProfileEdit": {
-        "title": "Modifier le profil de chef",
+        "title": "Modifier la page chef",
         "savedUpdating": "Enregistré. Mise à jour du résumé…",
         "bioGenerateFailed": "Impossible de générer la biographie.",
-        "backToProfile": "Retour au profil",
+        "backToProfile": "Retour à la page chef",
+        "guestZoneTitle": "Sur ta page chef",
+        "guestZoneHint": "Les hôtes voient cela dans la recherche et sur ta page chef publique.",
         "picture": "Photo de profil",
+        "extraPicture": "Photo supplémentaire",
         "biography": "Biographie",
         "generating": "Génération…",
         "improveWithAi": "Améliorer avec l’IA",

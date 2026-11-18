@@ -71,7 +71,7 @@
             },
             "DIRECT_BOOKING_REQUEST": {
                 "title": "{count, plural, one {Jemand hat dich direkt angefragt} other {# direkte Anfragen}}",
-                "body": "Ein Gast hat dich über dein Kochprofil angefragt.",
+                "body": "Ein Gast hat dich über deine Kochseite angefragt.",
                 "action": "Zur Anfrage"
             },
             "CALL_UPCOMING": {
@@ -98,13 +98,13 @@
             },
             "PROFILE_PICTURE": {
                 "title": "Profilbild hinzufügen",
-                "body": "Ein Foto hilft Kunden, dich auf deinem öffentlichen Profil zu erkennen.",
+                "body": "Ein Foto hilft Kunden, dich auf deiner Kochseite zu erkennen.",
                 "action": "Bild hinzufügen"
             },
             "CHEF_PROFILE": {
-                "title": "Kochprofil vervollständigen",
+                "title": "Kochseite vervollständigen",
                 "body": "Schreibe eine Bio und wähle Küchenstil sowie Kochphilosophie.",
-                "action": "Zum Profil"
+                "action": "Zur Kochseite"
             },
             "FIRST_MEAL": {
                 "title": "Erstes Gericht anlegen",
@@ -131,7 +131,7 @@
     "nav": {
         "bookingRequestPool": {
             "title": "Anfragen-Pool",
-            "description": "Anfragen in deinem Reiseradius, plus Gäste, die dich direkt über dein Kochprofil angefragt haben."
+            "description": "Anfragen in deinem Reiseradius, plus Gäste, die dich direkt über deine Kochseite angefragt haben."
         },
         "bookingRequestOffers": {
             "title": "Angebote",
@@ -146,12 +146,8 @@
             "description": "Lade Köche ein, die du kennst, und verfolge ihren Fortschritt."
         },
         "chefProfile": {
-            "title": "Kochprofil",
-            "description": "Was Gäste über dich lesen, plus private Angebotswerkzeuge."
-        },
-        "public": {
-            "title": "Öffentliches Profil",
-            "description": "Sichtbarkeit, Vorschau und Link zu deinem öffentlichen Kochprofil."
+            "title": "Kochseite",
+            "description": "Deine öffentliche Kochseite: Vorschau, sichtbar schalten und bearbeiten, was Gäste sehen."
         },
         "travel": {
             "title": "Reiseeinstellungen",
@@ -533,6 +529,23 @@
         "cuisineAndPhilosophy": "Küchenstil und Philosophie",
         "identityLabel": "Koch-Identität",
         "seePublicProfile": "Öffentliches Profil ansehen",
+        "live": "Live",
+        "hidden": "Verborgen",
+        "pendingApproval": "Wartet auf Freischaltung durch unser Team",
+        "tabsAria": "Bereiche der Kochseite",
+        "tabs": {
+            "overview": "Übersicht",
+            "card": "Öffentliche Karte",
+            "page": "Öffentliche Seite"
+        },
+        "guestName": "Name für Gäste",
+        "added": "Vorhanden",
+        "mealsOnPageLabel": "Gerichte",
+        "mealsOnPage": "{count, plural, one {1 auf der öffentlichen Seite} other {# auf der öffentlichen Seite}}",
+        "menusOnPageLabel": "Menüs",
+        "menusOnPage": "{count, plural, one {1 auf der öffentlichen Seite} other {# auf der öffentlichen Seite}}",
+        "pageHint": "Das ist deine öffentliche Kochseite. Gäste landen hier über die Suche, Stadtseiten und den Link, den du teilst.",
+        "extraPictureMissing": "Ohne zusätzliches Bild zeigt der Über-mich-Bereich die peopleeat-Vorteile.",
         "photoMissingHint": "Kunden sehen dieses Foto zuerst.",
         "readinessNeedsPhotoAndBio": "Deine öffentliche Geschichte braucht noch ein Foto und eine Biografie.",
         "readinessNeedsPhoto": "Deine öffentliche Geschichte braucht noch ein Foto.",
@@ -557,11 +570,14 @@
         "suggestion": "Vorschlag"
     },
     "chefProfileEdit": {
-        "title": "Kochprofil bearbeiten",
+        "title": "Kochseite bearbeiten",
         "savedUpdating": "Gespeichert. Kurzfassung wird aktualisiert…",
         "bioGenerateFailed": "Biografie konnte nicht erzeugt werden.",
-        "backToProfile": "Zur Profilansicht",
+        "backToProfile": "Zur Kochseite",
+        "guestZoneTitle": "Auf deiner Kochseite",
+        "guestZoneHint": "Gäste sehen das in der Suche und auf deiner öffentlichen Kochseite.",
         "picture": "Profilbild",
+        "extraPicture": "Zusätzliches Bild",
         "biography": "Biografie",
         "generating": "Wird erzeugt…",
         "improveWithAi": "Mit KI verbessern",
@@ -787,8 +803,8 @@
         "makeOffer": "Angebot machen",
         "requestedYou": "Dieser Gast hat dich direkt angefragt",
         "requestedYouOpen": "Dieser Gast hat dich angefragt, die Anfrage ist auch für andere offen",
-        "fromProfileMenu": "Die Anfrage kam über dein öffentliches Kochprofil, für das Menü „{title}“.",
-        "fromProfile": "Die Anfrage kam über dein öffentliches Kochprofil.",
+        "fromProfileMenu": "Die Anfrage kam über deine öffentliche Kochseite, für das Menü „{title}“.",
+        "fromProfile": "Die Anfrage kam über deine öffentliche Kochseite.",
         "whatToDo": "Was ist zu tun?",
         "createHint": "Erstelle ein Angebot mit optionalen Menüs und einem Preis.",
         "customerReviews": "Der Kunde prüft dein Angebot. Bei Annahme könnt ihr Details klären.",

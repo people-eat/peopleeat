@@ -1,16 +1,54 @@
-# Chef profile (identity, biography, profile picture). See docs/features/cook-profile.md
+# Chef page (guest preview, visibility, identity edit). See docs/features/cook-profile.md
 # and docs/features/profile-pictures.md.
 
 fragment ProfileCookChefProfileCook on Cook {
     cookId
     pathName
     previousPathNames
+    stageName
+    isVisible
+    isApprovedByAdmin
+    canCreateOffers
     biography
     biographySummary
     biographySummaryGenerating
     cuisineStyle
     cookingPhilosophy
     defaultOfferMessage
+    logo {
+        url
+    }
+    rating {
+        averageRating
+        reviewCount
+    }
+    exactTravelOriginAddress {
+        city
+    }
+    meals {
+        mealId
+        title
+        description
+        imageUrl
+        publishedAt
+    }
+    menus {
+        menuId
+        title
+        description
+        publishedAt
+        courseMealOptionImages
+        courses {
+            courseId
+            title
+            mealOptions {
+                mealId
+                title
+                description
+                imageUrl
+            }
+        }
+    }
     presenceLinks {
         websiteUrl
         instagramUrl

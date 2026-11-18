@@ -16,11 +16,13 @@ export function ProfilePinnedFooterLayout({
     footer,
     className,
     contentClassName,
+    scrollerClassName,
     contentScroll = true,
 }: PropsWithChildren<{
     footer?: ReactNode;
     className?: string;
     contentClassName?: string;
+    scrollerClassName?: string;
     contentScroll?: boolean;
 }>) {
     return (
@@ -45,6 +47,7 @@ export function ProfilePinnedFooterLayout({
                     // Keep `pb-*` on this block scrollport — Chromium drops padding-bottom when
                     // the same node is also `display: grid` / `flex` (via contentClassName).
                     contentScroll ? (footer != null ? 'pb-10' : 'pb-6') : 'pb-0',
+                    scrollerClassName,
                 )}
             >
                 <div className={cn(!contentScroll && 'h-full min-h-0', contentClassName)}>{children}</div>

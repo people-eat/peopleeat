@@ -318,10 +318,9 @@ Isomorphic date, currency, file-size, duration, participants, and euro-amount he
 BCP-47 tags via `languageTagFromLocale`. Date/time helpers accept an optional `timeZone`. In the UI pass the viewer zone from
 `useTimeZone()`; in user-facing emails pass the recipient’s `Users.timeZone`; Slack ops may keep a fixed zone. Do **not** redefine local
 `formatDate` / `formatTime` / `formatDateTime` / `formatParticipants` / `formatCurrency` / `formatBytes` helpers in routes or components —
-import from `src/shared`. `formatCurrency` always shows **2 fraction digits** by default (e.g. `50,00 €` / `€50.00`); amounts under
-1 € (1–99 cents) fall back to localized cents (`35 Cent` / `35 cents`). Pass `maximumFractionDigits: 0` only for whole-euro admin
-overview summaries. Relative time and calendar pickers still use `date-fns` + `DATE_FNS_LOCALE` (see
-[i18n.md](./architecture/i18n.md)).
+import from `src/shared`. `formatCurrency` always shows **2 fraction digits** by default (e.g. `50,00 €` / `€50.00`); amounts under 1 €
+(1–99 cents) fall back to localized cents (`35 Cent` / `35 cents`). Pass `maximumFractionDigits: 0` only for whole-euro admin overview
+summaries. Relative time and calendar pickers still use `date-fns` + `DATE_FNS_LOCALE` (see [i18n.md](./architecture/i18n.md)).
 
 ### Status labels, tones, and hues
 

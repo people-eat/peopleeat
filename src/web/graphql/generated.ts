@@ -20935,12 +20935,32 @@ export type GqlCProfileCookChefProfileCookFragment = {
     cookId: string;
     pathName: string;
     previousPathNames: Array<string>;
+    stageName: string | null;
+    isVisible: boolean;
+    isApprovedByAdmin: boolean;
+    canCreateOffers: boolean;
     biography: string;
     biographySummary: string;
     biographySummaryGenerating: boolean;
     cuisineStyle: string | null;
     cookingPhilosophy: string | null;
     defaultOfferMessage: string | null;
+    logo: { url: string } | null;
+    rating: { averageRating: number | null; reviewCount: number };
+    exactTravelOriginAddress: { city: string } | null;
+    meals: Array<{ mealId: string; title: string; description: string; imageUrl: string | null; publishedAt: string | null }>;
+    menus: Array<{
+        menuId: string;
+        title: string;
+        description: string;
+        publishedAt: string | null;
+        courseMealOptionImages: Array<string>;
+        courses: Array<{
+            courseId: string;
+            title: string;
+            mealOptions: Array<{ mealId: string; title: string; description: string; imageUrl: string | null }>;
+        }>;
+    }>;
     presenceLinks: {
         websiteUrl: string | null;
         instagramUrl: string | null;
@@ -20959,12 +20979,32 @@ export type GqlCProfileCookChefProfileUserFragment = {
         cookId: string;
         pathName: string;
         previousPathNames: Array<string>;
+        stageName: string | null;
+        isVisible: boolean;
+        isApprovedByAdmin: boolean;
+        canCreateOffers: boolean;
         biography: string;
         biographySummary: string;
         biographySummaryGenerating: boolean;
         cuisineStyle: string | null;
         cookingPhilosophy: string | null;
         defaultOfferMessage: string | null;
+        logo: { url: string } | null;
+        rating: { averageRating: number | null; reviewCount: number };
+        exactTravelOriginAddress: { city: string } | null;
+        meals: Array<{ mealId: string; title: string; description: string; imageUrl: string | null; publishedAt: string | null }>;
+        menus: Array<{
+            menuId: string;
+            title: string;
+            description: string;
+            publishedAt: string | null;
+            courseMealOptionImages: Array<string>;
+            courses: Array<{
+                courseId: string;
+                title: string;
+                mealOptions: Array<{ mealId: string; title: string; description: string; imageUrl: string | null }>;
+            }>;
+        }>;
         presenceLinks: {
             websiteUrl: string | null;
             instagramUrl: string | null;
@@ -20989,12 +21029,32 @@ export type GqlCProfileCookChefProfilePageQuery = {
                 cookId: string;
                 pathName: string;
                 previousPathNames: Array<string>;
+                stageName: string | null;
+                isVisible: boolean;
+                isApprovedByAdmin: boolean;
+                canCreateOffers: boolean;
                 biography: string;
                 biographySummary: string;
                 biographySummaryGenerating: boolean;
                 cuisineStyle: string | null;
                 cookingPhilosophy: string | null;
                 defaultOfferMessage: string | null;
+                logo: { url: string } | null;
+                rating: { averageRating: number | null; reviewCount: number };
+                exactTravelOriginAddress: { city: string } | null;
+                meals: Array<{ mealId: string; title: string; description: string; imageUrl: string | null; publishedAt: string | null }>;
+                menus: Array<{
+                    menuId: string;
+                    title: string;
+                    description: string;
+                    publishedAt: string | null;
+                    courseMealOptionImages: Array<string>;
+                    courses: Array<{
+                        courseId: string;
+                        title: string;
+                        mealOptions: Array<{ mealId: string; title: string; description: string; imageUrl: string | null }>;
+                    }>;
+                }>;
                 presenceLinks: {
                     websiteUrl: string | null;
                     instagramUrl: string | null;
@@ -21019,12 +21079,32 @@ export type GqlCProfileCookChefProfilePageUpdatesSubscription = {
             cookId: string;
             pathName: string;
             previousPathNames: Array<string>;
+            stageName: string | null;
+            isVisible: boolean;
+            isApprovedByAdmin: boolean;
+            canCreateOffers: boolean;
             biography: string;
             biographySummary: string;
             biographySummaryGenerating: boolean;
             cuisineStyle: string | null;
             cookingPhilosophy: string | null;
             defaultOfferMessage: string | null;
+            logo: { url: string } | null;
+            rating: { averageRating: number | null; reviewCount: number };
+            exactTravelOriginAddress: { city: string } | null;
+            meals: Array<{ mealId: string; title: string; description: string; imageUrl: string | null; publishedAt: string | null }>;
+            menus: Array<{
+                menuId: string;
+                title: string;
+                description: string;
+                publishedAt: string | null;
+                courseMealOptionImages: Array<string>;
+                courses: Array<{
+                    courseId: string;
+                    title: string;
+                    mealOptions: Array<{ mealId: string; title: string; description: string; imageUrl: string | null }>;
+                }>;
+            }>;
             presenceLinks: {
                 websiteUrl: string | null;
                 instagramUrl: string | null;
@@ -21882,173 +21962,6 @@ export type GqlCProfileCookPathNameAvailableQueryVariables = Exact<{
 export type GqlCProfileCookPathNameAvailableQuery = {
     currentSession: { user: { cook: { pathNameAvailable: Schema.GqlCCookPathNameAvailability } | null } | null };
 };
-
-export type GqlCProfileCookPublicPageCookFragment = {
-    cookId: string;
-    pathName: string;
-    isVisible: boolean;
-    isApprovedByAdmin: boolean;
-    canCreateOffers: boolean;
-    biography: string;
-    biographySummary: string;
-    cuisineStyle: string | null;
-    cookingPhilosophy: string | null;
-    minimumPriceAmount: number | null;
-    maximumPriceAmount: number | null;
-    minimumParticipants: number | null;
-    maximumParticipants: number | null;
-    callSchedulingEnabled: boolean;
-    logo: { url: string } | null;
-    rating: { averageRating: number | null; reviewCount: number };
-    exactTravelOriginAddress: { city: string } | null;
-    meals: Array<{ mealId: string; title: string; description: string; imageUrl: string | null; publishedAt: string | null }>;
-    menus: Array<{
-        menuId: string;
-        title: string;
-        description: string;
-        publishedAt: string | null;
-        courseMealOptionImages: Array<string>;
-        courses: Array<{
-            courseId: string;
-            title: string;
-            mealOptions: Array<{ mealId: string; title: string; description: string; imageUrl: string | null }>;
-        }>;
-    }>;
-};
-
-export type GqlCProfileCookPublicPageUserFragment = {
-    userId: string;
-    firstName: string;
-    profilePicture: { url: string } | null;
-    admin: { adminId: string } | null;
-    cook: {
-        cookId: string;
-        pathName: string;
-        isVisible: boolean;
-        isApprovedByAdmin: boolean;
-        canCreateOffers: boolean;
-        biography: string;
-        biographySummary: string;
-        cuisineStyle: string | null;
-        cookingPhilosophy: string | null;
-        minimumPriceAmount: number | null;
-        maximumPriceAmount: number | null;
-        minimumParticipants: number | null;
-        maximumParticipants: number | null;
-        callSchedulingEnabled: boolean;
-        logo: { url: string } | null;
-        rating: { averageRating: number | null; reviewCount: number };
-        exactTravelOriginAddress: { city: string } | null;
-        meals: Array<{ mealId: string; title: string; description: string; imageUrl: string | null; publishedAt: string | null }>;
-        menus: Array<{
-            menuId: string;
-            title: string;
-            description: string;
-            publishedAt: string | null;
-            courseMealOptionImages: Array<string>;
-            courses: Array<{
-                courseId: string;
-                title: string;
-                mealOptions: Array<{ mealId: string; title: string; description: string; imageUrl: string | null }>;
-            }>;
-        }>;
-    } | null;
-};
-
-export type GqlCProfileCookPublicPageQueryVariables = Exact<{ [key: string]: never }>;
-
-export type GqlCProfileCookPublicPageQuery = {
-    currentSession: {
-        sessionId: string;
-        user: {
-            userId: string;
-            firstName: string;
-            profilePicture: { url: string } | null;
-            admin: { adminId: string } | null;
-            cook: {
-                cookId: string;
-                pathName: string;
-                isVisible: boolean;
-                isApprovedByAdmin: boolean;
-                canCreateOffers: boolean;
-                biography: string;
-                biographySummary: string;
-                cuisineStyle: string | null;
-                cookingPhilosophy: string | null;
-                minimumPriceAmount: number | null;
-                maximumPriceAmount: number | null;
-                minimumParticipants: number | null;
-                maximumParticipants: number | null;
-                callSchedulingEnabled: boolean;
-                logo: { url: string } | null;
-                rating: { averageRating: number | null; reviewCount: number };
-                exactTravelOriginAddress: { city: string } | null;
-                meals: Array<{ mealId: string; title: string; description: string; imageUrl: string | null; publishedAt: string | null }>;
-                menus: Array<{
-                    menuId: string;
-                    title: string;
-                    description: string;
-                    publishedAt: string | null;
-                    courseMealOptionImages: Array<string>;
-                    courses: Array<{
-                        courseId: string;
-                        title: string;
-                        mealOptions: Array<{ mealId: string; title: string; description: string; imageUrl: string | null }>;
-                    }>;
-                }>;
-            } | null;
-        } | null;
-    };
-};
-
-export type GqlCProfileCookPublicPageUpdatesSubscriptionVariables = Exact<{ [key: string]: never }>;
-
-export type GqlCProfileCookPublicPageUpdatesSubscription = {
-    userUpdates: {
-        userId: string;
-        firstName: string;
-        profilePicture: { url: string } | null;
-        admin: { adminId: string } | null;
-        cook: {
-            cookId: string;
-            pathName: string;
-            isVisible: boolean;
-            isApprovedByAdmin: boolean;
-            canCreateOffers: boolean;
-            biography: string;
-            biographySummary: string;
-            cuisineStyle: string | null;
-            cookingPhilosophy: string | null;
-            minimumPriceAmount: number | null;
-            maximumPriceAmount: number | null;
-            minimumParticipants: number | null;
-            maximumParticipants: number | null;
-            callSchedulingEnabled: boolean;
-            logo: { url: string } | null;
-            rating: { averageRating: number | null; reviewCount: number };
-            exactTravelOriginAddress: { city: string } | null;
-            meals: Array<{ mealId: string; title: string; description: string; imageUrl: string | null; publishedAt: string | null }>;
-            menus: Array<{
-                menuId: string;
-                title: string;
-                description: string;
-                publishedAt: string | null;
-                courseMealOptionImages: Array<string>;
-                courses: Array<{
-                    courseId: string;
-                    title: string;
-                    mealOptions: Array<{ mealId: string; title: string; description: string; imageUrl: string | null }>;
-                }>;
-            }>;
-        } | null;
-    };
-};
-
-export type GqlCProfileCookPublicCookUpdateMutationVariables = Exact<{
-    input: Schema.GqlCCookUpdate;
-}>;
-
-export type GqlCProfileCookPublicCookUpdateMutation = { user: { cook: { update: { success: boolean; referenceId: string | null } } } };
 
 export type GqlCProfileTravelCookFragment = {
     cookId: string;
@@ -35699,12 +35612,89 @@ export const ProfileCookChefProfileCookFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'stageName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'isVisible' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'canCreateOffers' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummary' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummaryGenerating' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'defaultOfferMessage' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'logo' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'rating' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'averageRating' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'reviewCount' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'exactTravelOriginAddress' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'city' } }] },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'meals' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'mealId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'menus' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'courseMealOptionImages' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'courses' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'courseId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'mealOptions' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'mealId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'presenceLinks' },
@@ -35780,12 +35770,89 @@ export const ProfileCookChefProfileUserFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'stageName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'isVisible' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'canCreateOffers' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummary' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummaryGenerating' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'defaultOfferMessage' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'logo' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'rating' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'averageRating' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'reviewCount' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'exactTravelOriginAddress' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'city' } }] },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'meals' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'mealId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'menus' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'courseMealOptionImages' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'courses' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'courseId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'mealOptions' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'mealId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'presenceLinks' },
@@ -36500,240 +36567,6 @@ export const ProfileCookOfferAddonsPageUserFragmentDoc = {
         },
     ],
 } as unknown as DocumentNode<GqlCProfileCookOfferAddonsPageUserFragment, unknown>;
-export const ProfileCookPublicPageCookFragmentDoc = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileCookPublicPageCook' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Cook' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'isVisible' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'canCreateOffers' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'biographySummary' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'logo' },
-                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
-                    },
-                    { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'rating' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'averageRating' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'reviewCount' } },
-                            ],
-                        },
-                    },
-                    { kind: 'Field', name: { kind: 'Name', value: 'minimumPriceAmount' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'maximumPriceAmount' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'minimumParticipants' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'maximumParticipants' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'callSchedulingEnabled' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'exactTravelOriginAddress' },
-                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'city' } }] },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'meals' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'mealId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
-                            ],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'menus' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'courseMealOptionImages' } },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'courses' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'courseId' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'mealOptions' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'mealId' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'title' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'description' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
-                                                    ],
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCProfileCookPublicPageCookFragment, unknown>;
-export const ProfileCookPublicPageUserFragmentDoc = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileCookPublicPageUser' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'User' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'profilePicture' },
-                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'admin' },
-                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'adminId' } }] },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'cook' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookPublicPageCook' } }],
-                        },
-                    },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileCookPublicPageCook' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Cook' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'isVisible' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'canCreateOffers' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'biographySummary' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'logo' },
-                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
-                    },
-                    { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'rating' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'averageRating' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'reviewCount' } },
-                            ],
-                        },
-                    },
-                    { kind: 'Field', name: { kind: 'Name', value: 'minimumPriceAmount' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'maximumPriceAmount' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'minimumParticipants' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'maximumParticipants' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'callSchedulingEnabled' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'exactTravelOriginAddress' },
-                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'city' } }] },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'meals' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'mealId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
-                            ],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'menus' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'courseMealOptionImages' } },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'courses' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'courseId' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'mealOptions' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'mealId' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'title' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'description' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
-                                                    ],
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCProfileCookPublicPageUserFragment, unknown>;
 export const ProfileTravelCookFragmentDoc = {
     kind: 'Document',
     definitions: [
@@ -85014,12 +84847,89 @@ export const ProfileCookChefProfilePageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'stageName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'isVisible' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'canCreateOffers' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummary' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummaryGenerating' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'defaultOfferMessage' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'logo' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'rating' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'averageRating' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'reviewCount' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'exactTravelOriginAddress' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'city' } }] },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'meals' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'mealId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'menus' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'courseMealOptionImages' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'courses' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'courseId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'mealOptions' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'mealId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'presenceLinks' },
@@ -85113,12 +85023,89 @@ export const ProfileCookChefProfilePageUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'stageName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'isVisible' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'canCreateOffers' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummary' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummaryGenerating' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'defaultOfferMessage' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'logo' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'rating' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'averageRating' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'reviewCount' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'exactTravelOriginAddress' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'city' } }] },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'meals' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'mealId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'menus' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'courseMealOptionImages' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'courses' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'courseId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'mealOptions' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'mealId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'presenceLinks' },
@@ -87510,376 +87497,6 @@ export const ProfileCookPathNameAvailableDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCProfileCookPathNameAvailableQuery, GqlCProfileCookPathNameAvailableQueryVariables>;
-export const ProfileCookPublicPageDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'query',
-            name: { kind: 'Name', value: 'ProfileCookPublicPage' },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'currentSession' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'sessionId' } },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'user' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookPublicPageUser' } },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileCookPublicPageCook' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Cook' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'isVisible' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'canCreateOffers' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'biographySummary' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'logo' },
-                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
-                    },
-                    { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'rating' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'averageRating' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'reviewCount' } },
-                            ],
-                        },
-                    },
-                    { kind: 'Field', name: { kind: 'Name', value: 'minimumPriceAmount' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'maximumPriceAmount' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'minimumParticipants' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'maximumParticipants' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'callSchedulingEnabled' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'exactTravelOriginAddress' },
-                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'city' } }] },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'meals' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'mealId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
-                            ],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'menus' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'courseMealOptionImages' } },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'courses' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'courseId' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'mealOptions' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'mealId' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'title' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'description' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
-                                                    ],
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileCookPublicPageUser' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'User' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'profilePicture' },
-                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'admin' },
-                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'adminId' } }] },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'cook' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookPublicPageCook' } }],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCProfileCookPublicPageQuery, GqlCProfileCookPublicPageQueryVariables>;
-export const ProfileCookPublicPageUpdatesDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'subscription',
-            name: { kind: 'Name', value: 'ProfileCookPublicPageUpdates' },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'userUpdates' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookPublicPageUser' } }],
-                        },
-                    },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileCookPublicPageCook' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Cook' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'isVisible' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'canCreateOffers' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'biographySummary' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'logo' },
-                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
-                    },
-                    { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'rating' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'averageRating' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'reviewCount' } },
-                            ],
-                        },
-                    },
-                    { kind: 'Field', name: { kind: 'Name', value: 'minimumPriceAmount' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'maximumPriceAmount' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'minimumParticipants' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'maximumParticipants' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'callSchedulingEnabled' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'exactTravelOriginAddress' },
-                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'city' } }] },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'meals' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'mealId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
-                            ],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'menus' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'courseMealOptionImages' } },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'courses' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'courseId' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'mealOptions' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'mealId' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'title' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'description' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
-                                                    ],
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileCookPublicPageUser' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'User' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'profilePicture' },
-                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'admin' },
-                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'adminId' } }] },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'cook' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookPublicPageCook' } }],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCProfileCookPublicPageUpdatesSubscription, GqlCProfileCookPublicPageUpdatesSubscriptionVariables>;
-export const ProfileCookPublicCookUpdateDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'mutation',
-            name: { kind: 'Name', value: 'ProfileCookPublicCookUpdate' },
-            variableDefinitions: [
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'CookUpdate' } } },
-                },
-            ],
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'user' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'cook' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'update' },
-                                                arguments: [
-                                                    {
-                                                        kind: 'Argument',
-                                                        name: { kind: 'Name', value: 'input' },
-                                                        value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
-                                                    },
-                                                ],
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'success' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
-                                                    ],
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCProfileCookPublicCookUpdateMutation, GqlCProfileCookPublicCookUpdateMutationVariables>;
 export const ProfileCookTravelPageDocument = {
     kind: 'Document',
     definitions: [

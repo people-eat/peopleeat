@@ -75,7 +75,7 @@ export function ProfileLayout({ loaderData }: { loaderData: GqlCProfilePageQuery
         );
     }
 
-    // `public` matches `namespacesForPath` and AdminLayout: cook `/profile/public` Preview
+    // `public` matches `namespacesForPath` and AdminLayout: cook `/profile/chef-profile`
     // embeds Header / Footer / ChefProfileView / PublicCookCard (`useT('public')`).
     const roleNamespaces = user.cook
         ? (['common', 'public', 'profile', 'profileCook'] as const)

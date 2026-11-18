@@ -19,7 +19,7 @@ Keys today:
 - Cook wallet Stripe balance (live Connect balance + recent transactions on `/profile/wallet`)
 - Cook analytics (overview KPIs + `/profile/analytics`; see [cook-analytics.md](./cook-analytics.md))
 - Cook other profiles (website, Instagram, Google, Take a Chef, and other platforms on the chef profile; admin review stays available)
-- Cook public profile menus (published menus section on `/chefs/$pathName` and cook `/profile/public` Preview)
+- Cook public profile menus (published menus section on `/chefs/$pathName` and cook `/profile/chef-profile` Preview)
 - Booking request restrictions
 - Booking request indoor / outdoor
 - Booking request kitchen details
@@ -147,19 +147,19 @@ Wired today:
   transactions on `/profile/wallet`; `Cook.stripeWallet` returns null when off for the cook `userId` (no Stripe balance calls)
 - **Cook analytics** (`COOK_ANALYTICS`) — shows overview KPIs and `/profile/analytics`; `Cook.analytics` returns null when off for the cook
   `userId`. See [cook-analytics.md](./cook-analytics.md)
-- **Cook public profile share** (`COOK_PUBLIC_PROFILE_SHARE`) — shows Share on `/chefs/$pathName` (top bar) and on `/profile/public`
+- **Cook public profile share** (`COOK_PUBLIC_PROFILE_SHARE`) — shows Share on `/chefs/$pathName` (top bar) and on `/profile/chef-profile`
   Preview; missing row stays off. Public detail reads `Session.activeFeatureToggleKeys`; cook Preview uses the profile shell provider. See
   [public-chefs.md](./public-chefs.md) and [cook-profile.md](./cook-profile.md)
-- **Cook public URL** (`COOK_PUBLIC_PROFILE_PATH_NAME`) — shows the public chef URL editor on `/profile/chef-profile` (view and edit) with
-  live availability. `cookUpdate.pathName` rejects when off for the cook `userId`. Public `/chefs/<pathName>` URLs, sitemap, `llms.txt`, and
+- **Cook public URL** (`COOK_PUBLIC_PROFILE_PATH_NAME`) — shows the public chef URL editor on `/profile/chef-profile/edit` with live
+  availability. `cookUpdate.pathName` rejects when off for the cook `userId`. Public `/chefs/<pathName>` URLs, sitemap, `llms.txt`, and
   admin cook-profile edit stay always on. Missing row stays off. See [public-chefs.md](./public-chefs.md) and
   [cook-profile.md](./cook-profile.md)
 - **Cook public profile menus** (`COOK_PUBLIC_PROFILE_MENUS`) — shows the published menus section on `/chefs/$pathName` and on
-  `/profile/public` Preview; missing row stays off. Meal tiles stay visible when this is off. Public detail and cook Preview read
+  `/profile/chef-profile` Preview; missing row stays off. Meal tiles stay visible when this is off. Public detail and cook Preview read
   `Session.activeFeatureToggleKeys` / the profile shell provider. See [public-chefs.md](./public-chefs.md)
 - **Cook other profiles** (`COOK_PRESENCE_LINKS`) — shows website, Instagram, Google, Take a Chef, and other platform links on
-  `/profile/chef-profile` (view and edit). `Cook.presenceLinks` is null and `presenceLinksReplace` rejects when off for the cook `userId`.
-  Admin cook-profile view and edit always show and save the links. Customers never see them. See [cook-profile.md](./cook-profile.md)
+  `/profile/chef-profile/edit`. `Cook.presenceLinks` is null and `presenceLinksReplace` rejects when off for the cook `userId`. Admin
+  cook-profile view and edit always show and save the links. Customers never see them. See [cook-profile.md](./cook-profile.md)
 - **Cook invite** (`COOK_INVITE`) — shows Invite chefs in the cook sidebar and `/profile/invite`, plus the cook-invite promo on
   `/how-to-become-a-chef` and founding-chef country pages. Entry-point only: attribution, unlock, and fee credits keep working when the
   toggle is off. Missing row stays off. Public recruitment reads `Session.activeFeatureToggleKeys`. See [cook-invite.md](./cook-invite.md)

@@ -71,7 +71,7 @@
             },
             "DIRECT_BOOKING_REQUEST": {
                 "title": "{count, plural, one {Someone requested you} other {# direct requests}}",
-                "body": "A guest requested you from your chef profile.",
+                "body": "A guest requested you from your chef page.",
                 "action": "Open request"
             },
             "CALL_UPCOMING": {
@@ -98,13 +98,13 @@
             },
             "PROFILE_PICTURE": {
                 "title": "Add a profile picture",
-                "body": "A photo helps customers recognize you on your public profile.",
+                "body": "A photo helps customers recognize you on your chef page.",
                 "action": "Add picture"
             },
             "CHEF_PROFILE": {
-                "title": "Complete your chef profile",
+                "title": "Complete your chef page",
                 "body": "Add a bio and choose your cuisine style and cooking philosophy.",
-                "action": "Edit profile"
+                "action": "Edit page"
             },
             "FIRST_MEAL": {
                 "title": "Create your first meal",
@@ -131,7 +131,7 @@
     "nav": {
         "bookingRequestPool": {
             "title": "Booking request pool",
-            "description": "Requests in your travel radius, plus guests who requested you from your chef profile."
+            "description": "Requests in your travel radius, plus guests who requested you from your chef page."
         },
         "bookingRequestOffers": {
             "title": "Sent offers",
@@ -146,12 +146,8 @@
             "description": "Invite chefs you know and track their progress."
         },
         "chefProfile": {
-            "title": "Chef profile",
-            "description": "What guests see about you, plus private offer tools."
-        },
-        "public": {
-            "title": "Public profile",
-            "description": "Visibility, preview, and link to your public chef profile."
+            "title": "Chef page",
+            "description": "Your public chef page: preview, go live, and edit what guests see."
         },
         "travel": {
             "title": "Travel settings",
@@ -533,6 +529,23 @@
         "cuisineAndPhilosophy": "Cuisine style and philosophy",
         "identityLabel": "Chef identity",
         "seePublicProfile": "See public profile",
+        "live": "Live",
+        "hidden": "Hidden",
+        "pendingApproval": "Waiting for team approval",
+        "tabsAria": "Chef page sections",
+        "tabs": {
+            "overview": "Overview",
+            "card": "Public card",
+            "page": "Public page"
+        },
+        "guestName": "Name guests see",
+        "added": "Added",
+        "mealsOnPageLabel": "Meals",
+        "mealsOnPage": "{count, plural, one {1 on the public page} other {# on the public page}}",
+        "menusOnPageLabel": "Menus",
+        "menusOnPage": "{count, plural, one {1 on the public page} other {# on the public page}}",
+        "pageHint": "This is your public chef page. Guests land here from search, city pages, and the link you share.",
+        "extraPictureMissing": "Without an additional picture, the About section shows the peopleeat benefits instead.",
         "photoMissingHint": "Customers see this photo first.",
         "readinessNeedsPhotoAndBio": "Your public story still needs a photo and biography.",
         "readinessNeedsPhoto": "Your public story still needs a photo.",
@@ -557,17 +570,20 @@
         "suggestion": "Suggestion"
     },
     "chefProfileEdit": {
-        "title": "Edit chef profile",
+        "title": "Edit chef page",
         "savedUpdating": "Saved. Updating summary…",
         "bioGenerateFailed": "Could not generate the biography.",
-        "backToProfile": "Back to profile",
+        "backToProfile": "Back to chef page",
+        "guestZoneTitle": "On your chef page",
+        "guestZoneHint": "Guests see this in search and on your public chef page.",
         "picture": "Profile picture",
+        "extraPicture": "Additional picture",
         "biography": "Biography",
         "generating": "Generating…",
         "improveWithAi": "Improve with AI",
         "writeWithAi": "Write with AI",
         "summary": "Biography summary",
-        "summaryHint": "Updates automatically when you save your biography. Used on the public profile.",
+        "summaryHint": "Updates automatically when you save your biography. Used on the chef page.",
         "contactWarning": "Websites, Instagram, phone numbers, and emails do not belong in the biography. Guests will not see them.",
         "contactPreview": "This is how guests will see your text",
         "cuisine": "Cuisine style",
@@ -787,8 +803,8 @@
         "makeOffer": "Make offer",
         "requestedYou": "This guest requested you",
         "requestedYouOpen": "This guest requested you, and the request is also open to others",
-        "fromProfileMenu": "This request came from your public chef profile, for the menu “{title}”.",
-        "fromProfile": "This request came from your public chef profile.",
+        "fromProfileMenu": "This request came from your public chef page, for the menu “{title}”.",
+        "fromProfile": "This request came from your public chef page.",
         "whatToDo": "What to do?",
         "createHint": "Create an offer with optional menus and a price.",
         "customerReviews": "The customer reviews your offer. If they accept, you can discuss details.",

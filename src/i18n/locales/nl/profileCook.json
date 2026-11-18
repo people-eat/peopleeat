@@ -71,7 +71,7 @@
             },
             "DIRECT_BOOKING_REQUEST": {
                 "title": "{count, plural, one {Iemand heeft jou aangevraagd} other {# directe aanvragen}}",
-                "body": "Een gast heeft jou aangevraagd via je chefprofiel.",
+                "body": "Een gast heeft jou aangevraagd via je chefpagina.",
                 "action": "Aanvraag openen"
             },
             "CALL_UPCOMING": {
@@ -93,13 +93,13 @@
             },
             "PROFILE_PICTURE": {
                 "title": "Voeg een profielfoto toe",
-                "body": "Een foto helpt klanten je te herkennen op je openbare profiel.",
+                "body": "Een foto helpt klanten je te herkennen op je chefpagina.",
                 "action": "Foto toevoegen"
             },
             "CHEF_PROFILE": {
-                "title": "Maak je chefprofiel compleet",
+                "title": "Maak je chefpagina compleet",
                 "body": "Voeg een biografie toe en kies je kookstijl en kookfilosofie.",
-                "action": "Profiel bewerken"
+                "action": "Pagina bewerken"
             },
             "FIRST_MEAL": {
                 "title": "Maak je eerste gerecht",
@@ -146,12 +146,8 @@
             "description": "Nodig chefs uit die je kent en volg hun voortgang."
         },
         "chefProfile": {
-            "title": "Chefprofiel",
-            "description": "Wat gasten over jou zien, plus privétools voor offertes."
-        },
-        "public": {
-            "title": "Openbaar profiel",
-            "description": "Zichtbaarheid, voorbeeld en link naar je openbare chefprofiel."
+            "title": "Chefpagina",
+            "description": "Jouw openbare chefpagina: voorbeeld, live zetten en bewerken wat gasten zien."
         },
         "travel": {
             "title": "Reisinstellingen",
@@ -546,6 +542,23 @@
         "suggestion": "Suggestie",
         "identityLabel": "Identiteit van de chef",
         "seePublicProfile": "Openbaar profiel bekijken",
+        "live": "Live",
+        "hidden": "Verborgen",
+        "pendingApproval": "Wacht op goedkeuring van het team",
+        "pageHint": "Dit is je openbare chefpagina. Gasten komen hier via zoeken, stadspagina’s en de link die je deelt.",
+        "tabsAria": "Onderdelen van de chefpagina",
+        "tabs": {
+            "overview": "Overzicht",
+            "card": "Openbare kaart",
+            "page": "Openbare pagina"
+        },
+        "guestName": "Naam die gasten zien",
+        "added": "Toegevoegd",
+        "mealsOnPageLabel": "Gerechten",
+        "mealsOnPage": "{count, plural, one {1 op de openbare pagina} other {# op de openbare pagina}}",
+        "menusOnPageLabel": "Menu’s",
+        "menusOnPage": "{count, plural, one {1 op de openbare pagina} other {# op de openbare pagina}}",
+        "extraPictureMissing": "Zonder extra foto toont het Over-mij-gedeelte de peopleeat-voordelen.",
         "photoMissingHint": "Klanten zien deze foto als eerste.",
         "readinessNeedsPhotoAndBio": "Je openbare verhaal heeft nog een foto en biografie nodig.",
         "readinessNeedsPhoto": "Je openbare verhaal heeft nog een foto nodig.",
@@ -557,11 +570,14 @@
         "privateZoneHint": "Dit staat niet op je openbare chefpagina."
     },
     "chefProfileEdit": {
-        "title": "Chefprofiel bewerken",
+        "title": "Chefpagina bewerken",
         "savedUpdating": "Opgeslagen. Samenvatting bijwerken…",
         "bioGenerateFailed": "De biografie kon niet worden gegenereerd.",
-        "backToProfile": "Terug naar profiel",
+        "backToProfile": "Terug naar chefpagina",
+        "guestZoneTitle": "Op je chefpagina",
+        "guestZoneHint": "Gasten zien dit in de zoekresultaten en op je openbare chefpagina.",
         "picture": "Profielfoto",
+        "extraPicture": "Extra foto",
         "biography": "Biografie",
         "generating": "Genereren…",
         "improveWithAi": "Verbeteren met AI",

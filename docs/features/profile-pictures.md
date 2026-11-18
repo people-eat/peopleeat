@@ -46,9 +46,10 @@ sign-up copies the provider photo into the same `FileUploads` store at the OAuth
   ~250 KB), meal (square 960px ~350 KB), content (square 960px ~350 KB for content-section side-by-side images), contentWide (16:9 1280px
   ~450 KB for standalone image sections). No-crop multi-select uploads use `imageCompress` with the `testimonial` preset (full-frame 1280px
   ~450 KB) — see [testimonials.md](./testimonials.md). `objectFit="contain"` with dynamic min zoom; mobile sheet with pinch and rotate. Cook
-  brand marks use the `logo` variant via `CookLogoEditor` on `/profile/public` — see [cook-profile.md](./cook-profile.md). Content page
-  section images use `content` / `contentWide` via `ContentSectionsEditor` — see [content-sections.md](../architecture/content-sections.md).
-  Delivery and follow-ups (upload-time variants, migration script, CDN): [image-delivery.md](../architecture/image-delivery.md).
+  brand marks use the `logo` variant via `CookLogoEditor` on `/profile/chef-profile/edit` — see [cook-profile.md](./cook-profile.md).
+  Content page section images use `content` / `contentWide` via `ContentSectionsEditor` — see
+  [content-sections.md](../architecture/content-sections.md). Delivery and follow-ups (upload-time variants, migration script, CDN):
+  [image-delivery.md](../architecture/image-delivery.md).
 
 Key files: `userUpdate.ts`, `adminUserUpdate.ts`, `userCreate.ts`, `authGoogleCallback.ts`, `authFacebookCallback.ts`,
 `authOauthProfilePictureImport.ts`, `authOauthTicketReplace.ts`, `fileUploadContentAccess.ts`, `ImageCropDialog.tsx`,

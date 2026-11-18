@@ -18,14 +18,26 @@ import {
 } from '../../../shared/cookPresenceLinks';
 import { COOKING_PHILOSOPHIES, CUISINE_STYLES } from '../../../shared/cookProfile';
 import type { Locale } from '../../../shared/locale';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '../../components/base/alert-dialog';
 import { Button } from '../../components/base/button';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '../../components/base/combobox';
 import { Skeleton } from '../../components/base/skeleton';
 import { Spinner } from '../../components/base/spinner';
+import { Switch } from '../../components/base/switch';
 import { Textarea } from '../../components/base/textarea';
 import { BiographySuggestionReview } from '../../components/BiographySuggestionReview';
 import { CookBiographyContactNotice } from '../../components/CookBiographyContactNotice';
 import { CookDefaultOfferMessageFields } from '../../components/CookDefaultOfferMessageFields';
+import { CookLogoEditor } from '../../components/CookLogoEditor';
 import { CookPathNameFields } from '../../components/CookPathNameFields';
 import { CookPresenceLinksFields, cookPresenceLinksIssueMessage } from '../../components/CookPresenceLinksEditor';
 import { ProfilePictureEditor } from '../../components/ProfilePictureEditor';
@@ -86,6 +98,9 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
     const presenceLinksEnabled = useFeatureToggleActive('COOK_PRESENCE_LINKS');
     const pathNameEnabled = useFeatureToggleActive('COOK_PUBLIC_PROFILE_PATH_NAME');
     const [profilePictureBusy, setProfilePictureBusy] = useState(false);
+    const [logoBusy, setLogoBusy] = useState(false);
+    const [visibilitySaving, setVisibilitySaving] = useState(false);
+    const [pendingVisible, setPendingVisible] = useState<boolean | null>(null);
     const [biographySuggestion, setBiographySuggestion] = useState<string | null>(null);
     const [summaryRefreshPending, setSummaryRefreshPending] = useState(false);
 
@@ -230,7 +245,45 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
         }
     }
 
-    const formBusy = isSubmitting || profilePictureBusy;
+    async function onLogoLink(fileUploadId: string) {
+        const result = await updateCook({ input: { logoFileUploadId: fileUploadId } });
+        if (result.error || !result.data?.user.cook.update.success) {
+            throw result.error ?? new Error('Could not save.');
+        }
+    }
+
+    async function onLogoClear() {
+        const result = await updateCook({ input: { logoFileUploadId: null } });
+        if (result.error || !result.data?.user.cook.update.success) {
+            throw result.error ?? new Error('Could not save.');
+        }
+    }
+
+    const formBusy = isSubmitting || profilePictureBusy || logoBusy || visibilitySaving;
+    const confirmCopy =
+        cook == null || pendingVisible == null
+            ? null
+            : visibilityConfirmCopy({
+                  nextVisible: pendingVisible,
+                  isApprovedByAdmin: cook.isApprovedByAdmin,
+                  locale,
+              });
+
+    async function confirmVisibilityChange() {
+        if (!cook || pendingVisible == null || visibilitySaving || pendingVisible === cook.isVisible) {
+            setPendingVisible(null);
+            return;
+        }
+        setVisibilitySaving(true);
+        const result = await updateCook({ input: { isVisible: pendingVisible } });
+        setVisibilitySaving(false);
+        setPendingVisible(null);
+        if (result.error || !result.data?.user.cook.update.success) {
+            toast.error(t(locale, 'common', 'saveFailed'));
+            return;
+        }
+        toast.success(t(locale, 'profileCook', 'actions.saved'));
+    }
     const reviewingSuggestion = biographySuggestion != null;
     const summaryGenerating = summaryRefreshPending || cook.biographySummaryGenerating;
 
@@ -270,22 +323,47 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
                 )
             }
         >
-            <div className="grid gap-2">
-                <h1 className="font-serif text-3xl/tight text-foreground">{profileCookChefProfileEditPageTitle(locale)}</h1>
-                <p className="text-muted-foreground">{profileCookChefProfileEditPageDescription(locale)}</p>
+            <h1 className="sr-only">{profileCookChefProfileEditPageTitle(locale)}</h1>
+
+            <div className="grid min-w-0 gap-8 sm:grid-cols-2 sm:items-start">
+                <section className="grid min-w-0 gap-3">
+                    <h2 className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
+                        {t(locale, 'profileCook', 'chefProfileEdit.picture')}
+                    </h2>
+                    <ProfilePictureEditor
+                        profilePictureUrl={user.profilePicture?.url ?? null}
+                        displayName={userDisplayName(user)}
+                        disabled={isSubmitting}
+                        onLink={onProfilePictureLink}
+                        onClear={onProfilePictureClear}
+                        onBusyChange={setProfilePictureBusy}
+                    />
+                </section>
+
+                <div className="grid min-w-0 content-start gap-0.5">
+                    <div className="flex min-w-0 items-center justify-between gap-3">
+                        <span className="text-sm font-medium">{t(locale, 'profileCook', 'public.publiclyVisible')}</span>
+                        <Switch
+                            checked={cook.isVisible}
+                            disabled={formBusy}
+                            aria-label={t(locale, 'profileCook', 'public.publiclyVisible')}
+                            onCheckedChange={(checked) => setPendingVisible(checked)}
+                        />
+                    </div>
+                    <span className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'public.requiresApproval')}</span>
+                </div>
             </div>
 
             <section className="grid min-w-0 gap-3">
                 <h2 className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
-                    {t(locale, 'profileCook', 'chefProfileEdit.picture')}
+                    {t(locale, 'profileCook', 'chefProfileEdit.extraPicture')}
                 </h2>
-                <ProfilePictureEditor
-                    profilePictureUrl={user.profilePicture?.url ?? null}
-                    displayName={userDisplayName(user)}
+                <CookLogoEditor
+                    logoUrl={cook.logo?.url ?? null}
                     disabled={isSubmitting}
-                    onLink={onProfilePictureLink}
-                    onClear={onProfilePictureClear}
-                    onBusyChange={setProfilePictureBusy}
+                    onLink={onLogoLink}
+                    onClear={onLogoClear}
+                    onBusyChange={setLogoBusy}
                 />
             </section>
 
@@ -434,6 +512,11 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
                     </section>
                 ) : null}
 
+                <div className="grid min-w-0 gap-1 border-t border-border pt-8">
+                    <h2 className="font-serif text-xl/tight text-foreground">{t(locale, 'profileCook', 'chefProfile.privateZoneTitle')}</h2>
+                    <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'chefProfile.privateZoneHint')}</p>
+                </div>
+
                 <section className="grid min-w-0 gap-4">
                     <form.Field name="defaultOfferMessageMode">
                         {(modeField) => (
@@ -457,9 +540,9 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
                 {presenceLinksEnabled ? (
                     <section className="grid min-w-0 gap-4">
                         <div className="grid gap-1">
-                            <h2 className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
+                            <h3 className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
                                 {t(locale, 'profileCook', 'chefProfile.otherProfiles')}
-                            </h2>
+                            </h3>
                             <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'chefProfile.otherProfilesHint')}</p>
                         </div>
                         <form.Field name="presenceLinks">
@@ -475,8 +558,63 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
                     </section>
                 ) : null}
             </form>
+
+            <AlertDialog
+                open={pendingVisible != null}
+                onOpenChange={(open) => {
+                    if (!open && !visibilitySaving) setPendingVisible(null);
+                }}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>{confirmCopy?.title}</AlertDialogTitle>
+                        <AlertDialogDescription>{confirmCopy?.description}</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={visibilitySaving}>{t(locale, 'common', 'cancel')}</AlertDialogCancel>
+                        <AlertDialogAction
+                            variant={pendingVisible === false ? 'destructive' : 'default'}
+                            disabled={visibilitySaving}
+                            onClick={(event) => {
+                                event.preventDefault();
+                                void confirmVisibilityChange();
+                            }}
+                        >
+                            {visibilitySaving
+                                ? t(locale, 'profileCook', 'actions.saving')
+                                : (confirmCopy?.confirm ?? t(locale, 'profileCook', 'actions.confirm'))}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </ProfilePinnedFooterLayout>
     );
+}
+
+function visibilityConfirmCopy({
+    nextVisible,
+    isApprovedByAdmin,
+    locale,
+}: {
+    nextVisible: boolean;
+    isApprovedByAdmin: boolean;
+    locale: Locale;
+}): { title: string; description: string; confirm: string } {
+    if (nextVisible) {
+        return {
+            title: t(locale, 'profileCook', 'public.makePublicTitle'),
+            description: isApprovedByAdmin
+                ? t(locale, 'profileCook', 'public.makePublicBody')
+                : t(locale, 'profileCook', 'public.makePublicPending'),
+            confirm: t(locale, 'profileCook', 'public.makePublic'),
+        };
+    }
+
+    return {
+        title: t(locale, 'profileCook', 'public.hideTitle'),
+        description: isApprovedByAdmin ? t(locale, 'profileCook', 'public.hideBody') : t(locale, 'profileCook', 'public.hidePending'),
+        confirm: t(locale, 'profileCook', 'actions.hide'),
+    };
 }
 
 function CatalogCombobox({

@@ -7,7 +7,7 @@ Guests can send a booking request from a public chef page to that cook only, the
 1. When `BOOKING_REQUEST_COOK_DIRECT` is on and the cook is offer-ready (visible, admin-approved, Stripe complete, travel origin set), the
    public chef-page **Send request** CTA names the chef and opens `/booking-request/form?cookId=`. Published complete menus with at least
    one meal picture appear on `/chefs/$pathName` (and cook preview); **Request this menu** opens the same wizard with `?cookId=&menuId=`.
-   Cook WYSIWYG preview at `/profile/public` follows the same CTAs. Listing cards and city/venue/occasion grids stay profile links.
+   Cook WYSIWYG preview at `/profile/chef-profile` follows the same CTAs. Listing cards and city/venue/occasion grids stay profile links.
 2. The form keeps `cookId` and `menuId` across draft URL sync and the auth redirect (`menuId` is dropped when `cookId` is absent). Chrome,
    price-class help, message address, and submit label name the chef, and name the menu when that catalog item is still available. The venue
    step has a short hint that the cook can still come if the place is farther than usual (no kilometers, no “delivery area”). There is no

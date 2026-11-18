@@ -466,7 +466,7 @@
             },
             "DIRECT_BOOKING_REQUEST": {
                 "title": "{count, plural, one {Qualcuno ti ha richiesto direttamente} other {# richieste dirette}}",
-                "body": "Un ospite ti ha richiesto dal tuo profilo chef.",
+                "body": "Un ospite ti ha richiesto dalla tua pagina chef.",
                 "action": "Apri richiesta"
             },
             "CALL_UPCOMING": {
@@ -493,13 +493,13 @@
             },
             "PROFILE_PICTURE": {
                 "title": "Aggiungi una foto profilo",
-                "body": "Una foto aiuta i clienti a riconoscerti sul profilo pubblico.",
+                "body": "Una foto aiuta i clienti a riconoscerti sulla tua pagina chef.",
                 "action": "Aggiungi foto"
             },
             "CHEF_PROFILE": {
-                "title": "Completa il profilo chef",
+                "title": "Completa la pagina chef",
                 "body": "Aggiungi una bio e scegli stile di cucina e filosofia.",
-                "action": "Modifica profilo"
+                "action": "Modifica pagina"
             },
             "FIRST_MEAL": {
                 "title": "Crea il tuo primo piatto",
@@ -541,12 +541,8 @@
             "description": "Invita chef che conosci e segui i loro progressi."
         },
         "chefProfile": {
-            "title": "Profilo chef",
-            "description": "Cosa vedono gli ospiti su di te, più gli strumenti privati per le offerte."
-        },
-        "public": {
-            "title": "Profilo pubblico",
-            "description": "Visibilità, anteprima e link al tuo profilo chef pubblico."
+            "title": "Pagina chef",
+            "description": "La tua pagina chef pubblica: anteprima, pubblicazione e modifica di ciò che vedono gli ospiti."
         },
         "travel": {
             "title": "Impostazioni viaggio",
@@ -928,6 +924,23 @@
         "cuisineAndPhilosophy": "Stile di cucina e filosofia",
         "identityLabel": "Identità chef",
         "seePublicProfile": "Vedi profilo pubblico",
+        "live": "Online",
+        "hidden": "Nascosta",
+        "pendingApproval": "In attesa di approvazione del team",
+        "tabsAria": "Sezioni della pagina chef",
+        "tabs": {
+            "overview": "Panoramica",
+            "card": "Scheda pubblica",
+            "page": "Pagina pubblica"
+        },
+        "guestName": "Nome visibile agli ospiti",
+        "added": "Aggiunta",
+        "mealsOnPageLabel": "Piatti",
+        "mealsOnPage": "{count, plural, one {1 sulla pagina pubblica} other {# sulla pagina pubblica}}",
+        "menusOnPageLabel": "Menu",
+        "menusOnPage": "{count, plural, one {1 sulla pagina pubblica} other {# sulla pagina pubblica}}",
+        "pageHint": "Questa è la tua pagina chef pubblica. Gli ospiti arrivano qui dalla ricerca, dalle pagine città e dal link che condividi.",
+        "extraPictureMissing": "Senza un’immagine aggiuntiva, la sezione Chi sono mostra i vantaggi peopleeat.",
         "photoMissingHint": "I clienti vedono questa foto per primi.",
         "readinessNeedsPhotoAndBio": "La tua storia pubblica ha ancora bisogno di una foto e di una biografia.",
         "readinessNeedsPhoto": "La tua storia pubblica ha ancora bisogno di una foto.",
@@ -952,11 +965,14 @@
         "suggestion": "Suggerimento"
     },
     "chefProfileEdit": {
-        "title": "Modifica profilo chef",
+        "title": "Modifica pagina chef",
         "savedUpdating": "Salvato. Aggiornamento riepilogo…",
         "bioGenerateFailed": "Impossibile generare la biografia.",
-        "backToProfile": "Torna al profilo",
+        "backToProfile": "Torna alla pagina chef",
+        "guestZoneTitle": "Sulla tua pagina chef",
+        "guestZoneHint": "Gli ospiti lo vedono in ricerca e sulla tua pagina chef pubblica.",
         "picture": "Foto profilo",
+        "extraPicture": "Immagine aggiuntiva",
         "biography": "Biografia",
         "generating": "Generazione…",
         "improveWithAi": "Migliora con l’IA",

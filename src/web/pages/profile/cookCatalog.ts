@@ -4,7 +4,6 @@ import {
     BarChart3Icon,
     BookOpenIcon,
     ChefHatIcon,
-    EyeIcon,
     FileOutputIcon,
     MapPinIcon,
     PackagePlusIcon,
@@ -25,7 +24,6 @@ export type CookNavSlug =
     | 'invite'
     | 'chef-profile'
     | 'travel'
-    | 'public'
     | 'meals'
     | 'menus'
     | 'offer-addons'
@@ -48,7 +46,6 @@ const NAV_TITLE_KEY = {
     invite: 'nav.invite.title',
     'chef-profile': 'nav.chefProfile.title',
     travel: 'nav.travel.title',
-    public: 'nav.public.title',
     meals: 'nav.meals.title',
     menus: 'nav.menus.title',
     'offer-addons': 'nav.offerAddons.title',
@@ -63,7 +60,6 @@ const NAV_DESCRIPTION_KEY = {
     invite: 'nav.invite.description',
     'chef-profile': 'nav.chefProfile.description',
     travel: 'nav.travel.description',
-    public: 'nav.public.description',
     meals: 'nav.meals.description',
     menus: 'nav.menus.description',
     'offer-addons': 'nav.offerAddons.description',
@@ -119,14 +115,6 @@ export const COOK_NAV_ROUTES: readonly CookNavRoute[] = [
         title: cookNavTitle('chef-profile'),
         description: cookNavDescription('chef-profile'),
         icon: ChefHatIcon,
-    },
-    {
-        slug: 'public',
-        path: '/profile/public',
-        to: '/{-$locale}/profile/public',
-        title: cookNavTitle('public'),
-        description: cookNavDescription('public'),
-        icon: EyeIcon,
     },
     {
         slug: 'travel',

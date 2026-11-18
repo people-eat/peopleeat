@@ -9,8 +9,8 @@ Visiting `/profile/*` as a cook shows:
 - **Header:** peopleeat logo linking to the public landing page.
 - **Nav:** Overview at `/profile`, then Booking request pool with a `NotificationBadge` for open requests to review, Sent offers with a
   `NotificationBadge` for unread notifications across offers, Analytics (when `COOK_ANALYTICS` is on — see
-  [cook-analytics.md](./cook-analytics.md)), Invite chefs (when `COOK_INVITE` is on — see [cook-invite.md](./cook-invite.md)), Chef profile,
-  Public profile, Travel settings, Meals, Menus, Offer extras (when `BOOKING_REQUEST_OFFER_ADDONS` is on — see
+  [cook-analytics.md](./cook-analytics.md)), Invite chefs (when `COOK_INVITE` is on — see [cook-invite.md](./cook-invite.md)), Chef page,
+  Travel settings, Meals, Menus, Offer extras (when `BOOKING_REQUEST_OFFER_ADDONS` is on — see
   [booking-offer-addons.md](./booking-offer-addons.md)), Wallet, Gesprächstermine (call appointments). Wallet shows a warning `StatusBadge`
   when the invoice address is missing or (once approved) payout setup is incomplete — see
   [status-messaging.md](../styles/status-messaging.md) and [cook-profile.md](./cook-profile.md). Pool, offer counts, and wallet attention
@@ -31,20 +31,19 @@ Visiting `/profile/*` as a cook shows:
 Mobile: the left nav sheet closes when the route changes after a nav selection.
 
 Stub routes show a bilingual “coming soon” placeholder until their features land. **Meals**, **Menus**, **Offer extras** (toggle-gated),
-**Chef profile**, **Public profile** (Preview / Manage tabs: listing-card + detail WYSIWYG + share on Preview; visibility + additional
-picture on Manage), **Travel settings**, **Wallet**, **Gesprächstermine**, **Analytics** (toggle-gated), the **booking request pool**, and
-the **sent offers** inbox are implemented — see [cook-meals.md](./cook-meals.md), [cook-menus.md](./cook-menus.md),
-[booking-offer-addons.md](./booking-offer-addons.md), [cook-profile.md](./cook-profile.md), [cook-analytics.md](./cook-analytics.md),
-[cook-call-availability.md](./cook-call-availability.md), [booking.md](./booking.md), and [booking-offers.md](./booking-offers.md).
+**Chef page** (shop-window tabs: Overview / Public card / Public page, visibility, extra picture on edit), **Travel settings**, **Wallet**,
+**Gesprächstermine**, **Analytics** (toggle-gated), the **booking request pool**, and the **sent offers** inbox are implemented — see
+[cook-meals.md](./cook-meals.md), [cook-menus.md](./cook-menus.md), [booking-offer-addons.md](./booking-offer-addons.md),
+[cook-profile.md](./cook-profile.md), [cook-analytics.md](./cook-analytics.md), [cook-call-availability.md](./cook-call-availability.md),
+[booking.md](./booking.md), and [booking-offers.md](./booking-offers.md).
 
 ### Breadcrumbs
 
 Breadcrumbs answer “where within the cook profile?”, not “are you in profile?”. Examples:
 
 - `/profile` → Overview
-- `/profile/chef-profile` → Chef profile
-- `/profile/chef-profile/edit` → Chef profile › Edit
-- `/profile/public` → Public profile
+- `/profile/chef-profile` → Chef page
+- `/profile/chef-profile/edit` → Chef page › Edit
 - `/profile/travel` → Travel settings
 - `/profile/travel/edit` → Travel settings › Edit
 - `/profile/meals` → Meals
@@ -109,7 +108,7 @@ destinations share a catalog until real pages replace them. `/profile/account` i
   wired). See [assistants.md](./assistants.md).
 - Admin footer link: `isAdmin` from profile / account loaders.
 - i18n: `/profile` loader + `head()` `await i18nResourcesLoad(…, ['common', 'public', 'profile', 'profileCook'|'profileCustomer'])`;
-  `ProfileLayout` nests `I18nProvider` with those namespaces. `public` is required so `/profile/public` Preview (`Header` / `Footer` /
+  `ProfileLayout` nests `I18nProvider` with those namespaces. `public` is required so `/profile/chef-profile` Preview (`Header` / `Footer` /
   `ChefProfileView` / `PublicCookCard`) can call `useT('public')` — see [i18n.md](../architecture/i18n.md).
 - Key files: `src/web/pages/profile/ProfileLayout.tsx` (`CookShell`, `ProfileAssistantPane`), `src/web/components/CookSidebar.tsx`,
   `CookBreadcrumbs.tsx`, `CookAccessDenied.tsx`, `AssistantTriggerButton.tsx`, `ProfileAssistantSidebar.tsx`,
