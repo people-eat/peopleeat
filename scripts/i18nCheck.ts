@@ -3,7 +3,7 @@ import path from 'node:path';
 
 const LOCALES_DIR = path.join(process.cwd(), 'src/i18n/locales');
 const SOURCE_LOCALE = 'de';
-const COMPLETE_LOCALES = ['en', 'fr', 'it'] as const;
+const COMPLETE_LOCALES = ['en', 'fr', 'it', 'ru', 'nl'] as const;
 
 /** Values that look like TypeScript/JSX leaked into a catalog by a botched migrator. */
 const SOURCE_DUMP = /(?:function |export function |const [A-Za-z][\w]* = |className=|useState<|useRef<|as const|return \(|\{ de:|<\/[A-Z])/;

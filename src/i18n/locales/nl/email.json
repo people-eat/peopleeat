@@ -14,6 +14,11 @@
             "preview": "Bevestig je nieuwe e-mailadres. Code: {code}",
             "subject": "Bevestig je nieuwe e-mailadres",
             "body": "Voer deze code in op de accountpagina om je nieuwe e-mailadres te bevestigen. De code verloopt over tien minuten."
+        },
+        "accountDeleted": {
+            "preview": "Je peopleeat-account is verwijderd",
+            "subject": "Je peopleeat-account is verwijderd",
+            "body": "Je account is verwijderd. Persoonsgegevens zijn verwijderd en je kunt niet meer inloggen. Als je dit niet hebt aangevraagd, neem dan contact op met support."
         }
     },
     "common": {

@@ -2106,7 +2106,15 @@
         "technicalStatus": "Technisch: {status}",
         "tokenUsage": "Input {input} · Output {output} · Totaal {total} · Reasoning {reasoning} · Cache {cache}",
         "callsInRangeRates": "In bereik: bevestigingsratio {confirmRate}% · afwijsratio {declineRate}% (van afgeronde + afgewezen + geannuleerde slots).",
-        "cookCallStats": "{rooms} rooms · {completed} afgerond · {declined} afgewezen · {awaiting} wachtend"
+        "cookCallStats": "{rooms} rooms · {completed} afgerond · {declined} afgewezen · {awaiting} wachtend",
+        "accountDeletionScheduledFor": "Verwijdering gepland voor {date}.",
+        "anonymizeModeImmediate": "Direct",
+        "anonymizeModeSchedule": "Plannen (7 dagen wachten)",
+        "cancelScheduledDeletion": "Geplande verwijdering annuleren",
+        "couldNotCancelScheduledDeletion": "Geplande verwijdering kon niet worden geannuleerd.",
+        "dualAcceptedEventCoolOff": "Pas toegestaan 7 dagen na het laatste bevestigde evenement.",
+        "scheduledDeletionCanceled": "Geplande verwijdering geannuleerd.",
+        "userAnonymizeScheduled": "Anonimisering gepland."
     },
     "analytics": {
         "funnels": {
@@ -2433,7 +2441,8 @@
             "SUPPORT_REQUEST_RESOLVED": "Supportaanvraag opgelost",
             "BOOKING_REQUEST_OFFER_CHAT_MESSAGE_TO_CUSTOMER": "Offertechat aan klant",
             "BOOKING_REQUEST_OFFER_CHAT_MESSAGE_TO_COOK": "Offertechat aan chef",
-            "COOK_APPROVED_BY_ADMIN": "Chef goedgekeurd"
+            "COOK_APPROVED_BY_ADMIN": "Chef goedgekeurd",
+            "ACCOUNT_DELETED": "Account verwijderd"
         },
         "quotaReset": "Reset: {when}",
         "emailCount": "{count, plural, one {# e-mail} other {# e-mails}}"

@@ -14,19 +14,22 @@ Signed-in cooks manage these areas under `/profile/*`:
    offers, conversion) with a link to `/profile/analytics` — see [cook-analytics.md](./cook-analytics.md). Brand-new cooks see no analytics
    zeros. `ACTIVE_WAS_RESET` is Attention (not Getting started). Completed steps disappear. When both lanes are empty, a calm “you’re all
    set” note points to the sidebar.
-2. **Chef profile** (`/profile/chef-profile`) is a read-only view of biography, biography summary, and cuisine style / cooking philosophy as
-   the shared `CookProfileTags` pills, plus a private **default offer note** (customers never see this on the public chef page). When
-   `COOK_PUBLIC_PROFILE_PATH_NAME` is on, the same view and edit page include **Public URL** (`/chefs/<pathName>` with copy, slug input,
-   live availability). Changing the slug keeps the old address as a redirect; the last name in the URL is public even though the page still
-   shows first name or stage name. When the toggle is off, the section is hidden and `cookUpdate` rejects `pathName`. Public
-   `/chefs/<pathName>` still works. **Edit** opens the form with a dirty-gated footer (Save only when the form is dirty; otherwise **Back to
-   profile**). The default offer note has three states: **not set** (`null`, Getting started item; offer create still uses the peopleeat
-   greeting), **empty** (start blank each offer), or **custom text** (prefill). Saving chef profile without changing that section leaves
-   `null` as `null`. Profile picture can be changed or removed there (same crop/upload flow as account —
-   [profile-pictures.md](./profile-pictures.md)). When `COOK_BIOGRAPHY_AI_WRITE` is on, cooks can **Write with AI** / **Improve with AI**
-   (spinner while generating): the suggestion opens a **side-by-side review** (textarea hidden while reviewing); **Accept** fills the
-   biography field so the cook can edit further before Save; **Discard** leaves the form unchanged. When the toggle is off, the button is
-   hidden and the suggest mutation rejects. Biography summary is view-only for cooks and regenerates automatically in the background
+2. **Chef profile** (`/profile/chef-profile`) is a read-only identity readout: an **identity strip** (profile picture, name, and cuisine
+   style / cooking philosophy as shared `CookProfileTags` pills), then the public story (public URL when gated, full biography as the
+   primary reading block, guest-facing biography summary as a quieter secondary), then a clearly separated **private** zone for the
+   **default offer note** (customers never see this on the public chef page) and, when gated, **Other profiles**. A soft readiness line
+   appears only when photo and/or biography are missing, with a link to Overview setup; **See public profile** opens `/profile/public`
+   Preview (the only customer WYSIWYG). When `COOK_PUBLIC_PROFILE_PATH_NAME` is on, the same view and edit page include **Public URL**
+   (`/chefs/<pathName>` with copy, slug input, live availability). Changing the slug keeps the old address as a redirect; the last name in
+   the URL is public even though the page still shows first name or stage name. When the toggle is off, the section is hidden and
+   `cookUpdate` rejects `pathName`. Public `/chefs/<pathName>` still works. **Edit** opens the form with a dirty-gated footer (Save only
+   when the form is dirty; otherwise **Back to profile**). The default offer note has three states: **not set** (`null`, Getting started
+   item; offer create still uses the peopleeat greeting), **empty** (start blank each offer), or **custom text** (prefill). Saving chef
+   profile without changing that section leaves `null` as `null`. Profile picture can be changed or removed there (same crop/upload flow as
+   account — [profile-pictures.md](./profile-pictures.md)). When `COOK_BIOGRAPHY_AI_WRITE` is on, cooks can **Write with AI** / **Improve
+   with AI** (spinner while generating): the suggestion opens a **side-by-side review** (textarea hidden while reviewing); **Accept** fills
+   the biography field so the cook can edit further before Save; **Discard** leaves the form unchanged. When the toggle is off, the button
+   is hidden and the suggest mutation rejects. Biography summary is view-only for cooks and regenerates automatically in the background
    (best-effort job) whenever they save a non-empty biography — **always**, independent of the AI-write toggle. A biography save **stays on
    the edit page** (toast + summary skeleton via `Cook.biographySummaryGenerating`); cuisine/philosophy-only saves still navigate back to
    the read-only view. Clearing the biography clears the summary and cancels any pending summary job. Public surfaces keep showing the last

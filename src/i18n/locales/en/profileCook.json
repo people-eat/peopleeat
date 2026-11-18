@@ -147,7 +147,7 @@
         },
         "chefProfile": {
             "title": "Chef profile",
-            "description": "Biography, cuisine style, and cooking philosophy."
+            "description": "What guests see about you, plus private offer tools."
         },
         "public": {
             "title": "Public profile",
@@ -531,11 +531,22 @@
     },
     "chefProfile": {
         "cuisineAndPhilosophy": "Cuisine style and philosophy",
+        "identityLabel": "Chef identity",
+        "seePublicProfile": "See public profile",
+        "photoMissingHint": "Customers see this photo first.",
+        "readinessNeedsPhotoAndBio": "Your public story still needs a photo and biography.",
+        "readinessNeedsPhoto": "Your public story still needs a photo.",
+        "readinessNeedsBio": "Your public story still needs a biography.",
+        "seeSetupOnOverview": "See setup on Overview",
+        "yourStory": "Your story",
         "biography": "Biography",
-        "noBiography": "No biography yet.",
-        "summary": "Biography summary",
+        "noBiography": "No biography yet. Guests read this on your public profile.",
+        "summary": "Guest-facing summary",
+        "summaryGuestHint": "Shown to guests on your public profile. Updates automatically when you save your biography.",
         "summaryUpdating": "Updating summary…",
         "noSummary": "No summary yet.",
+        "privateZoneTitle": "Private to you and the team",
+        "privateZoneHint": "These stay off your public chef page.",
         "defaultOfferNote": "Default offer note",
         "defaultOfferNoteHint": "Prefills when you create an offer. Guests see it as the first chat message.",
         "otherProfiles": "Other profiles",
@@ -1169,7 +1180,7 @@
         "anotherProfile": "Another profile",
         "website": "Website",
         "googleProfile": "Google profile",
-        "empty": "No other profiles yet.",
+        "empty": "No other profiles added. The team uses these for review; customers never see them.",
         "removeProfile": "Remove profile",
         "platformName": "Platform name",
         "address": "Address",

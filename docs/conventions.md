@@ -291,7 +291,8 @@ disclaimer, chat transcript messages region) may call `useT('common')` inside th
 
 **Every locale must be real copy.** Identical values are fine when the word is the same (`Name`, `Status`, brand names). It is **not** fine
 when German has a clear equivalent: write `Fähigkeiten` not `Skills`, `Protokolle` not `Logs`. Prefer translating UI chrome even when the
-English loanword is common in German tech speech. `en` / `fr` / `it` / `ru` catalogs must match the `de` key tree (`npm run i18n:check`).
+English loanword is common in German tech speech. `en` / `fr` / `it` / `ru` / `nl` catalogs must match the `de` key tree
+(`npm run i18n:check`).
 Missing keys fall back to `de`, never a raw key.
 
 **No mid-sentence em or en dashes (`—` / `–`) in user-facing copy.** They read as AI-generated. Prefer commas, periods, colons, or

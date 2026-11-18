@@ -147,7 +147,7 @@
         },
         "chefProfile": {
             "title": "Kochprofil",
-            "description": "Biografie, Küchenstil und Kochphilosophie."
+            "description": "Was Gäste über dich lesen, plus private Angebotswerkzeuge."
         },
         "public": {
             "title": "Öffentliches Profil",
@@ -531,11 +531,22 @@
     },
     "chefProfile": {
         "cuisineAndPhilosophy": "Küchenstil und Philosophie",
+        "identityLabel": "Koch-Identität",
+        "seePublicProfile": "Öffentliches Profil ansehen",
+        "photoMissingHint": "Kunden sehen dieses Foto zuerst.",
+        "readinessNeedsPhotoAndBio": "Deine öffentliche Geschichte braucht noch ein Foto und eine Biografie.",
+        "readinessNeedsPhoto": "Deine öffentliche Geschichte braucht noch ein Foto.",
+        "readinessNeedsBio": "Deine öffentliche Geschichte braucht noch eine Biografie.",
+        "seeSetupOnOverview": "Einrichtung in der Übersicht ansehen",
+        "yourStory": "Deine Geschichte",
         "biography": "Biografie",
-        "noBiography": "Noch keine Biografie.",
-        "summary": "Biografie-Kurzfassung",
+        "noBiography": "Noch keine Biografie. Gäste lesen sie auf deinem öffentlichen Profil.",
+        "summary": "Kurzfassung für Gäste",
+        "summaryGuestHint": "Wird Gästen auf deinem öffentlichen Profil gezeigt. Aktualisiert sich automatisch, wenn du deine Biografie speicherst.",
         "summaryUpdating": "Kurzfassung wird aktualisiert…",
         "noSummary": "Noch keine Kurzfassung vorhanden.",
+        "privateZoneTitle": "Privat für dich und das Team",
+        "privateZoneHint": "Das erscheint nicht auf deiner öffentlichen Kochseite.",
         "defaultOfferNote": "Begrüßungstext für Angebote",
         "defaultOfferNoteHint": "Wird beim Erstellen eines Angebots vorausgefüllt. Gäste sehen ihn als erste Chat-Nachricht.",
         "otherProfiles": "Weitere Profile",
@@ -1169,7 +1180,7 @@
         "anotherProfile": "Weiteres Profil",
         "website": "Website",
         "googleProfile": "Google-Profil",
-        "empty": "Noch keine Profile angegeben.",
+        "empty": "Noch keine weiteren Profile. Das Team nutzt sie zur Prüfung; Kunden sehen sie nicht.",
         "removeProfile": "Profil entfernen",
         "platformName": "Name der Plattform",
         "address": "Adresse",

@@ -2106,7 +2106,15 @@
         "technicalStatus": "Техническое: {status}",
         "tokenUsage": "Вход {input} · Выход {output} · Всего {total} · Рассуждение {reasoning} · Кэш {cache}",
         "callsInRangeRates": "За период: доля подтверждений {confirmRate}% · доля отказов {declineRate}% (от завершённых + отклонённых + отменённых слотов).",
-        "cookCallStats": "{rooms} комнат · {completed} завершено · {declined} отклонено · {awaiting} в ожидании"
+        "cookCallStats": "{rooms} комнат · {completed} завершено · {declined} отклонено · {awaiting} в ожидании",
+        "accountDeletionScheduledFor": "Удаление запланировано на {date}.",
+        "anonymizeModeImmediate": "Сразу",
+        "anonymizeModeSchedule": "Запланировать (ожидание 7 дней)",
+        "cancelScheduledDeletion": "Отменить запланированное удаление",
+        "couldNotCancelScheduledDeletion": "Не удалось отменить запланированное удаление.",
+        "dualAcceptedEventCoolOff": "Можно только через 7 дней после последнего подтверждённого мероприятия.",
+        "scheduledDeletionCanceled": "Запланированное удаление отменено.",
+        "userAnonymizeScheduled": "Анонимизация запланирована."
     },
     "analytics": {
         "funnels": {
@@ -2433,7 +2441,8 @@
             "SUPPORT_REQUEST_RESOLVED": "Запрос в поддержку решён",
             "BOOKING_REQUEST_OFFER_CHAT_MESSAGE_TO_CUSTOMER": "Чат предложения клиенту",
             "BOOKING_REQUEST_OFFER_CHAT_MESSAGE_TO_COOK": "Чат предложения повару",
-            "COOK_APPROVED_BY_ADMIN": "Повар одобрен"
+            "COOK_APPROVED_BY_ADMIN": "Повар одобрен",
+            "ACCOUNT_DELETED": "Аккаунт удалён"
         },
         "quotaReset": "Сброс: {when}",
         "emailCount": "{count, plural, one {# письмо} few {# письма} many {# писем} other {# писем}}"

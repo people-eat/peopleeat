@@ -239,7 +239,7 @@
         "anotherProfile": "Autre profil",
         "website": "Site web",
         "googleProfile": "Profil Google",
-        "empty": "Aucun autre profil pour le moment.",
+        "empty": "Aucun autre profil ajouté. L’équipe s’en sert pour la revue; les clients ne les voient jamais.",
         "removeProfile": "Retirer le profil",
         "platformName": "Nom de la plateforme",
         "address": "Adresse",
@@ -542,7 +542,7 @@
         },
         "chefProfile": {
             "title": "Profil de chef",
-            "description": "Biographie, style de cuisine et philosophie."
+            "description": "Ce que les hôtes voient sur toi, plus les outils d’offre privés."
         },
         "public": {
             "title": "Profil public",
@@ -926,11 +926,22 @@
     },
     "chefProfile": {
         "cuisineAndPhilosophy": "Style de cuisine et philosophie",
+        "identityLabel": "Identité du chef",
+        "seePublicProfile": "Voir le profil public",
+        "photoMissingHint": "Les clients voient cette photo en premier.",
+        "readinessNeedsPhotoAndBio": "Ton histoire publique a encore besoin d’une photo et d’une biographie.",
+        "readinessNeedsPhoto": "Ton histoire publique a encore besoin d’une photo.",
+        "readinessNeedsBio": "Ton histoire publique a encore besoin d’une biographie.",
+        "seeSetupOnOverview": "Voir la configuration dans l’aperçu",
+        "yourStory": "Ton histoire",
         "biography": "Biographie",
-        "noBiography": "Pas encore de biographie.",
-        "summary": "Résumé de biographie",
+        "noBiography": "Pas encore de biographie. Les hôtes la lisent sur ton profil public.",
+        "summary": "Résumé pour les hôtes",
+        "summaryGuestHint": "Affiché aux hôtes sur ton profil public. Se met à jour automatiquement quand tu enregistres ta biographie.",
         "summaryUpdating": "Mise à jour du résumé…",
         "noSummary": "Pas encore de résumé.",
+        "privateZoneTitle": "Privé pour toi et l’équipe",
+        "privateZoneHint": "Cela n’apparaît pas sur ta page chef publique.",
         "defaultOfferNote": "Note d’offre par défaut",
         "defaultOfferNoteHint": "Se préremplit quand tu crées une offre. Les hôtes la voient comme premier message du chat.",
         "otherProfiles": "Autres profils",

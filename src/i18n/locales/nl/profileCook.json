@@ -120,6 +120,11 @@
                 "title": "Maak je eerste offerte",
                 "body": "Bekijk de aanvragenpool en stuur je eerste offerte.",
                 "action": "Naar pool"
+            },
+            "INVOICE_ADDRESS": {
+                "title": "Factuuradres toevoegen",
+                "body": "We hebben een factuuradres nodig zodat peopleeat platformkosten aan jou kan factureren.",
+                "action": "Naar wallet"
             }
         }
     },
@@ -142,7 +147,7 @@
         },
         "chefProfile": {
             "title": "Chefprofiel",
-            "description": "Biografie, kookstijl en kookfilosofie."
+            "description": "Wat gasten over jou zien, plus privétools voor offertes."
         },
         "public": {
             "title": "Openbaar profiel",
@@ -527,8 +532,8 @@
     "chefProfile": {
         "cuisineAndPhilosophy": "Kookstijl en filosofie",
         "biography": "Biografie",
-        "noBiography": "Nog geen biografie.",
-        "summary": "Samenvatting van de biografie",
+        "noBiography": "Nog geen biografie. Gasten lezen dit op je openbare profiel.",
+        "summary": "Samenvatting voor gasten",
         "summaryUpdating": "Samenvatting bijwerken…",
         "noSummary": "Nog geen samenvatting.",
         "defaultOfferNote": "Standaardnotitie voor offertes",
@@ -538,7 +543,18 @@
         "reviewTitle": "Suggestie voor biografie bekijken",
         "reviewHint": "Vergelijk de huidige tekst met de AI-suggestie. Met Accepteren vul je het tekstveld. Met Opslaan sla je de biografie op.",
         "current": "Huidig",
-        "suggestion": "Suggestie"
+        "suggestion": "Suggestie",
+        "identityLabel": "Identiteit van de chef",
+        "seePublicProfile": "Openbaar profiel bekijken",
+        "photoMissingHint": "Klanten zien deze foto als eerste.",
+        "readinessNeedsPhotoAndBio": "Je openbare verhaal heeft nog een foto en biografie nodig.",
+        "readinessNeedsPhoto": "Je openbare verhaal heeft nog een foto nodig.",
+        "readinessNeedsBio": "Je openbare verhaal heeft nog een biografie nodig.",
+        "seeSetupOnOverview": "Bekijk de setup in Overzicht",
+        "yourStory": "Jouw verhaal",
+        "summaryGuestHint": "Getoond aan gasten op je openbare profiel. Wordt automatisch bijgewerkt wanneer je je biografie opslaat.",
+        "privateZoneTitle": "Privé voor jou en het team",
+        "privateZoneHint": "Dit staat niet op je openbare chefpagina."
     },
     "chefProfileEdit": {
         "title": "Chefprofiel bewerken",
@@ -634,7 +650,31 @@
         "pending": "In behandeling",
         "balanceHint": "Beschikbaar betekent klaar voor uitbetaling naar je bank. In behandeling wordt vrijgegeven na de wachtperiode van Stripe. Ons team geeft de overboeking naar je bank na het evenement vrij.",
         "recentActivity": "Recente activiteit",
-        "noActivity": "Nog geen activiteit. Tegoeden verschijnen hier zodra klanten betalen."
+        "noActivity": "Nog geen activiteit. Tegoeden verschijnen hier zodra klanten betalen.",
+        "invoiceAddress": {
+            "missingTitle": "Factuuradres ontbreekt",
+            "missingBody": "Voeg een factuuradres toe zodat peopleeat platformkosten aan jou kan factureren. Dit is gescheiden van je reisvertrekpunt.",
+            "addAction": "Factuuradres toevoegen",
+            "sectionTitle": "Factuuradres",
+            "editAction": "Bewerken",
+            "addTitle": "Factuuradres toevoegen",
+            "editTitle": "Factuuradres bewerken",
+            "dialogBody": "Dit adres verschijnt op peopleeat-facturen aan jou. Het is niet je reisvertrekpunt.",
+            "firstName": "Voornaam",
+            "lastName": "Achternaam",
+            "line1": "Straat en huisnummer",
+            "line2": "Adresregel 2 (optioneel)",
+            "postalCode": "Postcode",
+            "city": "Plaats",
+            "country": "Land",
+            "countryHelp": "Tweeletterige landcode, bijvoorbeeld DE of AT.",
+            "back": "Terug",
+            "reuseTravelOrigin": "Reisvertrekpunt gebruiken",
+            "reuseTravelOriginHint": "Vult de straatvelden vanuit je reisvertrekpunt. Je kunt ze daarna nog aanpassen.",
+            "travelOriginApplied": "Reisvertrekpunt gekopieerd naar het formulier.",
+            "searchAddress": "Adres zoeken",
+            "searchAddressHint": "Kies een suggestie om de straatvelden te vullen, of typ ze zelf."
+        }
     },
     "invite": {
         "rewardUnlocked": "Beloning ontgrendeld",
@@ -1140,7 +1180,7 @@
         "anotherProfile": "Ander profiel",
         "website": "Website",
         "googleProfile": "Google-profiel",
-        "empty": "Nog geen andere profielen.",
+        "empty": "Nog geen andere profielen toegevoegd. Het team gebruikt ze voor beoordeling; klanten zien ze nooit.",
         "removeProfile": "Profiel verwijderen",
         "platformName": "Naam van het platform",
         "address": "Adres",

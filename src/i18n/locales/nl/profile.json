@@ -36,7 +36,9 @@
             "invalidOrExpiredCode": "Ongeldige of verlopen code.",
             "phoneTaken": "Dit nummer is al in gebruik.",
             "invalidPhone": "Vul een nummer in met landcode, bijvoorbeeld +49…",
-            "deleteFailed": "Het account kon niet worden verwijderd."
+            "deleteFailed": "Het account kon niet worden verwijderd.",
+            "deleteAlreadyScheduled": "Accountverwijdering is al gepland.",
+            "deleteCancelFailed": "Accountverwijdering kon niet worden geannuleerd."
         },
         "toasts": {
             "phoneSaved": "Telefoonnummer opgeslagen.",
@@ -56,7 +58,9 @@
             "deviceSignedOut": "Apparaat uitgelogd.",
             "accountDeleted": "Account verwijderd.",
             "signOutFailed": "Uitloggen is mislukt.",
-            "deviceSignOutFailed": "Dat apparaat kon niet worden uitgelogd."
+            "deviceSignOutFailed": "Dat apparaat kon niet worden uitgelogd.",
+            "accountDeletionCanceled": "Accountverwijdering geannuleerd.",
+            "accountDeletionScheduled": "Accountverwijdering gepland."
         },
         "noPhone": "Geen nummer opgeslagen",
         "notSet": "Niet ingesteld",
@@ -151,7 +155,11 @@
             "description": "Persoonlijke profielgegevens worden verwijderd. Daarna kun je niet meer inloggen.",
             "action": "Account verwijderen",
             "confirmTitle": "Je account definitief verwijderen?",
-            "confirmBody": "Dit kan niet ongedaan worden gemaakt. Je persoonlijke gegevens worden verwijderd en alle apparaten worden uitgelogd. De boekingsgeschiedenis blijft beschikbaar voor chefs en operations, maar is niet langer aan jouw identiteit gekoppeld. We sturen een code naar je e-mailadres."
+            "confirmBody": "Dit kan niet ongedaan worden gemaakt. Je persoonlijke gegevens worden verwijderd en alle apparaten worden uitgelogd. De boekingsgeschiedenis blijft beschikbaar voor chefs en operations, maar is niet langer aan jouw identiteit gekoppeld. We sturen een code naar je e-mailadres.",
+            "cancelAction": "Verwijdering annuleren",
+            "cancelBody": "Je account blijft actief en wordt niet automatisch verwijderd.",
+            "cancelTitle": "Geplande verwijdering annuleren?",
+            "scheduledDescription": "Je account staat gepland voor verwijdering op {date}. Je kunt peopleeat tot die tijd blijven gebruiken, of annuleren."
         },
         "security": {
             "title": "Inloggen en beveiliging",

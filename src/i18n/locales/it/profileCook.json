@@ -239,7 +239,7 @@
         "anotherProfile": "Altro profilo",
         "website": "Sito web",
         "googleProfile": "Profilo Google",
-        "empty": "Nessun altro profilo ancora.",
+        "empty": "Nessun altro profilo aggiunto. Il team li usa per la revisione; i clienti non li vedono mai.",
         "removeProfile": "Rimuovi profilo",
         "platformName": "Nome della piattaforma",
         "address": "Indirizzo",
@@ -542,7 +542,7 @@
         },
         "chefProfile": {
             "title": "Profilo chef",
-            "description": "Biografia, stile di cucina e filosofia."
+            "description": "Cosa vedono gli ospiti su di te, più gli strumenti privati per le offerte."
         },
         "public": {
             "title": "Profilo pubblico",
@@ -926,11 +926,22 @@
     },
     "chefProfile": {
         "cuisineAndPhilosophy": "Stile di cucina e filosofia",
+        "identityLabel": "Identità chef",
+        "seePublicProfile": "Vedi profilo pubblico",
+        "photoMissingHint": "I clienti vedono questa foto per primi.",
+        "readinessNeedsPhotoAndBio": "La tua storia pubblica ha ancora bisogno di una foto e di una biografia.",
+        "readinessNeedsPhoto": "La tua storia pubblica ha ancora bisogno di una foto.",
+        "readinessNeedsBio": "La tua storia pubblica ha ancora bisogno di una biografia.",
+        "seeSetupOnOverview": "Vedi la configurazione nella panoramica",
+        "yourStory": "La tua storia",
         "biography": "Biografia",
-        "noBiography": "Nessuna biografia ancora.",
-        "summary": "Riepilogo biografia",
+        "noBiography": "Nessuna biografia ancora. Gli ospiti la leggono sul tuo profilo pubblico.",
+        "summary": "Riepilogo per gli ospiti",
+        "summaryGuestHint": "Mostrato agli ospiti sul profilo pubblico. Si aggiorna automaticamente quando salvi la biografia.",
         "summaryUpdating": "Aggiornamento riepilogo…",
         "noSummary": "Nessun riepilogo ancora.",
+        "privateZoneTitle": "Privato per te e il team",
+        "privateZoneHint": "Non compare sulla tua pagina chef pubblica.",
         "defaultOfferNote": "Nota offerta predefinita",
         "defaultOfferNoteHint": "Si precompila quando crei un’offerta. Gli ospiti la vedono come primo messaggio in chat.",
         "otherProfiles": "Altri profili",
