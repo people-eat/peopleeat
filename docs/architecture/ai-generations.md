@@ -59,7 +59,7 @@ Kinds today:
 - `BOOKING_REQUEST_OFFER_CALL_RECORDING_TRANSCRIPT` → `ai.bookingRequestOfferCallRecordingTranscriptModel`
 - `BOOKING_REQUEST_OFFER_CALL_RECORDING_SUMMARY` → `ai.bookingRequestOfferCallRecordingSummaryModel`
 - `COOK_BIOGRAPHY_SUGGESTION` → `ai.cookBiographySuggestModel`
-- `COOK_BIOGRAPHY_SUMMARY` → `ai.cookBiographySummaryModel`
+- `COOK_BIOGRAPHY_SUMMARY` → `ai.cookBiographySummaryModel` (also returns a contact-stripped full `biography`; the job writes both)
 - `BOOKING_REQUEST_COOK_MENU_EVALUATION` → `ai.cookMenuEvaluationModel`
 - `BOOKING_REQUEST_ADJUSTED_MESSAGE` → `ai.bookingRequestAdjustedMessageModel`
 

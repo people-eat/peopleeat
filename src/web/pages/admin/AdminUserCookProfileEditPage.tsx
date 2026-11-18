@@ -7,6 +7,7 @@ import { useMutation, useQuery } from 'urql';
 
 import { t } from '../../../i18n/t';
 import { containsPhoneNumber, userDisplayName } from '../../../shared';
+import { cookBiographyNormalize } from '../../../shared/cookBiographyContact';
 import { cookDefaultOfferMessageFormFrom, cookDefaultOfferMessageUpdateFrom } from '../../../shared/cookDefaultOfferMessage';
 import {
     cookPresenceLinksEqual,
@@ -26,6 +27,7 @@ import { Separator } from '../../components/base/separator';
 import { Spinner } from '../../components/base/spinner';
 import { Textarea } from '../../components/base/textarea';
 import { BiographySuggestionReview } from '../../components/BiographySuggestionReview';
+import { CookBiographyContactNotice } from '../../components/CookBiographyContactNotice';
 import { CookDefaultOfferMessageFields } from '../../components/CookDefaultOfferMessageFields';
 import { CookLogoEditor } from '../../components/CookLogoEditor';
 import { CookPathNameFields } from '../../components/CookPathNameFields';
@@ -229,8 +231,8 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
                 input: {
                     stageName: value.stageName.trim() || null,
                     ...(value.pathName !== cook.pathName ? { pathName: value.pathName } : {}),
-                    biography: value.biography,
-                    biographySummary: value.biographySummary,
+                    biography: cookBiographyNormalize(value.biography),
+                    biographySummary: cookBiographyNormalize(value.biographySummary),
                     cuisineStyle: value.cuisineStyle.trim() || null,
                     cookingPhilosophy: value.cookingPhilosophy.trim() || null,
                     exactTravelOriginAddress: value.selectedLocation?.displayText ?? undefined,
@@ -290,7 +292,7 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
 
     function onAcceptBiographySuggestion() {
         if (!biographySuggestion) return;
-        form.setFieldValue('biography', biographySuggestion);
+        form.setFieldValue('biography', cookBiographyNormalize(biographySuggestion));
         setBiographySuggestion(null);
     }
 
@@ -469,14 +471,21 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
                                         onDiscard={() => setBiographySuggestion(null)}
                                     />
                                 ) : (
-                                    <Textarea
-                                        id="admin-cook-biography"
-                                        rows={6}
-                                        value={field.state.value}
-                                        disabled={formBusy}
-                                        onBlur={field.handleBlur}
-                                        onChange={(event) => field.handleChange(event.target.value)}
-                                    />
+                                    <>
+                                        <Textarea
+                                            id="admin-cook-biography"
+                                            rows={6}
+                                            value={field.state.value}
+                                            disabled={formBusy}
+                                            onBlur={field.handleBlur}
+                                            onChange={(event) => field.handleChange(event.target.value)}
+                                        />
+                                        <CookBiographyContactNotice
+                                            text={field.state.value}
+                                            warning={t(locale, 'admin', 'copy.biographyContactWarning')}
+                                            previewLabel={t(locale, 'admin', 'copy.biographyContactPreview')}
+                                        />
+                                    </>
                                 )}
                             </div>
                         )}
@@ -512,6 +521,11 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
                                     disabled={formBusy}
                                     onBlur={field.handleBlur}
                                     onChange={(event) => field.handleChange(event.target.value)}
+                                />
+                                <CookBiographyContactNotice
+                                    text={field.state.value}
+                                    warning={t(locale, 'admin', 'copy.biographyContactWarning')}
+                                    previewLabel={t(locale, 'admin', 'copy.biographyContactPreview')}
                                 />
                             </div>
                         )}

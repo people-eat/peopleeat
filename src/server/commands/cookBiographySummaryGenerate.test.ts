@@ -84,7 +84,15 @@ describe('cookBiographySummaryGenerate', () => {
                 deletedAt: new Date(),
             },
         ]);
-        vi.mocked(generateText).mockResolvedValue(modelObject({ biographySummary: '  Roland kochte in Saalbach.  ' }, 'mock-summary'));
+        vi.mocked(generateText).mockResolvedValue(
+            modelObject(
+                {
+                    biography: 'Roland arbeitete in einem 4*-Hotel in Saalbach.',
+                    biographySummary: '  Roland kochte in Saalbach.  ',
+                },
+                'mock-summary',
+            ),
+        );
 
         // Act
         const result = await cookBiographySummaryGenerate({
@@ -95,8 +103,12 @@ describe('cookBiographySummaryGenerate', () => {
         });
 
         // Assert
-        expect(result).toBe('Roland kochte in Saalbach.');
-        const call = vi.mocked(generateText).mock.calls[0]?.[0] as { prompt: string };
+        expect(result).toEqual({
+            biography: 'Roland arbeitete in einem 4*-Hotel in Saalbach.',
+            biographySummary: 'Roland kochte in Saalbach.',
+        });
+        const call = vi.mocked(generateText).mock.calls[0]?.[0] as { prompt: string; instructions: string };
+        expect(call.instructions).toContain('Telefonnummern');
         expect(call.prompt).toContain('Roland');
         expect(call.prompt).toContain('4*-Hotel in Saalbach');
         expect(call.prompt).toContain('Hotels in den Alpen');
@@ -131,7 +143,9 @@ describe('cookBiographySummaryGenerate', () => {
             cuisineStyle: 'Stored cuisine',
             cookingPhilosophy: 'Stored philosophy',
         });
-        vi.mocked(generateText).mockResolvedValue(modelObject({ biographySummary: 'Salvatore kochte in Rom.' }, 'mock-summary-override'));
+        vi.mocked(generateText).mockResolvedValue(
+            modelObject({ biography: 'Stationen in Rom.', biographySummary: 'Salvatore kochte in Rom.' }, 'mock-summary-override'),
+        );
 
         // Act
         const result = await cookBiographySummaryGenerate({
@@ -144,7 +158,10 @@ describe('cookBiographySummaryGenerate', () => {
         });
 
         // Assert
-        expect(result).toBe('Salvatore kochte in Rom.');
+        expect(result).toEqual({
+            biography: 'Stationen in Rom.',
+            biographySummary: 'Salvatore kochte in Rom.',
+        });
         const call = vi.mocked(generateText).mock.calls[0]?.[0] as { prompt: string };
         expect(call.prompt).toContain('Passed cuisine');
         expect(call.prompt).toContain('## Kochphilosophie\nKeine');
@@ -176,5 +193,31 @@ describe('cookBiographySummaryGenerate', () => {
         expect(rows).toHaveLength(0);
         const logs = await findLogsForSession(requestingSession.sessionId);
         expect(logs.some((row) => row.level === 'error' && row.message.includes('model down'))).toBe(true);
+    });
+
+    it('strips leftover contact from the model output', async () => {
+        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({ firstName: 'Lia', lastName: 'Contact' });
+        await testDb.insert(cooks).values({ cookId: user.userId });
+        vi.mocked(generateText).mockResolvedValue(
+            modelObject(
+                {
+                    biography: 'Lia kocht in Berlin. chef@example.com',
+                    biographySummary: 'Lia kocht in Berlin. +49 151 12345678',
+                },
+                'mock-summary-contact',
+            ),
+        );
+
+        const result = await cookBiographySummaryGenerate({
+            cookId: user.userId,
+            biography: 'Lia kocht in Berlin. Ruf mich unter null eins fünf an.',
+            requestingSession,
+            serverRuntime,
+        });
+
+        expect(result).toEqual({
+            biography: 'Lia kocht in Berlin.',
+            biographySummary: 'Lia kocht in Berlin.',
+        });
     });
 });

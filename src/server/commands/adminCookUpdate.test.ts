@@ -47,6 +47,27 @@ describe('adminCookUpdate', () => {
         expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledTimes(1);
     });
 
+    it('strips contact details from biography and biography summary', async () => {
+        const { admin, cookUser } = await seedAdminAndCook();
+
+        await adminCookUpdate(
+            adminMutationParent(admin.user.userId),
+            {
+                cookId: cookUser.user.userId,
+                input: {
+                    biography: 'New bio chef@example.com',
+                    biographySummary: 'Short bio +4915112345678',
+                },
+            },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        const [row] = await testDb.select().from(cooks).where(eq(cooks.cookId, cookUser.user.userId));
+        expect(row?.biography).toBe('New bio');
+        expect(row?.biographySummary).toBe('Short bio');
+    });
+
     it('saves an empty default offer message without collapsing it to null', async () => {
         const { admin, cookUser } = await seedAdminAndCook();
 

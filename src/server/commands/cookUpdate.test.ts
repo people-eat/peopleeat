@@ -83,6 +83,26 @@ describe('cookUpdate', () => {
         expect(serverRuntime.publish.adminUpdates).toHaveBeenCalled();
     });
 
+    it('strips website, Instagram, email, and phone contact from the biography', async () => {
+        const { serverRuntime, requestingSession, user } = await setupCook();
+
+        await cookUpdate(
+            cookMutationParent(user.userId),
+            {
+                input: {
+                    biography: 'I cook with love. chef@example.com IG: chef +4915112345678 chef.de',
+                },
+            },
+            requestingSession,
+            serverRuntime,
+        );
+
+        const [row] = await testDb.select().from(cooks).where(eq(cooks.cookId, user.userId));
+        expect(row!.biography).toBe('I cook with love.');
+        expect(row!.biography).not.toContain('@');
+        expect(row!.biography).not.toContain('chef.de');
+    });
+
     it('clears biographySummary and cancels the summary job when biography is emptied', async () => {
         const { serverRuntime, requestingSession, user } = await setupCook({
             biography: 'Old bio',

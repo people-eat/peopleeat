@@ -568,6 +568,8 @@
         "writeWithAi": "Write with AI",
         "summary": "Biography summary",
         "summaryHint": "Updates automatically when you save your biography. Used on the public profile.",
+        "contactWarning": "Websites, Instagram, phone numbers, and emails do not belong in the biography. Guests will not see them.",
+        "contactPreview": "This is how guests will see your text",
         "cuisine": "Cuisine style",
         "cuisinePlaceholder": "Select cuisine style…",
         "philosophy": "Cooking philosophy",

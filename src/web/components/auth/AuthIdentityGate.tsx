@@ -27,6 +27,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '../base/alert-dialog';
+import { Avatar, AvatarFallback, AvatarImage } from '../base/avatar';
 import { Button } from '../base/button';
 import { LegalAcceptancePanel } from '../LegalAcceptancePanel';
 import { AuthEmailOtpFlow } from './AuthEmailOtpFlow';
@@ -40,6 +41,13 @@ export type AuthSession = GqlCAuthSessionFieldsFragment;
 export type AuthSessionRefresh = () => Promise<AuthSession | null>;
 
 export const AUTH_USER_PROFILE_FORM_ID = 'auth-user-profile';
+
+function initialsFromOauthTicket(ticket: AuthSession['authOauthTicket']): string {
+    const first = ticket?.firstName?.trim().slice(0, 1) ?? '';
+    const last = ticket?.lastName?.trim().slice(0, 1) ?? '';
+    const initials = `${first}${last}`.toUpperCase();
+    return initials || '?';
+}
 
 function profileInitialValuesFromOauthTicket(
     ticket: AuthSession['authOauthTicket'],
@@ -282,9 +290,17 @@ export function AuthIdentityGate({
         return (
             <div className="grid gap-8">
                 <div className="grid gap-3">
-                    <div className="grid gap-1">
-                        <p className="text-sm text-muted-foreground">{t('auth.verifiedEmail')}</p>
-                        <p className="font-medium break-all">{verifiedEmail}</p>
+                    <div className="flex items-center gap-3">
+                        {oauthTicket?.profilePicture?.url ? (
+                            <Avatar size="lg" className="size-12">
+                                <AvatarImage src={oauthTicket.profilePicture.url} alt="" className="object-cover" />
+                                <AvatarFallback>{initialsFromOauthTicket(oauthTicket)}</AvatarFallback>
+                            </Avatar>
+                        ) : null}
+                        <div className="grid min-w-0 flex-1 gap-1">
+                            <p className="text-sm text-muted-foreground">{t('auth.verifiedEmail')}</p>
+                            <p className="font-medium break-all">{verifiedEmail}</p>
+                        </div>
                     </div>
                     <AlertDialog>
                         <AlertDialogTrigger asChild>

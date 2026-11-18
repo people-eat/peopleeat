@@ -2,6 +2,7 @@ import { generateText, Output } from 'ai';
 import { and, eq, isNull } from 'drizzle-orm';
 import { z } from 'zod';
 
+import { cookBiographyNormalize } from '../../shared/cookBiographyContact';
 import { cooks, meals, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSSession } from '../graphql/generated';
@@ -10,14 +11,20 @@ import { aiGenerationOutputSerialize } from '../utils/aiGenerationOutputSerializ
 import { aiGenerationUsageFromLanguageModel } from '../utils/aiGenerationUsage';
 
 const BIOGRAPHY_SUMMARY_SCHEMA = z.object({
+    biography: z.string().min(1),
     biographySummary: z.string().min(1),
 });
+
+export type CookBiographySummaryGenerateResult = {
+    biography: string;
+    biographySummary: string;
+};
 
 const BIOGRAPHY_SUMMARY_SYSTEM = `
 Du schreibst kurze Koch-Porträts für die Premium-Plattform peopleeat.
 Ziel: Der Kunde soll sich nach dem Lesen an den Koch erinnern können und verstehen, warum dieser Koch besonders ist.
 
-Aufgabe:
+Aufgabe (biographySummary):
 - Beschreibe den Koch, nicht sein Essen.
 - Verwende den Vornamen des Kochs immer im ersten Satz.
 - Schreibe maximal 2 Sätze.
@@ -62,12 +69,22 @@ Bevorzugte Themen:
 
 Schreibstil: natürlich, konkret, professionell, menschlich. Keine Werbesprache.
 
+Aufgabe (biography): die vollständige Biografie der Vorlage. Nur Kontakt entfernen, nicht kürzen und nicht umformulieren.
+
+Kontakt und Off-Platform-Werbung entfernen (in biography und biographySummary):
+- Keine Telefonnummern, auch nicht als Wörter (null eins fünf, zero one five) oder mit Leerzeichen zwischen Ziffern.
+- Keine E-Mail-Adressen, auch nicht umschrieben (chef at gmail Punkt com).
+- Keine Websites, URLs, Domainnamen oder QR-Codes.
+- Keine Instagram-, Facebook-, TikTok-, WhatsApp- oder anderen Social-Media-Handles.
+- Keine Bitte, außerhalb von peopleeat Kontakt aufzunehmen.
+Nach dem Entfernen die Sätze grammatikalisch schließen. Den restlichen Inhalt der Biografie nicht kürzen und nicht umformulieren.
+
 Beispiele für gute Porträts:
 - "Roland betreut private Familien und Filmproduktionen in ganz Europa. Nach seiner Ausbildung in einem 4*-Hotel in Saalbach-Hinterglemm arbeitete er in mehreren Ländern und ist heute zwischen Mallorca und Hamburg unterwegs."
 - "Salvatore sammelte Erfahrungen in Rom, Edinburgh, München und Köln. Stationen bei den Rocco Forte Hotels und dem Excelsior Hotel Ernst prägen seinen Anspruch an Gastfreundschaft."
 
 Selbst wenn die Datenlage dünn ist, triff eine bestmögliche Schätzung auf Basis der vorhandenen Informationen.
-Gib als Ergebnis biographySummary zurück.
+Gib als Ergebnis biography (bereinigte vollständige Biografie) und biographySummary (Kurzfassung) zurück.
 `.trim();
 
 export async function cookBiographySummaryGenerate({
@@ -84,7 +101,7 @@ export async function cookBiographySummaryGenerate({
     cookingPhilosophy?: string | null;
     requestingSession: GqlSSession | null;
     serverRuntime: ServerRuntime;
-}): Promise<string | null> {
+}): Promise<CookBiographySummaryGenerateResult | null> {
     const trimmedBiography = biography.trim();
     if (!trimmedBiography) {
         return null;
@@ -145,7 +162,12 @@ export async function cookBiographySummaryGenerate({
             ...aiGenerationUsageFromLanguageModel(result.finalStep.response.modelId, result.usage),
         });
 
-        return result.output.biographySummary.trim();
+        const cleanedBiography = cookBiographyNormalize(result.output.biography);
+        const biographySummary = cookBiographyNormalize(result.output.biographySummary);
+        if (!cleanedBiography || !biographySummary) {
+            return null;
+        }
+        return { biography: cleanedBiography, biographySummary };
     } catch (error) {
         serverRuntime.log.error(error, requestingSession);
         return null;

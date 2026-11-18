@@ -568,6 +568,8 @@
         "writeWithAi": "Mit KI schreiben",
         "summary": "Biografie-Kurzfassung",
         "summaryHint": "Wird automatisch aktualisiert, wenn du deine Biografie speicherst. Für die öffentliche Ansicht.",
+        "contactWarning": "Websites, Instagram, Telefonnummern und E-Mails gehören nicht in die Biografie. Gäste sehen sie nicht.",
+        "contactPreview": "So sehen Gäste deinen Text",
         "cuisine": "Küchenstil",
         "cuisinePlaceholder": "Küchenstil wählen…",
         "philosophy": "Kochphilosophie",

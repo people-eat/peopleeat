@@ -1481,6 +1481,8 @@
         "improveWithAi": "Улучшить с помощью AI",
         "writeWithAi": "Написать с помощью AI",
         "generateSummary": "Сгенерировать краткое содержание",
+        "biographyContactWarning": "Сайты, Instagram, телефоны и email не относятся к биографии. Гости их не увидят.",
+        "biographyContactPreview": "Так гости увидят текст",
         "editableManuallySavingDoesNotAutoRegenerateTheSummary": "Можно редактировать вручную. При сохранении краткое содержание автоматически не пересоздаётся.",
         "cuisineStyle": "Стиль кухни",
         "selectCuisineStyle": "Выберите стиль кухни…",

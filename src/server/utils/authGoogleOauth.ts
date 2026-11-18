@@ -6,6 +6,7 @@ import { phoneNumberNormalize } from '../../shared/phoneNumber';
 import { textNormalizeTitledOrNull } from '../../shared/textNormalize';
 import { userBirthDateMeetsMinimumAge } from '../../shared/userBirthDate';
 import type { EnvironmentVariables } from '../env/EnvironmentVariables';
+import { authGooglePictureUrlNormalize } from './authOauthProfilePictureImport';
 
 export const AUTH_GOOGLE_AUTHORIZE_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 export const AUTH_GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
@@ -34,6 +35,7 @@ export type AuthGoogleProfileSnapshot = {
     lastName: string | null;
     phoneNumber: string | null;
     birthDate: string | null;
+    pictureUrl: string | null;
 };
 
 export function authGoogleRedirectUri(webPageUrl: string): string {
@@ -142,7 +144,14 @@ export async function authGoogleTokenExchange(args: {
 export function authGoogleIdTokenClaimsParse(
     idToken: string,
     args: { clientId: string; nonce: string; nowMs?: number },
-): { subject: string; emailAddress: string; emailVerified: boolean; givenName: string | null; familyName: string | null } {
+): {
+    subject: string;
+    emailAddress: string;
+    emailVerified: boolean;
+    givenName: string | null;
+    familyName: string | null;
+    pictureUrl: string | null;
+} {
     const payload = jwtPayloadParse(idToken);
     if (!payload) {
         throw new Error('authGoogleIdTokenClaimsParse: invalid id_token');
@@ -176,13 +185,20 @@ export function authGoogleIdTokenClaimsParse(
         emailVerified,
         givenName: typeof payload.given_name === 'string' ? payload.given_name : null,
         familyName: typeof payload.family_name === 'string' ? payload.family_name : null,
+        pictureUrl: typeof payload.picture === 'string' ? payload.picture : null,
     };
 }
 
 export async function authGoogleUserinfoFetch(
     accessToken: string,
     fetchImpl: typeof fetch = fetch,
-): Promise<{ subject: string; emailAddress: string; givenName: string | null; familyName: string | null }> {
+): Promise<{
+    subject: string;
+    emailAddress: string;
+    givenName: string | null;
+    familyName: string | null;
+    pictureUrl: string | null;
+}> {
     const response = await fetchImpl(AUTH_GOOGLE_USERINFO_URL, {
         headers: { authorization: `Bearer ${accessToken}` },
     });
@@ -204,6 +220,7 @@ export async function authGoogleUserinfoFetch(
         emailAddress,
         givenName: typeof record.given_name === 'string' ? record.given_name : null,
         familyName: typeof record.family_name === 'string' ? record.family_name : null,
+        pictureUrl: typeof record.picture === 'string' ? record.picture : null,
     };
 }
 
@@ -268,8 +285,20 @@ export function authGooglePeopleParse(json: unknown): {
 }
 
 export function authGoogleProfileSnapshotMerge(args: {
-    claims: { subject: string; emailAddress: string; givenName: string | null; familyName: string | null };
-    userinfo: { subject: string; emailAddress: string; givenName: string | null; familyName: string | null };
+    claims: {
+        subject: string;
+        emailAddress: string;
+        givenName: string | null;
+        familyName: string | null;
+        pictureUrl: string | null;
+    };
+    userinfo: {
+        subject: string;
+        emailAddress: string;
+        givenName: string | null;
+        familyName: string | null;
+        pictureUrl: string | null;
+    };
     people: { givenName: string | null; familyName: string | null; phoneNumber: string | null; birthDate: string | null } | null;
 }): AuthGoogleProfileSnapshot {
     const givenName = args.people?.givenName ?? args.userinfo.givenName ?? args.claims.givenName;
@@ -281,6 +310,7 @@ export function authGoogleProfileSnapshotMerge(args: {
         lastName: textNormalizeTitledOrNull(familyName),
         phoneNumber: args.people?.phoneNumber ?? null,
         birthDate: args.people?.birthDate ?? null,
+        pictureUrl: authGooglePictureUrlNormalize(args.userinfo.pictureUrl ?? args.claims.pictureUrl),
     };
 }
 

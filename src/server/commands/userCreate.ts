@@ -5,7 +5,7 @@ import { phoneNumberAssert } from '../../shared/phoneNumber';
 import { textNormalizeTitled } from '../../shared/textNormalize';
 import { userBirthDateAssertMinimumAge } from '../../shared/userBirthDate';
 import type { UserCreate } from '../db/schema';
-import { authEmailOtps, authOauthIdentities, authOauthTickets, cooks, users } from '../db/schema';
+import { authEmailOtps, authOauthIdentities, authOauthTickets, cooks, fileUploads, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSMutationResult, GqlSMutationUserCreateArgs, GqlSSession } from '../graphql/generated';
 import { userKlaviyoProfileSync } from '../jobs/handlers/userKlaviyoProfileSync';
@@ -123,6 +123,7 @@ export async function userCreate(
             }
 
             const newUserId = idCreate();
+            const profilePictureFileUploadId = oauthTicketValid ? (oauthTicket.profilePictureFileUploadId ?? null) : null;
             const userInsert: UserCreate = {
                 userId: newUserId,
                 emailAddress,
@@ -135,9 +136,16 @@ export async function userCreate(
                 timeZone: args.input.timeZone,
                 lastAcceptedPrivacyPolicy: now,
                 lastAcceptedTerms: now,
+                ...(profilePictureFileUploadId ? { profilePictureFileUploadId } : {}),
             };
 
             await transaction.insert(users).values(userInsert);
+            if (profilePictureFileUploadId) {
+                await transaction
+                    .update(fileUploads)
+                    .set({ userId: newUserId })
+                    .where(eq(fileUploads.fileUploadId, profilePictureFileUploadId));
+            }
             let invitedByCookId: string | undefined;
             let inviteUnlockSignUp = false;
             if (cookPayload && cookInput) {

@@ -33,9 +33,12 @@ Signed-in cooks manage these areas under `/profile/*`:
    (best-effort job) whenever they save a non-empty biography — **always**, independent of the AI-write toggle. A biography save **stays on
    the edit page** (toast + summary skeleton via `Cook.biographySummaryGenerating`); cuisine/philosophy-only saves still navigate back to
    the read-only view. Clearing the biography clears the summary and cancels any pending summary job. Public surfaces keep showing the last
-   good summary until the job finishes. Admins edit both fields and regenerate the summary on demand; admin enhance uses the same
-   review/accept-into-form pattern (no auto summary) and is gated by the same toggle on the server — see [admin-users.md](./admin-users.md)
-   and [admin-feature-toggles.md](./admin-feature-toggles.md). When `COOK_PRESENCE_LINKS` is on, the same view and edit page include **Other
+   good summary until the job finishes. **Contact is not allowed in the biography**: websites, Instagram, emails, and phone numbers are
+   stripped while typing (live guest preview, same deterministic detection style as offer-chat phone blocking) and again on every write. The
+   summary job also asks the LLM to remove remaining contact, including phone digits written as words, and writes that cleaned biography
+   back with the summary. Admins edit both fields and regenerate the summary on demand; admin enhance uses the same review/accept-into-form
+   pattern (no auto summary) and is gated by the same toggle on the server — see [admin-users.md](./admin-users.md) and
+   [admin-feature-toggles.md](./admin-feature-toggles.md). When `COOK_PRESENCE_LINKS` is on, the same view and edit page include **Other
    profiles** (website, Instagram, Google profile, Take a Chef, and up to five more: Yhangry, Cozymeal, Eatwith, ChefMaison, or a named
    platform). The copy says the peopleeat team uses the links to review the profile and customers never see them. Blank fields clear the
    document. The cook mutation rejects when the toggle is off for that cook. Admins always see and edit the same links on the user
@@ -177,6 +180,10 @@ reviews stay out of the cook-facing summary until published, matching public rul
   `Session.locationSuggestions`
 - Booking travel: `travelDistanceKmResolve` — Routes preferred, haversine fallback; stamped on `BookingRequestCooks` at first open; customer
   edit previews per-offer delta via travel impact; origin / venue edits clear the stamp
+- Biography contact policy: shared `cookBiographyContactContains` / `cookBiographyContactStrip` / `cookBiographyNormalize` in
+  `src/shared/cookBiographyContact.ts`. Live preview: `CookBiographyContactNotice` on cook + admin chef-profile edit. Writes: `cookUpdate`,
+  `adminCookUpdate`, `cookCreatePayloadBuild`. Public reads: `toGqlPublicCook` and `ChefProfileView`. Summary LLM returns cleaned
+  `biography` + `biographySummary`; the job persists both.
 - Commands: `cookUpdate` (queues `cook-biography-summary-generate` on biography save; does not await the LLM), `cookBiographySuggest` (gated
   by `COOK_BIOGRAPHY_AI_WRITE`), `cookBiographySummaryGenerate`, `cookBiographySuggestGenerate`, `cookStripeOnboardingStart`,
   `cookStripeStatusSync` (calls shared `cookStripeAccountStatusApply`), `cookStripeDashboardUrlCreate`, `adminCookApprovalUpdate`,
@@ -186,8 +193,8 @@ reviews stay out of the cook-facing summary until published, matching public rul
 - Biography summary job: `cookBiographySummaryGenerate` handler; schedule helpers in `cookBiographySummaryGenerateSchedule` match pending
   work by payload `{ cookId }` (states `created` | `retry` | `active`); GraphQL `Cook.biographySummaryGenerating` /
   `AdminCook.biographySummaryGenerating` — see [jobs.md](../architecture/jobs.md)
-- UI: `BiographySuggestionReview` for cook + admin enhance accept-into-form / discard; summary skeleton on chef-profile view/edit when
-  generating
+- UI: `BiographySuggestionReview` for cook + admin enhance accept-into-form / discard; `CookBiographyContactNotice` live guest preview on
+  edit; summary skeleton on chef-profile view/edit when generating
 - AI kinds: `COOK_BIOGRAPHY_SUGGESTION`, `COOK_BIOGRAPHY_SUMMARY` — dedicated models `cookBiographySuggestModel` /
   `cookBiographySummaryModel` — see [ai-generations.md](../architecture/ai-generations.md)
 - Wallet live details: `Cook.stripeAccountDetails` → `cookStripeAccountDetailsFindOne` → `stripe.accountRequirementsFindOne` (category

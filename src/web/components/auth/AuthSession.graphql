@@ -45,6 +45,9 @@ fragment AuthSessionFields on Session {
         lastName
         phoneNumber
         birthDate
+        profilePicture {
+            url
+        }
     }
     authTotpChallenge {
         expiresAt

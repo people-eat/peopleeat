@@ -1,10 +1,11 @@
 import { and, eq } from 'drizzle-orm';
 
+import { cookBiographyNormalize } from '../../shared/cookBiographyContact';
 import { isCookCallDurationMinutes } from '../../shared/cookCallAvailability';
 import { cookDefaultOfferMessageNormalize } from '../../shared/cookDefaultOfferMessage';
 import { isCookingPhilosophy, isCuisineStyle } from '../../shared/cookProfile';
 import { invoiceAddressNormalize } from '../../shared/invoiceAddressNormalize';
-import { textNormalizeProse, textNormalizeTitled } from '../../shared/textNormalize';
+import { textNormalizeTitled } from '../../shared/textNormalize';
 import type { Cook } from '../db/schema';
 import { cooks, fileUploads } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -159,10 +160,10 @@ async function cookUpdateAdminApply(
         patch.previousPathNames = applied.previousPathNames;
     }
     if (biography !== undefined && biography !== null) {
-        patch.biography = textNormalizeProse(biography);
+        patch.biography = cookBiographyNormalize(biography);
     }
     if (biographySummary !== undefined && biographySummary !== null) {
-        patch.biographySummary = textNormalizeProse(biographySummary);
+        patch.biographySummary = cookBiographyNormalize(biographySummary);
     }
     if (cuisineStyle !== undefined) {
         patch.cuisineStyle = cuisineStyle === null || cuisineStyle.trim() === '' ? null : cuisineStyle.trim();

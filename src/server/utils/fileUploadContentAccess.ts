@@ -1,9 +1,10 @@
-import { and, eq, isNotNull, isNull, lte, or, sql } from 'drizzle-orm';
+import { and, eq, gt, isNotNull, isNull, lte, or, sql } from 'drizzle-orm';
 
 import { fileUploadPublicUrl } from '../../shared/contentSection';
 import type { Database } from '../db';
 import {
     admins,
+    authOauthTickets,
     blogPosts,
     bookingRequestCooks,
     bookingRequestKitchenDetailsPhotos,
@@ -204,6 +205,28 @@ export async function fileUploadReferencedByAnyContent(db: Database, fileUploadI
 /** True when any user currently points at this upload as their profile picture. */
 export async function fileUploadReferencedAsProfilePicture(db: Database, fileUploadId: string): Promise<boolean> {
     const [hit] = await db.select({ userId: users.userId }).from(users).where(eq(users.profilePictureFileUploadId, fileUploadId)).limit(1);
+    return Boolean(hit);
+}
+
+/** True when this session's unconsumed OAuth registration ticket holds the upload as a pending photo. */
+export async function fileUploadReferencedBySessionOauthTicket(
+    db: Database,
+    fileUploadId: string,
+    sessionId: string,
+): Promise<boolean> {
+    const now = new Date();
+    const [hit] = await db
+        .select({ authOauthTicketId: authOauthTickets.authOauthTicketId })
+        .from(authOauthTickets)
+        .where(
+            and(
+                eq(authOauthTickets.profilePictureFileUploadId, fileUploadId),
+                eq(authOauthTickets.sessionId, sessionId),
+                isNull(authOauthTickets.consumedAt),
+                gt(authOauthTickets.expiresAt, now),
+            ),
+        )
+        .limit(1);
     return Boolean(hit);
 }
 

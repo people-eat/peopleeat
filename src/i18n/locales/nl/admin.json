@@ -1481,6 +1481,8 @@
         "improveWithAi": "Verbeteren met AI",
         "writeWithAi": "Schrijven met AI",
         "generateSummary": "Samenvatting genereren",
+        "biographyContactWarning": "Websites, Instagram, telefoonnummers en e-mails horen niet in de biografie. Gasten zien ze niet.",
+        "biographyContactPreview": "Zo zien gasten de tekst",
         "editableManuallySavingDoesNotAutoRegenerateTheSummary": "Handmatig bewerkbaar. Opslaan genereert de samenvatting niet automatisch opnieuw.",
         "cuisineStyle": "Keukenstijl",
         "selectCuisineStyle": "Keukenstijl selecteren…",

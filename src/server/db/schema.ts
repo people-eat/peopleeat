@@ -1280,6 +1280,13 @@ export const authOauthTickets = pgTable(
         lastName: varchar(),
         phoneNumber: varchar(),
         birthDate: date({ mode: 'string' }),
+        // Pending Google / Facebook photo imported at OAuth callback. `FileUploads.userId`
+        // stays null until `userCreate` links it as `Users.profilePictureFileUploadId`.
+        // See docs/features/profile-pictures.md and docs/features/sign-in.md.
+        profilePictureFileUploadId: nanoId().references(() => fileUploads.fileUploadId, {
+            onUpdate: 'cascade',
+            onDelete: 'set null',
+        }),
         verifiedAt: timestamp({ withTimezone: true }).notNull(),
         consumedAt: timestamp({ withTimezone: true }),
         expiresAt: timestamp({ withTimezone: true }).notNull(),
@@ -1293,6 +1300,7 @@ export const authOauthTickets = pgTable(
             .onUpdate('cascade')
             .onDelete('cascade'),
         index('AuthOauthTickets_sessionId_idx').on(table.sessionId),
+        index('AuthOauthTickets_profilePictureFileUploadId_idx').on(table.profilePictureFileUploadId),
     ],
 );
 

@@ -2,6 +2,7 @@ import { generateText, Output } from 'ai';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 
+import { cookBiographyNormalize } from '../../shared/cookBiographyContact';
 import { users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSSession } from '../graphql/generated';
@@ -41,6 +42,7 @@ Ton: einladend, vertrauenswürdig und professionell. Ziel ist, Vertrauen zu erze
 Erwähne allgemein Gästezufriedenheit sowie Frische und Qualität der Lebensmittel und Zutaten.
 Berücksichtige SEO: nutze natürliche, relevante Stichwörter für eine Privatkoch-/Private-Chef-Plattform, ohne Keyword-Stuffing.
 Formale Einschränkungen: Schreibe keine Überschrift. Verwende keine Markdown-Formatierung. Nutze nur einfache Zeilenumbrüche (kein HTML, keine Listen).
+Keine Telefonnummern, E-Mail-Adressen, Websites, Instagram- oder anderen Social-Media-Handles. Gäste kontaktieren den Koch über peopleeat.
 Gib als Ergebnis biography zurück.
 `.trim();
 
@@ -75,5 +77,9 @@ Gib als Ergebnis biography zurück.
         ...aiGenerationUsageFromLanguageModel(result.finalStep.response.modelId, result.usage),
     });
 
-    return result.output.biography.trim();
+    const biography = cookBiographyNormalize(result.output.biography);
+    if (!biography) {
+        throw new Error('cookBiographySuggestGenerate: biography was empty after contact strip');
+    }
+    return biography;
 }

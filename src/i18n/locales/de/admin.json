@@ -1489,6 +1489,8 @@
         "improveWithAi": "Mit KI verbessern",
         "writeWithAi": "Mit KI schreiben",
         "generateSummary": "Kurzfassung erzeugen",
+        "biographyContactWarning": "Websites, Instagram, Telefonnummern und E-Mails gehören nicht in die Biografie. Gäste sehen sie nicht.",
+        "biographyContactPreview": "So sehen Gäste den Text",
         "editableManuallySavingDoesNotAutoRegenerateTheSummary": "Manuell bearbeitbar. Speichern überschreibt die Kurzfassung nicht automatisch.",
         "cuisineStyle": "Küchenstil",
         "selectCuisineStyle": "Küchenstil wählen…",

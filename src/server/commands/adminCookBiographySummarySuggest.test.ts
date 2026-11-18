@@ -47,7 +47,10 @@ describe('adminCookBiographySummarySuggest', () => {
     it('returns the generator summary and passes the trimmed biography', async () => {
         // Arrange
         const { admin, cook } = await seedAdminAndCook();
-        vi.mocked(cookBiographySummaryGenerate).mockResolvedValue('Roland kochte in Saalbach.');
+        vi.mocked(cookBiographySummaryGenerate).mockResolvedValue({
+            biography: 'Roland arbeitete in Saalbach.',
+            biographySummary: 'Roland kochte in Saalbach.',
+        });
 
         // Act
         const result = await adminCookBiographySummarySuggest(

@@ -19,6 +19,7 @@ import {
     fileUploadReferencedByPublishedContent,
     fileUploadReferencedByPublishedMeal,
     fileUploadReferencedByPublishedTestimonial,
+    fileUploadReferencedBySessionOauthTicket,
     fileUploadReferencedByWhatsAppAttachment,
     userIsAdmin,
 } from '../../server/utils/fileUploadContentAccess';
@@ -48,6 +49,7 @@ const log = loggerCreate(db);
 //   8. signed-in admin + referenced by any draft/published content page or any meal
 //   9. signed-in admin + referenced by any customer/cook testimonial `imageUrls`
 //  10. signed-in admin + gift-card receipt/voucher PDF or outbound-email attachment
+//  11. this session's unconsumed OAuth registration ticket picture (private)
 //
 // Same-origin only — `FileUpload.url` resolves to a server-rooted path,
 // so the browser sends the session cookie automatically with any `<img>` /
@@ -80,6 +82,7 @@ export const Route = createFileRoute('/api/file-uploads_/$fileUploadId')({
                 let allowed = isOwner;
                 let isPublicCachedAsset = false;
                 let isChatPeerAccess = false;
+                let isOauthTicketPicture = false;
                 if (!allowed) {
                     isPublicCachedAsset = await fileUploadReferencedAsProfilePicture(db, fileUpload.fileUploadId);
                     allowed = isPublicCachedAsset;
@@ -104,6 +107,14 @@ export const Route = createFileRoute('/api/file-uploads_/$fileUploadId')({
                         (await fileUploadAccessibleViaBookingRequestKitchenDetails(db, fileUpload.fileUploadId, session.userId)) ||
                         (await fileUploadAccessibleViaBookingRequestOfferMeal(db, fileUpload.fileUploadId, session.userId));
                     allowed = isChatPeerAccess;
+                }
+                if (!allowed) {
+                    isOauthTicketPicture = await fileUploadReferencedBySessionOauthTicket(
+                        db,
+                        fileUpload.fileUploadId,
+                        session.sessionId,
+                    );
+                    allowed = isOauthTicketPicture;
                 }
                 if (!allowed && session.userId) {
                     const admin = await userIsAdmin(db, session.userId);
@@ -130,7 +141,7 @@ export const Route = createFileRoute('/api/file-uploads_/$fileUploadId')({
                 const safeFilename = fileUploadContentDispositionFilename(fileUpload.filename);
                 const body = new ArrayBuffer(fileUpload.bytes.byteLength);
                 new Uint8Array(body).set(fileUpload.bytes);
-                const privateCache = (isOwner || isChatPeerAccess) && !isPublicCachedAsset;
+                const privateCache = (isOwner || isChatPeerAccess || isOauthTicketPicture) && !isPublicCachedAsset;
                 const disposition = fileUploadContentDisposition(fileUpload.mediaType);
                 return new Response(body, {
                     status: 200,

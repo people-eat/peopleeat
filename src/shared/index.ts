@@ -12,6 +12,7 @@ export { sessionDeviceLabel } from './sessionDeviceLabel';
 export type { BookingRequestFormPriceClassType, BookingRequestPriceClassInfo } from './bookingRequestFormDefaults';
 export { capitalizeFirstLetter } from './capitalizeFirstLetter';
 export { containsPhoneNumber } from './containsPhoneNumber';
+export { cookBiographyContactContains, cookBiographyContactStrip, cookBiographyNormalize } from './cookBiographyContact';
 export { emailNormalize } from './emailNormalize';
 export { invoiceAddressNormalize } from './invoiceAddressNormalize';
 export type { InvoiceAddressInput, InvoiceAddressNormalized } from './invoiceAddressNormalize';

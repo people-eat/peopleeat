@@ -2,7 +2,7 @@ import { and, eq } from 'drizzle-orm';
 
 import { emailNormalize } from '../../shared/emailNormalize';
 import { idCreate } from '../../shared/idCreate';
-import { authOauthIdentities, authOauthStates, authOauthTickets, sessions, users } from '../db/schema';
+import { authOauthIdentities, authOauthStates, sessions, users } from '../db/schema';
 import type { AuthOauthSignInFailReason } from '../domain/authOauth';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { EnvironmentVariables } from '../env/EnvironmentVariables';
@@ -16,6 +16,8 @@ import {
     authFacebookReturnToWithError,
     authFacebookTokenExchange,
 } from '../utils/authFacebookOauth';
+import { authOauthProfilePictureImport } from '../utils/authOauthProfilePictureImport';
+import { authOauthTicketReplace } from '../utils/authOauthTicketReplace';
 import { featureToggleIsEnabled } from '../utils/featureToggleIsEnabled';
 import { sessionEventCreate } from '../utils/sessionEventCreate';
 import { sessionPrimaryAuthComplete } from './sessionPrimaryAuthComplete';
@@ -157,20 +159,24 @@ export async function authFacebookCallback(
     }
 
     const now = new Date();
+    const profilePicture = snapshot.pictureUrl
+        ? await authOauthProfilePictureImport({ url: snapshot.pictureUrl, fetchImpl: args.fetchImpl })
+        : null;
     await serverRuntime.db.transaction(async (transaction) => {
-        await transaction.delete(authOauthTickets).where(eq(authOauthTickets.sessionId, sessionId));
-        await transaction.insert(authOauthTickets).values({
-            authOauthTicketId: idCreate(),
-            sessionId,
-            provider: 'FACEBOOK',
-            subject: snapshot.subject,
-            emailAddress: snapshot.emailAddress,
-            firstName: snapshot.firstName,
-            lastName: snapshot.lastName,
-            phoneNumber: null,
-            birthDate: null,
-            verifiedAt: now,
-            expiresAt: new Date(now.getTime() + AUTH_OAUTH_TICKET_TTL_MS),
+        await authOauthTicketReplace(transaction, {
+            ticket: {
+                sessionId,
+                provider: 'FACEBOOK',
+                subject: snapshot.subject,
+                emailAddress: snapshot.emailAddress,
+                firstName: snapshot.firstName,
+                lastName: snapshot.lastName,
+                phoneNumber: null,
+                birthDate: null,
+                verifiedAt: now,
+                expiresAt: new Date(now.getTime() + AUTH_OAUTH_TICKET_TTL_MS),
+            },
+            profilePicture,
         });
     });
     await sessionEventCreate(serverRuntime, {

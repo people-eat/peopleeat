@@ -147,4 +147,24 @@ describe('cookBiographySuggestGenerate', () => {
         const rows = await testDb.select().from(aiGenerations).where(eq(aiGenerations.userId, user.userId));
         expect(rows).toHaveLength(0);
     });
+
+    it('strips contact details from the model output', async () => {
+        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({
+            firstName: 'Ada',
+            lastName: 'Cook',
+        });
+        await testDb.insert(cooks).values({ cookId: user.userId, biography: '' });
+        vi.mocked(generateText).mockResolvedValue(
+            modelObject({ biography: 'Ich koche mit Freude. chef@example.com' }, 'mock-biography-contact'),
+        );
+
+        const result = await cookBiographySuggestGenerate({
+            cookId: user.userId,
+            currentBiography: '',
+            requestingSession,
+            serverRuntime,
+        });
+
+        expect(result).toBe('Ich koche mit Freude.');
+    });
 });

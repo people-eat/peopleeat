@@ -3,6 +3,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 import { authOauthTickets } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSMutationAuthOauthTicketDeleteArgs, GqlSMutationResult, GqlSSession } from '../graphql/generated';
+import { authOauthTicketRowDelete } from '../utils/authOauthTicketReplace';
 
 export async function authOauthTicketDelete(
     args: GqlSMutationAuthOauthTicketDeleteArgs,
@@ -26,7 +27,9 @@ export async function authOauthTicketDelete(
             throw new Error('authOauthTicketDelete: not found');
         }
 
-        await serverRuntime.db.delete(authOauthTickets).where(eq(authOauthTickets.authOauthTicketId, args.authOauthTicketId));
+        await serverRuntime.db.transaction(async (transaction) => {
+            await authOauthTicketRowDelete(transaction, args.authOauthTicketId);
+        });
         await serverRuntime.publish.sessionUpdates({ sessionId: requestingSession.sessionId });
         return { success: true, referenceId: args.authOauthTicketId };
     } catch (error) {

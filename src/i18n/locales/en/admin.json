@@ -1489,6 +1489,8 @@
         "improveWithAi": "Improve with AI",
         "writeWithAi": "Write with AI",
         "generateSummary": "Generate summary",
+        "biographyContactWarning": "Websites, Instagram, phone numbers, and emails do not belong in the biography. Guests will not see them.",
+        "biographyContactPreview": "This is how guests will see the text",
         "editableManuallySavingDoesNotAutoRegenerateTheSummary": "Editable manually. Saving does not auto-regenerate the summary.",
         "cuisineStyle": "Cuisine style",
         "selectCuisineStyle": "Select cuisine style…",

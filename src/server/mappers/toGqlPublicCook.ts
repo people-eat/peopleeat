@@ -1,3 +1,4 @@
+import { cookBiographyNormalize } from '../../shared/cookBiographyContact';
 import type { Cook, User } from '../db/schema';
 import { cookCanReceiveDirectBookingRequests } from '../domain/cook';
 import type { GqlSFileUpload, GqlSPublicCook } from '../graphql/generated';
@@ -16,8 +17,8 @@ export function toGqlPublicCook(
         user: stageName ? { ...publicUser, display: stageName } : publicUser,
         hasPublicProfile: cook.isVisible && cook.isApprovedByAdmin,
         stageName,
-        biography: cook.biography,
-        biographySummary: cook.biographySummary,
+        biography: cookBiographyNormalize(cook.biography),
+        biographySummary: cookBiographyNormalize(cook.biographySummary),
         // Field resolver loads FileUpload when `logoFileUploadId` is set.
         logo: null,
         cuisineStyle: cook.cuisineStyle ?? null,

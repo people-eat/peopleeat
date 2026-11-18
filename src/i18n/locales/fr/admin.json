@@ -943,6 +943,8 @@
         "improveWithAi": "Improve avec AI",
         "writeWithAi": "Write avec AI",
         "generateSummary": "Kurzfassung erzeugen",
+        "biographyContactWarning": "Les sites web, Instagram, numéros de téléphone et e-mails n’ont pas leur place dans la biographie. Les invités ne les verront pas.",
+        "biographyContactPreview": "Voici comment les invités verront le texte",
         "editableManuallySavingDoesNotAutoRegenerateTheSummary": "Editable manually. Enregistrement does pas auto-regenerate le summary.",
         "cuisineStyle": "Küchenstil",
         "selectCuisineStyle": "Küchenstil wählen…",

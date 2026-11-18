@@ -4,6 +4,7 @@ import { DEFAULT_LOCALE, isLocale } from '../../shared/locale';
 import type { Locale } from '../../shared/locale';
 import { textNormalizeTitledOrNull } from '../../shared/textNormalize';
 import type { EnvironmentVariables } from '../env/EnvironmentVariables';
+import { authOauthPictureUrlHttpsAllowed } from './authOauthProfilePictureImport';
 
 /** Pin Graph API / dialog version; bump deliberately when Meta requires it. */
 const AUTH_FACEBOOK_GRAPH_VERSION = 'v22.0';
@@ -28,6 +29,7 @@ export type AuthFacebookProfileSnapshot = {
     emailAddress: string;
     firstName: string | null;
     lastName: string | null;
+    pictureUrl: string | null;
 };
 
 export function authFacebookRedirectUri(webPageUrl: string): string {
@@ -125,7 +127,7 @@ export async function authFacebookMeFetch(args: {
     const fetchImpl = args.fetchImpl ?? fetch;
     const appsecretProof = authFacebookAppSecretProof(args.accessToken, args.clientSecret);
     const params = new URLSearchParams({
-        fields: 'id,email,first_name,last_name',
+        fields: 'id,email,first_name,last_name,picture.width(512).height(512)',
         access_token: args.accessToken,
         appsecret_proof: appsecretProof,
     });
@@ -155,5 +157,15 @@ export function authFacebookMeParse(json: unknown): AuthFacebookProfileSnapshot 
         emailAddress,
         firstName: textNormalizeTitledOrNull(typeof record.first_name === 'string' ? record.first_name : null),
         lastName: textNormalizeTitledOrNull(typeof record.last_name === 'string' ? record.last_name : null),
+        pictureUrl: authFacebookPictureUrlParse(record),
     };
+}
+
+function authFacebookPictureUrlParse(record: Record<string, unknown>): string | null {
+    const picture = record.picture && typeof record.picture === 'object' ? (record.picture as Record<string, unknown>) : null;
+    const data = picture?.data && typeof picture.data === 'object' ? (picture.data as Record<string, unknown>) : null;
+    if (!data || data.is_silhouette === true) return null;
+    const url = typeof data.url === 'string' ? data.url.trim() : '';
+    if (!url || !authOauthPictureUrlHttpsAllowed(url)) return null;
+    return url;
 }

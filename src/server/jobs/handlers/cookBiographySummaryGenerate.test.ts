@@ -8,7 +8,10 @@ import { commandSetup, testDb } from '../../test/commandTestUtils';
 import { cookBiographySummaryGenerate } from './cookBiographySummaryGenerate';
 
 vi.mock('../../commands/cookBiographySummaryGenerate', () => ({
-    cookBiographySummaryGenerate: vi.fn(async () => 'Generated summary'),
+    cookBiographySummaryGenerate: vi.fn(async () => ({
+        biography: 'Generated biography',
+        biographySummary: 'Generated summary',
+    })),
 }));
 
 describe('cookBiographySummaryGenerate', () => {
@@ -22,7 +25,10 @@ describe('cookBiographySummaryGenerate', () => {
             cookingPhilosophy: 'Regional',
             biographySummary: 'old',
         });
-        vi.mocked(cookBiographySummaryGenerateRun).mockResolvedValueOnce('Roland kocht zwischen Mallorca und Hamburg.');
+        vi.mocked(cookBiographySummaryGenerateRun).mockResolvedValueOnce({
+            biography: 'Roland kocht in Mallorca und Hamburg.',
+            biographySummary: 'Roland kocht zwischen Mallorca und Hamburg.',
+        });
 
         // Act
         await cookBiographySummaryGenerate.handler({
@@ -40,6 +46,7 @@ describe('cookBiographySummaryGenerate', () => {
             serverRuntime,
         });
         const [row] = await testDb.select().from(cooks).where(eq(cooks.cookId, user.userId));
+        expect(row?.biography).toBe('Roland kocht in Mallorca und Hamburg.');
         expect(row?.biographySummary).toBe('Roland kocht zwischen Mallorca und Hamburg.');
         expect(serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: user.userId });
     });

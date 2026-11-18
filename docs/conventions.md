@@ -73,6 +73,7 @@ Commands own normalization on every write path (GraphQL scalars are format gates
 | `textNormalizeTitled`                             | Names, titles, occasions, subjects, preference chips (`singleLine` + capitalize first letter)       |
 | `textNormalizeTitledOrNull`                       | Optional titled fields (`null` when blank)                                                          |
 | `textNormalizeProse` / `textNormalizeProseTitled` | Multiline copy (biography, descriptions, messages); collapses horizontal whitespace, keeps newlines |
+| `cookBiographyNormalize`                          | Cook biography / summary writes: prose normalize plus strip of websites, Instagram, emails, phones  |
 | `invoiceAddressNormalize`                         | Invoice JSON (`firstName` / `lastName` / `companyName` / address lines)                             |
 | `testimonialRatingAssertRequired`                 | Testimonial star ratings: integers **1–5**; reject `0` / null on every write path                   |
 
@@ -292,8 +293,7 @@ disclaimer, chat transcript messages region) may call `useT('common')` inside th
 **Every locale must be real copy.** Identical values are fine when the word is the same (`Name`, `Status`, brand names). It is **not** fine
 when German has a clear equivalent: write `Fähigkeiten` not `Skills`, `Protokolle` not `Logs`. Prefer translating UI chrome even when the
 English loanword is common in German tech speech. `en` / `fr` / `it` / `ru` / `nl` catalogs must match the `de` key tree
-(`npm run i18n:check`).
-Missing keys fall back to `de`, never a raw key.
+(`npm run i18n:check`). Missing keys fall back to `de`, never a raw key.
 
 **No mid-sentence em or en dashes (`—` / `–`) in user-facing copy.** They read as AI-generated. Prefer commas, periods, colons, or
 parentheses. Empty-value placeholders that render a lone `—` for missing data are fine, as are en dashes in numeric or alphabetic ranges

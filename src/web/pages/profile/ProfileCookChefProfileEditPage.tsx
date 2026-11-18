@@ -7,6 +7,7 @@ import { useMutation, useQuery } from 'urql';
 
 import { t } from '../../../i18n/t';
 import { containsPhoneNumber, cookPathNameTryNormalize, userDisplayName } from '../../../shared';
+import { cookBiographyNormalize } from '../../../shared/cookBiographyContact';
 import { cookDefaultOfferMessageFormFrom, cookDefaultOfferMessageUpdateFrom } from '../../../shared/cookDefaultOfferMessage';
 import {
     cookPresenceLinksEqual,
@@ -23,6 +24,7 @@ import { Skeleton } from '../../components/base/skeleton';
 import { Spinner } from '../../components/base/spinner';
 import { Textarea } from '../../components/base/textarea';
 import { BiographySuggestionReview } from '../../components/BiographySuggestionReview';
+import { CookBiographyContactNotice } from '../../components/CookBiographyContactNotice';
 import { CookDefaultOfferMessageFields } from '../../components/CookDefaultOfferMessageFields';
 import { CookPathNameFields } from '../../components/CookPathNameFields';
 import { CookPresenceLinksFields, cookPresenceLinksIssueMessage } from '../../components/CookPresenceLinksEditor';
@@ -105,7 +107,8 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
 
             const nextCuisine = value.cuisineStyle.trim();
             const nextPhilosophy = value.cookingPhilosophy.trim();
-            const biographyChanged = value.biography !== cook.biography;
+            const biography = cookBiographyNormalize(value.biography);
+            const biographyChanged = biography !== cook.biography;
             if (value.defaultOfferMessageMode === 'custom' && containsPhoneNumber(value.defaultOfferMessageText)) {
                 toast.error(t(locale, 'profileCook', 'actions.phoneSharingBlocked'));
                 return;
@@ -136,7 +139,7 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
 
             const result = await updateCook({
                 input: {
-                    biography: value.biography,
+                    biography,
                     cuisineStyle: nextCuisine || null,
                     cookingPhilosophy: nextPhilosophy || null,
                     ...(pathNameEnabled && value.pathName !== cook.pathName ? { pathName: value.pathName } : {}),
@@ -149,7 +152,7 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
             }
 
             form.reset({
-                biography: value.biography,
+                biography,
                 cuisineStyle: nextCuisine,
                 cookingPhilosophy: nextPhilosophy,
                 pathName: value.pathName,
@@ -159,7 +162,7 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
             });
 
             if (biographyChanged) {
-                if (value.biography.trim()) {
+                if (biography) {
                     setSummaryRefreshPending(true);
                     toast.success(t(locale, 'profileCook', 'chefProfileEdit.savedUpdating'));
                 } else {
@@ -243,7 +246,7 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
 
     function onAcceptBiographySuggestion() {
         if (!biographySuggestion) return;
-        form.setFieldValue('biography', biographySuggestion);
+        form.setFieldValue('biography', cookBiographyNormalize(biographySuggestion));
         setBiographySuggestion(null);
     }
 
@@ -333,15 +336,22 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
                                         onDiscard={() => setBiographySuggestion(null)}
                                     />
                                 ) : (
-                                    <Textarea
-                                        id="chef-biography"
-                                        name={field.name}
-                                        rows={6}
-                                        value={field.state.value}
-                                        disabled={formBusy || biographySuggestFetching}
-                                        onBlur={field.handleBlur}
-                                        onChange={(event) => field.handleChange(event.target.value)}
-                                    />
+                                    <>
+                                        <Textarea
+                                            id="chef-biography"
+                                            name={field.name}
+                                            rows={6}
+                                            value={field.state.value}
+                                            disabled={formBusy || biographySuggestFetching}
+                                            onBlur={field.handleBlur}
+                                            onChange={(event) => field.handleChange(event.target.value)}
+                                        />
+                                        <CookBiographyContactNotice
+                                            text={field.state.value}
+                                            warning={t(locale, 'profileCook', 'chefProfileEdit.contactWarning')}
+                                            previewLabel={t(locale, 'profileCook', 'chefProfileEdit.contactPreview')}
+                                        />
+                                    </>
                                 )}
                             </div>
                         )}

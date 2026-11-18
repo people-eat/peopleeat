@@ -1,6 +1,7 @@
 import { and, desc, eq, gt, isNull } from 'drizzle-orm';
 
-import { authOauthTickets } from '../db/schema';
+import { fileUploadMetadataColumns } from '../db/fileUploadMetadata';
+import { authOauthTickets, fileUploads } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAuthOauthTicket, GqlSSession } from '../graphql/generated';
 import { toGqlAuthOauthTicket } from '../mappers/toGqlAuthOauthTicket';
@@ -11,8 +12,12 @@ export async function sessionAuthOauthTicketFindOne(
 ): Promise<GqlSAuthOauthTicket | null> {
     const now = new Date();
     const [row] = await serverRuntime.db
-        .select()
+        .select({
+            ticket: authOauthTickets,
+            profilePicture: fileUploadMetadataColumns,
+        })
         .from(authOauthTickets)
+        .leftJoin(fileUploads, eq(fileUploads.fileUploadId, authOauthTickets.profilePictureFileUploadId))
         .where(
             and(
                 eq(authOauthTickets.sessionId, requestingSession.sessionId),
@@ -23,5 +28,7 @@ export async function sessionAuthOauthTicketFindOne(
         .orderBy(desc(authOauthTickets.createdAt))
         .limit(1);
 
-    return row ? toGqlAuthOauthTicket(row) : null;
+    if (!row) return null;
+    const profilePicture = row.profilePicture.fileUploadId ? row.profilePicture : null;
+    return toGqlAuthOauthTicket(row.ticket, profilePicture);
 }

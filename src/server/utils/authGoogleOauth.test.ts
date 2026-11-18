@@ -176,12 +176,14 @@ describe('authGoogleProfileSnapshotMerge', () => {
                 emailAddress: 'ada@example.com',
                 givenName: 'Claim',
                 familyName: null,
+                pictureUrl: null,
             },
             userinfo: {
                 subject: 'sub-1',
                 emailAddress: 'ada@example.com',
                 givenName: 'Userinfo',
                 familyName: null,
+                pictureUrl: null,
             },
             people: { givenName: 'People', familyName: null, phoneNumber: '+4915112345678', birthDate: '1990-01-15' },
         });

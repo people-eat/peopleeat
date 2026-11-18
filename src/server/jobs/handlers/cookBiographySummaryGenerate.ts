@@ -38,7 +38,7 @@ export const cookBiographySummaryGenerate: QueuedJobDefinition<CookBiographySumm
                 return;
             }
 
-            const biographySummary = await cookBiographySummaryGenerateRun({
+            const generated = await cookBiographySummaryGenerateRun({
                 cookId: data.cookId,
                 biography: trimmedBiography,
                 cuisineStyle: cook.cuisineStyle,
@@ -47,11 +47,18 @@ export const cookBiographySummaryGenerate: QueuedJobDefinition<CookBiographySumm
                 serverRuntime,
             });
 
-            if (!biographySummary) {
+            if (!generated) {
                 return;
             }
 
-            await serverRuntime.db.update(cooks).set({ biographySummary, lastModifiedAt: new Date() }).where(eq(cooks.cookId, data.cookId));
+            await serverRuntime.db
+                .update(cooks)
+                .set({
+                    biography: generated.biography,
+                    biographySummary: generated.biographySummary,
+                    lastModifiedAt: new Date(),
+                })
+                .where(eq(cooks.cookId, data.cookId));
             await serverRuntime.publish.userUpdates({ userId: data.cookId });
         } catch (error) {
             serverRuntime.log.error(error, null);

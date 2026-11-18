@@ -89,6 +89,40 @@ describe('authFacebookAppSecretProof', () => {
 });
 
 describe('authFacebookMeParse', () => {
+    it('keeps a non-silhouette picture URL', () => {
+        expect(
+            authFacebookMeParse({
+                id: '123',
+                email: 'ada@example.com',
+                first_name: 'Ada',
+                last_name: 'Lovelace',
+                picture: {
+                    data: {
+                        url: 'https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=123',
+                        is_silhouette: false,
+                    },
+                },
+            }).pictureUrl,
+        ).toBe('https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=123');
+    });
+
+    it('drops a Facebook silhouette', () => {
+        expect(
+            authFacebookMeParse({
+                id: '123',
+                email: 'ada@example.com',
+                first_name: 'Ada',
+                last_name: 'Lovelace',
+                picture: {
+                    data: {
+                        url: 'https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=123',
+                        is_silhouette: true,
+                    },
+                },
+            }).pictureUrl,
+        ).toBeNull();
+    });
+
     it('parses id, email, and names', () => {
         expect(
             authFacebookMeParse({
@@ -102,6 +136,7 @@ describe('authFacebookMeParse', () => {
             emailAddress: 'ada@example.com',
             firstName: 'Ada',
             lastName: 'Lovelace',
+            pictureUrl: null,
         });
     });
 

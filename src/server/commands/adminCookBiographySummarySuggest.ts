@@ -17,16 +17,16 @@ export async function adminCookBiographySummarySuggest(
     }
 
     try {
-        const summary = await cookBiographySummaryGenerate({
+        const generated = await cookBiographySummaryGenerate({
             cookId,
             biography: trimmed,
             requestingSession,
             serverRuntime,
         });
-        if (!summary) {
+        if (!generated) {
             throw new Error('adminCookBiographySummarySuggest: generation failed');
         }
-        return summary;
+        return generated.biographySummary;
     } catch (error) {
         serverRuntime.log.error(error, requestingSession);
         throw error;

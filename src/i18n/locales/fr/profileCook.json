@@ -963,6 +963,8 @@
         "writeWithAi": "Écrire avec l’IA",
         "summary": "Résumé de biographie",
         "summaryHint": "Se met à jour automatiquement quand tu enregistres ta biographie. Utilisé sur le profil public.",
+        "contactWarning": "Les sites web, Instagram, numéros de téléphone et e-mails n’ont pas leur place dans la biographie. Les invités ne les verront pas.",
+        "contactPreview": "Voici comment les invités verront ton texte",
         "cuisine": "Style de cuisine",
         "cuisinePlaceholder": "Choisir un style de cuisine…",
         "philosophy": "Philosophie culinaire",

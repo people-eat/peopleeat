@@ -3044,6 +3044,10 @@ type AuthOauthTicket {
     lastName: String
     phoneNumber: PhoneNumber
     birthDate: Date
+    # Provider photo imported at the OAuth callback when Google / Facebook returned a
+    # real (non-silhouette) image. Linked onto the user at `userCreate`. Bytes via
+    # GET `/api/file-uploads/:id` for this session until the account exists.
+    profilePicture: FileUpload
 }
 
 type AdminAuthOauthIdentity {
@@ -5173,7 +5177,9 @@ type AdminMutation {
     # AI: generate or expand a cook's first-person biography. Returns suggestion only.
     cookBiographySuggest(cookId: ID!, currentBiography: String!): String!
     # AI: generate a third-person biography summary from the given biography text.
-    # Returns suggestion only; admin applies into the form then saves via `cookUpdate`.
+    # Contact (websites, Instagram, emails, phones, including spelled-out digits) is
+    # stripped from the summary. Returns suggestion only; admin applies into the form
+    # then saves via `cookUpdate`.
     cookBiographySummarySuggest(cookId: ID!, biography: String!): String!
     # Insert or patch a cook meal. Omit `mealId` (requires `cookId`) for a draft;
     # pass `mealId` to patch. Image uploads must be owned by the admin and are

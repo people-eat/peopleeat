@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 
+import { cookBiographyNormalize } from '../../shared/cookBiographyContact';
 import { SectionCookAbout } from '../sections/SectionCookAbout';
 import { SectionCookHero } from '../sections/SectionCookHero';
 import type { SectionCookHeroBookCta, SectionCookHeroCook } from '../sections/SectionCookHero';
@@ -37,13 +38,15 @@ export function ChefProfileView({
     bookCta?: SectionCookHeroBookCta;
 }) {
     const hasTestimonials = cook.testimonials != null && cook.testimonials.length > 0;
+    const biography = cookBiographyNormalize(cook.biography);
+    const biographySummary = cookBiographyNormalize(cook.biographySummary);
 
     return (
         // Own `@container` so sections reflow with this pane (full page or cook
         // public preview), not a wider ancestor.
         <div className="@container flex w-full min-w-0 flex-col gap-16 pt-2 pb-16 @3xl:gap-24 @3xl:pt-10 @3xl:pb-24">
             <SectionCookHero
-                cook={cook}
+                cook={{ ...cook, biographySummary }}
                 showChefsIndexLink={showChefsIndexLink}
                 onBookCtaClick={onBookCtaClick}
                 shareButton={shareButton}
@@ -52,7 +55,7 @@ export function ChefProfileView({
             />
             <SectionCookMenus menus={cook.menus ?? []} bookCookId={bookCta?.cookId} onBookMenuCtaClick={onBookMenuCtaClick} />
             <SectionCookMeals meals={cook.meals} />
-            <SectionCookAbout biography={cook.biography} logoUrl={cook.logoUrl} />
+            <SectionCookAbout biography={biography} logoUrl={cook.logoUrl} />
             <SectionCookTestimonials testimonials={cook.testimonials} />
             <SectionQuestionsAndAnswers />
         </div>

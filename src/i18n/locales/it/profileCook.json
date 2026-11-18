@@ -963,6 +963,8 @@
         "writeWithAi": "Scrivi con l’IA",
         "summary": "Riepilogo biografia",
         "summaryHint": "Si aggiorna automaticamente quando salvi la biografia. Usato sul profilo pubblico.",
+        "contactWarning": "Siti web, Instagram, numeri di telefono e email non appartengono alla biografia. Gli ospiti non li vedranno.",
+        "contactPreview": "Così gli ospiti vedranno il tuo testo",
         "cuisine": "Stile di cucina",
         "cuisinePlaceholder": "Seleziona stile di cucina…",
         "philosophy": "Filosofia di cucina",

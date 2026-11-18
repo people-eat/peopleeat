@@ -568,6 +568,8 @@
         "writeWithAi": "Schrijven met AI",
         "summary": "Samenvatting van de biografie",
         "summaryHint": "Wordt automatisch bijgewerkt als je je biografie opslaat. Wordt gebruikt op het openbare profiel.",
+        "contactWarning": "Websites, Instagram, telefoonnummers en e-mails horen niet in de biografie. Gasten zien ze niet.",
+        "contactPreview": "Zo zien gasten jouw tekst",
         "cuisine": "Kookstijl",
         "cuisinePlaceholder": "Kies een kookstijl…",
         "philosophy": "Kookfilosofie",
