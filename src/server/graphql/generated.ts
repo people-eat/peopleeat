@@ -2602,6 +2602,7 @@ export interface GqlSAuthOauthTicket {
     firstName?: Maybe<Scalars['String']['output']>;
     lastName?: Maybe<Scalars['String']['output']>;
     phoneNumber?: Maybe<Scalars['PhoneNumber']['output']>;
+    profilePicture?: Maybe<GqlSFileUpload>;
     verifiedAt: Scalars['DateTime']['output'];
 }
 
@@ -9612,6 +9613,7 @@ export type GqlSAuthOauthTicketResolvers<
     firstName?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     lastName?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     phoneNumber?: Resolver<Maybe<GqlSResolversTypes['PhoneNumber']>, ParentType, ContextType>;
+    profilePicture?: Resolver<Maybe<GqlSResolversTypes['FileUpload']>, ParentType, ContextType>;
     verifiedAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
 }>;
 

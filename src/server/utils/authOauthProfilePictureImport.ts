@@ -119,9 +119,5 @@ export async function authOauthProfilePictureEncode(input: Buffer): Promise<Auth
 }
 
 function avatarWebpEncode(input: Buffer, quality: number): Promise<Buffer> {
-    return sharp(input)
-        .rotate()
-        .resize(AVATAR_EDGE_PX, AVATAR_EDGE_PX, { fit: 'cover', position: 'centre' })
-        .webp({ quality })
-        .toBuffer();
+    return sharp(input).rotate().resize(AVATAR_EDGE_PX, AVATAR_EDGE_PX, { fit: 'cover', position: 'centre' }).webp({ quality }).toBuffer();
 }

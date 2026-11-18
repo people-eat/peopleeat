@@ -38,9 +38,10 @@ chats use `SupportRequestMessageAttachments`. Booking-request kitchen photos use
 cook, or admin download). Gift-card purchase receipts store `GiftCards.invoiceFileUploadId` and may also appear on
 `OutboundEmailAttachments`. Regenerating a gift-card PDF deletes the previous file only when no outbound email or WhatsApp attachment still
 references it. `OutboundEmailAttachments.fileUploadId` cascades on file delete, so an emailed copy is kept. Profile pictures store
-`Users.profilePictureFileUploadId` (see [profile-pictures.md](../features/profile-pictures.md)). New consumers follow the same pattern —
-reference `FileUploads.fileUploadId` from a domain-specific join or FK, layer per-consumer cascade and authorization rules on top. A new
-domain-specific blob table is the exception, not the default.
+`Users.profilePictureFileUploadId` (see [profile-pictures.md](../features/profile-pictures.md)). Google / Facebook sign-up may create a
+null-owner `FileUploads` row referenced by `AuthOauthTickets.profilePictureFileUploadId` until `userCreate` assigns `userId`. New consumers
+follow the same pattern — reference `FileUploads.fileUploadId` from a domain-specific join or FK, layer per-consumer cascade and
+authorization rules on top. A new domain-specific blob table is the exception, not the default.
 
 **Bytes never travel through GraphQL.** The `FileUpload` GraphQL type exposes metadata plus a URL (`fileUploadId`, `filename`, `mediaType`,
 `size`, `url`). Resolvers and hydrates select only those columns via `fileUploadMetadataColumns` / `fileUploadMetadataLoad`
@@ -72,7 +73,8 @@ The upload and download routes are likewise consumer-agnostic:
      id (see [`content-sections.md`](./content-sections.md)), or
   9. the session user is an **admin** and any customer or cook testimonial (including `PENDING_REVIEW`) lists the URL in `imageUrls`, or
   10. the session user is an **admin** and the id is a gift-card `invoiceFileUploadId`, a booking-offer `customerReceiptFileUploadId` /
-      `cookStatementFileUploadId`, an `OutboundEmailAttachments` row, or a `WhatsAppMessageAttachments` row (Concierge inbound media).
+      `cookStatementFileUploadId`, an `OutboundEmailAttachments` row, or a `WhatsAppMessageAttachments` row (Concierge inbound media), or
+  11. the cookie session’s unconsumed `AuthOauthTickets.profilePictureFileUploadId` matches (registration preview; private cache).
       Unauthenticated public pages rely on (2), (3), (4), (5), and (6).
 
 ### Why `bytea` over `oid` / large objects

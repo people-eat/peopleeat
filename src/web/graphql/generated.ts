@@ -2605,6 +2605,7 @@ export interface GqlCAuthOauthTicket {
     firstName?: Maybe<Scalars['String']['output']>;
     lastName?: Maybe<Scalars['String']['output']>;
     phoneNumber?: Maybe<Scalars['PhoneNumber']['output']>;
+    profilePicture?: Maybe<GqlCFileUpload>;
     verifiedAt: Scalars['DateTime']['output'];
 }
 
@@ -8175,6 +8176,7 @@ export type GqlCAuthSessionFieldsFragment = {
         lastName: string | null;
         phoneNumber: string | null;
         birthDate: string | null;
+        profilePicture: { url: string } | null;
     } | null;
     authTotpChallenge: { expiresAt: string } | null;
 };
@@ -8227,6 +8229,7 @@ export type GqlCAuthSessionQuery = {
             lastName: string | null;
             phoneNumber: string | null;
             birthDate: string | null;
+            profilePicture: { url: string } | null;
         } | null;
         authTotpChallenge: { expiresAt: string } | null;
     };
@@ -8270,6 +8273,7 @@ export type GqlCAuthSessionUpdatesSubscription = {
             lastName: string | null;
             phoneNumber: string | null;
             birthDate: string | null;
+            profilePicture: { url: string } | null;
         } | null;
         authTotpChallenge: { expiresAt: string } | null;
     };
@@ -8862,6 +8866,7 @@ export type GqlCBookingRequestFormPageQuery = {
             lastName: string | null;
             phoneNumber: string | null;
             birthDate: string | null;
+            profilePicture: { url: string } | null;
         } | null;
         authTotpChallenge: { expiresAt: string } | null;
     };
@@ -8956,6 +8961,7 @@ export type GqlCBookingRequestPlanPageQuery = {
             lastName: string | null;
             phoneNumber: string | null;
             birthDate: string | null;
+            profilePicture: { url: string } | null;
         } | null;
         authTotpChallenge: { expiresAt: string } | null;
     };
@@ -9290,6 +9296,7 @@ export type GqlCChefSignUpPageQuery = {
             lastName: string | null;
             phoneNumber: string | null;
             birthDate: string | null;
+            profilePicture: { url: string } | null;
         } | null;
         authTotpChallenge: { expiresAt: string } | null;
     };
@@ -9640,6 +9647,7 @@ export type GqlCGiftCardPageQuery = {
             lastName: string | null;
             phoneNumber: string | null;
             birthDate: string | null;
+            profilePicture: { url: string } | null;
         } | null;
         authTotpChallenge: { expiresAt: string } | null;
     };
@@ -9709,6 +9717,7 @@ export type GqlCGiftCardSessionUpdatesSubscription = {
             lastName: string | null;
             phoneNumber: string | null;
             birthDate: string | null;
+            profilePicture: { url: string } | null;
         } | null;
         authTotpChallenge: { expiresAt: string } | null;
     };
@@ -9792,6 +9801,7 @@ export type GqlCLogOnPageQuery = {
             lastName: string | null;
             phoneNumber: string | null;
             birthDate: string | null;
+            profilePicture: { url: string } | null;
         } | null;
         authTotpChallenge: { expiresAt: string } | null;
     };
@@ -28066,6 +28076,14 @@ export const AuthSessionFieldsFragmentDoc = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'profilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                    },
+                                },
                             ],
                         },
                     },
@@ -41291,6 +41309,14 @@ export const AuthSessionDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'profilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                    },
+                                },
                             ],
                         },
                     },
@@ -41428,6 +41454,14 @@ export const AuthSessionUpdatesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'profilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                    },
+                                },
                             ],
                         },
                     },
@@ -44005,6 +44039,14 @@ export const BookingRequestFormPageDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'profilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                    },
+                                },
                             ],
                         },
                     },
@@ -44703,6 +44745,14 @@ export const BookingRequestPlanPageDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'profilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                    },
+                                },
                             ],
                         },
                     },
@@ -45746,6 +45796,14 @@ export const ChefSignUpPageDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'profilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                    },
+                                },
                             ],
                         },
                     },
@@ -47108,6 +47166,14 @@ export const GiftCardPageDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'profilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                    },
+                                },
                             ],
                         },
                     },
@@ -47338,6 +47404,14 @@ export const GiftCardSessionUpdatesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'profilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                    },
+                                },
                             ],
                         },
                     },
@@ -47814,6 +47888,14 @@ export const LogOnPageDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'profilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                    },
+                                },
                             ],
                         },
                     },

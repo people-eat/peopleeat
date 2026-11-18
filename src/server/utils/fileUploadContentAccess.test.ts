@@ -5,6 +5,7 @@ import { fileUploadPublicUrl } from '../../shared/contentSection';
 import { idCreate } from '../../shared/idCreate';
 import { fileUploadCreate } from '../commands/fileUploadCreate';
 import {
+    authOauthTickets,
     bookingRequestOffers,
     bookingRequests,
     cooks,
@@ -26,6 +27,7 @@ import {
     fileUploadReferencedByOutboundEmailAttachment,
     fileUploadReferencedByPublishedMeal,
     fileUploadReferencedByPublishedTestimonial,
+    fileUploadReferencedBySessionOauthTicket,
 } from './fileUploadContentAccess';
 
 const berlin = {
@@ -39,6 +41,36 @@ const berlin = {
     state: 'BE',
     country: 'DE',
 };
+
+describe('fileUploadReferencedBySessionOauthTicket', () => {
+    it('allows the owning session to read a pending OAuth photo', async () => {
+        const owner = await commandSetup();
+        const stranger = await commandSetup();
+        const upload = await fileUploadCreate(testDb, {
+            userId: null,
+            filename: 'avatar.webp',
+            mediaType: 'image/webp',
+            bytes: Buffer.from('RIFF'),
+        });
+        await testDb.insert(authOauthTickets).values({
+            authOauthTicketId: idCreate(),
+            sessionId: owner.requestingSession.sessionId,
+            provider: 'GOOGLE',
+            subject: `sub-${idCreate()}`,
+            emailAddress: `oauth-picture-${idCreate().toLowerCase()}@example.com`,
+            firstName: 'Ada',
+            lastName: 'Lovelace',
+            profilePictureFileUploadId: upload.fileUploadId,
+            verifiedAt: new Date(),
+            expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+        });
+
+        expect(await fileUploadReferencedBySessionOauthTicket(testDb, upload.fileUploadId, owner.requestingSession.sessionId)).toBe(true);
+        expect(await fileUploadReferencedBySessionOauthTicket(testDb, upload.fileUploadId, stranger.requestingSession.sessionId)).toBe(
+            false,
+        );
+    });
+});
 
 describe('fileUploadContentAccess invoice helpers', () => {
     it('detects a gift-card invoice file upload', async () => {

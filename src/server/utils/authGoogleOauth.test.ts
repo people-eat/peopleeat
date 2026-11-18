@@ -191,5 +191,46 @@ describe('authGoogleProfileSnapshotMerge', () => {
         expect(snapshot.lastName).toBeNull();
         expect(snapshot.phoneNumber).toBe('+4915112345678');
         expect(snapshot.birthDate).toBe('1990-01-15');
+        expect(snapshot.pictureUrl).toBeNull();
+    });
+
+    it('enlarges a Google picture URL and skips the default avatar', () => {
+        const withPhoto = authGoogleProfileSnapshotMerge({
+            claims: {
+                subject: 'sub-1',
+                emailAddress: 'ada@example.com',
+                givenName: 'Ada',
+                familyName: 'Lovelace',
+                pictureUrl: null,
+            },
+            userinfo: {
+                subject: 'sub-1',
+                emailAddress: 'ada@example.com',
+                givenName: 'Ada',
+                familyName: 'Lovelace',
+                pictureUrl: 'https://lh3.googleusercontent.com/a/ACg8ocTest=s96-c',
+            },
+            people: null,
+        });
+        expect(withPhoto.pictureUrl).toBe('https://lh3.googleusercontent.com/a/ACg8ocTest=s512-c');
+
+        const defaultPhoto = authGoogleProfileSnapshotMerge({
+            claims: {
+                subject: 'sub-1',
+                emailAddress: 'ada@example.com',
+                givenName: 'Ada',
+                familyName: 'Lovelace',
+                pictureUrl: 'https://lh3.googleusercontent.com/a/default-user',
+            },
+            userinfo: {
+                subject: 'sub-1',
+                emailAddress: 'ada@example.com',
+                givenName: 'Ada',
+                familyName: 'Lovelace',
+                pictureUrl: null,
+            },
+            people: null,
+        });
+        expect(defaultPhoto.pictureUrl).toBeNull();
     });
 });

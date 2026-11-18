@@ -37,7 +37,7 @@ export async function authOauthTicketReplace(
     });
 }
 
-export async function authOauthTicketsDeleteForSession(db: Db, sessionId: string): Promise<void> {
+async function authOauthTicketsDeleteForSession(db: Db, sessionId: string): Promise<void> {
     const previous = await db
         .select({ profilePictureFileUploadId: authOauthTickets.profilePictureFileUploadId })
         .from(authOauthTickets)

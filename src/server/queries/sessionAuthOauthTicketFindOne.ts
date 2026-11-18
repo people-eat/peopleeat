@@ -29,6 +29,6 @@ export async function sessionAuthOauthTicketFindOne(
         .limit(1);
 
     if (!row) return null;
-    const profilePicture = row.profilePicture.fileUploadId ? row.profilePicture : null;
+    const profilePicture = row.profilePicture?.fileUploadId ? row.profilePicture : null;
     return toGqlAuthOauthTicket(row.ticket, profilePicture);
 }

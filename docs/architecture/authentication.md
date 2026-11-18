@@ -184,6 +184,8 @@ summary on `AdminUser`.
   `authGoogleCallback.ts` / `authFacebookStart.ts` / `authFacebookCallback.ts` / `authOauthTicketDelete.ts` / `userCreate.ts`
 - `src/server/utils/authGoogleOauth.ts` — PKCE, token exchange, userinfo, People, profile merge
 - `src/server/utils/authFacebookOauth.ts` — state CSRF, token exchange, Graph `/me` (+ `appsecret_proof`), profile snapshot
+- `src/server/utils/authOauthProfilePictureImport.ts` — allowlisted download + sharp avatar encode for Google / Facebook photos
+- `src/server/utils/authOauthTicketReplace.ts` — replace a session ticket and its pending photo `FileUploads` row
 - `src/routes/api/auth/google.ts` / `src/routes/api/auth/google.callback.ts`
 - `src/routes/api/auth/facebook.ts` / `src/routes/api/auth/facebook.callback.ts`
 - `src/server/email/templates/AuthEmailOtpRequestForUserEmail.tsx` (React Email template; bilingual + component previews via
@@ -221,19 +223,23 @@ summary on `AdminUser`.
 `state`, **Set-Cookie**s that row’s `sessionId` (so bounce-tracking browsers that dropped the Lax cookie still resume), exchanges the code,
 validates `id_token` (`aud` / `iss` / `exp` / `nonce` / `email_verified`), fetches userinfo, and optionally People. Tokens are not stored.
 `sessionPrimaryAuthComplete` binds existing users (TOTP still applies). New emails get `AuthOauthTickets` (about 30 minutes) exposed as
-`Session.authOauthTicket` without the Google `sub`. Identity vs email conflict is refused. Starting Google dismisses pending OTP and vice
-versa. Feature toggle `SIGN_IN_GOOGLE` gates the button, start, and callback (per-user override after identity resolve). Redirect URI is
-`${WEB_PAGE_URL}/api/auth/google/callback`.
+`Session.authOauthTicket` without the Google `sub`. When userinfo includes a real photo (not Google’s default avatar), the callback
+downloads it from an allowlisted Google host, encodes a 512px WebP avatar, and stores it on the ticket; `userCreate` links it as the profile
+picture. Returning Google sign-in never overwrites an existing picture. Identity vs email conflict is refused. Starting Google dismisses
+pending OTP and vice versa. Feature toggle `SIGN_IN_GOOGLE` gates the button, start, and callback (per-user override after identity
+resolve). Redirect URI is `${WEB_PAGE_URL}/api/auth/google/callback`.
 
 ### Facebook OAuth
 
 `GET /api/auth/facebook?returnTo=` stores CSRF `state` on `AuthOauthStates` (about 10 minutes; `codeVerifier` / `nonce` columns filled but
 unused by Meta Login) and 302s to Facebook Login (`email,public_profile`). The callback restores the session cookie from state, exchanges
-the code with App ID + App Secret, and loads Graph `/me` (`id,email,first_name,last_name`) with `appsecret_proof`. Tokens are not stored.
-Missing email fails (`unverified_email` / `authError=facebook`). Existing users bind via `sessionPrimaryAuthComplete`; new emails get
-`AuthOauthTickets` with `provider: FACEBOOK` (names only). Feature toggle `SIGN_IN_FACEBOOK` gates the button, start, and callback (per-user
-override after identity resolve). Redirect URI is `${WEB_PAGE_URL}/api/auth/facebook/callback`. Use a consumer Meta app with Facebook Login,
-not the WhatsApp / Messenger Business app.
+the code with App ID + App Secret, and loads Graph `/me` (`id,email,first_name,last_name,picture.width(512).height(512)`) with
+`appsecret_proof`. Tokens are not stored. Missing email fails (`unverified_email` / `authError=facebook`). Existing users bind via
+`sessionPrimaryAuthComplete`; new emails get `AuthOauthTickets` with `provider: FACEBOOK` (names, and a photo when Graph did not return a
+silhouette). The callback downloads the allowlisted Facebook CDN URL, encodes a 512px WebP avatar, and stores it on the ticket; `userCreate`
+links it as the profile picture. Returning Facebook sign-in never overwrites an existing picture. Feature toggle `SIGN_IN_FACEBOOK` gates
+the button, start, and callback (per-user override after identity resolve). Redirect URI is `${WEB_PAGE_URL}/api/auth/facebook/callback`.
+Use a consumer Meta app with Facebook Login, not the WhatsApp / Messenger Business app.
 
 ### Planned next
 

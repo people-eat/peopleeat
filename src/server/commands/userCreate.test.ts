@@ -2,13 +2,14 @@ import { eq } from 'drizzle-orm';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
-import { authEmailOtps, authOauthIdentities, authOauthTickets, cooks, outboundEmails, sessions, users } from '../db/schema';
+import { authEmailOtps, authOauthIdentities, authOauthTickets, cooks, fileUploads, outboundEmails, sessions, users } from '../db/schema';
 import { userKlaviyoProfileSync } from '../jobs/handlers/userKlaviyoProfileSync';
 import { commandSetup, testDb } from '../test/commandTestUtils';
 import { phoneNumberCreate } from '../test/phoneNumberCreate';
 import * as authOtpUtils from '../utils/authOtpUtils';
 import { authEmailOtpRequest } from './authEmailOtpRequest';
 import { authEmailOtpVerify } from './authEmailOtpVerify';
+import { fileUploadCreate } from './fileUploadCreate';
 import { userCreate } from './userCreate';
 
 const berlinSuggestion = {
@@ -297,6 +298,48 @@ describe('userCreate', () => {
         expect(identities[0]?.subject).toBe(subject);
         const [ticket] = await testDb.select().from(authOauthTickets).where(eq(authOauthTickets.sessionId, requestingSession.sessionId));
         expect(ticket?.consumedAt).toBeInstanceOf(Date);
+    });
+
+    it('links an OAuth ticket photo as the new user profile picture', async () => {
+        const { serverRuntime, requestingSession } = await commandSetup();
+        const email = `google-picture-${idCreate().toLowerCase()}@example.com`;
+        const upload = await fileUploadCreate(testDb, {
+            userId: null,
+            filename: 'avatar.webp',
+            mediaType: 'image/webp',
+            bytes: Buffer.from('RIFF'),
+        });
+        await testDb.insert(authOauthTickets).values({
+            authOauthTicketId: idCreate(),
+            sessionId: requestingSession.sessionId,
+            provider: 'GOOGLE',
+            subject: `sub-${idCreate()}`,
+            emailAddress: email,
+            firstName: 'Ada',
+            lastName: 'Lovelace',
+            profilePictureFileUploadId: upload.fileUploadId,
+            verifiedAt: new Date(),
+            expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+        });
+
+        const result = await userCreate(
+            {
+                input: {
+                    firstName: 'Ada',
+                    lastName: 'Lovelace',
+                    locale: 'en',
+                    timeZone: 'Europe/Berlin',
+                },
+            },
+            requestingSession,
+            serverRuntime,
+        );
+
+        expect(result.success).toBe(true);
+        const [user] = await testDb.select().from(users).where(eq(users.emailAddress, email));
+        expect(user?.profilePictureFileUploadId).toBe(upload.fileUploadId);
+        const [owned] = await testDb.select().from(fileUploads).where(eq(fileUploads.fileUploadId, upload.fileUploadId));
+        expect(owned?.userId).toBe(user?.userId);
     });
 
     it('does not persist hidden Google phone or birth date on the gift-card path', async () => {

@@ -109,11 +109,7 @@ export const Route = createFileRoute('/api/file-uploads_/$fileUploadId')({
                     allowed = isChatPeerAccess;
                 }
                 if (!allowed) {
-                    isOauthTicketPicture = await fileUploadReferencedBySessionOauthTicket(
-                        db,
-                        fileUpload.fileUploadId,
-                        session.sessionId,
-                    );
+                    isOauthTicketPicture = await fileUploadReferencedBySessionOauthTicket(db, fileUpload.fileUploadId, session.sessionId);
                     allowed = isOauthTicketPicture;
                 }
                 if (!allowed && session.userId) {

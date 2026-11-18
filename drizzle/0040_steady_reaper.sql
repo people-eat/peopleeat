@@ -1,0 +1,3 @@
+ALTER TABLE "AuthOauthTickets" ADD COLUMN "profilePictureFileUploadId" varchar(20);--> statement-breakpoint
+ALTER TABLE "AuthOauthTickets" ADD CONSTRAINT "AuthOauthTickets_profilePictureFileUploadId_FileUploads_fileUploadId_fk" FOREIGN KEY ("profilePictureFileUploadId") REFERENCES "public"."FileUploads"("fileUploadId") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+CREATE INDEX "AuthOauthTickets_profilePictureFileUploadId_idx" ON "AuthOauthTickets" USING btree ("profilePictureFileUploadId");

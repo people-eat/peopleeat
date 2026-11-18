@@ -9,12 +9,15 @@ import {
     authTimeBasedOneTimePasswords,
     featureToggles,
     featureToggleUserOverrides,
+    fileUploads,
     sessionEvents,
     sessions,
 } from '../db/schema';
 import { commandSetup, testDb } from '../test/commandTestUtils';
 import { AUTH_OAUTH_STATE_TTL_MS } from '../utils/authFacebookOauth';
 import { authFacebookCallback } from './authFacebookCallback';
+
+const PNG_1X1 = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
 
 const testEnv = {
     facebookOauthClientId: 'test-facebook-oauth-client-id',
@@ -27,6 +30,8 @@ function facebookFetchMock(args: {
     email?: string | null;
     firstName?: string;
     lastName?: string | null;
+    pictureUrl?: string;
+    pictureSilhouette?: boolean;
     tokenStatus?: number;
     meStatus?: number;
 }) {
@@ -34,6 +39,9 @@ function facebookFetchMock(args: {
         const url = String(input);
         if (url.includes('/oauth/access_token')) {
             return new Response(JSON.stringify({ access_token: 'access-token' }), { status: args.tokenStatus ?? 200 });
+        }
+        if (args.pictureUrl && url === args.pictureUrl) {
+            return new Response(PNG_1X1, { status: 200, headers: { 'content-type': 'image/png' } });
         }
         if (url.includes('/me')) {
             if ((args.meStatus ?? 200) !== 200) {
@@ -52,6 +60,14 @@ function facebookFetchMock(args: {
                 body.email = args.email;
             } else if (args.email === undefined) {
                 body.email = `fb-${args.subject}@example.com`;
+            }
+            if (args.pictureUrl) {
+                body.picture = {
+                    data: {
+                        url: args.pictureUrl,
+                        is_silhouette: args.pictureSilhouette === true,
+                    },
+                };
             }
             return new Response(JSON.stringify(body), { status: 200 });
         }
@@ -329,5 +345,57 @@ describe('authFacebookCallback', () => {
         );
         expect(result.returnTo).toBe('/profile');
         expect(result.returnTo.includes('authError')).toBe(false);
+    });
+
+    it('stores an imported Facebook photo on the registration ticket', async () => {
+        const { serverRuntime, requestingSession } = await commandSetup();
+        await signInFacebookEnable();
+        const email = `facebook-photo-${idCreate().toLowerCase()}@example.com`;
+        const subject = `fb-${idCreate()}`;
+        const { state } = await oauthStateInsert(requestingSession.sessionId);
+        const pictureUrl = `https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=${idCreate()}`;
+
+        await authFacebookCallback(
+            {
+                code: 'code',
+                state,
+                error: null,
+                cookieSessionId: requestingSession.sessionId,
+                fetchImpl: facebookFetchMock({ subject, email, pictureUrl }),
+                env: testEnv,
+            },
+            serverRuntime,
+        );
+
+        const [ticket] = await testDb.select().from(authOauthTickets).where(eq(authOauthTickets.sessionId, requestingSession.sessionId));
+        expect(ticket?.profilePictureFileUploadId).toBeTruthy();
+        const [upload] = await testDb.select().from(fileUploads).where(eq(fileUploads.fileUploadId, ticket!.profilePictureFileUploadId!));
+        expect(upload?.userId).toBeNull();
+        expect(upload?.mediaType).toBe('image/webp');
+    });
+
+    it('skips a Facebook silhouette photo', async () => {
+        const { serverRuntime, requestingSession } = await commandSetup();
+        await signInFacebookEnable();
+        const email = `facebook-silhouette-${idCreate().toLowerCase()}@example.com`;
+        const subject = `fb-${idCreate()}`;
+        const { state } = await oauthStateInsert(requestingSession.sessionId);
+        const pictureUrl = `https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=${idCreate()}`;
+
+        await authFacebookCallback(
+            {
+                code: 'code',
+                state,
+                error: null,
+                cookieSessionId: requestingSession.sessionId,
+                fetchImpl: facebookFetchMock({ subject, email, pictureUrl, pictureSilhouette: true }),
+                env: testEnv,
+            },
+            serverRuntime,
+        );
+
+        const [ticket] = await testDb.select().from(authOauthTickets).where(eq(authOauthTickets.sessionId, requestingSession.sessionId));
+        expect(ticket?.emailAddress).toBe(email);
+        expect(ticket?.profilePictureFileUploadId).toBeNull();
     });
 });

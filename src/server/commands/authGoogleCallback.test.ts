@@ -9,6 +9,7 @@ import {
     authTimeBasedOneTimePasswords,
     featureToggles,
     featureToggleUserOverrides,
+    fileUploads,
     sessionEvents,
     sessions,
 } from '../db/schema';
@@ -16,6 +17,8 @@ import { commandSetup, testDb } from '../test/commandTestUtils';
 import { phoneNumberCreate } from '../test/phoneNumberCreate';
 import { AUTH_OAUTH_STATE_TTL_MS } from '../utils/authGoogleOauth';
 import { authGoogleCallback } from './authGoogleCallback';
+
+const PNG_1X1 = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
 
 const testEnv = {
     googleOauthClientId: 'test-google-oauth-client-id',
@@ -37,6 +40,7 @@ function googleFetchMock(args: {
     emailVerified?: boolean;
     givenName?: string;
     familyName?: string | null;
+    pictureUrl?: string;
     peopleStatus?: number;
     peopleBody?: unknown;
 }) {
@@ -56,6 +60,9 @@ function googleFetchMock(args: {
         if (url.includes('/token')) {
             return new Response(JSON.stringify({ access_token: 'access-token', id_token: idToken }), { status: 200 });
         }
+        if (args.pictureUrl && url.includes('googleusercontent.com')) {
+            return new Response(PNG_1X1, { status: 200, headers: { 'content-type': 'image/png' } });
+        }
         if (url.includes('userinfo')) {
             return new Response(
                 JSON.stringify({
@@ -63,6 +70,7 @@ function googleFetchMock(args: {
                     email: args.email,
                     given_name: args.givenName ?? 'Ada',
                     family_name: args.familyName === undefined ? 'Lovelace' : args.familyName,
+                    ...(args.pictureUrl ? { picture: args.pictureUrl } : {}),
                 }),
                 { status: 200 },
             );
@@ -443,5 +451,33 @@ describe('authGoogleCallback', () => {
         );
         expect(result.returnTo).toBe('/profile');
         expect(result.returnTo.includes('authError')).toBe(false);
+    });
+
+    it('stores an imported Google photo on the registration ticket', async () => {
+        const { serverRuntime, requestingSession } = await commandSetup();
+        await signInGoogleEnable();
+        const email = `google-photo-${idCreate().toLowerCase()}@example.com`;
+        const subject = `sub-${idCreate()}`;
+        const { state, nonce } = await oauthStateInsert(requestingSession.sessionId);
+        const pictureUrl = `https://lh3.googleusercontent.com/a/${idCreate()}=s96-c`;
+
+        await authGoogleCallback(
+            {
+                code: 'code',
+                state,
+                error: null,
+                cookieSessionId: requestingSession.sessionId,
+                fetchImpl: googleFetchMock({ nonce, subject, email, pictureUrl }),
+                env: testEnv,
+            },
+            serverRuntime,
+        );
+
+        const [ticket] = await testDb.select().from(authOauthTickets).where(eq(authOauthTickets.sessionId, requestingSession.sessionId));
+        expect(ticket?.profilePictureFileUploadId).toBeTruthy();
+        const [upload] = await testDb.select().from(fileUploads).where(eq(fileUploads.fileUploadId, ticket!.profilePictureFileUploadId!));
+        expect(upload?.userId).toBeNull();
+        expect(upload?.mediaType).toBe('image/webp');
+        expect(upload?.filename).toBe('avatar.webp');
     });
 });

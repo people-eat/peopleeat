@@ -281,6 +281,13 @@
             "when": 1794920196476,
             "tag": "0039_luxuriant_professor_monster",
             "breakpoints": true
+        },
+        {
+            "idx": 40,
+            "version": "7",
+            "when": 1794995817147,
+            "tag": "0040_steady_reaper",
+            "breakpoints": true
         }
     ]
 }

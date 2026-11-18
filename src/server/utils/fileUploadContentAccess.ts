@@ -209,11 +209,7 @@ export async function fileUploadReferencedAsProfilePicture(db: Database, fileUpl
 }
 
 /** True when this session's unconsumed OAuth registration ticket holds the upload as a pending photo. */
-export async function fileUploadReferencedBySessionOauthTicket(
-    db: Database,
-    fileUploadId: string,
-    sessionId: string,
-): Promise<boolean> {
+export async function fileUploadReferencedBySessionOauthTicket(db: Database, fileUploadId: string, sessionId: string): Promise<boolean> {
     const now = new Date();
     const [hit] = await db
         .select({ authOauthTicketId: authOauthTickets.authOauthTicketId })

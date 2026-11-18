@@ -25,13 +25,15 @@ Passwordless email OTP, optional Google, and passkeys establish a cookie session
    booking plan, gift-card, and chef sign-up. Clicking redirects to Google OIDC (`openid email profile`; People phone/birthday scopes only
    when `GOOGLE_OAUTH_PEOPLE_SCOPES=true`). Existing Google `sub` or verified email binds like OTP (TOTP still applies; `ANONYMIZED` is
    refused). New email writes a 30-minute `AuthOauthTicket` and prefills the register form (names always; phone and birth date only when
-   those fields are visible). Gift-card (`requireProfileDetails={false}`) prefills names only and does not persist hidden Google phone or
-   birth date. Returning Google sign-in never overwrites an existing profile. Failures toast once (`authError=google`) and mention Safari or
+   those fields are visible). When Google returns a real photo, the register step shows it and submitting the form saves it as the profile
+   picture. Gift-card (`requireProfileDetails={false}`) prefills names only and does not persist hidden Google phone or birth date.
+   Returning Google sign-in never overwrites an existing profile or picture. Failures toast once (`authError=google`) and mention Safari or
    Chrome when an in-app browser may have blocked Google.
 6. **Facebook** (`SIGN_IN_FACEBOOK`, missing row = off) sits in the same footer after Google. Clicking redirects to Meta Facebook Login
    (`email,public_profile`). Existing Facebook `id` or email binds like OTP (TOTP still applies; `ANONYMIZED` is refused). Missing email
    from Graph fails like an unverified Google email (`authError=facebook`). New email writes a 30-minute `AuthOauthTicket` and prefills
-   names only (no phone/birthday). Returning Facebook sign-in never overwrites an existing profile.
+   names only (no phone/birthday). A non-silhouette Facebook photo is imported the same way as Google. Returning Facebook sign-in never
+   overwrites an existing profile or picture.
 7. **Passkeys** sign in existing users only; after log-on, users may register additional passkeys on the account page. The shared
    `AuthPasskeyLogOn` control shows helper copy that passkeys are not for first-time users, and failure toasts point them back to email OTP.
 8. **TOTP (optional):** when the account has a confirmed authenticator, email OTP, Google, Facebook, or passkey verify leaves the session
@@ -65,10 +67,11 @@ Google / Facebook for new and returning users when their toggles are on; passkey
 
 ## Next steps
 
-| Capability             | Intent                                                                   |
-| ---------------------- | ------------------------------------------------------------------------ |
-| OTP expires-in display | Show remaining validity in the OTP dialog                                |
-| Sign in with Apple     | Same OAuth tables and event shape; handle private-relay emails carefully |
+| Capability               | Intent                                                                                   |
+| ------------------------ | ---------------------------------------------------------------------------------------- |
+| OTP expires-in display   | Show remaining validity in the OTP dialog                                                |
+| Sign in with Apple       | Same OAuth tables and event shape; handle private-relay emails carefully                 |
+| Fill missing OAuth photo | Returning Google / Facebook sign-in could attach a photo when the account still has none |
 
 Keep identity keyed by email. TOTP 2FA, Google, and Facebook are implemented. Enabling Google or Facebook in production means the published
 privacy policy must mention that provider as a sign-in / profile-prefill processor. People phone and birthday scopes stay off
@@ -98,9 +101,10 @@ Live with privacy, terms, and data deletion configured.
   `LegalAcceptancePanel` (inline in the identity gate; dialog wrapper is `LegalAcceptanceGate`).
 - Google HTTP: `GET /api/auth/google` and `/api/auth/google/callback` (PKCE, restore session from `AuthOauthStates`, Set-Cookie on
   callback). Facebook HTTP: `GET /api/auth/facebook` and `/api/auth/facebook/callback` (authorization code + Graph `/me`, same state/cookie
-  restore). GraphQL: `Session.authOauthTicket`, `authOauthTicketDelete`. Tables: `AuthOauthStates`, `AuthOauthTickets`,
-  `AuthOauthIdentities`. Feature toggles `SIGN_IN_GOOGLE` / `SIGN_IN_FACEBOOK`. Admin usage on `/admin/analytics`; linked-method stock on
-  `/admin/users`.
+  restore). GraphQL: `Session.authOauthTicket` (including `profilePicture` when imported), `authOauthTicketDelete`. Tables:
+  `AuthOauthStates`, `AuthOauthTickets` (`profilePictureFileUploadId`), `AuthOauthIdentities`. Feature toggles `SIGN_IN_GOOGLE` /
+  `SIGN_IN_FACEBOOK`. Admin usage on `/admin/analytics`; linked-method stock on `/admin/users`. A failed photo download does not fail
+  registration. Discarding the ticket deletes the pending `FileUploads` row.
 - Page: `src/web/pages/LogOnPage.tsx`, route `src/routes/{-$locale}/log-on.tsx` (noindex). `/sign-in` → `/log-on`.
 - Transport and WebAuthn: [architecture/authentication.md](../architecture/authentication.md). Passkey verify returns `{ success: false }`
   for routine denials; log-on toasts on failure.
