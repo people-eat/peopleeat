@@ -329,6 +329,9 @@
         "adultN": "Volwassene {n}",
         "childN": "Kind {n}"
     },
+    "currency": {
+        "cents": "{count, plural, one {1 cent} other {# cent}}"
+    },
     "calendarEvent": {
         "guestFallback": "Gast",
         "dinnerFallback": "Diner",

@@ -329,6 +329,9 @@
         "adultN": "Adult {n}",
         "childN": "Child {n}"
     },
+    "currency": {
+        "cents": "{count, plural, one {1 cent} other {# cents}}"
+    },
     "calendarEvent": {
         "guestFallback": "Guest",
         "dinnerFallback": "Dinner",

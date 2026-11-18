@@ -329,6 +329,9 @@
         "adultN": "Взрослый {n}",
         "childN": "Ребёнок {n}"
     },
+    "currency": {
+        "cents": "{count, plural, one {1 цент} few {# цента} many {# центов} other {# цента}}"
+    },
     "calendarEvent": {
         "guestFallback": "Гость",
         "dinnerFallback": "Ужин",

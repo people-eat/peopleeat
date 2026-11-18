@@ -1,3 +1,4 @@
+import { t } from '../i18n/t';
 import { languageTagFromLocale } from './locale';
 import type { Locale } from './locale';
 
@@ -18,6 +19,13 @@ export function formatCurrency(cents: number | null | undefined, options: Format
         if (nullAs === 'emDash') return '—';
         if (nullAs === 'empty') return '';
         cents = 0;
+    }
+
+    // Sub-euro amounts read clearer as "35 Cent" / "35 cents" than "0,35 €".
+    const absoluteCents = Math.abs(cents);
+    if (absoluteCents > 0 && absoluteCents < 100) {
+        const label = t(locale, 'common', 'currency.cents', { count: absoluteCents });
+        return cents < 0 ? `-${label}` : label;
     }
 
     return new Intl.NumberFormat(languageTagFromLocale(locale), {

@@ -269,6 +269,9 @@
         "adultN": "Adulto {n}",
         "childN": "Bambino {n}"
     },
+    "currency": {
+        "cents": "{count, plural, one {1 centesimo} other {# centesimi}}"
+    },
     "calendarEvent": {
         "guestFallback": "Ospite",
         "dinnerFallback": "Cena",

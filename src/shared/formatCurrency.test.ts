@@ -14,6 +14,18 @@ describe('formatCurrency', () => {
         expect(formatCurrency(123456, { locale: 'de', maximumFractionDigits: 0 })).toMatch(/1\.235\s*€/);
     });
 
+    it('falls back to localized cents under 1 euro', () => {
+        expect(formatCurrency(35, { locale: 'de' })).toBe('35 Cent');
+        expect(formatCurrency(1, { locale: 'en' })).toBe('1 cent');
+        expect(formatCurrency(35, { locale: 'en' })).toBe('35 cents');
+        expect(formatCurrency(-35, { locale: 'en' })).toBe('-35 cents');
+    });
+
+    it('keeps euro formatting at exactly 1 euro and at zero', () => {
+        expect(formatCurrency(100, { locale: 'en' })).toBe('€1.00');
+        expect(formatCurrency(0, { locale: 'en' })).toBe('€0.00');
+    });
+
     it('treats null as zero by default', () => {
         expect(formatCurrency(null, { locale: 'en' })).toBe('€0.00');
     });
