@@ -1,7 +1,8 @@
 import { Link } from '@tanstack/react-router';
 
 import { t } from '../../../i18n/t';
-import { formatCurrency } from '../../../shared';
+import type { Locale } from '../../../shared';
+import { formatCountryName, formatCurrency } from '../../../shared';
 import { Button } from '../../components/base/button';
 import { StatusAlert } from '../../components/base/status-alert';
 import { CookTravelRadiusMap } from '../../components/CookTravelRadiusMap';
@@ -18,11 +19,35 @@ export const profileCookTravelPageDescription = route.description;
 
 function DetailField({ label, value }: { label: string; value: string }) {
     return (
-        <div className="grid gap-1">
+        <div className="grid content-start gap-1">
             <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{label}</dt>
             <dd className="text-sm whitespace-pre-wrap text-foreground">{value}</dd>
         </div>
     );
+}
+
+function travelOriginAddressLines(
+    address: {
+        addressLine1: string;
+        addressLine2: string;
+        postCode: string;
+        city: string;
+        country: string;
+        displayText: string;
+    },
+    locale: Locale,
+): string {
+    const street = [address.addressLine1, address.addressLine2]
+        .map((part) => part.trim())
+        .filter(Boolean)
+        .join(', ');
+    const locality = [address.postCode, address.city]
+        .map((part) => part.trim())
+        .filter(Boolean)
+        .join(' ');
+    const country = formatCountryName(address.country, { locale });
+    const lines = [street, locality, country].filter(Boolean);
+    return lines.length > 0 ? lines.join('\n') : address.displayText.trim();
 }
 
 export function ProfileCookTravelPage({ data }: { data: GqlCProfileCookTravelPageQuery }) {
@@ -34,6 +59,9 @@ export function ProfileCookTravelPage({ data }: { data: GqlCProfileCookTravelPag
     if (!cook) {
         return null;
     }
+
+    const originAddress = cook.exactTravelOriginAddress;
+    const originDisplay = originAddress ? travelOriginAddressLines(originAddress, locale) : '';
 
     return (
         <ProfilePinnedFooterLayout
@@ -55,20 +83,13 @@ export function ProfileCookTravelPage({ data }: { data: GqlCProfileCookTravelPag
             />
 
             <section className="grid min-w-0 gap-4">
-                <dl className="grid min-w-0 gap-4 sm:grid-cols-2">
+                <dl className="grid min-w-0 items-start gap-4 sm:grid-cols-2">
                     <DetailField
                         label={t(locale, 'profileCook', 'travelEdit.origin')}
-                        value={
-                            cook.exactTravelOriginAddress?.displayText.trim()
-                                ? cook.exactTravelOriginAddress.displayText
-                                : t(locale, 'profileCook', 'actions.notSet')
-                        }
+                        value={originDisplay || t(locale, 'profileCook', 'actions.notSet')}
                     />
-                    {cook.exactTravelOriginAddress?.city.trim() ? (
-                        <DetailField
-                            label={t(locale, 'profileCook', 'travel.cityForCustomers')}
-                            value={cook.exactTravelOriginAddress.city}
-                        />
+                    {originAddress?.city.trim() ? (
+                        <DetailField label={t(locale, 'profileCook', 'travel.cityForCustomers')} value={originAddress.city} />
                     ) : null}
                     <DetailField
                         label={t(locale, 'profileCook', 'travelEdit.maxDistance')}
