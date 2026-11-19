@@ -1155,7 +1155,7 @@
         "darkOverlayOnCtaImage": "Dunkles Overlay auf CTA-Bild",
         "gradientOverTheSectionImageForWhiteTextTurnOffWhenNotNeeded": "Verlauf über dem Abschnittsbild für weiße Texte. Ausschalten, wenn nicht nötig.",
         "ctaLink": "CTA-Link",
-        "optionalLeaveEmptyForTheBookingFormAbsoluteHttpSUrlOrSiteRel": "Optional. Leer lassen für das Buchungsformular. Absolute http(s)-URL oder pfadrelativer Link.",
+        "optionalLeaveEmptyForTheBookingFormAbsoluteHttpSUrlOrSiteRel": "Optional. Leer lassen für das Buchungsformular. Bevorzuge einen pfadrelativen Link (z. B. /booking-request/plan). Absolute people-eat.com-URLs werden als Pfad gespeichert; andere http(s)-URLs bleiben extern.",
         "location": "Standort",
         "optionalPrefillsBookingRequestPlanVenueidUrlParamsOverrideTh": "Optional. Wird für /booking-request/plan?venueId=… vorausgefüllt. URL-Parameter überschreiben den Ort.",
         "n123MainStreet12345Springfield": "Musterstraße 1, 80331 München",

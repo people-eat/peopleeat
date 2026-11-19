@@ -1,7 +1,7 @@
 import { DEFAULT_LOCALE, isLocale, localePath, pathWithoutLocale } from '../../shared/locale';
 import type { CatalogLocale, Locale } from '../../shared/locale';
 
-export { CATALOG_LOCALES, DEFAULT_LOCALE, isLocale, localePath, pathWithoutLocale } from '../../shared/locale';
+export { CATALOG_LOCALES, DEFAULT_LOCALE, isLocale, localeAwareHref, localePath, pathWithoutLocale } from '../../shared/locale';
 export type { CatalogLocale, Locale } from '../../shared/locale';
 
 export function localeFromAcceptLanguage(header: string | null | undefined): Locale {

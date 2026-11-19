@@ -140,7 +140,17 @@ export {
 export { cookMenuDefaultCourseTitles, cookMenuDraftTitle } from './cookMenuDraftDefaults';
 export { cookMenuCoursesAreComplete, cookMenuIsPublicCatalogEligible } from './cookMenuCompleteness';
 export { COOK_MENU_SUGGESTION_FILE_MAX } from './cookMenuSuggestion';
-export { CATALOG_LOCALES, DEFAULT_LOCALE, isLocale, languageTagFromLocale, localePath, pathWithoutLocale } from './locale';
+export {
+    CATALOG_LOCALES,
+    DEFAULT_LOCALE,
+    isLocale,
+    isOnPlatformSiteHost,
+    languageTagFromLocale,
+    localeAwareHref,
+    localePath,
+    pathWithoutLocale,
+    siteRelativeHrefFromUrl,
+} from './locale';
 export { DEFAULT_TIME_ZONE, formatTimeZonePlaceLabel, timeZoneFromCountry, timeZoneOffsetAt, timeZonesDifferAt } from './timeZone';
 export type { CatalogLocale, Locale } from './locale';
 export {

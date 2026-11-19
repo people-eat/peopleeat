@@ -49,3 +49,67 @@ export function localePath(locale: CatalogLocale, path: `/${string}`): string {
     if (locale === DEFAULT_LOCALE) return unprefixed;
     return unprefixed === '/' ? `/${locale}` : `/${locale}${unprefixed}`;
 }
+
+/** Production public hosts. Staging / local hosts come from `siteHostnames` or `window.location`. */
+const PEOPLE_EAT_SITE_HOSTS = new Set(['people-eat.com', 'www.people-eat.com']);
+
+/** Dummy origin so `new URL('/path?x=1')` can parse site-relative hrefs. */
+const SITE_RELATIVE_PARSE_BASE = 'https://people-eat.invalid';
+
+export function isOnPlatformSiteHost(hostname: string, extraHostnames: readonly string[] = []): boolean {
+    const host = hostname.toLowerCase().replace(/\.$/, '');
+    if (PEOPLE_EAT_SITE_HOSTS.has(host)) return true;
+    return extraHostnames.some((extra) => extra.toLowerCase().replace(/\.$/, '') === host);
+}
+
+/**
+ * When `href` is on-platform (site-relative `/…`, or absolute on a known / provided
+ * site host), return an unprefixed path + search + hash. External URLs return null.
+ */
+export function siteRelativeHrefFromUrl(href: string, options?: { siteHostnames?: readonly string[] }): string | null {
+    const trimmed = href.trim();
+    if (trimmed.length === 0) return null;
+
+    if (trimmed.startsWith('/') && !trimmed.startsWith('//')) {
+        try {
+            const parsed = new URL(trimmed, SITE_RELATIVE_PARSE_BASE);
+            const path = pathWithoutLocale(parsed.pathname || '/') as `/${string}`;
+            return `${path}${parsed.search}${parsed.hash}`;
+        } catch {
+            return null;
+        }
+    }
+
+    try {
+        const parsed = new URL(trimmed);
+        if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
+        if (!isOnPlatformSiteHost(parsed.hostname, options?.siteHostnames ?? [])) return null;
+        const path = pathWithoutLocale(parsed.pathname || '/') as `/${string}`;
+        return `${path}${parsed.search}${parsed.hash}`;
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Rewrite on-platform hrefs to the given locale. Site-relative paths and absolute
+ * people-eat (or current-origin / provided) URLs become `localePath` links; external
+ * http(s) URLs are returned unchanged.
+ */
+export function localeAwareHref(locale: CatalogLocale, href: string, options?: { siteHostnames?: readonly string[] }): string {
+    const trimmed = href.trim();
+    if (trimmed.length === 0) return trimmed;
+
+    const siteHostnames = [...(options?.siteHostnames ?? [])];
+    if (typeof globalThis !== 'undefined') {
+        const locationHostname = (globalThis as { location?: { hostname?: string } }).location?.hostname;
+        if (locationHostname) siteHostnames.push(locationHostname);
+    }
+
+    const siteRelative = siteRelativeHrefFromUrl(trimmed, { siteHostnames });
+    if (siteRelative == null) return trimmed;
+
+    const parsed = new URL(siteRelative, SITE_RELATIVE_PARSE_BASE);
+    const localizedPath = localePath(locale, (parsed.pathname || '/') as `/${string}`);
+    return `${localizedPath}${parsed.search}${parsed.hash}`;
+}

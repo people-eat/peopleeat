@@ -477,7 +477,7 @@ export function AdminPartnerVenuePage({
                                     <Input
                                         value={values.firstSectionCtaUrl}
                                         onChange={(e) => patchVenueValues({ firstSectionCtaUrl: e.target.value })}
-                                        placeholder="/booking-request/form"
+                                        placeholder="/booking-request/plan"
                                     />
                                     <span className="text-xs text-muted-foreground">
                                         {t(locale, 'admin', 'copy.optionalLeaveEmptyForTheBookingFormAbsoluteHttpSUrlOrSiteRel')}

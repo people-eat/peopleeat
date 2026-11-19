@@ -89,4 +89,55 @@ describe('adminPartnerVenueUpsert', () => {
         const [row] = await testDb.select().from(partnerVenues).where(eq(partnerVenues.partnerVenueId, venue.partnerVenueId));
         expect(row?.partnerId).toBe(nextPartnerId);
     });
+
+    it('stores on-platform CTA URLs as unprefixed site-relative paths', async () => {
+        const admin = await commandSetup.withUser({ firstName: 'venue-upsert-cta', lastName: 'User' });
+        await testDb.insert(admins).values({ adminId: admin.user.userId });
+        const partnerId = await partnerOrgInsert('Cta Co');
+
+        const absolute = await adminPartnerVenueUpsert(
+            adminMutationParent(admin.user.userId),
+            {
+                input: venueInput(partnerId, {
+                    pathName: `cta-abs-${idCreate().slice(0, 6).toLowerCase()}`,
+                    firstSectionCtaUrl: 'https://people-eat.com/en/booking-request/plan?venueId=abc',
+                }),
+            },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+        expect(absolute.success).toBe(true);
+        const [absRow] = await testDb.select().from(partnerVenues).where(eq(partnerVenues.partnerVenueId, absolute.referenceId!));
+        expect(absRow?.firstSectionCtaUrl).toBe('/booking-request/plan?venueId=abc');
+
+        const relative = await adminPartnerVenueUpsert(
+            adminMutationParent(admin.user.userId),
+            {
+                input: venueInput(partnerId, {
+                    pathName: `cta-rel-${idCreate().slice(0, 6).toLowerCase()}`,
+                    firstSectionCtaUrl: '/en/booking-request/plan',
+                }),
+            },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+        expect(relative.success).toBe(true);
+        const [relRow] = await testDb.select().from(partnerVenues).where(eq(partnerVenues.partnerVenueId, relative.referenceId!));
+        expect(relRow?.firstSectionCtaUrl).toBe('/booking-request/plan');
+
+        const external = await adminPartnerVenueUpsert(
+            adminMutationParent(admin.user.userId),
+            {
+                input: venueInput(partnerId, {
+                    pathName: `cta-ext-${idCreate().slice(0, 6).toLowerCase()}`,
+                    firstSectionCtaUrl: 'https://wa.me/message/abc',
+                }),
+            },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+        expect(external.success).toBe(true);
+        const [extRow] = await testDb.select().from(partnerVenues).where(eq(partnerVenues.partnerVenueId, external.referenceId!));
+        expect(extRow?.firstSectionCtaUrl).toBe('https://wa.me/message/abc');
+    });
 });

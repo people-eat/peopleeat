@@ -1,11 +1,13 @@
 import { eq } from 'drizzle-orm';
 
 import { idCreate } from '../../shared/idCreate';
+import { siteRelativeHrefFromUrl } from '../../shared/locale';
 import { textNormalizeSingleLine, textNormalizeTitled } from '../../shared/textNormalize';
 import { partners, partnerVenues } from '../db/schema';
 import type { PartnerVenueCreate } from '../db/schema';
 import type { BookingRequestExactEventAddress } from '../domain/bookingRequest';
 import type { ServerRuntime } from '../domain/ServerRuntime';
+import { environmentVariables } from '../env/environmentVariablesCreate';
 import type {
     GqlSAdminMutation,
     GqlSAdminMutationPartnerVenueUpsertArgs,
@@ -38,13 +40,23 @@ function locationAddressNormalize(
     return exactEventAddress;
 }
 
-function firstSectionCtaUrlNormalize(value: string | null | undefined): string | null {
+function siteHostnamesFromWebPageUrl(webPageUrl: string): string[] {
+    try {
+        return [new URL(webPageUrl).hostname];
+    } catch {
+        return [];
+    }
+}
+
+/** Prefer unprefixed site-relative paths; fold absolute on-platform URLs into paths. */
+function firstSectionCtaUrlNormalize(value: string | null | undefined, webPageUrl: string): string | null {
     if (value == null) return null;
     const trimmed = value.trim();
     if (trimmed.length === 0) return null;
-    if (trimmed.startsWith('/') && !trimmed.startsWith('//')) {
-        return trimmed;
-    }
+
+    const siteRelative = siteRelativeHrefFromUrl(trimmed, { siteHostnames: siteHostnamesFromWebPageUrl(webPageUrl) });
+    if (siteRelative != null) return siteRelative;
+
     try {
         const parsed = new URL(trimmed);
         if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
@@ -86,7 +98,7 @@ export async function adminPartnerVenueUpsert(
             throw new Error('adminPartnerVenueUpsert: partner not found');
         }
 
-        const firstSectionCtaUrl = firstSectionCtaUrlNormalize(input.firstSectionCtaUrl);
+        const firstSectionCtaUrl = firstSectionCtaUrlNormalize(input.firstSectionCtaUrl, environmentVariables.webPageUrl);
         const promoCodeId = await resolveAssignedPromoCodeId(input.promoCodeId, serverRuntime);
         const locationAddress = locationAddressNormalize(input.locationAddress);
 

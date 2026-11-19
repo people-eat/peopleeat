@@ -13,9 +13,11 @@ Public venue detail section order:
 1. **Hero** — bilingual headline/subheadline. Admins can turn off the dark image overlay when the photo already reads dark enough
    (`heroImageOverlay`, default on).
 2. **Chef for any occasion** — bilingual headline and body, optional image, and a CTA card (primary button, WhatsApp, Google). The primary
-   button defaults to the booking request form; admins may set an optional custom CTA URL (absolute `http(s)` or site-relative path). When a
-   global promo is assigned and still valid, the card shows a gift banner with redeem code and amount. Expired or booking-scoped codes show
-   no banner. Admins can turn off the CTA image gradient (`firstSectionImageOverlay`, default on).
+   button defaults to the booking request form; admins may set an optional custom CTA URL. Prefer an unprefixed site-relative path (e.g.
+   `/booking-request/plan`); absolute on-platform URLs (`people-eat.com` or `WEB_PAGE_URL`) are stored as paths on save. Public render
+   rewrites on-platform hrefs with `localeAwareHref` so `/en/venues/…` keeps the visitor on `/en/…`. External http(s) URLs stay absolute.
+   When a global promo is assigned and still valid, the card shows a gift banner with redeem code and amount. Expired or booking-scoped
+   codes show no banner. Admins can turn off the CTA image gradient (`firstSectionImageOverlay`, default on).
 3. **Featured cooks** from a curated assignment. Empty assignment hides the section (venues are not geo pages, no travel-radius fallback).
    Admins can hide travel-origin city on those cook cards (`featuredCooksShowCity`, default on) when the city is misleading for the venue.
 4. **Testimonials** — curated and ordered; empty selection hides the block — [testimonials.md](./testimonials.md).
@@ -111,8 +113,9 @@ Direction: self-serve builder on the public venues surface, admins remain sole p
   `partnerVenueUpsert` / `partnerVenueDelete` (`partnerId` required; changing it moves the venue), cooks/testimonials take `partnerVenueId`
 - Enums: `WebPageKey.VENUES`, `VENUE_PAGE_VENUES_EXPLORE`, `AdminCookFeaturedLandingKind.PARTNER_VENUE`,
   `AdminTestimonialPublicPageKind.PARTNER_VENUE`
-- Venue columns: first-section bilingual copy and image, optional `firstSectionCtaUrl` (http(s) or site-relative; empty clears to default
-  booking form), optional `promoCodeId` (FK; rejects missing and booking-request-scoped codes), `heroImageOverlay` /
+- Venue columns: first-section bilingual copy and image, optional `firstSectionCtaUrl` (prefer unprefixed site-relative; on-platform
+  absolute URLs normalized to paths on save via `siteRelativeHrefFromUrl`; empty clears to default booking form; `Header` / `SectionChefCta`
+  apply `localeAwareHref` at render), optional `promoCodeId` (FK; rejects missing and booking-request-scoped codes), `heroImageOverlay` /
   `firstSectionImageOverlay` (default true), `howItWorksAlternativeMedia` (default false), `featuredCooksShowCity` (default true; gates city
   on featured `PublicCookCard`s), optional `locationAddress` (jsonb venue location; plan deep-links and later reuse)
 - Public GraphQL: `publicPartnerVenue.findOne(partnerVenueId)` (published-only) alongside `findOneByPathName`

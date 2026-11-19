@@ -8,6 +8,7 @@ import { SITE_GOOGLE_MAPS_URL, SITE_WHATSAPP_URL } from '../../shared/siteBrandi
 import { AppImage } from '../components/AppImage';
 import { Button } from '../components/base/button';
 import { cn } from '../utils/cn';
+import { localeAwareHref } from '../utils/locale';
 
 const GOOGLE_RATING = '5.0';
 
@@ -37,6 +38,7 @@ export function SectionChefCta({
     const hasImage = Boolean(imageUrl);
     const ctaLabel = t(locale, 'public', 'chefCta.findChef');
     const trimmedCtaUrl = ctaUrl?.trim() || null;
+    const resolvedCtaUrl = trimmedCtaUrl ? localeAwareHref(locale, trimmedCtaUrl) : null;
 
     return (
         <div className={cn('overflow-hidden rounded-2xl bg-background shadow-md ring-1 ring-black/5', className)}>
@@ -71,7 +73,11 @@ export function SectionChefCta({
 
             <div className="flex flex-col items-center gap-4 p-6">
                 <Button asChild className="w-full" size="lg">
-                    {trimmedCtaUrl ? <a href={trimmedCtaUrl}>{ctaLabel}</a> : <Link to="/{-$locale}/booking-request/form">{ctaLabel}</Link>}
+                    {resolvedCtaUrl ? (
+                        <a href={resolvedCtaUrl}>{ctaLabel}</a>
+                    ) : (
+                        <Link to="/{-$locale}/booking-request/form">{ctaLabel}</Link>
+                    )}
                 </Button>
                 {banner}
                 <a

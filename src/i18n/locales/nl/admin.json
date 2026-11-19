@@ -1147,7 +1147,7 @@
         "darkOverlayOnCtaImage": "Donkere overlay op CTA-afbeelding",
         "gradientOverTheSectionImageForWhiteTextTurnOffWhenNotNeeded": "Gradient over de sectieafbeelding voor witte tekst. Zet uit als dat niet nodig is.",
         "ctaLink": "CTA-link",
-        "optionalLeaveEmptyForTheBookingFormAbsoluteHttpSUrlOrSiteRel": "Optioneel. Leeg laten voor het boekingsformulier. Absolute http(s)-URL of pad relatief aan de site.",
+        "optionalLeaveEmptyForTheBookingFormAbsoluteHttpSUrlOrSiteRel": "Optioneel. Leeg laten voor het boekingsformulier. Gebruik bij voorkeur een pad relatief aan de site (bijv. /booking-request/plan). Absolute people-eat.com-URL's worden als pad opgeslagen; andere http(s)-URL's blijven extern.",
         "location": "Locatie",
         "optionalPrefillsBookingRequestPlanVenueidUrlParamsOverrideTh": "Optioneel. Vult /booking-request/plan?venueId=… vooraf in. URL-parameters overschrijven de locatie.",
         "n123MainStreet12345Springfield": "123 Main Street, 12345 Springfield",

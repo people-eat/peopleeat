@@ -1147,7 +1147,7 @@
         "darkOverlayOnCtaImage": "Тёмная подложка на изображении CTA",
         "gradientOverTheSectionImageForWhiteTextTurnOffWhenNotNeeded": "Градиент на изображении раздела для белого текста. Отключите, если не требуется.",
         "ctaLink": "Ссылка CTA",
-        "optionalLeaveEmptyForTheBookingFormAbsoluteHttpSUrlOrSiteRel": "Необязательно. Оставьте пустым для формы бронирования. Абсолютный URL http(s) или относительный путь на сайте.",
+        "optionalLeaveEmptyForTheBookingFormAbsoluteHttpSUrlOrSiteRel": "Необязательно. Оставьте пустым для формы бронирования. Лучше относительный путь на сайте (например /booking-request/plan). Абсолютные URL people-eat.com сохраняются как путь; другие http(s) остаются внешними.",
         "location": "Локация",
         "optionalPrefillsBookingRequestPlanVenueidUrlParamsOverrideTh": "Необязательно. Предзаполняет /booking-request/plan?venueId=…. Параметры URL переопределяют площадку.",
         "n123MainStreet12345Springfield": "ул. Примерная, 1, 123456 Москва",
