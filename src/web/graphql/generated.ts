@@ -13295,6 +13295,7 @@ export type GqlCAdminCitiesPageQuery = {
                     countryCode: Schema.GqlCCityCountryCode;
                     titleDe: string;
                     publishedAt: string | null;
+                    createdAt: string;
                     updatedAt: string;
                 }>;
             } | null;
@@ -13337,6 +13338,7 @@ export type GqlCAdminCitiesPageUpdatesSubscription = {
             countryCode: Schema.GqlCCityCountryCode;
             titleDe: string;
             publishedAt: string | null;
+            createdAt: string;
             updatedAt: string;
         }>;
     };
@@ -58873,6 +58875,7 @@ export const AdminCitiesPageDocument = {
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'countryCode' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
                                                                 ],
                                                             },
@@ -59039,6 +59042,7 @@ export const AdminCitiesPageUpdatesDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'countryCode' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
                                         ],
                                     },

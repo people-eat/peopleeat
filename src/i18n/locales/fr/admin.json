@@ -677,6 +677,7 @@
         "withOverrides": "Avec exceptions",
         "withoutOverrides": "Sans exceptions",
         "nameAZ": "Nom Un–Z",
+        "nameZA": "Nom Z–A",
         "keyAZ": "Key Un–Z",
         "recentlyUpdated": "Zuletzt mis à jour",
         "mostOverrides": "Most exceptions",
@@ -1578,7 +1579,14 @@
         "couldNotCancelScheduledDeletion": "Could not cancel scheduled deletion.",
         "dualAcceptedEventCoolOff": "Not allowed until 7 days after the last confirmed event.",
         "scheduledDeletionCanceled": "Scheduled deletion canceled.",
-        "userAnonymizeScheduled": "User anonymization scheduled."
+        "userAnonymizeScheduled": "User anonymization scheduled.",
+        "filterByCountry": "Filtrer par pays",
+        "allCountries": "Tous les pays",
+        "createdNewest": "Créé, plus récents d’abord",
+        "createdOldest": "Créé, plus anciens d’abord",
+        "lastModifiedNewest": "Dernière modification, plus récents d’abord",
+        "lastModifiedOldest": "Dernière modification, plus anciens d’abord",
+        "citiesVisibleOfTotal": "{visible} sur {total} villes"
     },
     "analytics": {
         "funnels": {

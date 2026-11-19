@@ -11,6 +11,7 @@ query AdminCitiesPage {
                     countryCode
                     titleDe
                     publishedAt
+                    createdAt
                     updatedAt
                 }
             }
@@ -51,6 +52,7 @@ subscription AdminCitiesPageUpdates {
             countryCode
             titleDe
             publishedAt
+            createdAt
             updatedAt
         }
     }

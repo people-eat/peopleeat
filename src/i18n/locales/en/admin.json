@@ -1223,6 +1223,7 @@
         "withOverrides": "With overrides",
         "withoutOverrides": "Without overrides",
         "nameAZ": "Name A–Z",
+        "nameZA": "Name Z–A",
         "keyAZ": "Key A–Z",
         "recentlyUpdated": "Recently updated",
         "mostOverrides": "Most overrides",
@@ -2116,7 +2117,14 @@
         "technicalStatus": "Technical: {status}",
         "tokenUsage": "Input {input} · Output {output} · Total {total} · Reasoning {reasoning} · Cache {cache}",
         "callsInRangeRates": "In range: confirm rate {confirmRate}% · decline rate {declineRate}% (of completed + declined + canceled slots).",
-        "cookCallStats": "{rooms} rooms · {completed} completed · {declined} declined · {awaiting} awaiting"
+        "cookCallStats": "{rooms} rooms · {completed} completed · {declined} declined · {awaiting} awaiting",
+        "filterByCountry": "Filter by country",
+        "allCountries": "All countries",
+        "createdNewest": "Created, newest first",
+        "createdOldest": "Created, oldest first",
+        "lastModifiedNewest": "Last modified, newest first",
+        "lastModifiedOldest": "Last modified, oldest first",
+        "citiesVisibleOfTotal": "{visible} of {total} cities"
     },
     "analytics": {
         "funnels": {

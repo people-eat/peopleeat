@@ -1215,6 +1215,7 @@
         "withOverrides": "Met overrides",
         "withoutOverrides": "Zonder overrides",
         "nameAZ": "Naam A–Z",
+        "nameZA": "Naam Z–A",
         "keyAZ": "Sleutel A–Z",
         "recentlyUpdated": "Recent bijgewerkt",
         "mostOverrides": "Meeste overrides",
@@ -2116,7 +2117,14 @@
         "couldNotCancelScheduledDeletion": "Geplande verwijdering kon niet worden geannuleerd.",
         "dualAcceptedEventCoolOff": "Pas toegestaan 7 dagen na het laatste bevestigde evenement.",
         "scheduledDeletionCanceled": "Geplande verwijdering geannuleerd.",
-        "userAnonymizeScheduled": "Anonimisering gepland."
+        "userAnonymizeScheduled": "Anonimisering gepland.",
+        "filterByCountry": "Filteren op land",
+        "allCountries": "Alle landen",
+        "createdNewest": "Aangemaakt, nieuwste eerst",
+        "createdOldest": "Aangemaakt, oudste eerst",
+        "lastModifiedNewest": "Laatst gewijzigd, nieuwste eerst",
+        "lastModifiedOldest": "Laatst gewijzigd, oudste eerst",
+        "citiesVisibleOfTotal": "{visible} van {total} steden"
     },
     "analytics": {
         "funnels": {

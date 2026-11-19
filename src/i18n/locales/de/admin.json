@@ -1223,6 +1223,7 @@
         "withOverrides": "Mit Ausnahmen",
         "withoutOverrides": "Ohne Ausnahmen",
         "nameAZ": "Name A–Z",
+        "nameZA": "Name Z–A",
         "keyAZ": "Key A–Z",
         "recentlyUpdated": "Zuletzt aktualisiert",
         "mostOverrides": "Meiste Ausnahmen",
@@ -2116,7 +2117,14 @@
         "technicalStatus": "Technisch: {status}",
         "tokenUsage": "Eingabe {input} · Ausgabe {output} · Gesamt {total} · Reasoning {reasoning} · Cache {cache}",
         "callsInRangeRates": "Im Zeitraum: Bestätigungsquote {confirmRate}% · Ablehnungsquote {declineRate}% (bezogen auf erledigte + abgelehnte + stornierte Termine).",
-        "cookCallStats": "{rooms} Räume · {completed} erledigt · {declined} abgelehnt · {awaiting} wartend"
+        "cookCallStats": "{rooms} Räume · {completed} erledigt · {declined} abgelehnt · {awaiting} wartend",
+        "filterByCountry": "Nach Land filtern",
+        "allCountries": "Alle Länder",
+        "createdNewest": "Erstellt, neueste zuerst",
+        "createdOldest": "Erstellt, älteste zuerst",
+        "lastModifiedNewest": "Zuletzt geändert, neueste zuerst",
+        "lastModifiedOldest": "Zuletzt geändert, älteste zuerst",
+        "citiesVisibleOfTotal": "{visible} von {total} Städten"
     },
     "analytics": {
         "funnels": {

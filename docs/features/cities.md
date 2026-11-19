@@ -69,8 +69,9 @@ short country hubs, not a `/countries` index.
   optional image (FK to `FileUploads`)
 - Static fallbacks: `public/city/find-a-chef-in-city-section/fine-dining.webp`, `public/city/cta/chef-preparing.webp` via
   `src/web/pages/cityPageAssets.ts`
-- Admin: `/admin/cities` (shared admin list cards; country badge; debounced client search in URL `q`; create requires country + map center),
-  `/admin/cities/$cityId` (country select, center, first section, cook assignment with listing warnings)
+- Admin: `/admin/cities` (shared admin list cards; country badge; debounced client search in URL `q`; country filter via URL `country`;
+  client sort via URL `sort` (`name-asc` default, `name-desc`, `created-desc` / `created-asc`, `updated-desc` / `updated-asc`); create
+  requires country + map center), `/admin/cities/$cityId` (country select, center, first section, cook assignment with listing warnings)
 - Admin editor order: SEO → city name/country/center → hero → first section → cooks → testimonials → configurable sections
 - Public: list grouped by country + detail via `ContentPageView` (hero fallback, ChefForAnyOccasion, featured cooks, testimonials,
   HowItWorks, sections, same-country `SectionCities`, KnownFrom)

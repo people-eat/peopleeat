@@ -1215,6 +1215,7 @@
         "withOverrides": "С переопределениями",
         "withoutOverrides": "Без переопределений",
         "nameAZ": "Имя А–Я",
+        "nameZA": "Имя Я–А",
         "keyAZ": "Ключ А–Я",
         "recentlyUpdated": "Недавно обновлённые",
         "mostOverrides": "Больше всего переопределений",
@@ -2116,7 +2117,14 @@
         "couldNotCancelScheduledDeletion": "Не удалось отменить запланированное удаление.",
         "dualAcceptedEventCoolOff": "Можно только через 7 дней после последнего подтверждённого мероприятия.",
         "scheduledDeletionCanceled": "Запланированное удаление отменено.",
-        "userAnonymizeScheduled": "Анонимизация запланирована."
+        "userAnonymizeScheduled": "Анонимизация запланирована.",
+        "filterByCountry": "Фильтр по стране",
+        "allCountries": "Все страны",
+        "createdNewest": "Создано, сначала новые",
+        "createdOldest": "Создано, сначала старые",
+        "lastModifiedNewest": "Изменено, сначала новые",
+        "lastModifiedOldest": "Изменено, сначала старые",
+        "citiesVisibleOfTotal": "{visible} из {total} городов"
     },
     "analytics": {
         "funnels": {

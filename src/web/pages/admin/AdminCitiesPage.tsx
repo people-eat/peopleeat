@@ -1,13 +1,13 @@
 import { useNavigate } from '@tanstack/react-router';
 import { Building2Icon, PlusIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
 import { t } from '../../../i18n/t';
 import type { CityCountryCode } from '../../../shared';
-import { cityCountryCodeLabel, cityCountryCodes, formatDate } from '../../../shared';
+import { cityCountryCodeLabel, cityCountryCodes, formatDate, isCityCountryCode } from '../../../shared';
 import { AdminCityCenterField } from '../../components/AdminCityCenterField';
 import type { CityCenterSelection } from '../../components/AdminCityCenterField';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
@@ -35,17 +35,81 @@ export function adminCitiesPageDescription(locale: Locale): string {
     return t(locale, 'admin', 'pages.cities.description');
 }
 
+const ADMIN_CITIES_SORT_VALUES = ['name-asc', 'name-desc', 'created-desc', 'created-asc', 'updated-desc', 'updated-asc'] as const;
+
+type AdminCitiesSort = (typeof ADMIN_CITIES_SORT_VALUES)[number];
+const DEFAULT_ADMIN_CITIES_SORT: AdminCitiesSort = 'name-asc';
+
 export type AdminCitiesSearch = {
     q?: string;
+    country?: CityCountryCode;
+    sort?: Exclude<AdminCitiesSort, typeof DEFAULT_ADMIN_CITIES_SORT>;
 };
+
+function parseAdminCitiesSort(value: unknown): AdminCitiesSearch['sort'] {
+    if (typeof value !== 'string') return undefined;
+    if (!(ADMIN_CITIES_SORT_VALUES as readonly string[]).includes(value)) return undefined;
+    if (value === DEFAULT_ADMIN_CITIES_SORT) return undefined;
+    return value as AdminCitiesSearch['sort'];
+}
 
 export function parseAdminCitiesSearch(search: Record<string, unknown>): AdminCitiesSearch {
     const q = typeof search.q === 'string' && search.q.trim().length > 0 ? search.q.trim() : undefined;
-    return { q };
+    const country = typeof search.country === 'string' && isCityCountryCode(search.country) ? search.country : undefined;
+    return { q, country, sort: parseAdminCitiesSort(search.sort) };
 }
 
 function adminCitiesSearchForUrl(search: AdminCitiesSearch): AdminCitiesSearch {
-    return { q: search.q };
+    return { q: search.q, country: search.country, sort: search.sort };
+}
+
+function adminCitiesHasActiveFilters(search: AdminCitiesSearch): boolean {
+    return search.q != null || search.country != null || search.sort != null;
+}
+
+type CityRow = NonNullable<NonNullable<NonNullable<GqlCAdminCitiesPageQuery['currentSession']['user']>['admin']>['cities']>[number];
+
+function citiesFilteredSorted({ cities, search, locale }: { cities: CityRow[]; search: AdminCitiesSearch; locale: Locale }): CityRow[] {
+    const q = (search.q ?? '').toLowerCase();
+    const filtered = cities.filter((city) => {
+        if (search.country != null && city.countryCode !== search.country) return false;
+        if (!q) return true;
+        return (
+            city.nameDe.toLowerCase().includes(q) ||
+            city.nameEn.toLowerCase().includes(q) ||
+            city.pathName.toLowerCase().includes(q) ||
+            city.titleDe.toLowerCase().includes(q)
+        );
+    });
+
+    const sort: AdminCitiesSort = search.sort ?? DEFAULT_ADMIN_CITIES_SORT;
+    const sorted = [...filtered];
+    sorted.sort((a, b) => {
+        switch (sort) {
+            case 'name-desc':
+                return b.nameDe.localeCompare(a.nameDe, locale) || b.cityId.localeCompare(a.cityId);
+            case 'created-desc': {
+                const delta = Date.parse(b.createdAt) - Date.parse(a.createdAt);
+                return delta !== 0 ? delta : a.nameDe.localeCompare(b.nameDe, locale);
+            }
+            case 'created-asc': {
+                const delta = Date.parse(a.createdAt) - Date.parse(b.createdAt);
+                return delta !== 0 ? delta : a.nameDe.localeCompare(b.nameDe, locale);
+            }
+            case 'updated-desc': {
+                const delta = Date.parse(b.updatedAt) - Date.parse(a.updatedAt);
+                return delta !== 0 ? delta : a.nameDe.localeCompare(b.nameDe, locale);
+            }
+            case 'updated-asc': {
+                const delta = Date.parse(a.updatedAt) - Date.parse(b.updatedAt);
+                return delta !== 0 ? delta : a.nameDe.localeCompare(b.nameDe, locale);
+            }
+            case 'name-asc':
+            default:
+                return a.nameDe.localeCompare(b.nameDe, locale) || a.cityId.localeCompare(b.cityId);
+        }
+    });
+    return sorted;
 }
 
 export function AdminCitiesPage({ data, search }: { data: GqlCAdminCitiesPageQuery; search: AdminCitiesSearch }) {
@@ -63,6 +127,8 @@ export function AdminCitiesPage({ data, search }: { data: GqlCAdminCitiesPageQue
     const [center, setCenter] = useState<CityCenterSelection | null>(null);
     const [draftQ, setDraftQ] = useState(search.q ?? '');
     const debouncedQ = useDebouncedValue(draftQ, 300);
+    const searchRef = useRef(search);
+    searchRef.current = search;
 
     useEffect(() => {
         if (!seed) return;
@@ -81,25 +147,30 @@ export function AdminCitiesPage({ data, search }: { data: GqlCAdminCitiesPageQue
     }, [search.q]);
 
     useEffect(() => {
+        const current = searchRef.current;
         const nextQ = debouncedQ.trim() || undefined;
-        if (nextQ === search.q) return;
+        if (nextQ === current.q) return;
         void navigate({
-            search: adminCitiesSearchForUrl({ q: nextQ }),
+            search: adminCitiesSearchForUrl({ ...current, q: nextQ }),
             replace: true,
         });
-    }, [debouncedQ, navigate, search.q]);
+    }, [debouncedQ, navigate]);
 
     const cities = admin?.cities ?? [];
-    const q = (search.q ?? '').toLowerCase();
-    const filteredCities = q
-        ? cities.filter(
-              (city) =>
-                  city.nameDe.toLowerCase().includes(q) ||
-                  city.nameEn.toLowerCase().includes(q) ||
-                  city.pathName.toLowerCase().includes(q) ||
-                  city.titleDe.toLowerCase().includes(q),
-          )
-        : cities;
+    const hasActiveFilters = adminCitiesHasActiveFilters(search) || draftQ.trim().length > 0;
+    const filteredCities = citiesFilteredSorted({ cities, search, locale });
+
+    function updateSearch(next: AdminCitiesSearch) {
+        void navigate({
+            search: adminCitiesSearchForUrl(next),
+            replace: true,
+        });
+    }
+
+    function clearFilters() {
+        setDraftQ('');
+        updateSearch({});
+    }
 
     async function createCity() {
         if (!center) {
@@ -167,14 +238,74 @@ export function AdminCitiesPage({ data, search }: { data: GqlCAdminCitiesPageQue
                         {t(locale, 'admin', 'copy.newCity')}
                     </Button>
                 </div>
-                <Input
-                    type="search"
-                    value={draftQ}
-                    onChange={(event) => setDraftQ(event.target.value)}
-                    placeholder={t(locale, 'admin', 'copy.searchNameOrPath')}
-                    aria-label={t(locale, 'admin', 'copy.searchCities')}
-                    className="max-w-sm"
-                />
+                <div className="flex flex-wrap items-center gap-3">
+                    <Input
+                        type="search"
+                        value={draftQ}
+                        onChange={(event) => setDraftQ(event.target.value)}
+                        placeholder={t(locale, 'admin', 'copy.searchNameOrPath')}
+                        aria-label={t(locale, 'admin', 'copy.searchCities')}
+                        className="max-w-sm"
+                    />
+                    <Select
+                        value={search.country ?? 'all'}
+                        onValueChange={(value) =>
+                            updateSearch({
+                                ...search,
+                                country: value != null && isCityCountryCode(value) ? value : undefined,
+                            })
+                        }
+                    >
+                        <SelectTrigger size="sm" className="w-auto shrink-0" aria-label={t(locale, 'admin', 'copy.filterByCountry')}>
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">{t(locale, 'admin', 'copy.allCountries')}</SelectItem>
+                            {cityCountryCodes.map((code) => (
+                                <SelectItem key={code} value={code}>
+                                    {cityCountryCodeLabel(code, locale)}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Select
+                        value={search.sort ?? DEFAULT_ADMIN_CITIES_SORT}
+                        onValueChange={(value) =>
+                            updateSearch({
+                                ...search,
+                                sort: parseAdminCitiesSort(value),
+                            })
+                        }
+                    >
+                        <SelectTrigger size="sm" className="w-auto shrink-0" aria-label={t(locale, 'admin', 'copy.sort')}>
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="name-asc">{t(locale, 'admin', 'copy.nameAZ')}</SelectItem>
+                            <SelectItem value="name-desc">{t(locale, 'admin', 'copy.nameZA')}</SelectItem>
+                            <SelectItem value="created-desc">{t(locale, 'admin', 'copy.createdNewest')}</SelectItem>
+                            <SelectItem value="created-asc">{t(locale, 'admin', 'copy.createdOldest')}</SelectItem>
+                            <SelectItem value="updated-desc">{t(locale, 'admin', 'copy.lastModifiedNewest')}</SelectItem>
+                            <SelectItem value="updated-asc">{t(locale, 'admin', 'copy.lastModifiedOldest')}</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    {hasActiveFilters ? (
+                        <Button
+                            type="button"
+                            variant="link"
+                            className="h-auto shrink-0 p-0 text-sm text-muted-foreground"
+                            onClick={clearFilters}
+                        >
+                            {t(locale, 'admin', 'copy.clearFilters')}
+                        </Button>
+                    ) : null}
+                    <p className="text-sm text-muted-foreground tabular-nums sm:ml-auto">
+                        {t(locale, 'admin', 'copy.citiesVisibleOfTotal', {
+                            visible: filteredCities.length,
+                            total: cities.length,
+                        })}
+                    </p>
+                </div>
                 {cities.length === 0 ? (
                     <p className="text-muted-foreground">{t(locale, 'admin', 'copy.noCitiesYet')}</p>
                 ) : filteredCities.length === 0 ? (
