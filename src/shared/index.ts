@@ -231,6 +231,7 @@ export {
     bookingRequestMarketClosedFromMessage,
     expansionMarketCityList,
     expansionMarketCityNames,
+    expansionMarketCityNamesJoin,
     expansionMarketComingToDescription,
     expansionMarketComingToPhrase,
     expansionMarketComingToTitle,

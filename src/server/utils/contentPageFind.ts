@@ -1,5 +1,6 @@
-import { and, desc, eq, isNotNull, lte, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, isNotNull, lte, sql } from 'drizzle-orm';
 
+import type { CityCountryCode } from '../../shared/cityCountryCode';
 import type { Database } from '../db';
 import { blogPosts, cities, occasions, partnerVenues } from '../db/schema';
 import type { BlogPost, City, Occasion, PartnerVenue } from '../db/schema';
@@ -71,6 +72,28 @@ export async function publicPublishedCitiesFindMany(db: Database): Promise<City[
         .from(cities)
         .where(and(isNotNull(cities.publishedAt), lte(cities.publishedAt, now)))
         .orderBy(desc(cities.publishedAt));
+}
+
+/**
+ * Public city list, optionally narrowed by country.
+ * NL/CH include unpublished drafts (coming-to hubs before guest launch).
+ * DE / unfiltered stay published-only.
+ */
+export async function publicCitiesFindMany(db: Database, countryCode?: CityCountryCode | null): Promise<City[]> {
+    if (!countryCode) {
+        return publicPublishedCitiesFindMany(db);
+    }
+
+    if (countryCode === 'NL' || countryCode === 'CH') {
+        return db.select().from(cities).where(eq(cities.countryCode, countryCode)).orderBy(asc(cities.nameDe));
+    }
+
+    const now = publishedNow();
+    return db
+        .select()
+        .from(cities)
+        .where(and(eq(cities.countryCode, countryCode), isNotNull(cities.publishedAt), lte(cities.publishedAt, now)))
+        .orderBy(asc(cities.nameDe));
 }
 
 export async function publicPublishedPartnerVenuesFindMany(db: Database): Promise<PartnerVenue[]> {

@@ -25,7 +25,7 @@ Public city detail section order:
 5. **How it works** — same chrome as the landing page.
 6. **Dynamic content sections** — free-form shared section stack.
 7. **Cities list** — published siblings in the **same country**, plus a link to that country’s hub (catalog for DE; coming-to for NL/CH
-   until guest launch).
+   until guest launch). Coming-to / founding-chef hubs list `Cities` rows for that `countryCode` (including unpublished drafts).
 8. **Known from** — press logos (same as landing).
 
 The landing `SectionCities` shows the German grid and always-visible NL/CH hub links under “More countries”. It does not dump every market
@@ -75,6 +75,7 @@ short country hubs, not a `/countries` index.
 - Public: list grouped by country + detail via `ContentPageView` (hero fallback, ChefForAnyOccasion, featured cooks, testimonials,
   HowItWorks, sections, same-country `SectionCities`, KnownFrom)
 - Landing: `HomePage` → `SectionCities` (DE cities + expansion hub links) via `publicCity.findMany`
+- Expansion hubs: `ComingToCountryPage` / `FoundingChefCountryPage` → `publicCity.findMany(countryCode:)` (NL/CH include drafts)
 - Sitemap: `/sitemap-cities.xml`
 - JSON-LD: `jsonLdCityService` Place includes `address.addressCountry`
 - Geo fallback: `PublicCookFindManyCriterion.geoCoordinates` at city center — see [public-chefs.md](./public-chefs.md)

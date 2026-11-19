@@ -4902,6 +4902,10 @@ export interface GqlSPublicCityQuery {
     findOneByPathName?: Maybe<GqlSPublicCity>;
 }
 
+export type GqlSPublicCityQueryFindManyArgs = {
+    countryCode?: InputMaybe<GqlSCityCountryCode>;
+};
+
 export type GqlSPublicCityQueryFindOneByPathNameArgs = {
     pathName: Scalars['String']['input'];
 };
@@ -11646,7 +11650,7 @@ export type GqlSPublicCityQueryResolvers<
     ContextType = any,
     ParentType extends GqlSResolversParentTypes['PublicCityQuery'] = GqlSResolversParentTypes['PublicCityQuery'],
 > = ResolversObject<{
-    findMany?: Resolver<Array<GqlSResolversTypes['PublicCity']>, ParentType, ContextType>;
+    findMany?: Resolver<Array<GqlSResolversTypes['PublicCity']>, ParentType, ContextType, Partial<GqlSPublicCityQueryFindManyArgs>>;
     findOneByPathName?: Resolver<
         Maybe<GqlSResolversTypes['PublicCity']>,
         ParentType,

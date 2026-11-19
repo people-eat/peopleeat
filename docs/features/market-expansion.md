@@ -15,14 +15,16 @@ Visitors open four indexable pages (German unprefixed, English under `/en`):
    Germany chef page, with founding benefits and a last onboarding step that does **not** promise guest requests until early 2027. The CTA
    opens `/chef-sign-up?market=netherlands` (or `switzerland`).
 
-Key cities named on the pages (localized via `comingTo.markets.*.city.*` in public catalogs):
+Key cities on the coming-to / founding-chef pages come from the `Cities` table filtered by `countryCode` (`NL` / `CH`). Unpublished drafts
+are included so the hubs can name cities before guest launch; city detail URLs stay unpublished until then. Catalog fallbacks under
+`comingTo.markets.*.city.*` remain for SEO/FAQ when no rows exist yet:
 
 - Netherlands: Amsterdam, Rotterdam, The Hague (Den Haag / La Haye), Utrecht, Eindhoven
 - Switzerland: Zurich, Geneva, Basel, Bern, Lausanne (localized in catalogs)
 
-These names are copy and structured data only. There are **no** published `/cities/...` pages for those markets yet. Admins may create
-**unpublished** `Cities` drafts with `countryCode` `NL` or `CH` (founding-chef assignment, copy, map center) and publish them only at guest
-launch together with lifting the booking guard. Country is a field on each city, not a Countries CMS — see [cities.md](./cities.md).
+Admins create **unpublished** `Cities` drafts with `countryCode` `NL` or `CH` (founding-chef assignment, copy, map center) and publish them
+only at guest launch together with lifting the booking guard. Country is a field on each city, not a Countries CMS — see
+[cities.md](./cities.md).
 
 Expectation rules:
 
@@ -70,15 +72,18 @@ surface country grouping / hub links so crawlable HTML stays stable before NL/CH
 
 ## Implementation
 
-- Config: [`src/shared/expansionMarkets.ts`](../../src/shared/expansionMarkets.ts) — locative / motion phrases and city labels come from
-  `public.comingTo.markets.*` (do not inject `inCountryEn` / `comingToPhraseEn` into non-English UI)
+- Config: [`src/shared/expansionMarkets.ts`](../../src/shared/expansionMarkets.ts) — locative / motion phrases come from
+  `public.comingTo.markets.*`; hardcoded city labels are FAQ/SEO fallback only (do not inject `inCountryEn` / `comingToPhraseEn` into
+  non-English UI)
+- Cities list: `publicCity.findMany(countryCode:)` on [`ExpansionCountryPage.graphql`](../../src/web/pages/ExpansionCountryPage.graphql) →
+  [`SectionComingToCountryCities`](../../src/web/sections/SectionComingToCountryCities.tsx) (NL/CH include unpublished drafts)
 - Flags: `public/countries/flag-netherlands.png`, `flag-switzerland.png` (badges) and `flag-*-peopleeat.png` (hero / card marks)
 - Pages: [`ComingToCountryPage.tsx`](../../src/web/pages/ComingToCountryPage.tsx),
   [`FoundingChefCountryPage.tsx`](../../src/web/pages/FoundingChefCountryPage.tsx)
 - Routes: [`coming-to_.$country.tsx`](../../src/routes/{-$locale}/coming-to_.$country.tsx),
   [`how-to-become-a-chef_.$country.tsx`](../../src/routes/{-$locale}/how-to-become-a-chef_.$country.tsx)
 - SEO: market-config titles (not admin `WebPage` chrome); `COMING_TO` / `FOUNDING_CHEF` visit keys; sitemap + `llms.txt` blurbs; FAQ +
-  country `Service` JSON-LD
+  country `Service` JSON-LD (cities from DB when present)
 - Booking guard: `bookingRequestMarketClosedAssert` in `userBookingRequestCreate` and `userBookingRequestUpdate`
 - Places: optional `regionCode` on `locationSuggestions` (default `DE`)
 - City taxonomy: `Cities.countryCode` + `src/shared/cityCountryCode.ts` (hub paths still point at `/coming-to/…` until short country URLs

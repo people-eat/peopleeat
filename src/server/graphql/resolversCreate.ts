@@ -767,6 +767,7 @@ import type {
     GqlSPublicBlogPostQueryFindOneByPathNameArgs,
     GqlSPublicCity,
     GqlSPublicCityQuery,
+    GqlSPublicCityQueryFindManyArgs,
     GqlSPublicCityQueryFindOneByPathNameArgs,
     GqlSPublicCook,
     GqlSPublicCookCallSlotsArgs,
@@ -3043,8 +3044,8 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
         },
         PublicCityQuery: {
-            findMany() {
-                return publicCityFindMany(serverRuntime);
+            findMany(_parent: unknown, args: GqlSPublicCityQueryFindManyArgs) {
+                return publicCityFindMany(args, serverRuntime);
             },
             findOneByPathName(_parent: unknown, args: GqlSPublicCityQueryFindOneByPathNameArgs) {
                 return publicCityFindOneByPathName(args, serverRuntime);

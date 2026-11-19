@@ -4905,6 +4905,10 @@ export interface GqlCPublicCityQuery {
     findOneByPathName?: Maybe<GqlCPublicCity>;
 }
 
+export type GqlCPublicCityQueryFindManyArgs = {
+    countryCode?: InputMaybe<GqlCCityCountryCode>;
+};
+
 export type GqlCPublicCityQueryFindOneByPathNameArgs = {
     pathName: Scalars['String']['input'];
 };
@@ -9483,12 +9487,24 @@ export type GqlCPublicCityPageQuery = {
     };
 };
 
-export type GqlCExpansionCountryPageQueryVariables = Exact<{ [key: string]: never }>;
+export type GqlCExpansionCountryPageQueryVariables = Exact<{
+    countryCode: Schema.GqlCCityCountryCode;
+}>;
 
 export type GqlCExpansionCountryPageQuery = {
     currentSession: {
         activeFeatureToggleKeys: Array<Schema.GqlCFeatureToggleKey>;
         user: { admin: { adminId: string } | null; cook: { cookId: string } | null } | null;
+    };
+    publicCity: {
+        findMany: Array<{
+            pathName: string;
+            nameDe: string;
+            nameEn: string;
+            countryCode: Schema.GqlCCityCountryCode;
+            latitude: number;
+            longitude: number;
+        }>;
     };
 };
 
@@ -46421,6 +46437,13 @@ export const ExpansionCountryPageDocument = {
             kind: 'OperationDefinition',
             operation: 'query',
             name: { kind: 'Name', value: 'ExpansionCountryPage' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'countryCode' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'CityCountryCode' } } },
+                },
+            ],
             selectionSet: {
                 kind: 'SelectionSet',
                 selections: [
@@ -46437,6 +46460,37 @@ export const ExpansionCountryPageDocument = {
                                     selectionSet: {
                                         kind: 'SelectionSet',
                                         selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'PublicHeaderUser' } }],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'publicCity' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'findMany' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'countryCode' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'countryCode' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'nameDe' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'nameEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'countryCode' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
+                                        ],
                                     },
                                 },
                             ],

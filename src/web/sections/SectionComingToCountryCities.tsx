@@ -1,26 +1,37 @@
 import { Link } from '@tanstack/react-router';
 
+import { contentLocaleText } from '../../shared/contentSection';
+import type { ExpansionMarket } from '../../shared/expansionMarkets';
 import {
     expansionMarketCityList,
-    expansionMarketCityNames,
+    expansionMarketCityNamesJoin,
     expansionMarketComingToTitle,
     expansionMarketInCountryPhrase,
 } from '../../shared/expansionMarkets';
-import type { ExpansionMarket } from '../../shared/expansionMarkets';
 import { useLocale } from '../hooks/useLocale';
 import { useT } from '../hooks/useT';
 
+export type ComingToCountryCity = {
+    pathName: string;
+    nameDe: string;
+    nameEn: string;
+    latitude: number;
+    longitude: number;
+};
+
 export function SectionComingToCountryCities({
     market,
+    cities,
     audience = 'coming-to',
 }: {
     market: ExpansionMarket;
+    cities: readonly ComingToCountryCity[];
     audience?: 'coming-to' | 'founding-chef';
 }) {
     const locale = useLocale();
     const { t } = useT('public');
-    const cityList = expansionMarketCityList(market, locale);
-    const cityNames = expansionMarketCityNames(market, locale);
+    const cityNames = cities.map((city) => contentLocaleText(city.nameDe, city.nameEn, locale));
+    const cityList = cityNames.length > 0 ? expansionMarketCityNamesJoin(cityNames, locale) : expansionMarketCityList(market, locale);
     const foundingChef = audience === 'founding-chef';
     const inCountry = expansionMarketInCountryPhrase(market, locale);
 
@@ -30,13 +41,17 @@ export function SectionComingToCountryCities({
             <p className="mt-6 max-w-2xl text-lg/8 text-muted-foreground">
                 {foundingChef ? t('comingTo.citiesFounding', { cities: cityList }) : t('comingTo.citiesComingTo', { cities: cityList })}
             </p>
-            <ul className="mt-10 divide-y divide-border border-y border-border @md:mt-14">
-                {market.cities.map((city, index) => (
-                    <li key={city.key}>
-                        <h3 className="py-5 font-serif text-3xl font-light tracking-tight @md:py-7 @md:text-5xl">{cityNames[index]}</h3>
-                    </li>
-                ))}
-            </ul>
+            {cityNames.length > 0 ? (
+                <ul className="mt-10 divide-y divide-border border-y border-border @md:mt-14">
+                    {cities.map((city) => (
+                        <li key={city.pathName}>
+                            <h3 className="py-5 font-serif text-3xl font-light tracking-tight @md:py-7 @md:text-5xl">
+                                {contentLocaleText(city.nameDe, city.nameEn, locale)}
+                            </h3>
+                        </li>
+                    ))}
+                </ul>
+            ) : null}
             {foundingChef ? (
                 <p className="mt-8">
                     <Link

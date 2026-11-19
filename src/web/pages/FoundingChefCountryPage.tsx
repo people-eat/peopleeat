@@ -1,5 +1,6 @@
+import { contentLocaleText } from '../../shared/contentSection';
 import type { ExpansionMarket } from '../../shared/expansionMarkets';
-import { expansionMarketFaqEntries } from '../../shared/expansionMarkets';
+import { expansionMarketCityNamesJoin, expansionMarketFaqEntries } from '../../shared/expansionMarkets';
 import { featureToggleIsActive } from '../../shared/featureToggle';
 import { Footer } from '../components/Footer';
 import { Header } from '../components/Header';
@@ -18,14 +19,22 @@ export function FoundingChefCountryPage({ data, market }: { data: GqlCExpansionC
     const locale = useLocale();
     const isCook = Boolean(data.currentSession.user?.cook);
     const inviteEnabled = featureToggleIsActive(data.currentSession.activeFeatureToggleKeys, 'COOK_INVITE');
-    const faqs = expansionMarketFaqEntries(market, 'foundingChef', locale);
+    const cities = data.publicCity.findMany;
+    const citiesOverride =
+        cities.length > 0
+            ? expansionMarketCityNamesJoin(
+                  cities.map((city) => contentLocaleText(city.nameDe, city.nameEn, locale)),
+                  locale,
+              )
+            : undefined;
+    const faqs = expansionMarketFaqEntries(market, 'foundingChef', locale, citiesOverride);
 
     return (
         <>
             <Header user={data.currentSession.user} />
             <main id="main-content" className="flex flex-col gap-16 py-16 sm:gap-24 sm:py-24">
                 <SectionHowToBecomeAChefMain isCook={isCook} market={market} />
-                <SectionComingToCountryCities audience="founding-chef" market={market} />
+                <SectionComingToCountryCities audience="founding-chef" market={market} cities={cities} />
                 <SectionChefOnboardingProcess market={market} />
                 <SectionBenefitsForChefs market={market} />
                 <SectionReadyToBecomeAChef isCook={isCook} market={market} />

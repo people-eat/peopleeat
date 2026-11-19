@@ -6209,7 +6209,10 @@ input BlogPostUpsert {
 
 type PublicCityQuery {
     findOneByPathName(pathName: String!): PublicCity
-    findMany: [PublicCity!]!
+    # Optional country filter. Published only when omitted or DE; NL/CH include
+    # unpublished drafts so coming-to / founding-chef hubs can list key cities
+    # before guest launch — see docs/features/market-expansion.md.
+    findMany(countryCode: CityCountryCode): [PublicCity!]!
 }
 
 type PublicPartnerVenueQuery {

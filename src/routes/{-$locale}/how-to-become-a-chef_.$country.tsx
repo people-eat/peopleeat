@@ -13,7 +13,7 @@ export const Route = createFileRoute('/{-$locale}/how-to-become-a-chef_/$country
         if (!market) {
             throw notFound();
         }
-        const data = await routeLoaderGraphqlClient(ExpansionCountryPageDocument)();
+        const data = await routeLoaderGraphqlClient(ExpansionCountryPageDocument, { countryCode: market.countryCode })();
         return { data, market };
     },
     staleTime: 0,
@@ -22,7 +22,7 @@ export const Route = createFileRoute('/{-$locale}/how-to-become-a-chef_/$country
         if (!market) {
             return {};
         }
-        return expansionMarketFoundingChefHead(market, localeFromParam(params));
+        return expansionMarketFoundingChefHead(market, localeFromParam(params), loaderData?.data.publicCity.findMany ?? []);
     },
     component() {
         const { data, market } = Route.useLoaderData();

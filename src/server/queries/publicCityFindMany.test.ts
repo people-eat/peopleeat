@@ -30,18 +30,59 @@ async function insertCity(overrides: Partial<CityCreate> = {}) {
 }
 
 describe('publicCityFindMany', () => {
-    it('includes published cities and excludes unpublished ones', async () => {
+    it('includes published cities and excludes unpublished ones when unfiltered', async () => {
         // Arrange
         const { serverRuntime } = await commandSetup();
         const published = await insertCity({ nameDe: 'published-city', publishedAt: new Date('2024-01-01T00:00:00.000Z') });
         const unpublished = await insertCity({ nameDe: 'draft-city', publishedAt: null });
 
         // Act
-        const rows = await publicCityFindMany(serverRuntime);
+        const rows = await publicCityFindMany({}, serverRuntime);
 
         // Assert
         expect(rows.some((row) => row.cityId === published.cityId)).toBe(true);
         expect(rows.some((row) => row.cityId === unpublished.cityId)).toBe(false);
+    });
+
+    it('includes unpublished NL cities when filtered by country', async () => {
+        // Arrange
+        const { serverRuntime } = await commandSetup();
+        const draft = await insertCity({
+            nameDe: 'Amsterdam',
+            nameEn: 'Amsterdam',
+            countryCode: 'NL',
+            publishedAt: null,
+        });
+        const publishedDe = await insertCity({
+            nameDe: 'Berlin',
+            countryCode: 'DE',
+            publishedAt: new Date('2024-01-01T00:00:00.000Z'),
+        });
+
+        // Act
+        const rows = await publicCityFindMany({ countryCode: 'NL' }, serverRuntime);
+
+        // Assert
+        expect(rows.some((row) => row.cityId === draft.cityId)).toBe(true);
+        expect(rows.some((row) => row.cityId === publishedDe.cityId)).toBe(false);
+    });
+
+    it('keeps DE country filter published-only', async () => {
+        // Arrange
+        const { serverRuntime } = await commandSetup();
+        const published = await insertCity({
+            nameDe: 'München',
+            countryCode: 'DE',
+            publishedAt: new Date('2024-01-01T00:00:00.000Z'),
+        });
+        const draft = await insertCity({ nameDe: 'Draft DE', countryCode: 'DE', publishedAt: null });
+
+        // Act
+        const rows = await publicCityFindMany({ countryCode: 'DE' }, serverRuntime);
+
+        // Assert
+        expect(rows.some((row) => row.cityId === published.cityId)).toBe(true);
+        expect(rows.some((row) => row.cityId === draft.cityId)).toBe(false);
     });
 });
 

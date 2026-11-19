@@ -1,8 +1,18 @@
-query ExpansionCountryPage {
+query ExpansionCountryPage($countryCode: CityCountryCode!) {
     currentSession {
         activeFeatureToggleKeys
         user {
             ...PublicHeaderUser
+        }
+    }
+    publicCity {
+        findMany(countryCode: $countryCode) {
+            pathName
+            nameDe
+            nameEn
+            countryCode
+            latitude
+            longitude
         }
     }
 }

@@ -1,7 +1,9 @@
 import { t } from '../../i18n/t';
+import { contentLocaleText } from '../../shared/contentSection';
 import type { ExpansionMarket } from '../../shared/expansionMarkets';
 import {
     expansionMarketCityNames,
+    expansionMarketCityNamesJoin,
     expansionMarketComingToDescription,
     expansionMarketComingToTitle,
     expansionMarketFaqEntries,
@@ -14,7 +16,21 @@ import { SITE_NAME } from './seoConstants';
 import { seoMeta } from './seoMeta';
 import { webPageUrlGet } from './webPageUrlGet';
 
-function expansionMarketJsonLdCities(market: ExpansionMarket, locale: Locale) {
+export type ExpansionMarketSeoCity = {
+    nameDe: string;
+    nameEn: string;
+    latitude: number;
+    longitude: number;
+};
+
+function expansionMarketJsonLdCities(market: ExpansionMarket, locale: Locale, cities: readonly ExpansionMarketSeoCity[]) {
+    if (cities.length > 0) {
+        return cities.map((city) => ({
+            name: contentLocaleText(city.nameDe, city.nameEn, locale),
+            latitude: city.latitude,
+            longitude: city.longitude,
+        }));
+    }
     const names = expansionMarketCityNames(market, locale);
     return market.cities.map((city, index) => ({
         name: names[index] ?? city.key,
@@ -23,11 +39,20 @@ function expansionMarketJsonLdCities(market: ExpansionMarket, locale: Locale) {
     }));
 }
 
-export function expansionMarketComingToHead(market: ExpansionMarket, locale: Locale) {
+function expansionMarketCitiesOverride(cities: readonly ExpansionMarketSeoCity[], locale: Locale): string | undefined {
+    if (cities.length === 0) return undefined;
+    return expansionMarketCityNamesJoin(
+        cities.map((city) => contentLocaleText(city.nameDe, city.nameEn, locale)),
+        locale,
+    );
+}
+
+export function expansionMarketComingToHead(market: ExpansionMarket, locale: Locale, cities: readonly ExpansionMarketSeoCity[] = []) {
     const webPageUrl = webPageUrlGet();
     const path = market.comingToPath;
-    const title = expansionMarketComingToTitle(market, locale);
-    const description = expansionMarketComingToDescription(market, locale);
+    const citiesOverride = expansionMarketCitiesOverride(cities, locale);
+    const title = expansionMarketComingToTitle(market, locale, citiesOverride);
+    const description = expansionMarketComingToDescription(market, locale, citiesOverride);
     return {
         ...seoMeta({ title, description, path, locale, webPageUrl }),
         scripts: jsonLdHeadScripts([
@@ -42,18 +67,19 @@ export function expansionMarketComingToHead(market: ExpansionMarket, locale: Loc
                 name: title,
                 description,
                 countryName: expansionMarketCountryName(market, locale),
-                cities: expansionMarketJsonLdCities(market, locale),
+                cities: expansionMarketJsonLdCities(market, locale, cities),
             }),
-            jsonLdFaqPage(expansionMarketFaqEntries(market, 'comingTo', locale)),
+            jsonLdFaqPage(expansionMarketFaqEntries(market, 'comingTo', locale, citiesOverride)),
         ]),
     };
 }
 
-export function expansionMarketFoundingChefHead(market: ExpansionMarket, locale: Locale) {
+export function expansionMarketFoundingChefHead(market: ExpansionMarket, locale: Locale, cities: readonly ExpansionMarketSeoCity[] = []) {
     const webPageUrl = webPageUrlGet();
     const path = market.foundingChefPath;
-    const title = expansionMarketFoundingChefTitle(market, locale);
-    const description = expansionMarketFoundingChefDescription(market, locale);
+    const citiesOverride = expansionMarketCitiesOverride(cities, locale);
+    const title = expansionMarketFoundingChefTitle(market, locale, citiesOverride);
+    const description = expansionMarketFoundingChefDescription(market, locale, citiesOverride);
     return {
         ...seoMeta({ title, description, path, locale, webPageUrl }),
         scripts: jsonLdHeadScripts([
@@ -69,9 +95,9 @@ export function expansionMarketFoundingChefHead(market: ExpansionMarket, locale:
                 name: title,
                 description,
                 countryName: expansionMarketCountryName(market, locale),
-                cities: expansionMarketJsonLdCities(market, locale),
+                cities: expansionMarketJsonLdCities(market, locale, cities),
             }),
-            jsonLdFaqPage(expansionMarketFaqEntries(market, 'foundingChef', locale)),
+            jsonLdFaqPage(expansionMarketFaqEntries(market, 'foundingChef', locale, citiesOverride)),
         ]),
     };
 }

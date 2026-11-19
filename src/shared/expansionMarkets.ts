@@ -71,8 +71,7 @@ function cityName(city: ExpansionMarketCity, market: ExpansionMarket, locale: Lo
     return labels[city.key as SwitzerlandCityKey];
 }
 
-function cityList(cities: readonly ExpansionMarketCity[], market: ExpansionMarket, locale: Locale): string {
-    const names = cities.map((city) => cityName(city, market, locale));
+export function expansionMarketCityNamesJoin(names: readonly string[], locale: Locale): string {
     if (names.length === 0) return '';
     if (names.length === 1) return names[0] ?? '';
     const last = names.at(-1) ?? '';
@@ -80,7 +79,18 @@ function cityList(cities: readonly ExpansionMarketCity[], market: ExpansionMarke
     return t(locale, 'public', 'comingTo.cityListJoin', { head, last });
 }
 
-function marketPhrases(market: ExpansionMarket, locale: Locale): { comingTo: string; inCountry: string; cities: string } {
+function cityList(cities: readonly ExpansionMarketCity[], market: ExpansionMarket, locale: Locale): string {
+    return expansionMarketCityNamesJoin(
+        cities.map((city) => cityName(city, market, locale)),
+        locale,
+    );
+}
+
+function marketPhrases(
+    market: ExpansionMarket,
+    locale: Locale,
+    citiesOverride?: string,
+): { comingTo: string; inCountry: string; cities: string } {
     const phrases = {
         netherlands: {
             comingTo: t(locale, 'public', 'comingTo.markets.netherlands.comingTo'),
@@ -93,7 +103,7 @@ function marketPhrases(market: ExpansionMarket, locale: Locale): { comingTo: str
     } satisfies Record<ExpansionMarketSlug, { comingTo: string; inCountry: string }>;
     return {
         ...phrases[market.slug],
-        cities: cityList(market.cities, market, locale),
+        cities: citiesOverride ?? cityList(market.cities, market, locale),
     };
 }
 
@@ -158,28 +168,29 @@ export function expansionMarketCityNames(market: ExpansionMarket, locale: Locale
     return market.cities.map((city) => cityName(city, market, locale));
 }
 
-export function expansionMarketComingToTitle(market: ExpansionMarket, locale: Locale): string {
-    return t(locale, 'public', 'comingTo.pageTitle', marketPhrases(market, locale));
+export function expansionMarketComingToTitle(market: ExpansionMarket, locale: Locale, citiesOverride?: string): string {
+    return t(locale, 'public', 'comingTo.pageTitle', marketPhrases(market, locale, citiesOverride));
 }
 
-export function expansionMarketComingToDescription(market: ExpansionMarket, locale: Locale): string {
-    return t(locale, 'public', 'comingTo.pageDescription', marketPhrases(market, locale));
+export function expansionMarketComingToDescription(market: ExpansionMarket, locale: Locale, citiesOverride?: string): string {
+    return t(locale, 'public', 'comingTo.pageDescription', marketPhrases(market, locale, citiesOverride));
 }
 
-export function expansionMarketFoundingChefTitle(market: ExpansionMarket, locale: Locale): string {
-    return t(locale, 'public', 'comingTo.foundingTitle', marketPhrases(market, locale));
+export function expansionMarketFoundingChefTitle(market: ExpansionMarket, locale: Locale, citiesOverride?: string): string {
+    return t(locale, 'public', 'comingTo.foundingTitle', marketPhrases(market, locale, citiesOverride));
 }
 
-export function expansionMarketFoundingChefDescription(market: ExpansionMarket, locale: Locale): string {
-    return t(locale, 'public', 'comingTo.foundingDescription', marketPhrases(market, locale));
+export function expansionMarketFoundingChefDescription(market: ExpansionMarket, locale: Locale, citiesOverride?: string): string {
+    return t(locale, 'public', 'comingTo.foundingDescription', marketPhrases(market, locale, citiesOverride));
 }
 
 export function expansionMarketFaqEntries(
     market: ExpansionMarket,
     kind: ExpansionMarketFaqKind,
     locale: Locale,
+    citiesOverride?: string,
 ): ReadonlyArray<{ question: string; answer: string }> {
-    const phrases = marketPhrases(market, locale);
+    const phrases = marketPhrases(market, locale, citiesOverride);
     if (kind === 'comingTo') {
         const entry = {
             canBook: {
