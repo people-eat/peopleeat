@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useMutation, useQuery } from 'urql';
 
 import { t } from '../../../i18n/t';
+import { cookTravelDistanceSelectOptions, cookTravelDistanceSelectValue } from '../../../shared/cookTravelDistance';
 import type { Locale } from '../../../shared/locale';
 import { Button } from '../../components/base/button';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '../../components/base/combobox';
@@ -28,8 +29,6 @@ export function profileCookTravelEditPageTitle(locale: Locale): string {
     return t(locale, 'profileCook', 'travelEdit.title');
 }
 export const profileCookTravelEditPageDescription = route.description;
-
-const TRAVEL_DISTANCE_OPTIONS = ['50', '100', '150', '200'] as const;
 
 type TravelFormValues = {
     locationSearchText: string;
@@ -71,7 +70,7 @@ function formFromCook(next: GqlCProfileTravelCookFragment): TravelFormValues {
               }
             : null,
         travelExpensesText: centsToEuroText(next.travelExpensesAmount),
-        maximumTravelDistanceText: String(next.maximumTravelDistance ?? 100),
+        maximumTravelDistanceText: cookTravelDistanceSelectValue(next.maximumTravelDistance),
     };
 }
 
@@ -91,7 +90,7 @@ export function ProfileCookTravelEditPage({ data }: { data: GqlCProfileCookTrave
                   locationSearchText: '',
                   selectedLocation: null as GqlCLocationSuggestion | null,
                   travelExpensesText: '0,25',
-                  maximumTravelDistanceText: '100',
+                  maximumTravelDistanceText: cookTravelDistanceSelectValue(undefined),
               },
         onSubmit: async ({ value }) => {
             if (!cook) return;
@@ -247,10 +246,10 @@ export function ProfileCookTravelEditPage({ data }: { data: GqlCProfileCookTrave
                                     <span className="text-sm font-medium">{t(locale, 'profileCook', 'travelEdit.maxDistance')}</span>
                                     <Select value={field.state.value} onValueChange={(next) => field.handleChange(next)}>
                                         <SelectTrigger className="w-full min-w-0">
-                                            <SelectValue />
+                                            <SelectValue>{`${field.state.value} km`}</SelectValue>
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {TRAVEL_DISTANCE_OPTIONS.map((option) => (
+                                            {cookTravelDistanceSelectOptions(cook.maximumTravelDistance).map((option) => (
                                                 <SelectItem key={option} value={option}>
                                                     {option} km
                                                 </SelectItem>

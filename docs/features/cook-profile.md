@@ -57,8 +57,10 @@ Signed-in cooks manage these areas under `/profile/*`:
 3. **Travel settings** (`/profile/travel`) shows travel origin, max distance, and €/km expenses, plus a map centered on the origin with the
    max-distance radius drawn as a circle so cooks can see which area their booking-request pool covers. An info `StatusAlert` explains that
    radius traffic lands in the pool and links there with **Go to booking request pool**. **Edit** opens the travel form and updates the
-   circle live when origin or max distance changes. Customers only see the **city** from the travel origin — never the full street address
-   or the pin. Overview and the booking request pool deep-link here when travel origin is missing.
+   circle live when origin or max distance changes. Max distance is a select of **50 / 100 / 150 / 200 km** (default **100** on create /
+   sign-up); if a cook already has a non-standard saved km (legacy import), that value stays visible in the select until they pick a
+   standard choice. Customers only see the **city** from the travel origin — never the full street address or the pin. Overview and the
+   booking request pool deep-link here when travel origin is missing.
 4. **Wallet** (`/profile/wallet`) is the Stripe Connect onboarding surface and the place cooks save their **invoice / billing address**
    (separate from travel origin; used later for peopleeat→cook invoices). When `Cook.invoiceAddress` is null, a warning `StatusAlert` asks
    them to add it (stacked in the same `gap-4` alert column as Stripe status banners); when set, the page shows the address with Edit. Both
@@ -211,6 +213,9 @@ reviews stay out of the cook-facing summary until published, matching public rul
   the standard pinned-footer content scroller (`content-start` grid, not a fill-height nested pane). MapLibre mounts on the sized box itself
   (`min-h-[50vh]`); a nested `absolute inset-0` child is restyled to `position: relative` and collapses. `scrollZoom` is off so wheel events
   scroll the shell, not the map.
+- Travel distance select: shared `cookTravelDistanceSelectOptions` / `cookTravelDistanceSelectValue` in `src/shared/cookTravelDistance.ts`
+  (50/100/150/200 + current legacy km when needed). Used by `CookCreateFields`, chef sign-up, cook travel edit, and admin cook-profile edit;
+  `SelectValue` children render `{km} km` so the trigger is never blank when the value is set.
 - Cook GraphQL: `mealsCounts` / `menusCounts` (`CookMealCriterion` / `CookMenuCriterion`);
   `callSlotBookings(criterion: CookCallSlotBookingCriterion)` for status + `startAt` window
 - Admin: pending-approval queue on `/admin`; cook-profile tab (read-only + approval/visibility; edit at

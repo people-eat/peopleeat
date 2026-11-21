@@ -6,6 +6,11 @@ import { useMutation, useQuery } from 'urql';
 
 import { chefSignUpFunnelArea } from '../../shared/chefSignUpFunnel';
 import type { ChefSignUpFunnelClientStep } from '../../shared/chefSignUpFunnel';
+import {
+    COOK_TRAVEL_DISTANCE_SELECT_DEFAULT_KM,
+    cookTravelDistanceSelectOptions,
+    cookTravelDistanceSelectValue,
+} from '../../shared/cookTravelDistance';
 import { expansionMarketFoundingChefTitle, expansionMarketFromParam, expansionMarketInCountryPhrase } from '../../shared/expansionMarkets';
 import type { ExpansionMarketSlug } from '../../shared/expansionMarkets';
 import { AuthIdentityGate } from '../components/auth/AuthIdentityGate';
@@ -22,8 +27,6 @@ import { ChefSignUpCookCreateDocument, ChefSignUpFunnelTrackDocument, CookCreate
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useLocale } from '../hooks/useLocale';
 import { useT } from '../hooks/useT';
-
-const TRAVEL_DISTANCE_OPTIONS = ['50', '100', '150', '200'] as const;
 
 type ChefSignUpFormValues = {
     locationSearchText: string;
@@ -109,7 +112,7 @@ export function ChefSignUpPage({
             locationSearchText: '',
             selectedLocation: null as GqlCLocationSuggestion | null,
             travelExpensesText: '0,25',
-            maximumTravelDistanceText: '100',
+            maximumTravelDistanceText: cookTravelDistanceSelectValue(COOK_TRAVEL_DISTANCE_SELECT_DEFAULT_KM),
         } satisfies ChefSignUpFormValues,
         onSubmit: async ({ value }) => {
             if (!value.selectedLocation?.displayText) {
@@ -289,10 +292,10 @@ export function ChefSignUpPage({
                                                     onValueChange={(next) => field.handleChange(next)}
                                                 >
                                                     <SelectTrigger className="w-full">
-                                                        <SelectValue />
+                                                        <SelectValue>{`${field.state.value} km`}</SelectValue>
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        {TRAVEL_DISTANCE_OPTIONS.map((option) => (
+                                                        {cookTravelDistanceSelectOptions().map((option) => (
                                                             <SelectItem key={option} value={option}>
                                                                 {option} km
                                                             </SelectItem>

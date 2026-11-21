@@ -1,6 +1,11 @@
 import type { Dispatch, SetStateAction } from 'react';
 import { useQuery } from 'urql';
 
+import {
+    COOK_TRAVEL_DISTANCE_SELECT_DEFAULT_KM,
+    cookTravelDistanceSelectOptions,
+    cookTravelDistanceSelectValue,
+} from '../../shared/cookTravelDistance';
 import type { GqlCCookCreate, GqlCLocationSuggestion } from '../graphql/generated';
 import { CookCreateLocationSuggestionsDocument } from '../graphql/generated';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
@@ -8,8 +13,6 @@ import { useT } from '../hooks/useT';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from './base/combobox';
 import { Input } from './base/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './base/select';
-
-const TRAVEL_DISTANCE_OPTIONS = ['50', '100', '150', '200'] as const;
 
 export type CookCreateFieldsState = {
     locationSearchText: string;
@@ -23,7 +26,7 @@ export function cookCreateFieldsInitial(): CookCreateFieldsState {
         locationSearchText: '',
         selectedLocation: null,
         travelExpensesText: '0,25',
-        maximumTravelDistanceText: '100',
+        maximumTravelDistanceText: cookTravelDistanceSelectValue(COOK_TRAVEL_DISTANCE_SELECT_DEFAULT_KM),
     };
 }
 
@@ -154,10 +157,10 @@ export function CookCreateFields({
                         onValueChange={(maximumTravelDistanceText) => onChange((prev) => ({ ...prev, maximumTravelDistanceText }))}
                     >
                         <SelectTrigger className="w-full">
-                            <SelectValue />
+                            <SelectValue>{`${value.maximumTravelDistanceText} km`}</SelectValue>
                         </SelectTrigger>
                         <SelectContent>
-                            {TRAVEL_DISTANCE_OPTIONS.map((option) => (
+                            {cookTravelDistanceSelectOptions().map((option) => (
                                 <SelectItem key={option} value={option}>
                                     {option} km
                                 </SelectItem>

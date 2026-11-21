@@ -17,6 +17,7 @@ import {
     cookPresenceLinksNormalize,
 } from '../../../shared/cookPresenceLinks';
 import { COOKING_PHILOSOPHIES, CUISINE_STYLES } from '../../../shared/cookProfile';
+import { cookTravelDistanceSelectOptions, cookTravelDistanceSelectValue } from '../../../shared/cookTravelDistance';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import { Button } from '../../components/base/button';
@@ -62,7 +63,6 @@ type AdminCookRow = NonNullable<
 
 const CUISINE_STYLE_ITEMS = [...CUISINE_STYLES];
 const COOKING_PHILOSOPHY_ITEMS = [...COOKING_PHILOSOPHIES];
-const TRAVEL_DISTANCE_OPTIONS = ['50', '100', '150', '200'] as const;
 const COOK_PROFILE_EDIT_FORM_ID = 'admin-user-cook-profile-edit-form';
 
 type CookFormValues = {
@@ -110,7 +110,7 @@ function formFromCook(cook: AdminCookRow): CookFormValues {
               }
             : null,
         travelExpensesText: centsToEuroText(cook.travelExpensesAmount),
-        maximumTravelDistanceText: String(cook.maximumTravelDistance ?? 100),
+        maximumTravelDistanceText: cookTravelDistanceSelectValue(cook.maximumTravelDistance),
         presenceLinks: cookPresenceLinksFormFrom(cook.presenceLinks),
         ...cookDefaultOfferMessageFormFrom(cook.defaultOfferMessage ?? null),
     };
@@ -684,10 +684,10 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
                                         disabled={isSubmitting}
                                     >
                                         <SelectTrigger id="admin-cook-max-distance">
-                                            <SelectValue />
+                                            <SelectValue>{`${field.state.value} km`}</SelectValue>
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {TRAVEL_DISTANCE_OPTIONS.map((option) => (
+                                            {cookTravelDistanceSelectOptions(cook.maximumTravelDistance).map((option) => (
                                                 <SelectItem key={option} value={option}>
                                                     {option} km
                                                 </SelectItem>
