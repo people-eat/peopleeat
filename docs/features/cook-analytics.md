@@ -9,7 +9,8 @@ Cooks see marketplace and discovery insights on their profile overview and a ded
    filter: all (default), direct / “requested you”, or pool (`?channel=`). Defaults are omitted from the URL.
 3. Page layout (outcome-first, chart-forward):
    - **Your results** — paid cook payout, paid booking count, dual-accept conversion (channel-scoped), with help tooltips.
-   - **Highlights** — short insight callouts derived from rates / funnel gaps (at most two).
+   - **Highlights** — up to two `StatusAlert` callouts derived from rates / funnel gaps (warning for gaps, success for strong
+     follow-through, info for waiting conversion).
    - **Activity over time** — Recharts grouped bars for profile visits, offers created, and paid bookings (day buckets for week/month, week
      buckets for quarter/year).
    - **How requests turn into bookings** — Direct and/or Pool panels with horizontal bar charts, entry→paid summary, help copy, and a Sankey
@@ -24,8 +25,8 @@ Cooks see marketplace and discovery insights on their profile overview and a ded
 5. The cook overview (`/profile`) shows a compact past-month strip (profile views, time to open, offers, conversion) with a link to the full
    page **only when the cook already has lifetime activity** (any notified request, any offer, or any public profile visit). Brand-new cooks
    see no analytics section and no wall of zeros.
-6. The full page with no lifetime activity shows a single calm empty note (period and channel controls still visible). Direct visits while
-   the toggle is off redirect to `/profile`.
+6. The full page with no lifetime activity shows a single calm empty note without period/channel controls; filters appear once there is
+   lifetime activity. Direct visits while the toggle is off redirect to `/profile`.
 7. Profile views count human (`isBot = false`) `WEB_PAGE_VISITED` events for `CHEFS` with `params.cookId` matching the cook (detail pages,
    not the listing).
 

@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 
 import { t } from '../../../i18n/t';
 import type { CookAnalyticsChannel, CookAnalyticsPeriod } from '../../../shared';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/base/select';
 import { StatusAlert } from '../../components/base/status-alert';
 import { Tabs, TabsList, TabsTrigger } from '../../components/base/tabs';
 import type { GqlCProfileCookAnalyticsPageQuery } from '../../graphql/generated';
@@ -76,62 +77,71 @@ export function ProfileCookAnalyticsPage({
                 <p className="text-muted-foreground">{profileCookAnalyticsPageDescription(locale)}</p>
             </div>
 
-            <div className="grid gap-3">
-                <Tabs
-                    value={period}
-                    onValueChange={(value) => {
-                        navigateSearch({
-                            period: profileCookAnalyticsPeriodResolve({
-                                period: value as ProfileCookAnalyticsSearch['period'],
-                            }),
-                            channel,
-                        });
-                    }}
-                >
-                    <TabsList aria-label={t(locale, 'profileCook', 'period.label')}>
-                        {cookAnalyticsPeriods.map((entry) => (
-                            <TabsTrigger key={entry} value={entry}>
-                                {cookAnalyticsPeriodLabel(entry, locale)}
-                            </TabsTrigger>
-                        ))}
-                    </TabsList>
-                </Tabs>
-
-                <Tabs
-                    value={channel}
-                    onValueChange={(value) => {
-                        navigateSearch({
-                            period,
-                            channel: profileCookAnalyticsChannelResolve({
-                                channel: value === 'ALL' ? undefined : (value as ProfileCookAnalyticsSearch['channel']),
-                            }),
-                        });
-                    }}
-                >
-                    <TabsList aria-label={t(locale, 'profileCook', 'analytics.channel.label')}>
-                        {cookAnalyticsChannels.map((entry) => (
-                            <TabsTrigger key={entry} value={entry}>
-                                {cookAnalyticsChannelLabel(entry, locale)}
-                            </TabsTrigger>
-                        ))}
-                    </TabsList>
-                </Tabs>
-            </div>
-
             {!analytics.hasInsights ? (
                 <StatusAlert tone="info" title={t(locale, 'profileCook', 'analytics.emptyTitle')}>
                     {t(locale, 'profileCook', 'analytics.emptyBody')}
                 </StatusAlert>
             ) : (
-                <div className="grid gap-10">
-                    <CookAnalyticsHero analytics={analytics} />
-                    <CookAnalyticsInsights analytics={analytics} />
-                    <CookAnalyticsTrend analytics={analytics} />
-                    <CookAnalyticsFunnelPair funnels={analytics.funnels} channel={channel} />
-                    <CookAnalyticsRateStrip analytics={analytics} />
-                    <CookAnalyticsProfileDemand viewCount={analytics.publicProfileViewCount} />
-                    <CookAnalyticsOfferCreateDisclosure stages={analytics.offerCreateStages} />
-                </div>
+                <>
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <Tabs
+                            value={period}
+                            onValueChange={(value) => {
+                                navigateSearch({
+                                    period: profileCookAnalyticsPeriodResolve({
+                                        period: value as ProfileCookAnalyticsSearch['period'],
+                                    }),
+                                    channel,
+                                });
+                            }}
+                        >
+                            <TabsList variant="line" aria-label={t(locale, 'profileCook', 'period.label')}>
+                                {cookAnalyticsPeriods.map((entry) => (
+                                    <TabsTrigger key={entry} value={entry}>
+                                        {cookAnalyticsPeriodLabel(entry, locale)}
+                                    </TabsTrigger>
+                                ))}
+                            </TabsList>
+                        </Tabs>
+
+                        <Select
+                            value={channel}
+                            onValueChange={(value) => {
+                                navigateSearch({
+                                    period,
+                                    channel: profileCookAnalyticsChannelResolve({
+                                        channel: value === 'ALL' ? undefined : (value as ProfileCookAnalyticsSearch['channel']),
+                                    }),
+                                });
+                            }}
+                        >
+                            <SelectTrigger
+                                size="sm"
+                                className="w-auto shrink-0"
+                                aria-label={t(locale, 'profileCook', 'analytics.channel.label')}
+                            >
+                                <SelectValue>{cookAnalyticsChannelLabel(channel, locale)}</SelectValue>
+                            </SelectTrigger>
+                            <SelectContent align="end">
+                                {cookAnalyticsChannels.map((entry) => (
+                                    <SelectItem key={entry} value={entry}>
+                                        {cookAnalyticsChannelLabel(entry, locale)}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="grid gap-10">
+                        <CookAnalyticsHero analytics={analytics} />
+                        <CookAnalyticsInsights analytics={analytics} />
+                        <CookAnalyticsTrend analytics={analytics} />
+                        <CookAnalyticsFunnelPair funnels={analytics.funnels} channel={channel} />
+                        <CookAnalyticsRateStrip analytics={analytics} />
+                        <CookAnalyticsProfileDemand viewCount={analytics.publicProfileViewCount} />
+                        <CookAnalyticsOfferCreateDisclosure stages={analytics.offerCreateStages} />
+                    </div>
+                </>
             )}
         </main>
     );

@@ -21,6 +21,8 @@ import type { CookAnalyticsChannel } from '../../../shared';
 import { Button } from '../../components/base/button';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../../components/base/chart';
 import type { ChartConfig } from '../../components/base/chart';
+import type { StatusTone } from '../../components/base/status';
+import { StatusAlert } from '../../components/base/status-alert';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/base/tooltip';
 import { Reveal } from '../../components/Reveal';
 import type {
@@ -113,8 +115,10 @@ function stageLabel(stageId: string, locale: ReturnType<typeof useLocale>): stri
     }
 }
 
-function insightLines(analytics: GqlCProfileCookAnalyticsFragment, locale: ReturnType<typeof useLocale>): string[] {
-    const lines: string[] = [];
+type CookAnalyticsInsight = { key: string; tone: StatusTone; title: string };
+
+function cookAnalyticsInsights(analytics: GqlCProfileCookAnalyticsFragment, locale: ReturnType<typeof useLocale>): CookAnalyticsInsight[] {
+    const insights: CookAnalyticsInsight[] = [];
     const direct = analytics.funnels.find((funnel) => funnel.channel === 'DIRECT');
     const pool = analytics.funnels.find((funnel) => funnel.channel === 'POOL');
     const directOpened = direct?.stages.find((stage) => stage.id === 'opened')?.count ?? 0;
@@ -123,34 +127,52 @@ function insightLines(analytics: GqlCProfileCookAnalyticsFragment, locale: Retur
     const poolOffers = pool?.stages.find((stage) => stage.id === 'offer_sent')?.count ?? 0;
 
     if ((direct?.entryCount ?? 0) > 0 && directOpened > 0 && directOffers === 0) {
-        lines.push(t(locale, 'profileCook', 'analytics.insights.directOpenedNoOffer'));
+        insights.push({
+            key: 'directOpenedNoOffer',
+            tone: 'warning',
+            title: t(locale, 'profileCook', 'analytics.insights.directOpenedNoOffer'),
+        });
     }
     if (analytics.openRate != null && analytics.openRate < 0.5 && analytics.requestsNotifiedCount >= 5) {
-        lines.push(t(locale, 'profileCook', 'analytics.insights.lowOpenRate'));
+        insights.push({
+            key: 'lowOpenRate',
+            tone: 'warning',
+            title: t(locale, 'profileCook', 'analytics.insights.lowOpenRate'),
+        });
     }
     if (analytics.offerCreateRate != null && analytics.offerCreateRate >= 0.7 && analytics.requestsOpenedCount >= 5) {
-        lines.push(t(locale, 'profileCook', 'analytics.insights.strongOfferRate'));
+        insights.push({
+            key: 'strongOfferRate',
+            tone: 'success',
+            title: t(locale, 'profileCook', 'analytics.insights.strongOfferRate'),
+        });
     }
     if (poolOpened > 0 && poolOffers > 0 && poolOffers / poolOpened >= 0.75) {
-        lines.push(t(locale, 'profileCook', 'analytics.insights.poolOfferFollowThrough'));
+        insights.push({
+            key: 'poolOfferFollowThrough',
+            tone: 'success',
+            title: t(locale, 'profileCook', 'analytics.insights.poolOfferFollowThrough'),
+        });
     }
     if (analytics.offersCreatedCount > 0 && analytics.offerConversionRate != null && analytics.offerConversionRate < 0.25) {
-        lines.push(t(locale, 'profileCook', 'analytics.insights.lowConversion'));
+        insights.push({
+            key: 'lowConversion',
+            tone: 'info',
+            title: t(locale, 'profileCook', 'analytics.insights.lowConversion'),
+        });
     }
-    return lines.slice(0, 2);
+    return insights.slice(0, 2);
 }
 
 export function CookAnalyticsInsights({ analytics }: { analytics: GqlCProfileCookAnalyticsFragment }) {
     const locale = useLocale();
-    const lines = insightLines(analytics, locale);
-    if (lines.length === 0) return null;
+    const insights = cookAnalyticsInsights(analytics, locale);
+    if (insights.length === 0) return null;
 
     return (
         <Reveal as="section" className="grid gap-2" aria-label={t(locale, 'profileCook', 'analytics.insights.label')}>
-            {lines.map((line) => (
-                <div key={line} className="rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-950">
-                    {line}
-                </div>
+            {insights.map((insight) => (
+                <StatusAlert key={insight.key} tone={insight.tone} title={insight.title} />
             ))}
         </Reveal>
     );
