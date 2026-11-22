@@ -11,9 +11,9 @@ Visiting `/profile/*` as a cook shows:
   `NotificationBadge` for unread notifications across offers, Analytics (when `COOK_ANALYTICS` is on — see
   [cook-analytics.md](./cook-analytics.md)), Invite chefs (when `COOK_INVITE` is on — see [cook-invite.md](./cook-invite.md)), Chef page,
   Travel settings, Meals, Menus, Offer extras (when `BOOKING_REQUEST_OFFER_ADDONS` is on — see
-  [booking-offer-addons.md](./booking-offer-addons.md)), Wallet, Gesprächstermine (call appointments). Wallet shows a warning `StatusBadge`
-  when the invoice address is missing or (once approved) payout setup is incomplete — see
-  [status-messaging.md](../styles/status-messaging.md) and [cook-profile.md](./cook-profile.md). Pool, offer counts, and wallet attention
+  [booking-offer-addons.md](./booking-offer-addons.md)), Finances, Gesprächstermine (call appointments). Finances shows a warning
+  `StatusBadge` when the invoice address is missing or (once approved) payout setup is incomplete — see
+  [status-messaging.md](../styles/status-messaging.md) and [cook-profile.md](./cook-profile.md). Pool, offer counts, and finances attention
   are computed by the server (the pool badge always matches the pool list), seed from the profile loader, and stay live via real-time user
   updates.
 - **Footer:** Account at `/profile/account`. When the cook is also an admin, an Admin link appears above Account (same escape-hatch pattern
@@ -31,9 +31,9 @@ Visiting `/profile/*` as a cook shows:
 Mobile: the left nav sheet closes when the route changes after a nav selection.
 
 Stub routes show a bilingual “coming soon” placeholder until their features land. **Meals**, **Menus**, **Offer extras** (toggle-gated),
-**Chef page** (shop-window tabs: Overview / Public card / Public page, visibility, extra picture on edit), **Travel settings**, **Wallet**,
-**Gesprächstermine**, **Analytics** (toggle-gated), the **booking request pool**, and the **sent offers** inbox are implemented — see
-[cook-meals.md](./cook-meals.md), [cook-menus.md](./cook-menus.md), [booking-offer-addons.md](./booking-offer-addons.md),
+**Chef page** (shop-window tabs: Overview / Public card / Public page, visibility, extra picture on edit), **Travel settings**,
+**Finances**, **Gesprächstermine**, **Analytics** (toggle-gated), the **booking request pool**, and the **sent offers** inbox are
+implemented — see [cook-meals.md](./cook-meals.md), [cook-menus.md](./cook-menus.md), [booking-offer-addons.md](./booking-offer-addons.md),
 [cook-profile.md](./cook-profile.md), [cook-analytics.md](./cook-analytics.md), [cook-call-availability.md](./cook-call-availability.md),
 [booking.md](./booking.md), and [booking-offers.md](./booking-offers.md).
 
@@ -54,7 +54,7 @@ Breadcrumbs answer “where within the cook profile?”, not “are you in profi
 - `/profile/menus/<menuId>/edit` → Menus › Menu › Edit
 - `/profile/offer-addons` → Offer extras
 - `/profile/offer-addons/<id>/edit` → Offer extras › Edit
-- `/profile/wallet` → Wallet
+- `/profile/finances` → Finances
 - `/profile/analytics` → Analytics
 - `/profile/invite` → Invite chefs (gated by `COOK_INVITE`)
 - `/profile/booking-request-pool` → Booking request pool

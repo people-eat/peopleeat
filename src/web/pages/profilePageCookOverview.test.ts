@@ -71,7 +71,7 @@ describe('profilePageCookOverview', () => {
         expect(overview.attention[1]?.body).toMatch(/^Ada · /);
     });
 
-    it('shows pending approval without an action and wallet reset with one', () => {
+    it('shows pending approval without an action and finances reset with one', () => {
         // Arrange
         const cook = cookFixture({ attention: [attentionItem({ kind: 'APPROVAL_PENDING' }), attentionItem({ kind: 'WALLET_RESET' })] });
 
@@ -82,7 +82,7 @@ describe('profilePageCookOverview', () => {
         expect(overview.attention[0]).toMatchObject({ tone: 'info', action: null });
         expect(overview.attention[1]).toMatchObject({
             tone: 'warning',
-            action: { to: '/{-$locale}/profile/wallet', label: 'Go to wallet' },
+            action: { to: '/{-$locale}/profile/finances', label: 'Go to finances' },
         });
     });
 
@@ -95,7 +95,7 @@ describe('profilePageCookOverview', () => {
 
         // Assert
         expect(overview.gettingStarted.map((step) => step.href)).toEqual([
-            '/{-$locale}/profile/wallet',
+            '/{-$locale}/profile/finances',
             '/{-$locale}/profile/chef-profile/edit',
             '/{-$locale}/profile/chef-profile/edit',
             '/{-$locale}/profile/booking-request-pool',

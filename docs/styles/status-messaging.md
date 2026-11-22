@@ -102,7 +102,7 @@ Only statuses that exist in peopleeat’s derived booking enums are mapped.
 
 ## Current consumers
 
-- Cook sidebar Wallet attention → icon-only `StatusBadge` (`warning`)
+- Cook sidebar Finances attention → icon-only `StatusBadge` (`warning`)
 - Cook / customer / admin sidebar unread counts → `NotificationBadge` (`placement="inline"`) for pool review, offer unread, support unread
 - Booking / support cards with unread → `NotificationBadge` (`placement="corner"`) on customer/cook/admin offer and request cards; customer
   cards also use the corner badge for an outstanding review when there is no unread count (unread wins when both apply)
@@ -110,7 +110,7 @@ Only statuses that exist in peopleeat’s derived booking enums are mapped.
 - Menu editor section summary → `StatusAlert` (`warning`) when any course is incomplete
 - Offer menu picker (`CookMenuSelectPanel`) incomplete inventory menus → separate grid below selectable menus; labeled `StatusBadge`
   (`warning`); Select button disabled
-- Wallet page + admin cook finances Stripe / approval states → `StatusAlert` (`info` / `warning` / `success`), tones and copy from
+- Finances page + admin cook finances Stripe / approval states → `StatusAlert` (`info` / `warning` / `success`), tones and copy from
   `src/shared/cookStripe.ts` (audience `cook` / `admin`)
 - Booking request / offer lifecycle → `BookingStatusPill` (customer, cook, admin list/detail/cards)
 - Offer Call tab schedule section + cook `/profile/calls` appointment rows → labeled `StatusBadge` (pending warning/info, confirmed success,

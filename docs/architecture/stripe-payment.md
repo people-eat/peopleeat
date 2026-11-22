@@ -121,7 +121,7 @@ built from stored `paymentData` ids via `stripeDashboardUrls` helpers; test vs l
 
 `accountRequirementsFindOne(accountId)` retrieves the Express account and returns a domain DTO: capability flags (`detailsSubmitted` /
 `chargesEnabled` / `payoutsEnabled`), a mapped `disabledReason`, and deduped requirement **categories** for `currently_due` / `past_due` /
-`pending_verification` (never raw Stripe keys). Used by `Cook.stripeAccountDetails` on `/profile/wallet` — see
+`pending_verification` (never raw Stripe keys). Used by `Cook.stripeAccountDetails` on `/profile/finances` — see
 [cook-profile.md](../features/cook-profile.md). Do not put this field on `userUpdates` (would call Stripe on every push).
 
 ### Connect wallet balance (live)
@@ -129,7 +129,7 @@ built from stored `paymentData` ids via `stripeDashboardUrls` helpers; test vs l
 `accountBalanceFindOne(accountId)` retrieves the connected-account Balance (`Stripe-Account` header) and sums the `eur` buckets for
 `available` / `pending` into integer cents. `accountBalanceTransactionsFindMany({ accountId, limit })` lists recent Balance Transactions on
 that account (newest first) and maps Stripe `type` / `status` to cook-facing enums (`PAYMENT` / `PAYOUT` / …, `AVAILABLE` / `PENDING`). Used
-by `Cook.stripeWallet` on `/profile/wallet` when `COOK_WALLET_STRIPE_BALANCE` is enabled for the cook — same ownership + failure-null
+by `Cook.stripeWallet` on `/profile/finances` when `COOK_WALLET_STRIPE_BALANCE` is enabled for the cook — same ownership + failure-null
 pattern as requirements; never on `userUpdates`. `accountPayoutsFindMany({ accountId, limit })` lists recent Connect **Payouts** (newest
 first) for admin reconcile of Dashboard-created bank payouts.
 
@@ -179,7 +179,7 @@ Do **not** add `capability.updated` / `person.*` / `external_account.*` for now;
 requirements changes for Express.
 
 Cook wallet return URL still calls `cookStripeStatusSync` (same apply helper). Live requirement categories stay on-demand via
-`Cook.stripeAccountDetails` on `/profile/wallet`. When Stripe later needs more info, `ACTIVE_WAS_RESET` surfaces on the cook overview
+`Cook.stripeAccountDetails` on `/profile/finances`. When Stripe later needs more info, `ACTIVE_WAS_RESET` surfaces on the cook overview
 Attention lane — see [cook-profile.md](../features/cook-profile.md).
 
 ## Alternatives considered

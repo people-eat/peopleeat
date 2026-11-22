@@ -7,9 +7,9 @@ Signed-in users land on `/profile`, which routes customers and cooks into the ri
 1. Open `/profile` (or `/en/profile`). Unsigned sessions redirect to sign-in.
 2. **Customers** (no cook membership) see the customer shell: overview, booking requests, gift cards, account —
    [customer-shell.md](./customer-shell.md).
-3. **Cooks** see the cook shell: overview, meals, menus, chef profile, wallet, call scheduling, account — [cook-shell.md](./cook-shell.md),
-   [cook-meals.md](./cook-meals.md), [cook-menus.md](./cook-menus.md), [cook-profile.md](./cook-profile.md),
-   [cook-call-availability.md](./cook-call-availability.md).
+3. **Cooks** see the cook shell: overview, meals, menus, chef profile, finances, call scheduling, account —
+   [cook-shell.md](./cook-shell.md), [cook-meals.md](./cook-meals.md), [cook-menus.md](./cook-menus.md),
+   [cook-profile.md](./cook-profile.md), [cook-call-availability.md](./cook-call-availability.md).
 4. Already signed-in visits to sign-in redirect to profile; successful log-on navigates to profile.
 5. Account settings live at `/profile/account` (admins use `/admin/account`) — [account.md](./account.md).
 6. Users who are also admins get an Admin link in the profile sidebar footer and an Administration control on public headers.

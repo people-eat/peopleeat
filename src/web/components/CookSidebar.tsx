@@ -49,13 +49,13 @@ type CookNavTo = '/{-$locale}/profile' | `/{-$locale}/profile/${CookNavSlug}`;
 
 export function CookSidebar({
     isAdmin,
-    walletBadge: walletBadgeSeed = false,
+    financesBadge: financesBadgeSeed = false,
     poolReviewCount: poolReviewCountSeed = 0,
     offersUnreadCount: offersUnreadCountSeed = 0,
     ...props
 }: ComponentProps<typeof Sidebar> & {
     isAdmin: boolean;
-    walletBadge?: boolean;
+    financesBadge?: boolean;
     poolReviewCount?: number;
     offersUnreadCount?: number;
 }) {
@@ -70,7 +70,7 @@ export function CookSidebar({
     const offerAddonsEnabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_ADDONS');
     const [poolReviewCount, setPoolReviewCount] = useState(poolReviewCountSeed);
     const [offersUnreadCount, setOffersUnreadCount] = useState(offersUnreadCountSeed);
-    const [walletBadge, setWalletBadge] = useState(walletBadgeSeed);
+    const [financesBadge, setFinancesBadge] = useState(financesBadgeSeed);
 
     useEffect(() => {
         setOpenMobile(false);
@@ -79,8 +79,8 @@ export function CookSidebar({
     useEffect(() => {
         setPoolReviewCount(poolReviewCountSeed);
         setOffersUnreadCount(offersUnreadCountSeed);
-        setWalletBadge(walletBadgeSeed);
-    }, [poolReviewCountSeed, offersUnreadCountSeed, walletBadgeSeed]);
+        setFinancesBadge(financesBadgeSeed);
+    }, [poolReviewCountSeed, offersUnreadCountSeed, financesBadgeSeed]);
 
     useEffect(() => {
         const request = createRequest(CookSidebarNavBadgesUpdatesDocument, {});
@@ -91,20 +91,20 @@ export function CookSidebar({
                 if (!counts) return;
                 setPoolReviewCount(counts.bookingRequestPoolCount);
                 setOffersUnreadCount(counts.bookingRequestOfferUnreadCount);
-                setWalletBadge(counts.walletNeedsAttention);
+                setFinancesBadge(counts.walletNeedsAttention);
             }),
         );
         return unsubscribe;
     }, [client]);
 
-    const walletAttentionLabel = t(locale, 'profileCook', 'chrome.walletIncomplete');
+    const financesAttentionLabel = t(locale, 'profileCook', 'chrome.financesIncomplete');
 
     const navItems: {
         title: string;
         to: CookNavTo;
         icon: ReactNode;
         isActive: boolean;
-        walletAttention?: boolean;
+        financesAttention?: boolean;
         count?: number;
         countLabel?: string;
     }[] = [
@@ -129,7 +129,7 @@ export function CookSidebar({
                 to: route.to,
                 icon: <Icon />,
                 isActive: path === route.path || path.startsWith(`${route.path}/`),
-                walletAttention: route.slug === 'wallet' ? walletBadge : false,
+                financesAttention: route.slug === 'finances' ? financesBadge : false,
                 count: count != null && count > 0 ? count : undefined,
                 countLabel:
                     count != null && count > 0
@@ -169,9 +169,9 @@ export function CookSidebar({
                                         <span>{item.title}</span>
                                     </Link>
                                 </SidebarMenuButton>
-                                {item.walletAttention ? (
+                                {item.financesAttention ? (
                                     <SidebarMenuBadge className="bg-transparent p-0 text-transparent peer-hover/menu-button:text-transparent peer-data-[active=true]/menu-button:text-transparent">
-                                        <StatusBadge tone="warning" label={walletAttentionLabel} />
+                                        <StatusBadge tone="warning" label={financesAttentionLabel} />
                                     </SidebarMenuBadge>
                                 ) : null}
                                 {item.count != null && item.countLabel != null ? (

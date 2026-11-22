@@ -46,9 +46,9 @@
     "stripe": {
         "statusDescription": {
             "EMPTY": "Stel je Stripe-account in, zodat uitbetalingen je kunnen bereiken.",
-            "PREPARED": "De wallet is nog niet volledig ingesteld. Ga verder om uitbetalingen te activeren.",
-            "COMPLETED": "Je wallet is gekoppeld. Uitbetalingen naar je bank worden na het evenement door ons team vrijgegeven.",
-            "ACTIVE_WAS_RESET": "Stripe heeft bijgewerkte gegevens nodig. Ververs je wallet voordat uitbetalingen kunnen doorgaan."
+            "PREPARED": "De setup van je financiën is nog niet afgerond. Ga verder om uitbetalingen te activeren.",
+            "COMPLETED": "Je financiën zijn gekoppeld. Uitbetalingen naar je bank worden na het evenement door ons team vrijgegeven.",
+            "ACTIVE_WAS_RESET": "Stripe heeft bijgewerkte gegevens nodig. Ververs je financiën voordat uitbetalingen kunnen doorgaan."
         },
         "disabledReason": {
             "PAST_DUE": "Vereiste gegevens zijn te laat. Vul ze aan in Stripe.",
@@ -62,12 +62,12 @@
         "cook": {
             "APPROVAL_PENDING": {
                 "title": "Goedkeuring in behandeling",
-                "body": "Ons team neemt contact met je op voor een kort kennismakingsgesprek. Daarna kun je je wallet instellen en offertes maken."
+                "body": "Ons team neemt contact met je op voor een kort kennismakingsgesprek. Daarna kun je je financiën instellen en offertes maken."
             },
             "WALLET_RESET": {
                 "title": "Stripe heeft bijgewerkte gegevens nodig",
-                "body": "Ververs je wallet voordat uitbetalingen kunnen doorgaan.",
-                "action": "Naar wallet"
+                "body": "Ververs je financiën voordat uitbetalingen kunnen doorgaan.",
+                "action": "Naar financiën"
             },
             "DIRECT_BOOKING_REQUEST": {
                 "title": "{count, plural, one {Iemand heeft jou aangevraagd} other {# directe aanvragen}}",
@@ -82,9 +82,9 @@
         },
         "onboarding": {
             "WALLET": {
-                "title": "Stel je wallet in",
+                "title": "Stel je financiën in",
                 "body": "Stel Stripe Connect in om uitbetalingen te ontvangen.",
-                "action": "Naar wallet"
+                "action": "Naar financiën"
             },
             "TRAVEL": {
                 "title": "Voeg je vertrekpunt toe",
@@ -124,7 +124,7 @@
             "INVOICE_ADDRESS": {
                 "title": "Factuuradres toevoegen",
                 "body": "We hebben een factuuradres nodig zodat peopleeat platformkosten aan jou kan factureren.",
-                "action": "Naar wallet"
+                "action": "Naar financiën"
             }
         }
     },
@@ -165,22 +165,22 @@
             "title": "Extra's bij offertes",
             "description": "Optionele extra's voor je offertes, zoals wijn of taart."
         },
-        "wallet": {
-            "title": "Wallet",
-            "description": "Stel Stripe Connect-uitbetalingen in."
-        },
         "calls": {
             "title": "Belafspraken",
             "description": "Gesprekken plannen voor kennismakingen."
+        },
+        "finances": {
+            "title": "Financiën",
+            "description": "Stel Stripe Connect-uitbetalingen en je factuuradres in."
         }
     },
     "chrome": {
         "meal": "Gerecht",
         "menu": "Menu",
         "request": "Aanvraag",
-        "walletIncomplete": "Wallet vraagt om aandacht",
         "poolReviewCount": "{count} aanvragen om te bekijken",
-        "offersUnreadCount": "{count} ongelezen meldingen"
+        "offersUnreadCount": "{count} ongelezen meldingen",
+        "financesIncomplete": "Financiën vragen om aandacht"
     },
     "overview": {
         "allSetBody": "Je profiel is ingesteld. Gebruik de zijbalk voor aanvragen en offertes.",
@@ -644,56 +644,6 @@
         "maxDistance": "Maximale reisafstand",
         "expensesPerKm": "Reiskosten per km"
     },
-    "wallet": {
-        "statusRefreshFailed": "Status verversen is mislukt.",
-        "statusUpdated": "Walletstatus bijgewerkt.",
-        "onboardingFailed": "Starten van de onboarding is mislukt.",
-        "alreadySetUp": "Je wallet is al ingesteld.",
-        "mustBeApproved": "Je profiel moet eerst worden goedgekeurd.",
-        "dashboardFailed": "Het dashboard kon niet worden geopend.",
-        "addWallet": "Wallet toevoegen",
-        "continueSetup": "Instellen voortzetten",
-        "updateWallet": "Wallet bijwerken",
-        "openDashboard": "Stripe-dashboard openen",
-        "goToPool": "Naar pool met boekingsaanvragen",
-        "approvalPending": "Goedkeuring in behandeling",
-        "approvalPendingBody": "Ons team moet je profiel goedkeuren voordat je Stripe kunt instellen.",
-        "waitingStripe": "Je hoeft nu niets meer te doen. We werken de status bij zodra Stripe klaar is.",
-        "chargesNotEnabled": "Betalingen of uitbetalingen zijn nog niet ingeschakeld bij Stripe.",
-        "readyTitle": "Klaar om offertes te maken",
-        "readyBody": "In de pool met boekingsaanvragen vind je aanvragen in jouw regio. Maak offertes en verdien met peopleeat.",
-        "notUpdatedYet": "Nog niet bijgewerkt?",
-        "balance": "Saldo",
-        "available": "Beschikbaar",
-        "pending": "In behandeling",
-        "balanceHint": "Beschikbaar betekent klaar voor uitbetaling naar je bank. In behandeling wordt vrijgegeven na de wachtperiode van Stripe. Ons team geeft de overboeking naar je bank na het evenement vrij.",
-        "recentActivity": "Recente activiteit",
-        "noActivity": "Nog geen activiteit. Tegoeden verschijnen hier zodra klanten betalen.",
-        "invoiceAddress": {
-            "missingTitle": "Factuuradres ontbreekt",
-            "missingBody": "Voeg een factuuradres toe zodat peopleeat platformkosten aan jou kan factureren. Dit is gescheiden van je reisvertrekpunt.",
-            "addAction": "Factuuradres toevoegen",
-            "sectionTitle": "Factuuradres",
-            "editAction": "Bewerken",
-            "addTitle": "Factuuradres toevoegen",
-            "editTitle": "Factuuradres bewerken",
-            "dialogBody": "Dit adres verschijnt op peopleeat-facturen aan jou. Het is niet je reisvertrekpunt.",
-            "firstName": "Voornaam",
-            "lastName": "Achternaam",
-            "line1": "Straat en huisnummer",
-            "line2": "Adresregel 2 (optioneel)",
-            "postalCode": "Postcode",
-            "city": "Plaats",
-            "country": "Land",
-            "countryHelp": "Tweeletterige landcode, bijvoorbeeld DE of AT.",
-            "back": "Terug",
-            "reuseTravelOrigin": "Reisvertrekpunt gebruiken",
-            "reuseTravelOriginHint": "Vult de straatvelden vanuit je reisvertrekpunt. Je kunt ze daarna nog aanpassen.",
-            "travelOriginApplied": "Reisvertrekpunt gekopieerd naar het formulier.",
-            "searchAddress": "Adres zoeken",
-            "searchAddressHint": "Kies een suggestie om de straatvelden te vullen, of typ ze zelf."
-        }
-    },
     "invite": {
         "rewardUnlocked": "Beloning ontgrendeld",
         "shareTitle": "Word peopleeat-chef",
@@ -793,7 +743,6 @@
     "poolRequest": {
         "title": "Boekingsaanvraag uit de pool",
         "description": "Bekijk de aanvraag, wijs hem af of maak een offerte.",
-        "setupWalletFirst": "Stel eerst uitbetalingen in je wallet in.",
         "setupTravelFirst": "Stel eerst je vertrekpunt in onder Reizen.",
         "reasonRequired": "Geef een reden op.",
         "hidden": "Aanvraag verborgen.",
@@ -809,7 +758,6 @@
         "createHint": "Maak een offerte met optionele menu's en een prijs.",
         "customerReviews": "De klant bekijkt je offerte. Als die accepteert, kun je de details bespreken.",
         "setupPayouts": "Uitbetalingen instellen",
-        "goToWallet": "Naar wallet",
         "finishStripe": "Rond eerst het instellen van Stripe-uitbetalingen af voordat je offertes kunt maken.",
         "travelMissing": "Vertrekpunt ontbreekt",
         "goToTravel": "Naar reizen",
@@ -831,7 +779,9 @@
             "menuNotFeasible": "Menuwensen zijn niet haalbaar",
             "kitchen": "Onvoldoende keukenapparatuur",
             "unclear": "Aanvraag lijkt onduidelijk of onbetrouwbaar"
-        }
+        },
+        "setupFinancesFirst": "Stel eerst uitbetalingen in onder financiën in.",
+        "goToFinances": "Naar financiën"
     },
     "offers": {
         "status": "Offertestatus",
@@ -940,7 +890,7 @@
         "phoneSharingChat": "Telefoonnummers delen is niet toegestaan. Houd afspraken in deze chat.",
         "messagePlaceholder": "Bijv. Ik kijk uit naar je evenement…",
         "requirementsMissing": "Vereisten ontbreken",
-        "requirementsBody": "Wallet en vertrekpunt moeten zijn ingesteld.",
+        "requirementsBody": "Financiën en vertrekpunt moeten zijn ingesteld.",
         "guestPreview": "Zo ziet de gast je offerte",
         "sending": "Versturen…",
         "makeOffer": "Offerte maken"
@@ -1369,5 +1319,55 @@
         "select": "Foto kiezen",
         "saving": "Opslaan…",
         "remove": "Foto verwijderen"
+    },
+    "finances": {
+        "statusRefreshFailed": "Status verversen is mislukt.",
+        "statusUpdated": "Status van financiën bijgewerkt.",
+        "onboardingFailed": "Starten van de onboarding is mislukt.",
+        "alreadySetUp": "Je financiën zijn al ingesteld.",
+        "mustBeApproved": "Je profiel moet eerst worden goedgekeurd.",
+        "dashboardFailed": "Het dashboard kon niet worden geopend.",
+        "continueSetup": "Instellen voortzetten",
+        "openDashboard": "Stripe-dashboard openen",
+        "goToPool": "Naar pool met boekingsaanvragen",
+        "approvalPending": "Goedkeuring in behandeling",
+        "approvalPendingBody": "Ons team moet je profiel goedkeuren voordat je Stripe kunt instellen.",
+        "waitingStripe": "Je hoeft nu niets meer te doen. We werken de status bij zodra Stripe klaar is.",
+        "chargesNotEnabled": "Betalingen of uitbetalingen zijn nog niet ingeschakeld bij Stripe.",
+        "readyTitle": "Klaar om offertes te maken",
+        "readyBody": "In de pool met boekingsaanvragen vind je aanvragen in jouw regio. Maak offertes en verdien met peopleeat.",
+        "notUpdatedYet": "Nog niet bijgewerkt?",
+        "balance": "Saldo",
+        "available": "Beschikbaar",
+        "pending": "In behandeling",
+        "balanceHint": "Beschikbaar betekent klaar voor uitbetaling naar je bank. In behandeling wordt vrijgegeven na de wachtperiode van Stripe. Ons team geeft de overboeking naar je bank na het evenement vrij.",
+        "recentActivity": "Recente activiteit",
+        "noActivity": "Nog geen activiteit. Tegoeden verschijnen hier zodra klanten betalen.",
+        "invoiceAddress": {
+            "missingTitle": "Factuuradres ontbreekt",
+            "missingBody": "Voeg een factuuradres toe zodat peopleeat platformkosten aan jou kan factureren. Dit is gescheiden van je reisvertrekpunt.",
+            "addAction": "Factuuradres toevoegen",
+            "sectionTitle": "Factuuradres",
+            "editAction": "Bewerken",
+            "addTitle": "Factuuradres toevoegen",
+            "editTitle": "Factuuradres bewerken",
+            "dialogBody": "Dit adres verschijnt op peopleeat-facturen aan jou. Het is niet je reisvertrekpunt.",
+            "firstName": "Voornaam",
+            "lastName": "Achternaam",
+            "line1": "Straat en huisnummer",
+            "line2": "Adresregel 2 (optioneel)",
+            "postalCode": "Postcode",
+            "city": "Plaats",
+            "country": "Land",
+            "countryHelp": "Tweeletterige landcode, bijvoorbeeld DE of AT.",
+            "back": "Terug",
+            "reuseTravelOrigin": "Reisvertrekpunt gebruiken",
+            "reuseTravelOriginHint": "Vult de straatvelden vanuit je reisvertrekpunt. Je kunt ze daarna nog aanpassen.",
+            "travelOriginApplied": "Reisvertrekpunt gekopieerd naar het formulier.",
+            "searchAddress": "Adres zoeken",
+            "searchAddressHint": "Kies een suggestie om de straatvelden te vullen, of typ ze zelf."
+        },
+        "addFinances": "Financiën instellen",
+        "updateFinances": "Financiën bijwerken"
     }
 }

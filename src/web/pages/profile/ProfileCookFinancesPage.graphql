@@ -1,8 +1,8 @@
-# Wallet / Stripe Connect. Return/refresh land here with search params.
-# Invoice address collection lives here too (Getting started → Wallet).
+# Finances / Stripe Connect. Return/refresh land here with search params.
+# Invoice address collection lives here too (Getting started → Finances).
 # See docs/features/cook-profile.md.
 
-fragment ProfileWalletInvoiceAddress on InvoiceAddress {
+fragment ProfileFinancesInvoiceAddress on InvoiceAddress {
     companyName
     firstName
     lastName
@@ -13,7 +13,7 @@ fragment ProfileWalletInvoiceAddress on InvoiceAddress {
     line2
 }
 
-fragment ProfileWalletTravelOrigin on CookTravelOriginAddress {
+fragment ProfileFinancesTravelOrigin on CookTravelOriginAddress {
     displayText
     addressLine1
     addressLine2
@@ -22,20 +22,20 @@ fragment ProfileWalletTravelOrigin on CookTravelOriginAddress {
     country
 }
 
-fragment ProfileWalletCook on Cook {
+fragment ProfileFinancesCook on Cook {
     cookId
     isApprovedByAdmin
     stripeStatus
     canCreateOffers
     exactTravelOriginAddress {
-        ...ProfileWalletTravelOrigin
+        ...ProfileFinancesTravelOrigin
     }
     invoiceAddress {
-        ...ProfileWalletInvoiceAddress
+        ...ProfileFinancesInvoiceAddress
     }
 }
 
-fragment ProfileWalletStripeAccountDetails on CookStripeAccountDetails {
+fragment ProfileFinancesStripeAccountDetails on CookStripeAccountDetails {
     detailsSubmitted
     chargesEnabled
     payoutsEnabled
@@ -45,7 +45,7 @@ fragment ProfileWalletStripeAccountDetails on CookStripeAccountDetails {
     pendingVerification
 }
 
-fragment ProfileWalletStripeWallet on CookStripeWallet {
+fragment ProfileFinancesStripeWallet on CookStripeWallet {
     availableCents
     pendingCents
     transactions {
@@ -59,26 +59,26 @@ fragment ProfileWalletStripeWallet on CookStripeWallet {
     }
 }
 
-fragment ProfileWalletUser on User {
+fragment ProfileFinancesUser on User {
     userId
     firstName
     lastName
     cook {
-        ...ProfileWalletCook
+        ...ProfileFinancesCook
     }
 }
 
-query ProfileCookWalletPage {
+query ProfileCookFinancesPage {
     currentSession {
         sessionId
         user {
-            ...ProfileWalletUser
+            ...ProfileFinancesUser
             cook {
                 stripeAccountDetails {
-                    ...ProfileWalletStripeAccountDetails
+                    ...ProfileFinancesStripeAccountDetails
                 }
                 stripeWallet {
-                    ...ProfileWalletStripeWallet
+                    ...ProfileFinancesStripeWallet
                 }
             }
         }
@@ -86,35 +86,35 @@ query ProfileCookWalletPage {
 }
 
 # Live Stripe snapshots only — refetch after sync without putting Stripe on userUpdates.
-query ProfileCookWalletStripeDetails {
+query ProfileCookFinancesStripeDetails {
     currentSession {
         user {
             cook {
                 stripeAccountDetails {
-                    ...ProfileWalletStripeAccountDetails
+                    ...ProfileFinancesStripeAccountDetails
                 }
                 stripeWallet {
-                    ...ProfileWalletStripeWallet
+                    ...ProfileFinancesStripeWallet
                 }
             }
         }
     }
 }
 
-subscription ProfileCookWalletPageUpdates {
+subscription ProfileCookFinancesPageUpdates {
     userUpdates {
-        ...ProfileWalletUser
+        ...ProfileFinancesUser
     }
 }
 
-query ProfileCookWalletLocationSuggestions($searchText: String!, $onlyFullAddresses: Boolean! = true) {
+query ProfileCookFinancesLocationSuggestions($searchText: String!, $onlyFullAddresses: Boolean! = true) {
     currentSession {
         locationSuggestions(searchText: $searchText, onlyFullAddresses: $onlyFullAddresses) {
             displayText
             latitude
             longitude
             structuredAddress {
-                ...ProfileWalletTravelOrigin
+                ...ProfileFinancesTravelOrigin
                 latitude
                 longitude
                 state
@@ -155,7 +155,7 @@ mutation ProfileCookStripeDashboardUrlCreate {
     }
 }
 
-mutation ProfileCookWalletInvoiceAddressUpdate($input: CookUpdate!) {
+mutation ProfileCookFinancesInvoiceAddressUpdate($input: CookUpdate!) {
     user {
         cook {
             update(input: $input) {

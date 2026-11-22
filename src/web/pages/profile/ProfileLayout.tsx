@@ -54,7 +54,7 @@ export function ProfileLayout({ loaderData }: { loaderData: GqlCProfilePageQuery
             <Suspense fallback={null}>
                 <ProfileCookShell
                     isAdmin={isAdmin}
-                    walletBadge={attentionCounts.walletNeedsAttention}
+                    financesBadge={attentionCounts.walletNeedsAttention}
                     poolReviewCount={attentionCounts.bookingRequestPoolCount}
                     offersUnreadCount={attentionCounts.bookingRequestOfferUnreadCount}
                     assistantEnabled={featureToggleIsActive(activeFeatureToggleKeys, 'ASSISTANT_COOK')}

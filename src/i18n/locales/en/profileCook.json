@@ -46,9 +46,9 @@
     "stripe": {
         "statusDescription": {
             "EMPTY": "Set up your Stripe account so payouts can reach you.",
-            "PREPARED": "Wallet setup is not finished yet. Continue to enable payouts.",
-            "COMPLETED": "Your wallet is connected. Bank payouts are released by our team after the event.",
-            "ACTIVE_WAS_RESET": "Stripe needs updated details. Please refresh your wallet before payouts can continue."
+            "PREPARED": "Finances setup is not finished yet. Continue to enable payouts.",
+            "COMPLETED": "Your finances are connected. Bank payouts are released by our team after the event.",
+            "ACTIVE_WAS_RESET": "Stripe needs updated details. Please refresh your finances before payouts can continue."
         },
         "disabledReason": {
             "PAST_DUE": "Required details are overdue. Please complete them in Stripe.",
@@ -62,12 +62,12 @@
         "cook": {
             "APPROVAL_PENDING": {
                 "title": "Approval pending",
-                "body": "Our team will reach out for a short intro call. Afterwards you can set up your wallet and create offers."
+                "body": "Our team will reach out for a short intro call. Afterwards you can set up your finances and create offers."
             },
             "WALLET_RESET": {
                 "title": "Stripe needs updated details",
-                "body": "Please refresh your wallet before payouts can continue.",
-                "action": "Go to wallet"
+                "body": "Please refresh your finances before payouts can continue.",
+                "action": "Go to finances"
             },
             "DIRECT_BOOKING_REQUEST": {
                 "title": "{count, plural, one {Someone requested you} other {# direct requests}}",
@@ -84,12 +84,12 @@
             "INVOICE_ADDRESS": {
                 "title": "Add your invoice address",
                 "body": "We need a billing address so peopleeat can invoice you for platform fees.",
-                "action": "Go to wallet"
+                "action": "Go to finances"
             },
             "WALLET": {
-                "title": "Set up your wallet",
+                "title": "Set up your finances",
                 "body": "Set up Stripe Connect to receive payouts.",
-                "action": "Go to wallet"
+                "action": "Go to finances"
             },
             "TRAVEL": {
                 "title": "Add travel origin",
@@ -165,22 +165,22 @@
             "title": "Offer extras",
             "description": "Optional extras for your offers, such as wine or cake."
         },
-        "wallet": {
-            "title": "Wallet",
-            "description": "Set up Stripe Connect payouts."
-        },
         "calls": {
             "title": "Call appointments",
             "description": "Call scheduling for intro conversations."
+        },
+        "finances": {
+            "title": "Finances",
+            "description": "Set up Stripe Connect payouts and your invoice address."
         }
     },
     "chrome": {
         "meal": "Meal",
         "menu": "Menu",
         "request": "Request",
-        "walletIncomplete": "Wallet needs attention",
         "poolReviewCount": "{count} requests to review",
-        "offersUnreadCount": "{count} unread notifications"
+        "offersUnreadCount": "{count} unread notifications",
+        "financesIncomplete": "Finances need attention"
     },
     "overview": {
         "allSetBody": "Your profile is set up. Use the sidebar for requests and offers.",
@@ -644,56 +644,6 @@
         "maxDistance": "Maximum travel distance",
         "expensesPerKm": "Travel expenses per km"
     },
-    "wallet": {
-        "statusRefreshFailed": "Could not refresh status.",
-        "statusUpdated": "Wallet status updated.",
-        "onboardingFailed": "Could not start onboarding.",
-        "alreadySetUp": "Wallet is already set up.",
-        "mustBeApproved": "Your profile must be approved first.",
-        "dashboardFailed": "Could not open the dashboard.",
-        "addWallet": "Add wallet",
-        "continueSetup": "Continue setup",
-        "updateWallet": "Update wallet",
-        "openDashboard": "Open Stripe dashboard",
-        "goToPool": "Go to booking request pool",
-        "approvalPending": "Approval pending",
-        "approvalPendingBody": "Your profile must be approved by our team before you can set up Stripe.",
-        "waitingStripe": "Nothing more to do right now. We will update the status once Stripe finishes.",
-        "chargesNotEnabled": "Charges or payouts are not enabled on Stripe yet.",
-        "readyTitle": "Ready to make offers",
-        "readyBody": "In the booking request pool you will find requests in your area. Create offers and earn with peopleeat.",
-        "notUpdatedYet": "Not updated yet?",
-        "balance": "Balance",
-        "available": "Available",
-        "pending": "Pending",
-        "balanceHint": "Available means ready for bank payout. Pending clears after the Stripe hold period. Our team releases the transfer to your bank after the event.",
-        "recentActivity": "Recent activity",
-        "noActivity": "No activity yet. Credits appear here once customers pay.",
-        "invoiceAddress": {
-            "missingTitle": "Invoice address missing",
-            "missingBody": "Add a billing address so peopleeat can invoice you for platform fees. This is separate from your travel origin.",
-            "addAction": "Add invoice address",
-            "sectionTitle": "Invoice address",
-            "editAction": "Edit",
-            "addTitle": "Add invoice address",
-            "editTitle": "Edit invoice address",
-            "dialogBody": "This address appears on peopleeat invoices to you. It is not your travel origin.",
-            "firstName": "First name",
-            "lastName": "Last name",
-            "line1": "Street and number",
-            "line2": "Address line 2 (optional)",
-            "postalCode": "Postal code",
-            "city": "City",
-            "country": "Country",
-            "countryHelp": "Two-letter country code, for example DE or AT.",
-            "back": "Back",
-            "reuseTravelOrigin": "Use travel origin",
-            "reuseTravelOriginHint": "Fills the street fields from your travel origin. You can still edit them.",
-            "travelOriginApplied": "Travel origin copied into the form.",
-            "searchAddress": "Search address",
-            "searchAddressHint": "Pick a suggestion to fill the street fields, or type them manually."
-        }
-    },
     "invite": {
         "rewardUnlocked": "Reward unlocked",
         "shareTitle": "Become a peopleeat chef",
@@ -793,7 +743,6 @@
     "poolRequest": {
         "title": "Booking request from the pool",
         "description": "Review the request, decline it, or create an offer.",
-        "setupWalletFirst": "Please set up payouts in your wallet first.",
         "setupTravelFirst": "Please set your travel origin under Travel first.",
         "reasonRequired": "Please provide a reason.",
         "hidden": "Request hidden.",
@@ -809,7 +758,6 @@
         "createHint": "Create an offer with optional menus and a price.",
         "customerReviews": "The customer reviews your offer. If they accept, you can discuss details.",
         "setupPayouts": "Set up payouts",
-        "goToWallet": "Go to wallet",
         "finishStripe": "Before you can create offers, finish setting up Stripe payouts.",
         "travelMissing": "Travel origin missing",
         "goToTravel": "Go to travel",
@@ -831,7 +779,9 @@
             "menuNotFeasible": "Menu requirements not feasible",
             "kitchen": "Insufficient kitchen equipment",
             "unclear": "Request appears unclear / unreliable"
-        }
+        },
+        "setupFinancesFirst": "Please set up payouts in finances first.",
+        "goToFinances": "Go to finances"
     },
     "offers": {
         "status": "Offer status",
@@ -940,7 +890,7 @@
         "phoneSharingChat": "Sharing phone numbers is not allowed. Please keep arrangements in this chat.",
         "messagePlaceholder": "e.g. Looking forward to your event…",
         "requirementsMissing": "Requirements missing",
-        "requirementsBody": "Wallet and travel origin must be set up.",
+        "requirementsBody": "Finances and travel origin must be set up.",
         "guestPreview": "How the guest sees your offer",
         "sending": "Sending…",
         "makeOffer": "Make offer"
@@ -1369,5 +1319,55 @@
         "select": "Select picture",
         "saving": "Saving…",
         "remove": "Remove picture"
+    },
+    "finances": {
+        "statusRefreshFailed": "Could not refresh status.",
+        "statusUpdated": "Finances status updated.",
+        "onboardingFailed": "Could not start onboarding.",
+        "alreadySetUp": "Finances are already set up.",
+        "mustBeApproved": "Your profile must be approved first.",
+        "dashboardFailed": "Could not open the dashboard.",
+        "continueSetup": "Continue setup",
+        "openDashboard": "Open Stripe dashboard",
+        "goToPool": "Go to booking request pool",
+        "approvalPending": "Approval pending",
+        "approvalPendingBody": "Your profile must be approved by our team before you can set up Stripe.",
+        "waitingStripe": "Nothing more to do right now. We will update the status once Stripe finishes.",
+        "chargesNotEnabled": "Charges or payouts are not enabled on Stripe yet.",
+        "readyTitle": "Ready to make offers",
+        "readyBody": "In the booking request pool you will find requests in your area. Create offers and earn with peopleeat.",
+        "notUpdatedYet": "Not updated yet?",
+        "balance": "Balance",
+        "available": "Available",
+        "pending": "Pending",
+        "balanceHint": "Available means ready for bank payout. Pending clears after the Stripe hold period. Our team releases the transfer to your bank after the event.",
+        "recentActivity": "Recent activity",
+        "noActivity": "No activity yet. Credits appear here once customers pay.",
+        "invoiceAddress": {
+            "missingTitle": "Invoice address missing",
+            "missingBody": "Add a billing address so peopleeat can invoice you for platform fees. This is separate from your travel origin.",
+            "addAction": "Add invoice address",
+            "sectionTitle": "Invoice address",
+            "editAction": "Edit",
+            "addTitle": "Add invoice address",
+            "editTitle": "Edit invoice address",
+            "dialogBody": "This address appears on peopleeat invoices to you. It is not your travel origin.",
+            "firstName": "First name",
+            "lastName": "Last name",
+            "line1": "Street and number",
+            "line2": "Address line 2 (optional)",
+            "postalCode": "Postal code",
+            "city": "City",
+            "country": "Country",
+            "countryHelp": "Two-letter country code, for example DE or AT.",
+            "back": "Back",
+            "reuseTravelOrigin": "Use travel origin",
+            "reuseTravelOriginHint": "Fills the street fields from your travel origin. You can still edit them.",
+            "travelOriginApplied": "Travel origin copied into the form.",
+            "searchAddress": "Search address",
+            "searchAddressHint": "Pick a suggestion to fill the street fields, or type them manually."
+        },
+        "addFinances": "Set up finances",
+        "updateFinances": "Update finances"
     }
 }

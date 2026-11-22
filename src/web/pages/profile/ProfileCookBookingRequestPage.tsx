@@ -146,7 +146,7 @@ export function ProfileCookBookingRequestPage({
 
     function tryOpenOfferCreate() {
         if (!stripeReady) {
-            toast.error(t(locale, 'profileCook', 'poolRequest.setupWalletFirst'));
+            toast.error(t(locale, 'profileCook', 'poolRequest.setupFinancesFirst'));
             return;
         }
         if (!hasTravelOrigin) {
@@ -256,7 +256,7 @@ export function ProfileCookBookingRequestPage({
                         title={t(locale, 'profileCook', 'poolRequest.setupPayouts')}
                         action={
                             <Button asChild variant="outline" size="sm">
-                                <Link to="/{-$locale}/profile/wallet">{t(locale, 'profileCook', 'poolRequest.goToWallet')}</Link>
+                                <Link to="/{-$locale}/profile/finances">{t(locale, 'profileCook', 'poolRequest.goToFinances')}</Link>
                             </Button>
                         }
                     >

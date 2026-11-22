@@ -34,8 +34,8 @@ async function setupCook(
 }
 
 const urls = {
-    returnUrl: `${environmentVariables.webPageUrl}/profile/wallet?return=1`,
-    refreshUrl: `${environmentVariables.webPageUrl}/profile/wallet?refresh=1`,
+    returnUrl: `${environmentVariables.webPageUrl}/profile/finances?return=1`,
+    refreshUrl: `${environmentVariables.webPageUrl}/profile/finances?refresh=1`,
 };
 
 describe('cookStripeOnboardingStart', () => {

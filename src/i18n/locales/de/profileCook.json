@@ -46,9 +46,9 @@
     "stripe": {
         "statusDescription": {
             "EMPTY": "Richte dein Stripe-Konto ein, damit Auszahlungen an dich möglich sind.",
-            "PREPARED": "Die Wallet-Einrichtung ist noch nicht abgeschlossen. Bitte fahre fort, um Auszahlungen zu aktivieren.",
-            "COMPLETED": "Dein Wallet ist verbunden. Auszahlungen auf dein Bankkonto löst unser Team nach dem Event aus.",
-            "ACTIVE_WAS_RESET": "Stripe benötigt aktualisierte Angaben. Bitte aktualisiere dein Wallet, bevor Auszahlungen weiterlaufen."
+            "PREPARED": "Die Einrichtung der Finanzen ist noch nicht abgeschlossen. Bitte fahre fort, um Auszahlungen zu aktivieren.",
+            "COMPLETED": "Deine Finanzen sind verbunden. Auszahlungen auf dein Bankkonto löst unser Team nach dem Event aus.",
+            "ACTIVE_WAS_RESET": "Stripe benötigt aktualisierte Angaben. Bitte aktualisiere deine Finanzen, bevor Auszahlungen weiterlaufen."
         },
         "disabledReason": {
             "PAST_DUE": "Pflichtangaben sind überfällig. Bitte vervollständige sie in Stripe.",
@@ -62,12 +62,12 @@
         "cook": {
             "APPROVAL_PENDING": {
                 "title": "Freischaltung ausstehend",
-                "body": "Unser Team meldet sich für ein kurzes Kennenlerngespräch. Danach kannst du dein Wallet einrichten und Angebote erstellen."
+                "body": "Unser Team meldet sich für ein kurzes Kennenlerngespräch. Danach kannst du deine Finanzen einrichten und Angebote erstellen."
             },
             "WALLET_RESET": {
                 "title": "Stripe benötigt aktualisierte Angaben",
-                "body": "Bitte aktualisiere dein Wallet, bevor Auszahlungen weiterlaufen.",
-                "action": "Zum Wallet"
+                "body": "Bitte aktualisiere deine Finanzen, bevor Auszahlungen weiterlaufen.",
+                "action": "Zu den Finanzen"
             },
             "DIRECT_BOOKING_REQUEST": {
                 "title": "{count, plural, one {Jemand hat dich direkt angefragt} other {# direkte Anfragen}}",
@@ -84,12 +84,12 @@
             "INVOICE_ADDRESS": {
                 "title": "Rechnungsadresse hinterlegen",
                 "body": "Wir brauchen eine Rechnungsadresse, damit peopleeat dir Plattformgebühren in Rechnung stellen kann.",
-                "action": "Zum Wallet"
+                "action": "Zu den Finanzen"
             },
             "WALLET": {
-                "title": "Wallet einrichten",
+                "title": "Finanzen einrichten",
                 "body": "Richte Stripe Connect ein, um Auszahlungen zu erhalten.",
-                "action": "Zum Wallet"
+                "action": "Zu den Finanzen"
             },
             "TRAVEL": {
                 "title": "Reiseadresse fehlt",
@@ -165,22 +165,22 @@
             "title": "Zusatzleistungen",
             "description": "Optionale Leistungen für deine Angebote, etwa Wein oder eine Torte."
         },
-        "wallet": {
-            "title": "Wallet",
-            "description": "Stripe Connect Auszahlungen einrichten."
-        },
         "calls": {
             "title": "Gesprächstermine",
             "description": "Anrufplanung für Kennenlerngespräche."
+        },
+        "finances": {
+            "title": "Finanzen",
+            "description": "Stripe-Connect-Auszahlungen und Rechnungsadresse einrichten."
         }
     },
     "chrome": {
         "meal": "Gericht",
         "menu": "Menü",
         "request": "Anfrage",
-        "walletIncomplete": "Wallet erfordert Aufmerksamkeit",
         "poolReviewCount": "{count} Anfragen zur Prüfung",
-        "offersUnreadCount": "{count} ungelesene Benachrichtigungen"
+        "offersUnreadCount": "{count} ungelesene Benachrichtigungen",
+        "financesIncomplete": "Finanzen erfordern Aufmerksamkeit"
     },
     "overview": {
         "allSetBody": "Dein Profil ist eingerichtet. Nutze die Seitenleiste für Anfragen und Angebote.",
@@ -644,56 +644,6 @@
         "maxDistance": "Maximale Reisestrecke",
         "expensesPerKm": "Reisekosten je km"
     },
-    "wallet": {
-        "statusRefreshFailed": "Status konnte nicht aktualisiert werden.",
-        "statusUpdated": "Wallet-Status aktualisiert.",
-        "onboardingFailed": "Onboarding konnte nicht gestartet werden.",
-        "alreadySetUp": "Wallet ist bereits eingerichtet.",
-        "mustBeApproved": "Dein Profil muss zuerst freigeschaltet werden.",
-        "dashboardFailed": "Dashboard konnte nicht geöffnet werden.",
-        "addWallet": "Wallet hinzufügen",
-        "continueSetup": "Einrichtung fortsetzen",
-        "updateWallet": "Wallet aktualisieren",
-        "openDashboard": "Stripe-Dashboard öffnen",
-        "goToPool": "Zum Anfragen-Pool",
-        "approvalPending": "Freischaltung ausstehend",
-        "approvalPendingBody": "Dein Profil muss zuerst von unserem Team freigeschaltet werden, bevor du Stripe einrichten kannst.",
-        "waitingStripe": "Du musst gerade nichts weiter tun. Wir aktualisieren den Status, sobald Stripe fertig ist.",
-        "chargesNotEnabled": "Zahlungen oder Auszahlungen sind bei Stripe noch nicht freigeschaltet.",
-        "readyTitle": "Bereit für Angebote",
-        "readyBody": "Im Anfragen-Pool findest du Buchungsanfragen in deinem Umkreis. Erstelle Angebote und verdiene mit peopleeat.",
-        "notUpdatedYet": "Noch nicht aktualisiert?",
-        "balance": "Guthaben",
-        "available": "Verfügbar",
-        "pending": "Ausstehend",
-        "balanceHint": "Verfügbar bedeutet bereit für die Bankauszahlung. Ausstehend wird nach der Stripe-Frist freigegeben. Die Überweisung auf dein Konto löst unser Team nach dem Event aus.",
-        "recentActivity": "Letzte Bewegungen",
-        "noActivity": "Noch keine Bewegungen. Sobald Kunden zahlen, erscheinen Gutschriften hier.",
-        "invoiceAddress": {
-            "missingTitle": "Rechnungsadresse fehlt",
-            "missingBody": "Hinterlege eine Rechnungsadresse, damit peopleeat dir Plattformgebühren in Rechnung stellen kann. Das ist getrennt von deiner Reiseadresse.",
-            "addAction": "Rechnungsadresse hinzufügen",
-            "sectionTitle": "Rechnungsadresse",
-            "editAction": "Bearbeiten",
-            "addTitle": "Rechnungsadresse hinzufügen",
-            "editTitle": "Rechnungsadresse bearbeiten",
-            "dialogBody": "Diese Adresse erscheint auf peopleeat-Rechnungen an dich. Sie ist nicht deine Reiseadresse.",
-            "firstName": "Vorname",
-            "lastName": "Nachname",
-            "line1": "Straße und Hausnummer",
-            "line2": "Adresszeile 2 (optional)",
-            "postalCode": "Postleitzahl",
-            "city": "Stadt",
-            "country": "Land",
-            "countryHelp": "Zweistelliger Ländercode, zum Beispiel DE oder AT.",
-            "back": "Zurück",
-            "reuseTravelOrigin": "Reiseadresse übernehmen",
-            "reuseTravelOriginHint": "Übernimmt die Straßenfelder aus deiner Reiseadresse. Du kannst sie danach noch anpassen.",
-            "travelOriginApplied": "Reiseadresse in das Formular übernommen.",
-            "searchAddress": "Adresse suchen",
-            "searchAddressHint": "Wähle einen Vorschlag, um die Straßenfelder zu füllen, oder tippe sie selbst ein."
-        }
-    },
     "invite": {
         "rewardUnlocked": "Belohnung freigeschaltet",
         "shareTitle": "peopleeat Koch werden",
@@ -793,7 +743,6 @@
     "poolRequest": {
         "title": "Buchungsanfrage aus dem Pool",
         "description": "Anfrage prüfen, ablehnen oder ein Angebot erstellen.",
-        "setupWalletFirst": "Bitte richte zuerst deine Auszahlungen in der Wallet ein.",
         "setupTravelFirst": "Bitte hinterlege zuerst deinen Reise-Startort unter Reise.",
         "reasonRequired": "Bitte gib einen Grund an.",
         "hidden": "Anfrage ausgeblendet.",
@@ -809,7 +758,6 @@
         "createHint": "Erstelle ein Angebot mit optionalen Menüs und einem Preis.",
         "customerReviews": "Der Kunde prüft dein Angebot. Bei Annahme könnt ihr Details klären.",
         "setupPayouts": "Auszahlungen einrichten",
-        "goToWallet": "Zur Wallet",
         "finishStripe": "Bevor du Angebote erstellen kannst, musst du deine Stripe-Auszahlungen abschließen.",
         "travelMissing": "Reise-Startort fehlt",
         "goToTravel": "Zur Reise",
@@ -831,7 +779,9 @@
             "menuNotFeasible": "Menüanforderungen nicht umsetzbar",
             "kitchen": "Küchenausstattung unzureichend",
             "unclear": "Anfrage wirkt unklar / unseriös"
-        }
+        },
+        "setupFinancesFirst": "Bitte richte zuerst deine Auszahlungen unter Finanzen ein.",
+        "goToFinances": "Zu den Finanzen"
     },
     "offers": {
         "status": "Angebots-Status",
@@ -940,7 +890,7 @@
         "phoneSharingChat": "Das Teilen von Telefonnummern ist nicht erlaubt. Bitte bleibe für Absprachen hier im Chat.",
         "messagePlaceholder": "z. B. Freue mich auf euer Event…",
         "requirementsMissing": "Voraussetzungen fehlen",
-        "requirementsBody": "Wallet und Reise-Startort müssen eingerichtet sein.",
+        "requirementsBody": "Finanzen und Reise-Startort müssen eingerichtet sein.",
         "guestPreview": "So sieht der Gast dein Angebot",
         "sending": "Wird gesendet…",
         "makeOffer": "Angebot machen"
@@ -1369,5 +1319,55 @@
         "select": "Bild auswählen",
         "saving": "Speichert…",
         "remove": "Bild entfernen"
+    },
+    "finances": {
+        "statusRefreshFailed": "Status konnte nicht aktualisiert werden.",
+        "statusUpdated": "Finanzstatus aktualisiert.",
+        "onboardingFailed": "Onboarding konnte nicht gestartet werden.",
+        "alreadySetUp": "Finanzen sind bereits eingerichtet.",
+        "mustBeApproved": "Dein Profil muss zuerst freigeschaltet werden.",
+        "dashboardFailed": "Dashboard konnte nicht geöffnet werden.",
+        "continueSetup": "Einrichtung fortsetzen",
+        "openDashboard": "Stripe-Dashboard öffnen",
+        "goToPool": "Zum Anfragen-Pool",
+        "approvalPending": "Freischaltung ausstehend",
+        "approvalPendingBody": "Dein Profil muss zuerst von unserem Team freigeschaltet werden, bevor du Stripe einrichten kannst.",
+        "waitingStripe": "Du musst gerade nichts weiter tun. Wir aktualisieren den Status, sobald Stripe fertig ist.",
+        "chargesNotEnabled": "Zahlungen oder Auszahlungen sind bei Stripe noch nicht freigeschaltet.",
+        "readyTitle": "Bereit für Angebote",
+        "readyBody": "Im Anfragen-Pool findest du Buchungsanfragen in deinem Umkreis. Erstelle Angebote und verdiene mit peopleeat.",
+        "notUpdatedYet": "Noch nicht aktualisiert?",
+        "balance": "Guthaben",
+        "available": "Verfügbar",
+        "pending": "Ausstehend",
+        "balanceHint": "Verfügbar bedeutet bereit für die Bankauszahlung. Ausstehend wird nach der Stripe-Frist freigegeben. Die Überweisung auf dein Konto löst unser Team nach dem Event aus.",
+        "recentActivity": "Letzte Bewegungen",
+        "noActivity": "Noch keine Bewegungen. Sobald Kunden zahlen, erscheinen Gutschriften hier.",
+        "invoiceAddress": {
+            "missingTitle": "Rechnungsadresse fehlt",
+            "missingBody": "Hinterlege eine Rechnungsadresse, damit peopleeat dir Plattformgebühren in Rechnung stellen kann. Das ist getrennt von deiner Reiseadresse.",
+            "addAction": "Rechnungsadresse hinzufügen",
+            "sectionTitle": "Rechnungsadresse",
+            "editAction": "Bearbeiten",
+            "addTitle": "Rechnungsadresse hinzufügen",
+            "editTitle": "Rechnungsadresse bearbeiten",
+            "dialogBody": "Diese Adresse erscheint auf peopleeat-Rechnungen an dich. Sie ist nicht deine Reiseadresse.",
+            "firstName": "Vorname",
+            "lastName": "Nachname",
+            "line1": "Straße und Hausnummer",
+            "line2": "Adresszeile 2 (optional)",
+            "postalCode": "Postleitzahl",
+            "city": "Stadt",
+            "country": "Land",
+            "countryHelp": "Zweistelliger Ländercode, zum Beispiel DE oder AT.",
+            "back": "Zurück",
+            "reuseTravelOrigin": "Reiseadresse übernehmen",
+            "reuseTravelOriginHint": "Übernimmt die Straßenfelder aus deiner Reiseadresse. Du kannst sie danach noch anpassen.",
+            "travelOriginApplied": "Reiseadresse in das Formular übernommen.",
+            "searchAddress": "Adresse suchen",
+            "searchAddressHint": "Wähle einen Vorschlag, um die Straßenfelder zu füllen, oder tippe sie selbst ein."
+        },
+        "addFinances": "Finanzen einrichten",
+        "updateFinances": "Finanzen aktualisieren"
     }
 }

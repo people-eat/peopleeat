@@ -16,7 +16,7 @@ Keys today:
 - AI booking-request adjusted message (cook-facing rewrite after create; see
   [ai-booking-request-message.md](./ai-booking-request-message.md))
 - Cook biography AI writing (Write / Improve with AI; short summary generation stays always on)
-- Cook wallet Stripe balance (live Connect balance + recent transactions on `/profile/wallet`)
+- Cook wallet Stripe balance (live Connect balance + recent transactions on `/profile/finances`)
 - Cook analytics (overview KPIs + `/profile/analytics`; see [cook-analytics.md](./cook-analytics.md))
 - Cook other profiles (website, Instagram, Google, Take a Chef, and other platforms on the chef profile; admin review stays available)
 - Cook public profile menus (published menus section on `/chefs/$pathName` and cook `/profile/chef-profile` Preview)
@@ -144,7 +144,7 @@ Wired today:
   summary) is not toggled and always runs. Admin shells keep the AI write button visible for ops (same as publication / restrictions); the
   server still rejects when the effective toggle is off
 - **Cook wallet Stripe balance** (`COOK_WALLET_STRIPE_BALANCE`) — shows live Connect available/pending balance and recent balance
-  transactions on `/profile/wallet`; `Cook.stripeWallet` returns null when off for the cook `userId` (no Stripe balance calls)
+  transactions on `/profile/finances`; `Cook.stripeWallet` returns null when off for the cook `userId` (no Stripe balance calls)
 - **Cook analytics** (`COOK_ANALYTICS`) — shows overview KPIs and `/profile/analytics`; `Cook.analytics` returns null when off for the cook
   `userId`. See [cook-analytics.md](./cook-analytics.md)
 - **Cook public profile share** (`COOK_PUBLIC_PROFILE_SHARE`) — shows Share on `/chefs/$pathName` (top bar) and on `/profile/chef-profile`

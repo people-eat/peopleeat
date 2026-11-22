@@ -90,7 +90,7 @@ Stripe account + Dashboard link, call scheduling + weekly windows, About logo, t
 note (`null` / empty / custom text), other public profiles for review (website, Instagram, Google, Take a Chef, and named platforms; always
 visible to admins, not gated by `COOK_PRESENCE_LINKS`), public URL (`/chefs/<pathName>` with copy and previous slugs), public chef link when
 approved + visible, featured city/venue/occasion landings, and created/last-modified timestamps; then a **Finances** block with live Stripe
-requirements checklist + Connect available/pending balance and recent balance transactions (same data as the cook wallet page when
+requirements checklist + Connect available/pending balance and recent balance transactions (same data as the cook finances page when
 `COOK_WALLET_STRIPE_BALANCE` is on — admin always loads it, not gated by that toggle; fetched only on this tab). Confirm-gated
 approve/revoke and public-visibility actions sit at the bottom. Legacy price/participant columns stay on `AdminCook` / `CookUpdate` but are
 not shown here (unused in product matching). **Edit** in the pinned footer opens `/admin/users/<userId>/cook-profile/edit`, where admins

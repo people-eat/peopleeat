@@ -1,6 +1,7 @@
 import type { ParseKeys } from 'i18next';
 import type { LucideIcon } from 'lucide-react';
 import {
+    BanknoteIcon,
     BarChart3Icon,
     BookOpenIcon,
     ChefHatIcon,
@@ -11,7 +12,6 @@ import {
     RadarIcon,
     UserPlusIcon,
     UtensilsIcon,
-    WalletIcon,
 } from 'lucide-react';
 
 import { t } from '../../../i18n/t';
@@ -27,7 +27,7 @@ export type CookNavSlug =
     | 'meals'
     | 'menus'
     | 'offer-addons'
-    | 'wallet'
+    | 'finances'
     | 'calls';
 
 export type CookNavRoute = {
@@ -49,7 +49,7 @@ const NAV_TITLE_KEY = {
     meals: 'nav.meals.title',
     menus: 'nav.menus.title',
     'offer-addons': 'nav.offerAddons.title',
-    wallet: 'nav.wallet.title',
+    finances: 'nav.finances.title',
     calls: 'nav.calls.title',
 } as const satisfies Record<CookNavSlug, ParseKeys<'profileCook'>>;
 
@@ -63,7 +63,7 @@ const NAV_DESCRIPTION_KEY = {
     meals: 'nav.meals.description',
     menus: 'nav.menus.description',
     'offer-addons': 'nav.offerAddons.description',
-    wallet: 'nav.wallet.description',
+    finances: 'nav.finances.description',
     calls: 'nav.calls.description',
 } as const satisfies Record<CookNavSlug, ParseKeys<'profileCook'>>;
 
@@ -149,12 +149,12 @@ export const COOK_NAV_ROUTES: readonly CookNavRoute[] = [
         icon: PackagePlusIcon,
     },
     {
-        slug: 'wallet',
-        path: '/profile/wallet',
-        to: '/{-$locale}/profile/wallet',
-        title: cookNavTitle('wallet'),
-        description: cookNavDescription('wallet'),
-        icon: WalletIcon,
+        slug: 'finances',
+        path: '/profile/finances',
+        to: '/{-$locale}/profile/finances',
+        title: cookNavTitle('finances'),
+        description: cookNavDescription('finances'),
+        icon: BanknoteIcon,
     },
     {
         slug: 'calls',

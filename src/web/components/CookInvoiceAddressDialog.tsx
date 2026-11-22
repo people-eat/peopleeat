@@ -12,7 +12,7 @@ import type {
     GqlCInvoiceAddressInput,
     GqlCLocationSuggestion,
 } from '../graphql/generated';
-import { ProfileCookWalletInvoiceAddressUpdateDocument, ProfileCookWalletLocationSuggestionsDocument } from '../graphql/generated';
+import { ProfileCookFinancesInvoiceAddressUpdateDocument, ProfileCookFinancesLocationSuggestionsDocument } from '../graphql/generated';
 import { useIsMobile } from '../hooks/use-mobile';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useLocale } from '../hooks/useLocale';
@@ -89,7 +89,7 @@ function isInvoiceAddressComplete(value: GqlCInvoiceAddressInput): boolean {
 export function CookInvoiceAddressDialog({ open, onOpenChange, invoiceAddress, travelOrigin, seed }: CookInvoiceAddressDialogProps) {
     const locale = useLocale();
     const isMobile = useIsMobile();
-    const [, updateCook] = useMutation(ProfileCookWalletInvoiceAddressUpdateDocument);
+    const [, updateCook] = useMutation(ProfileCookFinancesInvoiceAddressUpdateDocument);
     const editing = invoiceAddress != null;
     const [locationSearchText, setLocationSearchText] = useState('');
     const [selectedLocation, setSelectedLocation] = useState<GqlCLocationSuggestion | null>(null);
@@ -128,7 +128,7 @@ export function CookInvoiceAddressDialog({ open, onOpenChange, invoiceAddress, t
     const isSubmitting = useSelector(form.store, (state) => state.isSubmitting);
     const debouncedLocationSearch = useDebouncedValue(locationSearchText, 300);
     const [{ data: suggestionsData, fetching: suggestionsFetching }] = useQuery({
-        query: ProfileCookWalletLocationSuggestionsDocument,
+        query: ProfileCookFinancesLocationSuggestionsDocument,
         variables: { searchText: debouncedLocationSearch, onlyFullAddresses: true },
         pause: !open || debouncedLocationSearch.trim().length < 3 || selectedLocation?.displayText === locationSearchText,
     });
@@ -152,7 +152,7 @@ export function CookInvoiceAddressDialog({ open, onOpenChange, invoiceAddress, t
         form.setFieldValue('country', next.country);
         setLocationSearchText('');
         setSelectedLocation(null);
-        toast.message(t(locale, 'profileCook', 'wallet.invoiceAddress.travelOriginApplied'));
+        toast.message(t(locale, 'profileCook', 'finances.invoiceAddress.travelOriginApplied'));
     }
 
     function applySuggestion(suggestion: GqlCLocationSuggestion) {
@@ -169,20 +169,20 @@ export function CookInvoiceAddressDialog({ open, onOpenChange, invoiceAddress, t
     }
 
     const title = editing
-        ? t(locale, 'profileCook', 'wallet.invoiceAddress.editTitle')
-        : t(locale, 'profileCook', 'wallet.invoiceAddress.addTitle');
-    const description = t(locale, 'profileCook', 'wallet.invoiceAddress.dialogBody');
-    const backLabel = t(locale, 'profileCook', 'wallet.invoiceAddress.back');
+        ? t(locale, 'profileCook', 'finances.invoiceAddress.editTitle')
+        : t(locale, 'profileCook', 'finances.invoiceAddress.addTitle');
+    const description = t(locale, 'profileCook', 'finances.invoiceAddress.dialogBody');
+    const backLabel = t(locale, 'profileCook', 'finances.invoiceAddress.back');
 
     const identityFields = (
         <div className="grid content-start gap-4">
             {travelOrigin != null ? (
                 <div className="grid gap-2">
                     <Button type="button" variant="outline" size="sm" className="justify-self-start" onClick={applyTravelOrigin}>
-                        {t(locale, 'profileCook', 'wallet.invoiceAddress.reuseTravelOrigin')}
+                        {t(locale, 'profileCook', 'finances.invoiceAddress.reuseTravelOrigin')}
                     </Button>
                     <p className="text-sm text-muted-foreground">
-                        {t(locale, 'profileCook', 'wallet.invoiceAddress.reuseTravelOriginHint')}
+                        {t(locale, 'profileCook', 'finances.invoiceAddress.reuseTravelOriginHint')}
                     </p>
                 </div>
             ) : null}
@@ -208,7 +208,7 @@ export function CookInvoiceAddressDialog({ open, onOpenChange, invoiceAddress, t
                 {(field) => (
                     <div className="grid gap-1.5">
                         <label htmlFor="cook-invoice-first-name" className="text-sm font-medium">
-                            {t(locale, 'profileCook', 'wallet.invoiceAddress.firstName')}
+                            {t(locale, 'profileCook', 'finances.invoiceAddress.firstName')}
                         </label>
                         <Input
                             id="cook-invoice-first-name"
@@ -226,7 +226,7 @@ export function CookInvoiceAddressDialog({ open, onOpenChange, invoiceAddress, t
                 {(field) => (
                     <div className="grid gap-1.5">
                         <label htmlFor="cook-invoice-last-name" className="text-sm font-medium">
-                            {t(locale, 'profileCook', 'wallet.invoiceAddress.lastName')}
+                            {t(locale, 'profileCook', 'finances.invoiceAddress.lastName')}
                         </label>
                         <Input
                             id="cook-invoice-last-name"
@@ -246,7 +246,7 @@ export function CookInvoiceAddressDialog({ open, onOpenChange, invoiceAddress, t
     const addressFields = (
         <div className="grid content-start gap-4">
             <div className="grid gap-1.5">
-                <span className="text-sm font-medium">{t(locale, 'profileCook', 'wallet.invoiceAddress.searchAddress')}</span>
+                <span className="text-sm font-medium">{t(locale, 'profileCook', 'finances.invoiceAddress.searchAddress')}</span>
                 <Combobox
                     filter={null}
                     items={suggestions.map((suggestion) => suggestion.displayText)}
@@ -285,14 +285,14 @@ export function CookInvoiceAddressDialog({ open, onOpenChange, invoiceAddress, t
                         </ComboboxList>
                     </ComboboxContent>
                 </Combobox>
-                <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'wallet.invoiceAddress.searchAddressHint')}</p>
+                <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'finances.invoiceAddress.searchAddressHint')}</p>
             </div>
 
             <form.Field name="line1">
                 {(field) => (
                     <div className="grid gap-1.5">
                         <label htmlFor="cook-invoice-line1" className="text-sm font-medium">
-                            {t(locale, 'profileCook', 'wallet.invoiceAddress.line1')}
+                            {t(locale, 'profileCook', 'finances.invoiceAddress.line1')}
                         </label>
                         <Input
                             id="cook-invoice-line1"
@@ -310,7 +310,7 @@ export function CookInvoiceAddressDialog({ open, onOpenChange, invoiceAddress, t
                 {(field) => (
                     <div className="grid gap-1.5">
                         <label htmlFor="cook-invoice-line2" className="text-sm font-medium">
-                            {t(locale, 'profileCook', 'wallet.invoiceAddress.line2')}
+                            {t(locale, 'profileCook', 'finances.invoiceAddress.line2')}
                         </label>
                         <Input
                             id="cook-invoice-line2"
@@ -328,7 +328,7 @@ export function CookInvoiceAddressDialog({ open, onOpenChange, invoiceAddress, t
                     {(field) => (
                         <div className="grid gap-1.5">
                             <label htmlFor="cook-invoice-postal" className="text-sm font-medium">
-                                {t(locale, 'profileCook', 'wallet.invoiceAddress.postalCode')}
+                                {t(locale, 'profileCook', 'finances.invoiceAddress.postalCode')}
                             </label>
                             <Input
                                 id="cook-invoice-postal"
@@ -346,7 +346,7 @@ export function CookInvoiceAddressDialog({ open, onOpenChange, invoiceAddress, t
                     {(field) => (
                         <div className="grid gap-1.5">
                             <label htmlFor="cook-invoice-city" className="text-sm font-medium">
-                                {t(locale, 'profileCook', 'wallet.invoiceAddress.city')}
+                                {t(locale, 'profileCook', 'finances.invoiceAddress.city')}
                             </label>
                             <Input
                                 id="cook-invoice-city"
@@ -365,7 +365,7 @@ export function CookInvoiceAddressDialog({ open, onOpenChange, invoiceAddress, t
                 {(field) => (
                     <div className="grid gap-1.5">
                         <label htmlFor="cook-invoice-country" className="text-sm font-medium">
-                            {t(locale, 'profileCook', 'wallet.invoiceAddress.country')}
+                            {t(locale, 'profileCook', 'finances.invoiceAddress.country')}
                         </label>
                         <Input
                             id="cook-invoice-country"
@@ -379,7 +379,7 @@ export function CookInvoiceAddressDialog({ open, onOpenChange, invoiceAddress, t
                             aria-describedby="cook-invoice-country-help"
                         />
                         <p id="cook-invoice-country-help" className="text-sm text-muted-foreground">
-                            {t(locale, 'profileCook', 'wallet.invoiceAddress.countryHelp')}
+                            {t(locale, 'profileCook', 'finances.invoiceAddress.countryHelp')}
                         </p>
                     </div>
                 )}

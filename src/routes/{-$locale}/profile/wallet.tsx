@@ -1,33 +1,22 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, redirect } from '@tanstack/react-router';
 
-import { ProfileCookWalletPageDocument } from '../../../web/graphql/generated';
-import { routeLoaderGraphqlClient } from '../../../web/graphql/routeLoaderGraphqlClient';
-import {
-    parseProfileWalletSearch,
-    ProfileCookWalletPage,
-    profileCookWalletPageDescription,
-    profileCookWalletPageTitle,
-} from '../../../web/pages/profile/ProfileCookWalletPage';
-import { seoMeta } from '../../../web/seo/seoMeta';
-import { webPageUrlGet } from '../../../web/seo/webPageUrlGet';
-import { localeFromParam } from '../../../web/utils/locale';
+import { DEFAULT_LOCALE, localeFromParam } from '../../../web/utils/locale';
 
+/** Legacy path — send cooks to `/profile/finances` (keeps Stripe return/refresh bookmarks working). */
 export const Route = createFileRoute('/{-$locale}/profile/wallet')({
-    validateSearch: (search: Record<string, unknown>) => parseProfileWalletSearch(search),
-    loader: routeLoaderGraphqlClient(ProfileCookWalletPageDocument),
-    staleTime: 0,
-    head: ({ params }) => {
+    validateSearch: (search: Record<string, unknown>) => search,
+    beforeLoad: ({ params, search }) => {
         const locale = localeFromParam(params);
-        return seoMeta({
-            title: profileCookWalletPageTitle(locale),
-            description: profileCookWalletPageDescription(locale),
-            path: '/profile/wallet',
-            locale,
-            webPageUrl: webPageUrlGet(),
-            noindex: true,
+        const prefix = locale === DEFAULT_LOCALE ? '' : `/${locale}`;
+        const query = new URLSearchParams();
+        for (const [key, value] of Object.entries(search)) {
+            if (value === undefined || value === null) continue;
+            query.set(key, String(value));
+        }
+        const qs = query.toString();
+        throw redirect({
+            href: `${prefix}/profile/finances${qs ? `?${qs}` : ''}`,
+            statusCode: 301,
         });
-    },
-    component() {
-        return <ProfileCookWalletPage data={Route.useLoaderData()} search={Route.useSearch()} />;
     },
 });

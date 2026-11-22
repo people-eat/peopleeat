@@ -6,9 +6,9 @@ Cooks manage identity, travel, public visibility, payouts, and discovery-call sc
 
 Signed-in cooks manage these areas under `/profile/*`:
 
-1. **Overview** (`/profile`) has two lanes: **Attention** (approval pending, Stripe wallet reset when Connect needs updated details, unread
-   offer-chat messages deep-linking the busiest offer with `?tab=chat`, upcoming discovery calls in the next 14 days) and **Getting
-   started** (incomplete setup only — invoice address first for every cook until saved, wallet for `EMPTY` / `PREPARED`, travel origin,
+1. **Overview** (`/profile`) has two lanes: **Attention** (approval pending, Stripe finances reset when Connect needs updated details,
+   unread offer-chat messages deep-linking the busiest offer with `?tab=chat`, upcoming discovery calls in the next 14 days) and **Getting
+   started** (incomplete setup only — invoice address first for every cook until saved, finances for `EMPTY` / `PREPARED`, travel origin,
    profile picture, chef bio/cuisine/philosophy, first meal, first menu, default offer note, first offer). When `COOK_ANALYTICS` is on and
    the cook already has marketplace or discovery activity, a compact past-month **Analytics** strip appears (profile views, time to open,
    offers, conversion) with a link to `/profile/analytics` — see [cook-analytics.md](./cook-analytics.md). Brand-new cooks see no analytics
@@ -61,20 +61,20 @@ Signed-in cooks manage these areas under `/profile/*`:
    sign-up); if a cook already has a non-standard saved km (legacy import), that value stays visible in the select until they pick a
    standard choice. Customers only see the **city** from the travel origin — never the full street address or the pin. Overview and the
    booking request pool deep-link here when travel origin is missing.
-4. **Wallet** (`/profile/wallet`) is the Stripe Connect onboarding surface and the place cooks save their **invoice / billing address**
+4. **Finances** (`/profile/finances`) is the Stripe Connect onboarding surface and the place cooks save their **invoice / billing address**
    (separate from travel origin; used later for peopleeat→cook invoices). When `Cook.invoiceAddress` is null, a warning `StatusAlert` asks
    them to add it (stacked in the same `gap-4` alert column as Stripe status banners); when set, the page shows the address with Edit. Both
    open an editor that saves via `CookUpdate.invoiceAddress` (full-page sheet below `md`, two-column dialog from `md` up), with Places
    autocomplete and a one-click **Use travel origin** fill when a travel origin exists. Getting started links here for `INVOICE_ADDRESS`.
    Stripe CTAs still require admin approval. Coarse Stripe status uses info / warning / success alerts — see
    [status-messaging.md](../styles/status-messaging.md). Connect flags (`stripeAccountActive` / `stripeAccountActiveWasReset`) also update
-   from the Stripe `account.updated` webhook via `cookStripeAccountStatusApply`, so status can change before the cook opens the wallet. When
-   a Connect account exists, the page also loads a **live** Stripe requirements snapshot (`Cook.stripeAccountDetails`) and shows a short
+   from the Stripe `account.updated` webhook via `cookStripeAccountStatusApply`, so status can change before the cook opens finances. When a
+   Connect account exists, the page also loads a **live** Stripe requirements snapshot (`Cook.stripeAccountDetails`) and shows a short
    checklist of what’s still needed (identity verification, bank account, pending review, overdue details). When setup is complete, an info
    CTA points cooks to the booking request pool to make offers. When `COOK_WALLET_STRIPE_BALANCE` is on, it also loads **live Connect
    balance + recent balance transactions** (`Cook.stripeWallet`: available/pending EUR cents and up to 20 newest movements) so cooks see
    money without opening the Express dashboard. Bank payouts remain admin-gated after the event — the page copy says so. Those live Stripe
-   fields are requested only on the wallet page query (and refetched after status sync), never on `userUpdates`. On **first** Express
+   fields are requested only on the finances page query (and refetched after status sync), never on `userUpdates`. On **first** Express
    account create, onboarding prefills phone and date of birth from the user profile and address from travel origin when present (Stripe
    still asks the cook to confirm; bank/ID docs are never prefilled). Webhook endpoint + event catalog:
    [stripe-payment.md](../architecture/stripe-payment.md#webhooks--dashboard-setup).
@@ -89,7 +89,7 @@ Signed-in cooks manage these areas under `/profile/*`:
 travel origin, expenses, and max distance; biography fields are optional and filled later. Signed-in cooks who open `/chef-sign-up` redirect
 to `/profile`.
 
-### Wallet return and refresh
+### Finances return and refresh
 
 | URL hint       | Behavior                                                               |
 | -------------- | ---------------------------------------------------------------------- |
@@ -103,18 +103,18 @@ Return and refresh URLs are distinct. Status sync alone does not replace an expi
 
 ### Alternatives considered
 
-| Option                           | Notes                                                                                                            |
-| -------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| JSON payout-methods array        | Rejected — fragile vs flat Connect account columns                                                               |
-| SSR mutate on every wallet visit | Rejected — re-fires on every load                                                                                |
-| Same URL for return and refresh  | Rejected — refresh must mint a new account link                                                                  |
-| Denormalized city / coordinates  | Rejected — public city derives from travel origin, with import-preserved city fallback when origin city is empty |
-| Free-text cuisine / philosophy   | Rejected — fixed catalogs via comboboxes                                                                         |
+| Option                             | Notes                                                                                                            |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| JSON payout-methods array          | Rejected — fragile vs flat Connect account columns                                                               |
+| SSR mutate on every finances visit | Rejected — re-fires on every load                                                                                |
+| Same URL for return and refresh    | Rejected — refresh must mint a new account link                                                                  |
+| Denormalized city / coordinates    | Rejected — public city derives from travel origin, with import-preserved city fallback when origin city is empty |
+| Free-text cuisine / philosophy     | Rejected — fixed catalogs via comboboxes                                                                         |
 
 ### Chosen
 
 Profile, travel, call, and flat Stripe columns on the cook record; cook updates and dedicated Stripe mutations; Places optional for address
-suggestions and driving distance; wallet page owns one-shot return/refresh handlers only (never from layout or SSR).
+suggestions and driving distance; finances page owns one-shot return/refresh handlers only (never from layout or SSR).
 
 ## Ideas
 
@@ -173,7 +173,7 @@ reviews stay out of the cook-facing summary until published, matching public rul
   `CookDefaultOfferMessageFields` on chef-page edit. Phone numbers rejected; max 2000 chars; `textNormalizeProse`
 - Invoice / billing address: `Cooks.invoiceAddress` JSON (`GiftCardInvoiceAddress` shape); `Cook.invoiceAddress` /
   `AdminCook.invoiceAddress`; `CookUpdate.invoiceAddress` (omit = no change; normalized via `invoiceAddressNormalize`). Not on `PublicCook`.
-  Onboarding `INVOICE_ADDRESS` while null (all cooks). Wallet UI: warning `StatusAlert` + `CookInvoiceAddressDialog`
+  Onboarding `INVOICE_ADDRESS` while null (all cooks). Finances UI: warning `StatusAlert` + `CookInvoiceAddressDialog`
 - Catalogs: `src/shared/cookProfile.ts` — validated in `cookUpdate`
 - Display pills: `CookProfileTags` / `CookProfileTag` in `src/web/components/CookProfileTags.tsx` — shared muted chips for cuisine style +
   cooking philosophy on public/hero/offer/featured surfaces and the chef-page listing-card preview (not `Badge secondary`, which is
@@ -199,12 +199,12 @@ reviews stay out of the cook-facing summary until published, matching public rul
   edit; summary skeleton on chef-page edit when generating; shop-window preview via `ChefPagePreviewFrame`
 - AI kinds: `COOK_BIOGRAPHY_SUGGESTION`, `COOK_BIOGRAPHY_SUMMARY` — dedicated models `cookBiographySuggestModel` /
   `cookBiographySummaryModel` — see [ai-generations.md](../architecture/ai-generations.md)
-- Wallet live details: `Cook.stripeAccountDetails` → `cookStripeAccountDetailsFindOne` → `stripe.accountRequirementsFindOne` (category
+- Finances live details: `Cook.stripeAccountDetails` → `cookStripeAccountDetailsFindOne` → `stripe.accountRequirementsFindOne` (category
   buckets, not raw Stripe keys); `Cook.stripeWallet` → `cookStripeWalletFindOne` (gated by `COOK_WALLET_STRIPE_BALANCE`) →
   `stripe.accountBalanceFindOne` + `stripe.accountBalanceTransactionsFindMany` (EUR cents + mapped transaction kinds, not raw Stripe type
   strings)
 - Chef sign-up: `/chef-sign-up` — one-shot create or upgrade form with shared travel fields
-- Profile UI: chef page view (shop-window preview + visibility) / edit, travel view/edit, wallet, calls, overview Attention + Getting
+- Profile UI: chef page view (shop-window preview + visibility) / edit, travel view/edit, finances, calls, overview Attention + Getting
   started on cook home (server `Cook.attention` / `Cook.onboardingSteps`, routed by `profilePageCookOverview`; see
   [attention.md](../architecture/attention.md)). `/profile/public` redirects to `/profile/chef-profile` (`?tab=preview` → Public page tab).
 - Travel radius map: `CookTravelRadiusMap` on `/profile/travel` + live preview on `/profile/travel/edit` (MapLibre + OpenFreeMap Positron,

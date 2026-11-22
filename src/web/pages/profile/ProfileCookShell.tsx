@@ -7,14 +7,14 @@ import { ProfileAssistantPane } from './ProfileAssistantPane';
 
 export function ProfileCookShell({
     isAdmin,
-    walletBadge,
+    financesBadge,
     poolReviewCount,
     offersUnreadCount,
     assistantEnabled,
     banner,
 }: {
     isAdmin: boolean;
-    walletBadge: boolean;
+    financesBadge: boolean;
     poolReviewCount: number;
     offersUnreadCount: number;
     assistantEnabled: boolean;
@@ -24,7 +24,7 @@ export function ProfileCookShell({
         <SidebarProvider style={{ '--sidebar-width': '19rem' } as CSSProperties}>
             <CookSidebar
                 isAdmin={isAdmin}
-                walletBadge={walletBadge}
+                financesBadge={financesBadge}
                 poolReviewCount={poolReviewCount}
                 offersUnreadCount={offersUnreadCount}
             />

@@ -880,7 +880,7 @@ enum CookStripeBalanceTransactionStatus {
     PENDING
 }
 
-# Live Connect balance + recent balance transactions for `/profile/wallet`.
+# Live Connect balance + recent balance transactions for `/profile/finances`.
 # Null when no Connect account or Stripe retrieve fails. Not on userUpdates.
 type CookStripeWallet {
     availableCents: Int!
@@ -912,9 +912,9 @@ type Cook {
     isApprovedByAdmin: Boolean!
     canCreateOffers: Boolean!
     stripeStatus: CookStripeStatus!
-    # Live Stripe requirements for `/profile/wallet`. Null without an account id.
+    # Live Stripe requirements for `/profile/finances`. Null without an account id.
     stripeAccountDetails: CookStripeAccountDetails
-    # Live Connect balance + recent transactions for `/profile/wallet`. Null without an account id.
+    # Live Connect balance + recent transactions for `/profile/finances`. Null without an account id.
     stripeWallet: CookStripeWallet
     # Optional public display name; when set, `PublicCook.user.display` prefers it over firstName.
     stageName: String

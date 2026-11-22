@@ -441,9 +441,9 @@
     "stripe": {
         "statusDescription": {
             "EMPTY": "Configura il tuo account Stripe così i pagamenti possono arrivarti.",
-            "PREPARED": "La configurazione del wallet non è ancora finita. Continua per attivare i pagamenti.",
-            "COMPLETED": "Il tuo wallet è collegato. I bonifici bancari vengono rilasciati dal nostro team dopo l’evento.",
-            "ACTIVE_WAS_RESET": "Stripe richiede dati aggiornati. Aggiorna il wallet prima che i pagamenti possano continuare."
+            "PREPARED": "La configurazione delle finanze non è ancora finita. Continua per attivare i pagamenti.",
+            "COMPLETED": "Le tue finanze sono collegate. I bonifici bancari vengono rilasciati dal nostro team dopo l’evento.",
+            "ACTIVE_WAS_RESET": "Stripe richiede dati aggiornati. Aggiorna le finanze prima che i pagamenti possano continuare."
         },
         "disabledReason": {
             "PAST_DUE": "Dati obbligatori in ritardo. Completali in Stripe.",
@@ -457,12 +457,12 @@
         "cook": {
             "APPROVAL_PENDING": {
                 "title": "Approvazione in sospeso",
-                "body": "Il nostro team ti contatterà per una breve chiamata di presentazione. Poi potrai configurare il wallet e creare offerte."
+                "body": "Il nostro team ti contatterà per una breve chiamata di presentazione. Poi potrai configurare le finanze e creare offerte."
             },
             "WALLET_RESET": {
                 "title": "Stripe richiede dati aggiornati",
-                "body": "Aggiorna il wallet prima che i pagamenti possano continuare.",
-                "action": "Vai al wallet"
+                "body": "Aggiorna le finanze prima che i pagamenti possano continuare.",
+                "action": "Vai alle finanze"
             },
             "DIRECT_BOOKING_REQUEST": {
                 "title": "{count, plural, one {Qualcuno ti ha richiesto direttamente} other {# richieste dirette}}",
@@ -479,12 +479,12 @@
             "INVOICE_ADDRESS": {
                 "title": "Aggiungi l’indirizzo di fatturazione",
                 "body": "Ci serve un indirizzo di fatturazione così peopleeat può fatturarti le commissioni di piattaforma.",
-                "action": "Vai al wallet"
+                "action": "Vai alle finanze"
             },
             "WALLET": {
-                "title": "Configura il wallet",
+                "title": "Configura le finanze",
                 "body": "Configura Stripe Connect per ricevere i pagamenti.",
-                "action": "Vai al wallet"
+                "action": "Vai alle finanze"
             },
             "TRAVEL": {
                 "title": "Aggiungi origine di viaggio",
@@ -560,22 +560,22 @@
             "title": "Extra offerta",
             "description": "Extra opzionali per le tue offerte, come vino o torta."
         },
-        "wallet": {
-            "title": "Wallet",
-            "description": "Configura i pagamenti Stripe Connect."
-        },
         "calls": {
             "title": "Appuntamenti chiamata",
             "description": "Pianificazione chiamate per presentazioni."
+        },
+        "finances": {
+            "title": "Finanze",
+            "description": "Configura i pagamenti Stripe Connect e l’indirizzo di fatturazione."
         }
     },
     "chrome": {
         "meal": "Piatto",
         "menu": "Menu",
         "request": "Richiesta",
-        "walletIncomplete": "Il wallet richiede attenzione",
         "poolReviewCount": "{count} richieste da esaminare",
-        "offersUnreadCount": "{count} notifiche non lette"
+        "offersUnreadCount": "{count} notifiche non lette",
+        "financesIncomplete": "Le finanze richiedono attenzione"
     },
     "overview": {
         "allSetBody": "Il tuo profilo è configurato. Usa la barra laterale per richieste e offerte.",
@@ -1039,56 +1039,6 @@
         "maxDistance": "Distanza di viaggio massima",
         "expensesPerKm": "Spese di viaggio per km"
     },
-    "wallet": {
-        "statusRefreshFailed": "Impossibile aggiornare lo stato.",
-        "statusUpdated": "Stato wallet aggiornato.",
-        "onboardingFailed": "Impossibile avviare l’onboarding.",
-        "alreadySetUp": "Il wallet è già configurato.",
-        "mustBeApproved": "Il tuo profilo deve prima essere approvato.",
-        "dashboardFailed": "Impossibile aprire la dashboard.",
-        "addWallet": "Aggiungi wallet",
-        "continueSetup": "Continua configurazione",
-        "updateWallet": "Aggiorna wallet",
-        "openDashboard": "Apri dashboard Stripe",
-        "goToPool": "Vai al pool richieste",
-        "approvalPending": "Approvazione in sospeso",
-        "approvalPendingBody": "Il tuo profilo deve prima essere approvato dal team prima di configurare Stripe.",
-        "waitingStripe": "Niente altro da fare per ora. Aggiorneremo lo stato quando Stripe avrà finito.",
-        "chargesNotEnabled": "Pagamenti o payout non ancora abilitati su Stripe.",
-        "readyTitle": "Pronto a creare offerte",
-        "readyBody": "Nel pool richieste trovi richieste nella tua zona. Crea offerte e guadagna con peopleeat.",
-        "notUpdatedYet": "Non ancora aggiornato?",
-        "balance": "Saldo",
-        "available": "Disponibile",
-        "pending": "In sospeso",
-        "balanceHint": "Disponibile significa pronto per il bonifico. In sospeso si sblocca dopo il periodo di hold Stripe. Il team rilascia il trasferimento dopo l’evento.",
-        "recentActivity": "Attività recente",
-        "noActivity": "Nessuna attività ancora. I crediti compaiono qui quando i clienti pagano.",
-        "invoiceAddress": {
-            "missingTitle": "Indirizzo di fatturazione mancante",
-            "missingBody": "Aggiungi un indirizzo di fatturazione così peopleeat può fatturarti le commissioni di piattaforma. Non è l’indirizzo di viaggio.",
-            "addAction": "Aggiungi indirizzo di fatturazione",
-            "sectionTitle": "Indirizzo di fatturazione",
-            "editAction": "Modifica",
-            "addTitle": "Aggiungi indirizzo di fatturazione",
-            "editTitle": "Modifica indirizzo di fatturazione",
-            "dialogBody": "Questo indirizzo compare sulle fatture peopleeat a te. Non è l’origine di viaggio.",
-            "firstName": "Nome",
-            "lastName": "Cognome",
-            "line1": "Via e numero",
-            "line2": "Seconda riga (facoltativo)",
-            "postalCode": "CAP",
-            "city": "Città",
-            "country": "Paese",
-            "countryHelp": "Codice paese a due lettere, ad esempio DE o AT.",
-            "back": "Indietro",
-            "reuseTravelOrigin": "Usa indirizzo di viaggio",
-            "reuseTravelOriginHint": "Compila i campi strada con l’indirizzo di viaggio. Puoi ancora modificarli.",
-            "travelOriginApplied": "Indirizzo di viaggio copiato nel modulo.",
-            "searchAddress": "Cerca indirizzo",
-            "searchAddressHint": "Scegli un suggerimento per compilare i campi strada, oppure inseriscili a mano."
-        }
-    },
     "invite": {
         "rewardUnlocked": "Ricompensa sbloccata",
         "shareTitle": "Diventa chef peopleeat",
@@ -1188,7 +1138,6 @@
     "poolRequest": {
         "title": "Richiesta di prenotazione dal pool",
         "description": "Esamina la richiesta, rifiutala o crea un’offerta.",
-        "setupWalletFirst": "Configura prima i pagamenti nel wallet.",
         "setupTravelFirst": "Imposta prima l’origine di viaggio in Viaggio.",
         "reasonRequired": "Indica un motivo.",
         "hidden": "Richiesta nascosta.",
@@ -1204,7 +1153,6 @@
         "createHint": "Crea un’offerta con menu opzionali e un prezzo.",
         "customerReviews": "Il cliente esamina la tua offerta. Se accetta, potete discutere i dettagli.",
         "setupPayouts": "Configura i pagamenti",
-        "goToWallet": "Vai al wallet",
         "finishStripe": "Prima di creare offerte, completa la configurazione dei pagamenti Stripe.",
         "travelMissing": "Origine di viaggio mancante",
         "goToTravel": "Vai a viaggio",
@@ -1226,7 +1174,9 @@
             "menuNotFeasible": "Requisiti del menu non fattibili",
             "kitchen": "Attrezzatura cucina insufficiente",
             "unclear": "Richiesta poco chiara / poco affidabile"
-        }
+        },
+        "setupFinancesFirst": "Configura prima i pagamenti nelle finanze.",
+        "goToFinances": "Vai alle finanze"
     },
     "offers": {
         "status": "Stato offerta",
@@ -1335,7 +1285,7 @@
         "phoneSharingChat": "Condividere numeri di telefono non è consentito. Tieni gli accordi in questa chat.",
         "messagePlaceholder": "es. Non vedo l’ora del tuo evento…",
         "requirementsMissing": "Requisiti mancanti",
-        "requirementsBody": "Wallet e origine di viaggio devono essere configurati.",
+        "requirementsBody": "Finanze e origine di viaggio devono essere configurati.",
         "guestPreview": "Come l’ospite vede la tua offerta",
         "sending": "Invio…",
         "makeOffer": "Fai un’offerta"
@@ -1369,5 +1319,55 @@
         "select": "Seleziona immagine",
         "saving": "Salvataggio…",
         "remove": "Rimuovi immagine"
+    },
+    "finances": {
+        "statusRefreshFailed": "Impossibile aggiornare lo stato.",
+        "statusUpdated": "Stato finanze aggiornato.",
+        "onboardingFailed": "Impossibile avviare l’onboarding.",
+        "alreadySetUp": "Le finanze sono già configurate.",
+        "mustBeApproved": "Il tuo profilo deve prima essere approvato.",
+        "dashboardFailed": "Impossibile aprire la dashboard.",
+        "continueSetup": "Continua configurazione",
+        "openDashboard": "Apri dashboard Stripe",
+        "goToPool": "Vai al pool richieste",
+        "approvalPending": "Approvazione in sospeso",
+        "approvalPendingBody": "Il tuo profilo deve prima essere approvato dal team prima di configurare Stripe.",
+        "waitingStripe": "Niente altro da fare per ora. Aggiorneremo lo stato quando Stripe avrà finito.",
+        "chargesNotEnabled": "Pagamenti o payout non ancora abilitati su Stripe.",
+        "readyTitle": "Pronto a creare offerte",
+        "readyBody": "Nel pool richieste trovi richieste nella tua zona. Crea offerte e guadagna con peopleeat.",
+        "notUpdatedYet": "Non ancora aggiornato?",
+        "balance": "Saldo",
+        "available": "Disponibile",
+        "pending": "In sospeso",
+        "balanceHint": "Disponibile significa pronto per il bonifico. In sospeso si sblocca dopo il periodo di hold Stripe. Il team rilascia il trasferimento dopo l’evento.",
+        "recentActivity": "Attività recente",
+        "noActivity": "Nessuna attività ancora. I crediti compaiono qui quando i clienti pagano.",
+        "invoiceAddress": {
+            "missingTitle": "Indirizzo di fatturazione mancante",
+            "missingBody": "Aggiungi un indirizzo di fatturazione così peopleeat può fatturarti le commissioni di piattaforma. Non è l’indirizzo di viaggio.",
+            "addAction": "Aggiungi indirizzo di fatturazione",
+            "sectionTitle": "Indirizzo di fatturazione",
+            "editAction": "Modifica",
+            "addTitle": "Aggiungi indirizzo di fatturazione",
+            "editTitle": "Modifica indirizzo di fatturazione",
+            "dialogBody": "Questo indirizzo compare sulle fatture peopleeat a te. Non è l’origine di viaggio.",
+            "firstName": "Nome",
+            "lastName": "Cognome",
+            "line1": "Via e numero",
+            "line2": "Seconda riga (facoltativo)",
+            "postalCode": "CAP",
+            "city": "Città",
+            "country": "Paese",
+            "countryHelp": "Codice paese a due lettere, ad esempio DE o AT.",
+            "back": "Indietro",
+            "reuseTravelOrigin": "Usa indirizzo di viaggio",
+            "reuseTravelOriginHint": "Compila i campi strada con l’indirizzo di viaggio. Puoi ancora modificarli.",
+            "travelOriginApplied": "Indirizzo di viaggio copiato nel modulo.",
+            "searchAddress": "Cerca indirizzo",
+            "searchAddressHint": "Scegli un suggerimento per compilare i campi strada, oppure inseriscili a mano."
+        },
+        "addFinances": "Configura le finanze",
+        "updateFinances": "Aggiorna le finanze"
     }
 }

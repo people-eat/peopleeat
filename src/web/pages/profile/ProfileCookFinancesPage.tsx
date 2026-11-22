@@ -26,14 +26,14 @@ import type {
     GqlCCookStripeAccountDetails,
     GqlCCookStripeWallet,
     GqlCInvoiceAddress,
-    GqlCProfileCookWalletPageQuery,
+    GqlCProfileCookFinancesPageQuery,
 } from '../../graphql/generated';
 import {
+    ProfileCookFinancesPageUpdatesDocument,
+    ProfileCookFinancesStripeDetailsDocument,
     ProfileCookStripeDashboardUrlCreateDocument,
     ProfileCookStripeOnboardingStartDocument,
     ProfileCookStripeStatusSyncDocument,
-    ProfileCookWalletPageUpdatesDocument,
-    ProfileCookWalletStripeDetailsDocument,
 } from '../../graphql/generated';
 import { useFeatureToggleActive } from '../../hooks/useFeatureToggleActive';
 import { useLocale } from '../../hooks/useLocale';
@@ -45,43 +45,43 @@ import { DEFAULT_LOCALE } from '../../utils/locale';
 import type { Locale } from '../../utils/locale';
 import { cookNavRouteBySlug } from './cookCatalog';
 
-const route = cookNavRouteBySlug('wallet');
-export const profileCookWalletPageTitle = route.title;
-export const profileCookWalletPageDescription = route.description;
+const route = cookNavRouteBySlug('finances');
+export const profileCookFinancesPageTitle = route.title;
+export const profileCookFinancesPageDescription = route.description;
 
-export type ProfileWalletSearch = {
+export type ProfileFinancesSearch = {
     stripeReturn?: true;
     stripeRefresh?: true;
 };
 
-export function parseProfileWalletSearch(search: Record<string, unknown>): ProfileWalletSearch {
+export function parseProfileFinancesSearch(search: Record<string, unknown>): ProfileFinancesSearch {
     return {
         stripeReturn: search.stripeReturn === '1' || search.stripeReturn === true ? true : undefined,
         stripeRefresh: search.stripeRefresh === '1' || search.stripeRefresh === true ? true : undefined,
     };
 }
 
-function walletUrls(locale: Locale): { returnUrl: string; refreshUrl: string } {
+function financesUrls(locale: Locale): { returnUrl: string; refreshUrl: string } {
     const origin = webPageUrlGet();
     const prefix = locale === DEFAULT_LOCALE ? '' : `/${locale}`;
-    const base = `${origin}${prefix}/profile/wallet`;
+    const base = `${origin}${prefix}/profile/finances`;
     return {
         returnUrl: `${base}?stripeReturn=1`,
         refreshUrl: `${base}?stripeRefresh=1`,
     };
 }
 
-export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookWalletPageQuery; search: ProfileWalletSearch }) {
+export function ProfileCookFinancesPage({ data, search }: { data: GqlCProfileCookFinancesPageQuery; search: ProfileFinancesSearch }) {
     const locale = useLocale();
     const timeZone = useTimeZone();
     const walletBalanceEnabled = useFeatureToggleActive('COOK_WALLET_STRIPE_BALANCE');
-    const navigate = useNavigate({ from: '/{-$locale}/profile/wallet' });
+    const navigate = useNavigate({ from: '/{-$locale}/profile/finances' });
     const pathname = useRouterState({ select: (state) => state.location.pathname });
     const client = useClient();
     const seedUser = data.currentSession.user ?? null;
     const seedDetails = seedUser?.cook?.stripeAccountDetails ?? null;
     const seedWallet = seedUser?.cook?.stripeWallet ?? null;
-    const user = useUserUpdatesSeed(seedUser, ProfileCookWalletPageUpdatesDocument);
+    const user = useUserUpdatesSeed(seedUser, ProfileCookFinancesPageUpdatesDocument);
     const [, startOnboarding] = useMutation(ProfileCookStripeOnboardingStartDocument);
     const [, syncStatus] = useMutation(ProfileCookStripeStatusSyncDocument);
     const [, dashboardUrlCreate] = useMutation(ProfileCookStripeDashboardUrlCreateDocument);
@@ -103,7 +103,7 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
     }, [seedWallet]);
 
     const refreshStripeDetails = useEffectEvent(async () => {
-        const result = await client.query(ProfileCookWalletStripeDetailsDocument, {}, { requestPolicy: 'network-only' }).toPromise();
+        const result = await client.query(ProfileCookFinancesStripeDetailsDocument, {}, { requestPolicy: 'network-only' }).toPromise();
         const cookLive = result.data?.currentSession.user?.cook;
         setStripeDetails(cookLive?.stripeAccountDetails ?? null);
         setStripeWallet(cookLive?.stripeWallet ?? null);
@@ -122,20 +122,20 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
                 if (key === 'return') {
                     const result = await syncStatus({});
                     if (result.error || !result.data?.user.cook.stripeStatusSync.success) {
-                        toast.error(t(locale, 'profileCook', 'wallet.statusRefreshFailed'));
+                        toast.error(t(locale, 'profileCook', 'finances.statusRefreshFailed'));
                     } else {
-                        toast.success(t(locale, 'profileCook', 'wallet.statusUpdated'));
+                        toast.success(t(locale, 'profileCook', 'finances.statusUpdated'));
                         await refreshStripeDetails();
                     }
                     await navigate({ search: {}, replace: true });
                     return;
                 }
 
-                const { returnUrl, refreshUrl } = walletUrls(locale);
+                const { returnUrl, refreshUrl } = financesUrls(locale);
                 const result = await startOnboarding({ returnUrl, refreshUrl });
                 const payload = result.data?.user.cook.stripeOnboardingStart;
                 if (result.error || !payload) {
-                    toast.error(t(locale, 'profileCook', 'wallet.onboardingFailed'));
+                    toast.error(t(locale, 'profileCook', 'finances.onboardingFailed'));
                     await navigate({ search: {}, replace: true });
                     return;
                 }
@@ -144,10 +144,10 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
                     return;
                 }
                 if (payload.kind === 'ALREADY_COMPLETE') {
-                    toast.success(t(locale, 'profileCook', 'wallet.alreadySetUp'));
+                    toast.success(t(locale, 'profileCook', 'finances.alreadySetUp'));
                     await refreshStripeDetails();
                 } else if (payload.kind === 'NOT_APPROVED') {
-                    toast.message(t(locale, 'profileCook', 'wallet.mustBeApproved'));
+                    toast.message(t(locale, 'profileCook', 'finances.mustBeApproved'));
                 }
                 await navigate({ search: {}, replace: true });
             } finally {
@@ -160,19 +160,19 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
         if (!cook?.isApprovedByAdmin) return;
         setBusy(true);
         try {
-            const { returnUrl, refreshUrl } = walletUrls(locale);
+            const { returnUrl, refreshUrl } = financesUrls(locale);
             const result = await startOnboarding({ returnUrl, refreshUrl });
             const payload = result.data?.user.cook.stripeOnboardingStart;
             if (result.error || !payload) {
-                toast.error(t(locale, 'profileCook', 'wallet.onboardingFailed'));
+                toast.error(t(locale, 'profileCook', 'finances.onboardingFailed'));
                 return;
             }
             if (payload.kind === 'NOT_APPROVED') {
-                toast.message(t(locale, 'profileCook', 'wallet.mustBeApproved'));
+                toast.message(t(locale, 'profileCook', 'finances.mustBeApproved'));
                 return;
             }
             if (payload.kind === 'ALREADY_COMPLETE') {
-                toast.success(t(locale, 'profileCook', 'wallet.alreadySetUp'));
+                toast.success(t(locale, 'profileCook', 'finances.alreadySetUp'));
                 await refreshStripeDetails();
                 return;
             }
@@ -190,7 +190,7 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
             const result = await dashboardUrlCreate({});
             const url = result.data?.user.cook.stripeDashboardUrlCreate.url;
             if (result.error || !url) {
-                toast.error(t(locale, 'profileCook', 'wallet.dashboardFailed'));
+                toast.error(t(locale, 'profileCook', 'finances.dashboardFailed'));
                 return;
             }
             window.location.assign(url);
@@ -204,10 +204,10 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
         try {
             const result = await syncStatus({});
             if (result.error || !result.data?.user.cook.stripeStatusSync.success) {
-                toast.error(t(locale, 'profileCook', 'wallet.statusRefreshFailed'));
+                toast.error(t(locale, 'profileCook', 'finances.statusRefreshFailed'));
                 return;
             }
-            toast.success(t(locale, 'profileCook', 'wallet.statusUpdated'));
+            toast.success(t(locale, 'profileCook', 'finances.statusUpdated'));
             await refreshStripeDetails();
         } finally {
             setBusy(false);
@@ -219,10 +219,10 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
     }
 
     const primaryLabel = {
-        EMPTY: t(locale, 'profileCook', 'wallet.addWallet'),
-        PREPARED: t(locale, 'profileCook', 'wallet.continueSetup'),
-        ACTIVE_WAS_RESET: t(locale, 'profileCook', 'wallet.updateWallet'),
-        COMPLETED: t(locale, 'profileCook', 'wallet.openDashboard'),
+        EMPTY: t(locale, 'profileCook', 'finances.addFinances'),
+        PREPARED: t(locale, 'profileCook', 'finances.continueSetup'),
+        ACTIVE_WAS_RESET: t(locale, 'profileCook', 'finances.updateFinances'),
+        COMPLETED: t(locale, 'profileCook', 'finances.openDashboard'),
     }[cook.stripeStatus];
 
     const detailsChecklist =
@@ -236,12 +236,12 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
     const showWalletBalance = walletBalanceEnabled && stripeWallet != null;
     const poolCta = (
         <Button asChild size="sm">
-            <Link to="/{-$locale}/profile/booking-request-pool">{t(locale, 'profileCook', 'wallet.goToPool')}</Link>
+            <Link to="/{-$locale}/profile/booking-request-pool">{t(locale, 'profileCook', 'finances.goToPool')}</Link>
         </Button>
     );
     const invoiceAddressCta = (
         <Button type="button" size="sm" onClick={() => setInvoiceDialogOpen(true)}>
-            {t(locale, 'profileCook', 'wallet.invoiceAddress.addAction')}
+            {t(locale, 'profileCook', 'finances.invoiceAddress.addAction')}
         </Button>
     );
 
@@ -253,13 +253,13 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
             </div>
 
             {invoiceAddress != null ? (
-                <section className="grid gap-3" aria-labelledby="wallet-invoice-address-heading">
+                <section className="grid gap-3" aria-labelledby="finances-invoice-address-heading">
                     <div className="flex flex-wrap items-start justify-between gap-3">
-                        <h2 id="wallet-invoice-address-heading" className="font-serif text-2xl/tight text-foreground">
-                            {t(locale, 'profileCook', 'wallet.invoiceAddress.sectionTitle')}
+                        <h2 id="finances-invoice-address-heading" className="font-serif text-2xl/tight text-foreground">
+                            {t(locale, 'profileCook', 'finances.invoiceAddress.sectionTitle')}
                         </h2>
                         <Button type="button" variant="outline" size="sm" onClick={() => setInvoiceDialogOpen(true)}>
-                            {t(locale, 'profileCook', 'wallet.invoiceAddress.editAction')}
+                            {t(locale, 'profileCook', 'finances.invoiceAddress.editAction')}
                         </Button>
                     </div>
                     <CookInvoiceAddressSummary address={invoiceAddress} locale={locale} />
@@ -270,16 +270,16 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
                 {invoiceAddress == null ? (
                     <StatusAlert
                         tone="warning"
-                        title={t(locale, 'profileCook', 'wallet.invoiceAddress.missingTitle')}
+                        title={t(locale, 'profileCook', 'finances.invoiceAddress.missingTitle')}
                         action={invoiceAddressCta}
                     >
-                        {t(locale, 'profileCook', 'wallet.invoiceAddress.missingBody')}
+                        {t(locale, 'profileCook', 'finances.invoiceAddress.missingBody')}
                     </StatusAlert>
                 ) : null}
 
                 {!cook.isApprovedByAdmin ? (
-                    <StatusAlert tone="info" title={t(locale, 'profileCook', 'wallet.approvalPending')}>
-                        {t(locale, 'profileCook', 'wallet.approvalPendingBody')}
+                    <StatusAlert tone="info" title={t(locale, 'profileCook', 'finances.approvalPending')}>
+                        {t(locale, 'profileCook', 'finances.approvalPendingBody')}
                     </StatusAlert>
                 ) : (
                     <>
@@ -308,19 +308,19 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
                                     {detailsChecklist.details.pendingVerification.length > 0 &&
                                     detailsChecklist.details.currentlyDue.length === 0 &&
                                     detailsChecklist.details.pastDue.length === 0 ? (
-                                        <p>{t(locale, 'profileCook', 'wallet.waitingStripe')}</p>
+                                        <p>{t(locale, 'profileCook', 'finances.waitingStripe')}</p>
                                     ) : null}
                                     {detailsChecklist.details.detailsSubmitted &&
                                     (!detailsChecklist.details.chargesEnabled || !detailsChecklist.details.payoutsEnabled) &&
                                     cook.stripeStatus !== 'COMPLETED' ? (
-                                        <p>{t(locale, 'profileCook', 'wallet.chargesNotEnabled')}</p>
+                                        <p>{t(locale, 'profileCook', 'finances.chargesNotEnabled')}</p>
                                     ) : null}
                                 </div>
                             </StatusAlert>
                         ) : null}
                         {cook.stripeStatus === 'COMPLETED' ? (
-                            <StatusAlert tone="info" title={t(locale, 'profileCook', 'wallet.readyTitle')} action={poolCta}>
-                                {t(locale, 'profileCook', 'wallet.readyBody')}
+                            <StatusAlert tone="info" title={t(locale, 'profileCook', 'finances.readyTitle')} action={poolCta}>
+                                {t(locale, 'profileCook', 'finances.readyBody')}
                             </StatusAlert>
                         ) : null}
                         <div className="flex flex-wrap gap-2">
@@ -335,7 +335,7 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
                             )}
                             {cook.stripeStatus !== 'EMPTY' && cook.stripeStatus !== 'COMPLETED' ? (
                                 <Button type="button" variant="outline" disabled={busy} onClick={() => void onSync()}>
-                                    {t(locale, 'profileCook', 'wallet.notUpdatedYet')}
+                                    {t(locale, 'profileCook', 'finances.notUpdatedYet')}
                                 </Button>
                             ) : null}
                         </div>
@@ -344,10 +344,10 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
             </div>
 
             {showWalletBalance ? (
-                <section className="grid gap-6" aria-labelledby="wallet-balance-heading">
+                <section className="grid gap-6" aria-labelledby="finances-balance-heading">
                     <div className="grid gap-3">
-                        <h2 id="wallet-balance-heading" className="font-serif text-2xl/tight text-foreground">
-                            {t(locale, 'profileCook', 'wallet.balance')}
+                        <h2 id="finances-balance-heading" className="font-serif text-2xl/tight text-foreground">
+                            {t(locale, 'profileCook', 'finances.balance')}
                         </h2>
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div className="grid gap-1">
@@ -363,13 +363,13 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
                                 </p>
                             </div>
                         </div>
-                        <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'wallet.balanceHint')}</p>
+                        <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'finances.balanceHint')}</p>
                     </div>
 
                     <div className="grid gap-3">
-                        <h2 className="font-serif text-2xl/tight text-foreground">{t(locale, 'profileCook', 'wallet.recentActivity')}</h2>
+                        <h2 className="font-serif text-2xl/tight text-foreground">{t(locale, 'profileCook', 'finances.recentActivity')}</h2>
                         {stripeWallet.transactions.length === 0 ? (
-                            <p className="text-muted-foreground">{t(locale, 'profileCook', 'wallet.noActivity')}</p>
+                            <p className="text-muted-foreground">{t(locale, 'profileCook', 'finances.noActivity')}</p>
                         ) : (
                             <Table>
                                 <TableHeader>

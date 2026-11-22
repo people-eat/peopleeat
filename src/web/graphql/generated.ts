@@ -21160,6 +21160,284 @@ export type GqlCProfileCookChefProfileUserUpdateMutationVariables = Exact<{
 
 export type GqlCProfileCookChefProfileUserUpdateMutation = { user: { userUpdate: { success: boolean } } };
 
+export type GqlCProfileFinancesInvoiceAddressFragment = {
+    companyName: string | null;
+    firstName: string;
+    lastName: string;
+    country: string;
+    city: string;
+    postalCode: string;
+    line1: string;
+    line2: string;
+};
+
+export type GqlCProfileFinancesTravelOriginFragment = {
+    displayText: string;
+    addressLine1: string;
+    addressLine2: string;
+    city: string;
+    postCode: string;
+    country: string;
+};
+
+export type GqlCProfileFinancesCookFragment = {
+    cookId: string;
+    isApprovedByAdmin: boolean;
+    stripeStatus: Schema.GqlCCookStripeStatus;
+    canCreateOffers: boolean;
+    exactTravelOriginAddress: {
+        displayText: string;
+        addressLine1: string;
+        addressLine2: string;
+        city: string;
+        postCode: string;
+        country: string;
+    } | null;
+    invoiceAddress: {
+        companyName: string | null;
+        firstName: string;
+        lastName: string;
+        country: string;
+        city: string;
+        postalCode: string;
+        line1: string;
+        line2: string;
+    } | null;
+};
+
+export type GqlCProfileFinancesStripeAccountDetailsFragment = {
+    detailsSubmitted: boolean;
+    chargesEnabled: boolean;
+    payoutsEnabled: boolean;
+    disabledReason: Schema.GqlCCookStripeDisabledReason | null;
+    currentlyDue: Array<Schema.GqlCCookStripeRequirementCategory>;
+    pastDue: Array<Schema.GqlCCookStripeRequirementCategory>;
+    pendingVerification: Array<Schema.GqlCCookStripeRequirementCategory>;
+};
+
+export type GqlCProfileFinancesStripeWalletFragment = {
+    availableCents: number;
+    pendingCents: number;
+    transactions: Array<{
+        balanceTransactionId: string;
+        kind: Schema.GqlCCookStripeBalanceTransactionKind;
+        status: Schema.GqlCCookStripeBalanceTransactionStatus;
+        netCents: number;
+        createdAt: string;
+        availableOn: string;
+        description: string | null;
+    }>;
+};
+
+export type GqlCProfileFinancesUserFragment = {
+    userId: string;
+    firstName: string;
+    lastName: string;
+    cook: {
+        cookId: string;
+        isApprovedByAdmin: boolean;
+        stripeStatus: Schema.GqlCCookStripeStatus;
+        canCreateOffers: boolean;
+        exactTravelOriginAddress: {
+            displayText: string;
+            addressLine1: string;
+            addressLine2: string;
+            city: string;
+            postCode: string;
+            country: string;
+        } | null;
+        invoiceAddress: {
+            companyName: string | null;
+            firstName: string;
+            lastName: string;
+            country: string;
+            city: string;
+            postalCode: string;
+            line1: string;
+            line2: string;
+        } | null;
+    } | null;
+};
+
+export type GqlCProfileCookFinancesPageQueryVariables = Exact<{ [key: string]: never }>;
+
+export type GqlCProfileCookFinancesPageQuery = {
+    currentSession: {
+        sessionId: string;
+        user: {
+            userId: string;
+            firstName: string;
+            lastName: string;
+            cook: {
+                cookId: string;
+                isApprovedByAdmin: boolean;
+                stripeStatus: Schema.GqlCCookStripeStatus;
+                canCreateOffers: boolean;
+                stripeAccountDetails: {
+                    detailsSubmitted: boolean;
+                    chargesEnabled: boolean;
+                    payoutsEnabled: boolean;
+                    disabledReason: Schema.GqlCCookStripeDisabledReason | null;
+                    currentlyDue: Array<Schema.GqlCCookStripeRequirementCategory>;
+                    pastDue: Array<Schema.GqlCCookStripeRequirementCategory>;
+                    pendingVerification: Array<Schema.GqlCCookStripeRequirementCategory>;
+                } | null;
+                stripeWallet: {
+                    availableCents: number;
+                    pendingCents: number;
+                    transactions: Array<{
+                        balanceTransactionId: string;
+                        kind: Schema.GqlCCookStripeBalanceTransactionKind;
+                        status: Schema.GqlCCookStripeBalanceTransactionStatus;
+                        netCents: number;
+                        createdAt: string;
+                        availableOn: string;
+                        description: string | null;
+                    }>;
+                } | null;
+                exactTravelOriginAddress: {
+                    displayText: string;
+                    addressLine1: string;
+                    addressLine2: string;
+                    city: string;
+                    postCode: string;
+                    country: string;
+                } | null;
+                invoiceAddress: {
+                    companyName: string | null;
+                    firstName: string;
+                    lastName: string;
+                    country: string;
+                    city: string;
+                    postalCode: string;
+                    line1: string;
+                    line2: string;
+                } | null;
+            } | null;
+        } | null;
+    };
+};
+
+export type GqlCProfileCookFinancesStripeDetailsQueryVariables = Exact<{ [key: string]: never }>;
+
+export type GqlCProfileCookFinancesStripeDetailsQuery = {
+    currentSession: {
+        user: {
+            cook: {
+                stripeAccountDetails: {
+                    detailsSubmitted: boolean;
+                    chargesEnabled: boolean;
+                    payoutsEnabled: boolean;
+                    disabledReason: Schema.GqlCCookStripeDisabledReason | null;
+                    currentlyDue: Array<Schema.GqlCCookStripeRequirementCategory>;
+                    pastDue: Array<Schema.GqlCCookStripeRequirementCategory>;
+                    pendingVerification: Array<Schema.GqlCCookStripeRequirementCategory>;
+                } | null;
+                stripeWallet: {
+                    availableCents: number;
+                    pendingCents: number;
+                    transactions: Array<{
+                        balanceTransactionId: string;
+                        kind: Schema.GqlCCookStripeBalanceTransactionKind;
+                        status: Schema.GqlCCookStripeBalanceTransactionStatus;
+                        netCents: number;
+                        createdAt: string;
+                        availableOn: string;
+                        description: string | null;
+                    }>;
+                } | null;
+            } | null;
+        } | null;
+    };
+};
+
+export type GqlCProfileCookFinancesPageUpdatesSubscriptionVariables = Exact<{ [key: string]: never }>;
+
+export type GqlCProfileCookFinancesPageUpdatesSubscription = {
+    userUpdates: {
+        userId: string;
+        firstName: string;
+        lastName: string;
+        cook: {
+            cookId: string;
+            isApprovedByAdmin: boolean;
+            stripeStatus: Schema.GqlCCookStripeStatus;
+            canCreateOffers: boolean;
+            exactTravelOriginAddress: {
+                displayText: string;
+                addressLine1: string;
+                addressLine2: string;
+                city: string;
+                postCode: string;
+                country: string;
+            } | null;
+            invoiceAddress: {
+                companyName: string | null;
+                firstName: string;
+                lastName: string;
+                country: string;
+                city: string;
+                postalCode: string;
+                line1: string;
+                line2: string;
+            } | null;
+        } | null;
+    };
+};
+
+export type GqlCProfileCookFinancesLocationSuggestionsQueryVariables = Exact<{
+    searchText: string;
+    onlyFullAddresses?: boolean;
+}>;
+
+export type GqlCProfileCookFinancesLocationSuggestionsQuery = {
+    currentSession: {
+        locationSuggestions: Array<{
+            displayText: string;
+            latitude: number;
+            longitude: number;
+            structuredAddress: {
+                latitude: number;
+                longitude: number;
+                state: string;
+                displayText: string;
+                addressLine1: string;
+                addressLine2: string;
+                city: string;
+                postCode: string;
+                country: string;
+            } | null;
+        }>;
+    };
+};
+
+export type GqlCProfileCookStripeOnboardingStartMutationVariables = Exact<{
+    returnUrl: string;
+    refreshUrl: string;
+}>;
+
+export type GqlCProfileCookStripeOnboardingStartMutation = {
+    user: { cook: { stripeOnboardingStart: { kind: Schema.GqlCCookStripeOnboardingKind; url: string | null } } };
+};
+
+export type GqlCProfileCookStripeStatusSyncMutationVariables = Exact<{ [key: string]: never }>;
+
+export type GqlCProfileCookStripeStatusSyncMutation = {
+    user: { cook: { stripeStatusSync: { success: boolean; referenceId: string | null } } };
+};
+
+export type GqlCProfileCookStripeDashboardUrlCreateMutationVariables = Exact<{ [key: string]: never }>;
+
+export type GqlCProfileCookStripeDashboardUrlCreateMutation = { user: { cook: { stripeDashboardUrlCreate: { url: string | null } } } };
+
+export type GqlCProfileCookFinancesInvoiceAddressUpdateMutationVariables = Exact<{
+    input: Schema.GqlCCookUpdate;
+}>;
+
+export type GqlCProfileCookFinancesInvoiceAddressUpdateMutation = {
+    user: { cook: { update: { success: boolean; referenceId: string | null } } };
+};
+
 export type GqlCProfileCookInviteInviteeFragment = {
     cookId: string;
     display: string;
@@ -22099,284 +22377,6 @@ export type GqlCProfileTravelLocationSuggestionsQuery = {
             } | null;
         }>;
     };
-};
-
-export type GqlCProfileWalletInvoiceAddressFragment = {
-    companyName: string | null;
-    firstName: string;
-    lastName: string;
-    country: string;
-    city: string;
-    postalCode: string;
-    line1: string;
-    line2: string;
-};
-
-export type GqlCProfileWalletTravelOriginFragment = {
-    displayText: string;
-    addressLine1: string;
-    addressLine2: string;
-    city: string;
-    postCode: string;
-    country: string;
-};
-
-export type GqlCProfileWalletCookFragment = {
-    cookId: string;
-    isApprovedByAdmin: boolean;
-    stripeStatus: Schema.GqlCCookStripeStatus;
-    canCreateOffers: boolean;
-    exactTravelOriginAddress: {
-        displayText: string;
-        addressLine1: string;
-        addressLine2: string;
-        city: string;
-        postCode: string;
-        country: string;
-    } | null;
-    invoiceAddress: {
-        companyName: string | null;
-        firstName: string;
-        lastName: string;
-        country: string;
-        city: string;
-        postalCode: string;
-        line1: string;
-        line2: string;
-    } | null;
-};
-
-export type GqlCProfileWalletStripeAccountDetailsFragment = {
-    detailsSubmitted: boolean;
-    chargesEnabled: boolean;
-    payoutsEnabled: boolean;
-    disabledReason: Schema.GqlCCookStripeDisabledReason | null;
-    currentlyDue: Array<Schema.GqlCCookStripeRequirementCategory>;
-    pastDue: Array<Schema.GqlCCookStripeRequirementCategory>;
-    pendingVerification: Array<Schema.GqlCCookStripeRequirementCategory>;
-};
-
-export type GqlCProfileWalletStripeWalletFragment = {
-    availableCents: number;
-    pendingCents: number;
-    transactions: Array<{
-        balanceTransactionId: string;
-        kind: Schema.GqlCCookStripeBalanceTransactionKind;
-        status: Schema.GqlCCookStripeBalanceTransactionStatus;
-        netCents: number;
-        createdAt: string;
-        availableOn: string;
-        description: string | null;
-    }>;
-};
-
-export type GqlCProfileWalletUserFragment = {
-    userId: string;
-    firstName: string;
-    lastName: string;
-    cook: {
-        cookId: string;
-        isApprovedByAdmin: boolean;
-        stripeStatus: Schema.GqlCCookStripeStatus;
-        canCreateOffers: boolean;
-        exactTravelOriginAddress: {
-            displayText: string;
-            addressLine1: string;
-            addressLine2: string;
-            city: string;
-            postCode: string;
-            country: string;
-        } | null;
-        invoiceAddress: {
-            companyName: string | null;
-            firstName: string;
-            lastName: string;
-            country: string;
-            city: string;
-            postalCode: string;
-            line1: string;
-            line2: string;
-        } | null;
-    } | null;
-};
-
-export type GqlCProfileCookWalletPageQueryVariables = Exact<{ [key: string]: never }>;
-
-export type GqlCProfileCookWalletPageQuery = {
-    currentSession: {
-        sessionId: string;
-        user: {
-            userId: string;
-            firstName: string;
-            lastName: string;
-            cook: {
-                cookId: string;
-                isApprovedByAdmin: boolean;
-                stripeStatus: Schema.GqlCCookStripeStatus;
-                canCreateOffers: boolean;
-                stripeAccountDetails: {
-                    detailsSubmitted: boolean;
-                    chargesEnabled: boolean;
-                    payoutsEnabled: boolean;
-                    disabledReason: Schema.GqlCCookStripeDisabledReason | null;
-                    currentlyDue: Array<Schema.GqlCCookStripeRequirementCategory>;
-                    pastDue: Array<Schema.GqlCCookStripeRequirementCategory>;
-                    pendingVerification: Array<Schema.GqlCCookStripeRequirementCategory>;
-                } | null;
-                stripeWallet: {
-                    availableCents: number;
-                    pendingCents: number;
-                    transactions: Array<{
-                        balanceTransactionId: string;
-                        kind: Schema.GqlCCookStripeBalanceTransactionKind;
-                        status: Schema.GqlCCookStripeBalanceTransactionStatus;
-                        netCents: number;
-                        createdAt: string;
-                        availableOn: string;
-                        description: string | null;
-                    }>;
-                } | null;
-                exactTravelOriginAddress: {
-                    displayText: string;
-                    addressLine1: string;
-                    addressLine2: string;
-                    city: string;
-                    postCode: string;
-                    country: string;
-                } | null;
-                invoiceAddress: {
-                    companyName: string | null;
-                    firstName: string;
-                    lastName: string;
-                    country: string;
-                    city: string;
-                    postalCode: string;
-                    line1: string;
-                    line2: string;
-                } | null;
-            } | null;
-        } | null;
-    };
-};
-
-export type GqlCProfileCookWalletStripeDetailsQueryVariables = Exact<{ [key: string]: never }>;
-
-export type GqlCProfileCookWalletStripeDetailsQuery = {
-    currentSession: {
-        user: {
-            cook: {
-                stripeAccountDetails: {
-                    detailsSubmitted: boolean;
-                    chargesEnabled: boolean;
-                    payoutsEnabled: boolean;
-                    disabledReason: Schema.GqlCCookStripeDisabledReason | null;
-                    currentlyDue: Array<Schema.GqlCCookStripeRequirementCategory>;
-                    pastDue: Array<Schema.GqlCCookStripeRequirementCategory>;
-                    pendingVerification: Array<Schema.GqlCCookStripeRequirementCategory>;
-                } | null;
-                stripeWallet: {
-                    availableCents: number;
-                    pendingCents: number;
-                    transactions: Array<{
-                        balanceTransactionId: string;
-                        kind: Schema.GqlCCookStripeBalanceTransactionKind;
-                        status: Schema.GqlCCookStripeBalanceTransactionStatus;
-                        netCents: number;
-                        createdAt: string;
-                        availableOn: string;
-                        description: string | null;
-                    }>;
-                } | null;
-            } | null;
-        } | null;
-    };
-};
-
-export type GqlCProfileCookWalletPageUpdatesSubscriptionVariables = Exact<{ [key: string]: never }>;
-
-export type GqlCProfileCookWalletPageUpdatesSubscription = {
-    userUpdates: {
-        userId: string;
-        firstName: string;
-        lastName: string;
-        cook: {
-            cookId: string;
-            isApprovedByAdmin: boolean;
-            stripeStatus: Schema.GqlCCookStripeStatus;
-            canCreateOffers: boolean;
-            exactTravelOriginAddress: {
-                displayText: string;
-                addressLine1: string;
-                addressLine2: string;
-                city: string;
-                postCode: string;
-                country: string;
-            } | null;
-            invoiceAddress: {
-                companyName: string | null;
-                firstName: string;
-                lastName: string;
-                country: string;
-                city: string;
-                postalCode: string;
-                line1: string;
-                line2: string;
-            } | null;
-        } | null;
-    };
-};
-
-export type GqlCProfileCookWalletLocationSuggestionsQueryVariables = Exact<{
-    searchText: string;
-    onlyFullAddresses?: boolean;
-}>;
-
-export type GqlCProfileCookWalletLocationSuggestionsQuery = {
-    currentSession: {
-        locationSuggestions: Array<{
-            displayText: string;
-            latitude: number;
-            longitude: number;
-            structuredAddress: {
-                latitude: number;
-                longitude: number;
-                state: string;
-                displayText: string;
-                addressLine1: string;
-                addressLine2: string;
-                city: string;
-                postCode: string;
-                country: string;
-            } | null;
-        }>;
-    };
-};
-
-export type GqlCProfileCookStripeOnboardingStartMutationVariables = Exact<{
-    returnUrl: string;
-    refreshUrl: string;
-}>;
-
-export type GqlCProfileCookStripeOnboardingStartMutation = {
-    user: { cook: { stripeOnboardingStart: { kind: Schema.GqlCCookStripeOnboardingKind; url: string | null } } };
-};
-
-export type GqlCProfileCookStripeStatusSyncMutationVariables = Exact<{ [key: string]: never }>;
-
-export type GqlCProfileCookStripeStatusSyncMutation = {
-    user: { cook: { stripeStatusSync: { success: boolean; referenceId: string | null } } };
-};
-
-export type GqlCProfileCookStripeDashboardUrlCreateMutationVariables = Exact<{ [key: string]: never }>;
-
-export type GqlCProfileCookStripeDashboardUrlCreateMutation = { user: { cook: { stripeDashboardUrlCreate: { url: string | null } } } };
-
-export type GqlCProfileCookWalletInvoiceAddressUpdateMutationVariables = Exact<{
-    input: Schema.GqlCCookUpdate;
-}>;
-
-export type GqlCProfileCookWalletInvoiceAddressUpdateMutation = {
-    user: { cook: { update: { success: boolean; referenceId: string | null } } };
 };
 
 export type GqlCProfileCustomerBookingRequestEditLocationSuggestionsQueryVariables = Exact<{
@@ -35901,6 +35901,264 @@ export const ProfileCookChefProfileUserFragmentDoc = {
         },
     ],
 } as unknown as DocumentNode<GqlCProfileCookChefProfileUserFragment, unknown>;
+export const ProfileFinancesStripeAccountDetailsFragmentDoc = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileFinancesStripeAccountDetails' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookStripeAccountDetails' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'detailsSubmitted' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'chargesEnabled' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'payoutsEnabled' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'disabledReason' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'currentlyDue' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pastDue' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pendingVerification' } },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileFinancesStripeAccountDetailsFragment, unknown>;
+export const ProfileFinancesStripeWalletFragmentDoc = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileFinancesStripeWallet' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookStripeWallet' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'availableCents' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pendingCents' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'transactions' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'balanceTransactionId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'netCents' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'availableOn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileFinancesStripeWalletFragment, unknown>;
+export const ProfileFinancesTravelOriginFragmentDoc = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileFinancesTravelOrigin' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookTravelOriginAddress' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileFinancesTravelOriginFragment, unknown>;
+export const ProfileFinancesInvoiceAddressFragmentDoc = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileFinancesInvoiceAddress' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'InvoiceAddress' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'companyName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'postalCode' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'line1' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'line2' } },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileFinancesInvoiceAddressFragment, unknown>;
+export const ProfileFinancesCookFragmentDoc = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileFinancesCook' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Cook' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'stripeStatus' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'canCreateOffers' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'exactTravelOriginAddress' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileFinancesTravelOrigin' } }],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'invoiceAddress' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileFinancesInvoiceAddress' } }],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileFinancesTravelOrigin' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookTravelOriginAddress' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileFinancesInvoiceAddress' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'InvoiceAddress' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'companyName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'postalCode' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'line1' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'line2' } },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileFinancesCookFragment, unknown>;
+export const ProfileFinancesUserFragmentDoc = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileFinancesUser' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'User' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'cook' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileFinancesCook' } }],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileFinancesTravelOrigin' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookTravelOriginAddress' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileFinancesInvoiceAddress' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'InvoiceAddress' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'companyName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'postalCode' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'line1' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'line2' } },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileFinancesCook' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Cook' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'stripeStatus' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'canCreateOffers' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'exactTravelOriginAddress' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileFinancesTravelOrigin' } }],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'invoiceAddress' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileFinancesInvoiceAddress' } }],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileFinancesUserFragment, unknown>;
 export const ProfileCookInviteInviteeFragmentDoc = {
     kind: 'Document',
     definitions: [
@@ -36676,264 +36934,6 @@ export const ProfileTravelUserFragmentDoc = {
         },
     ],
 } as unknown as DocumentNode<GqlCProfileTravelUserFragment, unknown>;
-export const ProfileWalletStripeAccountDetailsFragmentDoc = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileWalletStripeAccountDetails' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookStripeAccountDetails' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'detailsSubmitted' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'chargesEnabled' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'payoutsEnabled' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'disabledReason' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'currentlyDue' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'pastDue' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'pendingVerification' } },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCProfileWalletStripeAccountDetailsFragment, unknown>;
-export const ProfileWalletStripeWalletFragmentDoc = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileWalletStripeWallet' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookStripeWallet' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'availableCents' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'pendingCents' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'transactions' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'balanceTransactionId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'netCents' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'availableOn' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCProfileWalletStripeWalletFragment, unknown>;
-export const ProfileWalletTravelOriginFragmentDoc = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileWalletTravelOrigin' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookTravelOriginAddress' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCProfileWalletTravelOriginFragment, unknown>;
-export const ProfileWalletInvoiceAddressFragmentDoc = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileWalletInvoiceAddress' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'InvoiceAddress' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'companyName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'postalCode' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'line1' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'line2' } },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCProfileWalletInvoiceAddressFragment, unknown>;
-export const ProfileWalletCookFragmentDoc = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileWalletCook' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Cook' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'stripeStatus' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'canCreateOffers' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'exactTravelOriginAddress' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileWalletTravelOrigin' } }],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'invoiceAddress' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileWalletInvoiceAddress' } }],
-                        },
-                    },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileWalletTravelOrigin' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookTravelOriginAddress' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileWalletInvoiceAddress' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'InvoiceAddress' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'companyName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'postalCode' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'line1' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'line2' } },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCProfileWalletCookFragment, unknown>;
-export const ProfileWalletUserFragmentDoc = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileWalletUser' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'User' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'cook' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileWalletCook' } }],
-                        },
-                    },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileWalletTravelOrigin' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookTravelOriginAddress' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileWalletInvoiceAddress' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'InvoiceAddress' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'companyName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'postalCode' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'line1' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'line2' } },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileWalletCook' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Cook' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'stripeStatus' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'canCreateOffers' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'exactTravelOriginAddress' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileWalletTravelOrigin' } }],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'invoiceAddress' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileWalletInvoiceAddress' } }],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCProfileWalletUserFragment, unknown>;
 export const ProfileCustomerBookingRequestOfferCheckoutPageUserFragmentDoc = {
     kind: 'Document',
     definitions: [
@@ -85439,6 +85439,740 @@ export const ProfileCookChefProfileUserUpdateDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCProfileCookChefProfileUserUpdateMutation, GqlCProfileCookChefProfileUserUpdateMutationVariables>;
+export const ProfileCookFinancesPageDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'ProfileCookFinancesPage' },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'sessionId' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'user' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileFinancesUser' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'cook' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'stripeAccountDetails' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    {
+                                                                        kind: 'FragmentSpread',
+                                                                        name: {
+                                                                            kind: 'Name',
+                                                                            value: 'ProfileFinancesStripeAccountDetails',
+                                                                        },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'stripeWallet' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    {
+                                                                        kind: 'FragmentSpread',
+                                                                        name: { kind: 'Name', value: 'ProfileFinancesStripeWallet' },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileFinancesTravelOrigin' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookTravelOriginAddress' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileFinancesInvoiceAddress' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'InvoiceAddress' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'companyName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'postalCode' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'line1' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'line2' } },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileFinancesCook' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Cook' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'stripeStatus' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'canCreateOffers' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'exactTravelOriginAddress' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileFinancesTravelOrigin' } }],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'invoiceAddress' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileFinancesInvoiceAddress' } }],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileFinancesUser' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'User' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'cook' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileFinancesCook' } }],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileFinancesStripeAccountDetails' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookStripeAccountDetails' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'detailsSubmitted' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'chargesEnabled' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'payoutsEnabled' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'disabledReason' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'currentlyDue' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pastDue' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pendingVerification' } },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileFinancesStripeWallet' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookStripeWallet' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'availableCents' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pendingCents' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'transactions' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'balanceTransactionId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'netCents' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'availableOn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCookFinancesPageQuery, GqlCProfileCookFinancesPageQueryVariables>;
+export const ProfileCookFinancesStripeDetailsDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'ProfileCookFinancesStripeDetails' },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'user' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'cook' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'stripeAccountDetails' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    {
+                                                                        kind: 'FragmentSpread',
+                                                                        name: {
+                                                                            kind: 'Name',
+                                                                            value: 'ProfileFinancesStripeAccountDetails',
+                                                                        },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'stripeWallet' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    {
+                                                                        kind: 'FragmentSpread',
+                                                                        name: { kind: 'Name', value: 'ProfileFinancesStripeWallet' },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileFinancesStripeAccountDetails' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookStripeAccountDetails' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'detailsSubmitted' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'chargesEnabled' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'payoutsEnabled' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'disabledReason' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'currentlyDue' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pastDue' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pendingVerification' } },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileFinancesStripeWallet' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookStripeWallet' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'availableCents' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pendingCents' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'transactions' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'balanceTransactionId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'netCents' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'availableOn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCookFinancesStripeDetailsQuery, GqlCProfileCookFinancesStripeDetailsQueryVariables>;
+export const ProfileCookFinancesPageUpdatesDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'subscription',
+            name: { kind: 'Name', value: 'ProfileCookFinancesPageUpdates' },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'userUpdates' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileFinancesUser' } }],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileFinancesTravelOrigin' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookTravelOriginAddress' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileFinancesInvoiceAddress' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'InvoiceAddress' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'companyName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'postalCode' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'line1' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'line2' } },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileFinancesCook' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Cook' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'stripeStatus' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'canCreateOffers' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'exactTravelOriginAddress' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileFinancesTravelOrigin' } }],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'invoiceAddress' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileFinancesInvoiceAddress' } }],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileFinancesUser' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'User' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'cook' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileFinancesCook' } }],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCookFinancesPageUpdatesSubscription, GqlCProfileCookFinancesPageUpdatesSubscriptionVariables>;
+export const ProfileCookFinancesLocationSuggestionsDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'ProfileCookFinancesLocationSuggestions' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'searchText' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'onlyFullAddresses' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } } },
+                    defaultValue: { kind: 'BooleanValue', value: true },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'locationSuggestions' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'searchText' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'searchText' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'onlyFullAddresses' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'onlyFullAddresses' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'structuredAddress' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'FragmentSpread',
+                                                            name: { kind: 'Name', value: 'ProfileFinancesTravelOrigin' },
+                                                        },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'state' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileFinancesTravelOrigin' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookTravelOriginAddress' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCookFinancesLocationSuggestionsQuery, GqlCProfileCookFinancesLocationSuggestionsQueryVariables>;
+export const ProfileCookStripeOnboardingStartDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'ProfileCookStripeOnboardingStart' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'returnUrl' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'refreshUrl' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cook' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'stripeOnboardingStart' },
+                                                arguments: [
+                                                    {
+                                                        kind: 'Argument',
+                                                        name: { kind: 'Name', value: 'returnUrl' },
+                                                        value: { kind: 'Variable', name: { kind: 'Name', value: 'returnUrl' } },
+                                                    },
+                                                    {
+                                                        kind: 'Argument',
+                                                        name: { kind: 'Name', value: 'refreshUrl' },
+                                                        value: { kind: 'Variable', name: { kind: 'Name', value: 'refreshUrl' } },
+                                                    },
+                                                ],
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCookStripeOnboardingStartMutation, GqlCProfileCookStripeOnboardingStartMutationVariables>;
+export const ProfileCookStripeStatusSyncDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'ProfileCookStripeStatusSync' },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cook' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'stripeStatusSync' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCookStripeStatusSyncMutation, GqlCProfileCookStripeStatusSyncMutationVariables>;
+export const ProfileCookStripeDashboardUrlCreateDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'ProfileCookStripeDashboardUrlCreate' },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cook' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'stripeDashboardUrlCreate' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCookStripeDashboardUrlCreateMutation, GqlCProfileCookStripeDashboardUrlCreateMutationVariables>;
+export const ProfileCookFinancesInvoiceAddressUpdateDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'ProfileCookFinancesInvoiceAddressUpdate' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'CookUpdate' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cook' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'update' },
+                                                arguments: [
+                                                    {
+                                                        kind: 'Argument',
+                                                        name: { kind: 'Name', value: 'input' },
+                                                        value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                                                    },
+                                                ],
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GqlCProfileCookFinancesInvoiceAddressUpdateMutation,
+    GqlCProfileCookFinancesInvoiceAddressUpdateMutationVariables
+>;
 export const ProfileCookInvitePageDocument = {
     kind: 'Document',
     definitions: [
@@ -87848,731 +88582,6 @@ export const ProfileTravelLocationSuggestionsDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCProfileTravelLocationSuggestionsQuery, GqlCProfileTravelLocationSuggestionsQueryVariables>;
-export const ProfileCookWalletPageDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'query',
-            name: { kind: 'Name', value: 'ProfileCookWalletPage' },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'currentSession' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'sessionId' } },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'user' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileWalletUser' } },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'cook' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        {
-                                                            kind: 'Field',
-                                                            name: { kind: 'Name', value: 'stripeAccountDetails' },
-                                                            selectionSet: {
-                                                                kind: 'SelectionSet',
-                                                                selections: [
-                                                                    {
-                                                                        kind: 'FragmentSpread',
-                                                                        name: { kind: 'Name', value: 'ProfileWalletStripeAccountDetails' },
-                                                                    },
-                                                                ],
-                                                            },
-                                                        },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: { kind: 'Name', value: 'stripeWallet' },
-                                                            selectionSet: {
-                                                                kind: 'SelectionSet',
-                                                                selections: [
-                                                                    {
-                                                                        kind: 'FragmentSpread',
-                                                                        name: { kind: 'Name', value: 'ProfileWalletStripeWallet' },
-                                                                    },
-                                                                ],
-                                                            },
-                                                        },
-                                                    ],
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileWalletTravelOrigin' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookTravelOriginAddress' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileWalletInvoiceAddress' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'InvoiceAddress' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'companyName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'postalCode' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'line1' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'line2' } },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileWalletCook' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Cook' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'stripeStatus' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'canCreateOffers' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'exactTravelOriginAddress' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileWalletTravelOrigin' } }],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'invoiceAddress' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileWalletInvoiceAddress' } }],
-                        },
-                    },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileWalletUser' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'User' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'cook' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileWalletCook' } }],
-                        },
-                    },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileWalletStripeAccountDetails' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookStripeAccountDetails' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'detailsSubmitted' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'chargesEnabled' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'payoutsEnabled' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'disabledReason' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'currentlyDue' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'pastDue' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'pendingVerification' } },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileWalletStripeWallet' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookStripeWallet' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'availableCents' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'pendingCents' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'transactions' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'balanceTransactionId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'netCents' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'availableOn' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCProfileCookWalletPageQuery, GqlCProfileCookWalletPageQueryVariables>;
-export const ProfileCookWalletStripeDetailsDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'query',
-            name: { kind: 'Name', value: 'ProfileCookWalletStripeDetails' },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'currentSession' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'user' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'cook' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        {
-                                                            kind: 'Field',
-                                                            name: { kind: 'Name', value: 'stripeAccountDetails' },
-                                                            selectionSet: {
-                                                                kind: 'SelectionSet',
-                                                                selections: [
-                                                                    {
-                                                                        kind: 'FragmentSpread',
-                                                                        name: { kind: 'Name', value: 'ProfileWalletStripeAccountDetails' },
-                                                                    },
-                                                                ],
-                                                            },
-                                                        },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: { kind: 'Name', value: 'stripeWallet' },
-                                                            selectionSet: {
-                                                                kind: 'SelectionSet',
-                                                                selections: [
-                                                                    {
-                                                                        kind: 'FragmentSpread',
-                                                                        name: { kind: 'Name', value: 'ProfileWalletStripeWallet' },
-                                                                    },
-                                                                ],
-                                                            },
-                                                        },
-                                                    ],
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileWalletStripeAccountDetails' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookStripeAccountDetails' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'detailsSubmitted' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'chargesEnabled' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'payoutsEnabled' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'disabledReason' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'currentlyDue' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'pastDue' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'pendingVerification' } },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileWalletStripeWallet' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookStripeWallet' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'availableCents' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'pendingCents' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'transactions' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'balanceTransactionId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'netCents' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'availableOn' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCProfileCookWalletStripeDetailsQuery, GqlCProfileCookWalletStripeDetailsQueryVariables>;
-export const ProfileCookWalletPageUpdatesDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'subscription',
-            name: { kind: 'Name', value: 'ProfileCookWalletPageUpdates' },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'userUpdates' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileWalletUser' } }],
-                        },
-                    },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileWalletTravelOrigin' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookTravelOriginAddress' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileWalletInvoiceAddress' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'InvoiceAddress' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'companyName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'postalCode' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'line1' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'line2' } },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileWalletCook' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Cook' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'stripeStatus' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'canCreateOffers' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'exactTravelOriginAddress' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileWalletTravelOrigin' } }],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'invoiceAddress' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileWalletInvoiceAddress' } }],
-                        },
-                    },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileWalletUser' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'User' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'cook' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileWalletCook' } }],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCProfileCookWalletPageUpdatesSubscription, GqlCProfileCookWalletPageUpdatesSubscriptionVariables>;
-export const ProfileCookWalletLocationSuggestionsDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'query',
-            name: { kind: 'Name', value: 'ProfileCookWalletLocationSuggestions' },
-            variableDefinitions: [
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'searchText' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
-                },
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'onlyFullAddresses' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } } },
-                    defaultValue: { kind: 'BooleanValue', value: true },
-                },
-            ],
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'currentSession' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'locationSuggestions' },
-                                    arguments: [
-                                        {
-                                            kind: 'Argument',
-                                            name: { kind: 'Name', value: 'searchText' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'searchText' } },
-                                        },
-                                        {
-                                            kind: 'Argument',
-                                            name: { kind: 'Name', value: 'onlyFullAddresses' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'onlyFullAddresses' } },
-                                        },
-                                    ],
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'structuredAddress' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        {
-                                                            kind: 'FragmentSpread',
-                                                            name: { kind: 'Name', value: 'ProfileWalletTravelOrigin' },
-                                                        },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'state' } },
-                                                    ],
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileWalletTravelOrigin' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookTravelOriginAddress' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'country' } },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCProfileCookWalletLocationSuggestionsQuery, GqlCProfileCookWalletLocationSuggestionsQueryVariables>;
-export const ProfileCookStripeOnboardingStartDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'mutation',
-            name: { kind: 'Name', value: 'ProfileCookStripeOnboardingStart' },
-            variableDefinitions: [
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'returnUrl' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
-                },
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'refreshUrl' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
-                },
-            ],
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'user' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'cook' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'stripeOnboardingStart' },
-                                                arguments: [
-                                                    {
-                                                        kind: 'Argument',
-                                                        name: { kind: 'Name', value: 'returnUrl' },
-                                                        value: { kind: 'Variable', name: { kind: 'Name', value: 'returnUrl' } },
-                                                    },
-                                                    {
-                                                        kind: 'Argument',
-                                                        name: { kind: 'Name', value: 'refreshUrl' },
-                                                        value: { kind: 'Variable', name: { kind: 'Name', value: 'refreshUrl' } },
-                                                    },
-                                                ],
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'url' } },
-                                                    ],
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCProfileCookStripeOnboardingStartMutation, GqlCProfileCookStripeOnboardingStartMutationVariables>;
-export const ProfileCookStripeStatusSyncDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'mutation',
-            name: { kind: 'Name', value: 'ProfileCookStripeStatusSync' },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'user' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'cook' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'stripeStatusSync' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'success' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
-                                                    ],
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCProfileCookStripeStatusSyncMutation, GqlCProfileCookStripeStatusSyncMutationVariables>;
-export const ProfileCookStripeDashboardUrlCreateDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'mutation',
-            name: { kind: 'Name', value: 'ProfileCookStripeDashboardUrlCreate' },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'user' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'cook' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'stripeDashboardUrlCreate' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCProfileCookStripeDashboardUrlCreateMutation, GqlCProfileCookStripeDashboardUrlCreateMutationVariables>;
-export const ProfileCookWalletInvoiceAddressUpdateDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'mutation',
-            name: { kind: 'Name', value: 'ProfileCookWalletInvoiceAddressUpdate' },
-            variableDefinitions: [
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'CookUpdate' } } },
-                },
-            ],
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'user' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'cook' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'update' },
-                                                arguments: [
-                                                    {
-                                                        kind: 'Argument',
-                                                        name: { kind: 'Name', value: 'input' },
-                                                        value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
-                                                    },
-                                                ],
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'success' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
-                                                    ],
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCProfileCookWalletInvoiceAddressUpdateMutation, GqlCProfileCookWalletInvoiceAddressUpdateMutationVariables>;
 export const ProfileCustomerBookingRequestEditLocationSuggestionsDocument = {
     kind: 'Document',
     definitions: [

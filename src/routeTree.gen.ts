@@ -103,6 +103,7 @@ import { Route as Char123LocaleChar125ProfileBookingRequestPoolRouteImport } fro
 import { Route as Char123LocaleChar125ProfileBookingRequestsRouteImport } from './routes/{-$locale}/profile/booking-requests'
 import { Route as Char123LocaleChar125ProfileCallsRouteImport } from './routes/{-$locale}/profile/calls'
 import { Route as Char123LocaleChar125ProfileChefProfileRouteImport } from './routes/{-$locale}/profile/chef-profile'
+import { Route as Char123LocaleChar125ProfileFinancesRouteImport } from './routes/{-$locale}/profile/finances'
 import { Route as Char123LocaleChar125ProfileGiftCardsRouteImport } from './routes/{-$locale}/profile/gift-cards'
 import { Route as Char123LocaleChar125ProfileInviteRouteImport } from './routes/{-$locale}/profile/invite'
 import { Route as Char123LocaleChar125ProfileMealsRouteImport } from './routes/{-$locale}/profile/meals'
@@ -732,6 +733,12 @@ const Char123LocaleChar125ProfileChefProfileRoute =
   Char123LocaleChar125ProfileChefProfileRouteImport.update({
     id: '/chef-profile',
     path: '/chef-profile',
+    getParentRoute: () => Char123LocaleChar125ProfileRoute,
+  } as any)
+const Char123LocaleChar125ProfileFinancesRoute =
+  Char123LocaleChar125ProfileFinancesRouteImport.update({
+    id: '/finances',
+    path: '/finances',
     getParentRoute: () => Char123LocaleChar125ProfileRoute,
   } as any)
 const Char123LocaleChar125ProfileGiftCardsRoute =
@@ -1397,6 +1404,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/profile/booking-requests': typeof Char123LocaleChar125ProfileBookingRequestsRoute
   '/{-$locale}/profile/calls': typeof Char123LocaleChar125ProfileCallsRoute
   '/{-$locale}/profile/chef-profile': typeof Char123LocaleChar125ProfileChefProfileRoute
+  '/{-$locale}/profile/finances': typeof Char123LocaleChar125ProfileFinancesRoute
   '/{-$locale}/profile/gift-cards': typeof Char123LocaleChar125ProfileGiftCardsRoute
   '/{-$locale}/profile/invite': typeof Char123LocaleChar125ProfileInviteRoute
   '/{-$locale}/profile/meals': typeof Char123LocaleChar125ProfileMealsRoute
@@ -1578,6 +1586,7 @@ export interface FileRoutesByTo {
   '/{-$locale}/profile/booking-requests': typeof Char123LocaleChar125ProfileBookingRequestsRoute
   '/{-$locale}/profile/calls': typeof Char123LocaleChar125ProfileCallsRoute
   '/{-$locale}/profile/chef-profile': typeof Char123LocaleChar125ProfileChefProfileRoute
+  '/{-$locale}/profile/finances': typeof Char123LocaleChar125ProfileFinancesRoute
   '/{-$locale}/profile/gift-cards': typeof Char123LocaleChar125ProfileGiftCardsRoute
   '/{-$locale}/profile/invite': typeof Char123LocaleChar125ProfileInviteRoute
   '/{-$locale}/profile/meals': typeof Char123LocaleChar125ProfileMealsRoute
@@ -1763,6 +1772,7 @@ export interface FileRoutesById {
   '/{-$locale}/profile/booking-requests': typeof Char123LocaleChar125ProfileBookingRequestsRoute
   '/{-$locale}/profile/calls': typeof Char123LocaleChar125ProfileCallsRoute
   '/{-$locale}/profile/chef-profile': typeof Char123LocaleChar125ProfileChefProfileRoute
+  '/{-$locale}/profile/finances': typeof Char123LocaleChar125ProfileFinancesRoute
   '/{-$locale}/profile/gift-cards': typeof Char123LocaleChar125ProfileGiftCardsRoute
   '/{-$locale}/profile/invite': typeof Char123LocaleChar125ProfileInviteRoute
   '/{-$locale}/profile/meals': typeof Char123LocaleChar125ProfileMealsRoute
@@ -1949,6 +1959,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/profile/booking-requests'
     | '/{-$locale}/profile/calls'
     | '/{-$locale}/profile/chef-profile'
+    | '/{-$locale}/profile/finances'
     | '/{-$locale}/profile/gift-cards'
     | '/{-$locale}/profile/invite'
     | '/{-$locale}/profile/meals'
@@ -2130,6 +2141,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/profile/booking-requests'
     | '/{-$locale}/profile/calls'
     | '/{-$locale}/profile/chef-profile'
+    | '/{-$locale}/profile/finances'
     | '/{-$locale}/profile/gift-cards'
     | '/{-$locale}/profile/invite'
     | '/{-$locale}/profile/meals'
@@ -2314,6 +2326,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/profile/booking-requests'
     | '/{-$locale}/profile/calls'
     | '/{-$locale}/profile/chef-profile'
+    | '/{-$locale}/profile/finances'
     | '/{-$locale}/profile/gift-cards'
     | '/{-$locale}/profile/invite'
     | '/{-$locale}/profile/meals'
@@ -3096,6 +3109,13 @@ declare module '@tanstack/react-router' {
       path: '/chef-profile'
       fullPath: '/{-$locale}/profile/chef-profile'
       preLoaderRoute: typeof Char123LocaleChar125ProfileChefProfileRouteImport
+      parentRoute: typeof Char123LocaleChar125ProfileRoute
+    }
+    '/{-$locale}/profile/finances': {
+      id: '/{-$locale}/profile/finances'
+      path: '/finances'
+      fullPath: '/{-$locale}/profile/finances'
+      preLoaderRoute: typeof Char123LocaleChar125ProfileFinancesRouteImport
       parentRoute: typeof Char123LocaleChar125ProfileRoute
     }
     '/{-$locale}/profile/gift-cards': {
@@ -3973,6 +3993,7 @@ interface Char123LocaleChar125ProfileRouteChildren {
   Char123LocaleChar125ProfileBookingRequestsRoute: typeof Char123LocaleChar125ProfileBookingRequestsRoute
   Char123LocaleChar125ProfileCallsRoute: typeof Char123LocaleChar125ProfileCallsRoute
   Char123LocaleChar125ProfileChefProfileRoute: typeof Char123LocaleChar125ProfileChefProfileRoute
+  Char123LocaleChar125ProfileFinancesRoute: typeof Char123LocaleChar125ProfileFinancesRoute
   Char123LocaleChar125ProfileGiftCardsRoute: typeof Char123LocaleChar125ProfileGiftCardsRoute
   Char123LocaleChar125ProfileInviteRoute: typeof Char123LocaleChar125ProfileInviteRoute
   Char123LocaleChar125ProfileMealsRoute: typeof Char123LocaleChar125ProfileMealsRoute
@@ -4022,6 +4043,8 @@ const Char123LocaleChar125ProfileRouteChildren: Char123LocaleChar125ProfileRoute
       Char123LocaleChar125ProfileCallsRoute,
     Char123LocaleChar125ProfileChefProfileRoute:
       Char123LocaleChar125ProfileChefProfileRoute,
+    Char123LocaleChar125ProfileFinancesRoute:
+      Char123LocaleChar125ProfileFinancesRoute,
     Char123LocaleChar125ProfileGiftCardsRoute:
       Char123LocaleChar125ProfileGiftCardsRoute,
     Char123LocaleChar125ProfileInviteRoute:

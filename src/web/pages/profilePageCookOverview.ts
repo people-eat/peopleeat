@@ -4,7 +4,7 @@ import type { Locale } from '../../shared/locale';
 import type { GqlCProfilePageCookStatusFragment } from '../graphql/generated';
 
 type CookOverviewAttentionAction =
-    | { to: '/{-$locale}/profile/wallet' }
+    | { to: '/{-$locale}/profile/finances' }
     | {
           to: '/{-$locale}/profile/booking-request-offers/$bookingRequestOfferId';
           bookingRequestOfferId: string;
@@ -25,7 +25,7 @@ export type CookOverviewAttentionItem = {
 };
 
 type CookOverviewGettingStartedHref =
-    | '/{-$locale}/profile/wallet'
+    | '/{-$locale}/profile/finances'
     | '/{-$locale}/profile/travel'
     | '/{-$locale}/profile/chef-profile/edit'
     | '/{-$locale}/profile/meals'
@@ -47,8 +47,8 @@ type CookOverviewModel = {
 };
 
 const onboardingStepHref: Record<CookOnboardingStep, CookOverviewGettingStartedHref> = {
-    INVOICE_ADDRESS: '/{-$locale}/profile/wallet',
-    WALLET: '/{-$locale}/profile/wallet',
+    INVOICE_ADDRESS: '/{-$locale}/profile/finances',
+    WALLET: '/{-$locale}/profile/finances',
     TRAVEL: '/{-$locale}/profile/travel',
     PROFILE_PICTURE: '/{-$locale}/profile/chef-profile/edit',
     CHEF_PROFILE: '/{-$locale}/profile/chef-profile/edit',
@@ -63,7 +63,7 @@ function attentionAction(item: GqlCProfilePageCookStatusFragment['attention'][nu
         case 'APPROVAL_PENDING':
             return null;
         case 'WALLET_RESET':
-            return { to: '/{-$locale}/profile/wallet' };
+            return { to: '/{-$locale}/profile/finances' };
         case 'DIRECT_BOOKING_REQUEST':
             if (item.bookingRequestId == null) return { to: '/{-$locale}/profile/booking-request-pool' };
             return {

@@ -13,7 +13,7 @@ import type { CookOverviewAttentionItem, CookOverviewGettingStartedStep } from '
 import { profilePageCookOverview } from './profilePageCookOverview';
 
 function AttentionAction({ action }: { action: NonNullable<CookOverviewAttentionItem['action']> }) {
-    if (action.to === '/{-$locale}/profile/wallet' || action.to === '/{-$locale}/profile/booking-request-pool') {
+    if (action.to === '/{-$locale}/profile/finances' || action.to === '/{-$locale}/profile/booking-request-pool') {
         return (
             <Button asChild size="sm">
                 <Link to={action.to}>{action.label}</Link>
