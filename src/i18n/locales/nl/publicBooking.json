@@ -309,7 +309,7 @@
             "exclusiveFor": "Exclusief voor gasten van",
             "alt": "Gedekte tafel voor jouw diner",
             "stars": "5,0 van 5 sterren",
-            "reviews": "{count, plural, one {Bekijk # review} other {Bekijk # reviews}}",
+            "reviews": "{count, plural, one {Bekijk # recensie} other {Bekijk # recensies}}",
             "placeTitle": "Jouw plek wordt jouw favoriete restaurant.",
             "placeBody1": "Je privéchef serveert gangen die vers bij jou thuis zijn bereid en op jouw wensen zijn afgestemd.",
             "placeBody2": "Boodschappen, koken en een schone keuken inbegrepen."

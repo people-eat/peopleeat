@@ -455,7 +455,7 @@
         ],
         "priceClasses": {
             "LOW": {
-                "title": "Casual Dining",
+                "title": "Entspanntes Dinner",
                 "description": "Für Abende, bei denen es einfach ums Zusammensein geht.",
                 "commonOccasions": ["JGAs", "Hochzeitsfeiern", "Team Events", "Kochkurse"]
             },
@@ -465,7 +465,7 @@
                 "commonOccasions": ["Familientreffen", "Abende mit Freunden", "Dinner in Ferienwohnungen"]
             },
             "HIGH": {
-                "title": "Prestige Experience",
+                "title": "Exklusives Erlebnis",
                 "description": "Für Anlässe, an denen besondere Erinnerungen entstehen.",
                 "commonOccasions": ["Jubiläen", "Candlelight Dinner", "Besondere Anlässe"]
             }

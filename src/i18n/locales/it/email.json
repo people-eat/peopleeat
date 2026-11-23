@@ -16,9 +16,9 @@
             "body": "Inserisci questo codice nella pagina dell’account per confermare il tuo nuovo indirizzo e-mail. È valido per dieci minuti."
         },
         "accountDeleted": {
-            "preview": "Your peopleeat account has been deleted",
-            "subject": "Your peopleeat account has been deleted",
-            "body": "Your account has been deleted. Personal data was removed and you can no longer sign in. If you did not request this, contact support."
+            "preview": "Il tuo account peopleeat è stato eliminato",
+            "subject": "Il tuo account peopleeat è stato eliminato",
+            "body": "Il tuo account è stato eliminato. I dati personali sono stati rimossi e non puoi più accedere. Se non sei stato tu a richiederlo, contatta il supporto."
         }
     },
     "common": {

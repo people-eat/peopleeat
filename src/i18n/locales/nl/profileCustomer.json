@@ -345,7 +345,7 @@
         "offers": "Offertes",
         "leaveAReview": "Review schrijven",
         "viewRequest": "Aanvraag bekijken",
-        "n1ReviewOutstanding": "1 review nog open",
+        "n1ReviewOutstanding": "1 recensie nog open",
         "showMenuSuggestion": "Menuvoorstel tonen",
         "viewOffer": "Offerte bekijken",
         "total": "Totaal",
@@ -414,7 +414,7 @@
         }
     },
     "bookingCard": {
-        "reviewsOutstandingOne": "1 review nog open",
-        "reviewsOutstandingOther": "{count} reviews nog open"
+        "reviewsOutstandingOne": "1 recensie nog open",
+        "reviewsOutstandingOther": "{count} recensies nog open"
     }
 }

@@ -189,7 +189,7 @@
         "metricProfileViews": "Profilbesuche",
         "metricTimeToOpen": "Zeit bis Öffnen",
         "metricOffers": "Angebote",
-        "metricConversion": "Conversion"
+        "metricConversion": "Konversion"
     },
     "actions": {
         "cancel": "Abbrechen",
@@ -328,7 +328,7 @@
             "count": "Anzahl"
         },
         "insights": {
-            "label": "Highlights",
+            "label": "Höhepunkte",
             "directOpenedNoOffer": "Gäste, die dich angefragt haben, haben geöffnet, aber es ging noch kein Angebot raus.",
             "lowOpenRate": "Viele Pool-Anfragen bleiben ungeöffnet. Schneller öffnen bringt meist mehr Buchungen.",
             "mealOpenedNeverBooked": "{title} wird auf deiner Kochseite oft geöffnet, aber Gäste haben es in einem angenommenen Angebot noch nicht gewählt.",
@@ -516,7 +516,7 @@
         "cuisineAndPhilosophy": "Küchenstil und Philosophie",
         "identityLabel": "Koch-Identität",
         "seePublicProfile": "Öffentliches Profil ansehen",
-        "live": "Live",
+        "live": "Veröffentlicht",
         "hidden": "Verborgen",
         "pendingApproval": "Wartet auf Freischaltung durch unser Team",
         "tabsAria": "Bereiche der Kochseite",
@@ -885,12 +885,12 @@
     "offerPriceEdit": {
         "validPrice": "Bitte gib einen gültigen Preis ein.",
         "updated": "Preis aktualisiert.",
-        "updateFailed": "Preisupdate fehlgeschlagen.",
+        "updateFailed": "Preis konnte nicht aktualisiert werden.",
         "backToOffer": "Zum Angebot"
     },
     "offerMenusEdit": {
         "updated": "Menüs aktualisiert.",
-        "updateFailed": "Menüupdate fehlgeschlagen.",
+        "updateFailed": "Menüs konnten nicht aktualisiert werden.",
         "menuCreated": "Menü angelegt.",
         "menuCreatedSelected": "Menü angelegt und ausgewählt.",
         "backToOffer": "Zum Angebot"
@@ -1208,7 +1208,7 @@
     },
     "menuCourses": {
         "presets": {
-            "0": "Amuse Bouche",
+            "0": "Amuse-Bouche",
             "1": "Vorspeise",
             "2": "Hauptspeise",
             "3": "Dessert",

@@ -2584,28 +2584,28 @@
     },
     "user": {
         "tabs": {
-            "general": "General",
-            "cook_profile": "Cook profile",
+            "general": "Общее",
+            "cook_profile": "Профиль повара",
             "offers": "Offers",
-            "meals": "Meals",
-            "menus": "Menus",
-            "pool": "Pool",
-            "calls": "Calls",
-            "testimonials": "Testimonials",
-            "booking_requests": "Booking requests",
-            "feature_toggles": "Feature toggles",
-            "session_events": "Session events",
-            "sessions": "Sessions",
+            "meals": "Блюда",
+            "menus": "Меню",
+            "pool": "Пул",
+            "calls": "Вызовы",
+            "testimonials": "Отзывы",
+            "booking_requests": "Заявки на бронирование",
+            "feature_toggles": "Флаги функций",
+            "session_events": "События сессии",
+            "sessions": "Сессии",
             "notes": "Notes",
             "whatsapp": "WhatsApp",
-            "emails": "Emails",
-            "assistant_chats": "Assistant chats"
+            "emails": "Письма",
+            "assistant_chats": "Чаты с ассистентом"
         }
     },
     "session": {
         "tabs": {
             "overview": "Overview",
-            "events": "Events"
+            "events": "События"
         }
     },
     "sessions": {
@@ -2616,9 +2616,9 @@
     },
     "promoCode": {
         "tabs": {
-            "general": "General",
-            "expiration": "Expiration",
-            "usage": "Usage"
+            "general": "Общее",
+            "expiration": "Срок действия",
+            "usage": "Использование"
         }
     },
     "logs": {
@@ -2657,13 +2657,13 @@
     },
     "offer": {
         "payoutConfirm": {
-            "releaseTitle": "Really release this payout?",
-            "checkTitle": "Check if payout already took place?",
-            "outOfSystemTitle": "Mark as paid out of system?",
-            "releaseBody": "This creates a Stripe bank payout of {amount} to the cook.",
-            "checkBody": "We ask Stripe for a matching payout of {amount}. If one is found, we mark the offer as paid out. No new payout is created.",
-            "checkBodyOutOfSystem": "We ask Stripe for a matching payout of {amount}. If one is found, we correct the status from out-of-system to Stripe payout. No new payout is created.",
-            "outOfSystemBody": "No Stripe payout. We mark {amount} as paid outside Stripe (for example wire or cash)."
+            "releaseTitle": "Точно провести эту выплату?",
+            "checkTitle": "Проверить, была ли выплата уже произведена?",
+            "outOfSystemTitle": "Отметить как оплачено вне Stripe?",
+            "releaseBody": "Будет запущена банковская выплата Stripe на {amount} повару.",
+            "checkBody": "Мы запрашиваем у Stripe подходящую выплату на {amount}. Если она найдётся, отметим предложение как выплаченное. Новая выплата не создаётся.",
+            "checkBodyOutOfSystem": "Мы запрашиваем у Stripe подходящую выплату на {amount}. Если она найдётся, исправим статус с «вне системы» на выплату Stripe. Новая выплата не создаётся.",
+            "outOfSystemBody": "Без выплаты Stripe. Отмечаем {amount} как выплаченные вне Stripe (например, перевод или наличные)."
         }
     }
 }

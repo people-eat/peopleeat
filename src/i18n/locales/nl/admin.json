@@ -923,7 +923,7 @@
         "dateRangeForRegistrations": "Datumbereik voor registraties",
         "barChartOfUserRegistrationsInTheSelectedRange": "Staafdiagram van gebruikersregistraties in het gekozen bereik",
         "acrossAllNonAnonymizedAccountsIndependentOfTheChartRange": "Over alle niet-geanonimiseerde accounts (los van het diagrambereik).",
-        "overlappingOneAccountCanHaveGoogleAndAPasskey": "Overlapping: one account can have Google, Facebook en een passkey.",
+        "overlappingOneAccountCanHaveGoogleAndAPasskey": "Overlappend: één account kan Google, Facebook en een passkey hebben.",
         "passkeyPresent": "Passkey aanwezig",
         "authenticatorApp": "Authenticator-app",
         "ageAndBirthdays": "Leeftijd en verjaardagen",
@@ -1150,7 +1150,7 @@
         "optionalLeaveEmptyForTheBookingFormAbsoluteHttpSUrlOrSiteRel": "Optioneel. Leeg laten voor het boekingsformulier. Gebruik bij voorkeur een pad relatief aan de site (bijv. /booking-request/plan). Absolute people-eat.com-URL's worden als pad opgeslagen; andere http(s)-URL's blijven extern.",
         "location": "Locatie",
         "optionalPrefillsBookingRequestPlanVenueidUrlParamsOverrideTh": "Optioneel. Vult /booking-request/plan?venueId=… vooraf in. URL-parameters overschrijven de locatie.",
-        "n123MainStreet12345Springfield": "123 Main Street, 12345 Springfield",
+        "n123MainStreet12345Springfield": "Hoofdstraat 123, 1234 AB Voorbeeldstad",
         "howItWorks": "Hoe het werkt",
         "thisSectionAppearsOnThePartnerPageBelowTestimonials": "Deze sectie verschijnt op de partnerpagina onder testimonials.",
         "useAlternativeMedia": "Alternatieve media gebruiken",
@@ -1461,10 +1461,10 @@
         "live": "Live",
         "upcoming": "Aankomend",
         "completed": "Afgerond",
-        "roomsEnded": "Rooms beëindigd",
+        "roomsEnded": "Ruimtes beëindigd",
         "needsAttention": "Aandacht nodig",
         "dateRangeForCallStatistics": "Datumbereik voor gespreksstatistieken",
-        "livePendingUpcomingAreCurrentCompletedDeclinedCanceledAndEnd": "Live / Pending / Upcoming zijn actueel. Afgerond, afgewezen, geannuleerd en beëindigde rooms gebruiken het gekozen bereik.",
+        "livePendingUpcomingAreCurrentCompletedDeclinedCanceledAndEnd": "Live / In behandeling / Aankomend zijn actueel. Afgerond, afgewezen, geannuleerd en beëindigde ruimtes gebruiken het gekozen bereik.",
         "slotRequests": "Slotverzoeken",
         "barChartOfSlotRequestsInTheSelectedRange": "Staafdiagram van slotverzoeken in het gekozen bereik",
         "cooksWithTheMostCalls": "Chefs met de meeste gesprekken",
@@ -2048,8 +2048,8 @@
         "type2": "Type",
         "liveDataFromStripeIndependentOfTheCookFeatureToggleForWallet": "Live gegevens van Stripe. Onafhankelijk van de chef-feature toggle voor walletsaldo.",
         "nothingMoreForTheCookToDoRightNowStatusUpdatesOnceStripeFini": "De chef hoeft nu niets meer te doen. Status wordt bijgewerkt zodra Stripe klaar is.",
-        "chargesOrPayoutsAreNotEnabledOnStripeYet": "Charges of uitbetalingen staan nog niet aan op Stripe.",
-        "availableMeansReadyForBankPayoutPendingClearsAfterTheStripeH": "Beschikbaar betekent klaar voor bankuitbetaling. Pending verdwijnt na de Stripe-holdperiode.",
+        "chargesOrPayoutsAreNotEnabledOnStripeYet": "Betalingen of uitbetalingen staan nog niet aan op Stripe.",
+        "availableMeansReadyForBankPayoutPendingClearsAfterTheStripeH": "Beschikbaar betekent klaar voor bankuitbetaling. In behandeling wordt na de Stripe-wachtperiode vrijgegeven.",
         "noActivityYet": "Nog geen activiteit.",
         "balanceCouldNotBeLoadedNoAccountOrStripeError": "Saldo kon niet worden geladen (geen account of Stripe-fout).",
         "optional": "optioneel",
@@ -2109,7 +2109,7 @@
         "technicalStatus": "Technisch: {status}",
         "tokenUsage": "Input {input} · Output {output} · Totaal {total} · Reasoning {reasoning} · Cache {cache}",
         "callsInRangeRates": "In bereik: bevestigingsratio {confirmRate}% · afwijsratio {declineRate}% (van afgeronde + afgewezen + geannuleerde slots).",
-        "cookCallStats": "{rooms} rooms · {completed} afgerond · {declined} afgewezen · {awaiting} wachtend",
+        "cookCallStats": "{rooms} ruimtes · {completed} afgerond · {declined} afgewezen · {awaiting} wachtend",
         "accountDeletionScheduledFor": "Verwijdering gepland voor {date}.",
         "anonymizeModeImmediate": "Direct",
         "anonymizeModeSchedule": "Plannen (7 dagen wachten)",
@@ -2341,7 +2341,7 @@
             "LANDING_TESTIMONIAL_CARDS": "Landing: testimonialkaarten",
             "VENUE_PAGE_VENUES_EXPLORE": "Locatiepagina: meer locaties",
             "SIGN_IN_GOOGLE": "Inloggen: Google",
-            "SIGN_IN_FACEBOOK": "Sign-in: Facebook",
+            "SIGN_IN_FACEBOOK": "Inloggen: Facebook",
             "LAST_VISITED_COOK_PROFILES": "Laatst bezochte chefs"
         },
         "descriptions": {
@@ -2375,7 +2375,7 @@
             "LANDING_TESTIMONIAL_CARDS": "Toont de gedeelde reviewkaarten op de homepage in plaats van de scrollende citatenkolommen. De citaten blijven de vaste marketingtekst.",
             "VENUE_PAGE_VENUES_EXPLORE": "Toont de CTA “Meer locaties” op openbare locatiepagina's (/venues/…).",
             "SIGN_IN_GOOGLE": "Toont Doorgaan met Google op inloggates. Bevestig vóór productie de Google-toestemmingsscherm (testgebruikers of geverifieerde People-scopes).",
-            "SIGN_IN_FACEBOOK": "Shows Continue with Facebook on sign-in gates. Before enabling in production, confirm the Meta app is Live with privacy, terms, and data deletion configured.",
+            "SIGN_IN_FACEBOOK": "Toont Doorgaan met Facebook op inloggates. Bevestig vóór productie dat de Meta-app Live is (privacy, voorwaarden en gegevensverwijdering).",
             "LAST_VISITED_COOK_PROFILES": "Toont de laatst bekeken chefprofielen (max. 4) onderaan openbare chef- en blogpagina's."
         },
         "overrideModes": {
@@ -2657,13 +2657,13 @@
     },
     "offer": {
         "payoutConfirm": {
-            "releaseTitle": "Really release this payout?",
-            "checkTitle": "Check if payout already took place?",
-            "outOfSystemTitle": "Mark as paid out of system?",
-            "releaseBody": "This creates a Stripe bank payout of {amount} to the cook.",
-            "checkBody": "We ask Stripe for a matching payout of {amount}. If one is found, we mark the offer as paid out. No new payout is created.",
-            "checkBodyOutOfSystem": "We ask Stripe for a matching payout of {amount}. If one is found, we correct the status from out-of-system to Stripe payout. No new payout is created.",
-            "outOfSystemBody": "No Stripe payout. We mark {amount} as paid outside Stripe (for example wire or cash)."
+            "releaseTitle": "Deze uitbetaling echt vrijgeven?",
+            "checkTitle": "Controleren of de uitbetaling al heeft plaatsgevonden?",
+            "outOfSystemTitle": "Markeren als buiten systeem uitbetaald?",
+            "releaseBody": "Er wordt een Stripe-bankuitbetaling van {amount} aan de chef in gang gezet.",
+            "checkBody": "We vragen Stripe naar een passende uitbetaling van {amount}. Als we er een vinden, markeren we de offerte als uitbetaald. Er wordt geen nieuwe uitbetaling aangemaakt.",
+            "checkBodyOutOfSystem": "We vragen Stripe naar een passende uitbetaling van {amount}. Als we er een vinden, corrigeren we de status van buiten systeem naar Stripe-uitbetaling. Er wordt geen nieuwe uitbetaling aangemaakt.",
+            "outOfSystemBody": "Geen Stripe-uitbetaling. We markeren {amount} als buiten Stripe uitbetaald (bijvoorbeeld overboeking of contant)."
         }
     }
 }

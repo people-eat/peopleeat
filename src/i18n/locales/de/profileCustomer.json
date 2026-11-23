@@ -5,7 +5,7 @@
             "description": "Angebot prüfen und mit dem Koch schreiben."
         },
         "checkout": {
-            "title": "Checkout",
+            "title": "Zahlung",
             "description": "Zahlung abschließen, um die Buchung zu bestätigen."
         },
         "status": {

@@ -143,7 +143,7 @@
             "subpageDescription": "Gutscheinverkäufe-Unterseite."
         },
         "promoCodes": {
-            "title": "Promo Codes",
+            "title": "Promo-Codes",
             "description": "Promo-Codes verwalten."
         },
         "meals": {
@@ -214,8 +214,8 @@
             "subpageDescription": "AI-Generierungen-Unterseite."
         },
         "featureToggles": {
-            "title": "Feature Toggles",
-            "description": "Feature Toggles steuern."
+            "title": "Funktionsschalter",
+            "description": "Funktionsschalter steuern."
         },
         "fileStore": {
             "title": "Dateispeicher",
@@ -371,7 +371,7 @@
             "description": "Köche können diese Vorlage in ihre Bibliothek übernehmen und Preis sowie Text anpassen. Preiseinheit und Preis sind ein Vorschlag."
         },
         "featureToggles": {
-            "description": "Globale Feature Toggles und Nutzer-Ausnahmen. Fehlende Einträge gelten als aus."
+            "description": "Globale Funktionsschalter und Nutzer-Ausnahmen. Fehlende Einträge gelten als aus."
         },
         "calls": {
             "title": "Anruf-Liste",
@@ -605,8 +605,8 @@
         "deleted2": "Gelöscht.",
         "couldNotDelete": "Löschen fehlgeschlagen.",
         "firstSection": "Erster Abschnitt",
-        "headlineDe": "Headline (DE)",
-        "headlineEn": "Headline (EN)",
+        "headlineDe": "Überschrift (DE)",
+        "headlineEn": "Überschrift (EN)",
         "sectionImage": "Abschnittsbild",
         "removeSectionImage": "Abschnittsbild entfernen?",
         "cookPayout": "Koch-Auszahlung",
@@ -1208,11 +1208,11 @@
         "setsTheGlobalDefaultToOffPerUserOverridesStillTakePrecedence": "Der globale Standard wird auf aus gesetzt. Nutzer-Ausnahmen haben weiter Vorrang.",
         "enable": "Aktivieren",
         "disable": "Deaktivieren",
-        "couldNotUpdateFeatureToggle": "Feature Toggle konnte nicht geändert werden.",
-        "featureToggleEnabled": "Feature Toggle aktiviert.",
-        "featureToggleDisabled": "Feature Toggle deaktiviert.",
+        "couldNotUpdateFeatureToggle": "Funktionsschalter konnte nicht geändert werden.",
+        "featureToggleEnabled": "Funktionsschalter aktiviert.",
+        "featureToggleDisabled": "Funktionsschalter deaktiviert.",
         "searchNameOrKey": "Name oder Key suchen…",
-        "searchFeatureToggles": "Feature Toggles suchen",
+        "searchFeatureToggles": "Funktionsschalter suchen",
         "enabled": "Aktiv",
         "disabled": "Inaktiv",
         "filterByConfiguration": "Konfiguration filtern",
@@ -1224,11 +1224,11 @@
         "withoutOverrides": "Ohne Ausnahmen",
         "nameAZ": "Name A–Z",
         "nameZA": "Name Z–A",
-        "keyAZ": "Key A–Z",
+        "keyAZ": "Schlüssel A–Z",
         "recentlyUpdated": "Zuletzt aktualisiert",
         "mostOverrides": "Meiste Ausnahmen",
         "enabledFirst": "Aktive zuerst",
-        "noFeatureTogglesYet": "Noch keine Feature Toggles.",
+        "noFeatureTogglesYet": "Noch keine Funktionsschalter.",
         "dateRangeForAssistantChatCreations": "Zeitraum für Assistent-Chat-Neuanlagen",
         "barChartOfAssistantChatCreationsInTheSelectedRange": "Balkendiagramm der Assistent-Chat-Neuanlagen im gewählten Zeitraum",
         "searchLocation": "Ort suchen…",
@@ -1544,7 +1544,7 @@
         "mean": "Mittel",
         "calls": "Aufrufe",
         "rows": "Zeilen",
-        "query": "Query",
+        "query": "Abfrage",
         "allPurposes": "Alle Zwecke",
         "deliveryStatus": "Zustellstatus",
         "emailPurpose": "E-Mail-Zweck",
@@ -1605,7 +1605,7 @@
         "overview": "Überblick",
         "formVisits": "Formularbesuche",
         "requestsCreated": "Anfragen erstellt",
-        "conversion": "Conversion %",
+        "conversion": "Konversion %",
         "conversionIsVisitRequestCreated0WhenThereAreNoFormVisits": "Conversion ist Besuch → Anfrage erstellt (0%, wenn keine Formularbesuche).",
         "humanSessionsWithoutImpersonationCooksIncludedSignInsExistin": "Menschliche Sitzungen ohne Impersonation (Köche eingeschlossen). Anmelden = bestehendes Konto, Registrierung = neues E-Mail-Ticket, Konto erstellt = abgeschlossene Registrierung über diesen Nachweis.",
         "method": "Methode",
@@ -1647,7 +1647,7 @@
         "giftCardPageVisits2": "Besuche Geschenkkarte",
         "chatNotFound": "Chat nicht gefunden.",
         "chatId": "Chat-ID",
-        "transcript": "Transcript",
+        "transcript": "Transkript",
         "thisChatHasNoMessagesYet": "Dieser Chat hat noch keine Nachrichten.",
         "jumpToLatest": "Zum neuesten springen",
         "clearSelection": "Auswahl schließen",
@@ -1702,7 +1702,7 @@
         "location2": "Ort",
         "offers": "Angebote",
         "paid": "Bezahlt",
-        "impersonation": "Impersonation",
+        "impersonation": "Identitätswechsel",
         "anonymous": "Anonym",
         "remove": "Entfernen",
         "cities": "Städte",
@@ -1978,7 +1978,7 @@
         "thisOfferPriceWasAdjustedAutomaticallyAfterARequestChange": "Dieser Angebotspreis wurde automatisch angepasst (nach einer Anfrageänderung).",
         "expiration": "Ablauf",
         "usage": "Nutzung",
-        "promoCodes": "Promo Codes",
+        "promoCodes": "Promo-Codes",
         "expired2": "Abgelaufen",
         "partners": "Partner",
         "ended": "Beendet",
@@ -2026,7 +2026,7 @@
         "pool": "Pool",
         "testimonials": "Bewertungen",
         "bookingRequests": "Buchungsanfragen",
-        "featureToggles": "Feature Toggles",
+        "featureToggles": "Funktionsschalter",
         "sessionEvents": "Sitzungsereignisse",
         "notes": "Notizen",
         "createBookingRequest2": "Buchungsanfrage anlegen",
@@ -2593,7 +2593,7 @@
             "calls": "Anrufe",
             "testimonials": "Bewertungen",
             "booking_requests": "Buchungsanfragen",
-            "feature_toggles": "Feature Toggles",
+            "feature_toggles": "Funktionsschalter",
             "session_events": "Sitzungsereignisse",
             "sessions": "Sitzungen",
             "notes": "Notizen",

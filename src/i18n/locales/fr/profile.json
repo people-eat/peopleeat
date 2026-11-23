@@ -37,8 +37,8 @@
             "phoneTaken": "Ce numéro est déjà utilisé.",
             "invalidPhone": "Saisis un numéro avec l’indicatif pays, par exemple +49…",
             "deleteFailed": "Impossible de supprimer le compte.",
-            "deleteAlreadyScheduled": "Account deletion is already scheduled.",
-            "deleteCancelFailed": "Could not cancel account deletion."
+            "deleteAlreadyScheduled": "La suppression du compte est déjà planifiée.",
+            "deleteCancelFailed": "Impossible d’annuler la suppression du compte."
         },
         "toasts": {
             "phoneSaved": "Numéro de téléphone enregistré.",
@@ -59,8 +59,8 @@
             "accountDeleted": "Compte supprimé.",
             "signOutFailed": "Déconnexion impossible.",
             "deviceSignOutFailed": "Impossible de déconnecter cet appareil.",
-            "accountDeletionScheduled": "Account deletion scheduled.",
-            "accountDeletionCanceled": "Account deletion canceled."
+            "accountDeletionScheduled": "Suppression du compte planifiée.",
+            "accountDeletionCanceled": "Suppression du compte annulée."
         },
         "noPhone": "Aucun numéro enregistré",
         "notSet": "Non renseigné",
@@ -152,14 +152,14 @@
         },
         "delete": {
             "title": "Supprimer le compte",
-            "description": "Personal profile data will be removed after a waiting period. You will not be able to sign in afterwards.",
+            "description": "Les données personnelles du profil seront retirées après un délai d’attente. Tu ne pourras plus te connecter ensuite.",
             "action": "Supprimer le compte",
-            "confirmTitle": "Schedule account deletion?",
-            "confirmBody": "We will send a code to your email address. After you confirm, deletion is scheduled for at least seven days from now, or seven days after your last confirmed event if that is later. You can cancel until then. Booking history stays available for chefs and operations, but will no longer be linked to your identity.",
-            "scheduledDescription": "Your account is scheduled for deletion on {date}. You can keep using peopleeat until then, or cancel.",
-            "cancelAction": "Cancel deletion",
-            "cancelTitle": "Cancel scheduled deletion?",
-            "cancelBody": "Your account stays active and will not be deleted automatically."
+            "confirmTitle": "Planifier la suppression du compte ?",
+            "confirmBody": "Nous envoyons un code à ton adresse e-mail. Après confirmation, la suppression est planifiée au plus tôt dans sept jours, ou sept jours après ton dernier événement confirmé si c’est plus tard. Jusque-là, tu peux annuler. L’historique des réservations reste disponible pour les chefs et l’équipe, mais ne sera plus lié à ton identité.",
+            "scheduledDescription": "Ton compte sera supprimé le {date}. Jusque-là, tu peux continuer à utiliser peopleeat, ou annuler.",
+            "cancelAction": "Annuler la suppression",
+            "cancelTitle": "Annuler la suppression planifiée ?",
+            "cancelBody": "Ton compte reste actif et ne sera pas supprimé automatiquement."
         },
         "security": {
             "title": "Connexion et sécurité",
