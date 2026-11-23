@@ -27,7 +27,7 @@ describe('bookingRequestFormDefaults', () => {
     });
 
     it('formats a compact price-class label with the from-price', () => {
-        expect(bookingRequestPriceClassLabel('HIGH', 'de')).toMatch(/^Prestige Experience \(ab .+ p\.P\.\)$/);
+        expect(bookingRequestPriceClassLabel('HIGH', 'de')).toMatch(/^Exklusives Erlebnis \(ab .+ p\.P\.\)$/);
         expect(bookingRequestPriceClassLabel('HIGH', 'en')).toMatch(/^Prestige Experience \(from .+ p\.p\.\)$/);
     });
 
