@@ -1,24 +1,28 @@
 // JSON-LD (schema.org) builders. Search engines and AI-search engines use
 // these blocks to render rich snippets and to attribute entities (WebSite,
-// Organization, Person, Service, BlogPosting) without inferring them from HTML.
-// Output shape matches TanStack Router `head().scripts`: each entry renders as a
-// `<script type="application/ld+json">…</script>` in the document head.
+// Organization, LocalBusiness, Product, Service, BlogPosting) without inferring
+// them from HTML. Output shape matches TanStack Router `head().scripts`: each
+// entry renders as a `<script type="application/ld+json">…</script>` in the
+// document head.
 //
 // Builders:
 //   - `jsonLdScripts(webPageUrl)` — `WebSite` + `Organization` for the homepage.
 //   - `jsonLdFaqPage(qa)` — `FAQPage` for a visible Q&A block. Pass the same
 //     entries the DOM renders so schema and content cannot drift.
 //   - `jsonLdBreadcrumbList` — trail matching the header logo and the page's index link.
-//   - `jsonLdPerson` — public chef profile (`Person` only; no `aggregateRating`).
-//   - `jsonLdCityService` — city landing as a service in that place.
+//   - `jsonLdLocalBusiness` — public chef profile (Google-eligible review parent).
+//   - `jsonLdCityProduct` — city landing as a bookable offering with optional ratings.
 //   - `jsonLdCountryService` — expansion market as a service with country + city Places.
 //   - `jsonLdBlogPosting` — article page.
+//
+// Review snippets: nest `aggregateRating` only on Google-supported parents
+// (`LocalBusiness`, `Product`, …). Do not put ratings on `Person` or `Service`.
+// Rating numbers must match visible on-page stars / reviews.
 //
 // `dateModified` on the site identity blocks is the last-commit ISO timestamp
 // injected by Vite (`__SITE_LAST_MODIFIED__`).
 // See docs/architecture/discovery-geo.md.
 
-import { t } from '../../i18n/t';
 import type { Locale } from '../../shared/locale';
 import { CATALOG_LOCALES, languageTagFromLocale } from '../../shared/locale';
 import {
@@ -47,12 +51,38 @@ export interface JsonLdBreadcrumb {
     path: string;
 }
 
+export interface JsonLdRating {
+    averageRating: number;
+    reviewCount: number;
+}
+
 function script(value: unknown): JsonLdScript {
     return { type: 'application/ld+json', children: JSON.stringify(value) };
 }
 
 function organizationId(webPageUrl: string): string {
     return `${webPageUrl}/#organization`;
+}
+
+function aggregateRatingBlock(rating: JsonLdRating): Record<string, unknown> {
+    return {
+        '@type': 'AggregateRating',
+        ratingValue: rating.averageRating,
+        reviewCount: rating.reviewCount,
+        bestRating: 5,
+        worstRating: 1,
+    };
+}
+
+/** Average of integer 1–5 ratings already shown on the page; null when none. */
+export function jsonLdRatingFromValues(ratings: ReadonlyArray<number | null | undefined>): JsonLdRating | null {
+    const values = ratings.filter((rating): rating is number => typeof rating === 'number' && rating >= 1 && rating <= 5);
+    if (values.length === 0) return null;
+    const sum = values.reduce((total, rating) => total + rating, 0);
+    return {
+        averageRating: Math.round((sum / values.length) * 10) / 10,
+        reviewCount: values.length,
+    };
 }
 
 export function jsonLdHeadScripts(scripts: ReadonlyArray<JsonLdScript>): JsonLdScript[] {
@@ -125,7 +155,7 @@ export function jsonLdBreadcrumbList(webPageUrl: string, locale: Locale, crumbs:
     });
 }
 
-export function jsonLdPerson(input: {
+export function jsonLdLocalBusiness(input: {
     webPageUrl: string;
     locale: Locale;
     path: string;
@@ -133,23 +163,31 @@ export function jsonLdPerson(input: {
     description: string;
     image?: string | null;
     cityName?: string | null;
+    rating?: JsonLdRating | null;
 }): JsonLdScript {
     const url = canonicalUrlBuild(input.webPageUrl, input.locale, input.path);
     const image = input.image?.trim() ? imageUrlAbsolute(input.webPageUrl, input.image) : undefined;
     const cityName = input.cityName?.trim() ?? '';
-    const person: Record<string, unknown> = {
+    const business: Record<string, unknown> = {
         '@context': 'https://schema.org',
-        '@type': 'Person',
-        '@id': `${url}#person`,
+        '@type': 'LocalBusiness',
+        '@id': `${url}#business`,
         name: input.name,
         description: input.description,
         url,
-        jobTitle: t(input.locale, 'public', 'chef.jobTitle'),
-        worksFor: { '@id': organizationId(input.webPageUrl) },
+        parentOrganization: { '@id': organizationId(input.webPageUrl) },
     };
-    if (image) person.image = image;
-    if (cityName) person.homeLocation = { '@type': 'City', name: cityName };
-    return script(person);
+    if (image) business.image = image;
+    if (cityName) {
+        business.address = {
+            '@type': 'PostalAddress',
+            addressLocality: cityName,
+        };
+    }
+    if (input.rating && input.rating.reviewCount > 0 && input.rating.averageRating != null) {
+        business.aggregateRating = aggregateRatingBlock(input.rating);
+    }
+    return script(business);
 }
 
 export function jsonLdCountryService(input: {
@@ -183,7 +221,7 @@ export function jsonLdCountryService(input: {
     });
 }
 
-export function jsonLdCityService(input: {
+export function jsonLdCityProduct(input: {
     webPageUrl: string;
     locale: Locale;
     path: string;
@@ -194,15 +232,16 @@ export function jsonLdCityService(input: {
     latitude: number;
     longitude: number;
     image?: string | null;
+    rating?: JsonLdRating | null;
 }): JsonLdScript {
     const image = input.image?.trim() ? imageUrlAbsolute(input.webPageUrl, input.image) : undefined;
-    const service: Record<string, unknown> = {
+    const product: Record<string, unknown> = {
         '@context': 'https://schema.org',
-        '@type': 'Service',
+        '@type': 'Product',
         name: input.name,
         description: input.description,
         url: canonicalUrlBuild(input.webPageUrl, input.locale, input.path),
-        provider: { '@id': organizationId(input.webPageUrl) },
+        brand: { '@id': organizationId(input.webPageUrl) },
         areaServed: {
             '@type': 'Place',
             name: input.cityName,
@@ -217,8 +256,11 @@ export function jsonLdCityService(input: {
             },
         },
     };
-    if (image) service.image = image;
-    return script(service);
+    if (image) product.image = image;
+    if (input.rating && input.rating.reviewCount > 0 && input.rating.averageRating != null) {
+        product.aggregateRating = aggregateRatingBlock(input.rating);
+    }
+    return script(product);
 }
 
 export function jsonLdBlogPosting(input: {

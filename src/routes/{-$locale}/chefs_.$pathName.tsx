@@ -6,7 +6,7 @@ import { ChefPage } from '../../web/pages/ChefPage';
 import { chefsIndexLinkLabel } from '../../web/sections/SectionCookHero';
 import { publicFaqJsonLdEntries } from '../../web/sections/SectionQuestionsAndAnswers';
 import { chefPageCityLabel, chefPageDescription, chefPageTitle } from '../../web/seo/chefPageSeo';
-import { jsonLdBreadcrumbList, jsonLdFaqPage, jsonLdHeadScripts, jsonLdPerson } from '../../web/seo/jsonLd';
+import { jsonLdBreadcrumbList, jsonLdFaqPage, jsonLdHeadScripts, jsonLdLocalBusiness } from '../../web/seo/jsonLd';
 import { SITE_NAME } from '../../web/seo/seoConstants';
 import { seoMeta } from '../../web/seo/seoMeta';
 import { webPageUrlGet } from '../../web/seo/webPageUrlGet';
@@ -63,7 +63,7 @@ export const Route = createFileRoute('/{-$locale}/chefs_/$pathName')({
                     { name: chefsIndexLinkLabel(locale), path: '/chefs' },
                     { name, path },
                 ]),
-                jsonLdPerson({
+                jsonLdLocalBusiness({
                     webPageUrl,
                     locale,
                     path,
@@ -71,6 +71,10 @@ export const Route = createFileRoute('/{-$locale}/chefs_/$pathName')({
                     description,
                     image: cook.user.profilePicture?.url,
                     cityName: cityLabel,
+                    rating:
+                        cook.rating.reviewCount > 0 && cook.rating.averageRating != null
+                            ? { averageRating: cook.rating.averageRating, reviewCount: cook.rating.reviewCount }
+                            : null,
                 }),
                 jsonLdFaqPage(publicFaqJsonLdEntries(locale)),
             ]),

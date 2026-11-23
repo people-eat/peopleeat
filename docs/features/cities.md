@@ -10,9 +10,11 @@ Admins create city pages with German and English names, a **country** (`DE` / `N
 Public visitors browse `/cities` and `/cities/$pathName` (and English paths). City URLs stay flat (`/cities/amsterdam`, never
 `/netherlands/amsterdam`). Unpublished pages are hidden; slug changes redirect permanently to the current slug. `/cities` lists every
 published city **grouped by country** (same HTML for every visitor and crawler; no IP or `Accept-Language` filtering). Detail shows a back
-link above the headline (Germany → “All cities”; NL/CH → the country hub). The route emits `Service` JSON-LD (place name, ISO
-`addressCountry`, and the stored map center) and a breadcrumb trail (Germany: Home → Cities → City; NL/CH: Home → country hub → City). A
-public chef links here when their travel-origin city matches this page’s German name, English name, or path.
+link above the headline (Germany → “All cities”; NL/CH → the country hub). The route emits `Product` JSON-LD (headline/title as name, place
+name, ISO `addressCountry`, stored map center as `areaServed`, and `aggregateRating` when curated testimonials with ratings are visible) and
+a breadcrumb trail (Germany: Home → Cities → City; NL/CH: Home → country hub → City). `Product` is Google-eligible for review snippets; the
+previous `Service` type was not. A public chef links here when their travel-origin city matches this page’s German name, English name, or
+path.
 
 Public city detail section order:
 
@@ -78,5 +80,5 @@ short country hubs, not a `/countries` index.
 - Landing: `HomePage` → `SectionCities` (DE cities + expansion hub links) via `publicCity.findMany`
 - Expansion hubs: `ComingToCountryPage` / `FoundingChefCountryPage` → `publicCity.findMany(countryCode:)` (NL/CH include drafts)
 - Sitemap: `/sitemap-cities.xml`
-- JSON-LD: `jsonLdCityService` Place includes `address.addressCountry`
+- JSON-LD: `jsonLdCityProduct` (`Product` + optional `aggregateRating`; `areaServed` Place includes `address.addressCountry`)
 - Geo fallback: `PublicCookFindManyCriterion.geoCoordinates` at city center — see [public-chefs.md](./public-chefs.md)

@@ -6,7 +6,7 @@ import { PublicCityPageDocument } from '../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../web/graphql/routeLoaderGraphqlClient';
 import { cityIndexLinkLabel, CityPage } from '../../web/pages/CityPage';
 import { CITY_HERO_FALLBACK_IMAGE } from '../../web/pages/cityPageAssets';
-import { jsonLdBreadcrumbList, jsonLdCityService, jsonLdHeadScripts } from '../../web/seo/jsonLd';
+import { jsonLdBreadcrumbList, jsonLdCityProduct, jsonLdHeadScripts, jsonLdRatingFromValues } from '../../web/seo/jsonLd';
 import { SITE_NAME } from '../../web/seo/seoConstants';
 import { seoMeta } from '../../web/seo/seoMeta';
 import { webPageUrlGet } from '../../web/seo/webPageUrlGet';
@@ -42,13 +42,14 @@ export const Route = createFileRoute('/{-$locale}/cities_/$pathName')({
         const headline = contentLocaleText(city.headlineDe, city.headlineEn, locale).trim();
         const subheadline = contentLocaleText(city.subHeadlineDe, city.subHeadlineEn, locale).trim();
         const cityName = contentLocaleText(city.nameDe, city.nameEn, locale);
-        const serviceName = headline || title;
-        const serviceDescription = subheadline || description;
+        const productName = headline || title;
+        const productDescription = subheadline || description;
         const countryHubPath = cityCountryHubPath(city.countryCode);
         const breadcrumbMiddle =
             city.countryCode === 'DE'
                 ? { name: cityIndexLinkLabel(locale), path: '/cities' }
                 : { name: cityCountryCodeLabel(city.countryCode, locale), path: countryHubPath };
+        const rating = jsonLdRatingFromValues(city.testimonials.map((entry) => entry.testimonial.rating));
         return {
             ...seoMeta({
                 title,
@@ -59,18 +60,19 @@ export const Route = createFileRoute('/{-$locale}/cities_/$pathName')({
                 image: city.heroImageUrl ?? undefined,
             }),
             scripts: jsonLdHeadScripts([
-                jsonLdBreadcrumbList(webPageUrl, locale, [{ name: SITE_NAME, path: '/' }, breadcrumbMiddle, { name: serviceName, path }]),
-                jsonLdCityService({
+                jsonLdBreadcrumbList(webPageUrl, locale, [{ name: SITE_NAME, path: '/' }, breadcrumbMiddle, { name: productName, path }]),
+                jsonLdCityProduct({
                     webPageUrl,
                     locale,
                     path,
-                    name: serviceName,
-                    description: serviceDescription,
+                    name: productName,
+                    description: productDescription,
                     cityName,
                     countryCode: city.countryCode,
                     latitude: city.latitude,
                     longitude: city.longitude,
                     image: city.heroImageUrl ?? CITY_HERO_FALLBACK_IMAGE,
+                    rating,
                 }),
             ]),
         };

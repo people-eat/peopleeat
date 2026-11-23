@@ -51,9 +51,9 @@ The document title is “{name}, Privatkoch in {city}” (English: “private ch
 The meta description uses the biography summary when it is at least 50 characters, otherwise a short factual sentence with cuisine when that
 is set. When the travel-origin city matches exactly one published city page (German name, English name, or path, compared as slugs), the pin
 links to that page and both the title and the pin use the page’s localized name. No match, or two matches, leaves the city as plain text.
-Cook self-preview does not resolve the city page, so its pin stays plain text. The route also emits `Person` and `BreadcrumbList` JSON-LD.
-`Person` does not include `aggregateRating` or `Review`: Google review snippets do not support that parent type, and Search Console reports
-it as invalid object type for `<parent_node>`. Visible star ratings on the hero and cards are unchanged.
+Cook self-preview does not resolve the city page, so its pin stays plain text. The route also emits `LocalBusiness` and `BreadcrumbList`
+JSON-LD. `LocalBusiness` includes `aggregateRating` when the hero shows published reviews (same average and count). Google review snippets
+support `LocalBusiness` when the site rates other businesses; `Person` does not.
 
 Section padding matches other public bands (`px-4` → `@lg:px-6`).
 
@@ -121,7 +121,7 @@ None for public slug URLs. Cook self-serve slug editing stays behind `COOK_PUBLI
   - Share / Copy / Open in the URL chrome). Visibility switch and additional picture on edit. Preview uses `Cook.rating`; testimonials
     section still omitted. `/profile/public` redirects here (`?tab=preview` → Public page tab).
 - Routes: `chefs.tsx`, `chefs_.$pathName.tsx` (loader `findOneByPathName`, 301 when the segment is a previous slug or cookId, `chefPageSeo`
-  title/description, `Person` + FAQ + breadcrumb JSON-LD), `profile/chef-profile.tsx`, `profile/public.tsx` (redirect)
+  title/description, `LocalBusiness` + FAQ + breadcrumb JSON-LD), `profile/chef-profile.tsx`, `profile/public.tsx` (redirect)
 - Path names: `Cooks.pathName` unique + `previousPathNames`; helpers `src/shared/cookPathName.ts` / `src/server/utils/cookPathName.ts`;
   GraphQL `pathName` on `PublicCook` / `Cook` / `AdminCook`, `findOneByPathName`, `Cook.pathNameAvailable` / `Admin.cookPathNameAvailable`;
   auto-assign on `userCreate` / `userCookCreate` / `adminUserCreate`; SQL backfill in `drizzle/0031_same_dorian_gray.sql`. Cook self-serve

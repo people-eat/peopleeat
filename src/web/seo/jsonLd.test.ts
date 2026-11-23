@@ -3,10 +3,11 @@ import { describe, expect, it } from 'vitest';
 import {
     jsonLdBlogPosting,
     jsonLdBreadcrumbList,
-    jsonLdCityService,
+    jsonLdCityProduct,
     jsonLdCountryService,
     jsonLdFaqPage,
-    jsonLdPerson,
+    jsonLdLocalBusiness,
+    jsonLdRatingFromValues,
     jsonLdScripts,
 } from './jsonLd';
 
@@ -54,12 +55,21 @@ describe('jsonLdFaqPage', () => {
     });
 });
 
-describe('jsonLdPerson', () => {
-    it('emits a Person without review-snippet markup', () => {
-        // Arrange — nothing
-        // Act
-        const de = JSON.parse(
-            jsonLdPerson({
+describe('jsonLdRatingFromValues', () => {
+    it('averages visible 1–5 ratings and ignores nulls', () => {
+        expect(jsonLdRatingFromValues([5, null, 4, undefined, 5])).toEqual({
+            averageRating: 4.7,
+            reviewCount: 3,
+        });
+        expect(jsonLdRatingFromValues([null, 0, 6])).toBeNull();
+        expect(jsonLdRatingFromValues([])).toBeNull();
+    });
+});
+
+describe('jsonLdLocalBusiness', () => {
+    it('emits LocalBusiness with aggregateRating only when reviews exist', () => {
+        const withRating = JSON.parse(
+            jsonLdLocalBusiness({
                 webPageUrl: 'https://example.com',
                 locale: 'de',
                 path: '/chefs/cook-1',
@@ -67,32 +77,41 @@ describe('jsonLdPerson', () => {
                 description: 'Anna kocht in Berlin.',
                 image: '/api/file-uploads/pic',
                 cityName: 'Berlin',
+                rating: { averageRating: 4.8, reviewCount: 12 },
             }).children,
-        ) as { '@type': string; image: string; jobTitle: string; aggregateRating?: unknown };
-        const en = JSON.parse(
-            jsonLdPerson({
+        ) as {
+            '@type': string;
+            image: string;
+            address: { addressLocality: string };
+            aggregateRating: { ratingValue: number; reviewCount: number; bestRating: number };
+        };
+        const withoutRating = JSON.parse(
+            jsonLdLocalBusiness({
                 webPageUrl: 'https://example.com',
                 locale: 'en',
                 path: '/chefs/cook-1',
                 name: 'Anna',
                 description: 'Anna cooks in Berlin.',
             }).children,
-        ) as { jobTitle: string; aggregateRating?: unknown };
+        ) as { '@type': string; aggregateRating?: unknown };
 
-        // Assert
-        expect(de['@type']).toBe('Person');
-        expect(de.jobTitle).toBe('Privatkoch');
-        expect(de.image).toBe('https://example.com/api/file-uploads/pic');
-        expect(de.aggregateRating).toBeUndefined();
-        expect(en.jobTitle).toBe('Private chef');
-        expect(en.aggregateRating).toBeUndefined();
+        expect(withRating['@type']).toBe('LocalBusiness');
+        expect(withRating.image).toBe('https://example.com/api/file-uploads/pic');
+        expect(withRating.address.addressLocality).toBe('Berlin');
+        expect(withRating.aggregateRating).toEqual({
+            '@type': 'AggregateRating',
+            ratingValue: 4.8,
+            reviewCount: 12,
+            bestRating: 5,
+            worstRating: 1,
+        });
+        expect(withoutRating['@type']).toBe('LocalBusiness');
+        expect(withoutRating.aggregateRating).toBeUndefined();
     });
 });
 
 describe('jsonLdBreadcrumbList', () => {
     it('builds absolute locale URLs', () => {
-        // Arrange — nothing
-        // Act
         const list = JSON.parse(
             jsonLdBreadcrumbList('https://example.com', 'en', [
                 { name: 'peopleeat', path: '/' },
@@ -100,19 +119,16 @@ describe('jsonLdBreadcrumbList', () => {
             ]).children,
         ) as { itemListElement: Array<{ position: number; item: string }> };
 
-        // Assert
         expect(list.itemListElement[0]?.item).toBe('https://example.com/en');
         expect(list.itemListElement[1]?.position).toBe(2);
         expect(list.itemListElement[1]?.item).toBe('https://example.com/en/chefs');
     });
 });
 
-describe('jsonLdCityService', () => {
-    it('places the city coordinates and country on the served area', () => {
-        // Arrange — nothing
-        // Act
-        const service = JSON.parse(
-            jsonLdCityService({
+describe('jsonLdCityProduct', () => {
+    it('places city coordinates and optional aggregateRating on Product', () => {
+        const product = JSON.parse(
+            jsonLdCityProduct({
                 webPageUrl: 'https://example.com',
                 locale: 'de',
                 path: '/cities/berlin',
@@ -122,17 +138,22 @@ describe('jsonLdCityService', () => {
                 countryCode: 'DE',
                 latitude: 52.52,
                 longitude: 13.405,
+                rating: { averageRating: 5, reviewCount: 3 },
             }).children,
         ) as {
+            '@type': string;
             areaServed: {
                 geo: { latitude: number };
                 address: { addressCountry: string };
             };
+            aggregateRating: { ratingValue: number; reviewCount: number };
         };
 
-        // Assert
-        expect(service.areaServed.geo.latitude).toBe(52.52);
-        expect(service.areaServed.address.addressCountry).toBe('DE');
+        expect(product['@type']).toBe('Product');
+        expect(product.areaServed.geo.latitude).toBe(52.52);
+        expect(product.areaServed.address.addressCountry).toBe('DE');
+        expect(product.aggregateRating.ratingValue).toBe(5);
+        expect(product.aggregateRating.reviewCount).toBe(3);
     });
 });
 
@@ -157,8 +178,6 @@ describe('jsonLdCountryService', () => {
 
 describe('jsonLdBlogPosting', () => {
     it('emits publish and update dates', () => {
-        // Arrange — nothing
-        // Act
         const posting = JSON.parse(
             jsonLdBlogPosting({
                 webPageUrl: 'https://example.com',
@@ -171,7 +190,6 @@ describe('jsonLdBlogPosting', () => {
             }).children,
         ) as { datePublished: string; inLanguage: string; headline: string };
 
-        // Assert
         expect(posting.headline).toBe('Hello');
         expect(posting.datePublished).toBe('2024-01-02T00:00:00.000Z');
         expect(posting.inLanguage).toBe('en-US');

@@ -16,14 +16,14 @@ building blocks; this ADR covers the AI-search layer that sits beside them.
 Five optional layers cooperate. Each is small; together they cover the surface AI engines actually look at. A fork adopts the layers it
 needs — none are mandatory on day one of a blank template clone.
 
-| Layer                | Where (when adopted)                                                                                                 |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Explicit bot policy  | `src/routes/robots[.]txt.ts` — major AI crawlers enumerated with `Allow: /`                                          |
-| LLM-native index     | `src/routes/llms[.]txt.ts` — markdown summary at `/llms.txt` per the `llmstxt.org` proposal                          |
-| Entity grounding     | `src/web/seo/jsonLd.ts` — `WebSite` + `Organization`, chef `Person`, city `Service`, `BlogPosting`, `BreadcrumbList` |
-| Verbatim Q&A         | Visible FAQ block mirrored into `FAQPage` JSON-LD via `jsonLdFaqPage()`                                              |
-| Freshness signal     | Build-injected `__SITE_LAST_MODIFIED__` (git commit ISO) → `dateModified` on JSON-LD                                 |
-| Conversational entry | Optional deep-link (e.g. `?ask=…`) that opens a chat surface preseeded                                               |
+| Layer                | Where (when adopted)                                                                                                        |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Explicit bot policy  | `src/routes/robots[.]txt.ts` — major AI crawlers enumerated with `Allow: /`                                                 |
+| LLM-native index     | `src/routes/llms[.]txt.ts` — markdown summary at `/llms.txt` per the `llmstxt.org` proposal                                 |
+| Entity grounding     | `src/web/seo/jsonLd.ts` — `WebSite` + `Organization`, chef `LocalBusiness`, city `Product`, `BlogPosting`, `BreadcrumbList` |
+| Verbatim Q&A         | Visible FAQ block mirrored into `FAQPage` JSON-LD via `jsonLdFaqPage()`                                                     |
+| Freshness signal     | Build-injected `__SITE_LAST_MODIFIED__` (git commit ISO) → `dateModified` on JSON-LD                                        |
+| Conversational entry | Optional deep-link (e.g. `?ask=…`) that opens a chat surface preseeded                                                      |
 
 ## Alternatives considered
 
@@ -87,13 +87,14 @@ URLs still need `WEB_PAGE_URL`.
 
 ## Structured data & FAQ
 
-- Prefer schema.org types that match the page (`WebSite`, `Organization`, `FAQPage`, `Person`, `Service`, `BlogPosting`, `BreadcrumbList`).
+- Prefer schema.org types that match the page (`WebSite`, `Organization`, `FAQPage`, `LocalBusiness`, `Product`, `Service`, `BlogPosting`,
+  `BreadcrumbList`).
 - Builders live in `src/web/seo/jsonLd.ts`. `jsonLdScripts(webPageUrl)` emits `WebSite` + `Organization` (legal name, Frankfurt postal
-  address, contact email, Instagram / Facebook / LinkedIn `sameAs`). `jsonLdFaqPage(entries)` emits `FAQPage`. `jsonLdPerson` is the public
-  chef. Omit `aggregateRating` / `Review` on `Person` (Google review snippets do not support that parent; Search Console flags it as invalid
-  object type for `<parent_node>`). `jsonLdCityService` is a city landing, with `GeoCoordinates` from the stored center. `jsonLdBlogPosting`
-  is an article, dated from `publishedAt` / `updatedAt`. `jsonLdBreadcrumbList` mirrors the header logo and the page's index link. Wire them
-  from a route's `head().scripts`. Canonical URLs come from `canonicalUrlBuild` in `seoMeta.ts`.
+  address, contact email, Instagram / Facebook / LinkedIn `sameAs`). `jsonLdFaqPage(entries)` emits `FAQPage`. `jsonLdLocalBusiness` is the
+  public chef, with `aggregateRating` when published reviews are visible (Google-eligible parent; do not use `Person` for ratings).
+  `jsonLdCityProduct` is a city landing (`Product` + optional `aggregateRating` from curated testimonials, `GeoCoordinates` from the stored
+  center). `jsonLdBlogPosting` is an article, dated from `publishedAt` / `updatedAt`. `jsonLdBreadcrumbList` mirrors the header logo and the
+  page's index link. Wire them from a route's `head().scripts`. Canonical URLs come from `canonicalUrlBuild` in `seoMeta.ts`.
 - Carry `dateModified` from `__SITE_LAST_MODIFIED__` (declared in `src/vite-env.d.ts`, injected by Vite).
 - FAQ answers must stand alone (1–3 factual sentences). Avoid marketing prose; engines extract verbatim.
 - Schema content must match visible content.
