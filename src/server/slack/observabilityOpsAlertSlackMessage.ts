@@ -1,6 +1,7 @@
 import type { KnownBlock } from '@slack/web-api';
 
 import type { RedWindowSnapshot } from '../observability/redMetrics';
+import type { SlackField } from './slackBlocks';
 import { slackMessageBlocksBuild } from './slackBlocks';
 
 export type ObservabilityOpsAlertInput = {
@@ -20,41 +21,64 @@ export type ObservabilityOpsAlertInput = {
     slowMeanMsThreshold: number;
 };
 
+function percent(ratio: number): string {
+    return `${(ratio * 100).toFixed(1).replace('.', ',')}%`;
+}
+
+function durationLabel(ms: number): string {
+    if (ms >= 1000) {
+        return `${(ms / 1000).toFixed(1).replace('.', ',')} s`;
+    }
+    return `${Math.round(ms)} ms`;
+}
+
 export function observabilityOpsAlertSlackMessageBuild(input: ObservabilityOpsAlertInput): {
     text: string;
     blocks: KnownBlock[];
 } {
-    const lines: string[] = [];
+    const fields: SlackField[] = [{ label: 'Zeitfenster', value: `letzte ${input.windowMinutes} Minuten` }];
 
     if (input.graphql.sampleCount > 0 && input.graphql.errorRate >= input.graphqlErrorRateThreshold) {
-        lines.push(
-            `GraphQL error rate ${(input.graphql.errorRate * 100).toFixed(1)}% over ${input.graphql.sampleCount} ops (threshold ${(input.graphqlErrorRateThreshold * 100).toFixed(0)}%)`,
-        );
+        fields.push({
+            label: 'GraphQL-Fehlerquote',
+            value: `${percent(input.graphql.errorRate)} (Schwelle ${percent(input.graphqlErrorRateThreshold)})`,
+        });
     }
     if (input.graphql.p95DurationMs != null && input.graphql.p95DurationMs >= input.graphqlP95MsThreshold) {
-        lines.push(`GraphQL p95 ${Math.round(input.graphql.p95DurationMs)}ms (threshold ${input.graphqlP95MsThreshold}ms)`);
+        fields.push({
+            label: 'GraphQL p95',
+            value: `${durationLabel(input.graphql.p95DurationMs)} (Schwelle ${durationLabel(input.graphqlP95MsThreshold)})`,
+        });
     }
     if (input.jobs.sampleCount > 0 && input.jobs.errorRate >= input.graphqlErrorRateThreshold) {
-        lines.push(
-            `Job error rate ${(input.jobs.errorRate * 100).toFixed(1)}% over ${input.jobs.sampleCount} runs (threshold ${(input.graphqlErrorRateThreshold * 100).toFixed(0)}%)`,
-        );
+        fields.push({
+            label: 'Job-Fehlerquote',
+            value: `${percent(input.jobs.errorRate)} (Schwelle ${percent(input.graphqlErrorRateThreshold)})`,
+        });
     }
     if (input.ingress.sampleCount > 0 && input.ingress.errorRate >= input.graphqlErrorRateThreshold) {
-        lines.push(
-            `Ingress error rate ${(input.ingress.errorRate * 100).toFixed(1)}% over ${input.ingress.sampleCount} requests (threshold ${(input.graphqlErrorRateThreshold * 100).toFixed(0)}%)`,
-        );
+        fields.push({
+            label: 'Ingress-Fehlerquote',
+            value: `${percent(input.ingress.errorRate)} (Schwelle ${percent(input.graphqlErrorRateThreshold)})`,
+        });
     }
     if (input.errorLogCount >= input.errorLogCountThreshold) {
-        lines.push(
-            `${input.errorLogCount} error log rows in the last ${input.windowMinutes} minutes (threshold ${input.errorLogCountThreshold})`,
-        );
+        fields.push({
+            label: 'Fehler-Logs',
+            value: `${input.errorLogCount} (Schwelle ${input.errorLogCountThreshold})`,
+        });
     }
-    for (const statement of input.slowStatements.slice(0, 3)) {
-        lines.push(`Slow SQL mean ${Math.round(statement.meanExecTimeMs)}ms × ${statement.calls}: ${statement.query.slice(0, 120)}`);
+    const slowTop = input.slowStatements[0];
+    if (slowTop) {
+        fields.push({
+            label: 'Langsame Abfragen',
+            value: `${input.slowStatements.length} · Mittelwert ${durationLabel(slowTop.meanExecTimeMs)} · ${slowTop.calls} Aufrufe`,
+        });
     }
 
     return slackMessageBlocksBuild({
-        header: 'Observability alert',
-        body: lines.join('\n'),
+        header: 'Systemhinweis: erhöhte Fehler',
+        fields,
+        body: 'Technische Details stehen in den Server-Logs / APM, nicht in Slack.',
     });
 }

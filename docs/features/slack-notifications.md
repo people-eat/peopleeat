@@ -7,20 +7,30 @@ Internal Slack posts keep ops aware of marketplace, support, sign-up, and gift-c
 Ops receives structured Slack messages (German copy — internal surface):
 
 - **Booking timeline** — one root message per booking request (channel by party size), then thread-only replies for lifecycle events (no
-  `reply_broadcast` into the main channel), including offer **call-slot** lifecycle (request / confirm / decline / cancel) and **live call**
-  room events (started / joined / left)
-- **Sign-ups** — customer and cook registration
+  `reply_broadcast` into the main channel), including offer **Gesprächstermin** lifecycle (request / confirm / decline / cancel), **live
+  Gespräch** room events (started / joined / left), and **Gesprächszusammenfassung** after a call recording AI summary is saved (deep link
+  to `/admin/calls/…`)
+- **Sign-ups** — customer and cook registration (and account-deletion lifecycle on the same channel)
 - **Support** — one root message per ticket, then thread replies for customer/admin messages and resolve
 - **Gift cards** — successful purchases
 - **Digests / alerts** — weekday booking report; 24h / 48h no-offer aging as a thread reply on the booking request; payment failures /
   payouts as booking-thread replies only (not channel-broadcast); **daily admin action-item report** (08:00 Europe/Berlin, mirrors `/admin`
-  queues) on the ops-alerts channel; **Resend quota at-risk alert** (00:00 and 19:00 Europe/Berlin, only when monthly or free-tier daily
+  queues) on the ops-alerts channel; **email quota at-risk alert** (00:00 and 19:00 Europe/Berlin, only when monthly or free-tier daily
   quota is at risk) on the same channel; **observability ops alert** (hourly, GraphQL/job error rate or p95, elevated error logs, or slow
-  `pg_stat_statements`) on the same channel — see [observability.md](../architecture/observability.md)
+  queries) on the same channel — see [observability.md](../architecture/observability.md)
 - **WhatsApp Concierge** — inbound customer messages on `SLACK_CHANNEL_WHATSAPP_MESSAGES`; known reaction quick-replies also reply on the
   booking-request Slack thread
 
-Failed Slack posts never roll back domain writes.
+Failed Slack posts never roll back domain writes. Provider / Stripe / SQL detail stays in server logs, not in Slack bodies.
+
+### Content
+
+- Header = event + primary person
+- Fields = human facts only (Datum, Ort, Anlass, Koch, Betrag, …) — no short nanoIds, enum codes, Stripe event/intent ids, or SQL
+- Body = human reason / message / AI summary preview
+- Context = optional human crumbs only (e.g. `Großgruppe · Review nötig`)
+- Deep link via a **context-specific CTA** (`Zur Anfrage`, `Zum Angebot`, `Zum Gespräch`, `Zum Nutzer`, `Zur Support-Anfrage`,
+  `Zum Gutschein`, `Zum Chat`, `Zur E-Mail-Übersicht`); digests keep short inline `öffnen`
 
 ## Decisions
 
@@ -35,7 +45,7 @@ Failed Slack posts never roll back domain writes.
 ### Chosen
 
 Outbound-only Slack client: root message on create (persist thread refs on the booking or support row), thread replies for later events,
-Block Kit layout (header → fields → optional body → context → optional admin button).
+Block Kit layout (header → fields → optional body → context → optional admin button with an explicit German CTA title).
 
 ## Ideas
 
@@ -66,8 +76,9 @@ Root refs: `BookingRequests.references` / `SupportRequests.references` as `{ sla
 
 ### Interactivity Request URL (admin URL buttons)
 
-Ops Block Kit messages include an `In Admin öffnen` **URL button**. Slack still POSTs to the app Interactivity Request URL on click and
-expects HTTP 200 — otherwise the Slack client shows _This app responded with status code …_ (even though the browser opens the admin link).
+Ops Block Kit messages include a context-specific **URL button** (e.g. `Zur Anfrage`). Slack still POSTs to the app Interactivity Request
+URL on click and expects HTTP 200 — otherwise the Slack client shows _This app responded with status code …_ (even though the browser opens
+the admin link).
 
 1. Deploy with `SLACK_SIGNING_SECRET` set (Slack app → **Basic Information** → **App Credentials** → Signing Secret).
 2. In the Slack app → **Interactivity & Shortcuts** → turn Interactivity **On**.
@@ -79,21 +90,24 @@ The route only acks; it does not run slash commands or other interactive workflo
 
 ### Module layout
 
-| Path                                               | Role                                    |
-| -------------------------------------------------- | --------------------------------------- |
-| `src/server/slack/slackCreate.ts`                  | WebClient wrapper                       |
-| `src/server/slack/slackBlocks.ts`                  | Block Kit template                      |
-| `src/server/slack/slackWebhookSignatureVerify.ts`  | HMAC verify for Interactivity POSTs     |
-| `src/routes/api/webhooks/slack.ts`                 | Interactivity Request URL (ack only)    |
-| `src/server/slack/bookingRequestSlack.ts`          | Booking root post + thread reply        |
-| `src/server/slack/supportRequestSlack.ts`          | Support root post + thread reply        |
-| `src/server/slack/slackNotifyBooking.ts`           | Booking lifecycle helpers               |
-| `src/server/slack/slackNotifyAdjacent.ts`          | Sign-up / support / gift card           |
-| `src/server/slack/whatsappSlack.ts`                | Concierge WhatsApp inbound + reactions  |
-| `src/server/slack/slackNotifyCallSlot.ts`          | Offer call events (slots + live room)   |
-| `src/server/slack/adminActionItemsSnapshot.ts`     | Admin-home action queue snapshot        |
-| `src/server/slack/adminActionItemsSlackMessage.ts` | German Block Kit for daily admin report |
-| `src/server/slack/resendUsageSlackMessage.ts`      | German Block Kit for Resend quota alert |
+| Path                                                    | Role                                              |
+| ------------------------------------------------------- | ------------------------------------------------- |
+| `src/server/slack/slackCreate.ts`                       | WebClient wrapper                                 |
+| `src/server/slack/slackBlocks.ts`                       | Block Kit template                                |
+| `src/server/slack/slackWebhookSignatureVerify.ts`       | HMAC verify for Interactivity POSTs               |
+| `src/routes/api/webhooks/slack.ts`                      | Interactivity Request URL (ack only)              |
+| `src/server/slack/bookingRequestSlack.ts`               | Booking root post + thread reply                  |
+| `src/server/slack/supportRequestSlack.ts`               | Support root post + thread reply                  |
+| `src/server/slack/slackNotifyBooking.ts`                | Booking lifecycle helpers                         |
+| `src/server/slack/slackNotifyAdjacent.ts`               | Sign-up / support / gift card                     |
+| `src/server/slack/whatsappSlack.ts`                     | Concierge WhatsApp inbound + reactions            |
+| `src/server/slack/slackNotifyCallSlot.ts`               | Offer call events (slots + live room)             |
+| `src/server/slack/bookingRequestSlackSummaryLoad.ts`    | Shared booking/offer fields for thread enrichment |
+| `src/server/slack/slackCta.ts`                          | Context-specific German URL-button titles         |
+| `src/server/slack/adminActionItemsSnapshot.ts`          | Admin-home action queue snapshot                  |
+| `src/server/slack/adminActionItemsSlackMessage.ts`      | German Block Kit for daily admin report           |
+| `src/server/slack/resendUsageSlackMessage.ts`           | German Block Kit for email quota alert            |
+| `src/server/slack/observabilityOpsAlertSlackMessage.ts` | German Block Kit for observability alerts         |
 
 ### Jobs
 

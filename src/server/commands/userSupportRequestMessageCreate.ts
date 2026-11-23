@@ -90,6 +90,7 @@ export async function userSupportRequestMessageCreate(
             customerName: user ? `${user.firstName} ${user.lastName}` : userId,
             bodyPreview: (message || '(Anhang)').slice(0, 500),
             from: 'customer',
+            subject: supportRequest.subject,
         });
 
         return { success: true, referenceId: supportRequestMessageId };

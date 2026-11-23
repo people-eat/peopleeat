@@ -246,14 +246,10 @@ describe('bookingRequestOfferPaymentFinalize', () => {
 
         expect(result).toEqual({ advanced: false });
         expect(slackNotifyPaymentConfirmed).not.toHaveBeenCalled();
-        expect(slackNotifyPaymentFinalizeMismatch).toHaveBeenCalledWith(
-            seeded.serverRuntime,
-            expect.objectContaining({
-                bookingRequestId: seeded.bookingRequestId,
-                bookingRequestOfferId: seeded.bookingRequestOfferId,
-                detail: expect.stringContaining(paymentIntentId),
-            }),
-        );
+        expect(slackNotifyPaymentFinalizeMismatch).toHaveBeenCalledWith(seeded.serverRuntime, {
+            bookingRequestId: seeded.bookingRequestId,
+            bookingRequestOfferId: seeded.bookingRequestOfferId,
+        });
     });
 
     it('passes a stable Stripe idempotency key for the primary extra transfer', async () => {

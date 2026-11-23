@@ -124,7 +124,7 @@ describe('resendUsageSlackAlertRun', () => {
         expect(serverRuntime.slack.postMessage).toHaveBeenCalledTimes(1);
         const args = vi.mocked(serverRuntime.slack.postMessage).mock.calls[0]![0];
         expect(args.channel).toBe('C_OPS');
-        expect(args.text).toBe('Resend E-Mail-Kontingent gefährdet');
+        expect(args.text).toBe('E-Mail-Kontingent gefährdet');
         expect(args.blocks.length).toBeGreaterThan(0);
     });
 

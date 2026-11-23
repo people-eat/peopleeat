@@ -3,7 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { LARGE_GROUP_PARTICIPANT_THRESHOLD } from './bookingRequestSlack';
 import { slackMessageBlocksBuild } from './slackBlocks';
 import { slackChannelsCreate } from './slackChannels';
-import { slackFormatParticipants, slackFormatPriceClass, slackShortId } from './slackFormat';
+import { SLACK_CTA } from './slackCta';
+import { slackFormatParticipants, slackFormatPriceClass, slackFormatTestimonialKind, slackPaymentFailedBody } from './slackFormat';
 
 describe('slackMessageBlocksBuild', () => {
     it('builds header, fields, body, context, and admin button', () => {
@@ -14,8 +15,9 @@ describe('slackMessageBlocksBuild', () => {
                 { label: 'Ort', value: 'München' },
             ],
             body: 'Bitte vegetarisch.',
-            contextLines: ['Anfrage abcdef12 · Max Mustermann'],
+            contextLines: ['12 Köche benachrichtigt'],
             adminHref: 'https://example.com/admin/booking-requests/abc',
+            adminButtonTitle: SLACK_CTA.request,
         });
 
         expect(text).toBe('Neue Buchungsanfrage · Max Mustermann');
@@ -24,6 +26,17 @@ describe('slackMessageBlocksBuild', () => {
         expect(blocks.some((block) => block.type === 'section' && 'text' in block)).toBe(true);
         expect(blocks.some((block) => block.type === 'context')).toBe(true);
         expect(blocks.some((block) => block.type === 'actions')).toBe(true);
+        expect(JSON.stringify(blocks)).toContain(SLACK_CTA.request);
+        expect(JSON.stringify(blocks)).not.toContain('In Admin öffnen');
+    });
+
+    it('requires adminButtonTitle when adminHref is set', () => {
+        expect(() =>
+            slackMessageBlocksBuild({
+                header: 'Info',
+                adminHref: 'https://example.com/admin',
+            }),
+        ).toThrow(/adminButtonTitle/);
     });
 
     it('omits actions when no admin href', () => {
@@ -67,13 +80,19 @@ describe('slackFormat helpers', () => {
         expect(slackFormatParticipants(1, 1)).toBe('1 Erwachsener, 1 Kind');
     });
 
-    it('formats price class', () => {
+    it('formats price class without em dash', () => {
         expect(slackFormatPriceClass('MEDIUM')).toBe('Signature Menü');
-        expect(slackFormatPriceClass(null)).toBe('—');
+        expect(slackFormatPriceClass(null)).toBe('nicht gesetzt');
     });
 
-    it('shortens ids', () => {
-        expect(slackShortId('abcdefgh-1234')).toBe('abcdefgh');
+    it('formats testimonial kinds in German', () => {
+        expect(slackFormatTestimonialKind('REMINDER_MORNING')).toBe('Morgen-Erinnerung');
+        expect(slackFormatTestimonialKind('MEMORY_NUDGE')).toBe('Memory-Nudge');
+    });
+
+    it('maps payment failures without leaking Stripe event codes for unknown detail', () => {
+        expect(slackPaymentFailedBody('payment_intent.payment_failed')).toContain('Kartenzahlung');
+        expect(slackPaymentFailedBody('pi_raw_error')).not.toContain('pi_');
     });
 
     it('exposes large-group threshold of 12', () => {

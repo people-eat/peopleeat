@@ -10,7 +10,6 @@ import {
     slackAdminUserUrl,
 } from './slackAdminUrls';
 import { slackMessageBlocksBuild } from './slackBlocks';
-import { slackShortId } from './slackFormat';
 
 const SLACK_TIME_ZONE = 'Europe/Berlin';
 
@@ -49,7 +48,6 @@ export function adminActionItemsSlackMessageBuild(snapshot: AdminActionItemsSnap
         return slackMessageBlocksBuild({
             header: 'Admin Aktionsübersicht',
             body: '*Alles erledigt*\nKeine offenen Admin-Aktionseinträge.',
-            contextLines: [`Report ${slackShortId(new Date().toISOString())}`],
         });
     }
 
@@ -102,6 +100,6 @@ export function adminActionItemsSlackMessageBuild(snapshot: AdminActionItemsSnap
     return slackMessageBlocksBuild({
         header: 'Admin Aktionsübersicht',
         body,
-        contextLines: [`Report ${slackShortId(new Date().toISOString())} · ${total} offen`],
+        contextLines: [`${total} offene Einträge`],
     });
 }

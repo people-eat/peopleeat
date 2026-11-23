@@ -130,12 +130,15 @@ export async function giftCardPayFinalize(
     }
     await serverRuntime.publish.adminUpdates();
 
+    const invoice = invoiceAddress ?? row.invoiceAddress;
+    const buyerName = invoice ? `${invoice.firstName} ${invoice.lastName}`.trim() : null;
     const { slackNotifyGiftCardPaid } = await import('../slack/slackNotifyAdjacent');
     await slackNotifyGiftCardPaid(serverRuntime, {
         giftCardId: row.giftCardId,
         amountCents: row.balanceCents,
         buyerEmail: row.buyerEmail,
-        recipientEmail: row.recipientName,
+        buyerName,
+        recipientName: row.recipientName,
     });
 
     return { advanced: true };

@@ -182,6 +182,7 @@ export const bookingRequestOfferTestimonialReminder: QueuedJobDefinition<Booking
             const { slackNotifyTestimonialReminderSent } = await import('../../slack/slackNotifyBooking');
             await slackNotifyTestimonialReminderSent(serverRuntime, {
                 bookingRequestId: bookingRequest.bookingRequestId,
+                bookingRequestOfferId: data.bookingRequestOfferId,
                 kind: data.kind,
             });
         }

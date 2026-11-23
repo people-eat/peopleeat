@@ -5,7 +5,7 @@ import type { ServerRuntime } from '../domain/ServerRuntime';
 import { slackAdminSupportRequestUrl } from './slackAdminUrls';
 import type { SlackField } from './slackBlocks';
 import { slackMessageBlocksBuild } from './slackBlocks';
-import { slackShortId } from './slackFormat';
+import { SLACK_CTA } from './slackCta';
 
 export type SupportRequestSlackRootPostArgs = {
     supportRequestId: string;
@@ -38,13 +38,10 @@ export async function supportRequestSlackRootPost(
 
     const { text, blocks } = slackMessageBlocksBuild({
         header: `Neue Support-Anfrage · ${args.customerName}`,
-        fields: [
-            { label: 'Kunde', value: args.customerName },
-            { label: 'Betreff', value: args.subject },
-        ],
+        fields: [{ label: 'Betreff', value: args.subject }],
         body: args.bodyPreview,
-        contextLines: [`Support ${slackShortId(args.supportRequestId)} · User ${slackShortId(args.userId)}`],
         adminHref: slackAdminSupportRequestUrl(args.supportRequestId),
+        adminButtonTitle: SLACK_CTA.support,
     });
 
     const posted = await serverRuntime.slack.postMessage({ channel: channelId, text, blocks });
@@ -95,8 +92,8 @@ export async function supportRequestSlackThreadReply(
             header: args.header,
             fields: args.fields,
             body: args.body,
-            contextLines: [`Support ${slackShortId(args.supportRequestId)}`],
             adminHref: slackAdminSupportRequestUrl(args.supportRequestId),
+            adminButtonTitle: SLACK_CTA.support,
         });
 
         await serverRuntime.slack.postMessage({

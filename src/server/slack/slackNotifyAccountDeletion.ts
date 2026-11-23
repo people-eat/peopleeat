@@ -4,7 +4,8 @@ import type { ServerRuntime } from '../domain/ServerRuntime';
 import { slackAdminUserUrl } from './slackAdminUrls';
 import { slackMessageBlocksBuild } from './slackBlocks';
 import type { SlackField } from './slackBlocks';
-import { slackShortId } from './slackFormat';
+import { SLACK_CTA } from './slackCta';
+import { slackFormatDateTime } from './slackFormat';
 
 async function postSignUps(serverRuntime: ServerRuntime, built: { text: string; blocks: KnownBlock[] }): Promise<void> {
     const channelId = serverRuntime.slack.channels.signUps;
@@ -32,18 +33,15 @@ export async function slackNotifyAccountDeletionIntent(
     args: { userId: string; firstName: string; lastName: string; emailAddress: string | null },
 ): Promise<void> {
     const name = nameOf(args);
-    const fields: SlackField[] = [
-        { label: 'Name', value: name },
-        { label: 'E-Mail', value: args.emailAddress ?? 'nicht hinterlegt' },
-    ];
+    const fields: SlackField[] = [{ label: 'E-Mail', value: args.emailAddress ?? 'nicht hinterlegt' }];
     await postSignUps(
         serverRuntime,
         slackMessageBlocksBuild({
             header: `Konto-Löschung gestartet · ${name}`,
             fields,
             body: 'Nutzer hat auf Konto löschen geklickt.',
-            contextLines: [`User ${slackShortId(args.userId)}`],
             adminHref: slackAdminUserUrl(args.userId),
+            adminButtonTitle: SLACK_CTA.user,
         }),
     );
 }
@@ -62,9 +60,8 @@ export async function slackNotifyAccountDeletionRequested(
 ): Promise<void> {
     const name = nameOf(args);
     const fields: SlackField[] = [
-        { label: 'Name', value: name },
         { label: 'E-Mail', value: args.emailAddress ?? 'nicht hinterlegt' },
-        { label: 'Geplant für', value: args.scheduledFor.toISOString() },
+        { label: 'Geplant für', value: slackFormatDateTime(args.scheduledFor) },
         { label: 'Quelle', value: args.source === 'admin' ? 'Admin' : 'Self-Serve' },
     ];
     await postSignUps(
@@ -72,8 +69,8 @@ export async function slackNotifyAccountDeletionRequested(
         slackMessageBlocksBuild({
             header: `Konto-Löschung angefordert · ${name}`,
             fields,
-            contextLines: [`User ${slackShortId(args.userId)}`],
             adminHref: slackAdminUserUrl(args.userId),
+            adminButtonTitle: SLACK_CTA.user,
         }),
     );
 }
@@ -91,7 +88,6 @@ export async function slackNotifyAccountDeletionTookPlace(
 ): Promise<void> {
     const name = nameOf(args);
     const fields: SlackField[] = [
-        { label: 'Name', value: name },
         { label: 'E-Mail', value: args.emailAddress ?? 'nicht hinterlegt' },
         { label: 'Quelle', value: args.source === 'admin' ? 'Admin' : args.source === 'job' ? 'Job' : 'Self-Serve' },
     ];
@@ -100,8 +96,8 @@ export async function slackNotifyAccountDeletionTookPlace(
         slackMessageBlocksBuild({
             header: `Konto gelöscht · ${name}`,
             fields,
-            contextLines: [`User ${slackShortId(args.userId)}`],
             adminHref: slackAdminUserUrl(args.userId),
+            adminButtonTitle: SLACK_CTA.user,
         }),
     );
 }

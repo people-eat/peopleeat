@@ -1,4 +1,5 @@
 import type { ServerRuntime } from '../domain/ServerRuntime';
+import { bookingRequestSlackSummaryFields, bookingRequestSlackSummaryLoad } from './bookingRequestSlackSummaryLoad';
 import { slackFormatDateTime } from './slackFormat';
 import { slackNotifyCallSlot } from './slackNotifyBooking';
 
@@ -7,6 +8,20 @@ type OfferCallActor = 'customer' | 'cook' | 'admin';
 function offerCallActorLabel(actor: OfferCallActor, onBehalfOf?: 'customer' | 'cook'): string {
     const partyLabel = (party: 'customer' | 'cook') => (party === 'customer' ? 'Kunde' : 'Koch');
     return actor === 'admin' ? `Admin (als ${partyLabel(onBehalfOf ?? 'customer')})` : partyLabel(actor);
+}
+
+function actorDisplayName(
+    actor: OfferCallActor,
+    summary: { customerName: string; cookName?: string } | undefined,
+    onBehalfOf?: 'customer' | 'cook',
+): string {
+    if (actor === 'admin') {
+        return offerCallActorLabel(actor, onBehalfOf);
+    }
+    if (actor === 'customer') {
+        return summary?.customerName ?? 'Kunde';
+    }
+    return summary?.cookName ?? 'Koch';
 }
 
 export async function slackNotifyCallSlotEvent(
@@ -22,17 +37,27 @@ export async function slackNotifyCallSlotEvent(
     },
 ): Promise<void> {
     const actionLabel = {
-        requested: 'Call-Slot angefragt',
-        confirmed: 'Call-Slot bestätigt',
-        declined: 'Call-Slot abgelehnt',
-        canceled: 'Call-Slot storniert',
+        requested: 'Gesprächstermin angefragt',
+        confirmed: 'Gesprächstermin bestätigt',
+        declined: 'Gesprächstermin abgelehnt',
+        canceled: 'Gesprächstermin storniert',
     }[args.action];
+
+    const summary = await bookingRequestSlackSummaryLoad(serverRuntime, {
+        bookingRequestId: args.bookingRequestId,
+        bookingRequestOfferId: args.bookingRequestOfferId,
+    });
+    const who = actorDisplayName(args.actor, summary, args.onBehalfOf);
+    const fields = summary ? bookingRequestSlackSummaryFields(summary, { includeCook: true }) : [];
+    if (args.startAt) {
+        fields.unshift({ label: 'Termin', value: slackFormatDateTime(args.startAt) });
+    }
 
     await slackNotifyCallSlot(serverRuntime, {
         bookingRequestId: args.bookingRequestId,
         bookingRequestOfferId: args.bookingRequestOfferId,
-        header: `${actionLabel} · ${offerCallActorLabel(args.actor, args.onBehalfOf)}`,
-        fields: args.startAt ? [{ label: 'Termin', value: slackFormatDateTime(args.startAt) }] : undefined,
+        header: `${actionLabel} · ${who}`,
+        fields: fields.length > 0 ? fields : undefined,
     });
 }
 
@@ -47,15 +72,22 @@ export async function slackNotifyCallRoomEvent(
     },
 ): Promise<void> {
     const actionLabel = {
-        started: 'Call gestartet',
-        joined: 'Call beigetreten',
-        left: 'Call verlassen',
+        started: 'Gespräch gestartet',
+        joined: 'Gespräch beigetreten',
+        left: 'Gespräch verlassen',
     }[args.action];
+
+    const summary = await bookingRequestSlackSummaryLoad(serverRuntime, {
+        bookingRequestId: args.bookingRequestId,
+        bookingRequestOfferId: args.bookingRequestOfferId,
+    });
+    const who = actorDisplayName(args.actor, summary);
 
     await slackNotifyCallSlot(serverRuntime, {
         bookingRequestId: args.bookingRequestId,
         bookingRequestOfferId: args.bookingRequestOfferId,
-        header: `${actionLabel} · ${offerCallActorLabel(args.actor)}`,
+        header: `${actionLabel} · ${who}`,
+        fields: summary ? bookingRequestSlackSummaryFields(summary, { includeCook: true }) : undefined,
     });
 }
 

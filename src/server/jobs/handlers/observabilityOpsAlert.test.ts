@@ -20,13 +20,15 @@ describe('observabilityOpsAlertSlackMessageBuild', () => {
             errorLogCountThreshold: 25,
             slowMeanMsThreshold: 1000,
         });
-        expect(text).toContain('Observability alert');
+        expect(text).toContain('Systemhinweis');
         const body = JSON.stringify(blocks);
-        expect(body).toContain('GraphQL error rate');
+        expect(body).toContain('GraphQL-Fehlerquote');
         expect(body).toContain('GraphQL p95');
-        expect(body).toContain('Ingress error rate');
-        expect(body).toContain('error log rows');
-        expect(body).toContain('Slow SQL');
+        expect(body).toContain('Ingress-Fehlerquote');
+        expect(body).toContain('Fehler-Logs');
+        expect(body).toContain('Langsame Abfragen');
+        expect(body).not.toContain('SELECT 1');
+        expect(body).not.toContain('Observability alert');
     });
 });
 

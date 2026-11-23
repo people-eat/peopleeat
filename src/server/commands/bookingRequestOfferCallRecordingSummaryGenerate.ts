@@ -2,7 +2,7 @@ import { generateText, Output } from 'ai';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 
-import { bookingRequestOfferCallRecordings } from '../db/schema';
+import { bookingRequestOfferCallRecordings, bookingRequestOfferCallRooms, bookingRequestOffers } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSSession } from '../graphql/generated';
 import { aiTelemetry } from '../observability/aiTelemetry';
@@ -78,6 +78,41 @@ export async function bookingRequestOfferCallRecordingSummaryGenerate({
         .update(bookingRequestOfferCallRecordings)
         .set({ summaryText: summary })
         .where(eq(bookingRequestOfferCallRecordings.bookingRequestOfferCallRecordingId, bookingRequestOfferCallRecordingId));
+
+    try {
+        const [thread] = await serverRuntime.db
+            .select({
+                bookingRequestId: bookingRequestOffers.bookingRequestId,
+                bookingRequestOfferId: bookingRequestOffers.bookingRequestOfferId,
+                bookingRequestOfferCallRoomId: bookingRequestOfferCallRooms.bookingRequestOfferCallRoomId,
+            })
+            .from(bookingRequestOfferCallRecordings)
+            .innerJoin(
+                bookingRequestOfferCallRooms,
+                eq(
+                    bookingRequestOfferCallRooms.bookingRequestOfferCallRoomId,
+                    bookingRequestOfferCallRecordings.bookingRequestOfferCallRoomId,
+                ),
+            )
+            .innerJoin(
+                bookingRequestOffers,
+                eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferCallRooms.bookingRequestOfferId),
+            )
+            .where(eq(bookingRequestOfferCallRecordings.bookingRequestOfferCallRecordingId, bookingRequestOfferCallRecordingId))
+            .limit(1);
+
+        if (thread) {
+            const { slackNotifyCallRecordingSummary } = await import('../slack/slackNotifyBooking');
+            await slackNotifyCallRecordingSummary(serverRuntime, {
+                bookingRequestId: thread.bookingRequestId,
+                bookingRequestOfferId: thread.bookingRequestOfferId,
+                bookingRequestOfferCallRoomId: thread.bookingRequestOfferCallRoomId,
+                summaryText: summary,
+            });
+        }
+    } catch (error) {
+        serverRuntime.log.error(error, requestingSession);
+    }
 
     return summary;
 }

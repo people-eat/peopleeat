@@ -35,3 +35,7 @@ export function slackAdminWhatsAppChatUrl(whatsAppConversationId: string): strin
 export function slackAdminOfferChatReviewUrl(bookingRequestOfferId: string): string {
     return `${origin()}/admin/offer-chat-reviews/${bookingRequestOfferId}`;
 }
+
+export function slackAdminCallUrl(bookingRequestOfferCallRoomId: string): string {
+    return `${origin()}/admin/calls/${bookingRequestOfferCallRoomId}`;
+}

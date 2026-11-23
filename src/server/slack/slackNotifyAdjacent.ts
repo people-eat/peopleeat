@@ -4,7 +4,8 @@ import type { ServerRuntime } from '../domain/ServerRuntime';
 import { slackAdminGiftCardUrl, slackAdminUserUrl } from './slackAdminUrls';
 import { slackMessageBlocksBuild } from './slackBlocks';
 import type { SlackField } from './slackBlocks';
-import { slackFormatCents, slackShortId } from './slackFormat';
+import { SLACK_CTA } from './slackCta';
+import { slackFormatCents } from './slackFormat';
 import { supportRequestSlackRootPost, supportRequestSlackThreadReply } from './supportRequestSlack';
 
 async function postToChannel(
@@ -43,12 +44,11 @@ export async function slackNotifyCustomerSignUp(
         slackMessageBlocksBuild({
             header: `Neue Kundenregistrierung · ${name}`,
             fields: [
-                { label: 'Name', value: name },
                 { label: 'E-Mail', value: args.emailAddress },
                 { label: 'Telefon', value: args.phoneNumber ?? 'nicht hinterlegt' },
             ],
-            contextLines: [`User ${slackShortId(args.userId)}`],
             adminHref: slackAdminUserUrl(args.userId),
+            adminButtonTitle: SLACK_CTA.user,
         }),
     );
 }
@@ -66,7 +66,6 @@ export async function slackNotifyCookSignUp(
 ): Promise<void> {
     const name = `${args.firstName} ${args.lastName}`;
     const fields: SlackField[] = [
-        { label: 'Name', value: name },
         { label: 'E-Mail', value: args.emailAddress },
         { label: 'Telefon', value: args.phoneNumber ?? 'nicht hinterlegt' },
     ];
@@ -80,8 +79,8 @@ export async function slackNotifyCookSignUp(
             header: `Neuer Koch · ${name}`,
             fields,
             body: 'Profil muss noch freigeschaltet werden.',
-            contextLines: [`User ${slackShortId(args.userId)}`],
             adminHref: slackAdminUserUrl(args.userId),
+            adminButtonTitle: SLACK_CTA.user,
         }),
     );
 }
@@ -106,13 +105,14 @@ export async function slackNotifySupportRequestMessage(
         customerName: string;
         bodyPreview: string;
         from: 'customer' | 'admin';
+        subject?: string;
     },
 ): Promise<void> {
     const header = args.from === 'admin' ? `Support-Antwort · ${args.customerName}` : `Support-Nachricht · ${args.customerName}`;
     await supportRequestSlackThreadReply(serverRuntime, {
         supportRequestId: args.supportRequestId,
         header,
-        fields: [{ label: 'Kunde', value: args.customerName }],
+        fields: args.subject ? [{ label: 'Betreff', value: args.subject }] : undefined,
         body: args.bodyPreview,
     });
 }
@@ -128,10 +128,7 @@ export async function slackNotifySupportRequestResolved(
     await supportRequestSlackThreadReply(serverRuntime, {
         supportRequestId: args.supportRequestId,
         header: `Support-Anfrage gelöst · ${args.customerName}`,
-        fields: [
-            { label: 'Kunde', value: args.customerName },
-            { label: 'Betreff', value: args.subject },
-        ],
+        fields: [{ label: 'Betreff', value: args.subject }],
         broadcast: true,
     });
 }
@@ -142,24 +139,32 @@ export async function slackNotifyGiftCardPaid(
         giftCardId: string;
         amountCents: number;
         buyerEmail?: string | null;
+        buyerName?: string | null;
+        recipientName?: string | null;
         recipientEmail?: string | null;
     },
 ): Promise<void> {
     const fields: SlackField[] = [{ label: 'Betrag', value: slackFormatCents(args.amountCents) }];
-    if (args.buyerEmail) {
-        fields.push({ label: 'Käufer', value: args.buyerEmail });
+    if (args.buyerEmail || args.buyerName) {
+        const buyer = [args.buyerName?.trim(), args.buyerEmail?.trim()].filter(Boolean).join(' · ');
+        if (buyer) {
+            fields.push({ label: 'Käufer', value: buyer });
+        }
     }
-    if (args.recipientEmail) {
-        fields.push({ label: 'Empfänger', value: args.recipientEmail });
+    if (args.recipientName || args.recipientEmail) {
+        const recipient = [args.recipientName?.trim(), args.recipientEmail?.trim()].filter(Boolean).join(' · ');
+        if (recipient) {
+            fields.push({ label: 'Empfänger', value: recipient });
+        }
     }
     await postToChannel(
         serverRuntime,
         serverRuntime.slack.channels.giftCardPurchases,
         slackMessageBlocksBuild({
-            header: 'Gutschein bezahlt',
+            header: `Gutschein bezahlt · ${slackFormatCents(args.amountCents)}`,
             fields,
-            contextLines: [`Gift card ${slackShortId(args.giftCardId)}`],
             adminHref: slackAdminGiftCardUrl(args.giftCardId),
+            adminButtonTitle: SLACK_CTA.giftCard,
         }),
     );
 }

@@ -1,7 +1,9 @@
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import { bookingRequestSlackThreadReply } from './bookingRequestSlack';
+import { bookingRequestSlackSummaryFields, bookingRequestSlackSummaryLoad } from './bookingRequestSlackSummaryLoad';
 import { slackAdminWhatsAppChatUrl } from './slackAdminUrls';
 import { slackMessageBlocksBuild } from './slackBlocks';
+import { SLACK_CTA } from './slackCta';
 
 export type WhatsAppInboundSlackNotifyArgs = {
     whatsAppConversationId: string;
@@ -19,10 +21,11 @@ export async function whatsappInboundSlackNotify(serverRuntime: ServerRuntime, a
 
     try {
         const { text, blocks } = slackMessageBlocksBuild({
-            header: `WhatsApp Nachricht von ${args.peerDisplay}`,
+            header: `WhatsApp-Nachricht von ${args.peerDisplay}`,
             fields: [{ label: 'Telefon', value: args.phoneNumber }],
             body: args.messagePreview,
             adminHref: slackAdminWhatsAppChatUrl(args.whatsAppConversationId),
+            adminButtonTitle: SLACK_CTA.chat,
         });
         await serverRuntime.slack.postMessage({ channel: channelId, text, blocks });
     } catch (error) {
@@ -35,8 +38,12 @@ export async function whatsappBookingReactionSlackNotify(
     serverRuntime: ServerRuntime,
     args: { bookingRequestId: string; reactionLabel: string },
 ): Promise<void> {
+    const summary = await bookingRequestSlackSummaryLoad(serverRuntime, { bookingRequestId: args.bookingRequestId });
+    const fields = summary ? bookingRequestSlackSummaryFields(summary, { includeCook: false }) : [];
+    fields.push({ label: 'Reaktion', value: args.reactionLabel });
     await bookingRequestSlackThreadReply(serverRuntime, {
         bookingRequestId: args.bookingRequestId,
-        header: `Customer reacted on WhatsApp: ${args.reactionLabel}`,
+        header: summary ? `WhatsApp-Reaktion · ${summary.customerName}` : 'WhatsApp-Reaktion',
+        fields,
     });
 }

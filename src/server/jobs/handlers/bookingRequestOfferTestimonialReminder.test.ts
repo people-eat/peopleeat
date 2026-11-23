@@ -116,6 +116,7 @@ describe('bookingRequestOfferTestimonialReminder', () => {
         );
         expect(slackNotifyTestimonialReminderSent).toHaveBeenCalledWith(serverRuntime, {
             bookingRequestId,
+            bookingRequestOfferId,
             kind: 'REMINDER_MORNING',
         });
     });

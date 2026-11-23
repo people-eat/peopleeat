@@ -11,7 +11,9 @@ When a LiveKit discovery call starts on an open offer:
    on the offer Call tab (`BookingRequestOfferCallTab`); keep the commented banner and re-show it before relying on recording in
    production-facing flows.
 3. When the room ends, a background job waits for recording to finish, downloads the audio, runs speech-to-text into structured segments,
-   then generates a short **AI summary** for admin review.
+   then generates a short **AI summary** for admin review. The same summary is also posted as a **Gesprächszusammenfassung** reply on the
+   booking-request Slack thread (deep link to the Admin Call page); admin regenerate uses the same path. See
+   [slack-notifications.md](./slack-notifications.md).
 4. Admins review a call on **`/admin/calls/$bookingRequestOfferCallRoomId`** (`AdminCallPage`): condensed header (occasion, status, time,
    cook/customer cards shared with the offer tab), sticky waveform player, summary first, optional chat-like transcript (collapsed by
    default; segment click seeks). Audio streams through an admin-authenticated API route. The offer Call tab shows compact recording cards

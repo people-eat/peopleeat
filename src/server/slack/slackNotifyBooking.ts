@@ -3,7 +3,19 @@ import { eq } from 'drizzle-orm';
 import { bookingRequestParticipants, bookingRequests, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import { bookingRequestSlackRootPost, bookingRequestSlackThreadReply } from './bookingRequestSlack';
-import { slackFormatCents, slackFormatCity, slackFormatDateTime, slackFormatParticipants, slackFormatPriceClass } from './slackFormat';
+import { bookingRequestSlackSummaryFields, bookingRequestSlackSummaryLoad } from './bookingRequestSlackSummaryLoad';
+import { slackAdminCallUrl } from './slackAdminUrls';
+import { SLACK_CTA } from './slackCta';
+import {
+    SLACK_PAYMENT_MISMATCH_BODY,
+    slackFormatCents,
+    slackFormatCity,
+    slackFormatDateTime,
+    slackFormatParticipants,
+    slackFormatPriceClass,
+    slackFormatTestimonialKind,
+    slackPaymentFailedBody,
+} from './slackFormat';
 
 async function customerNameFind(serverRuntime: ServerRuntime, userId: string): Promise<string> {
     const [user] = await serverRuntime.db
@@ -66,7 +78,7 @@ export async function slackNotifyBookingRequestCreated(
                 { label: 'Preisklasse', value: slackFormatPriceClass(row.bookingRequest.priceClassType) },
                 {
                     label: 'Status',
-                    value: chefPageDirect ? 'Chef-page Direktanfrage' : publicationBlocked ? 'Wartet auf Admin-Freigabe' : 'Veröffentlicht',
+                    value: chefPageDirect ? 'Direktanfrage an Koch' : publicationBlocked ? 'Wartet auf Admin-Freigabe' : 'Veröffentlicht',
                 },
             ],
             body: row.bookingRequest.originalMessage.trim() || undefined,
@@ -81,12 +93,13 @@ export async function slackNotifyBookingRequestRecall(
     args: { bookingRequestId: string; userId: string; phoneNumber: string | null },
 ): Promise<void> {
     const customerName = await customerNameFind(serverRuntime, args.userId);
+    const summary = await bookingRequestSlackSummaryLoad(serverRuntime, { bookingRequestId: args.bookingRequestId });
     await bookingRequestSlackThreadReply(serverRuntime, {
         bookingRequestId: args.bookingRequestId,
         header: `Rückruf angefordert · ${customerName}`,
         fields: [
-            { label: 'Kunde', value: customerName },
             { label: 'Telefon', value: args.phoneNumber ?? 'nicht hinterlegt' },
+            ...(summary ? bookingRequestSlackSummaryFields(summary, { includeCook: false }) : []),
         ],
     });
 }
@@ -96,10 +109,11 @@ export async function slackNotifyBookingRequestCanceled(
     args: { bookingRequestId: string; userId: string; reason?: string | null },
 ): Promise<void> {
     const customerName = await customerNameFind(serverRuntime, args.userId);
+    const summary = await bookingRequestSlackSummaryLoad(serverRuntime, { bookingRequestId: args.bookingRequestId });
     await bookingRequestSlackThreadReply(serverRuntime, {
         bookingRequestId: args.bookingRequestId,
         header: `Storniert · ${customerName}`,
-        fields: [{ label: 'Kunde', value: customerName }],
+        fields: summary ? bookingRequestSlackSummaryFields(summary, { includeCook: false }) : undefined,
         body: args.reason ? `Grund: ${args.reason}` : undefined,
     });
 }
@@ -115,9 +129,11 @@ export async function slackNotifyBookingRequestFieldChange(
     },
 ): Promise<void> {
     const customerName = await customerNameFind(serverRuntime, args.userId);
+    const summary = await bookingRequestSlackSummaryLoad(serverRuntime, { bookingRequestId: args.bookingRequestId });
     await bookingRequestSlackThreadReply(serverRuntime, {
         bookingRequestId: args.bookingRequestId,
         header: `${args.header} · ${customerName}`,
+        fields: summary ? bookingRequestSlackSummaryFields(summary, { includeCook: false }) : undefined,
         body: `*Vorher:* ${args.before}\n*Nachher:* ${args.after}`,
     });
 }
@@ -126,10 +142,15 @@ export async function slackNotifyBookingRequestPublicationApproved(
     serverRuntime: ServerRuntime,
     args: { bookingRequestId: string; cooksNotifiedCount?: number },
 ): Promise<void> {
+    const summary = await bookingRequestSlackSummaryLoad(serverRuntime, { bookingRequestId: args.bookingRequestId });
+    const fields = summary ? bookingRequestSlackSummaryFields(summary, { includeCook: false }) : [];
+    if (args.cooksNotifiedCount != null) {
+        fields.push({ label: 'Benachrichtigte Köche', value: String(args.cooksNotifiedCount) });
+    }
     await bookingRequestSlackThreadReply(serverRuntime, {
         bookingRequestId: args.bookingRequestId,
-        header: 'Veröffentlichung freigegeben',
-        fields: args.cooksNotifiedCount != null ? [{ label: 'Benachrichtigte Köche', value: String(args.cooksNotifiedCount) }] : undefined,
+        header: summary ? `Veröffentlichung freigegeben · ${summary.customerName}` : 'Veröffentlichung freigegeben',
+        fields: fields.length > 0 ? fields : undefined,
     });
 }
 
@@ -142,13 +163,22 @@ export async function slackNotifyOfferCreated(
         totalCentsCustomer: number;
     },
 ): Promise<void> {
+    const summary = await bookingRequestSlackSummaryLoad(serverRuntime, {
+        bookingRequestId: args.bookingRequestId,
+        bookingRequestOfferId: args.bookingRequestOfferId,
+    });
     await bookingRequestSlackThreadReply(serverRuntime, {
         bookingRequestId: args.bookingRequestId,
         header: `Neues Angebot · ${args.cookName}`,
-        fields: [
-            { label: 'Koch', value: args.cookName },
-            { label: 'Kundenpreis', value: slackFormatCents(args.totalCentsCustomer) },
-        ],
+        fields: summary
+            ? bookingRequestSlackSummaryFields(summary, {
+                  includePrice: true,
+                  amountCents: args.totalCentsCustomer,
+              })
+            : [
+                  { label: 'Koch', value: args.cookName },
+                  { label: 'Kundenpreis', value: slackFormatCents(args.totalCentsCustomer) },
+              ],
         adminOfferId: args.bookingRequestOfferId,
     });
 }
@@ -163,9 +193,14 @@ export async function slackNotifyOfferPriceUpdated(
         afterCents: number;
     },
 ): Promise<void> {
+    const summary = await bookingRequestSlackSummaryLoad(serverRuntime, {
+        bookingRequestId: args.bookingRequestId,
+        bookingRequestOfferId: args.bookingRequestOfferId,
+    });
     await bookingRequestSlackThreadReply(serverRuntime, {
         bookingRequestId: args.bookingRequestId,
         header: `Preis aktualisiert · ${args.cookName}`,
+        fields: summary ? bookingRequestSlackSummaryFields(summary, { includeCook: true }) : undefined,
         body: `*Vorher:* ${slackFormatCents(args.beforeCents)}\n*Nachher:* ${slackFormatCents(args.afterCents)}`,
         adminOfferId: args.bookingRequestOfferId,
     });
@@ -175,9 +210,14 @@ export async function slackNotifyOfferSuggestedMenusUpdated(
     serverRuntime: ServerRuntime,
     args: { bookingRequestId: string; bookingRequestOfferId: string; cookName: string },
 ): Promise<void> {
+    const summary = await bookingRequestSlackSummaryLoad(serverRuntime, {
+        bookingRequestId: args.bookingRequestId,
+        bookingRequestOfferId: args.bookingRequestOfferId,
+    });
     await bookingRequestSlackThreadReply(serverRuntime, {
         bookingRequestId: args.bookingRequestId,
         header: `Menüvorschläge aktualisiert · ${args.cookName}`,
+        fields: summary ? bookingRequestSlackSummaryFields(summary, { includePrice: true }) : undefined,
         adminOfferId: args.bookingRequestOfferId,
     });
 }
@@ -193,9 +233,14 @@ export async function slackNotifyOfferAccept(
     },
 ): Promise<void> {
     const who = args.actor === 'customer' ? 'Kunde' : 'Koch';
+    const summary = await bookingRequestSlackSummaryLoad(serverRuntime, {
+        bookingRequestId: args.bookingRequestId,
+        bookingRequestOfferId: args.bookingRequestOfferId,
+    });
     await bookingRequestSlackThreadReply(serverRuntime, {
         bookingRequestId: args.bookingRequestId,
         header: args.dualAccepted ? `Doppelte Annahme · ${args.name}` : `${who} hat angenommen · ${args.name}`,
+        fields: summary ? bookingRequestSlackSummaryFields(summary, { includePrice: true }) : undefined,
         adminOfferId: args.bookingRequestOfferId,
     });
 }
@@ -211,9 +256,14 @@ export async function slackNotifyOfferDecline(
     },
 ): Promise<void> {
     const who = args.actor === 'customer' ? 'Kunde' : 'Koch';
+    const summary = await bookingRequestSlackSummaryLoad(serverRuntime, {
+        bookingRequestId: args.bookingRequestId,
+        bookingRequestOfferId: args.bookingRequestOfferId,
+    });
     await bookingRequestSlackThreadReply(serverRuntime, {
         bookingRequestId: args.bookingRequestId,
         header: `${who} hat abgelehnt · ${args.name}`,
+        fields: summary ? bookingRequestSlackSummaryFields(summary, { includePrice: true }) : undefined,
         body: args.reason ? `Grund: ${args.reason}` : undefined,
         adminOfferId: args.bookingRequestOfferId,
     });
@@ -223,9 +273,11 @@ export async function slackNotifyCookRequestDecline(
     serverRuntime: ServerRuntime,
     args: { bookingRequestId: string; cookName: string; reason?: string | null },
 ): Promise<void> {
+    const summary = await bookingRequestSlackSummaryLoad(serverRuntime, { bookingRequestId: args.bookingRequestId });
     await bookingRequestSlackThreadReply(serverRuntime, {
         bookingRequestId: args.bookingRequestId,
         header: `Koch hat Anfrage abgelehnt · ${args.cookName}`,
+        fields: summary ? bookingRequestSlackSummaryFields(summary, { includeCook: false }) : undefined,
         body: args.reason ? `Grund: ${args.reason}` : undefined,
     });
 }
@@ -234,10 +286,19 @@ export async function slackNotifyPaymentConfirmed(
     serverRuntime: ServerRuntime,
     args: { bookingRequestId: string; bookingRequestOfferId: string; amountCents: number },
 ): Promise<void> {
+    const summary = await bookingRequestSlackSummaryLoad(serverRuntime, {
+        bookingRequestId: args.bookingRequestId,
+        bookingRequestOfferId: args.bookingRequestOfferId,
+    });
     await bookingRequestSlackThreadReply(serverRuntime, {
         bookingRequestId: args.bookingRequestId,
-        header: 'Zahlung bestätigt',
-        fields: [{ label: 'Betrag', value: slackFormatCents(args.amountCents) }],
+        header: summary ? `Zahlung bestätigt · ${summary.customerName}` : 'Zahlung bestätigt',
+        fields: summary
+            ? bookingRequestSlackSummaryFields(summary, {
+                  amountCents: args.amountCents,
+                  amountLabel: 'Betrag',
+              })
+            : [{ label: 'Betrag', value: slackFormatCents(args.amountCents) }],
         adminOfferId: args.bookingRequestOfferId,
     });
 }
@@ -245,48 +306,39 @@ export async function slackNotifyPaymentConfirmed(
 /** Second finalize channel saw different amount / intent ids than the stored offer. */
 export async function slackNotifyPaymentFinalizeMismatch(
     serverRuntime: ServerRuntime,
-    args: { bookingRequestId: string; bookingRequestOfferId: string; detail: string },
+    args: { bookingRequestId: string; bookingRequestOfferId: string },
 ): Promise<void> {
+    const summary = await bookingRequestSlackSummaryLoad(serverRuntime, {
+        bookingRequestId: args.bookingRequestId,
+        bookingRequestOfferId: args.bookingRequestOfferId,
+    });
     await bookingRequestSlackThreadReply(serverRuntime, {
         bookingRequestId: args.bookingRequestId,
-        header: 'Zahlung Hinweis: Abweichung',
-        body: args.detail,
+        header: summary ? `Zahlung weicht ab · ${summary.customerName}` : 'Zahlung weicht ab',
+        fields: summary ? bookingRequestSlackSummaryFields(summary, { includePrice: true, amountLabel: 'Betrag' }) : undefined,
+        body: SLACK_PAYMENT_MISMATCH_BODY,
         adminOfferId: args.bookingRequestOfferId,
     });
 }
 
-const SLACK_PAYMENT_FAILED_EVENT_LABELS: Record<string, string> = {
-    'setup_intent.setup_failed': 'Karten-Einrichtung fehlgeschlagen. Der Kunde kann den Checkout erneut versuchen.',
-    'setup_intent.canceled': 'SetupIntent abgebrochen. Der Kunde kann den Checkout erneut versuchen.',
-    'payment_intent.payment_failed': 'Zahlung fehlgeschlagen. Der Kunde kann den Checkout erneut versuchen.',
-    'payment_intent.canceled': 'PaymentIntent abgebrochen. Der Kunde kann den Checkout erneut versuchen.',
-};
-
-const SLACK_PAYMENT_FAILED_CODE_LABELS: Record<string, string> = {
-    payment_intent_authentication_failure: '3-D Secure fehlgeschlagen',
-    setup_intent_authentication_failure: '3-D Secure fehlgeschlagen',
-    authentication_required: 'Zusätzliche Authentifizierung erforderlich',
-};
-
-/** Map Stripe event types / error codes to ops German. Unknown detail is passed through. */
-export function slackPaymentFailedDetail(detail?: string): string | undefined {
-    if (!detail?.trim()) return undefined;
-    const [eventType, ...rest] = detail.trim().split(/\s+/);
-    const eventLabel = eventType ? SLACK_PAYMENT_FAILED_EVENT_LABELS[eventType] : undefined;
-    const extraRaw = rest.join(' ');
-    const extraLabel = extraRaw.length > 0 ? (SLACK_PAYMENT_FAILED_CODE_LABELS[extraRaw] ?? extraRaw) : undefined;
-    if (eventLabel && extraLabel) return `${eventLabel} ${extraLabel}`;
-    return eventLabel ?? detail.trim();
+/** @deprecated Prefer `slackPaymentFailedBody` from `./slackFormat`. */
+export function slackPaymentFailedDetail(detail?: string): string {
+    return slackPaymentFailedBody(detail);
 }
 
 export async function slackNotifyPaymentFailed(
     serverRuntime: ServerRuntime,
     args: { bookingRequestId: string; bookingRequestOfferId: string; detail?: string },
 ): Promise<void> {
+    const summary = await bookingRequestSlackSummaryLoad(serverRuntime, {
+        bookingRequestId: args.bookingRequestId,
+        bookingRequestOfferId: args.bookingRequestOfferId,
+    });
     await bookingRequestSlackThreadReply(serverRuntime, {
         bookingRequestId: args.bookingRequestId,
-        header: 'Zahlung fehlgeschlagen',
-        body: slackPaymentFailedDetail(args.detail),
+        header: summary ? `Zahlung fehlgeschlagen · ${summary.customerName}` : 'Zahlung fehlgeschlagen',
+        fields: summary ? bookingRequestSlackSummaryFields(summary, { includePrice: true, amountLabel: 'Betrag' }) : undefined,
+        body: slackPaymentFailedBody(args.detail),
         adminOfferId: args.bookingRequestOfferId,
     });
 }
@@ -295,10 +347,19 @@ export async function slackNotifyPayoutReleased(
     serverRuntime: ServerRuntime,
     args: { bookingRequestId: string; bookingRequestOfferId: string; amountCents: number },
 ): Promise<void> {
+    const summary = await bookingRequestSlackSummaryLoad(serverRuntime, {
+        bookingRequestId: args.bookingRequestId,
+        bookingRequestOfferId: args.bookingRequestOfferId,
+    });
     await bookingRequestSlackThreadReply(serverRuntime, {
         bookingRequestId: args.bookingRequestId,
-        header: 'Auszahlung freigegeben',
-        fields: [{ label: 'Betrag', value: slackFormatCents(args.amountCents) }],
+        header: summary?.cookName ? `Auszahlung freigegeben · ${summary.cookName}` : 'Auszahlung freigegeben',
+        fields: summary
+            ? bookingRequestSlackSummaryFields(summary, {
+                  amountCents: args.amountCents,
+                  amountLabel: 'Betrag',
+              })
+            : [{ label: 'Betrag', value: slackFormatCents(args.amountCents) }],
         adminOfferId: args.bookingRequestOfferId,
     });
 }
@@ -308,11 +369,20 @@ export async function slackNotifyPayoutAlreadyTookPlace(
     serverRuntime: ServerRuntime,
     args: { bookingRequestId: string; bookingRequestOfferId: string; amountCents: number },
 ): Promise<void> {
+    const summary = await bookingRequestSlackSummaryLoad(serverRuntime, {
+        bookingRequestId: args.bookingRequestId,
+        bookingRequestOfferId: args.bookingRequestOfferId,
+    });
     await bookingRequestSlackThreadReply(serverRuntime, {
         bookingRequestId: args.bookingRequestId,
-        header: 'Bestehende Stripe-Auszahlung bestätigt',
-        body: 'Keine neue Auszahlung ausgelöst. Status auf TRANSFERRED gesetzt.',
-        fields: [{ label: 'Betrag', value: slackFormatCents(args.amountCents) }],
+        header: summary?.cookName ? `Bestehende Auszahlung bestätigt · ${summary.cookName}` : 'Bestehende Auszahlung bestätigt',
+        body: 'Keine neue Auszahlung ausgelöst. Bestehende Auszahlung wurde bestätigt.',
+        fields: summary
+            ? bookingRequestSlackSummaryFields(summary, {
+                  amountCents: args.amountCents,
+                  amountLabel: 'Betrag',
+              })
+            : [{ label: 'Betrag', value: slackFormatCents(args.amountCents) }],
         adminOfferId: args.bookingRequestOfferId,
     });
 }
@@ -334,6 +404,33 @@ export async function slackNotifyCallSlot(
     });
 }
 
+export async function slackNotifyCallRecordingSummary(
+    serverRuntime: ServerRuntime,
+    args: {
+        bookingRequestId: string;
+        bookingRequestOfferId: string;
+        bookingRequestOfferCallRoomId: string;
+        summaryText: string;
+    },
+): Promise<void> {
+    try {
+        const summary = await bookingRequestSlackSummaryLoad(serverRuntime, {
+            bookingRequestId: args.bookingRequestId,
+            bookingRequestOfferId: args.bookingRequestOfferId,
+        });
+        await bookingRequestSlackThreadReply(serverRuntime, {
+            bookingRequestId: args.bookingRequestId,
+            header: summary ? `Gesprächszusammenfassung · ${summary.customerName}` : 'Gesprächszusammenfassung',
+            fields: summary ? bookingRequestSlackSummaryFields(summary, { includeCook: true }) : undefined,
+            body: args.summaryText,
+            adminHref: slackAdminCallUrl(args.bookingRequestOfferCallRoomId),
+            adminButtonTitle: SLACK_CTA.call,
+        });
+    } catch (error) {
+        serverRuntime.log.error(error);
+    }
+}
+
 export async function slackNotifyNoOffers(serverRuntime: ServerRuntime, args: { bookingRequestId: string; hours: 24 | 48 }): Promise<void> {
     const [row] = await serverRuntime.db
         .select({
@@ -352,6 +449,13 @@ export async function slackNotifyNoOffers(serverRuntime: ServerRuntime, args: { 
         return;
     }
 
+    const participantRows = await serverRuntime.db
+        .select({ type: bookingRequestParticipants.type })
+        .from(bookingRequestParticipants)
+        .where(eq(bookingRequestParticipants.bookingRequestId, args.bookingRequestId));
+    const adultCount = participantRows.filter((p) => p.type === 'ADULT').length;
+    const discountedCount = participantRows.filter((p) => p.type === 'DISCOUNTED').length;
+
     const customerName = `${row.firstName} ${row.lastName}`;
     await bookingRequestSlackThreadReply(serverRuntime, {
         bookingRequestId: args.bookingRequestId,
@@ -360,6 +464,7 @@ export async function slackNotifyNoOffers(serverRuntime: ServerRuntime, args: { 
             { label: 'Datum', value: slackFormatDateTime(row.dateTime) },
             { label: 'Ort', value: slackFormatCity(row.exactEventAddress) },
             { label: 'Anlass', value: row.occasion },
+            { label: 'Teilnehmer', value: slackFormatParticipants(adultCount, discountedCount) },
         ],
     });
 }
@@ -368,19 +473,33 @@ export async function slackNotifyEventTomorrow(
     serverRuntime: ServerRuntime,
     args: { bookingRequestId: string; bookingRequestOfferId: string },
 ): Promise<void> {
+    const summary = await bookingRequestSlackSummaryLoad(serverRuntime, {
+        bookingRequestId: args.bookingRequestId,
+        bookingRequestOfferId: args.bookingRequestOfferId,
+    });
     await bookingRequestSlackThreadReply(serverRuntime, {
         bookingRequestId: args.bookingRequestId,
-        header: 'Event morgen',
+        header: summary ? `Event morgen · ${summary.customerName}` : 'Event morgen',
+        fields: summary ? bookingRequestSlackSummaryFields(summary, { includePrice: true, amountLabel: 'Betrag' }) : undefined,
         adminOfferId: args.bookingRequestOfferId,
     });
 }
 
 export async function slackNotifyTestimonialReminderSent(
     serverRuntime: ServerRuntime,
-    args: { bookingRequestId: string; kind: string },
+    args: { bookingRequestId: string; kind: string; bookingRequestOfferId?: string },
 ): Promise<void> {
+    const summary = await bookingRequestSlackSummaryLoad(serverRuntime, {
+        bookingRequestId: args.bookingRequestId,
+        bookingRequestOfferId: args.bookingRequestOfferId,
+    });
+    const kindLabel = slackFormatTestimonialKind(args.kind);
+    const fields = summary ? bookingRequestSlackSummaryFields(summary, { includeCook: true }) : [];
+    fields.push({ label: 'Art', value: kindLabel });
     await bookingRequestSlackThreadReply(serverRuntime, {
         bookingRequestId: args.bookingRequestId,
-        header: `Testimonial-Erinnerung gesendet · ${args.kind}`,
+        header: summary ? `Bewertungserinnerung gesendet · ${summary.customerName}` : 'Bewertungserinnerung gesendet',
+        fields,
+        adminOfferId: args.bookingRequestOfferId,
     });
 }

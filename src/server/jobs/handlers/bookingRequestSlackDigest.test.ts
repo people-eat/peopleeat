@@ -153,13 +153,15 @@ describe('bookingRequestSlackDigest', () => {
         // Act
         await bookingRequestSlackDigest.handler({ data: undefined, serverRuntime });
 
-        // Assert — digest lists customer name + admin link (not occasion).
+        // Assert — digest lists customer name, occasion, city + admin link.
         expect(serverRuntime.slack.postMessage).toHaveBeenCalledTimes(1);
         const args = vi.mocked(serverRuntime.slack.postMessage).mock.calls[0]![0];
         expect(args.channel).toBe('C_REPORTS');
         expect(args.text).toBe('Buchungsanfragen Report');
         const body = JSON.stringify(args.blocks);
         expect(body).toContain(`Open-${token}`);
+        expect(body).toContain(`WaitingOffers-${token}`);
+        expect(body).toContain(`WaitingReview-${token}`);
         expect(body).toContain(waitingOffersId);
         expect(body).toContain(waitingReviewId);
         expect(body).toContain('Anfragen ohne Angebote (1)');

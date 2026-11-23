@@ -5,7 +5,7 @@ import type { BookingRequestOfferPaymentStatus } from '../../domain/bookingReque
 import { bookingRequestStatusDerive } from '../../domain/bookingRequest';
 import { slackAdminBookingRequestUrl } from '../../slack/slackAdminUrls';
 import { slackMessageBlocksBuild } from '../../slack/slackBlocks';
-import { slackFormatDateTime, slackShortId } from '../../slack/slackFormat';
+import { slackFormatCity, slackFormatDateTime } from '../../slack/slackFormat';
 import type { RecurringJobDefinition } from '../types';
 
 /**
@@ -73,7 +73,7 @@ export const bookingRequestSlackDigest: RecurringJobDefinition = {
             for (const row of waitingForReview.slice(0, 15)) {
                 const name = `${row.firstName} ${row.lastName}`;
                 bodyParts.push(
-                    `• ${slackFormatDateTime(row.bookingRequest.dateTime)} · ${name} · <${slackAdminBookingRequestUrl(row.bookingRequest.bookingRequestId)}|öffnen>`,
+                    `• ${slackFormatDateTime(row.bookingRequest.dateTime)} · ${name} · ${row.bookingRequest.occasion} · ${slackFormatCity(row.bookingRequest.exactEventAddress)} · <${slackAdminBookingRequestUrl(row.bookingRequest.bookingRequestId)}|öffnen>`,
                 );
             }
         }
@@ -82,7 +82,7 @@ export const bookingRequestSlackDigest: RecurringJobDefinition = {
             for (const row of waitingForOffers.slice(0, 15)) {
                 const name = `${row.firstName} ${row.lastName}`;
                 bodyParts.push(
-                    `• ${slackFormatDateTime(row.bookingRequest.dateTime)} · ${name} · <${slackAdminBookingRequestUrl(row.bookingRequest.bookingRequestId)}|öffnen>`,
+                    `• ${slackFormatDateTime(row.bookingRequest.dateTime)} · ${name} · ${row.bookingRequest.occasion} · ${slackFormatCity(row.bookingRequest.exactEventAddress)} · <${slackAdminBookingRequestUrl(row.bookingRequest.bookingRequestId)}|öffnen>`,
                 );
             }
         }
@@ -90,7 +90,6 @@ export const bookingRequestSlackDigest: RecurringJobDefinition = {
         const { text, blocks } = slackMessageBlocksBuild({
             header: 'Buchungsanfragen Report',
             body: bodyParts.join('\n'),
-            contextLines: [`Digest ${slackShortId(new Date().toISOString())}`],
         });
 
         await serverRuntime.slack.postMessage({ channel: channelId, text, blocks });

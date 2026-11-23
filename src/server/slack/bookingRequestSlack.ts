@@ -6,7 +6,7 @@ import type { ServerRuntime } from '../domain/ServerRuntime';
 import { slackAdminBookingRequestOfferUrl, slackAdminBookingRequestUrl } from './slackAdminUrls';
 import type { SlackField } from './slackBlocks';
 import { slackMessageBlocksBuild } from './slackBlocks';
-import { slackShortId } from './slackFormat';
+import { SLACK_CTA } from './slackCta';
 
 export { LARGE_GROUP_PARTICIPANT_THRESHOLD };
 
@@ -26,6 +26,9 @@ export type BookingRequestSlackThreadReplyArgs = {
     fields?: SlackField[];
     body?: string;
     adminOfferId?: string;
+    /** Override deep-link URL + CTA (e.g. Admin Call page). */
+    adminHref?: string;
+    adminButtonTitle?: string;
 };
 
 function channelForParticipantCount(serverRuntime: ServerRuntime, participantCount: number): string | undefined {
@@ -48,20 +51,21 @@ export async function bookingRequestSlackRootPost(
         return undefined;
     }
 
-    const routingHint = args.participantCount >= LARGE_GROUP_PARTICIPANT_THRESHOLD ? 'Großgruppe · cash-cows' : 'booking-requests';
-    const reviewHint = args.publicationBlocked ? 'Review nötig' : undefined;
+    const contextParts = [
+        args.participantCount >= LARGE_GROUP_PARTICIPANT_THRESHOLD ? 'Großgruppe' : undefined,
+        args.publicationBlocked ? 'Review nötig' : undefined,
+        args.cooksNotifiedCount != null
+            ? `${args.cooksNotifiedCount} ${args.cooksNotifiedCount === 1 ? 'Koch' : 'Köche'} benachrichtigt`
+            : undefined,
+    ].filter(Boolean);
 
     const { text, blocks } = slackMessageBlocksBuild({
         header: `Neue Buchungsanfrage · ${args.customerName}`,
         fields: args.fields,
         body: args.body,
-        contextLines: [
-            `Anfrage ${slackShortId(args.bookingRequestId)} · ${args.customerName}`,
-            [routingHint, reviewHint, args.cooksNotifiedCount != null ? `${args.cooksNotifiedCount} Köche benachrichtigt` : undefined]
-                .filter(Boolean)
-                .join(' · '),
-        ],
+        contextLines: contextParts.length > 0 ? [contextParts.join(' · ')] : undefined,
         adminHref: slackAdminBookingRequestUrl(args.bookingRequestId),
+        adminButtonTitle: SLACK_CTA.request,
     });
 
     const posted = await serverRuntime.slack.postMessage({ channel: channelId, text, blocks });
@@ -108,16 +112,19 @@ export async function bookingRequestSlackThreadReply(
             return;
         }
 
-        const adminHref = args.adminOfferId
-            ? slackAdminBookingRequestOfferUrl(args.bookingRequestId, args.adminOfferId)
-            : slackAdminBookingRequestUrl(args.bookingRequestId);
+        const adminHref =
+            args.adminHref ??
+            (args.adminOfferId
+                ? slackAdminBookingRequestOfferUrl(args.bookingRequestId, args.adminOfferId)
+                : slackAdminBookingRequestUrl(args.bookingRequestId));
+        const adminButtonTitle = args.adminButtonTitle ?? (args.adminOfferId ? SLACK_CTA.offer : SLACK_CTA.request);
 
         const { text, blocks } = slackMessageBlocksBuild({
             header: args.header,
             fields: args.fields,
             body: args.body,
-            contextLines: [`Anfrage ${slackShortId(args.bookingRequestId)}`],
             adminHref,
+            adminButtonTitle,
         });
 
         await serverRuntime.slack.postMessage({

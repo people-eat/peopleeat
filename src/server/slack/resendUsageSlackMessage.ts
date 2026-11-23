@@ -2,7 +2,7 @@ import { formatDateTime } from '../../shared/formatDate';
 import type { ResendEmailQuotaRisk } from '../utils/resendEmailQuotaAtRisk';
 import { slackAdminOutboundEmailsUrl } from './slackAdminUrls';
 import { slackMessageBlocksBuild } from './slackBlocks';
-import { slackShortId } from './slackFormat';
+import { SLACK_CTA } from './slackCta';
 
 const SLACK_TIME_ZONE = 'Europe/Berlin';
 
@@ -57,10 +57,9 @@ export function resendUsageSlackMessageBuild(input: ResendUsageSlackMessageInput
     }
 
     return slackMessageBlocksBuild({
-        header: 'Resend E-Mail-Kontingent gefährdet',
+        header: 'E-Mail-Kontingent gefährdet',
         body: sections.join('\n\n'),
-        contextLines: [`Alert ${slackShortId(input.now.toISOString())}`],
         adminHref: slackAdminOutboundEmailsUrl(),
-        adminButtonTitle: 'E-Mail-Übersicht öffnen',
+        adminButtonTitle: SLACK_CTA.emails,
     });
 }

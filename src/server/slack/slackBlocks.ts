@@ -80,6 +80,9 @@ export function slackMessageBlocksBuild(args: SlackMessageBuildArgs): { text: st
     }
 
     if (args.adminHref) {
+        if (!args.adminButtonTitle?.trim()) {
+            throw new Error('slackMessageBlocksBuild: adminButtonTitle is required when adminHref is set');
+        }
         blocks.push({
             type: 'actions',
             elements: [
@@ -87,7 +90,7 @@ export function slackMessageBlocksBuild(args: SlackMessageBuildArgs): { text: st
                     type: 'button',
                     text: {
                         type: 'plain_text',
-                        text: args.adminButtonTitle ?? 'In Admin öffnen',
+                        text: args.adminButtonTitle.trim(),
                         emoji: true,
                     },
                     url: args.adminHref,

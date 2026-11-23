@@ -141,7 +141,6 @@ async function paymentFinalizeAlreadyAdvancedHandle(
     await slackNotifyPaymentFinalizeMismatch(serverRuntime, {
         bookingRequestId: args.bookingRequestId,
         bookingRequestOfferId: args.bookingRequestOfferId,
-        detail,
     });
 
     return { advanced: false };
