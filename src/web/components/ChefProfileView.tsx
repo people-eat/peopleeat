@@ -64,7 +64,7 @@ export function ChefProfileView({
                 onMenuOpen={onMenuOpen}
             />
             <SectionCookMeals meals={cook.meals} onMealOpen={onMealOpen} />
-            <SectionCookAbout biography={biography} logoUrl={cook.logoUrl} />
+            <SectionCookAbout biography={biography} logoUrl={cook.logoUrl} displayName={cook.displayName} />
             <SectionCookTestimonials testimonials={cook.testimonials} />
             <SectionQuestionsAndAnswers />
         </div>

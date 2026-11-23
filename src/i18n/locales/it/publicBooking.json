@@ -166,7 +166,12 @@
             "item2": "Tre portate. Solo per voi.",
             "item3": "Un dolce finale.",
             "item4": "Con attenzione ai dettagli.",
-            "item5": "Il vostro tavolo nel loft."
+            "item5": "Il vostro tavolo nel loft.",
+            "item1Alt": "Burrata con pomodorini, basilico e pane tostato",
+            "item2Alt": "Antipasto impiattato con verdure e salsa, servito a un tavolo a lume di candela",
+            "item3Alt": "Crostata di mele con gelato alla vaniglia e caramello",
+            "item4Alt": "Chef privato che impiatta un piatto sotto le lampade riscaldanti",
+            "item5Alt": "Tavolo apparecchiato in un loft luminoso con un lungo tavolo di legno"
         },
         "care": {
             "title": "Voi gustate. Noi ci pensiamo.",

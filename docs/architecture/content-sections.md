@@ -66,7 +66,10 @@ section stack per entity.
    confirmed **Delete**. Delete is detail-only (not on list views).
 6. **Slugs** — unique `pathName` + `previousPathNames` for 301 redirects on rename.
 7. **Media** — hero and section images reference `FileUploads`; download auth allows owner, published content references, or admin + any
-   content reference. Section images are client-cropped (`content` / `contentWide`) before upload; hero remains uncropped.
+   content reference. Section images are client-cropped (`content` / `contentWide`) before upload; hero remains uncropped. Content-block
+   images use `common.imageAlt.photoOf` with the section title when present. Standalone `kind: 'image'` blocks have no title and render
+   `alt=""`; optional bilingual `altDe` / `altEn` on that kind is a follow-up if editors need unique descriptions. See
+   [image-delivery.md](./image-delivery.md#alternative-text).
 
 ## Alternatives considered
 

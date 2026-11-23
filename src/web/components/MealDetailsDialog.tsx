@@ -32,7 +32,12 @@ export function MealDetailsDialog({
                 <div className="flex flex-col justify-start gap-8 lg:flex-row">
                     {imageUrl ? (
                         <div className="aspect-square w-56 shrink-0 lg:w-80">
-                            <AppImage priority src={imageUrl} alt="" className="size-full rounded-2xl object-cover" />
+                            <AppImage
+                                priority
+                                src={imageUrl}
+                                alt={t('imageAlt.photoOf', { name: title })}
+                                className="size-full rounded-2xl object-cover"
+                            />
                         </div>
                     ) : (
                         <div className="flex aspect-square w-56 shrink-0 flex-col items-center justify-center gap-4 rounded-2xl bg-secondary p-8 text-muted-foreground lg:w-80">

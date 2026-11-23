@@ -6,6 +6,10 @@
     "saveFailed": "Speichern fehlgeschlagen.",
     "deletedAccount": "Gelöschtes Konto",
     "skipToContent": "Zum Inhalt springen",
+    "imageAlt": {
+        "photoOf": "Foto von {name}"
+    },
+    "conciergeJuliana": "Concierge Juliana",
     "language": {
         "de": "Deutsch",
         "en": "English",

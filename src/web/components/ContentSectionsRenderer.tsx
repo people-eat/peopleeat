@@ -166,7 +166,11 @@ function ContentBlock({ section, locale }: { section: Extract<ContentSection, { 
     return (
         <div className={cn('flex items-start gap-6', imageFirst ? 'flex-col @md:flex-row' : 'flex-col-reverse @md:flex-row-reverse')}>
             <div className="min-w-0 w-full overflow-hidden rounded-lg bg-muted @md:flex-1">
-                <AppImage src={imageUrl} alt="" className="aspect-square w-full object-cover" />
+                <AppImage
+                    src={imageUrl}
+                    alt={title ? t(locale, 'common', 'imageAlt.photoOf', { name: title }) : ''}
+                    className="aspect-square w-full object-cover"
+                />
             </div>
             {text}
         </div>

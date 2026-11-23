@@ -6,6 +6,10 @@
     "saveFailed": "Opslaan is niet gelukt.",
     "deletedAccount": "Verwijderd account",
     "skipToContent": "Naar de inhoud",
+    "imageAlt": {
+        "photoOf": "Foto van {name}"
+    },
+    "conciergeJuliana": "Concierge Juliana",
     "language": {
         "de": "Deutsch",
         "en": "English",

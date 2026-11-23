@@ -166,7 +166,12 @@
             "item2": "Drie gangen. Speciaal voor jou.",
             "item3": "Een zoete afsluiter.",
             "item4": "Met liefde voor detail.",
-            "item5": "Jouw tafel in de loft."
+            "item5": "Jouw tafel in de loft.",
+            "item1Alt": "Burrata met cherrytomaten, basilicum en geroosterd brood",
+            "item2Alt": "Aangericht voorgerecht met groenten en saus, geserveerd aan een tafel bij kaarslicht",
+            "item3Alt": "Appeltaartje met vanille-ijs en karamel",
+            "item4Alt": "Privéchef die een gerecht aanricht onder warmtelampen",
+            "item5Alt": "Gedekte eettafel in een lichte loft met een lange houten tafel"
         },
         "care": {
             "title": "Jij geniet. Wij zorgen.",

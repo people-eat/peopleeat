@@ -2,6 +2,8 @@ import { Link } from '@tanstack/react-router';
 import { MapPinIcon, StarIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
+import { t as translate } from '../../i18n/t';
+import { useLocale } from '../hooks/useLocale';
 import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 import { Avatar, AvatarFallback, AvatarImage } from './base/avatar';
@@ -56,6 +58,7 @@ function CookCardRating({ rating }: { rating: NonNullable<PublicCookCardCook['ra
 }
 
 function PublicCookCardBody({ cook, showCity, badge }: { cook: PublicCookCardCook; showCity: boolean; badge?: ReactNode }) {
+    const locale = useLocale();
     const name = cook.user.display;
     const city = showCity ? cook.city?.trim() || null : null;
 
@@ -64,7 +67,11 @@ function PublicCookCardBody({ cook, showCity, badge }: { cook: PublicCookCardCoo
             <div className="relative aspect-square w-full overflow-hidden bg-muted">
                 <Avatar className="size-full rounded-none text-2xl">
                     {cook.user.profilePicture != null && (
-                        <AvatarImage src={cook.user.profilePicture.url} alt="" className="rounded-none object-cover" />
+                        <AvatarImage
+                            src={cook.user.profilePicture.url}
+                            alt={translate(locale, 'common', 'imageAlt.photoOf', { name })}
+                            className="rounded-none object-cover"
+                        />
                     )}
                     <AvatarFallback className="rounded-none text-2xl">{initialsFromName(name)}</AvatarFallback>
                 </Avatar>

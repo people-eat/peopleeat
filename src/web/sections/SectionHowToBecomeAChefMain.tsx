@@ -63,7 +63,7 @@ export function SectionHowToBecomeAChefMain({ isCook, market }: { isCook: boolea
                     </div>
                     <AppImage
                         priority
-                        alt=""
+                        alt={t('howToBecome.heroChefAlt')}
                         className="mt-10 aspect-6/5 w-full max-w-lg select-none rounded-2xl object-cover @sm:mt-16 @lg:mt-0 @lg:max-w-none @xl:row-span-2 @xl:row-end-2 @xl:mt-36"
                         draggable={false}
                         height={400}

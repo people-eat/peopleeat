@@ -142,7 +142,11 @@ export function SectionCookHero({
                 <div className="relative mx-auto aspect-square w-full max-w-sm shrink-0 overflow-hidden rounded-2xl bg-muted @sm:max-w-md @3xl:mx-0 @3xl:w-72 @3xl:max-w-none @4xl:w-80 @5xl:w-96">
                     <Avatar className="size-full rounded-2xl text-5xl @3xl:text-6xl @4xl:text-7xl">
                         {cook.profilePictureUrl != null && (
-                            <AvatarImage src={cook.profilePictureUrl} alt="" className="rounded-2xl object-cover" />
+                            <AvatarImage
+                                src={cook.profilePictureUrl}
+                                alt={translate(locale, 'common', 'imageAlt.photoOf', { name: cook.displayName })}
+                                className="rounded-2xl object-cover"
+                            />
                         )}
                         <AvatarFallback className="rounded-2xl text-5xl @3xl:text-6xl @4xl:text-7xl">
                             {initialsFromName(cook.displayName)}

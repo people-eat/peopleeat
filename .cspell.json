@@ -91,6 +91,7 @@
                 "christmas",
                 "Didn",
                 "Dépublier",
+                "dépublier",
                 "Dépublié",
                 "knödel",
                 "EVJF",
@@ -118,13 +119,17 @@
         {
             "filename": "src/i18n/locales/fr/admin.json",
             "language": "en,fr,de",
-            "words": ["christmas", "Dépublier", "Dépublié", "OBJECTSTORAGES", "pgstatstatements", "stepterminé"]
+            "words": ["christmas", "Dépublier", "dépublier", "Dépublié", "OBJECTSTORAGES", "pgstatstatements", "stepterminé"]
         },
         {
             "filename": "src/i18n/locales/it/**",
             "language": "en,it",
             "words": [
                 "Anonimizza",
+                "Anonimizzare",
+                "Anonimizzato",
+                "Anonimizzazione",
+                "anonimizzato",
                 "canederli",
                 "chattare",
                 "christmas",
@@ -132,8 +137,10 @@
                 "dall’IA",
                 "dall’importo",
                 "dall’inizio",
+                "dall'admin",
                 "Didn",
                 "Disconnetti",
+                "impiatta",
                 "impiattando",
                 "impiattare",
                 "impiattamento",
@@ -143,15 +150,21 @@
                 "Nascondimento",
                 "OBJECTSTORAGES",
                 "pgstatstatements",
+                "preselezionati",
                 "preselezionato",
+                "ripreparato",
                 "sobbollire",
+                "Sottopagina",
                 "stepcompletato",
                 "sull’elenco",
                 "sull’evento",
                 "Sull’evento",
                 "sull’integrazione",
                 "sull’offerta",
+                "transcrizione",
+                "Transcrizione",
                 "unter",
+                "versionati",
                 "videochiamata",
                 "Русский",
                 "Nederlands"
@@ -161,7 +174,25 @@
         {
             "filename": "src/i18n/locales/it/admin.json",
             "language": "en,it,de",
-            "words": ["Anonimizza", "christmas", "OBJECTSTORAGES", "pgstatstatements", "stepcompletato", "stim"]
+            "words": [
+                "Anonimizza",
+                "Anonimizzare",
+                "Anonimizzato",
+                "Anonimizzazione",
+                "anonimizzato",
+                "christmas",
+                "dall'admin",
+                "OBJECTSTORAGES",
+                "pgstatstatements",
+                "preselezionati",
+                "ripreparato",
+                "Sottopagina",
+                "stepcompletato",
+                "stim",
+                "transcrizione",
+                "Transcrizione",
+                "versionati"
+            ]
         },
         {
             "filename": "src/i18n/locales/ru/**",
@@ -231,6 +262,7 @@
                 "предпросмотре",
                 "пуровера",
                 "сооснователи",
+                "тарт",
                 "уведомлён",
                 "уведомлённые"
             ],

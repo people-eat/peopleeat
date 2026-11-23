@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { slackPaymentFailedBody } from './slackFormat';
-import { slackPaymentFailedDetail } from './slackNotifyBooking';
 
 describe('slackPaymentFailedBody', () => {
     it('maps Stripe event types to ops German', () => {
@@ -24,9 +23,5 @@ describe('slackPaymentFailedBody', () => {
             'Zahlung fehlgeschlagen. Details stehen in den Server-Logs.',
         );
         expect(slackPaymentFailedBody(undefined)).toBe('Zahlung fehlgeschlagen. Details stehen in den Server-Logs.');
-    });
-
-    it('keeps deprecated alias in sync', () => {
-        expect(slackPaymentFailedDetail('payment_intent.canceled')).toBe(slackPaymentFailedBody('payment_intent.canceled'));
     });
 });

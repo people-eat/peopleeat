@@ -3,6 +3,8 @@ import { GiftIcon } from 'lucide-react';
 import { useLayoutEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 
+import { t as translate } from '../../i18n/t';
+import { useLocale } from '../hooks/useLocale';
 import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 import { AppImage } from './AppImage';
@@ -28,6 +30,7 @@ export function CookOfferAddonCard({
     className?: string;
     density?: 'comfortable' | 'compact';
 }) {
+    const locale = useLocale();
     const { t } = useT('profileCook');
     const shellRef = useRef<HTMLDivElement>(null);
     const [mediaSizePx, setMediaSizePx] = useState<number | null>(null);
@@ -68,7 +71,11 @@ export function CookOfferAddonCard({
             aria-hidden={resolvedImageUrl == null ? true : undefined}
         >
             {resolvedImageUrl != null ? (
-                <AppImage src={resolvedImageUrl} alt="" className="size-full object-cover" />
+                <AppImage
+                    src={resolvedImageUrl}
+                    alt={translate(locale, 'common', 'imageAlt.photoOf', { name: addon.title })}
+                    className="size-full object-cover"
+                />
             ) : (
                 <div className="flex size-full items-center justify-center">
                     <GiftIcon className={compact ? 'size-5' : 'size-6'} />

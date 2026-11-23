@@ -60,6 +60,7 @@ export type ContentPageViewModel = {
         bodyDe: string;
         bodyEn: string;
         imageUrl?: string | null;
+        imageAlt?: string;
         /** Partner-only CTA override for first-section + header; omit / null keeps the booking form. */
         ctaUrl?: string | null;
         promo?: SectionChefForAnyOccasionPromo | null;
@@ -125,12 +126,20 @@ function ContentPageViewBody({
     user: PublicHeaderUser;
 }) {
     const { t } = useT('common');
+    const { t: tPublic } = useT('public');
     const heroVariant = page.heroVariant ?? 'fullBleed';
     const headline = contentLocaleText(page.headlineDe, page.headlineEn, locale).trim();
     const subheadline = contentLocaleText(page.subHeadlineDe, page.subHeadlineEn, locale).trim();
-    const heroSrc = page.heroImageUrl ?? page.heroImageFallbackUrl ?? null;
-    const fullBleedMedia =
-        heroVariant === 'fullBleed' && heroSrc ? { src: heroSrc, type: 'image' as const, alt: headline || heroSrc } : null;
+    const uploadedHero = page.heroImageUrl?.trim() || null;
+    const heroSrc = uploadedHero ?? page.heroImageFallbackUrl ?? null;
+    const heroAlt = uploadedHero
+        ? headline
+            ? t('imageAlt.photoOf', { name: headline })
+            : ''
+        : page.heroImageFallbackUrl
+          ? tPublic('cities.heroFallbackAlt')
+          : '';
+    const fullBleedMedia = heroVariant === 'fullBleed' && heroSrc ? { src: heroSrc, type: 'image' as const, alt: heroAlt } : null;
     const noMediaLabel = t('m.noHeroImage');
 
     return (
@@ -150,7 +159,7 @@ function ContentPageViewBody({
                             headline={headline || undefined}
                             lead={subheadline || undefined}
                             imageUrl={heroSrc}
-                            imageAlt={headline || undefined}
+                            imageAlt={heroAlt || undefined}
                             noMediaLabel={noMediaLabel}
                             indexLink={page.indexLink}
                         />
@@ -175,6 +184,7 @@ function ContentPageViewBody({
                             bodyDe={page.chefForAnyOccasion.bodyDe}
                             bodyEn={page.chefForAnyOccasion.bodyEn}
                             imageUrl={page.chefForAnyOccasion.imageUrl}
+                            imageAlt={page.chefForAnyOccasion.imageAlt}
                             ctaUrl={page.chefForAnyOccasion.ctaUrl}
                             promo={page.chefForAnyOccasion.promo}
                             imageOverlay={page.chefForAnyOccasion.imageOverlay}

@@ -269,7 +269,11 @@ export function ProfileCookMealPage({ data, mealId }: { data: GqlCProfileCookMea
                     <div className="grid gap-2">
                         <p className="text-sm font-medium">{t(locale, 'profileCook', 'actions.image')}</p>
                         {meal.imageUrl ? (
-                            <img src={meal.imageUrl} alt="" className="aspect-square h-auto w-full max-w-sm object-cover" />
+                            <img
+                                src={meal.imageUrl}
+                                alt={t(locale, 'common', 'imageAlt.photoOf', { name: meal.title })}
+                                className="aspect-square h-auto w-full max-w-sm object-cover"
+                            />
                         ) : (
                             <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'actions.noImage')}</p>
                         )}

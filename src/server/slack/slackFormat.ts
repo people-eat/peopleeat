@@ -50,7 +50,10 @@ const TESTIMONIAL_KIND_LABEL: Record<BookingRequestOfferTestimonialReminderKind,
 };
 
 export function slackFormatTestimonialKind(kind: string): string {
-    return TESTIMONIAL_KIND_LABEL[kind as BookingRequestOfferTestimonialReminderKind] ?? kind;
+    if (Object.hasOwn(TESTIMONIAL_KIND_LABEL, kind)) {
+        return TESTIMONIAL_KIND_LABEL[kind as BookingRequestOfferTestimonialReminderKind];
+    }
+    return kind;
 }
 
 const PAYMENT_FAILED_EVENT_LABELS: Record<string, string> = {

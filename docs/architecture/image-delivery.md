@@ -18,13 +18,30 @@ heroes pull full stored files through Node + Postgres, which feels slow under co
    (`authOauthProfilePictureImport`). See [profile-pictures.md](../features/profile-pictures.md) and
    [testimonials.md](../features/testimonials.md).
 2. **`AppImage`** — shared `<img>` defaults (`loading="lazy"`, `decoding="async"`; `priority` for LCP / above-the-fold). Not a transform
-   pipeline.
+   pipeline. `alt` is required on the component (`alt=""` is valid for decorative images). See **Alternative text** below.
 3. **Static marketing** — heavy `public/` photos are checked in as sized WebP. Regenerate with `npm run images:optimize-public`
    ([`scripts/optimizePublicImages.ts`](../../scripts/optimizePublicImages.ts)). Logos, favicons, and small known-from marks stay PNG.
    Portrait / reusable faces (e.g. concierge Juliana, comparison chef Max) keep a long edge near the original (~1280 cap) so later larger UI
    uses stay sharp; do not crush them to current display size.
 
 Bytes still flow through the authenticated download route with `Cache-Control` max-age. GraphQL never carries image bytes.
+
+## Alternative text
+
+Informative public photos get a real, localized `alt`. House style is **Photo of …** / **Foto von …** (matching `home.comparison.chefAlt`),
+not a redundant “image of” prefix. Copy voice: [copy.md](../styles/copy.md).
+
+- **Static marketing** — dedicated catalog keys that describe the scene (home how-it-works, about founders, booking submitted dishes, and so
+  on). Never leave Tailwind-sample leftovers or a file URL as alt.
+- **Dynamic entities** (meals, add-ons, public cook portraits, CMS content-block images, occasion format cards, uploaded CMS / venue heroes)
+  interpolate `common.imageAlt.photoOf` with the nearby title or name. There is no stored alt on `FileUploads`.
+- **Decorative** — `alt=""`: expansion flags (`aria-hidden`), film-play posters, editor previews, avatars next to a visible name, menu
+  collages that are already `aria-hidden`, standalone CMS `kind: 'image'` blocks (no title on the block). Do not invent a generic “Photo”
+  alt; empty is better for assistive tech.
+- Public meal and chef-card photos still get a named alt for SEO even when the title is visible beside the image.
+
+City stock fallbacks (`fine-dining.webp`, `chef-preparing.webp`) use `cities.heroFallbackAlt` / `cities.ctaFallbackAlt`, not the page
+headline. Uploaded CMS heroes use `photoOf` with the headline when it is non-empty.
 
 ## Alternatives considered
 

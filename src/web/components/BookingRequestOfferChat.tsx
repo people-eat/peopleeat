@@ -74,7 +74,7 @@ function ConciergePresenceBanner({
                     );
                 })}
                 <Avatar size="lg" className="size-12">
-                    <AvatarImage src="/concierge-juliana.webp" alt="Concierge Juliana" />
+                    <AvatarImage src="/concierge-juliana.webp" alt={t('conciergeJuliana')} />
                     <AvatarFallback>J</AvatarFallback>
                 </Avatar>
             </AvatarGroup>
@@ -125,7 +125,7 @@ export function BookingRequestOfferChat({
     const groupedMessages = groupMessagesByDate(messages);
     const draftContainsPhoneNumber = containsPhoneNumber(draft);
 
-    const presenceTitle = `${peers.map((peer) => peer.display).join(', ')} & Concierge Juliana`;
+    const presenceTitle = `${peers.map((peer) => peer.display).join(', ')} & ${t('conciergeJuliana')}`;
     const presenceBody = viewerRole === 'admin' ? null : t(viewerRole === 'customer' ? 'chat.directWithCook' : 'chat.directWithGuest');
 
     return (

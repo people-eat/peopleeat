@@ -166,7 +166,12 @@
             "item2": "Trois plats. Rien que pour toi.",
             "item3": "Une douce conclusion.",
             "item4": "Avec le souci du détail.",
-            "item5": "Ta table dans le loft."
+            "item5": "Ta table dans le loft.",
+            "item1Alt": "Burrata avec tomates cerises, basilic et pain grillé",
+            "item2Alt": "Entrée dressée avec des légumes verts et une sauce, servie à une table aux chandelles",
+            "item3Alt": "Tarte aux pommes avec glace vanille et caramel",
+            "item4Alt": "Chef privé qui dresse un plat sous des lampes chauffantes",
+            "item5Alt": "Table dressée dans un loft lumineux avec une longue table en bois"
         },
         "care": {
             "title": "Tu savoures. On s’occupe du reste.",

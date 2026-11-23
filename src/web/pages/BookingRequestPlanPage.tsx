@@ -109,11 +109,11 @@ function selectionSurfaceClassName(selected: boolean): string {
 }
 
 const FORETASTE_ITEMS = [
-    { src: '/booking-request/plan/foretaste-1.png', captionKey: 'plan.foretaste.item1' },
-    { src: '/booking-request/plan/foretaste-2.jpg', captionKey: 'plan.foretaste.item2' },
-    { src: '/booking-request/plan/foretaste-3.png', captionKey: 'plan.foretaste.item3' },
-    { src: '/booking-request/plan/foretaste-4.jpg', captionKey: 'plan.foretaste.item4' },
-    { src: '/booking-request/plan/foretaste-5.jpg', captionKey: 'plan.foretaste.item5' },
+    { src: '/booking-request/plan/foretaste-1.png', captionKey: 'plan.foretaste.item1', altKey: 'plan.foretaste.item1Alt' },
+    { src: '/booking-request/plan/foretaste-2.jpg', captionKey: 'plan.foretaste.item2', altKey: 'plan.foretaste.item2Alt' },
+    { src: '/booking-request/plan/foretaste-3.png', captionKey: 'plan.foretaste.item3', altKey: 'plan.foretaste.item3Alt' },
+    { src: '/booking-request/plan/foretaste-4.jpg', captionKey: 'plan.foretaste.item4', altKey: 'plan.foretaste.item4Alt' },
+    { src: '/booking-request/plan/foretaste-5.jpg', captionKey: 'plan.foretaste.item5', altKey: 'plan.foretaste.item5Alt' },
 ] as const;
 
 const CARE_ITEMS = [
@@ -327,7 +327,7 @@ function BookingRequestPlanForetasteCarousel() {
                     <figure key={item.src} className="relative aspect-9/16 w-52 shrink-0 snap-start overflow-hidden rounded-2xl">
                         <AppImage
                             src={item.src}
-                            alt={t(item.captionKey)}
+                            alt={t(item.altKey)}
                             draggable={false}
                             className="absolute inset-0 size-full object-cover select-none"
                         />
@@ -419,7 +419,10 @@ export function BookingRequestPlanPage({
     const displayExpectedPriceRangeLabel = expectedPriceRangeLabel ?? lastExpectedPriceRangeLabelRef.current;
 
     const greetingName = search.firstName?.trim() || session.user?.firstName?.trim() || '';
-    const heroSrc = venue?.firstSectionImageUrl || venue?.heroImageUrl || HERO_FALLBACK_SRC;
+    const venueHeroUrl = venue?.firstSectionImageUrl || venue?.heroImageUrl || null;
+    const heroSrc = venueHeroUrl || HERO_FALLBACK_SRC;
+    const heroAlt =
+        venueHeroUrl && venue ? translate(locale, 'common', 'imageAlt.photoOf', { name: venue.name }) : tBooking('plan.hero.alt');
     const venueCity = values.exactEventAddress?.city || venueAddress?.city || '';
 
     const debouncedLocationSearch = useDebouncedValue(values.locationSearchText, 300);
@@ -897,7 +900,7 @@ export function BookingRequestPlanPage({
                                 {venue.firstSectionImageUrl || venue.heroImageUrl ? (
                                     <AppImage
                                         src={venue.firstSectionImageUrl || venue.heroImageUrl || HERO_FALLBACK_SRC}
-                                        alt={venue.name}
+                                        alt={translate(locale, 'common', 'imageAlt.photoOf', { name: venue.name })}
                                         className="size-18 shrink-0 rounded-xl object-cover"
                                     />
                                 ) : null}
@@ -924,7 +927,7 @@ export function BookingRequestPlanPage({
                                     <div className="group relative aspect-video overflow-hidden @3xl:aspect-auto @3xl:h-full @3xl:min-h-72">
                                         <AppImage
                                             src={heroSrc}
-                                            alt={tBooking('plan.hero.alt')}
+                                            alt={heroAlt}
                                             className="size-full object-cover transition-transform duration-300 ease-out group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
                                         />
                                     </div>

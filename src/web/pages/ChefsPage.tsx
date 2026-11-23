@@ -80,6 +80,7 @@ export function ChefsPage({ data, search }: { data: GqlCChefsPageQuery; search: 
                     bodyDe="Entdecke geprüfte Privatköche und buche ein unvergessliches Dinner zu Hause, für Geburtstag, Firmenfeier oder einen besonderen Abend."
                     bodyEn="Discover vetted private chefs and book an unforgettable dinner at home, for birthdays, company events, or a special evening."
                     imageUrl="/home/comparison-section/private-chef-max.webp"
+                    imageAlt={t('home.comparison.chefAlt')}
                 />
 
                 <section className="mx-auto w-full max-w-7xl px-4 pb-16 @lg:px-6">

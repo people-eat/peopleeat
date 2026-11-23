@@ -321,11 +321,6 @@ export async function slackNotifyPaymentFinalizeMismatch(
     });
 }
 
-/** @deprecated Prefer `slackPaymentFailedBody` from `./slackFormat`. */
-export function slackPaymentFailedDetail(detail?: string): string {
-    return slackPaymentFailedBody(detail);
-}
-
 export async function slackNotifyPaymentFailed(
     serverRuntime: ServerRuntime,
     args: { bookingRequestId: string; bookingRequestOfferId: string; detail?: string },

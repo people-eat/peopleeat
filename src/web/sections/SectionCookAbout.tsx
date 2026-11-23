@@ -3,7 +3,7 @@ import { CookAboutBenefitsFallback } from '../components/CookAboutBenefitsFallba
 import { useT } from '../hooks/useT';
 
 /** Biography + cook additional picture (or marketing benefits fallback). Hidden when the cook has no biography. */
-export function SectionCookAbout({ biography, logoUrl }: { biography: string; logoUrl?: string | null }) {
+export function SectionCookAbout({ biography, logoUrl, displayName }: { biography: string; logoUrl?: string | null; displayName: string }) {
     const { t } = useT('public');
 
     if (biography.trim().length === 0) {
@@ -21,7 +21,11 @@ export function SectionCookAbout({ biography, logoUrl }: { biography: string; lo
                 </div>
                 {hasLogo ? (
                     <div className="mx-auto w-full max-w-md @3xl:mx-0 @3xl:max-w-none">
-                        <AppImage src={logoUrl} alt={t('chef.aboutImageAlt')} className="aspect-video h-auto w-full object-contain" />
+                        <AppImage
+                            src={logoUrl}
+                            alt={t('chef.aboutImageAlt', { name: displayName })}
+                            className="aspect-video h-auto w-full object-contain"
+                        />
                     </div>
                 ) : (
                     <div className="mx-auto w-full max-w-md @3xl:mx-0 @3xl:max-w-none">

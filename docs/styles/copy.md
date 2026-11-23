@@ -38,6 +38,9 @@ When the same concept appears in both admin and end-user UI, keep two labels. Ex
 - **Every enabled locale is real copy.** Do not leave English loanwords in DE when a clear German word exists (`Geräte`, not “Devices” as a
   section title).
 - **Never surface transport errors.** Map failures to a short catalog outcome (`t('deviceSignOutFailed')`).
+- **Image alt text** describes what the picture shows. Marketing stills get a dedicated catalog key. User-generated photos interpolate
+  `common.imageAlt.photoOf` (`Photo of {name}` / `Foto von {name}`). Decorative images stay `alt=""`. Never use a URL, filename, or leftover
+  sample copy. Details: [image-delivery.md](../architecture/image-delivery.md#alternative-text).
 
 ## Anti-patterns
 
@@ -48,9 +51,10 @@ When the same concept appears in both admin and end-user UI, keep two labels. Ex
 
 ## Related
 
-| Concern                         | Doc                                                                 |
-| ------------------------------- | ------------------------------------------------------------------- |
-| Bilingual string mechanics      | [conventions.md — Bilingual copy](../conventions.md#bilingual-copy) |
-| Locale / time zone strategy     | [architecture/i18n.md](../architecture/i18n.md)                     |
-| Status banner / toast tone      | [status-messaging.md](./status-messaging.md)                        |
-| Email layout + preview subjects | [emails.md](./emails.md)                                            |
+| Concern                         | Doc                                                                     |
+| ------------------------------- | ----------------------------------------------------------------------- |
+| Bilingual string mechanics      | [conventions.md — Bilingual copy](../conventions.md#bilingual-copy)     |
+| Locale / time zone strategy     | [architecture/i18n.md](../architecture/i18n.md)                         |
+| Status banner / toast tone      | [status-messaging.md](./status-messaging.md)                            |
+| Email layout + preview subjects | [emails.md](./emails.md)                                                |
+| Image alternative text          | [image-delivery.md](../architecture/image-delivery.md#alternative-text) |

@@ -57,6 +57,9 @@ export function CityPage({ data }: { data: GqlCPublicCityPageQuery }) {
                     bodyDe: city.firstSectionBodyDe,
                     bodyEn: city.firstSectionBodyEn,
                     imageUrl: city.firstSectionImageUrl ?? CITY_CHEF_CTA_FALLBACK_IMAGE,
+                    imageAlt: city.firstSectionImageUrl
+                        ? t(locale, 'common', 'imageAlt.photoOf', { name: contentLocaleText(city.nameDe, city.nameEn, locale) })
+                        : t(locale, 'public', 'cities.ctaFallbackAlt'),
                 },
                 howItWorks: true,
                 cities: data.publicCity.findMany,

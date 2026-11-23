@@ -200,7 +200,11 @@ export function ProfileCookOfferAddonsPage({
                                                     aria-hidden={imageUrl == null ? true : undefined}
                                                 >
                                                     {imageUrl != null ? (
-                                                        <AppImage src={imageUrl} alt="" className="size-full object-cover" />
+                                                        <AppImage
+                                                            src={imageUrl}
+                                                            alt={t(locale, 'common', 'imageAlt.photoOf', { name: template.title })}
+                                                            className="size-full object-cover"
+                                                        />
                                                     ) : (
                                                         <GiftIcon className="size-5" />
                                                     )}

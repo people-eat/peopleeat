@@ -261,6 +261,11 @@ export function AdminCityPage({ data, cityId, search }: { data: GqlCAdminCityPag
                     imageUrl: values.firstSectionImageFileUploadId
                         ? fileUploadPublicUrl(values.firstSectionImageFileUploadId)
                         : CITY_CHEF_CTA_FALLBACK_IMAGE,
+                    imageAlt: values.firstSectionImageFileUploadId
+                        ? t(locale, 'common', 'imageAlt.photoOf', {
+                              name: contentLocaleText(values.nameDe, values.nameEn, locale).trim() || t(locale, 'admin', 'copy.city'),
+                          })
+                        : t(locale, 'public', 'cities.ctaFallbackAlt'),
                 }}
                 identityFields={
                     <Card className="gap-4 py-4" data-content-editor-anchor="top">

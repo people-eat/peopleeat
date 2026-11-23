@@ -20,6 +20,7 @@ export function SectionChefForAnyOccasion({
     bodyDe,
     bodyEn,
     imageUrl,
+    imageAlt,
     ctaUrl,
     promo,
     imageOverlay = true,
@@ -33,6 +34,7 @@ export function SectionChefForAnyOccasion({
     bodyDe: string;
     bodyEn: string;
     imageUrl?: string | null;
+    imageAlt?: string;
     /** Partner-only override for the primary CTA; omit for the booking form. */
     ctaUrl?: string | null;
     promo?: SectionChefForAnyOccasionPromo | null;
@@ -60,6 +62,7 @@ export function SectionChefForAnyOccasion({
                     locale={locale}
                     displayName={displayName}
                     imageUrl={imageUrl}
+                    imageAlt={imageAlt}
                     ctaUrl={ctaUrl}
                     imageOverlay={imageOverlay}
                     noImageLabel={t(locale, 'public', 'preview.noImage')}

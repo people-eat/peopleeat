@@ -307,7 +307,11 @@ export function AdminMealPage({ data, mealId }: { data: GqlCAdminMealPageQuery; 
                         <div className="grid gap-2">
                             <p className="text-sm font-medium">{t(locale, 'admin', 'copy.image')}</p>
                             {meal.imageUrl ? (
-                                <img src={meal.imageUrl} alt="" className="aspect-square h-auto w-full max-w-sm object-cover" />
+                                <img
+                                    src={meal.imageUrl}
+                                    alt={t(locale, 'common', 'imageAlt.photoOf', { name: meal.title })}
+                                    className="aspect-square h-auto w-full max-w-sm object-cover"
+                                />
                             ) : (
                                 <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noImageYet')}</p>
                             )}

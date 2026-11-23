@@ -2,6 +2,7 @@ import { SoupIcon } from 'lucide-react';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 import { AppImage } from './AppImage';
 import { bookingRequestCardInteractionClassName } from './bookingRequestCardInteraction';
@@ -31,8 +32,10 @@ export function CustomerMealCard({
     className?: string;
     onDetailsOpen?: () => void;
 }) {
+    const { t } = useT('common');
     const [detailsOpen, setDetailsOpen] = useState(false);
     const resolvedImageUrl = imageUrl != null && imageUrl.length > 0 ? imageUrl : null;
+    const photoAlt = t('imageAlt.photoOf', { name: title });
 
     function openDetails() {
         if (!detailsOpen) onDetailsOpen?.();
@@ -67,7 +70,7 @@ export function CustomerMealCard({
                 >
                     {resolvedImageUrl != null ? (
                         <div className="aspect-square w-full overflow-hidden bg-muted">
-                            <AppImage src={resolvedImageUrl} alt="" className="size-full object-cover" />
+                            <AppImage src={resolvedImageUrl} alt={photoAlt} className="size-full object-cover" />
                         </div>
                     ) : (
                         <div
@@ -108,7 +111,7 @@ export function CustomerMealCard({
                 >
                     {resolvedImageUrl != null ? (
                         <div className="size-20 shrink-0 overflow-hidden rounded-lg sm:size-24">
-                            <AppImage src={resolvedImageUrl} alt="" className="size-full object-cover" />
+                            <AppImage src={resolvedImageUrl} alt={photoAlt} className="size-full object-cover" />
                         </div>
                     ) : (
                         <div

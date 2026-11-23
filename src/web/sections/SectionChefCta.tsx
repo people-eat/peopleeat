@@ -16,6 +16,7 @@ export function SectionChefCta({
     locale,
     displayName,
     imageUrl,
+    imageAlt,
     noImageLabel,
     ctaUrl,
     banner,
@@ -26,6 +27,8 @@ export function SectionChefCta({
     /** Partner or occasion name shown over the CTA image. */
     displayName: string;
     imageUrl?: string | null;
+    /** When omitted, interpolates `common.imageAlt.photoOf` with `displayName`. */
+    imageAlt?: string;
     /** Shown with an icon when `imageUrl` is missing (e.g. admin preview). */
     noImageLabel?: string;
     /** When set, overrides the default booking-request form link. */
@@ -37,13 +40,14 @@ export function SectionChefCta({
 }) {
     const hasImage = Boolean(imageUrl);
     const ctaLabel = t(locale, 'public', 'chefCta.findChef');
+    const resolvedImageAlt = imageAlt ?? t(locale, 'common', 'imageAlt.photoOf', { name: displayName });
     const trimmedCtaUrl = ctaUrl?.trim() || null;
     const resolvedCtaUrl = trimmedCtaUrl ? localeAwareHref(locale, trimmedCtaUrl) : null;
 
     return (
         <div className={cn('overflow-hidden rounded-2xl bg-background shadow-md ring-1 ring-black/5', className)}>
             <div className="relative aspect-6/3 w-full bg-muted">
-                {imageUrl ? <AppImage src={imageUrl} alt={displayName} className="absolute inset-0 size-full object-cover" /> : null}
+                {imageUrl ? <AppImage src={imageUrl} alt={resolvedImageAlt} className="absolute inset-0 size-full object-cover" /> : null}
                 {!hasImage && noImageLabel ? (
                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-muted-foreground">
                         <ImageOffIcon className="size-10" aria-hidden />

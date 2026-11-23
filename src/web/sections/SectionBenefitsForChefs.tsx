@@ -48,7 +48,6 @@ export function SectionBenefitsForChefs({ market }: { market?: ExpansionMarket }
                 <div className="aspect-square overflow-hidden rounded-lg bg-muted">
                     <AppImage
                         alt={t('howToBecome.benefitsAlt1')}
-                        aria-hidden
                         className="size-full object-cover object-center"
                         height={800}
                         src="/how-to-become-a-chef/benefits-for-chefs-section/1.webp"
@@ -59,7 +58,6 @@ export function SectionBenefitsForChefs({ market }: { market?: ExpansionMarket }
                     <div className="aspect-square overflow-hidden rounded-lg bg-muted">
                         <AppImage
                             alt={t('howToBecome.benefitsAlt2')}
-                            aria-hidden
                             className="size-full object-cover object-center"
                             height={600}
                             src="/how-to-become-a-chef/benefits-for-chefs-section/2.webp"
@@ -69,7 +67,6 @@ export function SectionBenefitsForChefs({ market }: { market?: ExpansionMarket }
                     <div className="aspect-square overflow-hidden rounded-lg bg-muted">
                         <AppImage
                             alt={t('howToBecome.benefitsAlt3')}
-                            aria-hidden
                             className="size-full object-cover object-center"
                             height={600}
                             src="/how-to-become-a-chef/benefits-for-chefs-section/3.webp"

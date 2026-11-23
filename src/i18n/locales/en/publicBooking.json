@@ -166,7 +166,12 @@
             "item2": "Three courses. Just for you.",
             "item3": "A sweet finish.",
             "item4": "With love for detail.",
-            "item5": "Your table at the loft."
+            "item5": "Your table at the loft.",
+            "item1Alt": "Burrata with cherry tomatoes, basil, and toasted bread",
+            "item2Alt": "Plated starter with greens and sauce being served at a candlelit table",
+            "item3Alt": "Apple tart with vanilla ice cream and caramel",
+            "item4Alt": "Private chef plating a dish under kitchen heat lamps",
+            "item5Alt": "Set dining table in a bright loft with a long wooden table"
         },
         "care": {
             "title": "You enjoy. We take care.",

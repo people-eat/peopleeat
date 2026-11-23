@@ -79,7 +79,11 @@ export function SectionOccasionFormats({
                         <article key={index} className="flex flex-col gap-4">
                             <div className="relative aspect-4/3 overflow-hidden rounded-lg bg-muted">
                                 {imageUrl ? (
-                                    <AppImage src={imageUrl} alt={cardTitle || ''} className="size-full object-cover" />
+                                    <AppImage
+                                        src={imageUrl}
+                                        alt={cardTitle ? t(locale, 'common', 'imageAlt.photoOf', { name: cardTitle }) : ''}
+                                        className="size-full object-cover"
+                                    />
                                 ) : (
                                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-muted-foreground">
                                         <ImageOffIcon className="size-10" aria-hidden />

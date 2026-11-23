@@ -12,7 +12,7 @@ const partners = [
         url: 'https://www.deutsche-startups.de',
     },
     {
-        name: 'Statamic',
+        name: 'Bundesverband Deutsche Startups',
         imagePath: '/shared/known-from-section/start-up-verband.png',
         url: 'https://startupverband.de',
     },

@@ -166,7 +166,12 @@
             "item2": "Drei Gänge. Ganz für euch.",
             "item3": "Ein süßer Abschluss.",
             "item4": "Mit Liebe zum Detail.",
-            "item5": "Euer Tisch im Loft."
+            "item5": "Euer Tisch im Loft.",
+            "item1Alt": "Burrata mit Kirschtomaten, Basilikum und geröstetem Brot",
+            "item2Alt": "Angerichtete Vorspeise mit Salat und Sauce, serviert an einem festlich gedeckten Tisch",
+            "item3Alt": "Apfeltarte mit Vanilleeis und Karamell",
+            "item4Alt": "Privatkoch richtet ein Gericht unter Wärmelampen an",
+            "item5Alt": "Gedeckter Esstisch in einem hellen Loft mit langem Holztisch"
         },
         "care": {
             "title": "Ihr genießt. Wir kümmern uns.",

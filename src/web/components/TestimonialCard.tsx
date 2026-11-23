@@ -117,9 +117,11 @@ function experienceTitle(authorName: string, occasion: string | null, locale: Lo
 /** Up to four square thumbs; when there are more than four, slot 4 is “+N more”. */
 function TestimonialImageStrip({
     imageUrls,
+    authorName,
     onOpen,
 }: {
     imageUrls: ReadonlyArray<string>;
+    authorName: string;
     /** When omitted, thumbs are non-interactive (safe inside a surrounding Link). */
     onOpen?: (index: number) => void;
 }) {
@@ -130,6 +132,7 @@ function TestimonialImageStrip({
     const visibleCount = overflow ? CARD_IMAGE_SLOTS - 1 : Math.min(imageUrls.length, CARD_IMAGE_SLOTS);
     const moreCount = imageUrls.length - visibleCount;
     const interactive = onOpen != null;
+    const photoAlt = t(locale, 'common', 'imageAlt.photoOf', { name: authorName });
 
     return (
         <ul className="grid grid-cols-4 gap-1.5" aria-label={t(locale, 'common', 'testimonial.reviewPhotos')}>
@@ -147,13 +150,13 @@ function TestimonialImageStrip({
                         >
                             <AppImage
                                 src={url}
-                                alt=""
+                                alt={photoAlt}
                                 className="size-full object-cover transition-[filter] duration-300 ease-out group-hover:brightness-[0.92] group-active:brightness-[0.85]"
                             />
                         </button>
                     ) : (
                         <div className="relative aspect-square w-full overflow-hidden rounded-md bg-muted">
-                            <AppImage src={url} alt="" className="size-full object-cover" />
+                            <AppImage src={url} alt={photoAlt} className="size-full object-cover" />
                         </div>
                     )}
                 </li>
@@ -170,14 +173,14 @@ function TestimonialImageStrip({
                             }}
                             aria-label={t(locale, 'common', 'testimonial.viewMorePhotos', { moreCount })}
                         >
-                            <AppImage src={imageUrls[visibleCount]!} alt="" className="size-full object-cover brightness-[0.45]" />
+                            <AppImage src={imageUrls[visibleCount]!} alt={photoAlt} className="size-full object-cover brightness-[0.45]" />
                             <span className="absolute inset-0 flex items-center justify-center text-sm font-medium text-white tabular-nums">
                                 {t(locale, 'common', 'testimonial.moreCount', { moreCount })}
                             </span>
                         </button>
                     ) : (
                         <div className="relative aspect-square w-full overflow-hidden rounded-md bg-muted">
-                            <AppImage src={imageUrls[visibleCount]!} alt="" className="size-full object-cover brightness-[0.45]" />
+                            <AppImage src={imageUrls[visibleCount]!} alt={photoAlt} className="size-full object-cover brightness-[0.45]" />
                             <span className="absolute inset-0 flex items-center justify-center text-sm font-medium text-white tabular-nums">
                                 {t(locale, 'common', 'testimonial.moreCount', { moreCount })}
                             </span>
@@ -191,11 +194,13 @@ function TestimonialImageStrip({
 
 function TestimonialGallery({
     imageUrls,
+    authorName,
     index,
     onIndexChange,
     bleed = false,
 }: {
     imageUrls: ReadonlyArray<string>;
+    authorName: string;
     index: number;
     onIndexChange: (index: number) => void;
     /** Full-bleed hero for the mobile sheet. Dialog keeps the rounded frame. */
@@ -248,7 +253,7 @@ function TestimonialGallery({
                         >
                             <AppImage
                                 src={url}
-                                alt=""
+                                alt={t(locale, 'common', 'imageAlt.photoOf', { name: authorName })}
                                 priority={imageIndex === safeIndex}
                                 draggable={false}
                                 className="size-full object-cover select-none"
@@ -412,7 +417,7 @@ export function TestimonialCardFace({
                 <p className="line-clamp-4">{testimonial.body}</p>
             </blockquote>
 
-            <TestimonialImageStrip imageUrls={imageUrls} onOpen={onOpenImage} />
+            <TestimonialImageStrip imageUrls={imageUrls} authorName={testimonial.authorName} onOpen={onOpenImage} />
 
             <div className="mt-auto flex flex-wrap items-end justify-between gap-x-3 gap-y-2">
                 <figcaption className="min-w-0 flex-1 basis-40">
@@ -467,7 +472,13 @@ function TestimonialDetailSheet({
                 </div>
                 <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
                     {hasImages ? (
-                        <TestimonialGallery imageUrls={imageUrls} index={imageIndex} onIndexChange={onImageIndexChange} bleed />
+                        <TestimonialGallery
+                            imageUrls={imageUrls}
+                            authorName={testimonial.authorName}
+                            index={imageIndex}
+                            onIndexChange={onImageIndexChange}
+                            bleed
+                        />
                     ) : null}
                     <div className="px-6 pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
                         <TestimonialDetailCopy testimonial={testimonial} showBookingCta={showBookingCta} />
@@ -543,7 +554,12 @@ export function TestimonialDetailDialog({
                 {hasImages ? (
                     <div className="grid @3xl:grid-cols-2">
                         <div className="bg-muted/30 p-4 @md:p-5 @3xl:max-h-[90vh] @3xl:overflow-y-auto">
-                            <TestimonialGallery imageUrls={imageUrls} index={imageIndex} onIndexChange={setImageIndex} />
+                            <TestimonialGallery
+                                imageUrls={imageUrls}
+                                authorName={testimonial.authorName}
+                                index={imageIndex}
+                                onIndexChange={setImageIndex}
+                            />
                         </div>
                         <div className="p-6 pt-12 @md:p-8 @md:pt-12 @3xl:max-h-[90vh] @3xl:overflow-y-auto">
                             <TestimonialDetailCopy testimonial={testimonial} showBookingCta={showBookingCta} />

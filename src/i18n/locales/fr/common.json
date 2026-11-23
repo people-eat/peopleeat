@@ -6,6 +6,10 @@
     "saveFailed": "Enregistrement impossible.",
     "deletedAccount": "Compte supprimé",
     "skipToContent": "Aller au contenu",
+    "imageAlt": {
+        "photoOf": "Photo de {name}"
+    },
+    "conciergeJuliana": "Concierge Juliana",
     "language": {
         "de": "Deutsch",
         "en": "English",
