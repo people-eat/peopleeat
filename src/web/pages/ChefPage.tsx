@@ -1,6 +1,12 @@
 import { useMutation } from 'urql';
 
-import { chefsDiscoveryArea, chefsDiscoveryBookCtaKey, chefsDiscoveryShareKey } from '../../shared/chefsDiscovery';
+import {
+    chefsDiscoveryArea,
+    chefsDiscoveryBookCtaKey,
+    chefsDiscoveryMealOpenKey,
+    chefsDiscoveryMenuOpenKey,
+    chefsDiscoveryShareKey,
+} from '../../shared/chefsDiscovery';
 import { featureToggleIsActive } from '../../shared/featureToggle';
 import { ChefProfileView } from '../components/ChefProfileView';
 import type { ChefProfileViewModel } from '../components/ChefProfileView';
@@ -114,6 +120,26 @@ export function ChefPage({ data }: { data: GqlCChefPageQuery }) {
         });
     }
 
+    function onMenuOpen(menuId: string) {
+        void trackDiscovery({
+            input: {
+                webPageKey: 'CHEFS',
+                area: chefsDiscoveryArea,
+                interaction: { type: 'click', key: chefsDiscoveryMenuOpenKey, cookId: cook.cookId, menuId },
+            },
+        });
+    }
+
+    function onMealOpen(mealId: string) {
+        void trackDiscovery({
+            input: {
+                webPageKey: 'CHEFS',
+                area: chefsDiscoveryArea,
+                interaction: { type: 'click', key: chefsDiscoveryMealOpenKey, cookId: cook.cookId, mealId },
+            },
+        });
+    }
+
     return (
         <>
             <Header user={data.currentSession.user} bookingRequestFormSearch={directEnabled ? { cookId: cook.cookId } : undefined} />
@@ -122,6 +148,8 @@ export function ChefPage({ data }: { data: GqlCChefPageQuery }) {
                     cook={view}
                     onBookCtaClick={onBookCtaClick}
                     onBookMenuCtaClick={onBookMenuCtaClick}
+                    onMenuOpen={onMenuOpen}
+                    onMealOpen={onMealOpen}
                     bookCta={bookCta}
                     shareButton={
                         shareEnabled ? (

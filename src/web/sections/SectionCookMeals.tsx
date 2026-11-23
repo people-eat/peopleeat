@@ -13,7 +13,7 @@ export type SectionCookMeal = {
 
 const COLLAPSED_MEAL_COUNT = 5;
 
-export function SectionCookMeals({ meals }: { meals: ReadonlyArray<SectionCookMeal> }) {
+export function SectionCookMeals({ meals, onMealOpen }: { meals: ReadonlyArray<SectionCookMeal>; onMealOpen?: (mealId: string) => void }) {
     const { t } = useT('public');
     const [expanded, setExpanded] = useState(false);
     const canExpand = meals.length > COLLAPSED_MEAL_COUNT;
@@ -48,6 +48,7 @@ export function SectionCookMeals({ meals }: { meals: ReadonlyArray<SectionCookMe
                                 title={meal.title}
                                 description={meal.description}
                                 imageUrl={meal.imageUrl}
+                                onDetailsOpen={onMealOpen ? () => onMealOpen(meal.mealId) : undefined}
                             />
                         </li>
                     ))}

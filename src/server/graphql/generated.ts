@@ -2818,6 +2818,7 @@ export type GqlSBookingRequestOfferConfiguredMenuInput = {
 export interface GqlSBookingRequestOfferConfiguredMenuMeal {
     __typename?: 'BookingRequestOfferConfiguredMenuMeal';
     mealDescription: Scalars['String']['output'];
+    mealId?: Maybe<Scalars['ID']['output']>;
     mealImageUrl?: Maybe<Scalars['String']['output']>;
     mealTitle: Scalars['String']['output'];
 }
@@ -3500,7 +3501,6 @@ export interface GqlSCookAnalytics {
     medianNotifyToOpenMinutes?: Maybe<Scalars['Float']['output']>;
     offerConversionRate?: Maybe<Scalars['Float']['output']>;
     offerCreateRate?: Maybe<Scalars['Float']['output']>;
-    offerCreateStages: Array<GqlSCookAnalyticsOfferCreateStage>;
     offersAcceptedCount: Scalars['Int']['output'];
     offersCreatedCount: Scalars['Int']['output'];
     offersPaidCount: Scalars['Int']['output'];
@@ -3512,7 +3512,21 @@ export interface GqlSCookAnalytics {
     requestsDeclinedCount: Scalars['Int']['output'];
     requestsNotifiedCount: Scalars['Int']['output'];
     requestsOpenedCount: Scalars['Int']['output'];
+    topAddons: Array<GqlSCookAnalyticsCatalogRow>;
+    topMeals: Array<GqlSCookAnalyticsCatalogRow>;
+    topMenus: Array<GqlSCookAnalyticsCatalogRow>;
     trend: Array<GqlSCookAnalyticsTrendPoint>;
+}
+
+export interface GqlSCookAnalyticsCatalogRow {
+    __typename?: 'CookAnalyticsCatalogRow';
+    id: Scalars['ID']['output'];
+    offeredCount: Scalars['Int']['output'];
+    paidCount: Scalars['Int']['output'];
+    publicOpenCount: Scalars['Int']['output'];
+    requestedCount: Scalars['Int']['output'];
+    selectedCount: Scalars['Int']['output'];
+    title: Scalars['String']['output'];
 }
 
 export type GqlSCookAnalyticsChannel = 'ALL' | 'DIRECT' | 'POOL';
@@ -3527,14 +3541,6 @@ export interface GqlSCookAnalyticsFunnel {
 export interface GqlSCookAnalyticsFunnelStage {
     __typename?: 'CookAnalyticsFunnelStage';
     count: Scalars['Int']['output'];
-    id: Scalars['String']['output'];
-    stepRate?: Maybe<Scalars['Float']['output']>;
-}
-
-export interface GqlSCookAnalyticsOfferCreateStage {
-    __typename?: 'CookAnalyticsOfferCreateStage';
-    completedCount: Scalars['Int']['output'];
-    enteredCount: Scalars['Int']['output'];
     id: Scalars['String']['output'];
     stepRate?: Maybe<Scalars['Float']['output']>;
 }
@@ -6467,10 +6473,10 @@ export type GqlSResolversTypes = ResolversObject<{
         }
     >;
     CookAnalytics: ResolverTypeWrapper<GqlSCookAnalytics>;
+    CookAnalyticsCatalogRow: ResolverTypeWrapper<GqlSCookAnalyticsCatalogRow>;
     CookAnalyticsChannel: GqlSCookAnalyticsChannel;
     CookAnalyticsFunnel: ResolverTypeWrapper<GqlSCookAnalyticsFunnel>;
     CookAnalyticsFunnelStage: ResolverTypeWrapper<GqlSCookAnalyticsFunnelStage>;
-    CookAnalyticsOfferCreateStage: ResolverTypeWrapper<GqlSCookAnalyticsOfferCreateStage>;
     CookAnalyticsPeriod: GqlSCookAnalyticsPeriod;
     CookAnalyticsRange: ResolverTypeWrapper<GqlSCookAnalyticsRange>;
     CookAnalyticsTrendPoint: ResolverTypeWrapper<GqlSCookAnalyticsTrendPoint>;
@@ -7039,9 +7045,9 @@ export type GqlSResolversParentTypes = ResolversObject<{
         bookingRequests: Array<GqlSResolversParentTypes['CookBookingRequest']>;
     };
     CookAnalytics: GqlSCookAnalytics;
+    CookAnalyticsCatalogRow: GqlSCookAnalyticsCatalogRow;
     CookAnalyticsFunnel: GqlSCookAnalyticsFunnel;
     CookAnalyticsFunnelStage: GqlSCookAnalyticsFunnelStage;
-    CookAnalyticsOfferCreateStage: GqlSCookAnalyticsOfferCreateStage;
     CookAnalyticsRange: GqlSCookAnalyticsRange;
     CookAnalyticsTrendPoint: GqlSCookAnalyticsTrendPoint;
     CookAttentionCounts: GqlSCookAttentionCounts;
@@ -9826,6 +9832,7 @@ export type GqlSBookingRequestOfferConfiguredMenuMealResolvers<
         GqlSResolversParentTypes['BookingRequestOfferConfiguredMenuMeal'],
 > = ResolversObject<{
     mealDescription?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    mealId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
     mealImageUrl?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     mealTitle?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
 }>;
@@ -10394,7 +10401,6 @@ export type GqlSCookAnalyticsResolvers<
     medianNotifyToOpenMinutes?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
     offerConversionRate?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
     offerCreateRate?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
-    offerCreateStages?: Resolver<Array<GqlSResolversTypes['CookAnalyticsOfferCreateStage']>, ParentType, ContextType>;
     offersAcceptedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     offersCreatedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     offersPaidCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
@@ -10406,7 +10412,23 @@ export type GqlSCookAnalyticsResolvers<
     requestsDeclinedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     requestsNotifiedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     requestsOpenedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    topAddons?: Resolver<Array<GqlSResolversTypes['CookAnalyticsCatalogRow']>, ParentType, ContextType>;
+    topMeals?: Resolver<Array<GqlSResolversTypes['CookAnalyticsCatalogRow']>, ParentType, ContextType>;
+    topMenus?: Resolver<Array<GqlSResolversTypes['CookAnalyticsCatalogRow']>, ParentType, ContextType>;
     trend?: Resolver<Array<GqlSResolversTypes['CookAnalyticsTrendPoint']>, ParentType, ContextType>;
+}>;
+
+export type GqlSCookAnalyticsCatalogRowResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['CookAnalyticsCatalogRow'] = GqlSResolversParentTypes['CookAnalyticsCatalogRow'],
+> = ResolversObject<{
+    id?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    offeredCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    paidCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    publicOpenCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    requestedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    selectedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    title?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type GqlSCookAnalyticsFunnelResolvers<
@@ -10423,17 +10445,6 @@ export type GqlSCookAnalyticsFunnelStageResolvers<
     ParentType extends GqlSResolversParentTypes['CookAnalyticsFunnelStage'] = GqlSResolversParentTypes['CookAnalyticsFunnelStage'],
 > = ResolversObject<{
     count?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
-    id?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
-    stepRate?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
-}>;
-
-export type GqlSCookAnalyticsOfferCreateStageResolvers<
-    ContextType = any,
-    ParentType extends GqlSResolversParentTypes['CookAnalyticsOfferCreateStage'] =
-        GqlSResolversParentTypes['CookAnalyticsOfferCreateStage'],
-> = ResolversObject<{
-    completedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
-    enteredCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     id?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     stepRate?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
 }>;
@@ -12836,9 +12847,9 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     ContentSectionQuote?: GqlSContentSectionQuoteResolvers<ContextType>;
     Cook?: GqlSCookResolvers<ContextType>;
     CookAnalytics?: GqlSCookAnalyticsResolvers<ContextType>;
+    CookAnalyticsCatalogRow?: GqlSCookAnalyticsCatalogRowResolvers<ContextType>;
     CookAnalyticsFunnel?: GqlSCookAnalyticsFunnelResolvers<ContextType>;
     CookAnalyticsFunnelStage?: GqlSCookAnalyticsFunnelStageResolvers<ContextType>;
-    CookAnalyticsOfferCreateStage?: GqlSCookAnalyticsOfferCreateStageResolvers<ContextType>;
     CookAnalyticsRange?: GqlSCookAnalyticsRangeResolvers<ContextType>;
     CookAnalyticsTrendPoint?: GqlSCookAnalyticsTrendPointResolvers<ContextType>;
     CookAttentionCounts?: GqlSCookAttentionCountsResolvers<ContextType>;

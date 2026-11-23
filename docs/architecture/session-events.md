@@ -66,7 +66,8 @@ payload for cook × request aggregation. Gift-card funnel: `src/shared/giftCardF
 (`area: chef_sign_up`, client steps `auth` / `profile`; terminal `created` from `COOK_CREATED`). Booking checkout funnel:
 `src/shared/bookingRequestCheckoutFunnel.ts` (`area: booking_request_checkout`, client step `checkout`; terminal `paid` from
 `BOOKING_REQUEST_OFFER_PAYMENT_SUCCEEDED`). Discovery interactions on chefs pages use `area: chefs` with `change` (`searchText`) and `click`
-(`book_cta`, `share`).
+(`book_cta`, `share`, `menu_open`, `meal_open`). Menu/meal opens fire only from the public chef detail page when a dialog opens (not cook
+preview, Show more, or offer UIs). Clicks may carry optional `cookId`, `menuId`, and `mealId`.
 
 ### Historical (imported only; no longer produced)
 

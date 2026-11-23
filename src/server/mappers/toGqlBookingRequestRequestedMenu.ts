@@ -13,6 +13,7 @@ export function toGqlBookingRequestRequestedMenu(requestedMenu: BookingRequestCo
         courses: requestedMenu.courses.map((course): GqlSBookingRequestOfferConfiguredMenuCourse => ({
             title: course.title,
             meals: course.meals.map((meal): GqlSBookingRequestOfferConfiguredMenuMeal => ({
+                mealId: meal.mealId ?? null,
                 mealTitle: meal.mealTitle,
                 mealDescription: meal.mealDescription,
                 mealImageUrl: meal.mealImageUrl ?? null,

@@ -30,7 +30,7 @@ export type SessionEventWebPageInteractionPayload = {
         | GiftCardFunnelInteraction
         | ChefSignUpFunnelInteraction
         | BookingRequestCheckoutFunnelInteraction
-        | { type: 'click'; key: string; cookId?: string; menuId?: string }
+        | { type: 'click'; key: string; cookId?: string; menuId?: string; mealId?: string }
         | { type: 'change'; key: string; value: string };
 };
 

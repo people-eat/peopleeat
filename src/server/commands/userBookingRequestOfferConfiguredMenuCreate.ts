@@ -89,6 +89,7 @@ export async function userBookingRequestOfferConfiguredMenuCreate(
                 meals: mealIds.map((selectedMealId) => {
                     const option = optionByMealId.get(selectedMealId)!;
                     return {
+                        mealId: option.mealId,
                         mealTitle: option.title,
                         mealDescription: option.description,
                         mealImageUrl: option.imageFileUploadId ? fileUploadPublicUrl(option.imageFileUploadId) : undefined,

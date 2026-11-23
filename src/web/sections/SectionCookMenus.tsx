@@ -22,10 +22,12 @@ export function SectionCookMenus({
     menus,
     bookCookId,
     onBookMenuCtaClick,
+    onMenuOpen,
 }: {
     menus: ReadonlyArray<SectionCookMenu>;
     bookCookId?: string;
     onBookMenuCtaClick?: (menuId: string) => void;
+    onMenuOpen?: (menuId: string) => void;
 }) {
     const { t } = useT('public');
     const [expanded, setExpanded] = useState(false);
@@ -63,7 +65,10 @@ export function SectionCookMenus({
                                 'flex size-full flex-col overflow-hidden rounded-xl border border-border bg-card text-left text-card-foreground shadow-sm',
                                 bookingRequestCardInteractionClassName,
                             )}
-                            onClick={() => setOpenMenuId(menu.menuId)}
+                            onClick={() => {
+                                if (openMenuId !== menu.menuId) onMenuOpen?.(menu.menuId);
+                                setOpenMenuId(menu.menuId);
+                            }}
                         >
                             <div className="aspect-square w-full overflow-hidden bg-muted">
                                 <CookMenuCardMedia images={menu.courseMealOptionImages} className="size-full rounded-none" />

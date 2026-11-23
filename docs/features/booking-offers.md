@@ -101,7 +101,8 @@ create / negotiate and for customer booking / accept / pay paths; a ban auto-dec
 
 Admins can create / edit offers, cancel cancelable requests, and hand a dual-accepted offer to another cook (close old + create/upgrade new;
 never mutate `cookId` in place) — [admin-booking-requests.md](./admin-booking-requests.md). After a customer freezes a configured menu on an
-offer, admins can patch that snapshot (title, description, courses/meals) without changing cook inventory menus.
+offer, admins can patch that snapshot (title, description, courses/meals) without changing cook inventory menus. Guest configure stores
+optional inventory `mealId` on each frozen meal; admin free-text edits may omit it.
 
 ## Decisions
 
@@ -222,9 +223,9 @@ promo / gift (+ participant count) on the customer path. Never hardcode `de` / `
   `CookBookingRequest.suggestedOfferMessage` is the cook's `defaultOfferMessage` when set (including empty), otherwise a static DE/EN draft
   (`bookingRequestSuggestedOfferMessage`) from the customer's `Users.locale`
 
-- Customer offer: accept / decline / configured-menu create / unread reset. Accept keeps locked travel; it may still reprice selected addons
-  and emit `SYSTEM_CHANGED_PRICE` before `USER_ACCEPTED` when addon money moves. Travel only changes on venue edit (open-offer auto-adjust),
-  not on accept or cook menu-price update.
+- Customer offer: accept / decline / configured-menu create / unread reset. Configured-menu create writes optional `mealId` on each frozen
+  meal. Accept keeps locked travel; it may still reprice selected addons and emit `SYSTEM_CHANGED_PRICE` before `USER_ACCEPTED` when addon
+  money moves. Travel only changes on venue edit (open-offer auto-adjust), not on accept or cook menu-price update.
 - Admin: `bookingRequestOfferConfiguredMenuUpdate` replaces an existing configured-menu snapshot (preserves `menuId`) and emits
   `ADMIN_CONFIGURED_MENU_UPDATED` (admin-only in chat). `bookingRequestOfferUpdate` emits admin-only price / acceptance / payment-schedule
   milestones when those fields change.

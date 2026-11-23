@@ -2,13 +2,14 @@ import { Link } from '@tanstack/react-router';
 import { ChevronRightIcon } from 'lucide-react';
 
 import { t } from '../../i18n/t';
+import { formatCurrency } from '../../shared';
 import { Button } from '../components/base/button';
 import { Card, CardContent } from '../components/base/card';
 import { StatusAlert } from '../components/base/status-alert';
 import type { GqlCProfilePageCookStatusFragment } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
 import { useTimeZone } from '../hooks/useTimeZone';
-import { cookAnalyticsFormatDurationMinutes, cookAnalyticsFormatPercent } from './profile/cookAnalyticsFormat';
+import { cookAnalyticsFormatDurationMinutes } from './profile/cookAnalyticsFormat';
 import type { CookOverviewAttentionItem, CookOverviewGettingStartedStep } from './profilePageCookOverview';
 import { profilePageCookOverview } from './profilePageCookOverview';
 
@@ -55,9 +56,14 @@ function OverviewAnalyticsStrip({ cook }: { cook: GqlCProfilePageCookStatusFragm
 
     const stats = [
         {
-            key: 'views',
-            label: t(locale, 'profileCook', 'analytics.profileViews'),
-            value: String(analytics.publicProfileViewCount),
+            key: 'payout',
+            label: t(locale, 'profileCook', 'analytics.payoutTotal'),
+            value: formatCurrency(analytics.paidPayoutCentsCookTotal, { locale, maximumFractionDigits: 0 }),
+        },
+        {
+            key: 'paid',
+            label: t(locale, 'profileCook', 'analytics.paid'),
+            value: String(analytics.offersPaidCount),
         },
         {
             key: 'response',
@@ -65,14 +71,9 @@ function OverviewAnalyticsStrip({ cook }: { cook: GqlCProfilePageCookStatusFragm
             value: cookAnalyticsFormatDurationMinutes(analytics.medianNotifyToOpenMinutes, locale),
         },
         {
-            key: 'offers',
-            label: t(locale, 'profileCook', 'overview.metricOffers'),
-            value: String(analytics.offersCreatedCount),
-        },
-        {
-            key: 'conversion',
-            label: t(locale, 'profileCook', 'analytics.conversion'),
-            value: cookAnalyticsFormatPercent(analytics.offerConversionRate, locale),
+            key: 'views',
+            label: t(locale, 'profileCook', 'analytics.profileViews'),
+            value: String(analytics.publicProfileViewCount),
         },
     ] as const;
 

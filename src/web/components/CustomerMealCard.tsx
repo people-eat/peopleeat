@@ -17,6 +17,7 @@ export function CustomerMealCard({
     disabled = false,
     variant = 'default',
     className,
+    onDetailsOpen,
 }: {
     title: string;
     description: string;
@@ -28,9 +29,15 @@ export function CustomerMealCard({
     /** `marketing` — square image on top with title + clamped description (public cook page). */
     variant?: 'default' | 'marketing';
     className?: string;
+    onDetailsOpen?: () => void;
 }) {
     const [detailsOpen, setDetailsOpen] = useState(false);
     const resolvedImageUrl = imageUrl != null && imageUrl.length > 0 ? imageUrl : null;
+
+    function openDetails() {
+        if (!detailsOpen) onDetailsOpen?.();
+        setDetailsOpen(true);
+    }
 
     const detailsDialog = (
         <MealDetailsDialog
@@ -56,7 +63,7 @@ export function CustomerMealCard({
                         disabled && !selected && 'opacity-50',
                         className,
                     )}
-                    onClick={() => setDetailsOpen(true)}
+                    onClick={openDetails}
                 >
                     {resolvedImageUrl != null ? (
                         <div className="aspect-square w-full overflow-hidden bg-muted">
@@ -97,7 +104,7 @@ export function CustomerMealCard({
                         'flex min-w-0 flex-1 items-start gap-3 rounded-lg text-left outline-none',
                         'cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
                     )}
-                    onClick={() => setDetailsOpen(true)}
+                    onClick={openDetails}
                 >
                     {resolvedImageUrl != null ? (
                         <div className="size-20 shrink-0 overflow-hidden rounded-lg sm:size-24">

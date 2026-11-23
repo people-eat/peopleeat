@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { bookingRequestCheckoutFunnelArea } from '../../shared/bookingRequestCheckoutFunnel';
 import { bookingRequestFormFunnelArea } from '../../shared/bookingRequestFormFunnel';
+import { chefsDiscoveryArea, chefsDiscoveryMealOpenKey, chefsDiscoveryMenuOpenKey } from '../../shared/chefsDiscovery';
 import { idCreate } from '../../shared/idCreate';
 import { sessionEvents } from '../db/schema';
 import { commandSetup, testDb } from '../test/commandTestUtils';
@@ -74,6 +75,45 @@ describe('sessionWebPageInteractionCreate', () => {
         const [clickRow] = await testDb.select().from(sessionEvents).where(eq(sessionEvents.sessionEventId, clickResult.referenceId!));
         expect(clickRow?.payload).toMatchObject({
             interaction: { type: 'click', key: 'book_cta', cookId },
+        });
+    });
+
+    it('keeps menuId and mealId on chef-page catalog open clicks', async () => {
+        const { serverRuntime, requestingSession } = await commandSetup();
+        const cookId = idCreate();
+        const menuId = idCreate();
+        const mealId = idCreate();
+
+        const menuResult = await sessionWebPageInteractionCreate(
+            {
+                input: {
+                    webPageKey: 'CHEFS',
+                    area: chefsDiscoveryArea,
+                    interaction: { type: 'click', key: chefsDiscoveryMenuOpenKey, cookId, menuId },
+                },
+            },
+            requestingSession,
+            serverRuntime,
+        );
+        const [menuRow] = await testDb.select().from(sessionEvents).where(eq(sessionEvents.sessionEventId, menuResult.referenceId!));
+        expect(menuRow?.payload).toMatchObject({
+            interaction: { type: 'click', key: chefsDiscoveryMenuOpenKey, cookId, menuId },
+        });
+
+        const mealResult = await sessionWebPageInteractionCreate(
+            {
+                input: {
+                    webPageKey: 'CHEFS',
+                    area: chefsDiscoveryArea,
+                    interaction: { type: 'click', key: chefsDiscoveryMealOpenKey, cookId, mealId },
+                },
+            },
+            requestingSession,
+            serverRuntime,
+        );
+        const [mealRow] = await testDb.select().from(sessionEvents).where(eq(sessionEvents.sessionEventId, mealResult.referenceId!));
+        expect(mealRow?.payload).toMatchObject({
+            interaction: { type: 'click', key: chefsDiscoveryMealOpenKey, cookId, mealId },
         });
     });
 

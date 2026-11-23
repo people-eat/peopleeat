@@ -1,19 +1,7 @@
+import { Link } from '@tanstack/react-router';
 import { CircleHelpIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
-import {
-    Bar,
-    BarChart,
-    CartesianGrid,
-    Cell,
-    Layer,
-    Tooltip as RechartsTooltip,
-    Rectangle,
-    ResponsiveContainer,
-    Sankey,
-    useChartWidth,
-    XAxis,
-    YAxis,
-} from 'recharts';
+import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts';
 
 import { t } from '../../../i18n/t';
 import { formatCurrency, formatDate } from '../../../shared';
@@ -26,9 +14,9 @@ import { StatusAlert } from '../../components/base/status-alert';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/base/tooltip';
 import { Reveal } from '../../components/Reveal';
 import type {
+    GqlCProfileCookAnalyticsCatalogRowFragment,
     GqlCProfileCookAnalyticsFragment,
     GqlCProfileCookAnalyticsFunnelFragment,
-    GqlCProfileCookAnalyticsOfferCreateStageFragment,
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
@@ -100,16 +88,6 @@ function stageLabel(stageId: string, locale: ReturnType<typeof useLocale>): stri
             return t(locale, 'profileCook', 'analytics.stages.bothAccepted');
         case 'paid':
             return t(locale, 'profileCook', 'analytics.stages.paid');
-        case 'offer_create':
-            return t(locale, 'profileCook', 'analytics.offerCreateStages.offerCreate');
-        case 'menus':
-            return t(locale, 'profileCook', 'analytics.offerCreateStages.menus');
-        case 'price':
-            return t(locale, 'profileCook', 'analytics.offerCreateStages.price');
-        case 'message':
-            return t(locale, 'profileCook', 'analytics.offerCreateStages.message');
-        case 'created':
-            return t(locale, 'profileCook', 'analytics.offerCreateStages.created');
         default:
             return stageId;
     }
@@ -125,6 +103,12 @@ function cookAnalyticsInsights(analytics: GqlCProfileCookAnalyticsFragment, loca
     const directOffers = direct?.stages.find((stage) => stage.id === 'offer_sent')?.count ?? 0;
     const poolOpened = pool?.stages.find((stage) => stage.id === 'opened')?.count ?? 0;
     const poolOffers = pool?.stages.find((stage) => stage.id === 'offer_sent')?.count ?? 0;
+    const topMeals = analytics.topMeals ?? [];
+    const topAddons = analytics.topAddons ?? [];
+    const mealOpenedNeverBooked = topMeals.find((meal) => meal.publicOpenCount >= 5 && meal.selectedCount === 0);
+    const addonOftenSelected = topAddons.find(
+        (addon) => analytics.offersPaidCount >= 3 && addon.selectedCount >= 3 && addon.selectedCount / analytics.offersPaidCount >= 0.75,
+    );
 
     if ((direct?.entryCount ?? 0) > 0 && directOpened > 0 && directOffers === 0) {
         insights.push({
@@ -140,6 +124,13 @@ function cookAnalyticsInsights(analytics: GqlCProfileCookAnalyticsFragment, loca
             title: t(locale, 'profileCook', 'analytics.insights.lowOpenRate'),
         });
     }
+    if (mealOpenedNeverBooked) {
+        insights.push({
+            key: 'mealOpenedNeverBooked',
+            tone: 'warning',
+            title: t(locale, 'profileCook', 'analytics.insights.mealOpenedNeverBooked', { title: mealOpenedNeverBooked.title }),
+        });
+    }
     if (analytics.offerCreateRate != null && analytics.offerCreateRate >= 0.7 && analytics.requestsOpenedCount >= 5) {
         insights.push({
             key: 'strongOfferRate',
@@ -152,6 +143,13 @@ function cookAnalyticsInsights(analytics: GqlCProfileCookAnalyticsFragment, loca
             key: 'poolOfferFollowThrough',
             tone: 'success',
             title: t(locale, 'profileCook', 'analytics.insights.poolOfferFollowThrough'),
+        });
+    }
+    if (addonOftenSelected) {
+        insights.push({
+            key: 'addonOftenSelected',
+            tone: 'success',
+            title: t(locale, 'profileCook', 'analytics.insights.addonOftenSelected', { title: addonOftenSelected.title }),
         });
     }
     if (analytics.offersCreatedCount > 0 && analytics.offerConversionRate != null && analytics.offerConversionRate < 0.25) {
@@ -181,7 +179,6 @@ export function CookAnalyticsInsights({ analytics }: { analytics: GqlCProfileCoo
 export function CookAnalyticsHero({ analytics }: { analytics: GqlCProfileCookAnalyticsFragment }) {
     const locale = useLocale();
     const entryCount = analytics.funnels.reduce((sum, funnel) => sum + funnel.entryCount, 0);
-    const conversionPercent = analytics.offerConversionRate == null ? null : Math.round(analytics.offerConversionRate * 100);
 
     return (
         <Reveal as="section" className="grid gap-4" aria-labelledby="cook-analytics-hero">
@@ -212,6 +209,10 @@ export function CookAnalyticsHero({ analytics }: { analytics: GqlCProfileCookAna
                         </p>
                         <p className="text-sm text-muted-foreground">
                             {t(locale, 'profileCook', 'analytics.heroOffersCreated', { count: analytics.offersCreatedCount })}
+                            {' · '}
+                            {t(locale, 'profileCook', 'analytics.heroTimeToOpen', {
+                                time: cookAnalyticsFormatDurationMinutes(analytics.medianNotifyToOpenMinutes, locale),
+                            })}
                         </p>
                     </div>
                 </Panel>
@@ -227,101 +228,29 @@ export function CookAnalyticsHero({ analytics }: { analytics: GqlCProfileCookAna
                             />
                         </div>
                         <p className="font-serif text-4xl/tight tabular-nums text-foreground">{analytics.offersPaidCount}</p>
-                        <p className="text-sm text-muted-foreground">
-                            {t(locale, 'profileCook', 'analytics.heroAccepted', { count: analytics.offersAcceptedCount })}
-                        </p>
                     </div>
                 </Panel>
                 <Panel>
-                    <div className="grid gap-3">
+                    <div className="grid gap-2">
                         <div className="flex items-center gap-1.5">
                             <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                                {t(locale, 'profileCook', 'analytics.conversion')}
+                                {t(locale, 'profileCook', 'analytics.avgMenuPrice')}
                             </p>
                             <MetricHelp
-                                label={t(locale, 'profileCook', 'analytics.help.conversionLabel')}
-                                body={t(locale, 'profileCook', 'analytics.help.conversionBody')}
+                                label={t(locale, 'profileCook', 'analytics.help.avgMenuPriceLabel')}
+                                body={t(locale, 'profileCook', 'analytics.help.avgMenuPriceBody')}
                             />
                         </div>
                         <p className="font-serif text-4xl/tight tabular-nums text-foreground">
-                            {cookAnalyticsFormatPercent(analytics.offerConversionRate, locale)}
+                            {analytics.averageMenuPriceCents == null
+                                ? t(locale, 'profileCook', 'format.na')
+                                : formatCurrency(analytics.averageMenuPriceCents, { locale, maximumFractionDigits: 0 })}
                         </p>
-                        <div className="h-2 overflow-hidden rounded-full bg-muted" aria-hidden>
-                            <div
-                                className="h-full rounded-full bg-foreground transition-[width] duration-300 ease-out motion-reduce:transition-none"
-                                style={{ width: `${conversionPercent ?? 0}%` }}
-                            />
-                        </div>
                     </div>
                 </Panel>
             </div>
         </Reveal>
     );
-}
-
-function FunnelSankeyNode({
-    x,
-    y,
-    width,
-    height,
-    index,
-    payload,
-}: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    index: number;
-    payload: { name?: string };
-}) {
-    const chartWidth = useChartWidth();
-    if (chartWidth == null) return null;
-    const label = payload.name ?? '';
-    const labelOnLeft = x + width + 6 > chartWidth;
-    return (
-        <Layer key={`cook-sankey-node-${index}`}>
-            <Rectangle x={x} y={y} width={width} height={height} fill="var(--foreground)" fillOpacity={0.85} />
-            {label ? (
-                <text
-                    x={labelOnLeft ? x - 6 : x + width + 6}
-                    y={y + height / 2}
-                    textAnchor={labelOnLeft ? 'end' : 'start'}
-                    dominantBaseline="middle"
-                    className="fill-foreground text-xs"
-                >
-                    {label}
-                </text>
-            ) : null}
-        </Layer>
-    );
-}
-
-function sankeyFromFunnel(funnel: GqlCProfileCookAnalyticsFunnelFragment, locale: ReturnType<typeof useLocale>) {
-    const byId = new Map(funnel.stages.map((stage) => [stage.id, stage.count]));
-    const entryId = funnel.channel === 'DIRECT' ? 'requested_you' : 'in_pool';
-    const nodes = funnel.stages
-        .filter((stage) => stage.id !== 'declined' || (byId.get('declined') ?? 0) > 0)
-        .map((stage) => ({ id: stage.id, name: stageLabel(stage.id, locale) }));
-    const indexById = new Map(nodes.map((node, index) => [node.id, index]));
-    const links: Array<{ source: number; target: number; value: number }> = [];
-
-    function pushLink(sourceId: string, targetId: string, value: number) {
-        const source = indexById.get(sourceId);
-        const target = indexById.get(targetId);
-        if (source == null || target == null || value <= 0) return;
-        links.push({ source, target, value });
-    }
-
-    pushLink(entryId, 'opened', byId.get('opened') ?? 0);
-    if (funnel.channel === 'POOL') {
-        pushLink('opened', 'declined', byId.get('declined') ?? 0);
-    }
-    pushLink('opened', 'offer_sent', byId.get('offer_sent') ?? 0);
-    pushLink('offer_sent', 'both_accepted', byId.get('both_accepted') ?? 0);
-    pushLink('both_accepted', 'paid', byId.get('paid') ?? 0);
-
-    if (links.length === 0) return null;
-    return { nodes, links };
 }
 
 function CookAnalyticsSteppedFunnel({ funnel, title }: { funnel: GqlCProfileCookAnalyticsFunnelFragment; title: string }) {
@@ -337,18 +266,18 @@ function CookAnalyticsSteppedFunnel({ funnel, title }: { funnel: GqlCProfileCook
         count: { label: t(locale, 'profileCook', 'analytics.chart.count'), color: 'var(--foreground)' },
         declined: { label: t(locale, 'profileCook', 'analytics.stages.declined'), color: 'var(--destructive)' },
     } satisfies ChartConfig;
-    const sankeyData = funnel.entryCount >= 5 ? sankeyFromFunnel(funnel, locale) : null;
     const paidCount = funnel.stages.find((stage) => stage.id === 'paid')?.count ?? 0;
+    const openedCount = funnel.stages.find((stage) => stage.id === 'opened')?.count ?? 0;
     const entryToPaid = funnel.entryCount > 0 ? paidCount / funnel.entryCount : null;
 
     return (
         <Panel className="grid gap-4">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="grid gap-1">
-                    <h3 className="text-sm font-medium text-foreground">{title}</h3>
-                    {funnel.entryCount === 0 ? (
-                        <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'analytics.funnelEmptyPeriod')}</p>
-                    ) : (
+            <div className="grid gap-1">
+                <h3 className="text-sm font-medium text-foreground">{title}</h3>
+                {funnel.entryCount === 0 ? (
+                    <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'analytics.funnelEmptyPeriod')}</p>
+                ) : (
+                    <>
                         <p className="text-sm text-muted-foreground">
                             {t(locale, 'profileCook', 'analytics.funnelEntryToPaid', {
                                 entry: funnel.entryCount,
@@ -356,9 +285,12 @@ function CookAnalyticsSteppedFunnel({ funnel, title }: { funnel: GqlCProfileCook
                                 rate: cookAnalyticsFormatPercent(entryToPaid, locale),
                             })}
                         </p>
-                    )}
-                    <LowVolumeNote count={funnel.entryCount} />
-                </div>
+                        <p className="text-sm text-muted-foreground">
+                            {t(locale, 'profileCook', 'analytics.funnelOpenedOf', { opened: openedCount, entry: funnel.entryCount })}
+                        </p>
+                    </>
+                )}
+                <LowVolumeNote count={funnel.entryCount} />
             </div>
 
             {funnel.entryCount > 0 ? (
@@ -396,28 +328,6 @@ function CookAnalyticsSteppedFunnel({ funnel, title }: { funnel: GqlCProfileCook
                     </BarChart>
                 </ChartContainer>
             ) : null}
-
-            {sankeyData ? (
-                <div className="grid gap-2">
-                    <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                        {t(locale, 'profileCook', 'analytics.funnelFlowTitle')}
-                    </p>
-                    <div className="h-56 w-full" aria-label={t(locale, 'profileCook', 'analytics.funnelFlowTitle')}>
-                        <ResponsiveContainer width="100%" height="100%">
-                            <Sankey
-                                data={sankeyData}
-                                nodeWidth={12}
-                                nodePadding={28}
-                                margin={{ left: 8, right: 8, top: 8, bottom: 8 }}
-                                link={{ stroke: 'var(--foreground)', strokeOpacity: 0.18 }}
-                                node={FunnelSankeyNode}
-                            >
-                                <RechartsTooltip />
-                            </Sankey>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-            ) : null}
         </Panel>
     );
 }
@@ -425,9 +335,11 @@ function CookAnalyticsSteppedFunnel({ funnel, title }: { funnel: GqlCProfileCook
 export function CookAnalyticsFunnelPair({
     funnels,
     channel,
+    analytics,
 }: {
     funnels: GqlCProfileCookAnalyticsFunnelFragment[];
     channel: CookAnalyticsChannel;
+    analytics: GqlCProfileCookAnalyticsFragment;
 }) {
     const locale = useLocale();
 
@@ -455,191 +367,182 @@ export function CookAnalyticsFunnelPair({
                     />
                 ))}
             </div>
+            <Panel>
+                <dl className="grid gap-4 sm:grid-cols-2">
+                    <div className="grid gap-1">
+                        <dt className="flex items-center gap-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                            {t(locale, 'profileCook', 'analytics.timeToOpen')}
+                            <MetricHelp
+                                label={t(locale, 'profileCook', 'analytics.help.timeToOpenLabel')}
+                                body={t(locale, 'profileCook', 'analytics.help.timeToOpenBody')}
+                            />
+                        </dt>
+                        <dd className="font-serif text-2xl/tight tabular-nums text-foreground">
+                            {cookAnalyticsFormatDurationMinutes(analytics.medianNotifyToOpenMinutes, locale)}
+                        </dd>
+                    </div>
+                    <div className="grid gap-1">
+                        <dt className="flex items-center gap-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                            {t(locale, 'profileCook', 'analytics.timeToOffer')}
+                            <MetricHelp
+                                label={t(locale, 'profileCook', 'analytics.help.timeToOfferLabel')}
+                                body={t(locale, 'profileCook', 'analytics.help.timeToOfferBody')}
+                            />
+                        </dt>
+                        <dd className="font-serif text-2xl/tight tabular-nums text-foreground">
+                            {cookAnalyticsFormatDurationMinutes(analytics.medianNotifyToOfferMinutes, locale)}
+                        </dd>
+                    </div>
+                </dl>
+            </Panel>
         </Reveal>
     );
 }
 
-function RateMeter({
-    label,
-    help,
-    valueLabel,
-    rate,
-}: {
-    label: string;
-    help: { label: string; body: string };
-    valueLabel: string;
-    rate: number | null;
-}) {
-    const width = rate == null ? 0 : Math.max(0, Math.min(100, Math.round(rate * 100)));
+function CatalogMetric({ label, value }: { label: string; value: number }) {
+    if (value <= 0) return null;
     return (
-        <div className="grid gap-2 rounded-lg border border-border/60 bg-background/70 p-3">
-            <div className="flex items-center justify-between gap-2">
-                <div className="flex min-w-0 items-center gap-1">
-                    <p className="truncate text-xs font-medium tracking-wide text-muted-foreground uppercase">{label}</p>
-                    <MetricHelp label={help.label} body={help.body} />
-                </div>
-                <p className="shrink-0 font-serif text-xl/tight tabular-nums text-foreground">{valueLabel}</p>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-muted" aria-hidden>
-                <div
-                    className="h-full rounded-full bg-foreground/80 transition-[width] duration-300 ease-out motion-reduce:transition-none"
-                    style={{ width: `${width}%` }}
-                />
-            </div>
+        <div className="grid gap-0.5">
+            <dt className="text-xs text-muted-foreground">{label}</dt>
+            <dd className="text-sm tabular-nums text-foreground">{value}</dd>
         </div>
     );
 }
 
-export function CookAnalyticsRateStrip({ analytics }: { analytics: GqlCProfileCookAnalyticsFragment }) {
+function CatalogList({
+    title,
+    rows,
+    metrics,
+    titleLink,
+}: {
+    title: string;
+    rows: GqlCProfileCookAnalyticsCatalogRowFragment[];
+    metrics: Array<'opened' | 'requested' | 'offered' | 'selected' | 'paid'>;
+    titleLink: (row: GqlCProfileCookAnalyticsCatalogRowFragment) => ReactNode;
+}) {
     const locale = useLocale();
+    if (rows.length === 0) return null;
 
     return (
-        <Reveal as="section" index={2} className="grid gap-4" aria-labelledby="cook-analytics-rates">
+        <Panel className="grid gap-3">
+            <h3 className="text-sm font-medium text-foreground">{title}</h3>
+            <ul className="grid gap-3">
+                {rows.map((row) => (
+                    <li key={row.id} className="grid gap-2 border-t border-border/60 pt-3 first:border-t-0 first:pt-0">
+                        {titleLink(row)}
+                        <dl className="flex flex-wrap gap-x-4 gap-y-2">
+                            {metrics.includes('paid') ? (
+                                <CatalogMetric label={t(locale, 'profileCook', 'analytics.catalogPaid')} value={row.paidCount} />
+                            ) : null}
+                            {metrics.includes('selected') ? (
+                                <CatalogMetric label={t(locale, 'profileCook', 'analytics.catalogSelected')} value={row.selectedCount} />
+                            ) : null}
+                            {metrics.includes('requested') ? (
+                                <CatalogMetric label={t(locale, 'profileCook', 'analytics.catalogRequested')} value={row.requestedCount} />
+                            ) : null}
+                            {metrics.includes('offered') ? (
+                                <CatalogMetric label={t(locale, 'profileCook', 'analytics.catalogOffered')} value={row.offeredCount} />
+                            ) : null}
+                            {metrics.includes('opened') ? (
+                                <CatalogMetric label={t(locale, 'profileCook', 'analytics.catalogOpened')} value={row.publicOpenCount} />
+                            ) : null}
+                        </dl>
+                    </li>
+                ))}
+            </ul>
+        </Panel>
+    );
+}
+
+const catalogTitleClassName = 'text-sm font-medium text-foreground underline-offset-4 hover:underline';
+
+export function CookAnalyticsCatalog({ analytics }: { analytics: GqlCProfileCookAnalyticsFragment }) {
+    const locale = useLocale();
+    const topMenus = analytics.topMenus ?? [];
+    const topMeals = analytics.topMeals ?? [];
+    const topAddons = analytics.topAddons ?? [];
+    const hasRows = topMenus.length > 0 || topMeals.length > 0 || topAddons.length > 0;
+
+    return (
+        <Reveal as="section" className="grid gap-4" aria-labelledby="cook-analytics-catalog">
             <SectionHeading
-                id="cook-analytics-rates"
-                title={t(locale, 'profileCook', 'analytics.ratesTitle')}
-                description={t(locale, 'profileCook', 'analytics.ratesDescription')}
+                id="cook-analytics-catalog"
+                title={t(locale, 'profileCook', 'analytics.catalogTitle')}
+                description={t(locale, 'profileCook', 'analytics.catalogDescription')}
                 help={{
-                    label: t(locale, 'profileCook', 'analytics.help.ratesLabel'),
-                    body: t(locale, 'profileCook', 'analytics.help.ratesBody'),
+                    label: t(locale, 'profileCook', 'analytics.help.catalogLabel'),
+                    body: t(locale, 'profileCook', 'analytics.help.catalogBody'),
                 }}
             />
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                <RateMeter
-                    label={t(locale, 'profileCook', 'analytics.openRate')}
-                    help={{
-                        label: t(locale, 'profileCook', 'analytics.help.openRateLabel'),
-                        body: t(locale, 'profileCook', 'analytics.help.openRateBody'),
-                    }}
-                    valueLabel={cookAnalyticsFormatPercent(analytics.openRate, locale)}
-                    rate={analytics.openRate}
-                />
-                <RateMeter
-                    label={t(locale, 'profileCook', 'analytics.declineRate')}
-                    help={{
-                        label: t(locale, 'profileCook', 'analytics.help.declineRateLabel'),
-                        body: t(locale, 'profileCook', 'analytics.help.declineRateBody'),
-                    }}
-                    valueLabel={cookAnalyticsFormatPercent(analytics.declineRate, locale)}
-                    rate={analytics.declineRate}
-                />
-                <RateMeter
-                    label={t(locale, 'profileCook', 'analytics.offerCreateRate')}
-                    help={{
-                        label: t(locale, 'profileCook', 'analytics.help.offerCreateRateLabel'),
-                        body: t(locale, 'profileCook', 'analytics.help.offerCreateRateBody'),
-                    }}
-                    valueLabel={cookAnalyticsFormatPercent(analytics.offerCreateRate, locale)}
-                    rate={analytics.offerCreateRate}
-                />
-                <Panel className="sm:col-span-2 lg:col-span-3">
-                    <dl className="grid gap-4 sm:grid-cols-2">
-                        <div className="grid gap-1">
-                            <dt className="flex items-center gap-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                                {t(locale, 'profileCook', 'analytics.timeToOpen')}
-                                <MetricHelp
-                                    label={t(locale, 'profileCook', 'analytics.help.timeToOpenLabel')}
-                                    body={t(locale, 'profileCook', 'analytics.help.timeToOpenBody')}
-                                />
-                            </dt>
-                            <dd className="font-serif text-2xl/tight tabular-nums text-foreground">
-                                {cookAnalyticsFormatDurationMinutes(analytics.medianNotifyToOpenMinutes, locale)}
-                            </dd>
-                        </div>
-                        <div className="grid gap-1">
-                            <dt className="flex items-center gap-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                                {t(locale, 'profileCook', 'analytics.timeToOffer')}
-                                <MetricHelp
-                                    label={t(locale, 'profileCook', 'analytics.help.timeToOfferLabel')}
-                                    body={t(locale, 'profileCook', 'analytics.help.timeToOfferBody')}
-                                />
-                            </dt>
-                            <dd className="font-serif text-2xl/tight tabular-nums text-foreground">
-                                {cookAnalyticsFormatDurationMinutes(analytics.medianNotifyToOfferMinutes, locale)}
-                            </dd>
-                        </div>
-                    </dl>
+            {hasRows ? (
+                <div className="grid gap-4">
+                    <CatalogList
+                        title={t(locale, 'profileCook', 'analytics.catalogMenus')}
+                        rows={topMenus}
+                        metrics={['paid', 'selected', 'requested', 'opened']}
+                        titleLink={(row) => (
+                            <Link to="/{-$locale}/profile/menus/$menuId" params={{ menuId: row.id }} className={catalogTitleClassName}>
+                                {row.title}
+                            </Link>
+                        )}
+                    />
+                    <CatalogList
+                        title={t(locale, 'profileCook', 'analytics.catalogMeals')}
+                        rows={topMeals}
+                        metrics={['paid', 'selected', 'opened']}
+                        titleLink={(row) => (
+                            <Link to="/{-$locale}/profile/meals/$mealId" params={{ mealId: row.id }} className={catalogTitleClassName}>
+                                {row.title}
+                            </Link>
+                        )}
+                    />
+                    <CatalogList
+                        title={t(locale, 'profileCook', 'analytics.catalogAddons')}
+                        rows={topAddons}
+                        metrics={['paid', 'selected', 'offered']}
+                        titleLink={(row) => (
+                            <Link to="/{-$locale}/profile/offer-addons" className={catalogTitleClassName}>
+                                {row.title}
+                            </Link>
+                        )}
+                    />
+                </div>
+            ) : (
+                <Panel>
+                    <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'analytics.catalogEmpty')}</p>
                 </Panel>
-            </div>
+            )}
         </Reveal>
     );
 }
 
-export function CookAnalyticsTrend({ analytics }: { analytics: GqlCProfileCookAnalyticsFragment }) {
+export function CookAnalyticsChefPage({ analytics }: { analytics: GqlCProfileCookAnalyticsFragment }) {
     const locale = useLocale();
     const timeZone = useTimeZone();
-    const hasSignal = analytics.trend.some(
-        (point) => point.publicProfileViewCount > 0 || point.offersCreatedCount > 0 || point.offersPaidCount > 0,
-    );
+    const visitsOrPaid = analytics.trend.some((point) => point.publicProfileViewCount > 0 || point.offersPaidCount > 0);
+    const offersOnly = !visitsOrPaid && analytics.trend.some((point) => point.offersCreatedCount > 0);
+    const hasSignal = visitsOrPaid || offersOnly;
     const chartConfig = {
         publicProfileViewCount: {
             label: t(locale, 'profileCook', 'analytics.profileViews'),
             color: 'var(--muted-foreground)',
         },
-        offersCreatedCount: {
-            label: t(locale, 'profileCook', 'analytics.offersCreated'),
-            color: 'var(--foreground)',
-        },
         offersPaidCount: {
             label: t(locale, 'profileCook', 'analytics.paid'),
             color: 'var(--accent)',
         },
+        offersCreatedCount: {
+            label: t(locale, 'profileCook', 'analytics.offersCreated'),
+            color: 'var(--foreground)',
+        },
     } satisfies ChartConfig;
-
     const chartData = analytics.trend.map((point) => ({
         ...point,
         label: formatDate(point.bucketStart, { locale, timeZone, dateStyle: 'short' }),
     }));
 
     return (
-        <Reveal as="section" index={3} className="grid gap-4" aria-labelledby="cook-analytics-trend">
-            <SectionHeading
-                id="cook-analytics-trend"
-                title={t(locale, 'profileCook', 'analytics.trendTitle')}
-                description={t(locale, 'profileCook', 'analytics.trendDescription')}
-                help={{
-                    label: t(locale, 'profileCook', 'analytics.help.trendLabel'),
-                    body: t(locale, 'profileCook', 'analytics.help.trendBody'),
-                }}
-            />
-            <Panel>
-                {!hasSignal ? (
-                    <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'analytics.trendEmpty')}</p>
-                ) : (
-                    <ChartContainer
-                        config={chartConfig}
-                        className="aspect-auto h-64 w-full"
-                        aria-label={t(locale, 'profileCook', 'analytics.trendTitle')}
-                    >
-                        <BarChart accessibilityLayer data={chartData} margin={{ left: 0, right: 0, top: 8, bottom: 0 }}>
-                            <CartesianGrid vertical={false} />
-                            <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} minTickGap={16} />
-                            <ChartTooltip
-                                content={
-                                    <ChartTooltipContent
-                                        labelFormatter={(_, payload) => {
-                                            const bucketStart = payload[0]?.payload?.bucketStart as string | Date | undefined;
-                                            return bucketStart ? formatDate(bucketStart, { locale, timeZone, dateStyle: 'medium' }) : '';
-                                        }}
-                                    />
-                                }
-                            />
-                            <Bar dataKey="publicProfileViewCount" fill="var(--color-publicProfileViewCount)" radius={2} />
-                            <Bar dataKey="offersCreatedCount" fill="var(--color-offersCreatedCount)" radius={2} />
-                            <Bar dataKey="offersPaidCount" fill="var(--color-offersPaidCount)" radius={2} />
-                        </BarChart>
-                    </ChartContainer>
-                )}
-            </Panel>
-        </Reveal>
-    );
-}
-
-export function CookAnalyticsProfileDemand({ viewCount }: { viewCount: number }) {
-    const locale = useLocale();
-
-    return (
-        <Reveal as="section" index={4} className="grid gap-4" aria-labelledby="cook-analytics-profile">
+        <Reveal as="section" index={3} className="grid gap-4" aria-labelledby="cook-analytics-profile">
             <SectionHeading
                 id="cook-analytics-profile"
                 title={t(locale, 'profileCook', 'analytics.profileTitle')}
@@ -654,72 +557,47 @@ export function CookAnalyticsProfileDemand({ viewCount }: { viewCount: number })
                     <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                         {t(locale, 'profileCook', 'analytics.profileViews')}
                     </dt>
-                    <dd className="font-serif text-4xl/tight tabular-nums text-foreground">{viewCount}</dd>
+                    <dd className="font-serif text-4xl/tight tabular-nums text-foreground">{analytics.publicProfileViewCount}</dd>
                 </dl>
             </Panel>
-        </Reveal>
-    );
-}
-
-export function CookAnalyticsOfferCreateDisclosure({ stages }: { stages: GqlCProfileCookAnalyticsOfferCreateStageFragment[] }) {
-    const locale = useLocale();
-    const hasActivity = stages.some((stage) => stage.completedCount > 0 || stage.enteredCount > 0);
-    const chartConfig = {
-        completedCount: {
-            label: t(locale, 'profileCook', 'analytics.chart.completed'),
-            color: 'var(--foreground)',
-        },
-    } satisfies ChartConfig;
-    const chartData = stages.map((stage) => ({
-        label: stageLabel(stage.id, locale),
-        completedCount: stage.completedCount,
-        stepRate: stage.stepRate,
-    }));
-
-    return (
-        <details className="group grid gap-3">
-            <summary className="cursor-pointer list-none text-sm font-medium text-foreground marker:content-none [&::-webkit-details-marker]:hidden">
-                <span className="inline-flex items-center gap-2">
-                    <span aria-hidden className="text-muted-foreground transition-transform group-open:rotate-90">
-                        ▸
-                    </span>
-                    {t(locale, 'profileCook', 'analytics.offerCreateDisclosure')}
-                    <MetricHelp
-                        label={t(locale, 'profileCook', 'analytics.help.offerCreateLabel')}
-                        body={t(locale, 'profileCook', 'analytics.help.offerCreateBody')}
-                    />
-                </span>
-            </summary>
             <Panel>
-                {!hasActivity ? (
-                    <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'analytics.offerCreateEmpty')}</p>
-                ) : (
-                    <ChartContainer
-                        config={chartConfig}
-                        className="aspect-auto h-56 w-full"
-                        aria-label={t(locale, 'profileCook', 'analytics.offerCreateDisclosure')}
-                    >
-                        <BarChart accessibilityLayer data={chartData} layout="vertical" margin={{ left: 8, right: 12, top: 4, bottom: 4 }}>
-                            <CartesianGrid horizontal={false} />
-                            <XAxis type="number" hide />
-                            <YAxis dataKey="label" type="category" width={120} tickLine={false} axisLine={false} tickMargin={8} />
-                            <ChartTooltip
-                                content={
-                                    <ChartTooltipContent
-                                        formatter={(value, _name, item) => {
-                                            const rate = item?.payload?.stepRate as number | null | undefined;
-                                            const countLabel = String(value ?? 0);
-                                            if (rate == null) return countLabel;
-                                            return `${countLabel} · ${cookAnalyticsFormatPercent(rate, locale)}`;
-                                        }}
-                                    />
-                                }
-                            />
-                            <Bar dataKey="completedCount" fill="var(--color-completedCount)" radius={4} />
-                        </BarChart>
-                    </ChartContainer>
-                )}
+                <div className="grid gap-3">
+                    <h3 className="text-sm font-medium text-foreground">{t(locale, 'profileCook', 'analytics.trendTitle')}</h3>
+                    <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'analytics.trendDescription')}</p>
+                    {!hasSignal ? (
+                        <p className="text-sm text-muted-foreground">{t(locale, 'profileCook', 'analytics.trendEmpty')}</p>
+                    ) : (
+                        <ChartContainer
+                            config={chartConfig}
+                            className="aspect-auto h-64 w-full"
+                            aria-label={t(locale, 'profileCook', 'analytics.trendTitle')}
+                        >
+                            <BarChart accessibilityLayer data={chartData} margin={{ left: 0, right: 0, top: 8, bottom: 0 }}>
+                                <CartesianGrid vertical={false} />
+                                <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} minTickGap={16} />
+                                <ChartTooltip
+                                    content={
+                                        <ChartTooltipContent
+                                            labelFormatter={(_, payload) => {
+                                                const bucketStart = payload[0]?.payload?.bucketStart as string | Date | undefined;
+                                                return bucketStart
+                                                    ? formatDate(bucketStart, { locale, timeZone, dateStyle: 'medium' })
+                                                    : '';
+                                            }}
+                                        />
+                                    }
+                                />
+                                <Bar dataKey="publicProfileViewCount" fill="var(--color-publicProfileViewCount)" radius={2} />
+                                {offersOnly ? (
+                                    <Bar dataKey="offersCreatedCount" fill="var(--color-offersCreatedCount)" radius={2} />
+                                ) : (
+                                    <Bar dataKey="offersPaidCount" fill="var(--color-offersPaidCount)" radius={2} />
+                                )}
+                            </BarChart>
+                        </ChartContainer>
+                    )}
+                </div>
             </Panel>
-        </details>
+        </Reveal>
     );
 }

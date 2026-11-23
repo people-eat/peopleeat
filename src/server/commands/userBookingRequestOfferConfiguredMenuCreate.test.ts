@@ -203,16 +203,17 @@ describe('userBookingRequestOfferConfiguredMenuCreate', () => {
             title: menuTitle,
             description: menuDescription,
             courses: [
-                { title: 'Starter', meals: [{ mealTitle: 'Soup', mealDescription: 'Tomato' }] },
+                { title: 'Starter', meals: [{ mealId: seed.soupMealId, mealTitle: 'Soup', mealDescription: 'Tomato' }] },
                 {
                     title: 'Main',
                     meals: [
                         {
+                            mealId: seed.steakMealId,
                             mealTitle: 'Steak',
                             mealDescription: 'Rare',
                             mealImageUrl: fileUploadPublicUrl(seed.imageFileUploadId),
                         },
-                        { mealTitle: 'Fish', mealDescription: 'Grilled' },
+                        { mealId: seed.fishMealId, mealTitle: 'Fish', mealDescription: 'Grilled' },
                     ],
                 },
             ],

@@ -10,13 +10,11 @@ import type { GqlCProfileCookAnalyticsPageQuery } from '../../graphql/generated'
 import { useFeatureToggleActive } from '../../hooks/useFeatureToggleActive';
 import { useLocale } from '../../hooks/useLocale';
 import {
+    CookAnalyticsCatalog,
+    CookAnalyticsChefPage,
     CookAnalyticsFunnelPair,
     CookAnalyticsHero,
     CookAnalyticsInsights,
-    CookAnalyticsOfferCreateDisclosure,
-    CookAnalyticsProfileDemand,
-    CookAnalyticsRateStrip,
-    CookAnalyticsTrend,
 } from './CookAnalyticsSections';
 import { cookNavRouteBySlug } from './cookCatalog';
 import {
@@ -135,11 +133,9 @@ export function ProfileCookAnalyticsPage({
                     <div className="grid gap-10">
                         <CookAnalyticsHero analytics={analytics} />
                         <CookAnalyticsInsights analytics={analytics} />
-                        <CookAnalyticsTrend analytics={analytics} />
-                        <CookAnalyticsFunnelPair funnels={analytics.funnels} channel={channel} />
-                        <CookAnalyticsRateStrip analytics={analytics} />
-                        <CookAnalyticsProfileDemand viewCount={analytics.publicProfileViewCount} />
-                        <CookAnalyticsOfferCreateDisclosure stages={analytics.offerCreateStages} />
+                        <CookAnalyticsCatalog analytics={analytics} />
+                        <CookAnalyticsChefPage analytics={analytics} />
+                        <CookAnalyticsFunnelPair funnels={analytics.funnels} channel={channel} analytics={analytics} />
                     </div>
                 </>
             )}

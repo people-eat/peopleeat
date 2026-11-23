@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 
+import { chefsDiscoveryArea, chefsDiscoveryMealOpenKey, chefsDiscoveryMenuOpenKey } from '../../shared/chefsDiscovery';
 import type { CookAnalyticsChannel, CookAnalyticsFunnelChannel } from '../../shared/cookAnalyticsChannel';
 import { cookAnalyticsPeriodRange } from '../../shared/cookAnalyticsPeriod';
 import { cookBookingRequestOfferFunnelArea } from '../../shared/cookBookingRequestOfferFunnel';
@@ -8,9 +9,9 @@ import type {
     GqlSCook,
     GqlSCookAnalytics,
     GqlSCookAnalyticsArgs,
+    GqlSCookAnalyticsCatalogRow,
     GqlSCookAnalyticsFunnel,
     GqlSCookAnalyticsFunnelStage,
-    GqlSCookAnalyticsOfferCreateStage,
     GqlSCookAnalyticsTrendPoint,
     GqlSSession,
 } from '../graphql/generated';
@@ -43,22 +44,24 @@ type AggregateRow = {
     pool_paid_count: string | number;
 };
 
-type OfferCreateInteractionRow = {
-    booking_request_id: string;
-    step: string;
-    interaction_type: string;
-};
-
-type OfferCreateOfferRow = {
-    booking_request_id: string;
-};
-
 type TrendRow = {
     bucket_start: Date | string;
     public_profile_view_count: string | number;
     offers_created_count: string | number;
     offers_paid_count: string | number;
 };
+
+type CatalogAggregateRow = {
+    id: string;
+    title: string;
+    public_open_count: string | number;
+    requested_count: string | number;
+    offered_count: string | number;
+    selected_count: string | number;
+    paid_count: string | number;
+};
+
+const CATALOG_LIMIT = 8;
 
 function parseIntCount(value: string | number | null | undefined): number {
     if (value == null || value === '') return 0;
@@ -126,80 +129,16 @@ function buildFunnel(
     };
 }
 
-function buildOfferCreateStages(
-    interactionRows: OfferCreateInteractionRow[],
-    offerRows: OfferCreateOfferRow[],
-): GqlSCookAnalyticsOfferCreateStage[] {
-    const reachedByRequest = new Map<string, Set<string>>();
-    const enteredByStep = new Map<string, Set<string>>();
-    const withOffer = new Set(offerRows.map((row) => row.booking_request_id));
-
-    function mark(map: Map<string, Set<string>>, step: string, bookingRequestId: string) {
-        const set = map.get(step) ?? new Set<string>();
-        set.add(bookingRequestId);
-        map.set(step, set);
-    }
-
-    for (const row of interactionRows) {
-        const bookingRequestId = row.booking_request_id;
-        const reached = reachedByRequest.get(bookingRequestId) ?? new Set<string>();
-        reached.add(row.step);
-        reachedByRequest.set(bookingRequestId, reached);
-        if (row.interaction_type === 'step_entered') {
-            mark(enteredByStep, row.step, bookingRequestId);
-        }
-    }
-
-    function reachedCount(predicate: (reached: Set<string>, bookingRequestId: string) => boolean): number {
-        const ids = new Set<string>();
-        for (const [bookingRequestId, reached] of reachedByRequest) {
-            if (predicate(reached, bookingRequestId)) ids.add(bookingRequestId);
-        }
-        for (const bookingRequestId of withOffer) {
-            if (predicate(reachedByRequest.get(bookingRequestId) ?? new Set(), bookingRequestId)) {
-                ids.add(bookingRequestId);
-            }
-        }
-        return ids.size;
-    }
-
-    const offerCreateCompleted = reachedCount(
-        (reached, id) =>
-            reached.has('offer_create') || reached.has('menus') || reached.has('price') || reached.has('message') || withOffer.has(id),
-    );
-    const menusCompleted = reachedCount(
-        (reached, id) => reached.has('menus') || reached.has('price') || reached.has('message') || withOffer.has(id),
-    );
-    const priceCompleted = reachedCount((reached, id) => reached.has('price') || reached.has('message') || withOffer.has(id));
-    const messageCompleted = reachedCount((reached, id) => reached.has('message') || withOffer.has(id));
-    const createdCompleted = withOffer.size;
-
-    const completedById: Record<string, number> = {
-        offer_create: offerCreateCompleted,
-        menus: menusCompleted,
-        price: priceCompleted,
-        message: messageCompleted,
-        created: createdCompleted,
+function toCatalogRow(row: CatalogAggregateRow): GqlSCookAnalyticsCatalogRow {
+    return {
+        id: row.id,
+        title: row.title,
+        publicOpenCount: parseIntCount(row.public_open_count),
+        requestedCount: parseIntCount(row.requested_count),
+        offeredCount: parseIntCount(row.offered_count),
+        selectedCount: parseIntCount(row.selected_count),
+        paidCount: parseIntCount(row.paid_count),
     };
-
-    const stepIds = ['offer_create', 'menus', 'price', 'message', 'created'] as const;
-    const stages: GqlSCookAnalyticsOfferCreateStage[] = [];
-    let previousCompleted = 0;
-
-    for (const [index, id] of stepIds.entries()) {
-        const completed = completedById[id] ?? 0;
-        const enteredFromEvents = enteredByStep.get(id)?.size ?? 0;
-        const enteredCount = id === 'created' ? completed : Math.max(completed, enteredFromEvents);
-        stages.push({
-            id,
-            enteredCount,
-            completedCount: completed,
-            stepRate: index === 0 ? null : rate(completed, previousCompleted),
-        });
-        previousCompleted = completed;
-    }
-
-    return stages;
 }
 
 /**
@@ -458,55 +397,11 @@ export async function cookAnalyticsFind(
             throw new Error('cookAnalyticsFind returned no row');
         }
 
-        const offerCreateChannelSql =
-            channel === 'DIRECT'
-                ? sql`AND br."requestedCookId" = ${cookId}`
-                : channel === 'POOL'
-                  ? sql`AND (br."requestedCookId" IS NULL OR br."requestedCookId" <> ${cookId})`
-                  : sql``;
-
         const truncUnit = period === 'PAST_QUARTER' || period === 'PAST_YEAR' ? 'week' : 'day';
         const step = truncUnit === 'week' ? sql`interval '1 week'` : sql`interval '1 day'`;
         const truncLiteral = sql.raw(`'${truncUnit}'`);
 
-        const [interactionResult, offerCreateOfferResult, trendResult] = await Promise.all([
-            serverRuntime.db.execute<OfferCreateInteractionRow>(sql`
-                SELECT
-                    e.payload->>'bookingRequestId' AS booking_request_id,
-                    e.payload->'interaction'->>'step' AS step,
-                    e.payload->'interaction'->>'type' AS interaction_type
-                FROM "SessionEvents" e
-                INNER JOIN "Sessions" s ON s."sessionId" = e."sessionId"
-                INNER JOIN "BookingRequestCooks" brc
-                    ON brc."cookId" = ${cookId}
-                   AND brc."bookingRequestId" = e.payload->>'bookingRequestId'
-                INNER JOIN "BookingRequests" br ON br."bookingRequestId" = brc."bookingRequestId"
-                WHERE s."userId" = ${cookId}
-                  AND s."isBot" = false
-                  AND s."impersonationReturnSessionId" IS NULL
-                  AND brc."notifiedAt" IS NOT NULL
-                  AND brc."notifiedAt" >= ${startDateTime}
-                  AND brc."notifiedAt" <= ${endDateTime}
-                  AND e.type = 'WEB_PAGE_INTERACTION'
-                  AND e.payload->>'area' = ${cookBookingRequestOfferFunnelArea}
-                  AND e.payload->'interaction'->>'type' IN ('step_entered', 'step_completed')
-                  AND e.payload->'interaction'->>'step' IN ('offer_create', 'menus', 'price', 'message')
-                  AND e.payload->>'bookingRequestId' IS NOT NULL
-                  ${offerCreateChannelSql}
-            `),
-            serverRuntime.db.execute<OfferCreateOfferRow>(sql`
-                SELECT DISTINCT o."bookingRequestId" AS booking_request_id
-                FROM "BookingRequestOffers" o
-                INNER JOIN "BookingRequestCooks" brc
-                    ON brc."cookId" = o."cookId"
-                   AND brc."bookingRequestId" = o."bookingRequestId"
-                INNER JOIN "BookingRequests" br ON br."bookingRequestId" = o."bookingRequestId"
-                WHERE o."cookId" = ${cookId}
-                  AND brc."notifiedAt" IS NOT NULL
-                  AND brc."notifiedAt" >= ${startDateTime}
-                  AND brc."notifiedAt" <= ${endDateTime}
-                  ${offerCreateChannelSql}
-            `),
+        const [trendResult, menuCatalogResult, mealCatalogResult, addonCatalogResult] = await Promise.all([
             serverRuntime.db.execute<TrendRow>(sql`
                 SELECT
                     series.bucket_start AS bucket_start,
@@ -559,6 +454,247 @@ export async function cookAnalyticsFind(
                     GROUP BY 1
                 ) AS paid ON paid.bucket_start = series.bucket_start
                 ORDER BY series.bucket_start ASC
+            `),
+            serverRuntime.db.execute<CatalogAggregateRow>(sql`
+                WITH opens AS (
+                    SELECT
+                        e.payload->'interaction'->>'menuId' AS id,
+                        COUNT(*)::int AS public_open_count
+                    FROM "SessionEvents" e
+                    INNER JOIN "Sessions" s ON s."sessionId" = e."sessionId"
+                    WHERE e.type = 'WEB_PAGE_INTERACTION'
+                      AND e.payload->>'area' = ${chefsDiscoveryArea}
+                      AND e.payload->'interaction'->>'key' = ${chefsDiscoveryMenuOpenKey}
+                      AND e.payload->'interaction'->>'cookId' = ${cookId}
+                      AND e.payload->'interaction'->>'menuId' IS NOT NULL
+                      AND s."isBot" = false
+                      AND s."impersonationReturnSessionId" IS NULL
+                      AND e."createdAt" >= ${startDateTime}
+                      AND e."createdAt" <= ${endDateTime}
+                    GROUP BY 1
+                ),
+                requested AS (
+                    SELECT
+                        brc."requestedMenuId" AS id,
+                        COUNT(*)::int AS requested_count
+                    FROM "BookingRequestCooks" brc
+                    INNER JOIN "BookingRequests" br ON br."bookingRequestId" = brc."bookingRequestId"
+                    WHERE brc."cookId" = ${cookId}
+                      AND brc."requestedMenuId" IS NOT NULL
+                      AND brc."notifiedAt" IS NOT NULL
+                      AND brc."notifiedAt" >= ${startDateTime}
+                      AND brc."notifiedAt" <= ${endDateTime}
+                      AND ${offerChannelJoinPredicate}
+                    GROUP BY 1
+                ),
+                outcomes AS (
+                    SELECT
+                        m."copyOfMenuId" AS id,
+                        COUNT(*) FILTER (
+                            WHERE o."userAccepted" = true
+                              AND o."cookAccepted" = true
+                              AND o."createdAt" >= ${startDateTime}
+                              AND o."createdAt" <= ${endDateTime}
+                        )::int AS selected_count,
+                        COUNT(*) FILTER (
+                            WHERE o."paymentStatus" IN ('PAYED', 'TRANSFERRED', 'PAYED_OUT_OF_SYSTEM')
+                              AND COALESCE(o."paymentDateTime", o."createdAt") >= ${startDateTime}
+                              AND COALESCE(o."paymentDateTime", o."createdAt") <= ${endDateTime}
+                        )::int AS paid_count
+                    FROM "BookingRequestOffers" o
+                    INNER JOIN "BookingRequests" br ON br."bookingRequestId" = o."bookingRequestId"
+                    INNER JOIN "Menus" m ON m."menuId" = (o."configuredMenu"->>'menuId')
+                    WHERE o."cookId" = ${cookId}
+                      AND o."configuredMenu" IS NOT NULL
+                      AND m."copyOfMenuId" IS NOT NULL
+                      AND ${offerChannelJoinPredicate}
+                      AND (
+                            (o."userAccepted" = true AND o."cookAccepted" = true AND o."createdAt" >= ${startDateTime} AND o."createdAt" <= ${endDateTime})
+                         OR (o."paymentStatus" IN ('PAYED', 'TRANSFERRED', 'PAYED_OUT_OF_SYSTEM')
+                             AND COALESCE(o."paymentDateTime", o."createdAt") >= ${startDateTime}
+                             AND COALESCE(o."paymentDateTime", o."createdAt") <= ${endDateTime})
+                      )
+                    GROUP BY 1
+                ),
+                combined AS (
+                    SELECT id FROM opens
+                    UNION
+                    SELECT id FROM requested
+                    UNION
+                    SELECT id FROM outcomes
+                )
+                SELECT
+                    combined.id AS id,
+                    inventory.title AS title,
+                    COALESCE(opens.public_open_count, 0)::int AS public_open_count,
+                    COALESCE(requested.requested_count, 0)::int AS requested_count,
+                    0::int AS offered_count,
+                    COALESCE(outcomes.selected_count, 0)::int AS selected_count,
+                    COALESCE(outcomes.paid_count, 0)::int AS paid_count
+                FROM combined
+                INNER JOIN "Menus" inventory
+                    ON inventory."menuId" = combined.id
+                   AND inventory."cookId" = ${cookId}
+                   AND inventory."bookingRequestOfferId" IS NULL
+                LEFT JOIN opens ON opens.id = combined.id
+                LEFT JOIN requested ON requested.id = combined.id
+                LEFT JOIN outcomes ON outcomes.id = combined.id
+                ORDER BY paid_count DESC, selected_count DESC, requested_count DESC, public_open_count DESC, inventory.title ASC
+                LIMIT ${CATALOG_LIMIT}
+            `),
+            serverRuntime.db.execute<CatalogAggregateRow>(sql`
+                WITH opens AS (
+                    SELECT
+                        e.payload->'interaction'->>'mealId' AS id,
+                        COUNT(*)::int AS public_open_count
+                    FROM "SessionEvents" e
+                    INNER JOIN "Sessions" s ON s."sessionId" = e."sessionId"
+                    WHERE e.type = 'WEB_PAGE_INTERACTION'
+                      AND e.payload->>'area' = ${chefsDiscoveryArea}
+                      AND e.payload->'interaction'->>'key' = ${chefsDiscoveryMealOpenKey}
+                      AND e.payload->'interaction'->>'cookId' = ${cookId}
+                      AND e.payload->'interaction'->>'mealId' IS NOT NULL
+                      AND s."isBot" = false
+                      AND s."impersonationReturnSessionId" IS NULL
+                      AND e."createdAt" >= ${startDateTime}
+                      AND e."createdAt" <= ${endDateTime}
+                    GROUP BY 1
+                ),
+                outcomes AS (
+                    SELECT
+                        resolved.meal_id AS id,
+                        COUNT(*) FILTER (
+                            WHERE resolved.user_accepted = true
+                              AND resolved.cook_accepted = true
+                              AND resolved.offer_created_at >= ${startDateTime}
+                              AND resolved.offer_created_at <= ${endDateTime}
+                        )::int AS selected_count,
+                        COUNT(*) FILTER (
+                            WHERE resolved.payment_status IN ('PAYED', 'TRANSFERRED', 'PAYED_OUT_OF_SYSTEM')
+                              AND COALESCE(resolved.payment_date_time, resolved.offer_created_at) >= ${startDateTime}
+                              AND COALESCE(resolved.payment_date_time, resolved.offer_created_at) <= ${endDateTime}
+                        )::int AS paid_count
+                    FROM (
+                        SELECT DISTINCT
+                            o."bookingRequestOfferId",
+                            o."userAccepted" AS user_accepted,
+                            o."cookAccepted" AS cook_accepted,
+                            o."createdAt" AS offer_created_at,
+                            o."paymentStatus" AS payment_status,
+                            o."paymentDateTime" AS payment_date_time,
+                            COALESCE(
+                                NULLIF(meal.value->>'mealId', ''),
+                                (
+                                    SELECT meals."mealId"
+                                    FROM "MenuCourses" mc
+                                    INNER JOIN "MenuCourseMealOptions" meal_options ON meal_options."courseId" = mc."courseId"
+                                    INNER JOIN "Meals" meals ON meals."mealId" = meal_options."mealId"
+                                    WHERE mc."menuId" = (o."configuredMenu"->>'menuId')
+                                      AND meals.title = meal.value->>'mealTitle'
+                                    LIMIT 1
+                                )
+                            ) AS meal_id
+                        FROM "BookingRequestOffers" o
+                        INNER JOIN "BookingRequests" br ON br."bookingRequestId" = o."bookingRequestId"
+                        CROSS JOIN LATERAL jsonb_array_elements(COALESCE(o."configuredMenu"->'courses', '[]'::jsonb)) AS course(value)
+                        CROSS JOIN LATERAL jsonb_array_elements(COALESCE(course.value->'meals', '[]'::jsonb)) AS meal(value)
+                        WHERE o."cookId" = ${cookId}
+                          AND o."configuredMenu" IS NOT NULL
+                          AND ${offerChannelJoinPredicate}
+                          AND (
+                                (o."userAccepted" = true AND o."cookAccepted" = true AND o."createdAt" >= ${startDateTime} AND o."createdAt" <= ${endDateTime})
+                             OR (o."paymentStatus" IN ('PAYED', 'TRANSFERRED', 'PAYED_OUT_OF_SYSTEM')
+                                 AND COALESCE(o."paymentDateTime", o."createdAt") >= ${startDateTime}
+                                 AND COALESCE(o."paymentDateTime", o."createdAt") <= ${endDateTime})
+                          )
+                    ) AS resolved
+                    WHERE resolved.meal_id IS NOT NULL
+                    GROUP BY 1
+                ),
+                combined AS (
+                    SELECT id FROM opens
+                    UNION
+                    SELECT id FROM outcomes
+                )
+                SELECT
+                    combined.id AS id,
+                    inventory.title AS title,
+                    COALESCE(opens.public_open_count, 0)::int AS public_open_count,
+                    0::int AS requested_count,
+                    0::int AS offered_count,
+                    COALESCE(outcomes.selected_count, 0)::int AS selected_count,
+                    COALESCE(outcomes.paid_count, 0)::int AS paid_count
+                FROM combined
+                INNER JOIN "Meals" inventory
+                    ON inventory."mealId" = combined.id
+                   AND inventory."cookId" = ${cookId}
+                LEFT JOIN opens ON opens.id = combined.id
+                LEFT JOIN outcomes ON outcomes.id = combined.id
+                ORDER BY paid_count DESC, selected_count DESC, public_open_count DESC, inventory.title ASC
+                LIMIT ${CATALOG_LIMIT}
+            `),
+            serverRuntime.db.execute<CatalogAggregateRow>(sql`
+                SELECT
+                    library."cookOfferAddonId" AS id,
+                    library.title AS title,
+                    0::int AS public_open_count,
+                    0::int AS requested_count,
+                    COUNT(*) FILTER (
+                        WHERE o."createdAt" >= ${startDateTime}
+                          AND o."createdAt" <= ${endDateTime}
+                    )::int AS offered_count,
+                    COUNT(*) FILTER (
+                        WHERE copy."customerSelected" = true
+                          AND o."userAccepted" = true
+                          AND o."cookAccepted" = true
+                          AND o."createdAt" >= ${startDateTime}
+                          AND o."createdAt" <= ${endDateTime}
+                    )::int AS selected_count,
+                    COUNT(*) FILTER (
+                        WHERE copy."customerSelected" = true
+                          AND o."paymentStatus" IN ('PAYED', 'TRANSFERRED', 'PAYED_OUT_OF_SYSTEM')
+                          AND COALESCE(o."paymentDateTime", o."createdAt") >= ${startDateTime}
+                          AND COALESCE(o."paymentDateTime", o."createdAt") <= ${endDateTime}
+                    )::int AS paid_count
+                FROM "CookOfferAddons" copy
+                INNER JOIN "CookOfferAddons" library ON library."cookOfferAddonId" = copy."copyOfCookOfferAddonId"
+                INNER JOIN "BookingRequestOffers" o ON o."bookingRequestOfferId" = copy."bookingRequestOfferId"
+                INNER JOIN "BookingRequests" br ON br."bookingRequestId" = o."bookingRequestId"
+                WHERE copy."cookId" = ${cookId}
+                  AND copy."bookingRequestOfferId" IS NOT NULL
+                  AND copy."copyOfCookOfferAddonId" IS NOT NULL
+                  AND copy."deletedAt" IS NULL
+                  AND library."cookId" = ${cookId}
+                  AND library."bookingRequestOfferId" IS NULL
+                  AND ${offerChannelJoinPredicate}
+                  AND (
+                        (o."createdAt" >= ${startDateTime} AND o."createdAt" <= ${endDateTime})
+                     OR (copy."customerSelected" = true
+                         AND o."paymentStatus" IN ('PAYED', 'TRANSFERRED', 'PAYED_OUT_OF_SYSTEM')
+                         AND COALESCE(o."paymentDateTime", o."createdAt") >= ${startDateTime}
+                         AND COALESCE(o."paymentDateTime", o."createdAt") <= ${endDateTime})
+                  )
+                GROUP BY library."cookOfferAddonId", library.title
+                HAVING
+                    COUNT(*) FILTER (
+                        WHERE o."createdAt" >= ${startDateTime}
+                          AND o."createdAt" <= ${endDateTime}
+                    ) > 0
+                    OR COUNT(*) FILTER (
+                        WHERE copy."customerSelected" = true
+                          AND o."userAccepted" = true
+                          AND o."cookAccepted" = true
+                          AND o."createdAt" >= ${startDateTime}
+                          AND o."createdAt" <= ${endDateTime}
+                    ) > 0
+                    OR COUNT(*) FILTER (
+                        WHERE copy."customerSelected" = true
+                          AND o."paymentStatus" IN ('PAYED', 'TRANSFERRED', 'PAYED_OUT_OF_SYSTEM')
+                          AND COALESCE(o."paymentDateTime", o."createdAt") >= ${startDateTime}
+                          AND COALESCE(o."paymentDateTime", o."createdAt") <= ${endDateTime}
+                    ) > 0
+                ORDER BY paid_count DESC, selected_count DESC, offered_count DESC, library.title ASC
+                LIMIT ${CATALOG_LIMIT}
             `),
         ]);
 
@@ -618,8 +754,10 @@ export async function cookAnalyticsFind(
             averageMenuPriceCents: parseNullableInt(row.average_menu_price_cents),
             averageParticipants: parseNullableFloat(row.average_participants),
             funnels,
-            offerCreateStages: buildOfferCreateStages(rowsFromExecute(interactionResult), rowsFromExecute(offerCreateOfferResult)),
             trend,
+            topMenus: rowsFromExecute(menuCatalogResult).map(toCatalogRow),
+            topMeals: rowsFromExecute(mealCatalogResult).map(toCatalogRow),
+            topAddons: rowsFromExecute(addonCatalogResult).map(toCatalogRow),
         };
     } catch (error) {
         serverRuntime.log.error(error, requestingSession);

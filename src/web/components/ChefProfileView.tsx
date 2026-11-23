@@ -27,6 +27,8 @@ export function ChefProfileView({
     showChefsIndexLink = true,
     onBookCtaClick,
     onBookMenuCtaClick,
+    onMenuOpen,
+    onMealOpen,
     shareButton,
     bookCta,
 }: {
@@ -34,6 +36,8 @@ export function ChefProfileView({
     showChefsIndexLink?: boolean;
     onBookCtaClick?: () => void;
     onBookMenuCtaClick?: (menuId: string) => void;
+    onMenuOpen?: (menuId: string) => void;
+    onMealOpen?: (mealId: string) => void;
     shareButton?: ReactNode;
     bookCta?: SectionCookHeroBookCta;
 }) {
@@ -53,8 +57,13 @@ export function ChefProfileView({
                 bookCta={bookCta}
                 scrollToTestimonials={hasTestimonials}
             />
-            <SectionCookMenus menus={cook.menus ?? []} bookCookId={bookCta?.cookId} onBookMenuCtaClick={onBookMenuCtaClick} />
-            <SectionCookMeals meals={cook.meals} />
+            <SectionCookMenus
+                menus={cook.menus ?? []}
+                bookCookId={bookCta?.cookId}
+                onBookMenuCtaClick={onBookMenuCtaClick}
+                onMenuOpen={onMenuOpen}
+            />
+            <SectionCookMeals meals={cook.meals} onMealOpen={onMealOpen} />
             <SectionCookAbout biography={biography} logoUrl={cook.logoUrl} />
             <SectionCookTestimonials testimonials={cook.testimonials} />
             <SectionQuestionsAndAnswers />

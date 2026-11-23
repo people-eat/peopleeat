@@ -1150,16 +1150,6 @@ type CookAnalyticsFunnel {
     stages: [CookAnalyticsFunnelStage!]!
 }
 
-# Create-UI mid-step reach for offer drafts (session interactions).
-type CookAnalyticsOfferCreateStage {
-    # Stable id: offer_create | menus | price | message | created
-    id: String!
-    enteredCount: Int!
-    completedCount: Int!
-    # Rate vs previous completed; null when previous completed is 0.
-    stepRate: Float
-}
-
 # Zero-filled time bucket for cook analytics trend charts.
 # Day buckets for PAST_WEEK / PAST_MONTH; week buckets for PAST_QUARTER / PAST_YEAR.
 type CookAnalyticsTrendPoint {
@@ -1169,11 +1159,25 @@ type CookAnalyticsTrendPoint {
     offersPaidCount: Int!
 }
 
+# Ranked inventory row for cook analytics (menus, meals, or addons).
+# Unused columns are 0: meals have no requested/offered counts; addons have no
+# public opens or chef-page requests. Chef-page opens ignore `channel`.
+type CookAnalyticsCatalogRow {
+    id: ID!
+    title: String!
+    publicOpenCount: Int!
+    requestedCount: Int!
+    offeredCount: Int!
+    selectedCount: Int!
+    paidCount: Int!
+}
+
 # Aggregates for `/profile/analytics` and the cook overview strip.
 # Counts and rates are period-scoped unless noted. Nullable averages / rates
 # mean the denominator was zero (or no usable timestamp pairs for latencies).
-# Hero economics and rates respect `channel`; profile views always ignore it.
-# `funnels` is length 2 when channel=ALL (DIRECT then POOL), else length 1.
+# Hero economics and rates respect `channel`; profile views and catalog opens
+# always ignore it. `funnels` is length 2 when channel=ALL (DIRECT then POOL),
+# else length 1.
 type CookAnalytics {
     period: CookAnalyticsPeriod!
     channel: CookAnalyticsChannel!
@@ -1206,8 +1210,13 @@ type CookAnalytics {
     # Average participant count on booking requests for offers created in range.
     averageParticipants: Float
     funnels: [CookAnalyticsFunnel!]!
-    offerCreateStages: [CookAnalyticsOfferCreateStage!]!
     trend: [CookAnalyticsTrendPoint!]!
+    # Top inventory menus (max 8) by paid, then selected, then chef-page requests / opens.
+    topMenus: [CookAnalyticsCatalogRow!]!
+    # Top inventory meals (max 8) by paid, then selected, then chef-page opens.
+    topMeals: [CookAnalyticsCatalogRow!]!
+    # Top library addons (max 8) by paid, then selected, then offered.
+    topAddons: [CookAnalyticsCatalogRow!]!
 }
 
 # Result of `Cook.bookingRequestLookup` — stale email deep-links and live
@@ -1693,6 +1702,9 @@ type BookingRequestParticipant {
 }
 
 type BookingRequestOfferConfiguredMenuMeal {
+    # Inventory meal id when frozen from a catalog option. Null on older snapshots
+    # and admin free-text configured-menu edits.
+    mealId: ID
     mealTitle: String!
     mealDescription: String!
     mealImageUrl: String

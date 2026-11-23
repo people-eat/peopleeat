@@ -10,6 +10,7 @@ export function bookingRequestRequestedMenuFromPublicCookMenu(menu: GqlSPublicCo
         courses: menu.courses.map((course) => ({
             title: course.title,
             meals: course.mealOptions.map((meal) => ({
+                mealId: meal.mealId,
                 mealTitle: meal.title,
                 mealDescription: meal.description,
                 ...(meal.imageUrl != null && meal.imageUrl.length > 0 ? { mealImageUrl: meal.imageUrl } : {}),

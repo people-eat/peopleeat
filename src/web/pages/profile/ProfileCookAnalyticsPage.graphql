@@ -15,18 +15,21 @@ fragment ProfileCookAnalyticsFunnel on CookAnalyticsFunnel {
     }
 }
 
-fragment ProfileCookAnalyticsOfferCreateStage on CookAnalyticsOfferCreateStage {
-    id
-    enteredCount
-    completedCount
-    stepRate
-}
-
 fragment ProfileCookAnalyticsTrendPoint on CookAnalyticsTrendPoint {
     bucketStart
     publicProfileViewCount
     offersCreatedCount
     offersPaidCount
+}
+
+fragment ProfileCookAnalyticsCatalogRow on CookAnalyticsCatalogRow {
+    id
+    title
+    publicOpenCount
+    requestedCount
+    offeredCount
+    selectedCount
+    paidCount
 }
 
 fragment ProfileCookAnalytics on CookAnalytics {
@@ -51,14 +54,21 @@ fragment ProfileCookAnalytics on CookAnalytics {
     offerConversionRate
     offersPaidCount
     paidPayoutCentsCookTotal
+    averageMenuPriceCents
     funnels {
         ...ProfileCookAnalyticsFunnel
     }
-    offerCreateStages {
-        ...ProfileCookAnalyticsOfferCreateStage
-    }
     trend {
         ...ProfileCookAnalyticsTrendPoint
+    }
+    topMenus {
+        ...ProfileCookAnalyticsCatalogRow
+    }
+    topMeals {
+        ...ProfileCookAnalyticsCatalogRow
+    }
+    topAddons {
+        ...ProfileCookAnalyticsCatalogRow
     }
 }
 

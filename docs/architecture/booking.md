@@ -104,12 +104,14 @@ Product behavior: [booking-offer-chat.md](../features/booking-offer-chat.md).
 Suggested menus are **optional**. When present, offer create / suggested-menus update **deep-copies** cook inventory menus onto rows with
 `Menus.bookingRequestOfferId` set (and `copyOfMenuId` pointing at the source). Inventory `publishedAt` is ignored for offers (drafts are
 fine; publish is reserved for a planned public cook-page catalog). Customer course picks freeze into `BookingRequestOffers.configuredMenu`
-JSONB so later inventory edits do not rewrite history. Meal **image bytes** follow the same rule for offer peers: GraphQL still returns
-`imageUrl` / `mealImageUrl` for draft meals on offer menus, and `GET /api/file-uploads/:id` allows the offer customer / cook / admin to
-download those images via offer-menu meal options or the frozen `configuredMenu` snapshot (public meal publish remains required only for
-anonymous / catalog access — see [file-storage.md](./file-storage.md)). Cooks browse/edit those copies under `/profile/menus?scope=offers`
-and may sync them back onto the inventory template — see [cook-menus.md](../features/cook-menus.md). Admins may replace an existing snapshot
-via `AdminMutation.bookingRequestOfferConfiguredMenuUpdate` (preserves `menuId`). Cooks create offers on
+JSONB so later inventory edits do not rewrite history. Guest configure writes optional `mealId` on each frozen meal (inventory id);
+historical snapshots and admin free-text edits may omit it, so cook analytics falls back to matching `mealTitle` against that offer menu’s
+meal options. Meal **image bytes** follow the same rule for offer peers: GraphQL still returns `imageUrl` / `mealImageUrl` for draft meals
+on offer menus, and `GET /api/file-uploads/:id` allows the offer customer / cook / admin to download those images via offer-menu meal
+options or the frozen `configuredMenu` snapshot (public meal publish remains required only for anonymous / catalog access — see
+[file-storage.md](./file-storage.md)). Cooks browse/edit those copies under `/profile/menus?scope=offers` and may sync them back onto the
+inventory template — see [cook-menus.md](../features/cook-menus.md). Admins may replace an existing snapshot via
+`AdminMutation.bookingRequestOfferConfiguredMenuUpdate` (preserves `menuId`). Cooks create offers on
 `/profile/booking-request-pool/$bookingRequestId/create` with optional on-the-fly menu/meal create + AI prefill.
 
 ### Call slots

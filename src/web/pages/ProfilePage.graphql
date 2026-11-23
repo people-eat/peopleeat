@@ -24,8 +24,8 @@ fragment ProfilePageCookStatus on Cook {
         hasInsights
         publicProfileViewCount
         medianNotifyToOpenMinutes
-        offersCreatedCount
-        offerConversionRate
+        offersPaidCount
+        paidPayoutCentsCookTotal
     }
     ...CookSidebarNavBadges
 }

@@ -34,13 +34,13 @@ Shared profile layout (`ChefProfileView`, container-query driven):
   crushes copy beside a full-width square.
 - **Menus** — published, complete inventory menus with at least one meal-option image (`PublicCook.menus`) after the hero, gated by
   `COOK_PUBLIC_PROFILE_MENUS` (missing row stays off). Cards use the same collage as cook menu cards; click opens `PublicCookMenuDialog`
-  (courses and dishes). When the chef-page request toggle is on and the cook is offer-ready, the dialog has **Request this menu** →
-  `/booking-request/form?cookId=&menuId=`. Hidden when the toggle is off or none qualify. Shows the first 5 menus; Show more / Show less
-  when there are more. Grid 2 → 3 (`@md`) → 4 (`@2xl`) → 5 (`@5xl`).
+  (courses and dishes) and records a chefs discovery `menu_open` click (public detail only). When the chef-page request toggle is on and the
+  cook is offer-ready, the dialog has **Request this menu** → `/booking-request/form?cookId=&menuId=`. Hidden when the toggle is off or none
+  qualify. Shows the first 5 menus; Show more / Show less when there are more. Grid 2 → 3 (`@md`) → 4 (`@2xl`) → 5 (`@5xl`).
 - **Meals** — published dishes **with an image** as marketing meal tiles (`CustomerMealCard` `variant="marketing"`: square image on top,
-  title, up to two lines of description); published meals without an image are omitted. Click opens the shared meal details dialog. Shows
-  the first 5 meals; when there are more, a bilingual Show more / Show less control sits top-right on the section title row. Grid 2 → 3
-  (`@md`) → 4 (`@2xl`) → 5 (`@5xl`).
+  title, up to two lines of description); published meals without an image are omitted. Click opens the shared meal details dialog and
+  records a chefs discovery `meal_open` click (public detail only). Shows the first 5 meals; when there are more, a bilingual Show more /
+  Show less control sits top-right on the section title row. Grid 2 → 3 (`@md`) → 4 (`@2xl`) → 5 (`@5xl`).
 - **About** — full biography plus cook additional picture when uploaded, otherwise the bilingual peopleeat benefits list (taste / relaxed /
   secure booking); two columns from `@3xl`. Hidden when the cook has no biography.
 - **Testimonials** — published customer reviews as the shared public review card; hidden when none — [testimonials.md](./testimonials.md).

@@ -27,6 +27,13 @@ function optionalMenuId(record: Record<string, unknown>): { menuId: string } | R
     return { menuId };
 }
 
+function optionalMealId(record: Record<string, unknown>): { mealId: string } | Record<string, never> {
+    if (typeof record.mealId !== 'string') return {};
+    const mealId = record.mealId.trim();
+    if (!isNanoId(mealId)) return {};
+    return { mealId };
+}
+
 function optionalLocationSetting(
     record: Record<string, unknown>,
 ): { setting: BookingRequestFormLocationSettingChoice } | Record<string, never> {
@@ -67,7 +74,7 @@ function parseInteraction(raw: unknown): SessionEventWebPageInteractionPayload['
         return null;
     }
     if (type === 'click' && typeof record.key === 'string' && record.key.length > 0 && record.key.length <= 128) {
-        return { type: 'click', key: record.key, ...optionalCookId(record), ...optionalMenuId(record) };
+        return { type: 'click', key: record.key, ...optionalCookId(record), ...optionalMenuId(record), ...optionalMealId(record) };
     }
     if (
         type === 'change' &&

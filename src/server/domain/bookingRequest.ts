@@ -379,6 +379,8 @@ export type BookingRequestOfferParticipantAmendment = {
 
 /** Frozen customer menu selection on an accepted/configured offer (snapshot, not live Menus rows). */
 type BookingRequestOfferConfiguredMenuMeal = {
+    /** Inventory meal id when the snapshot was frozen from a catalog option. */
+    mealId?: string;
     mealTitle: string;
     mealDescription: string;
     mealImageUrl?: string;
