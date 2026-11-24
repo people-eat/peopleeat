@@ -1170,6 +1170,9 @@
         "active": "Attive",
         "completed": "Completate",
         "archive": "Archivio",
+        "createTitle": "Crea una nuova offerta",
+        "createBody": "Apri una richiesta nel pool e invia la tua offerta da lì.",
+        "createOffer": "Crea offerta",
         "emptyActive": "Nessuna offerta attiva.",
         "emptyCompleted": "Nessun evento completato ancora.",
         "emptyArchived": "Nessuna offerta archiviata."

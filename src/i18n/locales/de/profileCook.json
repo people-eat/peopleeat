@@ -775,6 +775,9 @@
         "active": "Aktiv",
         "completed": "Stattgefunden",
         "archive": "Archiv",
+        "createTitle": "Neues Angebot erstellen",
+        "createBody": "Öffne eine Buchungsanfrage im Pool und sende von dort dein Angebot.",
+        "createOffer": "Angebot erstellen",
         "emptyActive": "Keine aktiven Angebote.",
         "emptyCompleted": "Noch keine stattgefundenen Events.",
         "emptyArchived": "Keine archivierten Angebote."

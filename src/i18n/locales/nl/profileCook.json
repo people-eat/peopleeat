@@ -775,6 +775,9 @@
         "active": "Actief",
         "completed": "Afgerond",
         "archive": "Archief",
+        "createTitle": "Nieuwe offerte maken",
+        "createBody": "Open een boekingsaanvraag in de pool en stuur daarvandaan je offerte.",
+        "createOffer": "Offerte maken",
         "emptyActive": "Geen actieve offertes.",
         "emptyCompleted": "Nog geen afgeronde evenementen.",
         "emptyArchived": "Geen gearchiveerde offertes."

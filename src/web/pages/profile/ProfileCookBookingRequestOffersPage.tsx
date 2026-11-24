@@ -1,7 +1,9 @@
-import { useNavigate } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 
 import { t } from '../../../i18n/t';
 import { Badge } from '../../components/base/badge';
+import { Button } from '../../components/base/button';
+import { StatusAlert } from '../../components/base/status-alert';
 import { Tabs, TabsList, TabsTrigger } from '../../components/base/tabs';
 import { CookBookingRequestOfferCard } from '../../components/CookBookingRequestOfferCard';
 import type { GqlCProfileCookBookingRequestOffersPageQuery } from '../../graphql/generated';
@@ -53,6 +55,18 @@ export function ProfileCookBookingRequestOffersPage({
 
     return (
         <main id="main-content" className="@container grid w-full min-w-0 content-start gap-6">
+            <StatusAlert
+                tone="info"
+                title={t(locale, 'profileCook', 'offers.createTitle')}
+                action={
+                    <Button asChild variant="outline" size="sm">
+                        <Link to="/{-$locale}/profile/booking-request-pool">{t(locale, 'profileCook', 'offers.createOffer')}</Link>
+                    </Button>
+                }
+            >
+                {t(locale, 'profileCook', 'offers.createBody')}
+            </StatusAlert>
+
             <Tabs
                 value={view}
                 onValueChange={(value) => {
