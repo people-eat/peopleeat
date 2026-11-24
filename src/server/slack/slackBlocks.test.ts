@@ -4,7 +4,13 @@ import { LARGE_GROUP_PARTICIPANT_THRESHOLD } from './bookingRequestSlack';
 import { slackMessageBlocksBuild } from './slackBlocks';
 import { slackChannelsCreate } from './slackChannels';
 import { SLACK_CTA } from './slackCta';
-import { slackFormatParticipants, slackFormatPriceClass, slackFormatTestimonialKind, slackPaymentFailedBody } from './slackFormat';
+import {
+    slackFormatParticipants,
+    slackFormatPriceClass,
+    slackFormatTestimonialKind,
+    slackPaymentFailedBody,
+    slackTestimonialUpsertMessageBuild,
+} from './slackFormat';
 
 describe('slackMessageBlocksBuild', () => {
     it('builds header, fields, body, context, and admin button', () => {
@@ -88,6 +94,43 @@ describe('slackFormat helpers', () => {
     it('formats testimonial kinds in German', () => {
         expect(slackFormatTestimonialKind('REMINDER_MORNING')).toBe('Morgen-Erinnerung');
         expect(slackFormatTestimonialKind('MEMORY_NUDGE')).toBe('Memory-Nudge');
+    });
+
+    it('builds testimonial upsert Slack copy for create/update and audiences', () => {
+        expect(
+            slackTestimonialUpsertMessageBuild({
+                audience: 'CUSTOMER',
+                action: 'CREATED',
+                viaAdmin: false,
+                authorName: 'Ada Guest',
+                rating: 5,
+                body: 'Loved it',
+                imageCount: 2,
+            }),
+        ).toEqual({
+            header: 'Kundenbewertung erstellt · Ada Guest',
+            fields: [
+                { label: 'Bewertung', value: '5/5' },
+                { label: 'Bilder', value: '2 angehängt' },
+            ],
+            body: 'Loved it',
+        });
+
+        expect(
+            slackTestimonialUpsertMessageBuild({
+                audience: 'COOK',
+                action: 'UPDATED',
+                viaAdmin: true,
+                authorName: 'Chef Review',
+                rating: 4,
+                body: null,
+                imageCount: 0,
+            }),
+        ).toEqual({
+            header: 'Kochbewertung aktualisiert (Admin) · Chef Review',
+            fields: [{ label: 'Bewertung', value: '4/5' }],
+            body: undefined,
+        });
     });
 
     it('maps payment failures without leaking Stripe event codes for unknown detail', () => {

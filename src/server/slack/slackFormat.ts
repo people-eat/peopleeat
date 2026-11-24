@@ -56,6 +56,37 @@ export function slackFormatTestimonialKind(kind: string): string {
     return kind;
 }
 
+export type SlackTestimonialUpsertMessageArgs = {
+    audience: 'CUSTOMER' | 'COOK';
+    action: 'CREATED' | 'UPDATED';
+    viaAdmin: boolean;
+    authorName: string;
+    rating: number;
+    body: string | null;
+    imageCount: number;
+};
+
+/** Header / fields / body for offer-linked testimonial create/update Slack replies. */
+export function slackTestimonialUpsertMessageBuild(args: SlackTestimonialUpsertMessageArgs): {
+    header: string;
+    fields: { label: string; value: string }[];
+    body?: string;
+} {
+    const kind = args.audience === 'CUSTOMER' ? 'Kundenbewertung' : 'Kochbewertung';
+    const verb = args.action === 'CREATED' ? 'erstellt' : 'aktualisiert';
+    const adminSuffix = args.viaAdmin ? ' (Admin)' : '';
+    const fields: { label: string; value: string }[] = [{ label: 'Bewertung', value: `${args.rating}/5` }];
+    if (args.imageCount > 0) {
+        fields.push({ label: 'Bilder', value: `${args.imageCount} angehängt` });
+    }
+    const trimmed = args.body?.trim();
+    return {
+        header: `${kind} ${verb}${adminSuffix} · ${args.authorName}`,
+        fields,
+        body: trimmed ? trimmed : undefined,
+    };
+}
+
 const PAYMENT_FAILED_EVENT_LABELS: Record<string, string> = {
     'setup_intent.setup_failed': 'Karteneinrichtung fehlgeschlagen. Der Kunde kann den Checkout erneut versuchen.',
     'setup_intent.canceled': 'Karteneinrichtung abgebrochen. Der Kunde kann den Checkout erneut versuchen.',

@@ -15,6 +15,7 @@ import {
     slackFormatPriceClass,
     slackFormatTestimonialKind,
     slackPaymentFailedBody,
+    slackTestimonialUpsertMessageBuild,
 } from './slackFormat';
 
 async function customerNameFind(serverRuntime: ServerRuntime, userId: string): Promise<string> {
@@ -495,6 +496,30 @@ export async function slackNotifyTestimonialReminderSent(
         bookingRequestId: args.bookingRequestId,
         header: summary ? `Bewertungserinnerung gesendet · ${summary.customerName}` : 'Bewertungserinnerung gesendet',
         fields,
+        adminOfferId: args.bookingRequestOfferId,
+    });
+}
+
+export async function slackNotifyTestimonialUpserted(
+    serverRuntime: ServerRuntime,
+    args: {
+        bookingRequestId: string;
+        bookingRequestOfferId: string;
+        audience: 'CUSTOMER' | 'COOK';
+        action: 'CREATED' | 'UPDATED';
+        viaAdmin: boolean;
+        authorName: string;
+        rating: number;
+        body: string | null;
+        imageCount: number;
+    },
+): Promise<void> {
+    const message = slackTestimonialUpsertMessageBuild(args);
+    await bookingRequestSlackThreadReply(serverRuntime, {
+        bookingRequestId: args.bookingRequestId,
+        header: message.header,
+        fields: message.fields,
+        body: message.body,
         adminOfferId: args.bookingRequestOfferId,
     });
 }

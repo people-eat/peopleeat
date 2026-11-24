@@ -8,8 +8,9 @@ Ops receives structured Slack messages (German copy — internal surface):
 
 - **Booking timeline** — one root message per booking request (channel by party size), then thread-only replies for lifecycle events (no
   `reply_broadcast` into the main channel), including offer **Gesprächstermin** lifecycle (request / confirm / decline / cancel), **live
-  Gespräch** room events (started / joined / left), and **Gesprächszusammenfassung** after a call recording AI summary is saved (deep link
-  to `/admin/calls/…`)
+  Gespräch** room events (started / joined / left), **Gesprächszusammenfassung** after a call recording AI summary is saved (deep link to
+  `/admin/calls/…`), and **Bewertung erstellt/aktualisiert** when a customer, cook, or admin creates or updates an offer-linked testimonial
+  (who, rating, body, photo count; no booking summary fields)
 - **Sign-ups** — customer and cook registration (and account-deletion lifecycle on the same channel)
 - **Support** — one root message per ticket, then thread replies for customer/admin messages and resolve
 - **Gift cards** — successful purchases

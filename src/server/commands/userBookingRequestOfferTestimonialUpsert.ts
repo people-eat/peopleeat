@@ -3,7 +3,7 @@ import { and, eq } from 'drizzle-orm';
 import { idCreate } from '../../shared/idCreate';
 import { testimonialRatingAssertRequired } from '../../shared/testimonialRating';
 import { textNormalizeProseTitled } from '../../shared/textNormalize';
-import { bookingRequestOffers, bookingRequests, customerTestimonials } from '../db/schema';
+import { bookingRequestOffers, bookingRequests, customerTestimonials, users } from '../db/schema';
 import type { CustomerTestimonialCreate } from '../db/schema';
 import { bookingRequestOfferStatusDerive } from '../domain/bookingRequest';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -14,6 +14,7 @@ import type {
     GqlSUserMutationBookingRequestOfferTestimonialUpsertArgs,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { slackNotifyTestimonialUpserted } from '../slack/slackNotifyBooking';
 import { publicationStatusFromRating } from '../utils/publicationStatusFromRating';
 import { testimonialImageUrlsFromFileUploadIds } from '../utils/testimonialImageUrlsFromFileUploadIds';
 import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
@@ -41,9 +42,15 @@ export async function userBookingRequestOfferTestimonialUpsert(
 
     try {
         const [row] = await serverRuntime.db
-            .select({ offer: bookingRequestOffers, bookingRequest: bookingRequests })
+            .select({
+                offer: bookingRequestOffers,
+                bookingRequest: bookingRequests,
+                firstName: users.firstName,
+                lastName: users.lastName,
+            })
             .from(bookingRequestOffers)
             .innerJoin(bookingRequests, eq(bookingRequests.bookingRequestId, bookingRequestOffers.bookingRequestId))
+            .innerJoin(users, eq(users.userId, bookingRequests.userId))
             .where(and(eq(bookingRequestOffers.bookingRequestOfferId, input.bookingRequestOfferId), eq(bookingRequests.userId, userId)))
             .limit(1);
         if (!row) {
@@ -68,6 +75,17 @@ export async function userBookingRequestOfferTestimonialUpsert(
 
         const publicationStatus = publicationStatusFromRating(rating);
         const now = new Date();
+        const authorName = `${row.firstName} ${row.lastName}`;
+        const notifyArgs = {
+            bookingRequestId: row.bookingRequest.bookingRequestId,
+            bookingRequestOfferId: input.bookingRequestOfferId,
+            audience: 'CUSTOMER' as const,
+            viaAdmin: false,
+            authorName,
+            rating,
+            body,
+            imageCount: imageUrls.length,
+        };
 
         if (!existing) {
             const status = bookingRequestOfferStatusDerive({
@@ -103,6 +121,7 @@ export async function userBookingRequestOfferTestimonialUpsert(
 
             await serverRuntime.db.insert(customerTestimonials).values(values);
             await Promise.all([serverRuntime.publish.userUpdates({ userId }), serverRuntime.publish.adminUpdates()]);
+            await slackNotifyTestimonialUpserted(serverRuntime, { ...notifyArgs, action: 'CREATED' });
             return { success: true, referenceId: customerTestimonialId };
         }
 
@@ -115,6 +134,7 @@ export async function userBookingRequestOfferTestimonialUpsert(
             .where(eq(customerTestimonials.customerTestimonialId, existing.customerTestimonialId));
 
         await Promise.all([serverRuntime.publish.userUpdates({ userId }), serverRuntime.publish.adminUpdates()]);
+        await slackNotifyTestimonialUpserted(serverRuntime, { ...notifyArgs, action: 'UPDATED' });
 
         return { success: true, referenceId: existing.customerTestimonialId };
     } catch (error) {

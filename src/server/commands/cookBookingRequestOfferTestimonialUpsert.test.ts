@@ -1,10 +1,15 @@
 import { eq } from 'drizzle-orm';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
 import { adminLegalPrivacyPolicies, bookingRequestOffers, bookingRequests, cooks, cookTestimonials, fileUploads } from '../db/schema';
+import { slackNotifyTestimonialUpserted } from '../slack/slackNotifyBooking';
 import { commandSetup, cookMutationParent, findLogsForSession, testDb } from '../test/commandTestUtils';
 import { cookBookingRequestOfferTestimonialUpsert } from './cookBookingRequestOfferTestimonialUpsert';
+
+vi.mock('../slack/slackNotifyBooking', () => ({
+    slackNotifyTestimonialUpserted: vi.fn(async () => {}),
+}));
 
 const berlin = {
     displayText: 'Berlin',
@@ -79,7 +84,7 @@ async function seedOffer(options?: {
                 ? null
                 : { paymentIntentId: 'pi_cook_testimonial', clientSecret: 'secret', transferId: 'tr_cook_testimonial' },
     });
-    return { cook, customer, bookingRequestOfferId };
+    return { cook, customer, bookingRequestId, bookingRequestOfferId };
 }
 
 async function insertImage(userId: string, mediaType = 'image/jpeg') {
@@ -101,9 +106,13 @@ async function rowFor(bookingRequestOfferId: string) {
 }
 
 describe('cookBookingRequestOfferTestimonialUpsert', () => {
+    beforeEach(() => {
+        vi.mocked(slackNotifyTestimonialUpserted).mockClear();
+    });
+
     it('inserts a published review for a paid completed offer and publishes user and admin updates', async () => {
         // Arrange
-        const { cook, bookingRequestOfferId } = await seedOffer();
+        const { cook, bookingRequestId, bookingRequestOfferId } = await seedOffer();
         const fileUploadId = await insertImage(cook.user.userId);
 
         // Act
@@ -142,6 +151,17 @@ describe('cookBookingRequestOfferTestimonialUpsert', () => {
         expect(row!.publishedAt).toBeInstanceOf(Date);
         expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
         expect(cook.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
+        expect(slackNotifyTestimonialUpserted).toHaveBeenCalledWith(cook.serverRuntime, {
+            bookingRequestId,
+            bookingRequestOfferId,
+            audience: 'COOK',
+            action: 'CREATED',
+            viaAdmin: false,
+            authorName: 'Chef Review',
+            rating: 5,
+            body: 'Great guests',
+            imageCount: 1,
+        });
     });
 
     it('publishes a rating of 4 and still stores the required low-rating answers', async () => {
@@ -385,7 +405,9 @@ describe('cookBookingRequestOfferTestimonialUpsert', () => {
 
     it('keeps publishedAt and stored answers when an edit stays published below 5 and clears omitted images', async () => {
         // Arrange
-        const { cook, bookingRequestOfferId } = await seedOffer({ dateTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) });
+        const { cook, bookingRequestId, bookingRequestOfferId } = await seedOffer({
+            dateTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        });
         const publishedAt = new Date('2024-03-01T00:00:00.000Z');
         const cookTestimonialId = idCreate();
         await testDb.insert(cookTestimonials).values({
@@ -422,6 +444,17 @@ describe('cookBookingRequestOfferTestimonialUpsert', () => {
         expect(row!.publishedAt).toEqual(publishedAt);
         expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
         expect(cook.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
+        expect(slackNotifyTestimonialUpserted).toHaveBeenCalledWith(cook.serverRuntime, {
+            bookingRequestId,
+            bookingRequestOfferId,
+            audience: 'COOK',
+            action: 'UPDATED',
+            viaAdmin: false,
+            authorName: 'Chef Review',
+            rating: 4,
+            body: 'Still good',
+            imageCount: 0,
+        });
     });
 
     it('keeps existing low-rating answers when a later edit omits them', async () => {

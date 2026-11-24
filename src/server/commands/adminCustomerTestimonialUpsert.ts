@@ -13,7 +13,29 @@ import type {
     GqlSSession,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { slackNotifyTestimonialUpserted } from '../slack/slackNotifyBooking';
 import { testimonialImageUrlsFromFileUploadIds } from '../utils/testimonialImageUrlsFromFileUploadIds';
+
+async function displayNameForUser(serverRuntime: ServerRuntime, userId: string, authorName: string | null): Promise<string> {
+    if (authorName) {
+        return authorName;
+    }
+    const [user] = await serverRuntime.db
+        .select({ firstName: users.firstName, lastName: users.lastName })
+        .from(users)
+        .where(eq(users.userId, userId))
+        .limit(1);
+    return user ? `${user.firstName} ${user.lastName}` : 'Unknown';
+}
+
+async function bookingRequestIdForOffer(serverRuntime: ServerRuntime, bookingRequestOfferId: string): Promise<string | undefined> {
+    const [offer] = await serverRuntime.db
+        .select({ bookingRequestId: bookingRequestOffers.bookingRequestId })
+        .from(bookingRequestOffers)
+        .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId))
+        .limit(1);
+    return offer?.bookingRequestId;
+}
 
 // Admin-created testimonials are always PUBLISHED — there is no self-reported
 // rating to gate on (unlike `bookingRequestOfferTestimonialUpsert`).
@@ -36,6 +58,20 @@ export async function adminCustomerTestimonialUpsert(
 
     try {
         if (input.customerTestimonialId) {
+            const [existing] = await serverRuntime.db
+                .select({
+                    customerTestimonialId: customerTestimonials.customerTestimonialId,
+                    bookingRequestOfferId: customerTestimonials.bookingRequestOfferId,
+                    imageUrls: customerTestimonials.imageUrls,
+                    userId: customerTestimonials.userId,
+                })
+                .from(customerTestimonials)
+                .where(eq(customerTestimonials.customerTestimonialId, input.customerTestimonialId))
+                .limit(1);
+            if (!existing) {
+                throw new Error('adminCustomerTestimonialUpsert: testimonial not found');
+            }
+
             const set: Partial<CustomerTestimonialCreate> = {
                 authorName,
                 location,
@@ -51,24 +87,46 @@ export async function adminCustomerTestimonialUpsert(
                 });
             }
 
-            const updated = await serverRuntime.db
+            await serverRuntime.db
                 .update(customerTestimonials)
                 .set(set)
-                .where(eq(customerTestimonials.customerTestimonialId, input.customerTestimonialId))
-                .returning({ customerTestimonialId: customerTestimonials.customerTestimonialId });
-            if (updated.length === 0) {
-                throw new Error('adminCustomerTestimonialUpsert: testimonial not found');
-            }
+                .where(eq(customerTestimonials.customerTestimonialId, input.customerTestimonialId));
 
             await serverRuntime.publish.adminUpdates();
+
+            if (existing.bookingRequestOfferId) {
+                const bookingRequestId = await bookingRequestIdForOffer(serverRuntime, existing.bookingRequestOfferId);
+                if (bookingRequestId) {
+                    const imageCount = set.imageUrls?.length ?? existing.imageUrls?.length ?? 0;
+                    await slackNotifyTestimonialUpserted(serverRuntime, {
+                        bookingRequestId,
+                        bookingRequestOfferId: existing.bookingRequestOfferId,
+                        audience: 'CUSTOMER',
+                        action: 'UPDATED',
+                        viaAdmin: true,
+                        authorName: await displayNameForUser(serverRuntime, existing.userId, authorName),
+                        rating,
+                        body,
+                        imageCount,
+                    });
+                }
+            }
+
             return { success: true, referenceId: input.customerTestimonialId };
         }
 
         const [[user], [offer]] = await Promise.all([
-            serverRuntime.db.select({ userId: users.userId }).from(users).where(eq(users.userId, input.userId)).limit(1),
+            serverRuntime.db
+                .select({ userId: users.userId, firstName: users.firstName, lastName: users.lastName })
+                .from(users)
+                .where(eq(users.userId, input.userId))
+                .limit(1),
             input.bookingRequestOfferId
                 ? serverRuntime.db
-                      .select({ bookingRequestOfferId: bookingRequestOffers.bookingRequestOfferId })
+                      .select({
+                          bookingRequestOfferId: bookingRequestOffers.bookingRequestOfferId,
+                          bookingRequestId: bookingRequestOffers.bookingRequestId,
+                      })
                       .from(bookingRequestOffers)
                       .where(eq(bookingRequestOffers.bookingRequestOfferId, input.bookingRequestOfferId))
                       .limit(1)
@@ -106,6 +164,21 @@ export async function adminCustomerTestimonialUpsert(
 
         await serverRuntime.db.insert(customerTestimonials).values(values);
         await serverRuntime.publish.adminUpdates();
+
+        if (offer) {
+            await slackNotifyTestimonialUpserted(serverRuntime, {
+                bookingRequestId: offer.bookingRequestId,
+                bookingRequestOfferId: offer.bookingRequestOfferId,
+                audience: 'CUSTOMER',
+                action: 'CREATED',
+                viaAdmin: true,
+                authorName: authorName ?? `${user.firstName} ${user.lastName}`,
+                rating,
+                body,
+                imageCount: imageUrls.length,
+            });
+        }
+
         return { success: true, referenceId: customerTestimonialId };
     } catch (error) {
         serverRuntime.log.error(error, requestingSession);

@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
 import {
@@ -17,11 +17,16 @@ import {
     occasionTestimonials,
     partnerVenueTestimonials,
 } from '../db/schema';
+import { slackNotifyTestimonialUpserted } from '../slack/slackNotifyBooking';
 import { adminMutationParent, commandSetup, findLogsForSession, partnerVenueInsert, testDb } from '../test/commandTestUtils';
 import { adminCustomerTestimonialDelete } from './adminCustomerTestimonialDelete';
 import { adminCustomerTestimonialImageUpdate } from './adminCustomerTestimonialImageUpdate';
 import { adminCustomerTestimonialPublish } from './adminCustomerTestimonialPublish';
 import { adminCustomerTestimonialUpsert } from './adminCustomerTestimonialUpsert';
+
+vi.mock('../slack/slackNotifyBooking', () => ({
+    slackNotifyTestimonialUpserted: vi.fn(async () => {}),
+}));
 
 const berlin = {
     displayText: 'Berlin',
@@ -101,7 +106,7 @@ async function insertOffer() {
         cookId: cook.user.userId,
         ...offerFees,
     });
-    return { bookingRequestOfferId, customer };
+    return { bookingRequestId, bookingRequestOfferId, customer };
 }
 
 async function insertCustomerTestimonial(userId: string, imageUrls: string[] | null = ['/keep']) {
@@ -120,6 +125,10 @@ async function insertCustomerTestimonial(userId: string, imageUrls: string[] | n
 }
 
 describe('adminCustomerTestimonialUpsert', () => {
+    beforeEach(() => {
+        vi.mocked(slackNotifyTestimonialUpserted).mockClear();
+    });
+
     it('inserts a published testimonial and publishes adminUpdates', async () => {
         // Arrange
         const admin = await adminSetup('customer-upsert-create');
@@ -162,12 +171,13 @@ describe('adminCustomerTestimonialUpsert', () => {
         });
         expect(row!.publishedAt).toBeInstanceOf(Date);
         expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
+        expect(slackNotifyTestimonialUpserted).not.toHaveBeenCalled();
     });
 
     it('inserts a testimonial linked to an offer with owned images in order', async () => {
         // Arrange
         const admin = await adminSetup('customer-upsert-images');
-        const { bookingRequestOfferId, customer } = await insertOffer();
+        const { bookingRequestId, bookingRequestOfferId, customer } = await insertOffer();
         const first = await insertImage(admin.user.userId);
         const second = await insertImage(admin.user.userId, 'image/png');
 
@@ -199,13 +209,24 @@ describe('adminCustomerTestimonialUpsert', () => {
             publicationStatus: 'PUBLISHED',
         });
         expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
+        expect(slackNotifyTestimonialUpserted).toHaveBeenCalledWith(admin.serverRuntime, {
+            bookingRequestId,
+            bookingRequestOfferId,
+            audience: 'CUSTOMER',
+            action: 'CREATED',
+            viaAdmin: true,
+            authorName: 'Guest Offer',
+            rating: 5,
+            body: 'Loved it',
+            imageCount: 2,
+        });
     });
 
     it('updates copy without changing images, publication, user, or the offer link', async () => {
         // Arrange
         const admin = await adminSetup('customer-upsert-update');
         const customer = await commandSetup.withUser({ firstName: 'Ada', lastName: 'Update' });
-        const { bookingRequestOfferId } = await insertOffer();
+        const { bookingRequestId, bookingRequestOfferId } = await insertOffer();
         const customerTestimonialId = idCreate();
         await testDb.insert(customerTestimonials).values({
             customerTestimonialId,
@@ -257,6 +278,17 @@ describe('adminCustomerTestimonialUpsert', () => {
             publishedAt: null,
         });
         expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
+        expect(slackNotifyTestimonialUpserted).toHaveBeenCalledWith(admin.serverRuntime, {
+            bookingRequestId,
+            bookingRequestOfferId,
+            audience: 'CUSTOMER',
+            action: 'UPDATED',
+            viaAdmin: true,
+            authorName: 'New name',
+            rating: 5,
+            body: 'Updated body',
+            imageCount: 1,
+        });
     });
 
     it('leaves images unchanged when imageFileUploadIds is null', async () => {
@@ -288,6 +320,7 @@ describe('adminCustomerTestimonialUpsert', () => {
             .where(eq(customerTestimonials.customerTestimonialId, customerTestimonialId));
         expect(row!.imageUrls).toEqual(['/keep']);
         expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
+        expect(slackNotifyTestimonialUpserted).not.toHaveBeenCalled();
     });
 
     it('replaces images when imageFileUploadIds is provided and clears them when empty', async () => {

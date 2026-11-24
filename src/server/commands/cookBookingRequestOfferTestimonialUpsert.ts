@@ -3,7 +3,7 @@ import { and, eq } from 'drizzle-orm';
 import { idCreate } from '../../shared/idCreate';
 import { testimonialRatingAssertRequired } from '../../shared/testimonialRating';
 import { textNormalizeProseTitled } from '../../shared/textNormalize';
-import { bookingRequestOffers, bookingRequests, cookTestimonials } from '../db/schema';
+import { bookingRequestOffers, bookingRequests, cookTestimonials, users } from '../db/schema';
 import type { CookTestimonialCreate } from '../db/schema';
 import { bookingRequestOfferStatusDerive } from '../domain/bookingRequest';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -15,6 +15,7 @@ import type {
     GqlSSession,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { slackNotifyTestimonialUpserted } from '../slack/slackNotifyBooking';
 import { publicationStatusFromRating } from '../utils/publicationStatusFromRating';
 import { testimonialImageUrlsFromFileUploadIds } from '../utils/testimonialImageUrlsFromFileUploadIds';
 import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
@@ -41,9 +42,15 @@ export async function cookBookingRequestOfferTestimonialUpsert(
 
     try {
         const [row] = await serverRuntime.db
-            .select({ offer: bookingRequestOffers, bookingRequest: bookingRequests })
+            .select({
+                offer: bookingRequestOffers,
+                bookingRequest: bookingRequests,
+                firstName: users.firstName,
+                lastName: users.lastName,
+            })
             .from(bookingRequestOffers)
             .innerJoin(bookingRequests, eq(bookingRequests.bookingRequestId, bookingRequestOffers.bookingRequestId))
+            .innerJoin(users, eq(users.userId, bookingRequestOffers.cookId))
             .where(
                 and(eq(bookingRequestOffers.bookingRequestOfferId, input.bookingRequestOfferId), eq(bookingRequestOffers.cookId, cookId)),
             )
@@ -71,6 +78,17 @@ export async function cookBookingRequestOfferTestimonialUpsert(
 
         const publicationStatus = publicationStatusFromRating(rating);
         const now = new Date();
+        const authorName = `${row.firstName} ${row.lastName}`;
+        const notifyArgs = {
+            bookingRequestId: row.bookingRequest.bookingRequestId,
+            bookingRequestOfferId: input.bookingRequestOfferId,
+            audience: 'COOK' as const,
+            viaAdmin: false,
+            authorName,
+            rating,
+            body,
+            imageCount: imageUrls.length,
+        };
 
         if (!existing) {
             const status = bookingRequestOfferStatusDerive({
@@ -119,6 +137,7 @@ export async function cookBookingRequestOfferTestimonialUpsert(
 
             await serverRuntime.db.insert(cookTestimonials).values(values);
             await Promise.all([serverRuntime.publish.userUpdates({ userId: cookId }), serverRuntime.publish.adminUpdates()]);
+            await slackNotifyTestimonialUpserted(serverRuntime, { ...notifyArgs, action: 'CREATED' });
             return { success: true, referenceId: cookTestimonialId };
         }
 
@@ -148,6 +167,7 @@ export async function cookBookingRequestOfferTestimonialUpsert(
             .where(eq(cookTestimonials.cookTestimonialId, existing.cookTestimonialId));
 
         await Promise.all([serverRuntime.publish.userUpdates({ userId: cookId }), serverRuntime.publish.adminUpdates()]);
+        await slackNotifyTestimonialUpserted(serverRuntime, { ...notifyArgs, action: 'UPDATED' });
 
         return { success: true, referenceId: existing.cookTestimonialId };
     } catch (error) {

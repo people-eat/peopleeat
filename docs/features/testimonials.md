@@ -55,6 +55,12 @@ existing follow-up answers unless the cook fills them again; dropping from 5 to 
   (like `AdminFeaturedCook.isPubliclyListed`) flags curated rows that are not yet public. Admin live preview keeps those rows visible with a
   card `StatusBadge` and section `StatusAlert` (public pages still omit them).
 
+### Ops Slack
+
+Creating or updating an **offer-linked** customer or cook testimonial (marketplace or admin upsert) posts a German thread reply on that
+booking request’s Slack thread: who, rating, body, and photo count when images are attached. Catalog testimonials with no offer link do not
+notify. See [slack-notifications.md](./slack-notifications.md).
+
 ### Public
 
 - Shared public tile (`TestimonialCard`): fully clickable (hover wash + underline on “Bewertung ansehen” / “View review”), occasion as the
@@ -140,6 +146,7 @@ Structural decisions: [architecture/testimonials.md](../architecture/testimonial
   multi-select + compress path (cap 8).
 - List nudges: customer request/offer cards read `testimonialMissing`, show corner `NotificationBadge` when unread is 0, deep-link
   `?tab=testimonial`
+- Slack: `slackNotifyTestimonialUpserted` from customer / cook / admin upserts when `bookingRequestOfferId` is set (create + update)
 - Jobs: `bookingRequestOfferTestimonialReminder` (memory nudge, morning and evening reminders Europe/Berlin); schedule on payment success
   and datetime changes; cancel on request cancel
 - Email and Utility WhatsApp templates for each nudge kind and audience. WhatsApp uses the recipient locale, saved message snapshots, and

@@ -1,10 +1,15 @@
 import { eq } from 'drizzle-orm';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
 import { adminLegalPrivacyPolicies, bookingRequestOffers, bookingRequests, cooks, customerTestimonials, fileUploads } from '../db/schema';
+import { slackNotifyTestimonialUpserted } from '../slack/slackNotifyBooking';
 import { commandSetup, findLogsForSession, testDb, userMutationParent } from '../test/commandTestUtils';
 import { userBookingRequestOfferTestimonialUpsert } from './userBookingRequestOfferTestimonialUpsert';
+
+vi.mock('../slack/slackNotifyBooking', () => ({
+    slackNotifyTestimonialUpserted: vi.fn(async () => {}),
+}));
 
 const berlin = {
     displayText: 'Berlin',
@@ -79,7 +84,7 @@ async function seedOffer(options?: {
                 ? null
                 : { paymentIntentId: 'pi_user_testimonial', clientSecret: 'secret', transferId: 'tr_user_testimonial' },
     });
-    return { cook, customer, bookingRequestOfferId };
+    return { cook, customer, bookingRequestId, bookingRequestOfferId };
 }
 
 async function insertImage(userId: string, mediaType = 'image/jpeg') {
@@ -104,9 +109,13 @@ async function rowFor(bookingRequestOfferId: string) {
 }
 
 describe('userBookingRequestOfferTestimonialUpsert', () => {
+    beforeEach(() => {
+        vi.mocked(slackNotifyTestimonialUpserted).mockClear();
+    });
+
     it('inserts a published review for a paid completed offer and publishes user and admin updates', async () => {
         // Arrange
-        const { customer, bookingRequestOfferId } = await seedOffer();
+        const { customer, bookingRequestId, bookingRequestOfferId } = await seedOffer();
         const first = await insertImage(customer.user.userId);
         const second = await insertImage(customer.user.userId, 'image/png');
 
@@ -143,6 +152,17 @@ describe('userBookingRequestOfferTestimonialUpsert', () => {
         expect(row!.publishedAt).toBeInstanceOf(Date);
         expect(customer.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
         expect(customer.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
+        expect(slackNotifyTestimonialUpserted).toHaveBeenCalledWith(customer.serverRuntime, {
+            bookingRequestId,
+            bookingRequestOfferId,
+            audience: 'CUSTOMER',
+            action: 'CREATED',
+            viaAdmin: false,
+            authorName: 'Ada Guest',
+            rating: 5,
+            body: 'Lovely evening',
+            imageCount: 2,
+        });
     });
 
     it('publishes a rating of 4 immediately', async () => {
@@ -398,7 +418,9 @@ describe('userBookingRequestOfferTestimonialUpsert', () => {
 
     it('keeps publishedAt when an already published review stays published and clears omitted images', async () => {
         // Arrange
-        const { customer, bookingRequestOfferId } = await seedOffer({ dateTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) });
+        const { customer, bookingRequestId, bookingRequestOfferId } = await seedOffer({
+            dateTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        });
         const publishedAt = new Date('2024-03-01T00:00:00.000Z');
         const customerTestimonialId = idCreate();
         await testDb.insert(customerTestimonials).values({
@@ -427,6 +449,17 @@ describe('userBookingRequestOfferTestimonialUpsert', () => {
         expect(row!.publishedAt).toEqual(publishedAt);
         expect(customer.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
         expect(customer.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
+        expect(slackNotifyTestimonialUpserted).toHaveBeenCalledWith(customer.serverRuntime, {
+            bookingRequestId,
+            bookingRequestOfferId,
+            audience: 'CUSTOMER',
+            action: 'UPDATED',
+            viaAdmin: false,
+            authorName: 'Ada Guest',
+            rating: 4,
+            body: 'Still lovely',
+            imageCount: 0,
+        });
     });
 
     it('stamps publishedAt when a pending review is raised to 5', async () => {

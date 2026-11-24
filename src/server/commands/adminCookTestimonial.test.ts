@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
 import {
@@ -17,11 +17,16 @@ import {
     occasionTestimonials,
     partnerVenueTestimonials,
 } from '../db/schema';
+import { slackNotifyTestimonialUpserted } from '../slack/slackNotifyBooking';
 import { adminMutationParent, commandSetup, findLogsForSession, partnerVenueInsert, testDb } from '../test/commandTestUtils';
 import { adminCookTestimonialDelete } from './adminCookTestimonialDelete';
 import { adminCookTestimonialImageUpdate } from './adminCookTestimonialImageUpdate';
 import { adminCookTestimonialPublish } from './adminCookTestimonialPublish';
 import { adminCookTestimonialUpsert } from './adminCookTestimonialUpsert';
+
+vi.mock('../slack/slackNotifyBooking', () => ({
+    slackNotifyTestimonialUpserted: vi.fn(async () => {}),
+}));
 
 const berlin = {
     displayText: 'Berlin',
@@ -105,7 +110,7 @@ async function insertOffer(cookId: string) {
         cookId,
         ...offerFees,
     });
-    return bookingRequestOfferId;
+    return { bookingRequestId, bookingRequestOfferId };
 }
 
 async function insertCookTestimonial(cookId: string, imageUrls: string[] | null = ['/keep']) {
@@ -125,6 +130,10 @@ async function insertCookTestimonial(cookId: string, imageUrls: string[] | null 
 }
 
 describe('adminCookTestimonialUpsert', () => {
+    beforeEach(() => {
+        vi.mocked(slackNotifyTestimonialUpserted).mockClear();
+    });
+
     it('inserts a published testimonial for an existing cook and publishes adminUpdates', async () => {
         // Arrange
         const admin = await adminSetup('cook-upsert-create');
@@ -167,13 +176,14 @@ describe('adminCookTestimonialUpsert', () => {
         expect(row!.publishedAt).toBeInstanceOf(Date);
         expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledTimes(1);
         expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
+        expect(slackNotifyTestimonialUpserted).not.toHaveBeenCalled();
     });
 
     it('inserts a testimonial linked to an offer with owned images in order', async () => {
         // Arrange
         const admin = await adminSetup('cook-upsert-images');
         const cook = await cookUser('Images');
-        const bookingRequestOfferId = await insertOffer(cook.user.userId);
+        const { bookingRequestId, bookingRequestOfferId } = await insertOffer(cook.user.userId);
         const first = await insertImage(admin.user.userId);
         const second = await insertImage(admin.user.userId, 'image/png');
 
@@ -206,6 +216,17 @@ describe('adminCookTestimonialUpsert', () => {
             publicationStatus: 'PUBLISHED',
         });
         expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
+        expect(slackNotifyTestimonialUpserted).toHaveBeenCalledWith(admin.serverRuntime, {
+            bookingRequestId,
+            bookingRequestOfferId,
+            audience: 'COOK',
+            action: 'CREATED',
+            viaAdmin: true,
+            authorName: 'Images Cook',
+            rating: 5,
+            body: null,
+            imageCount: 2,
+        });
     });
 
     it('stores a null body when prose is blank', async () => {
@@ -240,7 +261,7 @@ describe('adminCookTestimonialUpsert', () => {
         // Arrange
         const admin = await adminSetup('cook-upsert-update');
         const cook = await cookUser('Update');
-        const bookingRequestOfferId = await insertOffer(cook.user.userId);
+        const { bookingRequestId, bookingRequestOfferId } = await insertOffer(cook.user.userId);
         const cookTestimonialId = idCreate();
         await testDb.insert(cookTestimonials).values({
             cookTestimonialId,
@@ -293,6 +314,17 @@ describe('adminCookTestimonialUpsert', () => {
             publishedAt: null,
         });
         expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
+        expect(slackNotifyTestimonialUpserted).toHaveBeenCalledWith(admin.serverRuntime, {
+            bookingRequestId,
+            bookingRequestOfferId,
+            audience: 'COOK',
+            action: 'UPDATED',
+            viaAdmin: true,
+            authorName: 'New name',
+            rating: 5,
+            body: 'Updated body',
+            imageCount: 1,
+        });
     });
 
     it('leaves images unchanged when imageFileUploadIds is null', async () => {
@@ -321,6 +353,7 @@ describe('adminCookTestimonialUpsert', () => {
         const [row] = await testDb.select().from(cookTestimonials).where(eq(cookTestimonials.cookTestimonialId, cookTestimonialId));
         expect(row!.imageUrls).toEqual(['/keep']);
         expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
+        expect(slackNotifyTestimonialUpserted).not.toHaveBeenCalled();
     });
 
     it('replaces images when imageFileUploadIds is provided', async () => {
