@@ -4,6 +4,7 @@ import type { CSSProperties } from 'react';
 
 import { ASSISTANT_SIDEBAR_WIDTH_DEFAULT_REM } from '../../chat/assistantSidebarWidth';
 import { isAssistantFullscreenPath } from '../../chat/isAssistantFullscreenPath';
+import { ADMIN_I18N_NAMESPACES } from '../../../i18n/namespacesForPath';
 import { AdminSidebar } from '../../components/AdminSidebar';
 import { SidebarInset, SidebarProvider, useSidebar } from '../../components/base/sidebar';
 import { I18nProvider } from '../../components/I18nProvider';
@@ -57,7 +58,7 @@ export function AdminLayout({ loaderData }: { loaderData: GqlCAdminPageQuery }) 
     const activeFeatureToggleKeys = loaderData.currentSession.activeFeatureToggleKeys;
 
     return (
-        <I18nProvider locale={locale} namespaces={['common', 'public', 'admin']}>
+        <I18nProvider locale={locale} namespaces={ADMIN_I18N_NAMESPACES}>
             <FeatureToggleAdminShellProvider value={true}>
                 <FeatureToggleKeysProvider value={activeFeatureToggleKeys}>
                     <SidebarProvider style={{ '--sidebar-width': '19rem' } as CSSProperties}>

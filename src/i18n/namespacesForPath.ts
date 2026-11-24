@@ -1,5 +1,8 @@
 import type { I18nWebNamespace } from './namespaces';
 
+/** Admin shell + shared cook inventory cards (`CookMealCard`, `CookMenuCard`, …). */
+export const ADMIN_I18N_NAMESPACES = ['common', 'public', 'admin', 'profileCook'] as const satisfies readonly I18nWebNamespace[];
+
 function pathWithoutQuery(pathname: string): string {
     const q = pathname.indexOf('?');
     return q === -1 ? pathname : pathname.slice(0, q);
@@ -31,7 +34,7 @@ function isProfilePublicBookingPath(path: string): boolean {
 /** Web namespaces the locale layout should preload for this unprefixed path. */
 export function namespacesForPath(pathname: string): I18nWebNamespace[] {
     const path = pathWithoutQuery(pathname);
-    if (isAdminPath(path)) return ['common', 'public', 'admin'];
+    if (isAdminPath(path)) return [...ADMIN_I18N_NAMESPACES];
     if (isProfilePath(path)) {
         if (isProfilePublicBookingPath(path)) return ['common', 'public', 'publicBooking', 'profile'];
         return ['common', 'public', 'profile'];

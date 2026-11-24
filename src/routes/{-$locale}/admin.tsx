@@ -1,6 +1,7 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
 
 import { i18nResourcesLoad } from '../../i18n/catalogCache';
+import { ADMIN_I18N_NAMESPACES } from '../../i18n/namespacesForPath';
 import { contentLocaleText } from '../../shared/contentSection';
 import { AdminPageDocument } from '../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../web/graphql/routeLoaderGraphqlClient';
@@ -9,8 +10,6 @@ import { seoMeta } from '../../web/seo/seoMeta';
 import { webPageUrlGet } from '../../web/seo/webPageUrlGet';
 import { localeFromParam } from '../../web/utils/locale';
 import { returnToFromLocation } from '../../web/utils/returnTo';
-
-const ADMIN_I18N_NAMESPACES = ['common', 'public', 'admin'] as const;
 
 export const Route = createFileRoute('/{-$locale}/admin')({
     loader: async ({ params, location }) => {

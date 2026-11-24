@@ -29,8 +29,9 @@ describe('namespacesForPath', () => {
         expect(namespacesForPath('/profile/booking-requests/abc/offers/def')).toEqual(['common', 'public', 'profile']);
     });
 
-    it('loads admin with public for content-page preview, without profile catalogs', () => {
-        expect(namespacesForPath('/admin')).toEqual(['common', 'public', 'admin']);
-        expect(namespacesForPath('/admin/users')).toEqual(['common', 'public', 'admin']);
+    it('loads admin with public and profileCook for content preview and cook inventory cards', () => {
+        expect(namespacesForPath('/admin')).toEqual(['common', 'public', 'admin', 'profileCook']);
+        expect(namespacesForPath('/admin/users')).toEqual(['common', 'public', 'admin', 'profileCook']);
+        expect(namespacesForPath('/admin/meals')).toEqual(['common', 'public', 'admin', 'profileCook']);
     });
 });

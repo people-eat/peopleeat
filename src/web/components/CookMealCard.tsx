@@ -134,7 +134,7 @@ export function CookMealCard({
                     <Popover>
                         <PopoverTrigger asChild>
                             <button type="button" className="inline-flex cursor-pointer" aria-label={t('meal.noPictureNote')}>
-                                <StatusBadge tone="warning" label={t('meal.noPictureNote')} />
+                                <StatusBadge tone="warning">{t('meal.pictureMissing')}</StatusBadge>
                             </button>
                         </PopoverTrigger>
                         <PopoverContent align="start" className="w-64 p-3 text-sm">
