@@ -71,7 +71,10 @@ stack with venue-specific chrome: single display name, curated cooks (optional c
 promo link, image overlay toggles, How it works alternative media, and landing chrome (How it works / Known from).
 
 Dedicated co-branded landings such as a former Amex route are **not** rebuilt. Venue pages (`/venues/$pathName`) are the product home for
-campaigns and CTAs.
+campaigns and CTAs. Historic Amex triage is **current-apply promo only** (a still-applied Amex promo on the booking request, via promo
+Usage). Admin Origin does not recover predecessor visit `params.referrer = amex`. Partner `?venueId=` is URL-only and is not stored on the
+request; Origin may show `landingPath` `/venues/…` only when that was first-touch of the **creating** session. A durable partner FK is
+deferred.
 
 ## Next steps
 

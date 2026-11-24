@@ -223,6 +223,12 @@ export const sessionEvents = pgTable(
             .where(
                 sql`${table.type} = 'WEB_PAGE_VISITED' AND ${table.payload}->>'webPageKey' = 'CHEFS' AND (${table.payload}->'params'->>'cookId') IS NOT NULL`,
             ),
+        // Admin booking-request Origin: reverse lookup of the creating session
+        // from BOOKING_REQUEST_CREATED.payload.bookingRequestId. Predecessor
+        // empty-payload rows are excluded. See adminBookingRequestCreatingSessionFindOne.
+        index('SessionEvents_bookingRequestCreated_bookingRequestId_createdAt_idx')
+            .using('btree', sql`(${table.payload}->>'bookingRequestId')`, table.createdAt)
+            .where(sql`${table.type} = 'BOOKING_REQUEST_CREATED' AND (${table.payload}->>'bookingRequestId') IS NOT NULL`),
     ],
 );
 

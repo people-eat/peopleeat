@@ -661,6 +661,7 @@ export interface GqlCAdminBookingRequest {
     cook?: Maybe<GqlCAdminCook>;
     cooksInTravelRadius: Array<GqlCAdminBookingRequestCookInTravelRadius>;
     createdAt: Scalars['DateTime']['output'];
+    creatingSession?: Maybe<GqlCAdminSession>;
     customer: GqlCAdminUser;
     dateTime: Scalars['DateTime']['output'];
     exactEventAddress: GqlCCookTravelOriginAddress;
@@ -12527,6 +12528,7 @@ export type GqlCAdminBookingRequestPageRequestFragment = {
     requestedMenu: { menuId: string; title: string } | null;
     promoCode: { promoCodeId: string; redeemCode: string; amountCents: number } | null;
     giftCard: { giftCardId: string; redeemCode: string; balanceCents: number } | null;
+    creatingSession: { sessionId: string; landingPath: string | null; referrer: string | null; isImpersonation: boolean } | null;
     cooksInTravelRadius: Array<{
         estimatedTravelDistanceKm: number;
         estimatedTravelExpensesCents: number;
@@ -12668,6 +12670,12 @@ export type GqlCAdminBookingRequestPageQuery = {
                     requestedMenu: { menuId: string; title: string } | null;
                     promoCode: { promoCodeId: string; redeemCode: string; amountCents: number } | null;
                     giftCard: { giftCardId: string; redeemCode: string; balanceCents: number } | null;
+                    creatingSession: {
+                        sessionId: string;
+                        landingPath: string | null;
+                        referrer: string | null;
+                        isImpersonation: boolean;
+                    } | null;
                     cooksInTravelRadius: Array<{
                         estimatedTravelDistanceKm: number;
                         estimatedTravelExpensesCents: number;
@@ -12812,6 +12820,7 @@ export type GqlCAdminBookingRequestPageUpdatesSubscription = {
             requestedMenu: { menuId: string; title: string } | null;
             promoCode: { promoCodeId: string; redeemCode: string; amountCents: number } | null;
             giftCard: { giftCardId: string; redeemCode: string; balanceCents: number } | null;
+            creatingSession: { sessionId: string; landingPath: string | null; referrer: string | null; isImpersonation: boolean } | null;
             cooksInTravelRadius: Array<{
                 estimatedTravelDistanceKm: number;
                 estimatedTravelExpensesCents: number;
@@ -30300,6 +30309,19 @@ export const AdminBookingRequestPageRequestFragmentDoc = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'giftCardId' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'redeemCode' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'balanceCents' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'creatingSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'sessionId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'landingPath' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'referrer' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'isImpersonation' } },
                             ],
                         },
                     },
@@ -56678,6 +56700,19 @@ export const AdminBookingRequestPageDocument = {
                     },
                     {
                         kind: 'Field',
+                        name: { kind: 'Name', value: 'creatingSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'sessionId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'landingPath' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'referrer' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'isImpersonation' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
                         name: { kind: 'Name', value: 'cooksInTravelRadius' },
                         selectionSet: {
                             kind: 'SelectionSet',
@@ -57115,6 +57150,19 @@ export const AdminBookingRequestPageUpdatesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'giftCardId' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'redeemCode' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'balanceCents' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'creatingSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'sessionId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'landingPath' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'referrer' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'isImpersonation' } },
                             ],
                         },
                     },

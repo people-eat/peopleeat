@@ -40,4 +40,11 @@ describe('parseAdminBookingRequestsSearch', () => {
             statuses: undefined,
         });
     });
+
+    it('keeps a valid promoCodeId and drops invalid ids', () => {
+        const promoCodeId = 'abcdefghijklmnopqrst';
+        expect(parseAdminBookingRequestsSearch({ promoCodeId })).toMatchObject({ promoCodeId });
+        expect(parseAdminBookingRequestsSearch({ promoCodeId: 'not-a-nano-id' }).promoCodeId).toBeUndefined();
+        expect(adminBookingRequestsPageVariables({ promoCodeId }).criterion.promoCodeId).toBe(promoCodeId);
+    });
 });

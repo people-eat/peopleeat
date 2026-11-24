@@ -658,6 +658,7 @@ export interface GqlSAdminBookingRequest {
     cook?: Maybe<GqlSAdminCook>;
     cooksInTravelRadius: Array<GqlSAdminBookingRequestCookInTravelRadius>;
     createdAt: Scalars['DateTime']['output'];
+    creatingSession?: Maybe<GqlSAdminSession>;
     customer: GqlSAdminUser;
     dateTime: Scalars['DateTime']['output'];
     exactEventAddress: GqlSCookTravelOriginAddress;
@@ -7920,6 +7921,7 @@ export type GqlSAdminBookingRequestResolvers<
     cook?: Resolver<Maybe<GqlSResolversTypes['AdminCook']>, ParentType, ContextType>;
     cooksInTravelRadius?: Resolver<Array<GqlSResolversTypes['AdminBookingRequestCookInTravelRadius']>, ParentType, ContextType>;
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
+    creatingSession?: Resolver<Maybe<GqlSResolversTypes['AdminSession']>, ParentType, ContextType>;
     customer?: Resolver<GqlSResolversTypes['AdminUser'], ParentType, ContextType>;
     dateTime?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     exactEventAddress?: Resolver<GqlSResolversTypes['CookTravelOriginAddress'], ParentType, ContextType>;

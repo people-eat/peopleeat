@@ -762,6 +762,8 @@ function AdminBookingRequestDetailFields({ bookingRequest }: { bookingRequest: A
                     value={formatDate(bookingRequest.createdAt, { locale, timeZone, dateStyle: 'medium' })}
                 />
                 <Separator />
+                <AdminBookingRequestOriginFields bookingRequest={bookingRequest} empty={empty} />
+                <Separator />
                 <DetailField
                     label={t(locale, 'admin', 'copy.expires')}
                     value={
@@ -1019,6 +1021,60 @@ function AdminBookingRequestOffersSection({
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+        </div>
+    );
+}
+
+function AdminBookingRequestOriginFields({ bookingRequest, empty }: { bookingRequest: AdminBookingRequestDetail; empty: string }) {
+    const locale = useLocale();
+    const creatingSession = bookingRequest.creatingSession;
+    const promoCode = bookingRequest.promoCode;
+    const landingPath = creatingSession?.landingPath?.trim() || empty;
+    const referrer = creatingSession?.referrer?.trim() || empty;
+
+    return (
+        <div className="grid gap-1">
+            <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t(locale, 'admin', 'copy.origin')}</dt>
+            <dd className="grid gap-2 text-sm text-foreground">
+                {creatingSession ? (
+                    <>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <Link
+                                to="/{-$locale}/admin/sessions/$sessionId"
+                                params={{ sessionId: creatingSession.sessionId }}
+                                className="font-medium text-foreground hover:underline"
+                            >
+                                {t(locale, 'admin', 'copy.openSession')}
+                            </Link>
+                            {creatingSession.isImpersonation ? (
+                                <Badge variant="secondary">{t(locale, 'admin', 'copy.impersonation')}</Badge>
+                            ) : null}
+                        </div>
+                        <p>
+                            <span className="text-muted-foreground">{t(locale, 'admin', 'copy.landingPath')}: </span>
+                            <span className="font-mono text-xs break-all">{landingPath}</span>
+                        </p>
+                        <p>
+                            <span className="text-muted-foreground">{t(locale, 'admin', 'copy.referrer')}: </span>
+                            <span className="break-all">{referrer}</span>
+                        </p>
+                    </>
+                ) : (
+                    <span className="text-muted-foreground">{t(locale, 'admin', 'copy.originNotRecorded')}</span>
+                )}
+                {promoCode ? (
+                    <p>
+                        <span className="text-muted-foreground">{t(locale, 'admin', 'copy.promoCode')}: </span>
+                        <Link
+                            to="/{-$locale}/admin/promo-codes/$promoCodeId"
+                            params={{ promoCodeId: promoCode.promoCodeId }}
+                            className="font-mono text-xs font-medium text-foreground hover:underline"
+                        >
+                            {promoCode.redeemCode}
+                        </Link>
+                    </p>
+                ) : null}
+            </dd>
         </div>
     );
 }

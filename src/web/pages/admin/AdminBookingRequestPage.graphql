@@ -93,6 +93,12 @@ fragment AdminBookingRequestPageRequest on AdminBookingRequest {
         redeemCode
         balanceCents
     }
+    creatingSession {
+        sessionId
+        landingPath
+        referrer
+        isImpersonation
+    }
     cooksInTravelRadius {
         estimatedTravelDistanceKm
         estimatedTravelExpensesCents

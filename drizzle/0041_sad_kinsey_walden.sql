@@ -1,0 +1,1 @@
+CREATE INDEX "SessionEvents_bookingRequestCreated_bookingRequestId_createdAt_idx" ON "SessionEvents" USING btree (("payload"->>'bookingRequestId'),"createdAt") WHERE "SessionEvents"."type" = 'BOOKING_REQUEST_CREATED' AND ("SessionEvents"."payload"->>'bookingRequestId') IS NOT NULL;

@@ -249,6 +249,7 @@ import { adminBookingRequestAverageParticipantsFindOne } from '../queries/adminB
 import { adminBookingRequestCookOfferStatsFindMany } from '../queries/adminBookingRequestCookOfferStatsFindMany';
 import { adminBookingRequestCooksInTravelRadiusFindMany } from '../queries/adminBookingRequestCooksInTravelRadiusFindMany';
 import { adminBookingRequestCounts } from '../queries/adminBookingRequestCounts';
+import { adminBookingRequestCreatingSessionFindOne } from '../queries/adminBookingRequestCreatingSessionFindOne';
 import { adminBookingRequestCreationMonthStatsFindMany } from '../queries/adminBookingRequestCreationMonthStatsFindMany';
 import { adminBookingRequestCreationsFindMany } from '../queries/adminBookingRequestCreationsFindMany';
 import { adminBookingRequestFindMany } from '../queries/adminBookingRequestFindMany';
@@ -1126,6 +1127,9 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
         },
         AdminBookingRequest: {
+            creatingSession(parent: GqlSAdminBookingRequest) {
+                return adminBookingRequestCreatingSessionFindOne(parent.bookingRequestId, serverRuntime);
+            },
             cooksInTravelRadius(parent: GqlSAdminBookingRequest) {
                 return adminBookingRequestCooksInTravelRadiusFindMany(parent, serverRuntime);
             },

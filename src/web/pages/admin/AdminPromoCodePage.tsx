@@ -141,7 +141,7 @@ function AdminPromoCodeTabPanel({
         case 'expiration':
             return <AdminPromoCodeExpirationForm promoCode={promoCode} />;
         case 'usage':
-            return <AdminPromoCodeUsage bookingRequests={bookingRequests} />;
+            return <AdminPromoCodeUsage bookingRequests={bookingRequests} promoCodeId={promoCode.promoCodeId} />;
     }
 }
 
@@ -330,7 +330,13 @@ function AdminPromoCodeExpirationForm({ promoCode }: { promoCode: AdminPromoCode
     );
 }
 
-function AdminPromoCodeUsage({ bookingRequests }: { bookingRequests: AdminPromoCodeUsageBookingRequest[] }) {
+function AdminPromoCodeUsage({
+    bookingRequests,
+    promoCodeId,
+}: {
+    bookingRequests: AdminPromoCodeUsageBookingRequest[];
+    promoCodeId: string;
+}) {
     const locale = useLocale();
     const timeZone = useTimeZone();
 
@@ -339,25 +345,36 @@ function AdminPromoCodeUsage({ bookingRequests }: { bookingRequests: AdminPromoC
     }
 
     return (
-        <ul className="grid gap-3">
-            {bookingRequests.map((request) => {
-                const customerName = [request.customer.firstName, request.customer.lastName].filter(Boolean).join(' ').trim();
-                return (
-                    <li key={request.bookingRequestId} className="grid gap-1 border-b border-border/60 pb-3 last:border-b-0">
-                        <Link
-                            to="/{-$locale}/admin/booking-requests/$bookingRequestId"
-                            params={{ bookingRequestId: request.bookingRequestId }}
-                            className="font-medium text-foreground hover:underline"
-                        >
-                            {customerName || request.customer.userId}
-                        </Link>
-                        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                            <span className="tabular-nums">{formatDate(request.dateTime, { locale, timeZone, dateStyle: 'medium' })}</span>
-                        </div>
-                    </li>
-                );
-            })}
-        </ul>
+        <div className="grid gap-4">
+            <Link
+                to="/{-$locale}/admin/booking-requests/list"
+                search={{ promoCodeId }}
+                className="text-sm font-medium text-foreground hover:underline"
+            >
+                {t(locale, 'admin', 'copy.viewRequestsUsingThisCode')}
+            </Link>
+            <ul className="grid gap-3">
+                {bookingRequests.map((request) => {
+                    const customerName = [request.customer.firstName, request.customer.lastName].filter(Boolean).join(' ').trim();
+                    return (
+                        <li key={request.bookingRequestId} className="grid gap-1 border-b border-border/60 pb-3 last:border-b-0">
+                            <Link
+                                to="/{-$locale}/admin/booking-requests/$bookingRequestId"
+                                params={{ bookingRequestId: request.bookingRequestId }}
+                                className="font-medium text-foreground hover:underline"
+                            >
+                                {customerName || request.customer.userId}
+                            </Link>
+                            <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                                <span className="tabular-nums">
+                                    {formatDate(request.dateTime, { locale, timeZone, dateStyle: 'medium' })}
+                                </span>
+                            </div>
+                        </li>
+                    );
+                })}
+            </ul>
+        </div>
     );
 }
 

@@ -20,8 +20,9 @@ Success → detail.
 ### Detail — `/admin/promo-codes/<id>`
 
 Tabs: **general** (read-only id, code, amount, minimum, scope global vs request-bound, active/expired, created), **expiration** (datetime
-save, **Expire now**), **usage** (booking requests that currently apply this code, links to admin booking detail). Redeem code and amount
-are not editable after create.
+save, **Expire now**), **usage** (booking requests that currently apply this code, links to admin booking detail, plus a list deep-link with
+`?promoCodeId=`). Usage is **not** a historical ledger: clearing the code on a request drops it from this tab. Redeem code and amount are
+not editable after create.
 
 ### Booking-scoped (churn) codes
 

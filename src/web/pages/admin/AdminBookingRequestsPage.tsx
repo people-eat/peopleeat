@@ -4,7 +4,7 @@ import { LayoutGridIcon, ListIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { t } from '../../../i18n/t';
-import { userDisplayName } from '../../../shared';
+import { isNanoId, userDisplayName } from '../../../shared';
 import { bookingRequestPublicationReviewQueueStatuses, bookingRequestStatusLabel } from '../../../shared/bookingRequestStatus';
 import { AdminBookingRequestListCard } from '../../components/AdminBookingRequestListCard';
 import { AdminListPaginationBar } from '../../components/AdminListPaginationBar';
@@ -86,6 +86,8 @@ export type AdminBookingRequestsSearch = {
     /** Omit or `grid` = card grid (default). `list` = table. */
     view?: AdminBookingRequestsView;
     staleDirect?: boolean;
+    /** Currently applied promo (`BookingRequests.promoCodeId`). Promo Usage deep-link. */
+    promoCodeId?: string;
 };
 
 const GRID_SORT_OPTIONS = [
@@ -138,7 +140,9 @@ export function parseAdminBookingRequestsSearch(search: Record<string, unknown>)
     const { sort, dir } = parseAdminListSortSearch(search, ADMIN_BOOKING_REQUESTS_SORT_FIELDS);
     const view = parseAdminBookingRequestsView(search.view);
     const staleDirect = search.staleDirect === true || search.staleDirect === 'true' ? true : undefined;
-    return { q, publicationStatus, status, statuses, page, pageSize, sort, dir, view, staleDirect };
+    const promoCodeId =
+        typeof search.promoCodeId === 'string' && isNanoId(search.promoCodeId.trim()) ? search.promoCodeId.trim() : undefined;
+    return { q, publicationStatus, status, statuses, page, pageSize, sort, dir, view, staleDirect, promoCodeId };
 }
 
 export function adminBookingRequestsPageVariables(search: AdminBookingRequestsSearch) {
@@ -149,6 +153,7 @@ export function adminBookingRequestsPageVariables(search: AdminBookingRequestsSe
             publicationStatuses: search.publicationStatus ? [search.publicationStatus] : undefined,
             statuses: search.statuses ?? (search.status ? [search.status] : undefined),
             staleDirect: search.staleDirect === true ? true : undefined,
+            promoCodeId: search.promoCodeId,
             ...adminListSortToCriterion(search),
         },
     };
@@ -178,11 +183,12 @@ function adminBookingRequestsSearchForUrl(search: AdminBookingRequestsSearch) {
         ...adminListSortSearchForUrl(search),
         ...adminBookingRequestsViewForUrl(search.view),
         staleDirect: search.staleDirect === true ? true : undefined,
+        promoCodeId: search.promoCodeId,
     };
 }
 
 function adminBookingRequestsHasActiveFilters(search: AdminBookingRequestsSearch): boolean {
-    return Boolean(search.q || search.publicationStatus || search.status || search.statuses || search.staleDirect);
+    return Boolean(search.q || search.publicationStatus || search.status || search.statuses || search.staleDirect || search.promoCodeId);
 }
 
 export function AdminBookingRequestsPage({
@@ -276,6 +282,7 @@ export function AdminBookingRequestsPage({
             status: undefined,
             statuses: undefined,
             staleDirect: undefined,
+            promoCodeId: undefined,
             page: undefined,
         });
     }
@@ -468,6 +475,10 @@ export function AdminBookingRequestsPage({
                         </p>
                     </div>
                 </div>
+
+                {search.promoCodeId ? (
+                    <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.filteredToCurrentlyAppliedPromo')}</p>
+                ) : null}
 
                 {viewMode === 'list' ? (
                     <AdminBookingRequestsDataTable data={tableRows} sorting={sorting} onSortingChange={onSortingChange} />

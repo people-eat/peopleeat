@@ -104,6 +104,8 @@ export function toGqlAdminBookingRequest(input: ToGqlAdminBookingRequestInput): 
                   balanceCents: giftCard.balanceCents,
               }
             : null,
+        // Lazy via `AdminBookingRequest.creatingSession` field resolver.
+        creatingSession: null,
         // Lazy via `AdminBookingRequest.cooksInTravelRadius` field resolver.
         cooksInTravelRadius: [],
         // Lazy via `AdminBookingRequest.queuedJobs` field resolver.

@@ -104,6 +104,10 @@ Admin descriptions mark these with “(Legacy)” / “(legacy)”.
   `SessionEvents_webPageVisit_chefs_sessionId_createdAt_idx` on `(sessionId, createdAt)` where `type = 'WEB_PAGE_VISITED'`,
   `webPageKey = 'CHEFS'`, and `params.cookId` is present, so a session-scoped MRU scan does not walk unrelated pageviews. See
   [last-visited-cook-profiles.md](../features/last-visited-cook-profiles.md).
+- Admin booking-request Origin (`AdminBookingRequest.creatingSession`) reverse-looks up the earliest `BOOKING_REQUEST_CREATED` row by
+  `payload->>'bookingRequestId'`. Partial index `SessionEvents_bookingRequestCreated_bookingRequestId_createdAt_idx` on
+  `(payload->>'bookingRequestId', createdAt)` where `type = 'BOOKING_REQUEST_CREATED'` and that JSON key is present. Predecessor
+  empty-payload rows are ignored. See [admin-booking-requests.md](../features/admin-booking-requests.md).
 - Booking-form funnel queries exclude bots, sessions whose user is admin or cook, and **admin impersonation sessions**
   (`Sessions.impersonationReturnSessionId IS NOT NULL`). Cook offer funnel cohorts are notified cooks (excluding admins); create-UI
   mid-steps still come from human cook sessions. Cook public-profile visit counts also drop impersonation sessions.
@@ -136,5 +140,6 @@ Admin descriptions mark these with “(Legacy)” / “(legacy)”.
 - Commands: `sessionWebPageVisitCreate`, `sessionWebPageInteractionCreate`, auth / user-create / legal / booking lifecycle emitters
 - Queries: `adminSessionEventFindMany`, `adminSessionEventCounts`, `adminAnalyticsBookingRequestFormFlow`, `adminAnalyticsGiftCardFlow`,
   `adminAnalyticsChefSignUpFlow`, `adminAnalyticsBookingRequestCheckoutFlow`, `adminAnalyticsCookBookingRequestOfferFlow`,
-  `adminSessionEventWebPageVisitCreationsFindMany`, `cookAnalyticsFind`, `sessionLastVisitedCookProfilesFindMany`
+  `adminSessionEventWebPageVisitCreationsFindMany`, `cookAnalyticsFind`, `sessionLastVisitedCookProfilesFindMany`,
+  `adminBookingRequestCreatingSessionFindOne`
 - Feature UI: [admin-analytics.md](../features/admin-analytics.md), [cook-analytics.md](../features/cook-analytics.md)

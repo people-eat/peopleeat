@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
-import { bookingRequestCooks, bookingRequests, cooks } from '../db/schema';
+import { bookingRequestCooks, bookingRequests, cooks, promoCodes } from '../db/schema';
 import { commandSetup, testDb } from '../test/commandTestUtils';
 import { adminBookingRequestFindMany } from './adminBookingRequestFindMany';
 
@@ -619,5 +619,59 @@ describe('adminBookingRequestFindMany', () => {
         // Assert
         expect(notifiedOnly.map((row) => row.bookingRequestId)).toEqual([notifiedId]);
         expect(allPool.map((row) => row.bookingRequestId).sort()).toEqual([notifiedId, pendingNotifyId].sort());
+    });
+
+    it('filters by currently applied promoCodeId', async () => {
+        const customer = await commandSetup.withUser({ firstName: 'Promo', lastName: 'Filter' });
+        const promoCodeId = idCreate();
+        const otherPromoCodeId = idCreate();
+        await testDb.insert(promoCodes).values([
+            {
+                promoCodeId,
+                redeemCode: `ORIGIN-${idCreate().slice(0, 8)}`,
+                amountCents: 7500,
+                expiresAt: new Date(Date.now() + 30 * 86_400_000),
+            },
+            {
+                promoCodeId: otherPromoCodeId,
+                redeemCode: `OTHER-${idCreate().slice(0, 8)}`,
+                amountCents: 2500,
+                expiresAt: new Date(Date.now() + 30 * 86_400_000),
+            },
+        ]);
+        const matchId = idCreate();
+        const otherId = idCreate();
+        await testDb.insert(bookingRequests).values([
+            {
+                bookingRequestId: matchId,
+                userId: customer.user.userId,
+                occasion: 'Promo match',
+                dateTime: new Date(Date.now() + 7 * 86_400_000),
+                exactEventAddress: berlin,
+                originalMessage: 'With promo',
+                publicationStatus: 'PUBLICATION_AUTO_APPROVED',
+                preferences: [],
+                promoCodeId,
+            },
+            {
+                bookingRequestId: otherId,
+                userId: customer.user.userId,
+                occasion: 'Promo other',
+                dateTime: new Date(Date.now() + 8 * 86_400_000),
+                exactEventAddress: berlin,
+                originalMessage: 'Other promo',
+                publicationStatus: 'PUBLICATION_AUTO_APPROVED',
+                preferences: [],
+                promoCodeId: otherPromoCodeId,
+            },
+        ]);
+
+        const rows = await adminBookingRequestFindMany(
+            { criterion: { skip: 0, take: 100, promoCodeId } },
+            customer.requestingSession,
+            customer.serverRuntime,
+        );
+
+        expect(rows.map((row) => row.bookingRequestId)).toEqual([matchId]);
     });
 });
