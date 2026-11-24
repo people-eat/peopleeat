@@ -111,6 +111,7 @@ export interface GqlCAdmin {
     sessionEventWebPageVisitCreations: Array<GqlCAdminTimeBucket>;
     sessionEvents: Array<GqlCAdminSessionEvent>;
     sessionEventsCounts: Array<Scalars['Int']['output']>;
+    sessionInsights: GqlCAdminSessionInsights;
     sessions: Array<GqlCAdminSession>;
     signInMethodStats: GqlCAdminSignInMethodStats;
     supportRequest?: Maybe<GqlCAdminSupportRequest>;
@@ -447,6 +448,11 @@ export type GqlCAdminSessionEventsArgs = {
 
 export type GqlCAdminSessionEventsCountsArgs = {
     criteria: Array<GqlCAdminSessionEventCriterion>;
+};
+
+export type GqlCAdminSessionInsightsArgs = {
+    range: GqlCDateTimeRange;
+    take?: Scalars['Int']['input'];
 };
 
 export type GqlCAdminSessionsArgs = {
@@ -2341,6 +2347,14 @@ export interface GqlCAdminSession {
     wasTerminatedAt?: Maybe<Scalars['DateTime']['output']>;
 }
 
+export type GqlCAdminSessionBrowser = 'chrome' | 'edge' | 'firefox' | 'opera' | 'other' | 'safari' | 'samsung' | 'unknown';
+
+export interface GqlCAdminSessionBrowserStat {
+    __typename?: 'AdminSessionBrowserStat';
+    browser: GqlCAdminSessionBrowser;
+    count: Scalars['Int']['output'];
+}
+
 export type GqlCAdminSessionCriterion = {
     kinds: Array<GqlCAdminSessionKind>;
     searchText?: InputMaybe<Scalars['String']['input']>;
@@ -2350,6 +2364,14 @@ export type GqlCAdminSessionCriterion = {
     take?: Scalars['Int']['input'];
     userIds?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
+
+export type GqlCAdminSessionDeviceClass = 'desktop' | 'mobile' | 'tablet' | 'unknown';
+
+export interface GqlCAdminSessionDeviceStat {
+    __typename?: 'AdminSessionDeviceStat';
+    count: Scalars['Int']['output'];
+    deviceClass: GqlCAdminSessionDeviceClass;
+}
 
 export interface GqlCAdminSessionEvent {
     __typename?: 'AdminSessionEvent';
@@ -2370,7 +2392,37 @@ export type GqlCAdminSessionEventCriterion = {
     userIds?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
 
+export interface GqlCAdminSessionInsights {
+    __typename?: 'AdminSessionInsights';
+    browsers: Array<GqlCAdminSessionBrowserStat>;
+    devices: Array<GqlCAdminSessionDeviceStat>;
+    landingPaths: Array<GqlCAdminSessionLandingPathStat>;
+    operatingSystems: Array<GqlCAdminSessionOperatingSystemStat>;
+    referrers: Array<GqlCAdminSessionReferrerStat>;
+    sessionCount: Scalars['Int']['output'];
+}
+
 export type GqlCAdminSessionKind = 'bot' | 'human';
+
+export interface GqlCAdminSessionLandingPathStat {
+    __typename?: 'AdminSessionLandingPathStat';
+    count: Scalars['Int']['output'];
+    landingPath?: Maybe<Scalars['String']['output']>;
+}
+
+export type GqlCAdminSessionOperatingSystem = 'android' | 'chromeOs' | 'ios' | 'linux' | 'macos' | 'other' | 'unknown' | 'windows';
+
+export interface GqlCAdminSessionOperatingSystemStat {
+    __typename?: 'AdminSessionOperatingSystemStat';
+    count: Scalars['Int']['output'];
+    operatingSystem: GqlCAdminSessionOperatingSystem;
+}
+
+export interface GqlCAdminSessionReferrerStat {
+    __typename?: 'AdminSessionReferrerStat';
+    count: Scalars['Int']['output'];
+    referrer?: Maybe<Scalars['String']['output']>;
+}
 
 export type GqlCAdminSessionSortField = 'createdAt' | 'lastInteractionAt' | 'user' | 'userAgent';
 
@@ -17056,6 +17108,7 @@ export type GqlCAdminSessionsOverviewPageQueryVariables = Exact<{
     criteria: Array<Schema.GqlCAdminSessionCriterion> | Schema.GqlCAdminSessionCriterion;
     range: Schema.GqlCDateTimeRange;
     granularity?: Schema.GqlCAdminTimeBucketGranularity;
+    insightsTake?: number;
 }>;
 
 export type GqlCAdminSessionsOverviewPageQuery = {
@@ -17067,6 +17120,14 @@ export type GqlCAdminSessionsOverviewPageQuery = {
                 adminId: string;
                 sessionCounts: Array<number>;
                 sessionCreations: Array<{ bucketStart: string; count: number }>;
+                sessionInsights: {
+                    sessionCount: number;
+                    landingPaths: Array<{ landingPath: string | null; count: number }>;
+                    referrers: Array<{ referrer: string | null; count: number }>;
+                    devices: Array<{ deviceClass: Schema.GqlCAdminSessionDeviceClass; count: number }>;
+                    operatingSystems: Array<{ operatingSystem: Schema.GqlCAdminSessionOperatingSystem; count: number }>;
+                    browsers: Array<{ browser: Schema.GqlCAdminSessionBrowser; count: number }>;
+                };
             } | null;
         } | null;
     };
@@ -71491,6 +71552,12 @@ export const AdminSessionsOverviewPageDocument = {
                     type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminTimeBucketGranularity' } } },
                     defaultValue: { kind: 'EnumValue', value: 'day' },
                 },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'insightsTake' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } } },
+                    defaultValue: { kind: 'IntValue', value: '10' },
+                },
             ],
             selectionSet: {
                 kind: 'SelectionSet',
@@ -71550,6 +71617,98 @@ export const AdminSessionsOverviewPageDocument = {
                                                                 selections: [
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'bucketStart' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'sessionInsights' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'range' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'take' },
+                                                                    value: {
+                                                                        kind: 'Variable',
+                                                                        name: { kind: 'Name', value: 'insightsTake' },
+                                                                    },
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'sessionCount' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'landingPaths' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'landingPath' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'referrers' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'referrer' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'devices' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'deviceClass' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'operatingSystems' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'operatingSystem' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'browsers' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'browser' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                                                                            ],
+                                                                        },
+                                                                    },
                                                                 ],
                                                             },
                                                         },

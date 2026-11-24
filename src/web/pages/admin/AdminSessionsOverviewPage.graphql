@@ -1,11 +1,13 @@
-# Admin sessions overview hub — kind distribution + creation time series.
-# See docs/features/admin-sessions.md.
-# `sessionCounts` order matches `ADMIN_SESSION_COUNT_CRITERIA` in AdminSessionsOverviewPage.tsx.
+# Admin sessions overview hub — kind distribution + creation time series +
+# first-touch / UA insights. See docs/features/admin-sessions.md.
+# `sessionCounts` order matches `ADMIN_SESSION_COUNT_CRITERIA` in
+# AdminSessionsOverviewPage.tsx.
 
 query AdminSessionsOverviewPage(
     $criteria: [AdminSessionCriterion!]!
     $range: DateTimeRange!
     $granularity: AdminTimeBucketGranularity! = day
+    $insightsTake: Int! = 10
 ) {
     currentSession {
         sessionId
@@ -17,6 +19,29 @@ query AdminSessionsOverviewPage(
                 sessionCreations(range: $range, granularity: $granularity) {
                     bucketStart
                     count
+                }
+                sessionInsights(range: $range, take: $insightsTake) {
+                    sessionCount
+                    landingPaths {
+                        landingPath
+                        count
+                    }
+                    referrers {
+                        referrer
+                        count
+                    }
+                    devices {
+                        deviceClass
+                        count
+                    }
+                    operatingSystems {
+                        operatingSystem
+                        count
+                    }
+                    browsers {
+                        browser
+                        count
+                    }
                 }
             }
         }

@@ -1,4 +1,4 @@
-import { useNavigate } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { AppWindowIcon, ListIcon } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
 
@@ -6,12 +6,20 @@ import { t } from '../../../i18n/t';
 import { formatIsoDate } from '../../../shared';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { DateRangePicker } from '../../components/base/date-range-picker';
-import type { GqlCAdminSessionCriterion, GqlCAdminSessionKind, GqlCAdminSessionsOverviewPageQuery } from '../../graphql/generated';
+import type {
+    GqlCAdminSessionBrowser,
+    GqlCAdminSessionCriterion,
+    GqlCAdminSessionDeviceClass,
+    GqlCAdminSessionKind,
+    GqlCAdminSessionOperatingSystem,
+    GqlCAdminSessionsOverviewPageQuery,
+} from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { DATE_FNS_LOCALE } from '../../utils/dateFnsLocale';
 import type { Locale } from '../../utils/locale';
 import { AdminOverviewBarChart } from './AdminOverviewBarChart';
+import { adminOverviewLinkCardClassName } from './adminOverviewLinkCard';
 import { AdminOverviewNavCard } from './AdminOverviewNavCard';
 import { adminOverviewRangeResolve, adminOverviewRangeToGraphQlVariables } from './adminOverviewRange';
 import type { AdminOverviewRangeSearch } from './adminOverviewRange';
@@ -28,21 +36,105 @@ export function adminSessionsOverviewPageDescription(locale: Locale): string {
 /** Order matches `sessionCounts` indices on the overview query. */
 const ADMIN_SESSION_COUNT_CRITERIA: GqlCAdminSessionCriterion[] = [{ kinds: ['human', 'bot'] }, { kinds: ['human'] }, { kinds: ['bot'] }];
 
+const ADMIN_SESSION_INSIGHTS_TAKE = 10;
+
 export function adminSessionsOverviewPageVariables(search: AdminOverviewRangeSearch = {}) {
     return {
         criteria: ADMIN_SESSION_COUNT_CRITERIA,
         ...adminOverviewRangeToGraphQlVariables(adminOverviewRangeResolve(search)),
+        insightsTake: ADMIN_SESSION_INSIGHTS_TAKE,
     };
 }
 
-function adminSessionsListSearch(kind: GqlCAdminSessionKind | undefined) {
+function adminSessionsListSearch({ kind, q }: { kind?: GqlCAdminSessionKind; q?: string } = {}) {
     return {
-        q: undefined,
+        q,
         kind,
         page: undefined,
         sort: undefined,
         dir: undefined,
     };
+}
+
+function sessionCountShareLabel(count: number, total: number, locale: Locale): string {
+    if (total <= 0) return t(locale, 'admin', 'copy.sessionCount', { count });
+    const percent = Math.round((count / total) * 100);
+    return t(locale, 'admin', 'users.countPercent', { count, percent });
+}
+
+function deviceClassLabel(deviceClass: GqlCAdminSessionDeviceClass, locale: Locale): string {
+    const labels = {
+        mobile: t(locale, 'admin', 'copy.deviceMobile'),
+        tablet: t(locale, 'admin', 'copy.deviceTablet'),
+        desktop: t(locale, 'admin', 'copy.deviceDesktop'),
+        unknown: t(locale, 'admin', 'copy.unknown'),
+    } satisfies Record<GqlCAdminSessionDeviceClass, string>;
+    return labels[deviceClass];
+}
+
+function operatingSystemLabel(operatingSystem: GqlCAdminSessionOperatingSystem, locale: Locale): string {
+    const labels = {
+        ios: t(locale, 'admin', 'copy.osIos'),
+        android: t(locale, 'admin', 'copy.osAndroid'),
+        windows: t(locale, 'admin', 'copy.osWindows'),
+        macos: t(locale, 'admin', 'copy.osMacos'),
+        linux: t(locale, 'admin', 'copy.osLinux'),
+        chromeOs: t(locale, 'admin', 'copy.osChromeOs'),
+        other: t(locale, 'admin', 'copy.osOther'),
+        unknown: t(locale, 'admin', 'copy.unknown'),
+    } satisfies Record<GqlCAdminSessionOperatingSystem, string>;
+    return labels[operatingSystem];
+}
+
+function browserLabel(browser: GqlCAdminSessionBrowser, locale: Locale): string {
+    const labels = {
+        chrome: t(locale, 'admin', 'copy.browserChrome'),
+        safari: t(locale, 'admin', 'copy.browserSafari'),
+        firefox: t(locale, 'admin', 'copy.browserFirefox'),
+        edge: t(locale, 'admin', 'copy.browserEdge'),
+        opera: t(locale, 'admin', 'copy.browserOpera'),
+        samsung: t(locale, 'admin', 'copy.browserSamsung'),
+        other: t(locale, 'admin', 'copy.browserOther'),
+        unknown: t(locale, 'admin', 'copy.unknown'),
+    } satisfies Record<GqlCAdminSessionBrowser, string>;
+    return labels[browser];
+}
+
+function InsightStatRow({
+    label,
+    count,
+    total,
+    locale,
+    to,
+    search,
+}: {
+    label: string;
+    count: number;
+    total: number;
+    locale: Locale;
+    to?: '/{-$locale}/admin/sessions/list';
+    search?: ReturnType<typeof adminSessionsListSearch>;
+}) {
+    const body = (
+        <>
+            <span className="min-w-0 break-all font-medium text-foreground">{label}</span>
+            <span className="text-sm text-muted-foreground tabular-nums">{sessionCountShareLabel(count, total, locale)}</span>
+        </>
+    );
+
+    if (to == null || search == null) {
+        return <div className={adminOverviewLinkCardClassName('flex flex-wrap items-center justify-between gap-3 px-4 py-3')}>{body}</div>;
+    }
+
+    return (
+        <Link
+            to={to}
+            search={search}
+            className={adminOverviewLinkCardClassName('flex flex-wrap items-center justify-between gap-3 px-4 py-3')}
+        >
+            {body}
+        </Link>
+    );
 }
 
 export function AdminSessionsOverviewPage({
@@ -59,6 +151,13 @@ export function AdminSessionsOverviewPage({
     const admin = data.currentSession.user?.admin;
     const [total = 0, human = 0, bot = 0] = admin?.sessionCounts ?? [];
     const buckets = admin?.sessionCreations ?? [];
+    const insights = admin?.sessionInsights;
+    const insightsTotal = insights?.sessionCount ?? 0;
+    const landingPaths = insights?.landingPaths ?? [];
+    const referrers = insights?.referrers ?? [];
+    const devices = insights?.devices ?? [];
+    const operatingSystems = insights?.operatingSystems ?? [];
+    const browsers = insights?.browsers ?? [];
 
     const distribution: {
         key: 'total' | 'human' | 'bot';
@@ -116,11 +215,7 @@ export function AdminSessionsOverviewPage({
                     <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.sections')}</h2>
                     <ul className="grid gap-2 sm:grid-cols-2">
                         <li>
-                            <AdminOverviewNavCard
-                                to={adminSessionsSectionTo('list')}
-                                search={adminSessionsListSearch(undefined)}
-                                icon={ListIcon}
-                            >
+                            <AdminOverviewNavCard to={adminSessionsSectionTo('list')} search={adminSessionsListSearch()} icon={ListIcon}>
                                 {t(locale, 'admin', 'copy.list')}
                             </AdminOverviewNavCard>
                         </li>
@@ -136,7 +231,7 @@ export function AdminSessionsOverviewPage({
                                 label={entry.label}
                                 value={entry.value}
                                 to={adminSessionsSectionTo('list')}
-                                search={adminSessionsListSearch(entry.kind)}
+                                search={adminSessionsListSearch({ kind: entry.kind })}
                             />
                         ))}
                     </dl>
@@ -160,6 +255,129 @@ export function AdminSessionsOverviewPage({
                         timeZone={timeZone}
                         ariaLabel={t(locale, 'admin', 'copy.barChartOfSessionCreationsInTheSelectedRange')}
                     />
+                </section>
+
+                <section className="grid gap-3">
+                    <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.insights')}</h2>
+                    <p className="text-sm text-muted-foreground">
+                        {t(locale, 'admin', 'copy.humanSessionsCreatedInTheSelectedRangeBotsAndImpersonationEx')}
+                    </p>
+
+                    <div className="grid gap-6 sm:grid-cols-2 sm:items-start">
+                        <div className="grid gap-3">
+                            <h3 className="text-base font-medium">{t(locale, 'admin', 'copy.topLandingPaths')}</h3>
+                            {landingPaths.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noData')}</p>
+                            ) : (
+                                <ul className="grid gap-2">
+                                    {landingPaths.map((stat) => {
+                                        const label = stat.landingPath?.trim() || t(locale, 'admin', 'copy.notSet');
+                                        const q = stat.landingPath?.trim() || undefined;
+                                        return (
+                                            <li key={stat.landingPath ?? 'unset'}>
+                                                <InsightStatRow
+                                                    label={label}
+                                                    count={stat.count}
+                                                    total={insightsTotal}
+                                                    locale={locale}
+                                                    to={q ? adminSessionsSectionTo('list') : undefined}
+                                                    search={q ? adminSessionsListSearch({ kind: 'human', q }) : undefined}
+                                                />
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            )}
+                        </div>
+
+                        <div className="grid gap-3">
+                            <h3 className="text-base font-medium">{t(locale, 'admin', 'copy.topReferrers')}</h3>
+                            {referrers.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noData')}</p>
+                            ) : (
+                                <ul className="grid gap-2">
+                                    {referrers.map((stat) => {
+                                        const q = stat.referrer?.trim() || undefined;
+                                        const label = q ?? t(locale, 'admin', 'copy.directTraffic');
+                                        return (
+                                            <li key={stat.referrer ?? 'direct'}>
+                                                <InsightStatRow
+                                                    label={label}
+                                                    count={stat.count}
+                                                    total={insightsTotal}
+                                                    locale={locale}
+                                                    to={q ? adminSessionsSectionTo('list') : undefined}
+                                                    search={q ? adminSessionsListSearch({ kind: 'human', q }) : undefined}
+                                                />
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="grid gap-6 sm:grid-cols-3 sm:items-start">
+                        <div className="grid gap-3">
+                            <h3 className="text-base font-medium">{t(locale, 'admin', 'copy.devices')}</h3>
+                            {devices.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noData')}</p>
+                            ) : (
+                                <ul className="grid gap-2">
+                                    {devices.map((stat) => (
+                                        <li key={stat.deviceClass}>
+                                            <InsightStatRow
+                                                label={deviceClassLabel(stat.deviceClass, locale)}
+                                                count={stat.count}
+                                                total={insightsTotal}
+                                                locale={locale}
+                                            />
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+
+                        <div className="grid gap-3">
+                            <h3 className="text-base font-medium">{t(locale, 'admin', 'copy.operatingSystems')}</h3>
+                            {operatingSystems.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noData')}</p>
+                            ) : (
+                                <ul className="grid gap-2">
+                                    {operatingSystems.map((stat) => (
+                                        <li key={stat.operatingSystem}>
+                                            <InsightStatRow
+                                                label={operatingSystemLabel(stat.operatingSystem, locale)}
+                                                count={stat.count}
+                                                total={insightsTotal}
+                                                locale={locale}
+                                            />
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+
+                        <div className="grid gap-3">
+                            <h3 className="text-base font-medium">{t(locale, 'admin', 'copy.browsers')}</h3>
+                            {browsers.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'copy.noData')}</p>
+                            ) : (
+                                <ul className="grid gap-2">
+                                    {browsers.map((stat) => (
+                                        <li key={stat.browser}>
+                                            <InsightStatRow
+                                                label={browserLabel(stat.browser, locale)}
+                                                count={stat.count}
+                                                total={insightsTotal}
+                                                locale={locale}
+                                            />
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+                    </div>
                 </section>
             </main>
         </AdminPathPageChrome>

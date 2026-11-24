@@ -11,6 +11,12 @@ Admins manage sessions under `/admin/sessions` (overview + list + detail; no cre
 Kind distribution (total, human, bot) and session-creation bar chart. Date range drives zero-filled buckets. Section card links to the list.
 Distribution cards deep-link into the list with `kind` preselected (Total clears the filter).
 
+Below the chart, **insights** for human non-impersonation sessions created in the same range:
+
+- Top first-touch landing paths and referrers (blank referrer = Direct; rows deep-link into the human list with `q`)
+- Device class (mobile / tablet / desktop), operating system, and browser family inferred from `userAgent` (coarse Postgres heuristics, not
+  Client Hints)
+
 ### List — `/admin/sessions/list`
 
 Search by session id, user id, user agent, landing path, referrer, or IP hash. Tabs filter human vs bot. Sortable table (default created
@@ -53,16 +59,17 @@ list layout.
 
 ## Implementation
 
-- SDL: `AdminSession`, kinds, criterion, creations in `schema.graphqls`
-- Queries: find many, counts, creations, find one; `adminSessionCriterionWhere`
+- SDL: `AdminSession`, kinds, criterion, creations, `AdminSessionInsights` (+ landing / referrer / device / OS / browser stats) in
+  `schema.graphqls`
+- Queries: find many, counts, creations, insights, find one; `adminSessionCriterionWhere`
 - Mapper: `toGqlAdminSession`; field resolver `AdminSession.user` → `adminUserFindOne`
-- UI: overview, list with kind tabs + data table, detail page
+- UI: overview (distribution + chart + insights), list with kind tabs + data table, detail page
 - Routes: `sessions.tsx`, `sessions_.list.tsx`, `sessions_.$sessionId.tsx`
 - Nav: `adminSessions.ts` — [admin-shell.md](./admin-shell.md)
 
 GraphQL: `sessions(criterion)` — search, kinds, optional user ids, sort (including by user last name), paginate; `sessionCounts`;
-`sessionCreations`; `session(id)`; detail events tab loads `sessionEvents(criterion: { sessionIds, skip, take })` + `sessionEventsCounts`.
-Kinds: human (`isBot` false), bot true. Writes: `AdminMutation.terminateSessions` (any session ids; publishes `userUpdates` +
-`adminUpdates`). Command: `adminSessionTerminateMany`.
+`sessionCreations`; `sessionInsights(range, take)`; `session(id)`; detail events tab loads
+`sessionEvents(criterion: { sessionIds, skip, take })` + `sessionEventsCounts`. Kinds: human (`isBot` false), bot true. Writes:
+`AdminMutation.terminateSessions` (any session ids; publishes `userUpdates` + `adminUpdates`). Command: `adminSessionTerminateMany`.
 
 Gate: [authorization-admin.md](../architecture/authorization-admin.md).

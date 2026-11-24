@@ -344,6 +344,7 @@ import { adminSessionEventFindMany } from '../queries/adminSessionEventFindMany'
 import { adminSessionEventWebPageVisitCreationsFindMany } from '../queries/adminSessionEventWebPageVisitCreationsFindMany';
 import { adminSessionFindMany } from '../queries/adminSessionFindMany';
 import { adminSessionFindOne } from '../queries/adminSessionFindOne';
+import { adminSessionInsightsFindOne } from '../queries/adminSessionInsightsFindOne';
 import { adminSupportRequestCounts } from '../queries/adminSupportRequestCounts';
 import { adminSupportRequestFindMany } from '../queries/adminSupportRequestFindMany';
 import { adminSupportRequestFindOne } from '../queries/adminSupportRequestFindOne';
@@ -662,6 +663,7 @@ import type {
     GqlSAdminSessionEventsArgs,
     GqlSAdminSessionEventsCountsArgs,
     GqlSAdminSessionEventWebPageVisitCreationsArgs,
+    GqlSAdminSessionInsightsArgs,
     GqlSAdminSessionsArgs,
     GqlSAdminSignInMethodStatsArgs,
     GqlSAdminSupportRequest,
@@ -1248,6 +1250,9 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             sessionCreations(_parent: GqlSAdmin, args: GqlSAdminSessionCreationsArgs, requestingSession: GqlSSession) {
                 return adminSessionCreationsFindMany(args, requestingSession, serverRuntime);
+            },
+            sessionInsights(_parent: GqlSAdmin, args: GqlSAdminSessionInsightsArgs, requestingSession: GqlSSession) {
+                return adminSessionInsightsFindOne(args, requestingSession, serverRuntime);
             },
             session(_parent: GqlSAdmin, args: GqlSAdminSessionArgs, requestingSession: GqlSSession) {
                 return adminSessionFindOne(args, requestingSession, serverRuntime);

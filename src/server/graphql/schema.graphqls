@@ -4286,6 +4286,84 @@ type AdminSession {
     createdAt: DateTime!
 }
 
+# First-touch landing-path bucket for the sessions overview ranking.
+# `landingPath` is null when the create stamp was blank / missing.
+type AdminSessionLandingPathStat {
+    landingPath: String
+    count: Int!
+}
+
+# First-touch referrer bucket for the sessions overview ranking.
+# `referrer` is null when the create stamp was blank / missing (direct).
+type AdminSessionReferrerStat {
+    referrer: String
+    count: Int!
+}
+
+# Coarse device class derived from `Sessions.userAgent` (heuristic, not Client Hints).
+enum AdminSessionDeviceClass {
+    mobile
+    tablet
+    desktop
+    unknown
+}
+
+type AdminSessionDeviceStat {
+    deviceClass: AdminSessionDeviceClass!
+    count: Int!
+}
+
+# Operating system derived from `Sessions.userAgent` (heuristic).
+enum AdminSessionOperatingSystem {
+    ios
+    android
+    windows
+    macos
+    linux
+    chromeOs
+    other
+    unknown
+}
+
+type AdminSessionOperatingSystemStat {
+    operatingSystem: AdminSessionOperatingSystem!
+    count: Int!
+}
+
+# Browser family derived from `Sessions.userAgent` (heuristic).
+enum AdminSessionBrowser {
+    chrome
+    safari
+    firefox
+    edge
+    opera
+    samsung
+    other
+    unknown
+}
+
+type AdminSessionBrowserStat {
+    browser: AdminSessionBrowser!
+    count: Int!
+}
+
+# Attribution + UA-derived mix for the sessions overview. Human non-impersonation
+# sessions created in the requested range. See docs/features/admin-sessions.md.
+type AdminSessionInsights {
+    # Denominator for share labels (same cohort as the ranked lists).
+    sessionCount: Int!
+    # Top landing paths. Cap via `take` on `Admin.sessionInsights`.
+    landingPaths: [AdminSessionLandingPathStat!]!
+    # Top referrers. Cap via `take` on `Admin.sessionInsights`.
+    referrers: [AdminSessionReferrerStat!]!
+    # Full device-class distribution (fixed enum; not capped by `take`).
+    devices: [AdminSessionDeviceStat!]!
+    # Full OS distribution (fixed enum; not capped by `take`).
+    operatingSystems: [AdminSessionOperatingSystemStat!]!
+    # Full browser distribution (fixed enum; not capped by `take`).
+    browsers: [AdminSessionBrowserStat!]!
+}
+
 # Humanized first-party analytics event for admin timelines.
 type AdminSessionEvent {
     sessionEventId: ID!
@@ -4486,6 +4564,10 @@ type Admin {
     # zero-filled across `range` at the given `granularity` (default `day`).
     # Span capped at 366 days.
     sessionCreations(range: DateTimeRange!, granularity: AdminTimeBucketGranularity! = day): [AdminTimeBucket!]!
+    # First-touch attribution + UA device/OS/browser mix for human
+    # non-impersonation sessions created in `range`. `take` caps landing-path
+    # and referrer rankings (default 10). Span capped at 366 days.
+    sessionInsights(range: DateTimeRange!, take: Int! = 10): AdminSessionInsights!
     # Single-session detail. Null when the id is unknown.
     session(sessionId: ID!): AdminSession
     # First-party session events across sessions/users. Sorted newest first.

@@ -112,6 +112,7 @@ export interface GqlSAdmin {
     sessionEventWebPageVisitCreations: Array<GqlSAdminTimeBucket>;
     sessionEvents: Array<GqlSAdminSessionEvent>;
     sessionEventsCounts: Array<Scalars['Int']['output']>;
+    sessionInsights: GqlSAdminSessionInsights;
     sessions: Array<GqlSAdminSession>;
     signInMethodStats: GqlSAdminSignInMethodStats;
     supportRequest?: Maybe<GqlSAdminSupportRequest>;
@@ -448,6 +449,11 @@ export type GqlSAdminSessionEventsArgs = {
 
 export type GqlSAdminSessionEventsCountsArgs = {
     criteria: Array<GqlSAdminSessionEventCriterion>;
+};
+
+export type GqlSAdminSessionInsightsArgs = {
+    range: GqlSDateTimeRange;
+    take?: Scalars['Int']['input'];
 };
 
 export type GqlSAdminSessionsArgs = {
@@ -2342,6 +2348,14 @@ export interface GqlSAdminSession {
     wasTerminatedAt?: Maybe<Scalars['DateTime']['output']>;
 }
 
+export type GqlSAdminSessionBrowser = 'chrome' | 'edge' | 'firefox' | 'opera' | 'other' | 'safari' | 'samsung' | 'unknown';
+
+export interface GqlSAdminSessionBrowserStat {
+    __typename?: 'AdminSessionBrowserStat';
+    browser: GqlSAdminSessionBrowser;
+    count: Scalars['Int']['output'];
+}
+
 export type GqlSAdminSessionCriterion = {
     kinds: Array<GqlSAdminSessionKind>;
     searchText?: InputMaybe<Scalars['String']['input']>;
@@ -2351,6 +2365,14 @@ export type GqlSAdminSessionCriterion = {
     take?: Scalars['Int']['input'];
     userIds?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
+
+export type GqlSAdminSessionDeviceClass = 'desktop' | 'mobile' | 'tablet' | 'unknown';
+
+export interface GqlSAdminSessionDeviceStat {
+    __typename?: 'AdminSessionDeviceStat';
+    count: Scalars['Int']['output'];
+    deviceClass: GqlSAdminSessionDeviceClass;
+}
 
 export interface GqlSAdminSessionEvent {
     __typename?: 'AdminSessionEvent';
@@ -2371,7 +2393,37 @@ export type GqlSAdminSessionEventCriterion = {
     userIds?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
 
+export interface GqlSAdminSessionInsights {
+    __typename?: 'AdminSessionInsights';
+    browsers: Array<GqlSAdminSessionBrowserStat>;
+    devices: Array<GqlSAdminSessionDeviceStat>;
+    landingPaths: Array<GqlSAdminSessionLandingPathStat>;
+    operatingSystems: Array<GqlSAdminSessionOperatingSystemStat>;
+    referrers: Array<GqlSAdminSessionReferrerStat>;
+    sessionCount: Scalars['Int']['output'];
+}
+
 export type GqlSAdminSessionKind = 'bot' | 'human';
+
+export interface GqlSAdminSessionLandingPathStat {
+    __typename?: 'AdminSessionLandingPathStat';
+    count: Scalars['Int']['output'];
+    landingPath?: Maybe<Scalars['String']['output']>;
+}
+
+export type GqlSAdminSessionOperatingSystem = 'android' | 'chromeOs' | 'ios' | 'linux' | 'macos' | 'other' | 'unknown' | 'windows';
+
+export interface GqlSAdminSessionOperatingSystemStat {
+    __typename?: 'AdminSessionOperatingSystemStat';
+    count: Scalars['Int']['output'];
+    operatingSystem: GqlSAdminSessionOperatingSystem;
+}
+
+export interface GqlSAdminSessionReferrerStat {
+    __typename?: 'AdminSessionReferrerStat';
+    count: Scalars['Int']['output'];
+    referrer?: Maybe<Scalars['String']['output']>;
+}
 
 export type GqlSAdminSessionSortField = 'createdAt' | 'lastInteractionAt' | 'user' | 'userAgent';
 
@@ -6406,10 +6458,19 @@ export type GqlSResolversTypes = ResolversObject<{
     AdminResendEmailQuota: ResolverTypeWrapper<GqlSAdminResendEmailQuota>;
     AdminResendUsage: ResolverTypeWrapper<GqlSAdminResendUsage>;
     AdminSession: ResolverTypeWrapper<GqlSAdminSession>;
+    AdminSessionBrowser: GqlSAdminSessionBrowser;
+    AdminSessionBrowserStat: ResolverTypeWrapper<GqlSAdminSessionBrowserStat>;
     AdminSessionCriterion: GqlSAdminSessionCriterion;
+    AdminSessionDeviceClass: GqlSAdminSessionDeviceClass;
+    AdminSessionDeviceStat: ResolverTypeWrapper<GqlSAdminSessionDeviceStat>;
     AdminSessionEvent: ResolverTypeWrapper<GqlSAdminSessionEvent>;
     AdminSessionEventCriterion: GqlSAdminSessionEventCriterion;
+    AdminSessionInsights: ResolverTypeWrapper<GqlSAdminSessionInsights>;
     AdminSessionKind: GqlSAdminSessionKind;
+    AdminSessionLandingPathStat: ResolverTypeWrapper<GqlSAdminSessionLandingPathStat>;
+    AdminSessionOperatingSystem: GqlSAdminSessionOperatingSystem;
+    AdminSessionOperatingSystemStat: ResolverTypeWrapper<GqlSAdminSessionOperatingSystemStat>;
+    AdminSessionReferrerStat: ResolverTypeWrapper<GqlSAdminSessionReferrerStat>;
     AdminSessionSortField: GqlSAdminSessionSortField;
     AdminSignInMethod: GqlSAdminSignInMethod;
     AdminSignInMethodBucket: ResolverTypeWrapper<GqlSAdminSignInMethodBucket>;
@@ -7031,9 +7092,15 @@ export type GqlSResolversParentTypes = ResolversObject<{
     AdminResendEmailQuota: GqlSAdminResendEmailQuota;
     AdminResendUsage: GqlSAdminResendUsage;
     AdminSession: GqlSAdminSession;
+    AdminSessionBrowserStat: GqlSAdminSessionBrowserStat;
     AdminSessionCriterion: GqlSAdminSessionCriterion;
+    AdminSessionDeviceStat: GqlSAdminSessionDeviceStat;
     AdminSessionEvent: GqlSAdminSessionEvent;
     AdminSessionEventCriterion: GqlSAdminSessionEventCriterion;
+    AdminSessionInsights: GqlSAdminSessionInsights;
+    AdminSessionLandingPathStat: GqlSAdminSessionLandingPathStat;
+    AdminSessionOperatingSystemStat: GqlSAdminSessionOperatingSystemStat;
+    AdminSessionReferrerStat: GqlSAdminSessionReferrerStat;
     AdminSignInMethodBucket: GqlSAdminSignInMethodBucket;
     AdminSignInMethodStat: GqlSAdminSignInMethodStat;
     AdminSignInMethodStats: GqlSAdminSignInMethodStats;
@@ -7813,6 +7880,12 @@ export type GqlSAdminResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSAdminSessionEventsCountsArgs, 'criteria'>
+    >;
+    sessionInsights?: Resolver<
+        GqlSResolversTypes['AdminSessionInsights'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminSessionInsightsArgs, 'range' | 'take'>
     >;
     sessions?: Resolver<
         Array<GqlSResolversTypes['AdminSession']>,
@@ -9516,6 +9589,22 @@ export type GqlSAdminSessionResolvers<
     wasTerminatedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
 }>;
 
+export type GqlSAdminSessionBrowserStatResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminSessionBrowserStat'] = GqlSResolversParentTypes['AdminSessionBrowserStat'],
+> = ResolversObject<{
+    browser?: Resolver<GqlSResolversTypes['AdminSessionBrowser'], ParentType, ContextType>;
+    count?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type GqlSAdminSessionDeviceStatResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminSessionDeviceStat'] = GqlSResolversParentTypes['AdminSessionDeviceStat'],
+> = ResolversObject<{
+    count?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    deviceClass?: Resolver<GqlSResolversTypes['AdminSessionDeviceClass'], ParentType, ContextType>;
+}>;
+
 export type GqlSAdminSessionEventResolvers<
     ContextType = any,
     ParentType extends GqlSResolversParentTypes['AdminSessionEvent'] = GqlSResolversParentTypes['AdminSessionEvent'],
@@ -9527,6 +9616,43 @@ export type GqlSAdminSessionEventResolvers<
     sessionEventId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     sessionId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     type?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type GqlSAdminSessionInsightsResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminSessionInsights'] = GqlSResolversParentTypes['AdminSessionInsights'],
+> = ResolversObject<{
+    browsers?: Resolver<Array<GqlSResolversTypes['AdminSessionBrowserStat']>, ParentType, ContextType>;
+    devices?: Resolver<Array<GqlSResolversTypes['AdminSessionDeviceStat']>, ParentType, ContextType>;
+    landingPaths?: Resolver<Array<GqlSResolversTypes['AdminSessionLandingPathStat']>, ParentType, ContextType>;
+    operatingSystems?: Resolver<Array<GqlSResolversTypes['AdminSessionOperatingSystemStat']>, ParentType, ContextType>;
+    referrers?: Resolver<Array<GqlSResolversTypes['AdminSessionReferrerStat']>, ParentType, ContextType>;
+    sessionCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type GqlSAdminSessionLandingPathStatResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminSessionLandingPathStat'] = GqlSResolversParentTypes['AdminSessionLandingPathStat'],
+> = ResolversObject<{
+    count?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    landingPath?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type GqlSAdminSessionOperatingSystemStatResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminSessionOperatingSystemStat'] =
+        GqlSResolversParentTypes['AdminSessionOperatingSystemStat'],
+> = ResolversObject<{
+    count?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    operatingSystem?: Resolver<GqlSResolversTypes['AdminSessionOperatingSystem'], ParentType, ContextType>;
+}>;
+
+export type GqlSAdminSessionReferrerStatResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminSessionReferrerStat'] = GqlSResolversParentTypes['AdminSessionReferrerStat'],
+> = ResolversObject<{
+    count?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    referrer?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type GqlSAdminSignInMethodBucketResolvers<
@@ -12959,7 +13085,13 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     AdminResendEmailQuota?: GqlSAdminResendEmailQuotaResolvers<ContextType>;
     AdminResendUsage?: GqlSAdminResendUsageResolvers<ContextType>;
     AdminSession?: GqlSAdminSessionResolvers<ContextType>;
+    AdminSessionBrowserStat?: GqlSAdminSessionBrowserStatResolvers<ContextType>;
+    AdminSessionDeviceStat?: GqlSAdminSessionDeviceStatResolvers<ContextType>;
     AdminSessionEvent?: GqlSAdminSessionEventResolvers<ContextType>;
+    AdminSessionInsights?: GqlSAdminSessionInsightsResolvers<ContextType>;
+    AdminSessionLandingPathStat?: GqlSAdminSessionLandingPathStatResolvers<ContextType>;
+    AdminSessionOperatingSystemStat?: GqlSAdminSessionOperatingSystemStatResolvers<ContextType>;
+    AdminSessionReferrerStat?: GqlSAdminSessionReferrerStatResolvers<ContextType>;
     AdminSignInMethodBucket?: GqlSAdminSignInMethodBucketResolvers<ContextType>;
     AdminSignInMethodStat?: GqlSAdminSignInMethodStatResolvers<ContextType>;
     AdminSignInMethodStats?: GqlSAdminSignInMethodStatsResolvers<ContextType>;
@@ -13440,7 +13572,22 @@ export const GqlSAdminQueuedJobStateSchema: z.ZodType<'ACTIVE' | 'CREATED' | 'RE
     'RETRY',
 ]);
 
+export const GqlSAdminSessionBrowserSchema: z.ZodType<
+    'chrome' | 'edge' | 'firefox' | 'opera' | 'other' | 'safari' | 'samsung' | 'unknown',
+    'chrome' | 'edge' | 'firefox' | 'opera' | 'other' | 'safari' | 'samsung' | 'unknown'
+> = z.enum(['chrome', 'edge', 'firefox', 'opera', 'other', 'safari', 'samsung', 'unknown']);
+
+export const GqlSAdminSessionDeviceClassSchema: z.ZodType<
+    'desktop' | 'mobile' | 'tablet' | 'unknown',
+    'desktop' | 'mobile' | 'tablet' | 'unknown'
+> = z.enum(['desktop', 'mobile', 'tablet', 'unknown']);
+
 export const GqlSAdminSessionKindSchema: z.ZodType<'bot' | 'human', 'bot' | 'human'> = z.enum(['bot', 'human']);
+
+export const GqlSAdminSessionOperatingSystemSchema: z.ZodType<
+    'android' | 'chromeOs' | 'ios' | 'linux' | 'macos' | 'other' | 'unknown' | 'windows',
+    'android' | 'chromeOs' | 'ios' | 'linux' | 'macos' | 'other' | 'unknown' | 'windows'
+> = z.enum(['android', 'chromeOs', 'ios', 'linux', 'macos', 'other', 'unknown', 'windows']);
 
 export const GqlSAdminSessionSortFieldSchema: z.ZodType<
     'createdAt' | 'lastInteractionAt' | 'user' | 'userAgent',
