@@ -8,6 +8,7 @@ import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import { Checkbox } from '../../components/base/checkbox';
 import { Input } from '../../components/base/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/base/select';
 import { Tabs, TabsList, TabsTrigger } from '../../components/base/tabs';
 import type { GqlCAdminUsersPageQuery, GqlCAdminUserType, GqlCUserStatus } from '../../graphql/generated';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
@@ -181,52 +182,62 @@ export function AdminUsersPage({ data, search }: { data: GqlCAdminUsersPageQuery
                     </TabsList>
                 </Tabs>
 
-                <Tabs value={search.status ?? 'all'}>
-                    <TabsList variant="line" aria-label={t(locale, 'admin', 'copy.userStatus')}>
-                        {ADMIN_USERS_STATUS_OPTIONS.map((status) => (
-                            <TabsTrigger key={status ?? 'all'} value={status ?? 'all'} asChild>
-                                <Link
-                                    to="/{-$locale}/admin/users/list"
-                                    search={adminUsersSearchForUrl({
-                                        ...search,
-                                        status,
-                                        page: undefined,
-                                    })}
-                                    replace
-                                >
-                                    {status == null ? t(locale, 'admin', 'copy.allStatuses') : adminUserStatusLabel(status, locale)}
-                                </Link>
-                            </TabsTrigger>
-                        ))}
-                    </TabsList>
-                </Tabs>
-
-                <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
+                <div className="flex flex-wrap items-center gap-3">
                     <Input
                         type="search"
                         value={draftQ}
                         onChange={(event) => setDraftQ(event.target.value)}
                         placeholder={t(locale, 'admin', 'copy.searchNameOrEmail')}
                         aria-label={t(locale, 'admin', 'copy.searchUsers2')}
+                        className="w-full min-w-0 basis-full sm:max-w-sm sm:flex-1 sm:basis-56"
                     />
-                    <p className="text-sm text-muted-foreground tabular-nums">{t(locale, 'admin', 'copy.userCount', { count: total })}</p>
-                </div>
+                    <div className="flex w-full min-w-0 flex-wrap items-center gap-3 sm:w-auto sm:flex-1">
+                        <label className="flex shrink-0 items-center gap-2 text-sm">
+                            <span className="text-muted-foreground">{t(locale, 'admin', 'copy.status')}</span>
+                            <Select
+                                value={search.status ?? '__all__'}
+                                onValueChange={(value) => {
+                                    updateSearch({
+                                        ...search,
+                                        page: undefined,
+                                        status: value === 'ACTIVE' || value === 'BANNED' || value === 'ANONYMIZED' ? value : undefined,
+                                    });
+                                }}
+                            >
+                                <SelectTrigger size="sm" className="w-auto shrink-0" aria-label={t(locale, 'admin', 'copy.filterByStatus')}>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {ADMIN_USERS_STATUS_OPTIONS.map((status) => (
+                                        <SelectItem key={status ?? 'all'} value={status ?? '__all__'}>
+                                            {status == null ? t(locale, 'admin', 'copy.allStatuses') : adminUserStatusLabel(status, locale)}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </label>
 
-                {search.type === 'cook' ? (
-                    <label className="flex items-center gap-2 text-sm">
-                        <Checkbox
-                            checked={Boolean(search.unapproved)}
-                            onCheckedChange={(checked) =>
-                                updateSearch({
-                                    ...search,
-                                    page: undefined,
-                                    unapproved: checked === true ? true : undefined,
-                                })
-                            }
-                        />
-                        {t(locale, 'admin', 'copy.unapprovedOnly')}
-                    </label>
-                ) : null}
+                        {search.type === 'cook' ? (
+                            <label className="flex shrink-0 items-center gap-2 text-sm">
+                                <Checkbox
+                                    checked={Boolean(search.unapproved)}
+                                    onCheckedChange={(checked) =>
+                                        updateSearch({
+                                            ...search,
+                                            page: undefined,
+                                            unapproved: checked === true ? true : undefined,
+                                        })
+                                    }
+                                />
+                                {t(locale, 'admin', 'copy.unapprovedOnly')}
+                            </label>
+                        ) : null}
+
+                        <p className="ml-auto text-sm text-muted-foreground tabular-nums">
+                            {t(locale, 'admin', 'copy.userCount', { count: total })}
+                        </p>
+                    </div>
+                </div>
 
                 <AdminUsersDataTable data={users} sorting={sorting} onSortingChange={onSortingChange} />
             </AdminPinnedFooterLayout>

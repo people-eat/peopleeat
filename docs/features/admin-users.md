@@ -23,9 +23,9 @@ primary age signal per segment; average stays for comparison when the distributi
 
 ### List — `/admin/users/list`
 
-Search by name or email. Tabs filter membership type (customer / cook / admin) and account status (`ACTIVE` / `BANNED` / `ANONYMIZED`).
-Sortable table (includes status column), pinned bottom pagination bar with per-page size (`page` / `pageSize` in the URL; default 25), row
-or chevron → detail. When `type=cook`, optional `unapproved=1` shows cooks awaiting approval.
+Search by name or email. Tabs filter membership type (customer / cook / admin); a status select filters account status (`ACTIVE` / `BANNED`
+/ `ANONYMIZED`). Sortable table (includes status column), pinned bottom pagination bar with per-page size (`page` / `pageSize` in the URL;
+default 25), row or chevron → detail. When `type=cook`, optional `unapproved=1` shows cooks awaiting approval.
 
 ### Create — `/admin/users/create`
 
@@ -136,7 +136,7 @@ detail with URL tabs; manual create with optional admin and cook payloads.
   `adminCookBiographySuggest`; `adminCookBiographySummarySuggest`; `adminCookMealUpsert`; `adminCookMenuUpsert`
 - Mapper: `toGqlAdminUser` (`profilePicture` resolved like public `User`)
 - Resolvers under `Admin` / `AdminMutation`
-- UI: overview with stat cards, insights breakdowns, upcoming birthdays, + chart; list with tabs, data table, and pinned
+- UI: overview with stat cards, insights breakdowns, upcoming birthdays, + chart; list with type tabs, status select, data table, and pinned
   `AdminListPaginationBar`; create form; detail with `@include` per tab; session-events tab uses `Admin.sessionEvents` +
   `Admin.sessionEventsCounts` with pinned `AdminListPaginationBar`; `AdminUserGeneralSection`, `AdminUserSignInSection`,
   `AdminUserCookProfileSection`, `AdminUserCookProfileEditPage`; booking-requests / pool / offers tabs reuse `AdminBookingRequestListCard` /
