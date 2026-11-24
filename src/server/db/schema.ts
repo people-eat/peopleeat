@@ -223,6 +223,19 @@ export const sessionEvents = pgTable(
             .where(
                 sql`${table.type} = 'WEB_PAGE_VISITED' AND ${table.payload}->>'webPageKey' = 'CHEFS' AND (${table.payload}->'params'->>'cookId') IS NOT NULL`,
             ),
+        // Admin traffic entity ranking / drill-down by catalog id.
+        index('SessionEvents_webPageVisit_cities_cityId_createdAt_idx')
+            .using('btree', sql`(${table.payload}->'params'->>'cityId')`, table.createdAt)
+            .where(sql`${table.type} = 'WEB_PAGE_VISITED' AND ${table.payload}->>'webPageKey' = 'CITIES'`),
+        index('SessionEvents_webPageVisit_venues_partnerVenueId_createdAt_idx')
+            .using('btree', sql`(${table.payload}->'params'->>'partnerVenueId')`, table.createdAt)
+            .where(sql`${table.type} = 'WEB_PAGE_VISITED' AND ${table.payload}->>'webPageKey' = 'VENUES'`),
+        index('SessionEvents_webPageVisit_occasions_occasionId_createdAt_idx')
+            .using('btree', sql`(${table.payload}->'params'->>'occasionId')`, table.createdAt)
+            .where(sql`${table.type} = 'WEB_PAGE_VISITED' AND ${table.payload}->>'webPageKey' = 'OCCASIONS'`),
+        index('SessionEvents_webPageVisit_blogPosts_blogPostId_createdAt_idx')
+            .using('btree', sql`(${table.payload}->'params'->>'blogPostId')`, table.createdAt)
+            .where(sql`${table.type} = 'WEB_PAGE_VISITED' AND ${table.payload}->>'webPageKey' = 'BLOG_POSTS'`),
         // Admin booking-request Origin: reverse lookup of the creating session
         // from BOOKING_REQUEST_CREATED.payload.bookingRequestId. Predecessor
         // empty-payload rows are excluded. See adminBookingRequestCreatingSessionFindOne.

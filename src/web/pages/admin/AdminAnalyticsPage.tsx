@@ -1,4 +1,4 @@
-import { useNavigate } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import type { DateRange } from 'react-day-picker';
 import { Layer, Rectangle, ResponsiveContainer, Sankey, Tooltip, useChartWidth } from 'recharts';
 
@@ -68,9 +68,6 @@ export function adminAnalyticsPageVariables(search: AdminOverviewRangeSearch = {
     return {
         ...adminOverviewRangeToGraphQlVariables(adminOverviewRangeResolve(search)),
         formVisitWebPageKey: 'BOOKING_REQUEST_FORM' as const,
-        landingVisitWebPageKey: 'LANDING' as const,
-        chefsVisitWebPageKey: 'CHEFS' as const,
-        giftCardVisitWebPageKey: 'GIFT_CARD' as const,
     };
 }
 
@@ -140,9 +137,6 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
     const bookingCheckoutFlow = admin?.bookingRequestCheckoutFlow;
     const cookOfferFlow = admin?.cookBookingRequestOfferFlow;
     const formVisits = admin?.formVisits ?? [];
-    const landingVisits = admin?.landingVisits ?? [];
-    const chefsVisits = admin?.chefsVisits ?? [];
-    const giftCardVisits = admin?.giftCardVisits ?? [];
     const signInMethodStats = admin?.signInMethodStats;
     const signInMethods = signInMethodStats?.methods ?? [];
     const signInBucketsByDate = new Map<
@@ -737,45 +731,11 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
                     )}
                 </section>
 
-                <section className="grid gap-3">
-                    <h2 className="font-serif text-2xl text-foreground">{t(locale, 'admin', 'copy.formPageVisits')}</h2>
-                    <AdminOverviewBarChart
-                        data={formVisits}
-                        locale={locale}
-                        timeZone={timeZone}
-                        ariaLabel={t(locale, 'admin', 'copy.bookingFormVisits')}
-                    />
-                </section>
-
-                <section className="grid gap-3">
-                    <h2 className="font-serif text-2xl text-foreground">{t(locale, 'admin', 'copy.landingPageVisits')}</h2>
-                    <AdminOverviewBarChart
-                        data={landingVisits}
-                        locale={locale}
-                        timeZone={timeZone}
-                        ariaLabel={t(locale, 'admin', 'copy.landingPageVisits2')}
-                    />
-                </section>
-
-                <section className="grid gap-3">
-                    <h2 className="font-serif text-2xl text-foreground">{t(locale, 'admin', 'copy.chefsPageVisits')}</h2>
-                    <AdminOverviewBarChart
-                        data={chefsVisits}
-                        locale={locale}
-                        timeZone={timeZone}
-                        ariaLabel={t(locale, 'admin', 'copy.chefsPageVisits2')}
-                    />
-                </section>
-
-                <section className="grid gap-3">
-                    <h2 className="font-serif text-2xl text-foreground">{t(locale, 'admin', 'copy.giftCardPageVisits')}</h2>
-                    <AdminOverviewBarChart
-                        data={giftCardVisits}
-                        locale={locale}
-                        timeZone={timeZone}
-                        ariaLabel={t(locale, 'admin', 'copy.giftCardPageVisits2')}
-                    />
-                </section>
+                <p className="text-sm text-muted-foreground">
+                    <Link to="/{-$locale}/admin/traffic" className="underline-offset-4 hover:underline">
+                        {t(locale, 'admin', 'traffic.pageVisitsLiveOnTraffic')}
+                    </Link>
+                </p>
             </main>
         </AdminPathPageChrome>
     );

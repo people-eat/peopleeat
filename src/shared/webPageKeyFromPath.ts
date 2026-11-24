@@ -44,15 +44,22 @@ export function webPageKeyFromPath(pathWithoutLocale: string): WebPageVisitMatch
     if (path === '/privacy-policy') return { webPageKey: 'PRIVACY_POLICY' };
     if (path === '/log-on' || path === '/sign-in') return { webPageKey: 'SIGN_IN' };
 
-    // Chef detail captures the URL segment; session-event create resolves slug
-    // or legacy cookId to the stable cookId so analytics survive a rename.
+    // Detail routes capture the URL segment; session-event create resolves slug
+    // or legacy id to the stable entity id so analytics survive a rename.
     const chefsMatch = /^\/chefs\/([^/]+)$/.exec(path);
     if (chefsMatch?.[1]) return { webPageKey: 'CHEFS', params: { cookId: chefsMatch[1] } };
 
-    if (/^\/cities\/[^/]+$/.test(path)) return { webPageKey: 'CITIES' };
-    if (/^\/venues\/[^/]+$/.test(path) || /^\/partners\/[^/]+$/.test(path)) return { webPageKey: 'VENUES' };
-    if (/^\/occasions\/[^/]+$/.test(path)) return { webPageKey: 'OCCASIONS' };
-    if (/^\/blog-posts\/[^/]+$/.test(path)) return { webPageKey: 'BLOG_POSTS' };
+    const citiesMatch = /^\/cities\/([^/]+)$/.exec(path);
+    if (citiesMatch?.[1]) return { webPageKey: 'CITIES', params: { cityId: citiesMatch[1] } };
+
+    const venuesMatch = /^\/venues\/([^/]+)$/.exec(path) ?? /^\/partners\/([^/]+)$/.exec(path);
+    if (venuesMatch?.[1]) return { webPageKey: 'VENUES', params: { partnerVenueId: venuesMatch[1] } };
+
+    const occasionsMatch = /^\/occasions\/([^/]+)$/.exec(path);
+    if (occasionsMatch?.[1]) return { webPageKey: 'OCCASIONS', params: { occasionId: occasionsMatch[1] } };
+
+    const blogPostsMatch = /^\/blog-posts\/([^/]+)$/.exec(path);
+    if (blogPostsMatch?.[1]) return { webPageKey: 'BLOG_POSTS', params: { blogPostId: blogPostsMatch[1] } };
 
     const bookingSubmittedMatch = /^\/booking-request\/([^/]+)\/submitted$/.exec(path);
     if (bookingSubmittedMatch?.[1]) {

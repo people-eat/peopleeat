@@ -4163,6 +4163,73 @@ type AdminTimeBucket {
     count: Int!
 }
 
+# Audience for admin public-page visit aggregates. HUMAN matches booking-form
+# funnel (not bot, not impersonation, not admin, not cook).
+enum AdminWebPageVisitAudience {
+    HUMAN
+    ALL
+}
+
+# Chart metric. KPIs always return both; series `count` follows this choice.
+enum AdminWebPageVisitMetric {
+    PAGEVIEWS
+    UNIQUE_SESSIONS
+}
+
+# Catalog list vs detail. INDEX = no entity param; DETAIL = param present.
+enum AdminWebPageVisitScope {
+    ALL
+    INDEX
+    DETAIL
+}
+
+# Optional drill-in for exactly one entity-capable WebPageKey.
+input AdminWebPageVisitEntity {
+    cookId: ID
+    cityId: ID
+    partnerVenueId: ID
+    occasionId: ID
+    blogPostId: ID
+}
+
+type AdminWebPageVisitSeries {
+    webPageKey: WebPageKey
+    buckets: [AdminTimeBucket!]!
+    pageviews: Int!
+    uniqueSessions: Int!
+}
+
+type AdminWebPageVisitRank {
+    webPageKey: WebPageKey!
+    pageviews: Int!
+    uniqueSessions: Int!
+}
+
+type AdminWebPageVisitEntityRank {
+    id: ID!
+    label: String!
+    pathName: String
+    pageviews: Int!
+    uniqueSessions: Int!
+}
+
+type AdminWebPageVisitTraffic {
+    series: [AdminWebPageVisitSeries!]!
+    pageviews: Int!
+    uniqueSessions: Int!
+    pageRanks: [AdminWebPageVisitRank!]!
+    entityRanks: [AdminWebPageVisitEntityRank!]!
+    # Visits in range for the focused catalog key that already carry an entity id.
+    entityVisitCount: Int!
+    # Detail-looking visits in range for the focused key that still lack an entity id.
+    untaggedDetailVisitCount: Int!
+}
+
+type AdminWebPageVisitCount {
+    webPageKey: WebPageKey!
+    pageviews: Int!
+}
+
 # Manual account creation from `/admin/users/create`. Leaves legal acceptance
 # timestamps null so the public gate fires on first sign-in. Optional `cook`
 # inserts a `Cooks` row with required profile/travel fields; `asAdmin` inserts
@@ -4435,6 +4502,19 @@ type Admin {
         range: DateTimeRange!
         granularity: AdminTimeBucketGranularity! = day
     ): [AdminTimeBucket!]!
+    # Filterable public-page visit explorer. Empty `webPageKeys` overlays one
+    # all-pages series. Max 8 keys. See docs/features/admin-traffic.md.
+    webPageVisitTraffic(
+        range: DateTimeRange!
+        granularity: AdminTimeBucketGranularity! = day
+        webPageKeys: [WebPageKey!]
+        audience: AdminWebPageVisitAudience! = HUMAN
+        metric: AdminWebPageVisitMetric! = PAGEVIEWS
+        scope: AdminWebPageVisitScope! = ALL
+        entity: AdminWebPageVisitEntity
+    ): AdminWebPageVisitTraffic!
+    # Per-key pageview totals for admin web-page cards.
+    webPageVisitCounts(range: DateTimeRange!, audience: AdminWebPageVisitAudience! = HUMAN): [AdminWebPageVisitCount!]!
     # Assistant chats (any surface, any owner). Sorted by criterion (default
     # `lastModifiedAt` desc). See `AdminAssistantChatCriterion` and
     # docs/features/admin-assistant-chats.md.

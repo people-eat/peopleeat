@@ -4,8 +4,8 @@ import { sessions } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { SessionEventWebPageVisitedPayload } from '../domain/sessionEvent';
 import type { GqlSMutationResult, GqlSMutationSessionWebPageVisitCreateArgs, GqlSSession } from '../graphql/generated';
-import { cookFindByPathNameAny } from '../utils/cookPathName';
 import { sessionEventCreate } from '../utils/sessionEventCreate';
+import { sessionWebPageVisitParamsResolve } from '../utils/sessionWebPageVisitParamsResolve';
 
 export async function sessionWebPageVisitCreate(
     args: GqlSMutationSessionWebPageVisitCreateArgs,
@@ -24,21 +24,12 @@ export async function sessionWebPageVisitCreate(
         }
 
         const input = args.input;
-        const params: NonNullable<SessionEventWebPageVisitedPayload['params']> = {};
-        if (input.cityId) params.cityId = input.cityId;
-        if (input.cookId) {
-            const cook = await cookFindByPathNameAny(serverRuntime.db, input.cookId);
-            params.cookId = cook?.cookId ?? input.cookId;
-        }
-        if (input.blogPostId) params.blogPostId = input.blogPostId;
-        if (input.partnerVenueId) params.partnerVenueId = input.partnerVenueId;
-        if (input.occasionId) params.occasionId = input.occasionId;
-        if (input.bookingRequestId) params.bookingRequestId = input.bookingRequestId;
+        const params = await sessionWebPageVisitParamsResolve(serverRuntime.db, input);
 
         const payload: SessionEventWebPageVisitedPayload = {
             webPageKey: input.webPageKey,
             ...(input.path ? { path: input.path.slice(0, 512) } : {}),
-            ...(Object.keys(params).length > 0 ? { params } : {}),
+            ...(params ? { params } : {}),
         };
 
         const { sessionEventId } = await sessionEventCreate(serverRuntime, {

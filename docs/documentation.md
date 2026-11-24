@@ -84,7 +84,8 @@ docs/
 │   ├── admin-jobs.md             # Global pending scheduled jobs (`/admin/jobs`)
 │   ├── admin-users.md
 │   ├── admin-sessions.md
-│   ├── admin-analytics.md        # Booking funnel Sankey + visit buckets
+│   ├── admin-analytics.md        # Booking funnel Sankey; form-visit KPI
+│   ├── admin-traffic.md          # Public page visit line charts + filters
 │   ├── admin-map.md              # Ops map (cooks / bookings / cities / venues)
 │   ├── admin-logs.md
 │   ├── admin-database-slow-statements.md # pg_stat_statements top-N via Admin GraphQL

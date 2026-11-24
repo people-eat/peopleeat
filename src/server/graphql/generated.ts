@@ -125,6 +125,8 @@ export interface GqlSAdmin {
     userRegistrations: Array<GqlSAdminTimeBucket>;
     users: Array<GqlSAdminUser>;
     webPage: GqlSAdminWebPage;
+    webPageVisitCounts: Array<GqlSAdminWebPageVisitCount>;
+    webPageVisitTraffic: GqlSAdminWebPageVisitTraffic;
     webPages: Array<GqlSAdminWebPage>;
     whatsAppConversation?: Maybe<GqlSAdminWhatsAppConversation>;
     whatsAppConversations: Array<GqlSAdminWhatsAppConversation>;
@@ -494,6 +496,21 @@ export type GqlSAdminUsersArgs = {
 
 export type GqlSAdminWebPageArgs = {
     webPageKey: GqlSWebPageKey;
+};
+
+export type GqlSAdminWebPageVisitCountsArgs = {
+    audience?: GqlSAdminWebPageVisitAudience;
+    range: GqlSDateTimeRange;
+};
+
+export type GqlSAdminWebPageVisitTrafficArgs = {
+    audience?: GqlSAdminWebPageVisitAudience;
+    entity?: InputMaybe<GqlSAdminWebPageVisitEntity>;
+    granularity?: GqlSAdminTimeBucketGranularity;
+    metric?: GqlSAdminWebPageVisitMetric;
+    range: GqlSDateTimeRange;
+    scope?: GqlSAdminWebPageVisitScope;
+    webPageKeys?: InputMaybe<Array<GqlSWebPageKey>>;
 };
 
 export type GqlSAdminWhatsAppConversationArgs = {
@@ -2559,6 +2576,61 @@ export type GqlSAdminWebPageUpsert = {
     titleDe: Scalars['String']['input'];
     titleEn: Scalars['String']['input'];
 };
+
+export type GqlSAdminWebPageVisitAudience = 'ALL' | 'HUMAN';
+
+export interface GqlSAdminWebPageVisitCount {
+    __typename?: 'AdminWebPageVisitCount';
+    pageviews: Scalars['Int']['output'];
+    webPageKey: GqlSWebPageKey;
+}
+
+export type GqlSAdminWebPageVisitEntity = {
+    blogPostId?: InputMaybe<Scalars['ID']['input']>;
+    cityId?: InputMaybe<Scalars['ID']['input']>;
+    cookId?: InputMaybe<Scalars['ID']['input']>;
+    occasionId?: InputMaybe<Scalars['ID']['input']>;
+    partnerVenueId?: InputMaybe<Scalars['ID']['input']>;
+};
+
+export interface GqlSAdminWebPageVisitEntityRank {
+    __typename?: 'AdminWebPageVisitEntityRank';
+    id: Scalars['ID']['output'];
+    label: Scalars['String']['output'];
+    pageviews: Scalars['Int']['output'];
+    pathName?: Maybe<Scalars['String']['output']>;
+    uniqueSessions: Scalars['Int']['output'];
+}
+
+export type GqlSAdminWebPageVisitMetric = 'PAGEVIEWS' | 'UNIQUE_SESSIONS';
+
+export interface GqlSAdminWebPageVisitRank {
+    __typename?: 'AdminWebPageVisitRank';
+    pageviews: Scalars['Int']['output'];
+    uniqueSessions: Scalars['Int']['output'];
+    webPageKey: GqlSWebPageKey;
+}
+
+export type GqlSAdminWebPageVisitScope = 'ALL' | 'DETAIL' | 'INDEX';
+
+export interface GqlSAdminWebPageVisitSeries {
+    __typename?: 'AdminWebPageVisitSeries';
+    buckets: Array<GqlSAdminTimeBucket>;
+    pageviews: Scalars['Int']['output'];
+    uniqueSessions: Scalars['Int']['output'];
+    webPageKey?: Maybe<GqlSWebPageKey>;
+}
+
+export interface GqlSAdminWebPageVisitTraffic {
+    __typename?: 'AdminWebPageVisitTraffic';
+    entityRanks: Array<GqlSAdminWebPageVisitEntityRank>;
+    entityVisitCount: Scalars['Int']['output'];
+    pageRanks: Array<GqlSAdminWebPageVisitRank>;
+    pageviews: Scalars['Int']['output'];
+    series: Array<GqlSAdminWebPageVisitSeries>;
+    uniqueSessions: Scalars['Int']['output'];
+    untaggedDetailVisitCount: Scalars['Int']['output'];
+}
 
 export interface GqlSAdminWhatsAppConversation {
     __typename?: 'AdminWhatsAppConversation';
@@ -6352,6 +6424,15 @@ export type GqlSResolversTypes = ResolversObject<{
     AdminUserUpcomingBirthday: ResolverTypeWrapper<GqlSAdminUserUpcomingBirthday>;
     AdminWebPage: ResolverTypeWrapper<GqlSAdminWebPage>;
     AdminWebPageUpsert: GqlSAdminWebPageUpsert;
+    AdminWebPageVisitAudience: GqlSAdminWebPageVisitAudience;
+    AdminWebPageVisitCount: ResolverTypeWrapper<GqlSAdminWebPageVisitCount>;
+    AdminWebPageVisitEntity: GqlSAdminWebPageVisitEntity;
+    AdminWebPageVisitEntityRank: ResolverTypeWrapper<GqlSAdminWebPageVisitEntityRank>;
+    AdminWebPageVisitMetric: GqlSAdminWebPageVisitMetric;
+    AdminWebPageVisitRank: ResolverTypeWrapper<GqlSAdminWebPageVisitRank>;
+    AdminWebPageVisitScope: GqlSAdminWebPageVisitScope;
+    AdminWebPageVisitSeries: ResolverTypeWrapper<GqlSAdminWebPageVisitSeries>;
+    AdminWebPageVisitTraffic: ResolverTypeWrapper<GqlSAdminWebPageVisitTraffic>;
     AdminWhatsAppConversation: ResolverTypeWrapper<
         Omit<GqlSAdminWhatsAppConversation, 'messages'> & { messages: Array<GqlSResolversTypes['HumanChatMessage']> }
     >;
@@ -6957,6 +7038,12 @@ export type GqlSResolversParentTypes = ResolversObject<{
     AdminUserUpcomingBirthday: GqlSAdminUserUpcomingBirthday;
     AdminWebPage: GqlSAdminWebPage;
     AdminWebPageUpsert: GqlSAdminWebPageUpsert;
+    AdminWebPageVisitCount: GqlSAdminWebPageVisitCount;
+    AdminWebPageVisitEntity: GqlSAdminWebPageVisitEntity;
+    AdminWebPageVisitEntityRank: GqlSAdminWebPageVisitEntityRank;
+    AdminWebPageVisitRank: GqlSAdminWebPageVisitRank;
+    AdminWebPageVisitSeries: GqlSAdminWebPageVisitSeries;
+    AdminWebPageVisitTraffic: GqlSAdminWebPageVisitTraffic;
     AdminWhatsAppConversation: Omit<GqlSAdminWhatsAppConversation, 'messages'> & {
         messages: Array<GqlSResolversParentTypes['HumanChatMessage']>;
     };
@@ -7755,6 +7842,18 @@ export type GqlSAdminResolvers<
     >;
     users?: Resolver<Array<GqlSResolversTypes['AdminUser']>, ParentType, ContextType, RequireFields<GqlSAdminUsersArgs, 'criterion'>>;
     webPage?: Resolver<GqlSResolversTypes['AdminWebPage'], ParentType, ContextType, RequireFields<GqlSAdminWebPageArgs, 'webPageKey'>>;
+    webPageVisitCounts?: Resolver<
+        Array<GqlSResolversTypes['AdminWebPageVisitCount']>,
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminWebPageVisitCountsArgs, 'audience' | 'range'>
+    >;
+    webPageVisitTraffic?: Resolver<
+        GqlSResolversTypes['AdminWebPageVisitTraffic'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminWebPageVisitTrafficArgs, 'audience' | 'granularity' | 'metric' | 'range' | 'scope'>
+    >;
     webPages?: Resolver<Array<GqlSResolversTypes['AdminWebPage']>, ParentType, ContextType>;
     whatsAppConversation?: Resolver<
         Maybe<GqlSResolversTypes['AdminWhatsAppConversation']>,
@@ -9585,6 +9684,57 @@ export type GqlSAdminWebPageResolvers<
     titleEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     updatedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     webPageKey?: Resolver<GqlSResolversTypes['WebPageKey'], ParentType, ContextType>;
+}>;
+
+export type GqlSAdminWebPageVisitCountResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminWebPageVisitCount'] = GqlSResolversParentTypes['AdminWebPageVisitCount'],
+> = ResolversObject<{
+    pageviews?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    webPageKey?: Resolver<GqlSResolversTypes['WebPageKey'], ParentType, ContextType>;
+}>;
+
+export type GqlSAdminWebPageVisitEntityRankResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminWebPageVisitEntityRank'] = GqlSResolversParentTypes['AdminWebPageVisitEntityRank'],
+> = ResolversObject<{
+    id?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    label?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    pageviews?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    pathName?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
+    uniqueSessions?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type GqlSAdminWebPageVisitRankResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminWebPageVisitRank'] = GqlSResolversParentTypes['AdminWebPageVisitRank'],
+> = ResolversObject<{
+    pageviews?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    uniqueSessions?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    webPageKey?: Resolver<GqlSResolversTypes['WebPageKey'], ParentType, ContextType>;
+}>;
+
+export type GqlSAdminWebPageVisitSeriesResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminWebPageVisitSeries'] = GqlSResolversParentTypes['AdminWebPageVisitSeries'],
+> = ResolversObject<{
+    buckets?: Resolver<Array<GqlSResolversTypes['AdminTimeBucket']>, ParentType, ContextType>;
+    pageviews?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    uniqueSessions?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    webPageKey?: Resolver<Maybe<GqlSResolversTypes['WebPageKey']>, ParentType, ContextType>;
+}>;
+
+export type GqlSAdminWebPageVisitTrafficResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminWebPageVisitTraffic'] = GqlSResolversParentTypes['AdminWebPageVisitTraffic'],
+> = ResolversObject<{
+    entityRanks?: Resolver<Array<GqlSResolversTypes['AdminWebPageVisitEntityRank']>, ParentType, ContextType>;
+    entityVisitCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    pageRanks?: Resolver<Array<GqlSResolversTypes['AdminWebPageVisitRank']>, ParentType, ContextType>;
+    pageviews?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    series?: Resolver<Array<GqlSResolversTypes['AdminWebPageVisitSeries']>, ParentType, ContextType>;
+    uniqueSessions?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    untaggedDetailVisitCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
 export type GqlSAdminWhatsAppConversationResolvers<
@@ -12789,6 +12939,11 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     AdminUserTimeZoneStat?: GqlSAdminUserTimeZoneStatResolvers<ContextType>;
     AdminUserUpcomingBirthday?: GqlSAdminUserUpcomingBirthdayResolvers<ContextType>;
     AdminWebPage?: GqlSAdminWebPageResolvers<ContextType>;
+    AdminWebPageVisitCount?: GqlSAdminWebPageVisitCountResolvers<ContextType>;
+    AdminWebPageVisitEntityRank?: GqlSAdminWebPageVisitEntityRankResolvers<ContextType>;
+    AdminWebPageVisitRank?: GqlSAdminWebPageVisitRankResolvers<ContextType>;
+    AdminWebPageVisitSeries?: GqlSAdminWebPageVisitSeriesResolvers<ContextType>;
+    AdminWebPageVisitTraffic?: GqlSAdminWebPageVisitTrafficResolvers<ContextType>;
     AdminWhatsAppConversation?: GqlSAdminWhatsAppConversationResolvers<ContextType>;
     AuthEmailOtp?: GqlSAuthEmailOtpResolvers<ContextType>;
     AuthOauthTicket?: GqlSAuthOauthTicketResolvers<ContextType>;
@@ -13290,6 +13445,19 @@ export const GqlSAdminUserTypeSchema: z.ZodType<'admin' | 'cook' | 'customer', '
     'admin',
     'cook',
     'customer',
+]);
+
+export const GqlSAdminWebPageVisitAudienceSchema: z.ZodType<'ALL' | 'HUMAN', 'ALL' | 'HUMAN'> = z.enum(['ALL', 'HUMAN']);
+
+export const GqlSAdminWebPageVisitMetricSchema: z.ZodType<'PAGEVIEWS' | 'UNIQUE_SESSIONS', 'PAGEVIEWS' | 'UNIQUE_SESSIONS'> = z.enum([
+    'PAGEVIEWS',
+    'UNIQUE_SESSIONS',
+]);
+
+export const GqlSAdminWebPageVisitScopeSchema: z.ZodType<'ALL' | 'DETAIL' | 'INDEX', 'ALL' | 'DETAIL' | 'INDEX'> = z.enum([
+    'ALL',
+    'DETAIL',
+    'INDEX',
 ]);
 
 export const GqlSAuthOauthProviderSchema: z.ZodType<'FACEBOOK' | 'GOOGLE', 'FACEBOOK' | 'GOOGLE'> = z.enum(['FACEBOOK', 'GOOGLE']);
@@ -14413,6 +14581,16 @@ export function GqlSAdminWebPageUpsertSchema(): z.ZodObject<Properties<GqlSAdmin
         descriptionEn: z.string(),
         titleDe: z.string(),
         titleEn: z.string(),
+    });
+}
+
+export function GqlSAdminWebPageVisitEntitySchema(): z.ZodObject<Properties<GqlSAdminWebPageVisitEntity>> {
+    return z.object({
+        blogPostId: z.string().nullish(),
+        cityId: z.string().nullish(),
+        cookId: z.string().nullish(),
+        occasionId: z.string().nullish(),
+        partnerVenueId: z.string().nullish(),
     });
 }
 

@@ -6,6 +6,7 @@ import {
     Building2Icon,
     CalendarClockIcon,
     ChartColumnIcon,
+    ChartSplineIcon,
     DatabaseIcon,
     FileClockIcon,
     FileInputIcon,
@@ -52,6 +53,7 @@ export type AdminStubSlug =
     | 'ai-generations'
     | 'sessions'
     | 'analytics'
+    | 'traffic'
     | 'map'
     | 'feature-toggles'
     | 'blog-posts'
@@ -104,6 +106,7 @@ const ADMIN_NAV_TITLE_KEY = {
     'ai-generations': 'nav.aiGenerations.title',
     sessions: 'nav.sessions.title',
     analytics: 'nav.analytics.title',
+    traffic: 'nav.traffic.title',
     map: 'nav.map.title',
     'feature-toggles': 'nav.featureToggles.title',
     'blog-posts': 'nav.blogPosts.title',
@@ -135,6 +138,7 @@ const ADMIN_NAV_DESCRIPTION_KEY = {
     'ai-generations': 'nav.aiGenerations.description',
     sessions: 'nav.sessions.description',
     analytics: 'nav.analytics.description',
+    traffic: 'nav.traffic.description',
     map: 'nav.map.description',
     'feature-toggles': 'nav.featureToggles.description',
     'blog-posts': 'nav.blogPosts.description',
@@ -205,7 +209,7 @@ export const ADMIN_NAV_GROUPS: readonly AdminNavGroup[] = [
     },
     {
         id: 'insights',
-        items: ['analytics', 'sessions', 'map'],
+        items: ['traffic', 'analytics', 'sessions', 'map'],
     },
     {
         id: 'platform',
@@ -321,6 +325,12 @@ export const ADMIN_STUB_ROUTES: readonly AdminStubRoute[] = [
         path: '/admin/occasions',
         to: '/{-$locale}/admin/occasions',
         icon: PartyPopperIcon,
+    },
+    {
+        slug: 'traffic',
+        path: '/admin/traffic',
+        to: '/{-$locale}/admin/traffic',
+        icon: ChartSplineIcon,
     },
     {
         slug: 'analytics',

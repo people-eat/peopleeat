@@ -182,9 +182,13 @@
             "title": "Anlässe",
             "description": "Anlassseiten verwalten."
         },
+        "traffic": {
+            "title": "Traffic",
+            "description": "Öffentliche Seitenbesuche im Zeitverlauf."
+        },
         "analytics": {
             "title": "Analysen",
-            "description": "Buchungsformular-Funnel und Seitenbesuche."
+            "description": "Buchungsformular-, Geschenkkarten-, Checkout- und Koch-Funnels sowie Anmeldemethoden."
         },
         "sessions": {
             "title": "Sitzungen",
@@ -363,8 +367,11 @@
             "title": "Gericht ansehen, veröffentlichen oder löschen",
             "description": "Gericht eines Kochs verwalten (inkl. gelöschter)."
         },
+        "traffic": {
+            "description": "Filterbare Liniendiagramme öffentlicher Seitenbesuche aus Session-Events."
+        },
         "analytics": {
-            "description": "Buchungsformular-, Geschenkkarten-, Checkout- und Koch-Funnels, Anmeldemethoden und Seitenbesuche."
+            "description": "Buchungsformular-, Geschenkkarten-, Checkout- und Koch-Funnels sowie Anmeldemethoden."
         },
         "offerAddonTemplate": {
             "title": "Zusatzleistung",
@@ -2173,6 +2180,37 @@
             }
         },
         "cookConversion": "Conversion benachrichtigt → Angebot: {percent}%."
+    },
+    "traffic": {
+        "allPages": "Alle öffentlichen Seiten",
+        "pageviews": "Seitenaufrufe",
+        "uniqueSessions": "Eindeutige Sitzungen",
+        "audience": "Zielgruppe",
+        "audienceHuman": "Menschen",
+        "audienceAll": "Alle Sitzungen",
+        "metric": "Kennzahl",
+        "metricPageviews": "Seitenaufrufe",
+        "metricUniqueSessions": "Eindeutige Sitzungen",
+        "granularity": "Granularität",
+        "granularityDay": "Tag",
+        "granularityWeek": "Woche",
+        "granularityMonth": "Monat",
+        "scope": "Umfang",
+        "scopeAll": "Alle",
+        "scopeIndex": "Übersichtsseiten",
+        "scopeDetail": "Detailseiten",
+        "pages": "Seiten",
+        "page": "Seite",
+        "entities": "Detailseiten",
+        "entity": "Seite",
+        "chart": "Seitenbesuche im Zeitverlauf",
+        "dateRange": "Zeitraum für Traffic",
+        "noVisits": "Keine Besuche im gewählten Zeitraum.",
+        "noEntityVisits": "Keine zugeordneten Detailseiten in diesem Zeitraum.",
+        "entityBreakdownPending": "Detailbesuche in diesem Zeitraum sind noch keiner Seite zugeordnet. Neue Besuche werden künftig zugeordnet.",
+        "viewTraffic": "Traffic ansehen",
+        "visits30d": "{count} Besuche (30 Tage)",
+        "pageVisitsLiveOnTraffic": "Seitenbesuche findest du unter Traffic."
     },
     "sessionEvents": {
         "static": {

@@ -2,7 +2,7 @@
 # Always one entry per WebPageKey (ghosts when not persisted).
 # See docs/features/admin-web-pages.md.
 
-query AdminWebPagesPage {
+query AdminWebPagesPage($range: DateTimeRange!) {
     currentSession {
         user {
             admin {
@@ -15,6 +15,10 @@ query AdminWebPagesPage {
                     descriptionEn
                     persisted
                     updatedAt
+                }
+                webPageVisitCounts(range: $range, audience: HUMAN) {
+                    webPageKey
+                    pageviews
                 }
             }
         }

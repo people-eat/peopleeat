@@ -360,6 +360,8 @@ import { adminUserTimeBasedOneTimePasswordFindOne } from '../queries/adminUserTi
 import { adminUserUpcomingBirthdaysFindMany } from '../queries/adminUserUpcomingBirthdaysFindMany';
 import { adminWebPageFindMany } from '../queries/adminWebPageFindMany';
 import { adminWebPageFindOne } from '../queries/adminWebPageFindOne';
+import { adminWebPageVisitCountFindMany } from '../queries/adminWebPageVisitCountFindMany';
+import { adminWebPageVisitTrafficFindOne } from '../queries/adminWebPageVisitTrafficFindOne';
 import { adminWhatsAppConversationFindMany } from '../queries/adminWhatsAppConversationFindMany';
 import { adminWhatsAppConversationFindManyCounts } from '../queries/adminWhatsAppConversationFindManyCounts';
 import { adminWhatsAppConversationFindOne } from '../queries/adminWhatsAppConversationFindOne';
@@ -673,6 +675,8 @@ import type {
     GqlSAdminUserRegistrationsArgs,
     GqlSAdminUsersArgs,
     GqlSAdminWebPageArgs,
+    GqlSAdminWebPageVisitCountsArgs,
+    GqlSAdminWebPageVisitTrafficArgs,
     GqlSAdminWhatsAppConversation,
     GqlSAdminWhatsAppConversationArgs,
     GqlSAdminWhatsAppConversationsArgs,
@@ -1283,6 +1287,28 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
                     args.webPageKey,
                     args.range,
                     args.granularity ?? 'day',
+                    requestingSession,
+                    serverRuntime,
+                );
+            },
+            webPageVisitTraffic(_parent: GqlSAdmin, args: GqlSAdminWebPageVisitTrafficArgs, requestingSession: GqlSSession) {
+                return adminWebPageVisitTrafficFindOne(
+                    {
+                        range: args.range,
+                        granularity: args.granularity,
+                        webPageKeys: args.webPageKeys ?? null,
+                        audience: args.audience ?? 'HUMAN',
+                        metric: args.metric ?? 'PAGEVIEWS',
+                        scope: args.scope ?? 'ALL',
+                        entity: args.entity ?? null,
+                    },
+                    requestingSession,
+                    serverRuntime,
+                );
+            },
+            webPageVisitCounts(_parent: GqlSAdmin, args: GqlSAdminWebPageVisitCountsArgs, requestingSession: GqlSSession) {
+                return adminWebPageVisitCountFindMany(
+                    { range: args.range, audience: args.audience ?? 'HUMAN' },
                     requestingSession,
                     serverRuntime,
                 );

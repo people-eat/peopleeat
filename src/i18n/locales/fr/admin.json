@@ -1636,6 +1636,37 @@
         },
         "cookConversion": "Conversion notifié → offre : {percent} %."
     },
+    "traffic": {
+        "allPages": "Toutes les pages publiques",
+        "pageviews": "Pages vues",
+        "uniqueSessions": "Sessions uniques",
+        "audience": "Audience",
+        "audienceHuman": "Humains",
+        "audienceAll": "Toutes les sessions",
+        "metric": "Indicateur",
+        "metricPageviews": "Pages vues",
+        "metricUniqueSessions": "Sessions uniques",
+        "granularity": "Granularité",
+        "granularityDay": "Jour",
+        "granularityWeek": "Semaine",
+        "granularityMonth": "Mois",
+        "scope": "Périmètre",
+        "scopeAll": "Tout",
+        "scopeIndex": "Pages d’index",
+        "scopeDetail": "Pages de détail",
+        "pages": "Pages",
+        "page": "Page",
+        "entities": "Pages de détail",
+        "entity": "Page",
+        "chart": "Visites de pages dans le temps",
+        "dateRange": "Période pour le trafic",
+        "noVisits": "Aucune visite dans la période sélectionnée.",
+        "noEntityVisits": "Aucune page de détail identifiée dans cette période.",
+        "entityBreakdownPending": "Les visites de détail de cette période n’ont pas encore d’identifiant d’entité. Les nouvelles visites sont associées.",
+        "viewTraffic": "Voir le trafic",
+        "visits30d": "{count} visites (30 jours)",
+        "pageVisitsLiveOnTraffic": "Les graphiques de visites sont dans Trafic."
+    },
     "sessionEvents": {
         "static": {
             "WEB_PAGE_VISITED": "Page visitée",
@@ -1911,9 +1942,13 @@
             "title": "Occasions",
             "description": "Gérer les pages d’occasion."
         },
+        "traffic": {
+            "title": "Trafic",
+            "description": "Visites des pages publiques dans le temps."
+        },
         "analytics": {
             "title": "Analytics",
-            "description": "Parcours du formulaire de réservation et visites de pages."
+            "description": "Parcours formulaire de réservation, carte cadeau, paiement et chef, plus méthodes de connexion."
         },
         "sessions": {
             "title": "Sessions",
@@ -2092,8 +2127,11 @@
             "title": "Voir, publier ou supprimer un plat",
             "description": "Gérer le plat d’un chef (y compris supprimé)."
         },
+        "traffic": {
+            "description": "Graphiques linéaires filtrables des visites de pages publiques à partir des événements de session."
+        },
         "analytics": {
-            "description": "Parcours formulaire de réservation, carte cadeau, paiement et chef, méthodes de connexion et visites de pages."
+            "description": "Parcours formulaire de réservation, carte cadeau, paiement et chef, plus méthodes de connexion."
         },
         "offerAddonTemplate": {
             "title": "Prestation supplémentaire",

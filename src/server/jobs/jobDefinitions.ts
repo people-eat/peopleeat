@@ -19,6 +19,7 @@ import { cookBookingRequestMenuEvaluationGenerateJob } from './handlers/cookBook
 import { giftCardPreparedExpire } from './handlers/giftCardPreparedExpire';
 import { observabilityOpsAlert } from './handlers/observabilityOpsAlert';
 import { resendUsageSlackAlert } from './handlers/resendUsageSlackAlert';
+import { sessionWebPageVisitParamsBackfillJob } from './handlers/sessionWebPageVisitParamsBackfill';
 import { supportRequestCustomerReplyNotify } from './handlers/supportRequestCustomerReplyNotify';
 import { userAccountDeletionApply } from './handlers/userAccountDeletionApply';
 import { userKlaviyoProfileSync } from './handlers/userKlaviyoProfileSync';
@@ -49,4 +50,5 @@ export const jobDefinitions: JobDefinition[] = [
     resendUsageSlackAlert,
     observabilityOpsAlert,
     supportRequestCustomerReplyNotify,
+    sessionWebPageVisitParamsBackfillJob,
 ];

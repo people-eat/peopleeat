@@ -1,0 +1,55 @@
+# Admin public-page visit explorer. Loaded by `/admin/traffic`.
+# See `docs/features/admin-traffic.md`.
+
+query AdminTrafficPage(
+    $range: DateTimeRange!
+    $granularity: AdminTimeBucketGranularity!
+    $webPageKeys: [WebPageKey!]
+    $audience: AdminWebPageVisitAudience!
+    $metric: AdminWebPageVisitMetric!
+    $scope: AdminWebPageVisitScope!
+    $entity: AdminWebPageVisitEntity
+) {
+    currentSession {
+        user {
+            admin {
+                adminId
+                webPageVisitTraffic(
+                    range: $range
+                    granularity: $granularity
+                    webPageKeys: $webPageKeys
+                    audience: $audience
+                    metric: $metric
+                    scope: $scope
+                    entity: $entity
+                ) {
+                    pageviews
+                    uniqueSessions
+                    entityVisitCount
+                    untaggedDetailVisitCount
+                    series {
+                        webPageKey
+                        pageviews
+                        uniqueSessions
+                        buckets {
+                            bucketStart
+                            count
+                        }
+                    }
+                    pageRanks {
+                        webPageKey
+                        pageviews
+                        uniqueSessions
+                    }
+                    entityRanks {
+                        id
+                        label
+                        pathName
+                        pageviews
+                        uniqueSessions
+                    }
+                }
+            }
+        }
+    }
+}

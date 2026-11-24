@@ -28,6 +28,55 @@ export const webPageKeys = [
 
 export type WebPageKey = (typeof webPageKeys)[number];
 
+/** SEO chrome for signed-in shells. Visit tracking never emits these keys. */
+const webPageKeysSeoOnly = ['PROFILE', 'ADMINISTRATION'] as const satisfies readonly WebPageKey[];
+
+const webPageKeysSeoOnlySet = new Set<string>(webPageKeysSeoOnly);
+
+export const webPageKeysTracked = webPageKeys.filter((key) => !webPageKeysSeoOnlySet.has(key));
+export type WebPageKeyTracked = (typeof webPageKeysTracked)[number];
+
+const webPageKeysWithVisitEntity = ['CHEFS', 'CITIES', 'VENUES', 'OCCASIONS', 'BLOG_POSTS'] as const;
+export type WebPageKeyWithVisitEntity = (typeof webPageKeysWithVisitEntity)[number];
+
+export const webPageVisitEntityParamByKey = {
+    CHEFS: 'cookId',
+    CITIES: 'cityId',
+    VENUES: 'partnerVenueId',
+    OCCASIONS: 'occasionId',
+    BLOG_POSTS: 'blogPostId',
+} as const satisfies Record<WebPageKeyWithVisitEntity, 'cookId' | 'cityId' | 'partnerVenueId' | 'occasionId' | 'blogPostId'>;
+
+export const webPageVisitDetailPathPatternByKey = {
+    CHEFS: '^/chefs/[^/]+/?$',
+    CITIES: '^/cities/[^/]+/?$',
+    VENUES: '^/(venues|partners)/[^/]+/?$',
+    OCCASIONS: '^/occasions/[^/]+/?$',
+    BLOG_POSTS: '^/blog-posts/[^/]+/?$',
+} as const satisfies Record<WebPageKeyWithVisitEntity, string>;
+
+export const WEB_PAGE_VISIT_TRAFFIC_SERIES_MAX = 8;
+export const WEB_PAGE_VISIT_ENTITY_RANK_MAX = 20;
+
+export function webPageKeyIsTracked(key: WebPageKey): key is WebPageKeyTracked {
+    return !webPageKeysSeoOnlySet.has(key);
+}
+
+export function webPageKeyHasVisitEntity(key: WebPageKey): key is WebPageKeyWithVisitEntity {
+    return (webPageKeysWithVisitEntity as readonly string[]).includes(key);
+}
+
+/** Historical visit rows stored `PARTNERS` before the key became `VENUES`. */
+export function webPageKeyParse(value: string | null | undefined): WebPageKey | null {
+    if (!value) return null;
+    if (value === 'PARTNERS') return 'VENUES';
+    return (webPageKeys as readonly string[]).includes(value) ? (value as WebPageKey) : null;
+}
+
+export function webPageKeyStoredValues(key: WebPageKey): readonly string[] {
+    return key === 'VENUES' ? ['VENUES', 'PARTNERS'] : [key];
+}
+
 export type WebPageSeoDefaults = {
     titleDe: string;
     titleEn: string;

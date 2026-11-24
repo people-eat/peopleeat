@@ -56,7 +56,8 @@ src/server/jobs/
     ├── bookingRequestOfferCallRecordingFinalize.ts Queued — poll egress + Gemini STT after room end
     ├── bookingRequestOfferTestimonialReminder*.ts Queued — memory nudge + day-after review asks
     ├── supportRequestCustomerReplyNotify.ts Queued — 1m debounce customer email after admin support reply
-    └── bookingRequestOfferChatMessageNotify.ts Queued — 1m debounce cook↔customer offer-chat email
+    ├── bookingRequestOfferChatMessageNotify.ts Queued — 1m debounce cook↔customer offer-chat email
+    └── sessionWebPageVisitParamsBackfill.ts Queued — one-shot fill of catalog ids on historical page visits
 ```
 
 ### Key Files
@@ -211,6 +212,16 @@ functions — test them with the real DB and stubbed runtime I/O, same as comman
 - GraphQL `Cook.biographySummaryGenerating` / `AdminCook.biographySummaryGenerating` resolve via the same pending `findByData` check. Note:
   pg-boss `queued: true` is only `state < active` (excludes in-flight work), so this path uses `queued: false` and filters pending states in
   app code. No column on `Cooks`. Public cook types do not expose the flag.
+
+## Web page visit params backfill
+
+`sessionWebPageVisitParamsBackfill` (`src/server/jobs/handlers/sessionWebPageVisitParamsBackfill.ts`) is a queued one-shot:
+
+- Enqueued once from `ensureJobsStarted` with `singletonKey: 'session-web-page-visit-params-backfill'` so worker restarts do not stack
+  duplicate chunks.
+- Handler runs `sessionWebPageVisitParamsBackfill` (chunk of 200 historical `WEB_PAGE_VISITED` rows that have a catalog detail `path` but
+  missing entity ids) and re-enqueues itself with the same singleton key until a short chunk reports `done`.
+- Resolves slugs the same way live tracking does (`sessionWebPageVisitParamsResolve`). See [admin-traffic.md](../features/admin-traffic.md).
 
 ## Gift-card prepared cleanup
 

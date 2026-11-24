@@ -1,9 +1,11 @@
+import { Link } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
 import { t } from '../../../i18n/t';
+import { webPageKeyIsTracked } from '../../../shared/webPage';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import { Button } from '../../components/base/button';
@@ -113,6 +115,17 @@ export function AdminWebPagePage({ data, webPageKey }: { data: GqlCAdminWebPageP
                         {!persisted ? <StatusBadge tone="info">{t(locale, 'admin', 'copy.notConfigured')}</StatusBadge> : null}
                     </div>
                     <p className="text-sm text-muted-foreground">{adminWebPagePageDescription(locale)}</p>
+                    {webPageKeyIsTracked(webPageKey) ? (
+                        <p className="mt-2 text-sm">
+                            <Link
+                                to="/{-$locale}/admin/traffic"
+                                search={{ keys: webPageKey }}
+                                className="text-muted-foreground underline-offset-4 hover:underline"
+                            >
+                                {t(locale, 'admin', 'traffic.viewTraffic')}
+                            </Link>
+                        </p>
+                    ) : null}
                 </div>
                 <Card className="gap-4 py-4">
                     <CardHeader className="px-4">

@@ -1,7 +1,7 @@
 # Admin analytics
 
 Operators inspect first-party product analytics: booking-form, gift-card, booking-checkout, chef sign-up, and cook offer creation funnels,
-sign-in method usage, plus page-visit time series.
+and sign-in method usage. Page-visit time series live on [admin-traffic.md](./admin-traffic.md).
 
 ## Behavior
 
@@ -36,16 +36,16 @@ sign-in method usage, plus page-visit time series.
 9. **Sign-in methods** — human non-impersonation sessions in range (cooks included, bots and admin impersonation excluded). Per-method table
    for Email OTP, Passkey, and Google: sign-ins, registration tickets, accounts created, failures. Daily grouped bar chart of sign-ins.
    Google account creates are `AUTH_OAUTH_ACCOUNT_CREATED`; email account creates are `USER_CREATE_SUCCESSFUL` minus those Google creates.
-10. **Visit charts** — zero-filled day buckets of `WEB_PAGE_VISITED` for `BOOKING_REQUEST_FORM`, `LANDING`, `CHEFS`, and `GIFT_CARD` (all
-    sessions; not filtered to non-admin/non-cook).
+10. **Page visits** — the form-visit KPI still sums `WEB_PAGE_VISITED` for `BOOKING_REQUEST_FORM`. Line charts and filters for every public
+    page live on `/admin/traffic` ([admin-traffic.md](./admin-traffic.md)).
 
 ### Funnel filters and empty states
 
 - Booking-form / gift-card / booking-checkout funnel aggregation includes only **human** sessions (`isBot = false`) whose `userId` is
   **not** an admin or cook.
 - Cook offer funnel uses notified cook affinities (not session grain); create-UI events still require a human non-admin cook session.
-- Visit charts do **not** apply that filter, so bars can show traffic while the funnel is empty (e.g. admin self-tests, bots, or visits
-  without structured completions).
+- Form-visit KPI buckets do **not** apply that filter, so the visit count can be above funnel completions (e.g. admin self-tests, bots, or
+  visits without structured completions). Traffic’s default audience is humans.
 - Empty Sankey copy distinguishes: no structured completions yet; completions but no multi-step transitions; or no data at all.
 - Booking-form funnel aggregation only counts the structured `{ area: booking_request_form, interaction: { type, step } }` shape (plus
   `BOOKING_REQUEST_CREATED`). Imported historical clicks were reshaped into `step_completed` where mapping was known; unmatched free-form

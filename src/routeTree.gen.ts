@@ -81,6 +81,7 @@ import { Route as Char123LocaleChar125AdminPromoCodesRouteImport } from './route
 import { Route as Char123LocaleChar125AdminSessionsRouteImport } from './routes/{-$locale}/admin/sessions'
 import { Route as Char123LocaleChar125AdminSupportRequestsRouteImport } from './routes/{-$locale}/admin/support-requests'
 import { Route as Char123LocaleChar125AdminTestimonialsRouteImport } from './routes/{-$locale}/admin/testimonials'
+import { Route as Char123LocaleChar125AdminTrafficRouteImport } from './routes/{-$locale}/admin/traffic'
 import { Route as Char123LocaleChar125AdminUsersRouteImport } from './routes/{-$locale}/admin/users'
 import { Route as Char123LocaleChar125AdminWebPagesRouteImport } from './routes/{-$locale}/admin/web-pages'
 import { Route as Char123LocaleChar125AdminWhatsAppChatsRouteImport } from './routes/{-$locale}/admin/whats-app-chats'
@@ -601,6 +602,12 @@ const Char123LocaleChar125AdminTestimonialsRoute =
   Char123LocaleChar125AdminTestimonialsRouteImport.update({
     id: '/testimonials',
     path: '/testimonials',
+    getParentRoute: () => Char123LocaleChar125AdminRoute,
+  } as any)
+const Char123LocaleChar125AdminTrafficRoute =
+  Char123LocaleChar125AdminTrafficRouteImport.update({
+    id: '/traffic',
+    path: '/traffic',
     getParentRoute: () => Char123LocaleChar125AdminRoute,
   } as any)
 const Char123LocaleChar125AdminUsersRoute =
@@ -1383,6 +1390,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/admin/sessions': typeof Char123LocaleChar125AdminSessionsRoute
   '/{-$locale}/admin/support-requests': typeof Char123LocaleChar125AdminSupportRequestsRoute
   '/{-$locale}/admin/testimonials': typeof Char123LocaleChar125AdminTestimonialsRoute
+  '/{-$locale}/admin/traffic': typeof Char123LocaleChar125AdminTrafficRoute
   '/{-$locale}/admin/users': typeof Char123LocaleChar125AdminUsersRoute
   '/{-$locale}/admin/web-pages': typeof Char123LocaleChar125AdminWebPagesRoute
   '/{-$locale}/admin/whats-app-chats': typeof Char123LocaleChar125AdminWhatsAppChatsRoute
@@ -1565,6 +1573,7 @@ export interface FileRoutesByTo {
   '/{-$locale}/admin/sessions': typeof Char123LocaleChar125AdminSessionsRoute
   '/{-$locale}/admin/support-requests': typeof Char123LocaleChar125AdminSupportRequestsRoute
   '/{-$locale}/admin/testimonials': typeof Char123LocaleChar125AdminTestimonialsRoute
+  '/{-$locale}/admin/traffic': typeof Char123LocaleChar125AdminTrafficRoute
   '/{-$locale}/admin/users': typeof Char123LocaleChar125AdminUsersRoute
   '/{-$locale}/admin/web-pages': typeof Char123LocaleChar125AdminWebPagesRoute
   '/{-$locale}/admin/whats-app-chats': typeof Char123LocaleChar125AdminWhatsAppChatsRoute
@@ -1751,6 +1760,7 @@ export interface FileRoutesById {
   '/{-$locale}/admin/sessions': typeof Char123LocaleChar125AdminSessionsRoute
   '/{-$locale}/admin/support-requests': typeof Char123LocaleChar125AdminSupportRequestsRoute
   '/{-$locale}/admin/testimonials': typeof Char123LocaleChar125AdminTestimonialsRoute
+  '/{-$locale}/admin/traffic': typeof Char123LocaleChar125AdminTrafficRoute
   '/{-$locale}/admin/users': typeof Char123LocaleChar125AdminUsersRoute
   '/{-$locale}/admin/web-pages': typeof Char123LocaleChar125AdminWebPagesRoute
   '/{-$locale}/admin/whats-app-chats': typeof Char123LocaleChar125AdminWhatsAppChatsRoute
@@ -1938,6 +1948,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/admin/sessions'
     | '/{-$locale}/admin/support-requests'
     | '/{-$locale}/admin/testimonials'
+    | '/{-$locale}/admin/traffic'
     | '/{-$locale}/admin/users'
     | '/{-$locale}/admin/web-pages'
     | '/{-$locale}/admin/whats-app-chats'
@@ -2120,6 +2131,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/admin/sessions'
     | '/{-$locale}/admin/support-requests'
     | '/{-$locale}/admin/testimonials'
+    | '/{-$locale}/admin/traffic'
     | '/{-$locale}/admin/users'
     | '/{-$locale}/admin/web-pages'
     | '/{-$locale}/admin/whats-app-chats'
@@ -2305,6 +2317,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/admin/sessions'
     | '/{-$locale}/admin/support-requests'
     | '/{-$locale}/admin/testimonials'
+    | '/{-$locale}/admin/traffic'
     | '/{-$locale}/admin/users'
     | '/{-$locale}/admin/web-pages'
     | '/{-$locale}/admin/whats-app-chats'
@@ -2955,6 +2968,13 @@ declare module '@tanstack/react-router' {
       path: '/testimonials'
       fullPath: '/{-$locale}/admin/testimonials'
       preLoaderRoute: typeof Char123LocaleChar125AdminTestimonialsRouteImport
+      parentRoute: typeof Char123LocaleChar125AdminRoute
+    }
+    '/{-$locale}/admin/traffic': {
+      id: '/{-$locale}/admin/traffic'
+      path: '/traffic'
+      fullPath: '/{-$locale}/admin/traffic'
+      preLoaderRoute: typeof Char123LocaleChar125AdminTrafficRouteImport
       parentRoute: typeof Char123LocaleChar125AdminRoute
     }
     '/{-$locale}/admin/users': {
@@ -3767,6 +3787,7 @@ interface Char123LocaleChar125AdminRouteChildren {
   Char123LocaleChar125AdminSessionsRoute: typeof Char123LocaleChar125AdminSessionsRoute
   Char123LocaleChar125AdminSupportRequestsRoute: typeof Char123LocaleChar125AdminSupportRequestsRoute
   Char123LocaleChar125AdminTestimonialsRoute: typeof Char123LocaleChar125AdminTestimonialsRoute
+  Char123LocaleChar125AdminTrafficRoute: typeof Char123LocaleChar125AdminTrafficRoute
   Char123LocaleChar125AdminUsersRoute: typeof Char123LocaleChar125AdminUsersRoute
   Char123LocaleChar125AdminWebPagesRoute: typeof Char123LocaleChar125AdminWebPagesRoute
   Char123LocaleChar125AdminWhatsAppChatsRoute: typeof Char123LocaleChar125AdminWhatsAppChatsRoute
@@ -3873,6 +3894,8 @@ const Char123LocaleChar125AdminRouteChildren: Char123LocaleChar125AdminRouteChil
       Char123LocaleChar125AdminSupportRequestsRoute,
     Char123LocaleChar125AdminTestimonialsRoute:
       Char123LocaleChar125AdminTestimonialsRoute,
+    Char123LocaleChar125AdminTrafficRoute:
+      Char123LocaleChar125AdminTrafficRoute,
     Char123LocaleChar125AdminUsersRoute: Char123LocaleChar125AdminUsersRoute,
     Char123LocaleChar125AdminWebPagesRoute:
       Char123LocaleChar125AdminWebPagesRoute,

@@ -23,21 +23,22 @@ routes at `/profile/account` and `/admin/account` use hardcoded noindex SEO and 
 ### Admin `/admin/web-pages`
 
 List shows every key as a shared admin list card with bilingual label, current-locale title (stored or default), ghost badge when not
-persisted, and last updated when persisted. A debounced search field filters the in-memory list by label, key, or title. Detail per key
-edits DE/EN title and description with a pinned Save footer (`AdminPinnedFooterLayout`); first save upserts. Live updates via admin updates
-seed-and-subscribe (no refetch after save).
+persisted, a 30-day human visit count, and last updated when persisted. A debounced search field filters the in-memory list by label, key,
+or title. Detail per key edits DE/EN title and description with a pinned Save footer (`AdminPinnedFooterLayout`); first save upserts. A
+**View traffic** link opens [admin-traffic.md](./admin-traffic.md) with that key selected. Live updates via admin updates seed-and-subscribe
+(no refetch after save). Visit counts come from the initial loader, not the SEO subscription.
 
 ## Decisions
 
 ### Alternatives considered
 
-| Option                                        | Notes                                                                                                                                              |
-| --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Hardcoded consts only                         | Admins need deploy to tune SEO                                                                                                                     |
-| Full CMS for every route                      | Overkill for title + description                                                                                                                   |
-| Visit analytics on same table                 | Out of scope — visits live on `SessionEvents` ([session-events.md](../architecture/session-events.md), [admin-analytics.md](./admin-analytics.md)) |
-| Seed all keys on migrate                      | Ghost merge keeps defaults clear without seed noise                                                                                                |
-| Fixed GraphQL enum + create-on-write (chosen) | Keys require a code change anyway; admin always sees all keys                                                                                      |
+| Option                                        | Notes                                                                                                |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Hardcoded consts only                         | Admins need deploy to tune SEO                                                                       |
+| Full CMS for every route                      | Overkill for title + description                                                                     |
+| Visit analytics on same table                 | Rejected — visits stay on `SessionEvents`; Web Pages links to [admin-traffic.md](./admin-traffic.md) |
+| Seed all keys on migrate                      | Ghost merge keeps defaults clear without seed noise                                                  |
+| Fixed GraphQL enum + create-on-write (chosen) | Keys require a code change anyway; admin always sees all keys                                        |
 
 ### Chosen
 

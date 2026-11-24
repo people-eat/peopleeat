@@ -231,8 +231,17 @@ export {
     cookAnalyticsPeriods,
 } from './cookAnalyticsPeriod';
 export type { CookAnalyticsDateTimeRange, CookAnalyticsPeriod } from './cookAnalyticsPeriod';
-export { webPageDefaults, webPageKeys } from './webPage';
-export type { WebPageKey, WebPageSeoDefaults } from './webPage';
+export {
+    WEB_PAGE_VISIT_ENTITY_RANK_MAX,
+    WEB_PAGE_VISIT_TRAFFIC_SERIES_MAX,
+    webPageDefaults,
+    webPageKeyHasVisitEntity,
+    webPageKeyIsTracked,
+    webPageKeys,
+    webPageKeysTracked,
+    webPageVisitEntityParamByKey,
+} from './webPage';
+export type { WebPageKey, WebPageKeyTracked, WebPageKeyWithVisitEntity, WebPageSeoDefaults } from './webPage';
 export { webPageKeyFromPath } from './webPageKeyFromPath';
 export type { WebPageVisitMatch } from './webPageKeyFromPath';
 export {

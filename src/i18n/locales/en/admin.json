@@ -182,9 +182,13 @@
             "title": "Occasions",
             "description": "Manage occasion landing pages."
         },
+        "traffic": {
+            "title": "Traffic",
+            "description": "Public page visits over time."
+        },
         "analytics": {
             "title": "Analytics",
-            "description": "Booking form funnel and page visits."
+            "description": "Booking form, gift card, checkout, and chef funnels, plus sign-in methods."
         },
         "sessions": {
             "title": "Sessions",
@@ -363,8 +367,11 @@
             "title": "View, publish, or delete a meal",
             "description": "Manage a cook meal (including deleted)."
         },
+        "traffic": {
+            "description": "Filterable line charts of public page visits from session events."
+        },
         "analytics": {
-            "description": "Booking form, gift card, checkout, and chef funnels, sign-in methods, and page visits."
+            "description": "Booking form, gift card, checkout, and chef funnels, plus sign-in methods."
         },
         "offerAddonTemplate": {
             "title": "Offer extra",
@@ -2173,6 +2180,37 @@
             }
         },
         "cookConversion": "Conversion notified → offer: {percent}%."
+    },
+    "traffic": {
+        "allPages": "All public pages",
+        "pageviews": "Page views",
+        "uniqueSessions": "Unique sessions",
+        "audience": "Audience",
+        "audienceHuman": "Humans",
+        "audienceAll": "All sessions",
+        "metric": "Metric",
+        "metricPageviews": "Page views",
+        "metricUniqueSessions": "Unique sessions",
+        "granularity": "Granularity",
+        "granularityDay": "Day",
+        "granularityWeek": "Week",
+        "granularityMonth": "Month",
+        "scope": "Scope",
+        "scopeAll": "All",
+        "scopeIndex": "Index pages",
+        "scopeDetail": "Detail pages",
+        "pages": "Pages",
+        "page": "Page",
+        "entities": "Detail pages",
+        "entity": "Page",
+        "chart": "Page visits over time",
+        "dateRange": "Date range for traffic",
+        "noVisits": "No visits in the selected range.",
+        "noEntityVisits": "No tagged detail pages in this range.",
+        "entityBreakdownPending": "Detail visits in this range have no entity ids yet. New visits are tagged going forward.",
+        "viewTraffic": "View traffic",
+        "visits30d": "{count} visits (30 days)",
+        "pageVisitsLiveOnTraffic": "Page visit charts live on Traffic."
     },
     "sessionEvents": {
         "static": {

@@ -104,6 +104,8 @@ Admin descriptions mark these with “(Legacy)” / “(legacy)”.
   `SessionEvents_webPageVisit_chefs_sessionId_createdAt_idx` on `(sessionId, createdAt)` where `type = 'WEB_PAGE_VISITED'`,
   `webPageKey = 'CHEFS'`, and `params.cookId` is present, so a session-scoped MRU scan does not walk unrelated pageviews. See
   [last-visited-cook-profiles.md](../features/last-visited-cook-profiles.md).
+- Admin traffic entity ranking uses matching partial indexes on `params.cityId` / `partnerVenueId` / `occasionId` / `blogPostId` +
+  `createdAt` for those `webPageKey`s. See [admin-traffic.md](../features/admin-traffic.md).
 - Admin booking-request Origin (`AdminBookingRequest.creatingSession`) reverse-looks up the earliest `BOOKING_REQUEST_CREATED` row by
   `payload->>'bookingRequestId'`. Partial index `SessionEvents_bookingRequestCreated_bookingRequestId_createdAt_idx` on
   `(payload->>'bookingRequestId', createdAt)` where `type = 'BOOKING_REQUEST_CREATED'` and that JSON key is present. Predecessor
@@ -128,7 +130,9 @@ Admin descriptions mark these with “(Legacy)” / “(legacy)”.
 4. Inserts go through `sessionEventCreate` only (typed to `SessionEventKeyEmitted`).
 5. Admin: session/user timelines via `Admin.sessionEvents` / `Admin.sessionEventsCounts`; booking-form / gift-card / chef sign-up /
    booking-checkout funnels via the matching `Admin.*Flow` fields; cook offer funnel via `Admin.cookBookingRequestOfferFlow`; visit buckets
-   via `Admin.sessionEventWebPageVisitCreations`.
+   via `Admin.sessionEventWebPageVisitCreations`; filterable visit explorer via `Admin.webPageVisitTraffic` / `Admin.webPageVisitCounts`
+   ([admin-traffic.md](../features/admin-traffic.md)). Detail visits for chefs, cities, venues, occasions, and blog posts store a stable
+   entity id (slug resolved on write). A one-shot job backfills historical rows from stored `path`.
 
 ## Key files
 
@@ -140,6 +144,7 @@ Admin descriptions mark these with “(Legacy)” / “(legacy)”.
 - Commands: `sessionWebPageVisitCreate`, `sessionWebPageInteractionCreate`, auth / user-create / legal / booking lifecycle emitters
 - Queries: `adminSessionEventFindMany`, `adminSessionEventCounts`, `adminAnalyticsBookingRequestFormFlow`, `adminAnalyticsGiftCardFlow`,
   `adminAnalyticsChefSignUpFlow`, `adminAnalyticsBookingRequestCheckoutFlow`, `adminAnalyticsCookBookingRequestOfferFlow`,
-  `adminSessionEventWebPageVisitCreationsFindMany`, `cookAnalyticsFind`, `sessionLastVisitedCookProfilesFindMany`,
-  `adminBookingRequestCreatingSessionFindOne`
-- Feature UI: [admin-analytics.md](../features/admin-analytics.md), [cook-analytics.md](../features/cook-analytics.md)
+  `adminSessionEventWebPageVisitCreationsFindMany`, `adminWebPageVisitTrafficFindOne`, `adminWebPageVisitCountFindMany`,
+  `cookAnalyticsFind`, `sessionLastVisitedCookProfilesFindMany`, `adminBookingRequestCreatingSessionFindOne`
+- Feature UI: [admin-analytics.md](../features/admin-analytics.md), [admin-traffic.md](../features/admin-traffic.md),
+  [cook-analytics.md](../features/cook-analytics.md)

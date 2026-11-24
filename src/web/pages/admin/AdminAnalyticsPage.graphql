@@ -1,14 +1,7 @@
 # Admin analytics overview. Loaded by `/admin/analytics`.
 # See `docs/features/admin-analytics.md`.
 
-query AdminAnalyticsPage(
-    $range: DateTimeRange!
-    $granularity: AdminTimeBucketGranularity! = day
-    $formVisitWebPageKey: WebPageKey!
-    $landingVisitWebPageKey: WebPageKey!
-    $chefsVisitWebPageKey: WebPageKey!
-    $giftCardVisitWebPageKey: WebPageKey!
-) {
+query AdminAnalyticsPage($range: DateTimeRange!, $granularity: AdminTimeBucketGranularity! = day, $formVisitWebPageKey: WebPageKey!) {
     currentSession {
         sessionId
         user {
@@ -113,30 +106,6 @@ query AdminAnalyticsPage(
                     offersCreatedCount
                 }
                 formVisits: sessionEventWebPageVisitCreations(webPageKey: $formVisitWebPageKey, range: $range, granularity: $granularity) {
-                    bucketStart
-                    count
-                }
-                landingVisits: sessionEventWebPageVisitCreations(
-                    webPageKey: $landingVisitWebPageKey
-                    range: $range
-                    granularity: $granularity
-                ) {
-                    bucketStart
-                    count
-                }
-                chefsVisits: sessionEventWebPageVisitCreations(
-                    webPageKey: $chefsVisitWebPageKey
-                    range: $range
-                    granularity: $granularity
-                ) {
-                    bucketStart
-                    count
-                }
-                giftCardVisits: sessionEventWebPageVisitCreations(
-                    webPageKey: $giftCardVisitWebPageKey
-                    range: $range
-                    granularity: $granularity
-                ) {
                     bucketStart
                     count
                 }

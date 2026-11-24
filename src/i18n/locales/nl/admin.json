@@ -182,9 +182,13 @@
             "title": "Gelegenheden",
             "description": "Landingspagina's voor gelegenheden beheren."
         },
+        "traffic": {
+            "title": "Traffic",
+            "description": "Bezoeken aan openbare pagina’s in de tijd."
+        },
         "analytics": {
             "title": "Analytics",
-            "description": "Boekingsformulier-funnel en paginaweergaven."
+            "description": "Funnels voor boekingsformulier, tegoedbon, checkout en chef, plus inlogmethoden."
         },
         "sessions": {
             "title": "Sessies",
@@ -363,8 +367,11 @@
             "title": "Gerecht bekijken, publiceren of verwijderen",
             "description": "Gerecht van een chef beheren (inclusief verwijderde)."
         },
+        "traffic": {
+            "description": "Filterbare lijndiagrammen van openbare paginabezoeken uit sessie-events."
+        },
         "analytics": {
-            "description": "Funnels voor boekingsformulier, tegoedbon, checkout en chef, inlogmethoden en paginaweergaven."
+            "description": "Funnels voor boekingsformulier, tegoedbon, checkout en chef, plus inlogmethoden."
         },
         "offerAddonTemplate": {
             "title": "Offerte-extra",
@@ -2173,6 +2180,37 @@
             }
         },
         "cookConversion": "Conversie geïnformeerd → offerte: {percent}%."
+    },
+    "traffic": {
+        "allPages": "Alle openbare pagina’s",
+        "pageviews": "Paginaweergaven",
+        "uniqueSessions": "Unieke sessies",
+        "audience": "Doelgroep",
+        "audienceHuman": "Mensen",
+        "audienceAll": "Alle sessies",
+        "metric": "Metric",
+        "metricPageviews": "Paginaweergaven",
+        "metricUniqueSessions": "Unieke sessies",
+        "granularity": "Granulariteit",
+        "granularityDay": "Dag",
+        "granularityWeek": "Week",
+        "granularityMonth": "Maand",
+        "scope": "Bereik",
+        "scopeAll": "Alles",
+        "scopeIndex": "Overzichtspagina’s",
+        "scopeDetail": "Detailpagina’s",
+        "pages": "Pagina’s",
+        "page": "Pagina",
+        "entities": "Detailpagina’s",
+        "entity": "Pagina",
+        "chart": "Paginabezoeken in de tijd",
+        "dateRange": "Datumbereik voor traffic",
+        "noVisits": "Geen bezoeken in het geselecteerde bereik.",
+        "noEntityVisits": "Geen detailpagina’s met een id in dit bereik.",
+        "entityBreakdownPending": "Detailbezoeken in dit bereik hebben nog geen id. Nieuwe bezoeken krijgen er een.",
+        "viewTraffic": "Traffic bekijken",
+        "visits30d": "{count} bezoeken (30 dagen)",
+        "pageVisitsLiveOnTraffic": "Grafieken van paginabezoeken staan bij Traffic."
     },
     "sessionEvents": {
         "static": {

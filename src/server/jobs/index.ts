@@ -3,6 +3,7 @@ import { SpanStatusCode, trace } from '@opentelemetry/api';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import { jobHandlerRecord, jobHandlerWindowRecord } from '../observability/redMetrics';
 import { ensureBossStarted } from './boss';
+import { sessionWebPageVisitParamsBackfillJob } from './handlers/sessionWebPageVisitParamsBackfill';
 import { jobDefinitions } from './jobDefinitions';
 
 let workersRegisteredPromise: Promise<void> | undefined;
@@ -54,6 +55,14 @@ export async function ensureJobsStarted(serverRuntime: ServerRuntime): Promise<v
             process.on('SIGINT', async () => {
                 await boss.stop({ graceful: true });
             });
+
+            await serverRuntime.jobs.enqueue(
+                sessionWebPageVisitParamsBackfillJob,
+                {},
+                {
+                    singletonKey: 'session-web-page-visit-params-backfill',
+                },
+            );
         })();
     }
 
@@ -77,5 +86,6 @@ export { bookingRequestOfferPullPayment } from './handlers/bookingRequestOfferPu
 export { bookingRequestOfferPullPaymentAnnouncement } from './handlers/bookingRequestOfferPullPaymentAnnouncement';
 export { giftCardPreparedExpire } from './handlers/giftCardPreparedExpire';
 export { supportRequestCustomerReplyNotify } from './handlers/supportRequestCustomerReplyNotify';
+export { sessionWebPageVisitParamsBackfillJob } from './handlers/sessionWebPageVisitParamsBackfill';
 export { userAccountDeletionApply } from './handlers/userAccountDeletionApply';
 export { userKlaviyoProfileSync } from './handlers/userKlaviyoProfileSync';

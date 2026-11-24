@@ -1636,6 +1636,37 @@
         },
         "cookConversion": "Conversione da notifica a offerta: {percent}%."
     },
+    "traffic": {
+        "allPages": "Tutte le pagine pubbliche",
+        "pageviews": "Visualizzazioni",
+        "uniqueSessions": "Sessioni uniche",
+        "audience": "Audience",
+        "audienceHuman": "Persone",
+        "audienceAll": "Tutte le sessioni",
+        "metric": "Metrica",
+        "metricPageviews": "Visualizzazioni",
+        "metricUniqueSessions": "Sessioni uniche",
+        "granularity": "Granularità",
+        "granularityDay": "Giorno",
+        "granularityWeek": "Settimana",
+        "granularityMonth": "Mese",
+        "scope": "Ambito",
+        "scopeAll": "Tutto",
+        "scopeIndex": "Pagine indice",
+        "scopeDetail": "Pagine di dettaglio",
+        "pages": "Pagine",
+        "page": "Pagina",
+        "entities": "Pagine di dettaglio",
+        "entity": "Pagina",
+        "chart": "Visite alle pagine nel tempo",
+        "dateRange": "Intervallo date per il traffico",
+        "noVisits": "Nessuna visita nel periodo selezionato.",
+        "noEntityVisits": "Nessuna pagina di dettaglio etichettata in questo intervallo.",
+        "entityBreakdownPending": "Le visite di dettaglio in questo intervallo non hanno ancora id di entità. Le nuove visite vengono etichettate.",
+        "viewTraffic": "Vedi il traffico",
+        "visits30d": "{count} visite (30 giorni)",
+        "pageVisitsLiveOnTraffic": "I grafici delle visite sono in Traffico."
+    },
     "sessionEvents": {
         "static": {
             "WEB_PAGE_VISITED": "Pagina visitata",
@@ -1911,9 +1942,13 @@
             "title": "Occasioni",
             "description": "Gestisci le pagine occasione."
         },
+        "traffic": {
+            "title": "Traffico",
+            "description": "Visite alle pagine pubbliche nel tempo."
+        },
         "analytics": {
             "title": "Analytics",
-            "description": "Funnel del modulo di prenotazione e visite alle pagine."
+            "description": "Funnel del modulo di prenotazione, buoni, checkout e cuochi, più metodi di accesso."
         },
         "sessions": {
             "title": "Sessioni",
@@ -2092,8 +2127,11 @@
             "title": "Vedi, pubblica o elimina un piatto",
             "description": "Gestisci il piatto di un cuoco (inclusi quelli eliminati)."
         },
+        "traffic": {
+            "description": "Grafici a linee filtrabili delle visite alle pagine pubbliche dagli eventi di sessione."
+        },
         "analytics": {
-            "description": "Funnel del modulo di prenotazione, buoni, checkout e cuochi, metodi di accesso e visite alle pagine."
+            "description": "Funnel del modulo di prenotazione, buoni, checkout e cuochi, più metodi di accesso."
         },
         "offerAddonTemplate": {
             "title": "Extra",

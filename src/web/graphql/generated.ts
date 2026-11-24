@@ -128,6 +128,8 @@ export interface GqlCAdmin {
     userRegistrations: Array<GqlCAdminTimeBucket>;
     users: Array<GqlCAdminUser>;
     webPage: GqlCAdminWebPage;
+    webPageVisitCounts: Array<GqlCAdminWebPageVisitCount>;
+    webPageVisitTraffic: GqlCAdminWebPageVisitTraffic;
     webPages: Array<GqlCAdminWebPage>;
     whatsAppConversation?: Maybe<GqlCAdminWhatsAppConversation>;
     whatsAppConversations: Array<GqlCAdminWhatsAppConversation>;
@@ -497,6 +499,21 @@ export type GqlCAdminUsersArgs = {
 
 export type GqlCAdminWebPageArgs = {
     webPageKey: GqlCWebPageKey;
+};
+
+export type GqlCAdminWebPageVisitCountsArgs = {
+    audience?: GqlCAdminWebPageVisitAudience;
+    range: GqlCDateTimeRange;
+};
+
+export type GqlCAdminWebPageVisitTrafficArgs = {
+    audience?: GqlCAdminWebPageVisitAudience;
+    entity?: InputMaybe<GqlCAdminWebPageVisitEntity>;
+    granularity?: GqlCAdminTimeBucketGranularity;
+    metric?: GqlCAdminWebPageVisitMetric;
+    range: GqlCDateTimeRange;
+    scope?: GqlCAdminWebPageVisitScope;
+    webPageKeys?: InputMaybe<Array<GqlCWebPageKey>>;
 };
 
 export type GqlCAdminWhatsAppConversationArgs = {
@@ -2562,6 +2579,61 @@ export type GqlCAdminWebPageUpsert = {
     titleDe: Scalars['String']['input'];
     titleEn: Scalars['String']['input'];
 };
+
+export type GqlCAdminWebPageVisitAudience = 'ALL' | 'HUMAN';
+
+export interface GqlCAdminWebPageVisitCount {
+    __typename?: 'AdminWebPageVisitCount';
+    pageviews: Scalars['Int']['output'];
+    webPageKey: GqlCWebPageKey;
+}
+
+export type GqlCAdminWebPageVisitEntity = {
+    blogPostId?: InputMaybe<Scalars['ID']['input']>;
+    cityId?: InputMaybe<Scalars['ID']['input']>;
+    cookId?: InputMaybe<Scalars['ID']['input']>;
+    occasionId?: InputMaybe<Scalars['ID']['input']>;
+    partnerVenueId?: InputMaybe<Scalars['ID']['input']>;
+};
+
+export interface GqlCAdminWebPageVisitEntityRank {
+    __typename?: 'AdminWebPageVisitEntityRank';
+    id: Scalars['ID']['output'];
+    label: Scalars['String']['output'];
+    pageviews: Scalars['Int']['output'];
+    pathName?: Maybe<Scalars['String']['output']>;
+    uniqueSessions: Scalars['Int']['output'];
+}
+
+export type GqlCAdminWebPageVisitMetric = 'PAGEVIEWS' | 'UNIQUE_SESSIONS';
+
+export interface GqlCAdminWebPageVisitRank {
+    __typename?: 'AdminWebPageVisitRank';
+    pageviews: Scalars['Int']['output'];
+    uniqueSessions: Scalars['Int']['output'];
+    webPageKey: GqlCWebPageKey;
+}
+
+export type GqlCAdminWebPageVisitScope = 'ALL' | 'DETAIL' | 'INDEX';
+
+export interface GqlCAdminWebPageVisitSeries {
+    __typename?: 'AdminWebPageVisitSeries';
+    buckets: Array<GqlCAdminTimeBucket>;
+    pageviews: Scalars['Int']['output'];
+    uniqueSessions: Scalars['Int']['output'];
+    webPageKey?: Maybe<GqlCWebPageKey>;
+}
+
+export interface GqlCAdminWebPageVisitTraffic {
+    __typename?: 'AdminWebPageVisitTraffic';
+    entityRanks: Array<GqlCAdminWebPageVisitEntityRank>;
+    entityVisitCount: Scalars['Int']['output'];
+    pageRanks: Array<GqlCAdminWebPageVisitRank>;
+    pageviews: Scalars['Int']['output'];
+    series: Array<GqlCAdminWebPageVisitSeries>;
+    uniqueSessions: Scalars['Int']['output'];
+    untaggedDetailVisitCount: Scalars['Int']['output'];
+}
 
 export interface GqlCAdminWhatsAppConversation {
     __typename?: 'AdminWhatsAppConversation';
@@ -10483,9 +10555,6 @@ export type GqlCAdminAnalyticsPageQueryVariables = Exact<{
     range: Schema.GqlCDateTimeRange;
     granularity?: Schema.GqlCAdminTimeBucketGranularity;
     formVisitWebPageKey: Schema.GqlCWebPageKey;
-    landingVisitWebPageKey: Schema.GqlCWebPageKey;
-    chefsVisitWebPageKey: Schema.GqlCWebPageKey;
-    giftCardVisitWebPageKey: Schema.GqlCWebPageKey;
 }>;
 
 export type GqlCAdminAnalyticsPageQuery = {
@@ -10533,9 +10602,6 @@ export type GqlCAdminAnalyticsPageQuery = {
                     steps: Array<{ id: string; label: string; enteredCount: number; completedCount: number }>;
                 };
                 formVisits: Array<{ bucketStart: string; count: number }>;
-                landingVisits: Array<{ bucketStart: string; count: number }>;
-                chefsVisits: Array<{ bucketStart: string; count: number }>;
-                giftCardVisits: Array<{ bucketStart: string; count: number }>;
                 signInMethodStats: {
                     methods: Array<{
                         method: Schema.GqlCAdminSignInMethod;
@@ -17477,6 +17543,40 @@ export type GqlCAdminCookTestimonialUpsertMutationVariables = Exact<{
 
 export type GqlCAdminCookTestimonialUpsertMutation = { admin: { cookTestimonialUpsert: { success: boolean; referenceId: string | null } } };
 
+export type GqlCAdminTrafficPageQueryVariables = Exact<{
+    range: Schema.GqlCDateTimeRange;
+    granularity: Schema.GqlCAdminTimeBucketGranularity;
+    webPageKeys?: Array<Schema.GqlCWebPageKey> | Schema.GqlCWebPageKey | null | undefined;
+    audience: Schema.GqlCAdminWebPageVisitAudience;
+    metric: Schema.GqlCAdminWebPageVisitMetric;
+    scope: Schema.GqlCAdminWebPageVisitScope;
+    entity?: Schema.GqlCAdminWebPageVisitEntity | null | undefined;
+}>;
+
+export type GqlCAdminTrafficPageQuery = {
+    currentSession: {
+        user: {
+            admin: {
+                adminId: string;
+                webPageVisitTraffic: {
+                    pageviews: number;
+                    uniqueSessions: number;
+                    entityVisitCount: number;
+                    untaggedDetailVisitCount: number;
+                    series: Array<{
+                        webPageKey: Schema.GqlCWebPageKey | null;
+                        pageviews: number;
+                        uniqueSessions: number;
+                        buckets: Array<{ bucketStart: string; count: number }>;
+                    }>;
+                    pageRanks: Array<{ webPageKey: Schema.GqlCWebPageKey; pageviews: number; uniqueSessions: number }>;
+                    entityRanks: Array<{ id: string; label: string; pathName: string | null; pageviews: number; uniqueSessions: number }>;
+                };
+            } | null;
+        } | null;
+    };
+};
+
 export type GqlCAdminUserCookProfileEditCookFragment = {
     cookId: string;
     pathName: string;
@@ -18311,7 +18411,9 @@ export type GqlCAdminWebPagePageUpdatesSubscription = {
     };
 };
 
-export type GqlCAdminWebPagesPageQueryVariables = Exact<{ [key: string]: never }>;
+export type GqlCAdminWebPagesPageQueryVariables = Exact<{
+    range: Schema.GqlCDateTimeRange;
+}>;
 
 export type GqlCAdminWebPagesPageQuery = {
     currentSession: {
@@ -18327,6 +18429,7 @@ export type GqlCAdminWebPagesPageQuery = {
                     persisted: boolean;
                     updatedAt: string | null;
                 }>;
+                webPageVisitCounts: Array<{ webPageKey: Schema.GqlCWebPageKey; pageviews: number }>;
             } | null;
         } | null;
     };
@@ -50195,21 +50298,6 @@ export const AdminAnalyticsPageDocument = {
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'formVisitWebPageKey' } },
                     type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'WebPageKey' } } },
                 },
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'landingVisitWebPageKey' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'WebPageKey' } } },
-                },
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'chefsVisitWebPageKey' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'WebPageKey' } } },
-                },
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'giftCardVisitWebPageKey' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'WebPageKey' } } },
-                },
             ],
             selectionSet: {
                 kind: 'SelectionSet',
@@ -50563,111 +50651,6 @@ export const AdminAnalyticsPageDocument = {
                                                                     value: {
                                                                         kind: 'Variable',
                                                                         name: { kind: 'Name', value: 'formVisitWebPageKey' },
-                                                                    },
-                                                                },
-                                                                {
-                                                                    kind: 'Argument',
-                                                                    name: { kind: 'Name', value: 'range' },
-                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
-                                                                },
-                                                                {
-                                                                    kind: 'Argument',
-                                                                    name: { kind: 'Name', value: 'granularity' },
-                                                                    value: {
-                                                                        kind: 'Variable',
-                                                                        name: { kind: 'Name', value: 'granularity' },
-                                                                    },
-                                                                },
-                                                            ],
-                                                            selectionSet: {
-                                                                kind: 'SelectionSet',
-                                                                selections: [
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'bucketStart' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'count' } },
-                                                                ],
-                                                            },
-                                                        },
-                                                        {
-                                                            kind: 'Field',
-                                                            alias: { kind: 'Name', value: 'landingVisits' },
-                                                            name: { kind: 'Name', value: 'sessionEventWebPageVisitCreations' },
-                                                            arguments: [
-                                                                {
-                                                                    kind: 'Argument',
-                                                                    name: { kind: 'Name', value: 'webPageKey' },
-                                                                    value: {
-                                                                        kind: 'Variable',
-                                                                        name: { kind: 'Name', value: 'landingVisitWebPageKey' },
-                                                                    },
-                                                                },
-                                                                {
-                                                                    kind: 'Argument',
-                                                                    name: { kind: 'Name', value: 'range' },
-                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
-                                                                },
-                                                                {
-                                                                    kind: 'Argument',
-                                                                    name: { kind: 'Name', value: 'granularity' },
-                                                                    value: {
-                                                                        kind: 'Variable',
-                                                                        name: { kind: 'Name', value: 'granularity' },
-                                                                    },
-                                                                },
-                                                            ],
-                                                            selectionSet: {
-                                                                kind: 'SelectionSet',
-                                                                selections: [
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'bucketStart' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'count' } },
-                                                                ],
-                                                            },
-                                                        },
-                                                        {
-                                                            kind: 'Field',
-                                                            alias: { kind: 'Name', value: 'chefsVisits' },
-                                                            name: { kind: 'Name', value: 'sessionEventWebPageVisitCreations' },
-                                                            arguments: [
-                                                                {
-                                                                    kind: 'Argument',
-                                                                    name: { kind: 'Name', value: 'webPageKey' },
-                                                                    value: {
-                                                                        kind: 'Variable',
-                                                                        name: { kind: 'Name', value: 'chefsVisitWebPageKey' },
-                                                                    },
-                                                                },
-                                                                {
-                                                                    kind: 'Argument',
-                                                                    name: { kind: 'Name', value: 'range' },
-                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
-                                                                },
-                                                                {
-                                                                    kind: 'Argument',
-                                                                    name: { kind: 'Name', value: 'granularity' },
-                                                                    value: {
-                                                                        kind: 'Variable',
-                                                                        name: { kind: 'Name', value: 'granularity' },
-                                                                    },
-                                                                },
-                                                            ],
-                                                            selectionSet: {
-                                                                kind: 'SelectionSet',
-                                                                selections: [
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'bucketStart' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'count' } },
-                                                                ],
-                                                            },
-                                                        },
-                                                        {
-                                                            kind: 'Field',
-                                                            alias: { kind: 'Name', value: 'giftCardVisits' },
-                                                            name: { kind: 'Name', value: 'sessionEventWebPageVisitCreations' },
-                                                            arguments: [
-                                                                {
-                                                                    kind: 'Argument',
-                                                                    name: { kind: 'Name', value: 'webPageKey' },
-                                                                    value: {
-                                                                        kind: 'Variable',
-                                                                        name: { kind: 'Name', value: 'giftCardVisitWebPageKey' },
                                                                     },
                                                                 },
                                                                 {
@@ -73255,6 +73238,233 @@ export const AdminCookTestimonialUpsertDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminCookTestimonialUpsertMutation, GqlCAdminCookTestimonialUpsertMutationVariables>;
+export const AdminTrafficPageDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'AdminTrafficPage' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'DateTimeRange' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'granularity' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminTimeBucketGranularity' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'webPageKeys' } },
+                    type: {
+                        kind: 'ListType',
+                        type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'WebPageKey' } } },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'audience' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminWebPageVisitAudience' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'metric' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminWebPageVisitMetric' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'scope' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminWebPageVisitScope' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'entity' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminWebPageVisitEntity' } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'user' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'admin' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'adminId' } },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'webPageVisitTraffic' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'range' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'granularity' },
+                                                                    value: {
+                                                                        kind: 'Variable',
+                                                                        name: { kind: 'Name', value: 'granularity' },
+                                                                    },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'webPageKeys' },
+                                                                    value: {
+                                                                        kind: 'Variable',
+                                                                        name: { kind: 'Name', value: 'webPageKeys' },
+                                                                    },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'audience' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'audience' } },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'metric' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'metric' } },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'scope' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'scope' } },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'entity' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'entity' } },
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'pageviews' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'uniqueSessions' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'entityVisitCount' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'untaggedDetailVisitCount' },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'series' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'webPageKey' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'pageviews' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'uniqueSessions' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'buckets' },
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: {
+                                                                                                    kind: 'Name',
+                                                                                                    value: 'bucketStart',
+                                                                                                },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'count' },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'pageRanks' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'webPageKey' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'pageviews' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'uniqueSessions' },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'entityRanks' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'pathName' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'pageviews' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'uniqueSessions' },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminTrafficPageQuery, GqlCAdminTrafficPageQueryVariables>;
 export const AdminUserCookProfileEditPageDocument = {
     kind: 'Document',
     definitions: [
@@ -77261,6 +77471,13 @@ export const AdminWebPagesPageDocument = {
             kind: 'OperationDefinition',
             operation: 'query',
             name: { kind: 'Name', value: 'AdminWebPagesPage' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'DateTimeRange' } } },
+                },
+            ],
             selectionSet: {
                 kind: 'SelectionSet',
                 selections: [
@@ -77296,6 +77513,29 @@ export const AdminWebPagesPageDocument = {
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'persisted' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'webPageVisitCounts' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'range' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'audience' },
+                                                                    value: { kind: 'EnumValue', value: 'HUMAN' },
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'webPageKey' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'pageviews' } },
                                                                 ],
                                                             },
                                                         },

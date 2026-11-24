@@ -16,7 +16,7 @@ Visiting `/admin/*` as an admin shows:
   - **Catalog** — Meals, menus, offer extras ([booking-offer-addons.md](./booking-offer-addons.md)), reviews
     ([cook-meals.md](./cook-meals.md), …).
   - **Content** — Websites (SEO), blog, cities, partners, occasions, Legal texts (privacy, terms, imprint).
-  - **Insights** — Analytics, sessions, map.
+  - **Insights** — Traffic ([admin-traffic.md](./admin-traffic.md)), Analytics, sessions, map.
   - **Platform** — Scheduled jobs ([admin-jobs.md](./admin-jobs.md)), logs, AI generations, feature toggles
     ([admin-feature-toggles.md](./admin-feature-toggles.md)), file store, important links. Implemented surfaces link to their feature docs
     (e.g. [admin-booking-requests.md](./admin-booking-requests.md)).
@@ -65,9 +65,9 @@ non-zero queues (two columns from `lg`). When every queue is clear, one success 
 filter + ⌘K/Ctrl+K pages dialog sit under the logo (evolve in place: entity global search). When the sidebar nav is scrolled down, a
 floating scroll-to-top control appears at the top of the visible sidebar.
 
-Stub routes show bilingual “coming soon” until shipped. Sessions, analytics, map ([admin-map.md](./admin-map.md)), logs, scheduled jobs, AI
-generations, promo codes, booking requests, assistant chats, gift cards, outbound emails (overview + list), important links, web pages SEO,
-and feature toggles are implemented.
+Stub routes show bilingual “coming soon” until shipped. Sessions, traffic, analytics, map ([admin-map.md](./admin-map.md)), logs, scheduled
+jobs, AI generations, promo codes, booking requests, assistant chats, gift cards, outbound emails (overview + list), important links, web
+pages SEO, and feature toggles are implemented.
 
 ### Breadcrumbs
 
@@ -120,9 +120,9 @@ Stub catalog shared until real pages land.
 ## Implementation
 
 - Gate: `/admin` loader — unsigned → sign-in; non-admin → `/profile`. Loader + `head()` also
-  `await i18nResourcesLoad(…, ['common', 'public', 'admin'])`; `AdminLayout` nests `I18nProvider` with those namespaces so landing → admin
-  client nav does not throw `i18n catalog not loaded` (locale layout blocking stay-reload is the other half — see
-  [i18n.md](../architecture/i18n.md)).
+  `await i18nResourcesLoad(…, ADMIN_I18N_NAMESPACES)` (`common`+`public`+`admin`+`profileCook`); `AdminLayout` nests `I18nProvider` with
+  those namespaces so landing → admin client nav does not throw `i18n catalog not loaded`, and shared cook inventory cards can resolve
+  `profileCook` keys (locale layout blocking stay-reload is the other half — see [i18n.md](../architecture/i18n.md)).
 - `SidebarInset` as `<div>`; viewport-locked; chat pages pass overflow-hidden content class.
 - Assistant: nested provider; `useAdminNavSidebar()` for left nav toggle; chat persists across admin route changes —
   [chat.md](../architecture/chat.md).
