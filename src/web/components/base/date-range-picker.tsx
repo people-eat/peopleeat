@@ -45,9 +45,19 @@ function DateRangePicker({
     'aria-invalid'?: boolean | 'true' | 'false';
 }) {
     const [open, setOpen] = useState(false);
+    // Draft selection while the popover is open. Parents often ignore incomplete ranges
+    // (from without to); without a draft the calendar snaps back to `value` on the first click.
+    const [draft, setDraft] = useState<DateRange | undefined>(value);
+
+    function handleOpenChange(nextOpen: boolean) {
+        setDraft(value);
+        setOpen(nextOpen);
+    }
+
+    const display = open ? (draft ?? value) : value;
 
     return (
-        <Popover open={open} onOpenChange={setOpen}>
+        <Popover open={open} onOpenChange={handleOpenChange}>
             <PopoverTrigger asChild>
                 <Button
                     variant="outline"
@@ -89,9 +99,10 @@ function DateRangePicker({
             >
                 <Calendar
                     mode="range"
-                    defaultMonth={value?.from}
-                    selected={value}
+                    defaultMonth={display?.from ?? value?.from}
+                    selected={display}
                     onSelect={(range) => {
+                        setDraft(range);
                         onValueChange?.(range);
                         if (range?.from && range.to) {
                             setOpen(false);
