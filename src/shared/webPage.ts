@@ -17,6 +17,7 @@ export const webPageKeys = [
     'BOOKING_REQUEST',
     'BOOKING_REQUEST_FORM',
     'BOOKING_REQUEST_CHAT',
+    'BOOKING_REQUEST_PLAN',
     'CHEF_SIGN_UP',
     'IMPRINT',
     'TERMS_AND_CONDITIONS',
@@ -74,6 +75,7 @@ export const webPageKeyPublicPathByKey = {
     BOOKING_REQUEST: '/booking-request',
     BOOKING_REQUEST_FORM: '/booking-request/form',
     BOOKING_REQUEST_CHAT: '/booking-request/chat',
+    BOOKING_REQUEST_PLAN: '/booking-request/plan',
     CHEF_SIGN_UP: '/chef-sign-up',
     IMPRINT: '/imprint',
     TERMS_AND_CONDITIONS: '/terms-and-conditions',
@@ -106,6 +108,7 @@ export const webPageKeysTrafficConversion = [
     'BOOKING_REQUEST',
     'BOOKING_REQUEST_FORM',
     'BOOKING_REQUEST_CHAT',
+    'BOOKING_REQUEST_PLAN',
     'GIFT_CARD',
     'CHEF_SIGN_UP',
 ] as const satisfies readonly WebPageKeyTracked[];
@@ -263,6 +266,12 @@ export const webPageDefaults: Record<WebPageKey, WebPageSeoDefaults> = {
         titleEn: 'Booking request: chat',
         descriptionDe: 'Stelle deine Buchungsanfrage im Chat.',
         descriptionEn: 'Submit your booking request in chat.',
+    },
+    BOOKING_REQUEST_PLAN: {
+        titleDe: 'Buchungsanfrage: Plan',
+        titleEn: 'Booking request: plan',
+        descriptionDe: 'Plant euer privates Dinner in zwei Schritten.',
+        descriptionEn: 'Plan your private dinner in two steps.',
     },
     CHEF_SIGN_UP: {
         titleDe: 'Als Koch registrieren',

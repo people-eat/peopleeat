@@ -1,11 +1,11 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
 
 import { i18nResourcesLoad } from '../../i18n/catalogCache';
-import { t } from '../../i18n/t';
 import { BookingRequestPlanPageDocument } from '../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../web/graphql/routeLoaderGraphqlClient';
 import { BookingRequestPlanPage, parseBookingRequestPlanSearch } from '../../web/pages/BookingRequestPlanPage';
 import { seoMeta } from '../../web/seo/seoMeta';
+import { webPageSeoText } from '../../web/seo/webPageSeoText';
 import { webPageUrlGet } from '../../web/seo/webPageUrlGet';
 import { localeFromParam } from '../../web/utils/locale';
 
@@ -34,12 +34,17 @@ export const Route = createFileRoute('/{-$locale}/booking-request_/plan')({
         return data;
     },
     staleTime: 0,
-    head: async ({ params }) => {
+    head: async ({ params, loaderData }) => {
         const locale = localeFromParam(params);
         await i18nResourcesLoad(locale, PUBLIC_BOOKING_I18N_NAMESPACES);
+        const webPage = loaderData?.publicWebPage.findOne;
+        if (!webPage) {
+            return {};
+        }
+        const { title, description } = webPageSeoText(locale, webPage, 'plan', 'publicBooking');
         return seoMeta({
-            title: t(locale, 'publicBooking', 'plan.seo.title'),
-            description: t(locale, 'publicBooking', 'plan.seo.description'),
+            title,
+            description,
             path: '/booking-request/plan',
             locale,
             webPageUrl: webPageUrlGet(),

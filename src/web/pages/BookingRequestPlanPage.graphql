@@ -5,6 +5,14 @@ query BookingRequestPlanPage($venueId: ID!, $includeVenue: Boolean!) {
             ...PublicHeaderUser
         }
     }
+    publicWebPage {
+        findOne(webPageKey: BOOKING_REQUEST_PLAN) {
+            titleDe
+            titleEn
+            descriptionDe
+            descriptionEn
+        }
+    }
     publicPartnerVenue {
         findOne(partnerVenueId: $venueId) @include(if: $includeVenue) {
             ...PublicPartnerVenueFields

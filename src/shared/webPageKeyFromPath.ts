@@ -38,6 +38,7 @@ export function webPageKeyFromPath(pathWithoutLocale: string): WebPageVisitMatch
     if (path === '/booking-request') return { webPageKey: 'BOOKING_REQUEST' };
     if (path === '/booking-request/form') return { webPageKey: 'BOOKING_REQUEST_FORM' };
     if (path === '/booking-request/chat') return { webPageKey: 'BOOKING_REQUEST_CHAT' };
+    if (path === '/booking-request/plan') return { webPageKey: 'BOOKING_REQUEST_PLAN' };
     if (path === '/chef-sign-up') return { webPageKey: 'CHEF_SIGN_UP' };
     if (path === '/imprint') return { webPageKey: 'IMPRINT' };
     if (path === '/terms-and-conditions') return { webPageKey: 'TERMS_AND_CONDITIONS' };

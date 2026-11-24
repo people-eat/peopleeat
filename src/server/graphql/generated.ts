@@ -6065,6 +6065,7 @@ export type GqlSWebPageKey =
     | 'BOOKING_REQUEST'
     | 'BOOKING_REQUEST_CHAT'
     | 'BOOKING_REQUEST_FORM'
+    | 'BOOKING_REQUEST_PLAN'
     | 'CHEFS'
     | 'CHEF_SIGN_UP'
     | 'CITIES'
@@ -14139,6 +14140,7 @@ export const GqlSWebPageKeySchema: z.ZodType<
     | 'BOOKING_REQUEST'
     | 'BOOKING_REQUEST_CHAT'
     | 'BOOKING_REQUEST_FORM'
+    | 'BOOKING_REQUEST_PLAN'
     | 'CHEFS'
     | 'CHEF_SIGN_UP'
     | 'CITIES'
@@ -14160,6 +14162,7 @@ export const GqlSWebPageKeySchema: z.ZodType<
     | 'BOOKING_REQUEST'
     | 'BOOKING_REQUEST_CHAT'
     | 'BOOKING_REQUEST_FORM'
+    | 'BOOKING_REQUEST_PLAN'
     | 'CHEFS'
     | 'CHEF_SIGN_UP'
     | 'CITIES'
@@ -14182,6 +14185,7 @@ export const GqlSWebPageKeySchema: z.ZodType<
     'BOOKING_REQUEST',
     'BOOKING_REQUEST_CHAT',
     'BOOKING_REQUEST_FORM',
+    'BOOKING_REQUEST_PLAN',
     'CHEFS',
     'CHEF_SIGN_UP',
     'CITIES',

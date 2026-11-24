@@ -6064,6 +6064,7 @@ export type GqlCWebPageKey =
     | 'BOOKING_REQUEST'
     | 'BOOKING_REQUEST_CHAT'
     | 'BOOKING_REQUEST_FORM'
+    | 'BOOKING_REQUEST_PLAN'
     | 'CHEFS'
     | 'CHEF_SIGN_UP'
     | 'CITIES'
@@ -9068,6 +9069,7 @@ export type GqlCBookingRequestPlanPageQuery = {
         } | null;
         authTotpChallenge: { expiresAt: string } | null;
     };
+    publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
     publicPartnerVenue: {
         findOne?: {
             partnerVenueId: string;
@@ -44532,6 +44534,35 @@ export const BookingRequestPlanPageDocument = {
                                     selectionSet: {
                                         kind: 'SelectionSet',
                                         selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'PublicHeaderUser' } }],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'publicWebPage' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'findOne' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'webPageKey' },
+                                            value: { kind: 'EnumValue', value: 'BOOKING_REQUEST_PLAN' },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                        ],
                                     },
                                 },
                             ],

@@ -53,6 +53,7 @@ venue.
    `Button variant="link"` + `ArrowLeftIcon` pattern. The plan asks for guest counts, not individual names. Create stores one participant
    per guest with the same default names as the multi-step form (Erwachsener 1 / Adult 1, Kind 1 / Child 1).
 4. Cooks are redirected to `/profile` (same as the multi-step form). Page is `noindex`.
+5. Visits emit `WEB_PAGE_VISITED` with `webPageKey: BOOKING_REQUEST_PLAN` (same first-party tracker as form / chat).
 
 Visitors without a venue id use the same route. Venue resolution order: URL venue params → venue `locationAddress` → empty (Combobox).
 
@@ -77,7 +78,8 @@ Visitors without a venue id use the same route. Venue resolution order: URL venu
 - Route: `src/routes/{-$locale}/booking-request_.plan.tsx`
 - Page / search: `BookingRequestPlanPage.tsx`, `bookingRequestPlanSearch.ts` (+ tests)
 - Copy: `src/i18n/locales/{de,en}/publicBooking.json` (`plan.*`)
-- GraphQL: `BookingRequestPlanPage.graphql` (`publicPartnerVenue.findOne`, create mutation, location suggestions)
+- Visit / SEO key: `WebPageKey.BOOKING_REQUEST_PLAN` (`webPageKeyFromPath`, admin traffic Conversion group, `publicWebPage.findOne`)
+- GraphQL: `BookingRequestPlanPage.graphql` (`publicWebPage.findOne`, `publicPartnerVenue.findOne`, create mutation, location suggestions)
 - Venue: `PartnerVenues.locationAddress`; `PublicPartnerVenueQuery.findOne`; admin Standort Combobox on `AdminPartnerVenuePage`
 - Auth: optional `profileInitialValues` on `AuthIdentityGate`
 - Related: [booking-request-create.md](./booking-request-create.md), [partners.md](./partners.md)

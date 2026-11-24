@@ -2370,6 +2370,7 @@
             "BOOKING_REQUEST": "Buchungsanfrage",
             "BOOKING_REQUEST_FORM": "Buchungsanfrage: Formular",
             "BOOKING_REQUEST_CHAT": "Buchungsanfrage: Chat",
+            "BOOKING_REQUEST_PLAN": "Buchungsanfrage: Plan",
             "CHEF_SIGN_UP": "Koch-Registrierung",
             "IMPRINT": "Impressum",
             "TERMS_AND_CONDITIONS": "AGB",
