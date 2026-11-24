@@ -1,4 +1,5 @@
 import { isBenignClientNetworkErrorMessage } from '../../shared/isBenignClientNetworkErrorMessage';
+import { isStaleClientChunkErrorMessage } from '../../shared/isStaleClientChunkErrorMessage';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type {
     GqlSClientObservabilityReportInput,
@@ -66,6 +67,9 @@ export async function clientObservabilityReport(
 
         // ROUTE_ERROR (exhaustive after WEB_VITAL / GRAPHQL_ERROR)
         const message = truncate(input.message, MESSAGE_MAX) ?? 'Route error';
+        if (isStaleClientChunkErrorMessage(message)) {
+            return { success: true, referenceId: null };
+        }
         const routeId = truncate(input.routeId, ROUTE_ID_MAX);
         clientRouteErrorRecord();
         serverRuntime.log.error(

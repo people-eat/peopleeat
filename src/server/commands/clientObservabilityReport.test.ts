@@ -71,4 +71,24 @@ describe('clientObservabilityReport', () => {
 
         expect(result.success).toBe(true);
     });
+
+    it('skips Logs for stale dynamic-import chunk failures', async () => {
+        const { requestingSession, serverRuntime } = await commandSetup();
+        const error = vi.spyOn(serverRuntime.log, 'error');
+
+        const result = await clientObservabilityReport(
+            {
+                input: {
+                    kind: 'ROUTE_ERROR',
+                    message: 'error loading dynamically imported module: https://people-eat.com/assets/ImageCropDialog-DiR9vtaz.js',
+                    path: '/profile/meals/abc123/edit',
+                },
+            },
+            requestingSession,
+            serverRuntime,
+        );
+
+        expect(result.success).toBe(true);
+        expect(error).not.toHaveBeenCalled();
+    });
 });

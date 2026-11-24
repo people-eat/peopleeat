@@ -161,8 +161,14 @@ Key files: [`clientConnectionAbortPlugin.ts`](../../src/server/nitro/clientConne
   failures (Safari `Load failed`, Chromium `Failed to fetch`, abort / offline wording on long-lived SSE) are dropped client-side and again
   on ingest via [`isBenignClientNetworkErrorMessage`](../../src/shared/isBenignClientNetworkErrorMessage.ts) so they do not inflate `Logs`
   or `client.graphql.errors` — same intent as server
-  [`isClientConnectionAbortError`](../../src/server/utils/isClientConnectionAbortError.ts). A flood of `Missing message event` on `*Updates`
-  subscriptions is a server SSE wire-format bug (bare `data:` without `event: next` / `complete`), not benign client noise — see
+  [`isClientConnectionAbortError`](../../src/server/utils/isClientConnectionAbortError.ts). Post-deploy **stale chunk** failures
+  (`Failed to fetch dynamically imported module` / Safari `error loading dynamically imported module` / Firefox module-script import
+  failures) are recovered with a one-shot-per-tab `location.reload()`
+  ([`staleClientChunkReload.ts`](../../src/web/utils/staleClientChunkReload.ts), Vite `vite:preloadError` + `RouteError`; guard stays set
+  for the tab session to avoid reload loops on cached HTML) and dropped from RUM ingest via
+  [`isStaleClientChunkErrorMessage`](../../src/shared/isStaleClientChunkErrorMessage.ts) so deploys do not flood `Logs` /
+  `client.route.errors`. A flood of `Missing message event` on `*Updates` subscriptions is a server SSE wire-format bug (bare `data:`
+  without `event: next` / `complete`), not benign client noise — see
   [state-synchronization.md](./state-synchronization.md#sse-stream-details).
 
 Grafana Explore: Tempo filter `ingress.provider` or span name `ingress stripe`; Prometheus `http.ingress.duration`,
@@ -341,6 +347,8 @@ Then open `/admin/database-slow-statements`, use GraphQL `databaseSlowStatements
 - `src/server/observability/traceContext.ts` — active span ids for logs
 - `src/server/commands/clientObservabilityReport.ts` — browser RUM ingest mutation
 - `src/web/observability/` — Web Vitals bootstrap + report helpers
+- `src/web/utils/staleClientChunkReload.ts` — one-shot reload after stale hashed asset 404
+- `src/shared/isStaleClientChunkErrorMessage.ts` — detect post-deploy dynamic-import failures
 - `src/server/queries/adminDatabaseSlowStatementsFindMany.ts` — `pg_stat_statements` admin read
 - `src/server/queries/databaseSlowStatementIsMetabase.ts` — Metabase SQL heuristic for Slack slow-SQL filter
 - `src/server/jobs/handlers/observabilityOpsAlert.ts` — Slack threshold alerts

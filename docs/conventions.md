@@ -378,6 +378,10 @@ Rules:
 3. **Heavy optional UI is `React.lazy`.** Follow the Stripe pattern already documented in
    [`stripe-payment.md`](./architecture/stripe-payment.md): LiveKit call panel, image cropper, and admin assistant (Streamdown) load only
    when the user opens that surface. Those surfaces keep the previous page chrome visible, so a null Suspense fallback is fine.
+4. **Stale chunks after deploy.** Hashed `/assets/*` files disappear on each Coolify image replace. Old tabs that then hit a dynamic
+   `import()` (route splitter or `React.lazy`) get a browser error. Do not treat that as an app bug: `staleClientChunkReload` reloads the
+   document once per tab (Vite `vite:preloadError` + `RouteError`), and RUM ingest drops the message via `isStaleClientChunkErrorMessage` —
+   see [observability.md](./architecture/observability.md).
 
 After changing import graphs that cross admin / cook / customer / public, run a production build and confirm the entry / public /profile
 chunks did not re-absorb the deferred packages (`livekit-client`, `react-easy-crop`, `@stripe/*`).

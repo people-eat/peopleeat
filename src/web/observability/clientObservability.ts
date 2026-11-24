@@ -2,6 +2,7 @@ import { onCLS, onFCP, onINP, onLCP, onTTFB } from 'web-vitals';
 import type { Metric } from 'web-vitals';
 
 import { isBenignClientNetworkErrorMessage } from '../../shared/isBenignClientNetworkErrorMessage';
+import { isStaleClientChunkErrorMessage } from '../../shared/isStaleClientChunkErrorMessage';
 import type { GqlCClientObservabilityReportInput, GqlCClientWebVitalName } from '../graphql/generated';
 import { pathWithoutLocale } from '../utils/locale';
 
@@ -75,6 +76,7 @@ export function clientObservabilityGraphqlErrorReport(operationName: string | un
 }
 
 export function clientObservabilityRouteErrorReport(message: string, routeId?: string): void {
+    if (isStaleClientChunkErrorMessage(message)) return;
     report({
         kind: 'ROUTE_ERROR',
         message: message.slice(0, 200),

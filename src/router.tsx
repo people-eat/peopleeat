@@ -2,8 +2,13 @@ import { createRouter as createTanStackRouter } from '@tanstack/react-router';
 import { routeTree } from './routeTree.gen';
 import { RouteError } from './web/components/RouteError';
 import { RouteNotFound } from './web/components/RouteNotFound';
+import { staleClientChunkReloadListen } from './web/utils/staleClientChunkReload';
 
 export function getRouter() {
+    // Register before React mounts so Vite preload failures during early
+    // navigation can one-shot reload instead of crashing the tab.
+    staleClientChunkReloadListen();
+
     const router = createTanStackRouter({
         routeTree,
         scrollRestoration: true,

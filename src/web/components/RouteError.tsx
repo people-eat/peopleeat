@@ -1,10 +1,12 @@
 import { isNotFound, useRouter } from '@tanstack/react-router';
 import type { ErrorComponentProps } from '@tanstack/react-router';
-import { useEffect } from 'react';
+import { useLayoutEffect, useState } from 'react';
+import { isStaleClientChunkErrorMessage } from '../../shared/isStaleClientChunkErrorMessage';
 import { useLocale } from '../hooks/useLocale';
 import { useT } from '../hooks/useT';
 import { clientObservabilityRouteErrorReport } from '../observability/clientObservability';
 import { localePath } from '../utils/locale';
+import { staleClientChunkReloadOnce } from '../utils/staleClientChunkReload';
 import { Button } from './base/button';
 import { RouteNotFound } from './RouteNotFound';
 
@@ -21,12 +23,22 @@ function RouteErrorFallback({ error, reset }: ErrorComponentProps) {
     const router = useRouter();
     const locale = useLocale();
     const { t } = useT('common');
+    const message = error instanceof Error ? error.message : String(error);
+    const isStaleChunk = isStaleClientChunkErrorMessage(message);
+    const [hideForReload, setHideForReload] = useState(isStaleChunk);
 
-    useEffect(() => {
+    useLayoutEffect(() => {
+        if (isStaleChunk && staleClientChunkReloadOnce()) {
+            return;
+        }
+        setHideForReload(false);
         console.error('[route-error]', error);
-        const message = error instanceof Error ? error.message : String(error);
         clientObservabilityRouteErrorReport(message);
-    }, [error]);
+    }, [error, isStaleChunk, message]);
+
+    if (hideForReload) {
+        return null;
+    }
 
     return (
         <main id="main-content" className="flex min-h-screen items-center justify-center px-4">
@@ -37,6 +49,10 @@ function RouteErrorFallback({ error, reset }: ErrorComponentProps) {
                     <Button
                         type="button"
                         onClick={() => {
+                            if (isStaleChunk) {
+                                window.location.reload();
+                                return;
+                            }
                             reset();
                             void router.invalidate();
                         }}
