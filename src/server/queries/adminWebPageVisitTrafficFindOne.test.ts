@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
+import { WEB_PAGE_VISIT_INDEX_RANK_ID } from '../../shared/webPage';
 import { sessionEvents } from '../db/schema';
-import { commandSetup, testDb } from '../test/commandTestUtils';
+import { commandSetup, partnerVenueInsert, testDb } from '../test/commandTestUtils';
 import { adminWebPageVisitTrafficFindOne } from './adminWebPageVisitTrafficFindOne';
 
 function isolatedRange() {
@@ -105,5 +106,84 @@ describe('adminWebPageVisitTrafficFindOne', () => {
         expect(traffic.pageRanks).toEqual([expect.objectContaining({ webPageKey: 'VENUES', pageviews: 1 })]);
         expect(traffic.series[0]?.webPageKey).toBe('VENUES');
         expect(traffic.series[0]?.pageviews).toBe(1);
+        expect(traffic.entityRanks).toEqual([
+            expect.objectContaining({ id: WEB_PAGE_VISIT_INDEX_RANK_ID, pageviews: 1, uniqueSessions: 1 }),
+        ]);
+    });
+
+    it('puts the catalog index first as an overview row', async () => {
+        const { serverRuntime, requestingSession } = await commandSetup();
+        const cookId = idCreate();
+        const range = isolatedRange();
+        await testDb.insert(sessionEvents).values([
+            {
+                sessionEventId: idCreate(),
+                sessionId: requestingSession.sessionId,
+                type: 'WEB_PAGE_VISITED',
+                payload: { webPageKey: 'CHEFS', path: '/chefs' },
+                createdAt: range.at,
+            },
+            {
+                sessionEventId: idCreate(),
+                sessionId: requestingSession.sessionId,
+                type: 'WEB_PAGE_VISITED',
+                payload: { webPageKey: 'CHEFS', path: `/chefs/${cookId}`, params: { cookId } },
+                createdAt: range.at,
+            },
+        ]);
+
+        const chefs = await adminWebPageVisitTrafficFindOne(
+            {
+                range,
+                granularity: 'day',
+                webPageKeys: ['CHEFS'],
+                audience: 'HUMAN',
+                metric: 'PAGEVIEWS',
+                scope: 'ALL',
+                entity: null,
+            },
+            requestingSession,
+            serverRuntime,
+        );
+
+        expect(chefs.entityRanks[0]).toEqual(
+            expect.objectContaining({ id: WEB_PAGE_VISIT_INDEX_RANK_ID, pageviews: 1, uniqueSessions: 1 }),
+        );
+        expect(chefs.entityRanks[1]).toEqual(expect.objectContaining({ id: cookId, pageviews: 1 }));
+    });
+
+    it('ranks historical partnerId venue visits with the stable venue id', async () => {
+        const { serverRuntime, requestingSession } = await commandSetup();
+        const venue = await partnerVenueInsert({ name: 'Loft' });
+        const range = isolatedRange();
+        await testDb.insert(sessionEvents).values({
+            sessionEventId: idCreate(),
+            sessionId: requestingSession.sessionId,
+            type: 'WEB_PAGE_VISITED',
+            payload: {
+                webPageKey: 'PARTNERS' as never,
+                path: `/partners/${venue.pathName}`,
+                params: { partnerId: venue.partnerVenueId } as never,
+            },
+            createdAt: range.at,
+        });
+
+        const traffic = await adminWebPageVisitTrafficFindOne(
+            {
+                range,
+                granularity: 'day',
+                webPageKeys: ['VENUES'],
+                audience: 'HUMAN',
+                metric: 'PAGEVIEWS',
+                scope: 'ALL',
+                entity: null,
+            },
+            requestingSession,
+            serverRuntime,
+        );
+
+        expect(traffic.pageviews).toBe(1);
+        expect(traffic.entityVisitCount).toBe(1);
+        expect(traffic.entityRanks).toEqual([expect.objectContaining({ id: venue.partnerVenueId, pageviews: 1, uniqueSessions: 1 })]);
     });
 });

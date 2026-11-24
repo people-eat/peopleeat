@@ -2203,6 +2203,7 @@
         "page": "Seite",
         "entities": "Detailseiten",
         "entity": "Seite",
+        "overviewPage": "Übersichtsseite",
         "chart": "Seitenbesuche im Zeitverlauf",
         "dateRange": "Zeitraum für Traffic",
         "noVisits": "Keine Besuche im gewählten Zeitraum.",

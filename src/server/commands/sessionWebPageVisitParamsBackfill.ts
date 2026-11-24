@@ -1,7 +1,8 @@
 import { eq, sql } from 'drizzle-orm';
 
 import { isNanoId } from '../../shared/idCreate';
-import { webPageKeyHasVisitEntity, webPageVisitEntityParamByKey } from '../../shared/webPage';
+import type { WebPageVisitStoredParams } from '../../shared/webPage';
+import { webPageKeyHasVisitEntity, webPageVisitEntityParamByKey, webPageVisitVenueIdFromParams } from '../../shared/webPage';
 import { webPageKeyFromPath } from '../../shared/webPageKeyFromPath';
 import { sessionEvents } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -42,7 +43,8 @@ export async function sessionWebPageVisitParamsBackfill(
                 payload->>'webPageKey' = 'CITIES' AND payload->'params'->>'cityId' IS NULL
             )
             OR (
-                payload->>'webPageKey' = 'VENUES' AND payload->'params'->>'partnerVenueId' IS NULL
+                payload->>'webPageKey' IN ('VENUES', 'PARTNERS')
+                AND payload->'params'->>'partnerVenueId' IS NULL
             )
             OR (
                 payload->>'webPageKey' = 'OCCASIONS' AND payload->'params'->>'occasionId' IS NULL
@@ -66,11 +68,27 @@ export async function sessionWebPageVisitParamsBackfill(
         const match = webPageKeyFromPath(path);
         if (!match?.params || !webPageKeyHasVisitEntity(match.webPageKey)) continue;
 
+        const storedParams = row.payload.params as WebPageVisitStoredParams | undefined;
         const paramKey = webPageVisitEntityParamByKey[match.webPageKey];
-        const existingId = row.payload.params?.[paramKey];
-        if (existingId && isNanoId(existingId)) continue;
+        const existingId = match.webPageKey === 'VENUES' ? webPageVisitVenueIdFromParams(storedParams) : storedParams?.[paramKey];
+        if (existingId && isNanoId(existingId)) {
+            if (match.webPageKey === 'VENUES' && storedParams?.partnerVenueId !== existingId) {
+                updates.push({
+                    sessionEventId: row.sessionEventId,
+                    payload: {
+                        ...row.payload,
+                        params: { ...storedParams, partnerVenueId: existingId },
+                    },
+                });
+            }
+            continue;
+        }
 
-        const resolved = await sessionWebPageVisitParamsResolve(serverRuntime.db, match.params);
+        const resolved = await sessionWebPageVisitParamsResolve(serverRuntime.db, {
+            ...match.params,
+            partnerId: storedParams?.partnerId,
+            venueId: storedParams?.venueId,
+        });
         if (!resolved) continue;
 
         updates.push({

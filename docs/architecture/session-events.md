@@ -132,7 +132,8 @@ Admin descriptions mark these with “(Legacy)” / “(legacy)”.
    booking-checkout funnels via the matching `Admin.*Flow` fields; cook offer funnel via `Admin.cookBookingRequestOfferFlow`; visit buckets
    via `Admin.sessionEventWebPageVisitCreations`; filterable visit explorer via `Admin.webPageVisitTraffic` / `Admin.webPageVisitCounts`
    ([admin-traffic.md](../features/admin-traffic.md)). Detail visits for chefs, cities, venues, occasions, and blog posts store a stable
-   entity id (slug resolved on write). A one-shot job backfills historical rows from stored `path`.
+   entity id (slug resolved on write). Historical `PARTNERS` keys and `params.partnerId` / `params.venueId` map onto `VENUES` /
+   `partnerVenueId`. A one-shot job backfills historical rows from stored `path`.
 
 ## Key files
 

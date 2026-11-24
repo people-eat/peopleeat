@@ -57,6 +57,26 @@ export const webPageVisitDetailPathPatternByKey = {
 
 export const WEB_PAGE_VISIT_TRAFFIC_SERIES_MAX = 8;
 export const WEB_PAGE_VISIT_ENTITY_RANK_MAX = 20;
+export const WEB_PAGE_VISIT_INDEX_RANK_ID = 'overview';
+
+export type WebPageVisitStoredParams = {
+    cityId?: string;
+    cookId?: string;
+    blogPostId?: string;
+    partnerVenueId?: string;
+    partnerId?: string;
+    venueId?: string;
+    occasionId?: string;
+    bookingRequestId?: string;
+};
+
+/** Live writes use `partnerVenueId`. Older public partner pages stored `partnerId` or `venueId`. */
+export function webPageVisitVenueIdFromParams(
+    params?: { partnerVenueId?: string | null; partnerId?: string | null; venueId?: string | null } | null,
+): string | undefined {
+    const value = params?.partnerVenueId ?? params?.partnerId ?? params?.venueId;
+    return value && value.length > 0 ? value : undefined;
+}
 
 export function webPageKeyIsTracked(key: WebPageKey): key is WebPageKeyTracked {
     return !webPageKeysSeoOnlySet.has(key);

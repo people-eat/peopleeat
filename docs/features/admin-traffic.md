@@ -13,7 +13,8 @@ Operators explore first-party public page visits over time: filterable line char
 5. **Metric** chooses what the line plots (page views vs unique sessions). KPIs always show both.
 6. When exactly one selected key is chefs, cities, venues, occasions, or blog posts:
    - **Scope** can limit index pages (no entity id) vs detail pages (entity id present).
-   - A top-20 entity table lists labeled cities / chefs / venues / occasions / posts. Clicking a row drills the chart into that entity.
+   - The global page-key ranking hides so Landing is not mixed into that catalog. A table titled with the page label lists the **overview
+     page** (index visits) first, then a top-20 of labeled cities / chefs / venues / occasions / posts. Clicking a row drills the chart.
 7. Empty copy distinguishes no visits in range from a catalog key whose detail-looking visits are not tagged with entity ids yet. Index-only
    visits for that key show "no tagged detail pages", not the backfill pending message.
 8. Analytics keeps funnels and the booking-form visit KPI, and links here for page-visit charts.
@@ -48,7 +49,8 @@ operators can drill into a city, chef, venue, occasion, or blog post. Web Pages 
 - SDL: `AdminWebPageVisitTraffic`, `Admin.webPageVisitTraffic`, `Admin.webPageVisitCounts`, audience / metric / scope enums
 - Queries: `adminWebPageVisitTrafficFindOne`, `adminWebPageVisitCountFindMany`
 - Visit write: `webPageKeyFromPath` captures catalog path segments; `sessionWebPageVisitParamsResolve` maps slugs to stable ids in
-  `sessionWebPageVisitCreate`. Historical `PARTNERS` visit keys rank as `VENUES`.
+  `sessionWebPageVisitCreate`. Historical `PARTNERS` visit keys rank as `VENUES`. Legacy visit params `partnerId` / `venueId` coalesce to
+  `partnerVenueId` (public `/partners` 301s to `/venues`; old partner ids match venue ids).
 - Backfill: `sessionWebPageVisitParamsBackfill` (chunked), queued job `session-web-page-visit-params-backfill` enqueued once on worker start
 - Indexes: partial `(params.cityId|partnerVenueId|occasionId|blogPostId, createdAt)` on `WEB_PAGE_VISITED` for those keys
 - UI: `AdminTrafficPage`, `AdminOverviewLineChart`, route `traffic.tsx`, nav via `adminCatalog` (`traffic`)

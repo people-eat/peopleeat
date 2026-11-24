@@ -3,7 +3,7 @@ import type { DateRange } from 'react-day-picker';
 
 import { t } from '../../../i18n/t';
 import { formatIsoDate } from '../../../shared';
-import { WEB_PAGE_VISIT_TRAFFIC_SERIES_MAX, webPageKeysTracked } from '../../../shared/webPage';
+import { WEB_PAGE_VISIT_INDEX_RANK_ID, WEB_PAGE_VISIT_TRAFFIC_SERIES_MAX, webPageKeysTracked } from '../../../shared/webPage';
 import type { WebPageKey } from '../../../shared/webPage';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { Button } from '../../components/base/button';
@@ -89,7 +89,9 @@ export function AdminTrafficPage({ data, search }: { data: GqlCAdminTrafficPageQ
     const pageRanks = traffic?.pageRanks ?? [];
     const entityRanks = traffic?.entityRanks ?? [];
     const selectedEntityId = resolved.cookId ?? resolved.cityId ?? resolved.partnerVenueId ?? resolved.occasionId ?? resolved.blogPostId;
+    const overviewSelected = Boolean(resolved.focusedKey) && resolved.scope === 'INDEX' && !selectedEntityId;
     const showEntityPending = Boolean(resolved.focusedKey) && (traffic?.untaggedDetailVisitCount ?? 0) > 0;
+    const showPageRanks = !resolved.focusedKey;
 
     return (
         <AdminPathPageChrome>
@@ -213,48 +215,49 @@ export function AdminTrafficPage({ data, search }: { data: GqlCAdminTrafficPageQ
                     />
                 )}
 
-                <section className="grid gap-3">
-                    <h2 className="font-serif text-2xl text-foreground">{t(locale, 'admin', 'traffic.pages')}</h2>
-                    {pageRanks.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'traffic.noVisits')}</p>
-                    ) : (
-                        <Table aria-label={t(locale, 'admin', 'traffic.pages')}>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>{t(locale, 'admin', 'traffic.page')}</TableHead>
-                                    <TableHead className="text-right">{t(locale, 'admin', 'traffic.pageviews')}</TableHead>
-                                    <TableHead className="text-right">{t(locale, 'admin', 'traffic.uniqueSessions')}</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {pageRanks.map((row) => {
-                                    const selected = resolved.keys.includes(row.webPageKey);
-                                    return (
-                                        <TableRow key={row.webPageKey}>
-                                            <TableCell>
-                                                <Button
-                                                    type="button"
-                                                    variant="link"
-                                                    className="h-auto px-0"
-                                                    aria-pressed={selected}
-                                                    onClick={() => toggleKey(row.webPageKey)}
-                                                >
-                                                    {adminWebPageLabel(row.webPageKey, locale)}
-                                                </Button>
-                                            </TableCell>
-                                            <TableCell className="text-right tabular-nums">{row.pageviews}</TableCell>
-                                            <TableCell className="text-right tabular-nums">{row.uniqueSessions}</TableCell>
-                                        </TableRow>
-                                    );
-                                })}
-                            </TableBody>
-                        </Table>
-                    )}
-                </section>
+                {showPageRanks ? (
+                    <section className="grid gap-3">
+                        {pageRanks.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'traffic.noVisits')}</p>
+                        ) : (
+                            <Table aria-label={t(locale, 'admin', 'traffic.pages')}>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>{t(locale, 'admin', 'traffic.page')}</TableHead>
+                                        <TableHead className="text-right">{t(locale, 'admin', 'traffic.pageviews')}</TableHead>
+                                        <TableHead className="text-right">{t(locale, 'admin', 'traffic.uniqueSessions')}</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {pageRanks.map((row) => {
+                                        const selected = resolved.keys.includes(row.webPageKey);
+                                        return (
+                                            <TableRow key={row.webPageKey}>
+                                                <TableCell>
+                                                    <Button
+                                                        type="button"
+                                                        variant="link"
+                                                        className="h-auto px-0"
+                                                        aria-pressed={selected}
+                                                        onClick={() => toggleKey(row.webPageKey)}
+                                                    >
+                                                        {adminWebPageLabel(row.webPageKey, locale)}
+                                                    </Button>
+                                                </TableCell>
+                                                <TableCell className="text-right tabular-nums">{row.pageviews}</TableCell>
+                                                <TableCell className="text-right tabular-nums">{row.uniqueSessions}</TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                </TableBody>
+                            </Table>
+                        )}
+                    </section>
+                ) : null}
 
                 {resolved.focusedKey ? (
                     <section className="grid gap-3">
-                        <h2 className="font-serif text-2xl text-foreground">{t(locale, 'admin', 'traffic.entities')}</h2>
+                        <h2 className="font-serif text-2xl text-foreground">{adminWebPageLabel(resolved.focusedKey, locale)}</h2>
                         {showEntityPending ? (
                             <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'traffic.entityBreakdownPending')}</p>
                         ) : null}
@@ -272,7 +275,8 @@ export function AdminTrafficPage({ data, search }: { data: GqlCAdminTrafficPageQ
                                 </TableHeader>
                                 <TableBody>
                                     {entityRanks.map((row) => {
-                                        const selected = selectedEntityId === row.id;
+                                        const isOverview = row.id === WEB_PAGE_VISIT_INDEX_RANK_ID;
+                                        const selected = isOverview ? overviewSelected : selectedEntityId === row.id;
                                         return (
                                             <TableRow key={row.id}>
                                                 <TableCell>
@@ -282,8 +286,20 @@ export function AdminTrafficPage({ data, search }: { data: GqlCAdminTrafficPageQ
                                                         className="h-auto px-0"
                                                         aria-pressed={selected}
                                                         onClick={() => {
+                                                            if (isOverview) {
+                                                                updateSearch({
+                                                                    scope: selected ? 'ALL' : 'INDEX',
+                                                                    cookId: undefined,
+                                                                    cityId: undefined,
+                                                                    partnerVenueId: undefined,
+                                                                    occasionId: undefined,
+                                                                    blogPostId: undefined,
+                                                                });
+                                                                return;
+                                                            }
                                                             const nextId = selected ? undefined : row.id;
                                                             updateSearch({
+                                                                scope: nextId ? 'DETAIL' : 'ALL',
                                                                 cookId: resolved.focusedKey === 'CHEFS' ? nextId : undefined,
                                                                 cityId: resolved.focusedKey === 'CITIES' ? nextId : undefined,
                                                                 partnerVenueId: resolved.focusedKey === 'VENUES' ? nextId : undefined,

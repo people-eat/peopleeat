@@ -103,10 +103,7 @@ function jobRelatedLinks(job: AdminJobsRow, locale: Locale): { key: string; node
             key: 'request',
             node: (
                 <Button asChild variant="outline" size="sm">
-                    <Link
-                        to="/{-$locale}/admin/booking-requests/$bookingRequestId"
-                        params={{ bookingRequestId: job.bookingRequestId }}
-                    >
+                    <Link to="/{-$locale}/admin/booking-requests/$bookingRequestId" params={{ bookingRequestId: job.bookingRequestId }}>
                         {t(locale, 'admin', 'copy.viewRequest')}
                     </Link>
                 </Button>
@@ -132,10 +129,7 @@ function jobRelatedLinks(job: AdminJobsRow, locale: Locale): { key: string; node
             key: 'support',
             node: (
                 <Button asChild variant="outline" size="sm">
-                    <Link
-                        to="/{-$locale}/admin/support-requests/$supportRequestId"
-                        params={{ supportRequestId: job.supportRequestId }}
-                    >
+                    <Link to="/{-$locale}/admin/support-requests/$supportRequestId" params={{ supportRequestId: job.supportRequestId }}>
                         {t(locale, 'admin', 'copy.viewSupport')}
                     </Link>
                 </Button>

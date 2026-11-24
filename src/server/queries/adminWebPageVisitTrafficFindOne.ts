@@ -1,10 +1,12 @@
 import { eq, inArray, sql } from 'drizzle-orm';
 
+import { t } from '../../i18n/t';
 import { contentLocaleText } from '../../shared/contentSection';
 import { DEFAULT_LOCALE } from '../../shared/locale';
 import type { Locale } from '../../shared/locale';
 import {
     WEB_PAGE_VISIT_ENTITY_RANK_MAX,
+    WEB_PAGE_VISIT_INDEX_RANK_ID,
     WEB_PAGE_VISIT_TRAFFIC_SERIES_MAX,
     webPageKeyHasVisitEntity,
     webPageKeyParse,
@@ -75,6 +77,11 @@ function truncParts(granularity: GqlSAdminTimeBucketGranularity): {
 }
 
 function entityParamExpr(key: WebPageKeyWithVisitEntity): ReturnType<typeof sql.raw> {
+    if (key === 'VENUES') {
+        return sql.raw(
+            `COALESCE(e.payload->'params'->>'partnerVenueId', e.payload->'params'->>'partnerId', e.payload->'params'->>'venueId')`,
+        );
+    }
     return sql.raw(`e.payload->'params'->>'${webPageVisitEntityParamByKey[key]}'`);
 }
 
@@ -333,6 +340,7 @@ export async function adminWebPageVisitTrafficFindOne(
         let entityRankRows: EntityRankRow[] = [];
         let entityVisitCount = 0;
         let untaggedDetailVisitCount = 0;
+        let indexRank: GqlSAdminWebPageVisitEntityRank | null = null;
         if (focusedKey) {
             const param = entityParamExpr(focusedKey);
             const entityResult = await serverRuntime.db.execute<EntityRankRow>(sql`
@@ -352,7 +360,7 @@ export async function adminWebPageVisitTrafficFindOne(
                 ORDER BY pageviews DESC, entity_id ASC
                 LIMIT ${WEB_PAGE_VISIT_ENTITY_RANK_MAX}
             `);
-            entityRankRows = Array.isArray(entityResult) ? entityResult : entityResult.rows;
+            entityRankRows = (Array.isArray(entityResult) ? entityResult : entityResult.rows).filter((row) => Boolean(row.entity_id));
 
             const coverageResult = await serverRuntime.db.execute<{ entity_visit_count: string | number }>(sql`
                 SELECT COUNT(*)::int AS entity_visit_count
@@ -382,6 +390,37 @@ export async function adminWebPageVisitTrafficFindOne(
             `);
             const untaggedRows = Array.isArray(untaggedResult) ? untaggedResult : untaggedResult.rows;
             untaggedDetailVisitCount = asInt(untaggedRows[0]?.untagged_detail_visit_count);
+
+            if (args.scope !== 'DETAIL') {
+                const indexResult = await serverRuntime.db.execute<{ pageviews: string | number; unique_sessions: string | number }>(sql`
+                    SELECT
+                        COUNT(*)::int AS pageviews,
+                        COUNT(DISTINCT e."sessionId")::int AS unique_sessions
+                    FROM "SessionEvents" e
+                    ${audience.join}
+                    WHERE e.type = 'WEB_PAGE_VISITED'
+                      AND ${audience.where}
+                      AND ${storedWebPageKeyMatchSql(focusedKey)}
+                      AND ${param} IS NULL
+                      AND (
+                        e.payload->>'path' IS NULL
+                        OR e.payload->>'path' !~ ${webPageVisitDetailPathPatternByKey[focusedKey]}
+                      )
+                      AND e."createdAt" >= date_trunc(${truncLiteral}, ${startDateTime}::timestamptz)
+                      AND e."createdAt" < date_trunc(${truncLiteral}, ${endDateTime}::timestamptz) + ${step}
+                `);
+                const indexRows = Array.isArray(indexResult) ? indexResult : indexResult.rows;
+                const indexPageviews = asInt(indexRows[0]?.pageviews);
+                if (indexPageviews > 0) {
+                    indexRank = {
+                        id: WEB_PAGE_VISIT_INDEX_RANK_ID,
+                        label: t(locale, 'admin', 'traffic.overviewPage'),
+                        pathName: null,
+                        pageviews: indexPageviews,
+                        uniqueSessions: asInt(indexRows[0]?.unique_sessions),
+                    };
+                }
+            }
         }
 
         const totalsResult = await serverRuntime.db.execute<BucketCountRow>(sql`
@@ -445,7 +484,8 @@ export async function adminWebPageVisitTrafficFindOne(
             ];
         });
 
-        const entityRanks = focusedKey ? await entityRanksLabel(entityRankRows, focusedKey, locale, serverRuntime) : [];
+        const detailRanks = focusedKey ? await entityRanksLabel(entityRankRows, focusedKey, locale, serverRuntime) : [];
+        const entityRanks = args.scope === 'INDEX' ? (indexRank ? [indexRank] : []) : indexRank ? [indexRank, ...detailRanks] : detailRanks;
 
         return {
             series,

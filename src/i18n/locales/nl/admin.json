@@ -2203,6 +2203,7 @@
         "page": "Pagina",
         "entities": "Detailpagina’s",
         "entity": "Pagina",
+        "overviewPage": "Overzichtspagina",
         "chart": "Paginabezoeken in de tijd",
         "dateRange": "Datumbereik voor traffic",
         "noVisits": "Geen bezoeken in het geselecteerde bereik.",

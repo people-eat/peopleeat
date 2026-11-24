@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
 import { cities, sessionEvents } from '../db/schema';
-import { commandSetup, testDb } from '../test/commandTestUtils';
+import { commandSetup, partnerVenueInsert, testDb } from '../test/commandTestUtils';
 import { sessionWebPageVisitParamsBackfill } from './sessionWebPageVisitParamsBackfill';
 
 describe('sessionWebPageVisitParamsBackfill', () => {
@@ -52,10 +52,32 @@ describe('sessionWebPageVisitParamsBackfill', () => {
             payload: { webPageKey: 'CITIES', path: '/cities' },
         });
 
-        const result = await sessionWebPageVisitParamsBackfill(serverRuntime, { limit: 50 });
+        await sessionWebPageVisitParamsBackfill(serverRuntime, { limit: 50 });
 
-        expect(result.updated).toBe(0);
         const [row] = await testDb.select().from(sessionEvents).where(eq(sessionEvents.sessionEventId, sessionEventId));
         expect(row?.payload).toEqual({ webPageKey: 'CITIES', path: '/cities' });
+    });
+
+    it('copies a legacy partnerId onto partnerVenueId', async () => {
+        const { serverRuntime, requestingSession } = await commandSetup();
+        const venue = await partnerVenueInsert({ name: 'Loft' });
+        const sessionEventId = idCreate();
+        await testDb.insert(sessionEvents).values({
+            sessionEventId,
+            sessionId: requestingSession.sessionId,
+            type: 'WEB_PAGE_VISITED',
+            payload: {
+                webPageKey: 'VENUES',
+                path: `/partners/${venue.pathName}`,
+                params: { partnerId: venue.partnerVenueId } as never,
+            },
+        });
+
+        await sessionWebPageVisitParamsBackfill(serverRuntime, { limit: 50 });
+
+        const [row] = await testDb.select().from(sessionEvents).where(eq(sessionEvents.sessionEventId, sessionEventId));
+        expect(row?.payload).toMatchObject({
+            params: { partnerId: venue.partnerVenueId, partnerVenueId: venue.partnerVenueId },
+        });
     });
 });

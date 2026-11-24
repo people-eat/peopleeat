@@ -2203,6 +2203,7 @@
         "page": "Page",
         "entities": "Detail pages",
         "entity": "Page",
+        "overviewPage": "Overview page",
         "chart": "Page visits over time",
         "dateRange": "Date range for traffic",
         "noVisits": "No visits in the selected range.",

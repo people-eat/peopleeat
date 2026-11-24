@@ -1658,6 +1658,7 @@
         "page": "Pagina",
         "entities": "Pagine di dettaglio",
         "entity": "Pagina",
+        "overviewPage": "Pagina di riepilogo",
         "chart": "Visite alle pagine nel tempo",
         "dateRange": "Intervallo date per il traffico",
         "noVisits": "Nessuna visita nel periodo selezionato.",
