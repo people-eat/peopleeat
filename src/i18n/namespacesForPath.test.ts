@@ -34,4 +34,17 @@ describe('namespacesForPath', () => {
         expect(namespacesForPath('/admin/users')).toEqual(['common', 'public', 'admin', 'profileCook']);
         expect(namespacesForPath('/admin/meals')).toEqual(['common', 'public', 'admin', 'profileCook']);
     });
+
+    it('adds publicBooking on admin booking request create and edit', () => {
+        expect(namespacesForPath('/admin/booking-requests/create')).toEqual(['common', 'public', 'admin', 'profileCook', 'publicBooking']);
+        expect(namespacesForPath('/admin/booking-requests/abc/edit')).toEqual([
+            'common',
+            'public',
+            'admin',
+            'profileCook',
+            'publicBooking',
+        ]);
+        expect(namespacesForPath('/admin/booking-requests/abc')).toEqual(['common', 'public', 'admin', 'profileCook']);
+        expect(namespacesForPath('/admin/booking-requests')).toEqual(['common', 'public', 'admin', 'profileCook']);
+    });
 });

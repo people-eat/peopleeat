@@ -31,10 +31,18 @@ function isProfilePublicBookingPath(path: string): boolean {
     return /^\/profile\/booking-requests\/[^/]+(?:\/edit)?$/.test(path);
 }
 
+/** Admin booking create/edit reuse `publicBooking` form-default helpers (occasions, preferences, restrictions). */
+function isAdminPublicBookingPath(path: string): boolean {
+    return path === '/admin/booking-requests/create' || /^\/admin\/booking-requests\/[^/]+\/edit$/.test(path);
+}
+
 /** Web namespaces the locale layout should preload for this unprefixed path. */
 export function namespacesForPath(pathname: string): I18nWebNamespace[] {
     const path = pathWithoutQuery(pathname);
-    if (isAdminPath(path)) return [...ADMIN_I18N_NAMESPACES];
+    if (isAdminPath(path)) {
+        if (isAdminPublicBookingPath(path)) return [...ADMIN_I18N_NAMESPACES, 'publicBooking'];
+        return [...ADMIN_I18N_NAMESPACES];
+    }
     if (isProfilePath(path)) {
         if (isProfilePublicBookingPath(path)) return ['common', 'public', 'publicBooking', 'profile'];
         return ['common', 'public', 'profile'];
