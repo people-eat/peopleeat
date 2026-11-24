@@ -23,15 +23,16 @@ The pieces:
 | Sitemap             | Index at `src/routes/sitemap[.]xml.ts`; static pages in `sitemap-pages[.]xml.ts` from `SITEMAP_PATHS`; shared builders in `sitemapXmlBuild.ts`                                     |
 | Robots              | Dynamic route `src/routes/robots[.]txt.ts` + `robotsTxtBuild.ts` — query-param Disallows, AI crawler groups (see [discovery-geo.md](./discovery-geo.md))                           |
 | LLM index           | Dynamic route `src/routes/llms[.]txt.ts` — see [discovery-geo.md](./discovery-geo.md)                                                                                              |
-| Structured data     | `src/web/seo/jsonLd.ts` — homepage `WebSite` + `Organization`, plus `FAQPage`, `BreadcrumbList`, chef `LocalBusiness`, city `Product`, `BlogPosting`                               |
+| Structured data     | `src/web/seo/jsonLd.ts` — homepage `WebSite` + `Organization`, plus `FAQPage`, `BreadcrumbList`, chef `LocalBusiness`, city `Product`/`Service`, `BlogPosting`                     |
 
 Optional structured data (JSON-LD) is available via `src/web/seo/jsonLd.ts`. The homepage emits `WebSite` + `Organization` (legal name,
 postal address, contact email, and social `sameAs`) and `FAQPage`. Chef profiles emit `LocalBusiness` (canonical `/chefs/<pathName>`) with
 `aggregateRating` when the hero shows published reviews, plus the same FAQ and `BreadcrumbList`. Previous slugs and `/chefs/<cookId>` 301 to
 the current path. Use `LocalBusiness` (not `Person`) so Google review snippets have an eligible parent — peopleeat rates other cooks, which
-fits the “reviews about other local businesses” guideline. City pages emit `Product` with the stored map center as `areaServed` and
-`aggregateRating` averaged from the curated testimonials visible on that page. Articles emit `BlogPosting`. Wire them from a route's
-`head().scripts`. AI-search / GEO layers (`/llms.txt`, AI crawler policy, freshness) live in [discovery-geo.md](./discovery-geo.md).
+fits the “reviews about other local businesses” guideline. City pages emit `Product` with required `aggregateRating` (averaged from curated
+testimonials on that page) when ratings are visible; otherwise `Service` with the stored map center as `areaServed` (a Product without
+offers/review/aggregateRating is invalid in Search Console). Articles emit `BlogPosting`. Wire them from a route's `head().scripts`.
+AI-search / GEO layers (`/llms.txt`, AI crawler policy, freshness) live in [discovery-geo.md](./discovery-geo.md).
 
 ## Alternatives considered
 

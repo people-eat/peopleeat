@@ -92,9 +92,10 @@ URLs still need `WEB_PAGE_URL`.
 - Builders live in `src/web/seo/jsonLd.ts`. `jsonLdScripts(webPageUrl)` emits `WebSite` + `Organization` (legal name, Frankfurt postal
   address, contact email, Instagram / Facebook / LinkedIn `sameAs`). `jsonLdFaqPage(entries)` emits `FAQPage`. `jsonLdLocalBusiness` is the
   public chef, with `aggregateRating` when published reviews are visible (Google-eligible parent; do not use `Person` for ratings).
-  `jsonLdCityProduct` is a city landing (`Product` + optional `aggregateRating` from curated testimonials, `GeoCoordinates` from the stored
-  center). `jsonLdBlogPosting` is an article, dated from `publishedAt` / `updatedAt`. `jsonLdBreadcrumbList` mirrors the header logo and the
-  page's index link. Wire them from a route's `head().scripts`. Canonical URLs come from `canonicalUrlBuild` in `seoMeta.ts`.
+  `jsonLdCityProduct` is a city landing with curated ratings (`Product` + required `aggregateRating`); without ratings use
+  `jsonLdCityService` (`Service` + `GeoCoordinates` from the stored center). `jsonLdBlogPosting` is an article, dated from `publishedAt` /
+  `updatedAt`. `jsonLdBreadcrumbList` mirrors the header logo and the page's index link. Wire them from a route's `head().scripts`.
+  Canonical URLs come from `canonicalUrlBuild` in `seoMeta.ts`.
 - Carry `dateModified` from `__SITE_LAST_MODIFIED__` (declared in `src/vite-env.d.ts`, injected by Vite).
 - FAQ answers must stand alone (1–3 factual sentences). Avoid marketing prose; engines extract verbatim.
 - Schema content must match visible content.

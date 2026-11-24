@@ -6,7 +6,13 @@ import { PublicCityPageDocument } from '../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../web/graphql/routeLoaderGraphqlClient';
 import { cityIndexLinkLabel, CityPage } from '../../web/pages/CityPage';
 import { CITY_HERO_FALLBACK_IMAGE } from '../../web/pages/cityPageAssets';
-import { jsonLdBreadcrumbList, jsonLdCityProduct, jsonLdHeadScripts, jsonLdRatingFromValues } from '../../web/seo/jsonLd';
+import {
+    jsonLdBreadcrumbList,
+    jsonLdCityProduct,
+    jsonLdCityService,
+    jsonLdHeadScripts,
+    jsonLdRatingFromValues,
+} from '../../web/seo/jsonLd';
 import { SITE_NAME } from '../../web/seo/seoConstants';
 import { seoMeta } from '../../web/seo/seoMeta';
 import { webPageUrlGet } from '../../web/seo/webPageUrlGet';
@@ -50,6 +56,21 @@ export const Route = createFileRoute('/{-$locale}/cities_/$pathName')({
                 ? { name: cityIndexLinkLabel(locale), path: '/cities' }
                 : { name: cityCountryCodeLabel(city.countryCode, locale), path: countryHubPath };
         const rating = jsonLdRatingFromValues(city.testimonials.map((entry) => entry.testimonial.rating));
+        const cityJsonLdInput = {
+            webPageUrl,
+            locale,
+            path,
+            name: productName,
+            description: productDescription,
+            cityName,
+            countryCode: city.countryCode,
+            latitude: city.latitude,
+            longitude: city.longitude,
+            image: city.heroImageUrl ?? CITY_HERO_FALLBACK_IMAGE,
+        };
+        // Product without offers/review/aggregateRating is invalid in Search Console —
+        // only emit Product when curated ratings are visible; otherwise Service.
+        const cityEntity = rating ? jsonLdCityProduct({ ...cityJsonLdInput, rating }) : jsonLdCityService(cityJsonLdInput);
         return {
             ...seoMeta({
                 title,
@@ -61,19 +82,7 @@ export const Route = createFileRoute('/{-$locale}/cities_/$pathName')({
             }),
             scripts: jsonLdHeadScripts([
                 jsonLdBreadcrumbList(webPageUrl, locale, [{ name: SITE_NAME, path: '/' }, breadcrumbMiddle, { name: productName, path }]),
-                jsonLdCityProduct({
-                    webPageUrl,
-                    locale,
-                    path,
-                    name: productName,
-                    description: productDescription,
-                    cityName,
-                    countryCode: city.countryCode,
-                    latitude: city.latitude,
-                    longitude: city.longitude,
-                    image: city.heroImageUrl ?? CITY_HERO_FALLBACK_IMAGE,
-                    rating,
-                }),
+                cityEntity,
             ]),
         };
     },

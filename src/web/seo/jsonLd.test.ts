@@ -4,6 +4,7 @@ import {
     jsonLdBlogPosting,
     jsonLdBreadcrumbList,
     jsonLdCityProduct,
+    jsonLdCityService,
     jsonLdCountryService,
     jsonLdFaqPage,
     jsonLdLocalBusiness,
@@ -126,7 +127,7 @@ describe('jsonLdBreadcrumbList', () => {
 });
 
 describe('jsonLdCityProduct', () => {
-    it('places city coordinates and optional aggregateRating on Product', () => {
+    it('always includes aggregateRating on Product', () => {
         const product = JSON.parse(
             jsonLdCityProduct({
                 webPageUrl: 'https://example.com',
@@ -154,6 +155,28 @@ describe('jsonLdCityProduct', () => {
         expect(product.areaServed.address.addressCountry).toBe('DE');
         expect(product.aggregateRating.ratingValue).toBe(5);
         expect(product.aggregateRating.reviewCount).toBe(3);
+    });
+});
+
+describe('jsonLdCityService', () => {
+    it('emits Service without Product rich-result fields when ratings are absent', () => {
+        const service = JSON.parse(
+            jsonLdCityService({
+                webPageUrl: 'https://example.com',
+                locale: 'de',
+                path: '/cities/ludwigsburg',
+                name: 'Privatkoch in Ludwigsburg',
+                description: 'Köche für Ludwigsburg.',
+                cityName: 'Ludwigsburg',
+                countryCode: 'DE',
+                latitude: 48.8891,
+                longitude: 9.19428,
+            }).children,
+        ) as { '@type': string; aggregateRating?: unknown; offers?: unknown };
+
+        expect(service['@type']).toBe('Service');
+        expect(service.aggregateRating).toBeUndefined();
+        expect(service.offers).toBeUndefined();
     });
 });
 

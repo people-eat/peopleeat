@@ -11,7 +11,9 @@
 //     entries the DOM renders so schema and content cannot drift.
 //   - `jsonLdBreadcrumbList` — trail matching the header logo and the page's index link.
 //   - `jsonLdLocalBusiness` — public chef profile (Google-eligible review parent).
-//   - `jsonLdCityProduct` — city landing as a bookable offering with optional ratings.
+//   - `jsonLdCityProduct` — city landing as Product when curated ratings exist (required
+//     `aggregateRating`; Google Product rich results need offers, review, or aggregateRating).
+//   - `jsonLdCityService` — city landing fallback when there are no rated testimonials.
 //   - `jsonLdCountryService` — expansion market as a service with country + city Places.
 //   - `jsonLdBlogPosting` — article page.
 //
@@ -221,6 +223,58 @@ export function jsonLdCountryService(input: {
     });
 }
 
+function cityAreaServed(input: {
+    cityName: string;
+    countryCode: string;
+    latitude: number;
+    longitude: number;
+}): Record<string, unknown> {
+    return {
+        '@type': 'Place',
+        name: input.cityName,
+        address: {
+            '@type': 'PostalAddress',
+            addressCountry: input.countryCode,
+        },
+        geo: {
+            '@type': 'GeoCoordinates',
+            latitude: input.latitude,
+            longitude: input.longitude,
+        },
+    };
+}
+
+/** City landing without rated testimonials — valid grounding, not a Product rich result. */
+export function jsonLdCityService(input: {
+    webPageUrl: string;
+    locale: Locale;
+    path: string;
+    name: string;
+    description: string;
+    cityName: string;
+    countryCode: string;
+    latitude: number;
+    longitude: number;
+    image?: string | null;
+}): JsonLdScript {
+    const image = input.image?.trim() ? imageUrlAbsolute(input.webPageUrl, input.image) : undefined;
+    const service: Record<string, unknown> = {
+        '@context': 'https://schema.org',
+        '@type': 'Service',
+        name: input.name,
+        description: input.description,
+        url: canonicalUrlBuild(input.webPageUrl, input.locale, input.path),
+        provider: { '@id': organizationId(input.webPageUrl) },
+        areaServed: cityAreaServed(input),
+    };
+    if (image) service.image = image;
+    return script(service);
+}
+
+/**
+ * City landing with visible curated ratings. Always includes `aggregateRating` —
+ * a Product without offers/review/aggregateRating is invalid in Search Console.
+ */
 export function jsonLdCityProduct(input: {
     webPageUrl: string;
     locale: Locale;
@@ -232,7 +286,7 @@ export function jsonLdCityProduct(input: {
     latitude: number;
     longitude: number;
     image?: string | null;
-    rating?: JsonLdRating | null;
+    rating: JsonLdRating;
 }): JsonLdScript {
     const image = input.image?.trim() ? imageUrlAbsolute(input.webPageUrl, input.image) : undefined;
     const product: Record<string, unknown> = {
@@ -242,24 +296,10 @@ export function jsonLdCityProduct(input: {
         description: input.description,
         url: canonicalUrlBuild(input.webPageUrl, input.locale, input.path),
         brand: { '@id': organizationId(input.webPageUrl) },
-        areaServed: {
-            '@type': 'Place',
-            name: input.cityName,
-            address: {
-                '@type': 'PostalAddress',
-                addressCountry: input.countryCode,
-            },
-            geo: {
-                '@type': 'GeoCoordinates',
-                latitude: input.latitude,
-                longitude: input.longitude,
-            },
-        },
+        areaServed: cityAreaServed(input),
+        aggregateRating: aggregateRatingBlock(input.rating),
     };
     if (image) product.image = image;
-    if (input.rating && input.rating.reviewCount > 0 && input.rating.averageRating != null) {
-        product.aggregateRating = aggregateRatingBlock(input.rating);
-    }
     return script(product);
 }
 
