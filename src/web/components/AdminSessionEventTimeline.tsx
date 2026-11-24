@@ -59,7 +59,11 @@ export function AdminSessionEventTimeline({
                                 <Badge variant="outline" className="font-mono">
                                     {event.type}
                                 </Badge>
-                                {event.isImpersonation ? <Badge variant="secondary">{impersonationLabel}</Badge> : null}
+                                {event.isImpersonation ? (
+                                    <Badge variant="outline" className="bg-muted">
+                                        {impersonationLabel}
+                                    </Badge>
+                                ) : null}
                                 <time className="tabular-nums">
                                     {formatDateTime(event.createdAt, { locale, timeZone, dateStyle: 'medium', timeStyle: 'short' })}
                                 </time>
