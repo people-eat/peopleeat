@@ -7,7 +7,12 @@ import type { Locale } from '../../shared/locale';
 import type { GqlCAdminUserType, GqlCUserStatus } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
 import { useTimeZone } from '../hooks/useTimeZone';
-import { adminUserStatusLabel, adminUserTypeLabel } from '../pages/admin/adminUsersColumns';
+import {
+    adminUserStatusBadgeClassName,
+    adminUserStatusLabel,
+    adminUserTypeBadgeClassName,
+    adminUserTypeLabel,
+} from '../pages/admin/adminUsersColumns';
 import { cn } from '../utils/cn';
 import { Avatar, AvatarFallback } from './base/avatar';
 import { Badge } from './base/badge';
@@ -32,7 +37,7 @@ function initialsFromName(name: string): string {
 
 function typeBadges(types: readonly GqlCAdminUserType[], locale: Locale) {
     return types.map((type) => (
-        <Badge key={type} variant="secondary">
+        <Badge key={type} variant="outline" className={adminUserTypeBadgeClassName}>
             {adminUserTypeLabel(type, locale)}
         </Badge>
     ));
@@ -66,7 +71,7 @@ export function AdminUserListCard({ user }: { user: AdminUserListCardUser }) {
                         >
                             {name}
                         </Link>
-                        <Badge variant={user.status === 'ACTIVE' ? 'secondary' : 'destructive'} className="shrink-0">
+                        <Badge variant="outline" className={cn('shrink-0', adminUserStatusBadgeClassName(user.status))}>
                             {adminUserStatusLabel(user.status, locale)}
                         </Badge>
                     </div>

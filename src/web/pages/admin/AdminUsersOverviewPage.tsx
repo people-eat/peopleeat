@@ -24,7 +24,7 @@ import { adminOverviewRangeResolve, adminOverviewRangeToGraphQlVariables } from 
 import type { AdminOverviewRangeSearch } from './adminOverviewRange';
 import { AdminOverviewStatCard } from './AdminOverviewStatCard';
 import { adminUsersSectionTo } from './adminUsers';
-import { adminUserTypeLabel } from './adminUsersColumns';
+import { adminUserTypeBadgeClassName, adminUserTypeLabel } from './adminUsersColumns';
 
 export function adminUsersOverviewPageTitle(locale: Locale): string {
     return t(locale, 'admin', 'nav.users.title');
@@ -429,7 +429,7 @@ export function AdminUsersOverviewPage({ data, search }: { data: GqlCAdminUsersO
                                         <span className="flex min-w-0 flex-wrap items-center gap-2">
                                             <span className="font-medium text-foreground">{userDisplayName(entry)}</span>
                                             {entry.types.map((type) => (
-                                                <Badge key={type} variant="outline">
+                                                <Badge key={type} variant="outline" className={adminUserTypeBadgeClassName}>
                                                     {adminUserTypeLabel(type, locale)}
                                                 </Badge>
                                             ))}

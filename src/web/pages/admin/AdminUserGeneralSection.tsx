@@ -38,7 +38,6 @@ import type {
     GqlCAdminUserPageQuery,
     GqlCLocale,
     GqlCUserPreferredCommunication,
-    GqlCUserStatus,
 } from '../../graphql/generated';
 import {
     AdminUserAccountDeletionCancelDocument,
@@ -53,7 +52,7 @@ import { useTimeZone } from '../../hooks/useTimeZone';
 import type { Locale } from '../../utils/locale';
 import { DEFAULT_LOCALE, isLocale, localePath, setLocaleCookie } from '../../utils/locale';
 import { sessionSwitchUrl } from '../../utils/sessionSwitchUrl';
-import { adminUserTypeLabel } from './adminUsersColumns';
+import { adminUserStatusBadgeClassName, adminUserStatusLabel, adminUserTypeBadgeClassName, adminUserTypeLabel } from './adminUsersColumns';
 import { AdminUserSignInSection } from './AdminUserSignInSection';
 
 type AdminUserRow = NonNullable<NonNullable<NonNullable<GqlCAdminUserPageQuery['currentSession']['user']>['admin']>['user']>;
@@ -82,20 +81,6 @@ function formFromUser(user: AdminUserRow): GeneralFormValues {
         locale: user.locale,
         timeZone: user.timeZone,
     };
-}
-
-function adminUserStatusLabel(status: GqlCUserStatus, locale: Locale): string {
-    const labels = {
-        ACTIVE: t(locale, 'admin', 'users.accountStatus.ACTIVE'),
-        BANNED: t(locale, 'admin', 'users.accountStatus.BANNED'),
-        ANONYMIZED: t(locale, 'admin', 'users.accountStatus.ANONYMIZED'),
-    } satisfies Record<GqlCUserStatus, string>;
-    return labels[status];
-}
-
-function adminUserStatusBadgeVariant(status: GqlCUserStatus): 'default' | 'destructive' {
-    if (status === 'ANONYMIZED' || status === 'BANNED') return 'destructive';
-    return 'default';
 }
 
 function localeLabel(value: string, uiLocale: Locale): string {
@@ -492,9 +477,11 @@ export function AdminUserGeneralSection({
     return (
         <div className="@container grid w-full min-w-0 gap-8">
             <div className="flex flex-wrap items-center gap-2">
-                <Badge variant={adminUserStatusBadgeVariant(user.status)}>{adminUserStatusLabel(user.status, locale)}</Badge>
+                <Badge variant="outline" className={adminUserStatusBadgeClassName(user.status)}>
+                    {adminUserStatusLabel(user.status, locale)}
+                </Badge>
                 {user.types.map((type) => (
-                    <Badge key={type} variant="outline">
+                    <Badge key={type} variant="outline" className={adminUserTypeBadgeClassName}>
                         {adminUserTypeLabel(type, locale)}
                     </Badge>
                 ))}

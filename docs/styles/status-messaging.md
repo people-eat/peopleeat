@@ -55,9 +55,9 @@ future surfaces can stay in sync. The `StatusTone` type itself lives in `src/sha
 
 `Badge` (neutral meta: draft/published, non-unread counts) stays for non-status labels. Use `variant="outline"` for draft/published on cards
 and detail pages — `variant="secondary"` is white (`--secondary`) and disappears on `bg-card`. Count badges on line tabs and meta on white
-admin tables add `bg-muted` to that outline pill (email purpose, sent; meals/menus/pool/offers tab counts). Log severity uses the status
-tones above; debug stays a muted outline pill. Do not stretch `Badge variant="destructive"` or brand `--accent` into unread bubbles — use
-`NotificationBadge`.
+admin tables add `bg-muted` to that outline pill (email purpose, sent; user type; meals/menus/pool/offers tab counts). User account status
+uses the status tones above (`success` / `error`). Log severity uses the status tones above; debug stays a muted outline pill. Do not
+stretch `Badge variant="destructive"` or brand `--accent` into unread bubbles — use `NotificationBadge`.
 
 ## Rules
 
@@ -118,6 +118,8 @@ Only statuses that exist in peopleeat’s derived booking enums are mapped.
 - Email OTP dialogs (log-on / account email change) → `StatusAlert` (`info`) via `AuthEmailOtpSpamHint` (check spam/junk)
 - Admin log list and detail level badges → labeled `Badge` with status tones (`error` / `warning` / `info`); debug is a neutral muted
   outline pill, not a status tone
+- Admin user list / cards / detail account status → labeled `Badge` with status tones (`success` for `ACTIVE`, `error` for `BANNED` /
+  `ANONYMIZED`); user type is a muted outline pill, not a status tone
 
 ## Anti-patterns
 

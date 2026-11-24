@@ -4,6 +4,7 @@ import { t } from '../../../i18n/t';
 import { formatDate } from '../../../shared';
 import type { Locale } from '../../../shared/locale';
 import { Badge } from '../../components/base/badge';
+import { statusBadgeToneClass } from '../../components/base/status';
 import type { GqlCAdminUserType, GqlCUserStatus } from '../../graphql/generated';
 import { AdminDataTableSortHeader } from './AdminDataTableSortHeader';
 import type { AdminUsersDataTableFeatures } from './adminUsersDataTableFeatures';
@@ -41,6 +42,13 @@ export function adminUserStatusLabel(status: GqlCUserStatus, locale: Locale) {
     return labels[status];
 }
 
+export function adminUserStatusBadgeClassName(status: GqlCUserStatus) {
+    return status === 'ACTIVE' ? statusBadgeToneClass.success : statusBadgeToneClass.error;
+}
+
+/** Muted fill so type pills stay visible on the white admin table. */
+export const adminUserTypeBadgeClassName = 'bg-muted';
+
 export function adminUsersColumns(locale: Locale, timeZone: string) {
     return columnHelper.columns([
         columnHelper.accessor('firstName', {
@@ -62,7 +70,7 @@ export function adminUsersColumns(locale: Locale, timeZone: string) {
         columnHelper.accessor('status', {
             header: () => t(locale, 'admin', 'copy.status'),
             cell: ({ row }) => (
-                <Badge variant={row.original.status === 'ACTIVE' ? 'secondary' : 'destructive'}>
+                <Badge variant="outline" className={adminUserStatusBadgeClassName(row.original.status)}>
                     {adminUserStatusLabel(row.original.status, locale)}
                 </Badge>
             ),
@@ -71,9 +79,9 @@ export function adminUsersColumns(locale: Locale, timeZone: string) {
         columnHelper.accessor('types', {
             header: () => t(locale, 'admin', 'copy.type'),
             cell: ({ row }) => (
-                <div className="flex flex-wrap gap-1">
+                <div className="flex w-max gap-1">
                     {row.original.types.map((type) => (
-                        <Badge key={type} variant="secondary">
+                        <Badge key={type} variant="outline" className={adminUserTypeBadgeClassName}>
                             {adminUserTypeLabel(type, locale)}
                         </Badge>
                     ))}

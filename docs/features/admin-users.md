@@ -140,7 +140,9 @@ detail with URL tabs; manual create with optional admin and cook payloads.
   `AdminListPaginationBar`; create form; detail with `@include` per tab; session-events tab uses `Admin.sessionEvents` +
   `Admin.sessionEventsCounts` with pinned `AdminListPaginationBar`; `AdminUserGeneralSection`, `AdminUserSignInSection`,
   `AdminUserCookProfileSection`, `AdminUserCookProfileEditPage`; booking-requests / pool / offers tabs reuse `AdminBookingRequestListCard` /
-  `AdminBookingRequestOfferCard`; testimonials tab reuses `AdminTestimonialListCard`; calls tab uses a compact `callTraffic` list
+  `AdminBookingRequestOfferCard`; testimonials tab reuses `AdminTestimonialListCard`; calls tab uses a compact `callTraffic` list. Account
+  status / type badges: `adminUserStatusBadgeClassName` (status tones) and `adminUserTypeBadgeClassName` (`outline` + `bg-muted`) in
+  `adminUsersColumns.tsx` — never `Badge variant="secondary"` on the white table / cards. Type pills stay on one row (`flex w-max`).
 - `AdminCook` field resolvers: `logo`, `rating`, `callAvailabilityRules`, `featuredOn` (city/venue/occasion reverse index),
   `stripeAccountDetails` / `stripeWallet` (live Stripe; admin loaders, not cook ownership / balance toggle)
 - `Admin.customerTestimonials` / `cookTestimonials` accept optional criterion (`cookIds`, skip/take); omit criterion = full catalog
