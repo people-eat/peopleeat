@@ -19,6 +19,7 @@ import { bookingRequestParticipantsPrepareForWrite } from '../utils/bookingReque
 import { bookingRequestPoolCooksPublish } from '../utils/bookingRequestPoolCooksPublish';
 import { bookingRequestSettingPrepareForWrite } from '../utils/bookingRequestSettingPrepareForWrite';
 import { cookIdsCanCreateOffersFind } from '../utils/cookIdsCanCreateOffersFind';
+import { featureToggleIsEnabled } from '../utils/featureToggleIsEnabled';
 
 export async function adminBookingRequestCreate(
     { adminId }: GqlSAdminMutation,
@@ -43,7 +44,10 @@ export async function adminBookingRequestCreate(
         throw new Error('adminBookingRequestCreate: occasion must not be empty');
     }
     if (originalMessage.length === 0) {
-        throw new Error('adminBookingRequestCreate: originalMessage must not be empty');
+        const optionalMessageEnabled = await featureToggleIsEnabled('BOOKING_REQUEST_OPTIONAL_MESSAGE', serverRuntime, userId);
+        if (!optionalMessageEnabled) {
+            throw new Error('adminBookingRequestCreate: originalMessage must not be empty');
+        }
     }
 
     const participants = await bookingRequestParticipantsPrepareForWrite(

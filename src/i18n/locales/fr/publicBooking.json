@@ -345,6 +345,7 @@
             "subtitle": "Nous vérifions ta date souhaitée et accordons le menu avec toi.",
             "subtitleVenue": "Ta soirée chez {venue}. Nous vérifions ta date souhaitée et accordons le menu avec toi.",
             "wishes": "Souhaits et allergies",
+            "wishesOptional": "Souhaits et allergies (facultatif)",
             "wishesPlaceholder": "Alimentation, allergies ou une occasion particulière",
             "contactDetails": "Tes coordonnées",
             "send": "Envoyer la demande de réservation",

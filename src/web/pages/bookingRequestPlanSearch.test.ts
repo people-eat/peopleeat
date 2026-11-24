@@ -254,4 +254,47 @@ describe('bookingRequestPlanCreateInputFromValues', () => {
 
         expect(input?.priceClassType).toBeNull();
     });
+
+    it('rejects an empty message by default', () => {
+        const input = bookingRequestPlanCreateInputFromValues(
+            {
+                adultCount: 2,
+                discountedCount: 0,
+                locationSearchText: exactEventAddress.displayText,
+                exactEventAddress,
+                dateTime: new Date('2027-06-12T17:00:00.000Z'),
+                cuisine: 'mediterranean',
+                priceClassType: 'MEDIUM',
+                originalMessage: '   ',
+                redeemCode: '',
+                occasion: '',
+                settingChoice: null,
+            },
+            'en',
+        );
+
+        expect(input).toBeNull();
+    });
+
+    it('allows an empty message when allowEmptyMessage is true', () => {
+        const input = bookingRequestPlanCreateInputFromValues(
+            {
+                adultCount: 2,
+                discountedCount: 0,
+                locationSearchText: exactEventAddress.displayText,
+                exactEventAddress,
+                dateTime: new Date('2027-06-12T17:00:00.000Z'),
+                cuisine: 'mediterranean',
+                priceClassType: 'MEDIUM',
+                originalMessage: '',
+                redeemCode: '',
+                occasion: '',
+                settingChoice: null,
+            },
+            'en',
+            { allowEmptyMessage: true },
+        );
+
+        expect(input?.originalMessage).toBe('');
+    });
 });

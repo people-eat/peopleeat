@@ -243,7 +243,14 @@ export async function adminBookingRequestUpdate(
         if (input.originalMessage != null) {
             const nextMessage = textNormalizeProseTitled(input.originalMessage);
             if (nextMessage.length === 0) {
-                throw new Error('adminBookingRequestUpdate: originalMessage must not be empty');
+                const optionalMessageEnabled = await featureToggleIsEnabled(
+                    'BOOKING_REQUEST_OPTIONAL_MESSAGE',
+                    serverRuntime,
+                    bookingRequest.userId,
+                );
+                if (!optionalMessageEnabled) {
+                    throw new Error('adminBookingRequestUpdate: originalMessage must not be empty');
+                }
             }
             if (nextMessage !== bookingRequest.originalMessage) {
                 requestPatch.originalMessage = nextMessage;

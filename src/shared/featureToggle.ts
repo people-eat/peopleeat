@@ -21,6 +21,8 @@ export const featureToggleKeys = [
     'BOOKING_REQUEST_KITCHEN_DETAILS',
     // Plan funnel: history-based expected menu-price range instead of price-class cards.
     'BOOKING_REQUEST_EXPECTED_MENU_PRICE_RANGE',
+    // Plan + form create: allow empty originalMessage (skips AI rewrite).
+    'BOOKING_REQUEST_OPTIONAL_MESSAGE',
     'BOOKING_REQUEST_COOK_DIRECT',
     'BOOKING_REQUEST_OFFER_CHAT_REACTIONS',
     'BOOKING_REQUEST_OFFER_AMENDMENT',

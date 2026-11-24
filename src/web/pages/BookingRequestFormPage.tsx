@@ -259,12 +259,14 @@ function createInputFromValues(
     participants: readonly BookingRequestParticipantDraft[],
     confirmedDiscount: ConfirmedDiscount | null,
     settingEnabled: boolean,
+    optionalMessageEnabled: boolean,
     requestedCookId?: string | null,
     requestedMenuId?: string | null,
 ): GqlCUserBookingRequestCreate | null {
     if (!values.exactEventAddress || !values.priceClassType) return null;
     if (values.adultCount < 1) return null;
-    if (!values.occasion.trim() || !values.originalMessage.trim()) return null;
+    if (!values.occasion.trim()) return null;
+    if (!optionalMessageEnabled && !values.originalMessage.trim()) return null;
     return {
         occasion: values.occasion.trim(),
         dateTime: values.dateTime.toISOString(),
@@ -318,6 +320,7 @@ export function BookingRequestFormPage({
     const signedIn = sessionAuthPhase(session) === 'signedIn';
     const restrictionsEnabled = featureToggleIsActive(session.activeFeatureToggleKeys, 'BOOKING_REQUEST_RESTRICTIONS');
     const settingEnabled = featureToggleIsActive(session.activeFeatureToggleKeys, 'BOOKING_REQUEST_SETTING');
+    const optionalMessageEnabled = featureToggleIsActive(session.activeFeatureToggleKeys, 'BOOKING_REQUEST_OPTIONAL_MESSAGE');
     const cookDirectToggleOn = featureToggleIsActive(session.activeFeatureToggleKeys, 'BOOKING_REQUEST_COOK_DIRECT');
     const [{ data: cookData, fetching: cookFetching }] = useQuery({
         query: BookingRequestFormCookDocument,
@@ -528,6 +531,7 @@ export function BookingRequestFormPage({
             participants,
             confirmedDiscount,
             settingEnabled,
+            optionalMessageEnabled,
             honorDirect ? requestedCook?.cookId : null,
             requestedMenu?.menuId ?? null,
         );
@@ -655,7 +659,7 @@ export function BookingRequestFormPage({
         (step === 'location' && (!values.exactEventAddress || Boolean(closedMarket))) ||
         (step === 'dateTime' && !values.dateTime) ||
         (step === 'priceClass' && !values.priceClassType) ||
-        (step === 'message' && !values.originalMessage.trim()) ||
+        (step === 'message' && !optionalMessageEnabled && !values.originalMessage.trim()) ||
         step === 'auth';
 
     return (

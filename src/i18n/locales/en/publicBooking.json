@@ -345,6 +345,7 @@
             "subtitle": "We check your preferred date and align the menu with you.",
             "subtitleVenue": "Your evening at {venue}. We check your preferred date and align the menu with you.",
             "wishes": "Wishes & allergies",
+            "wishesOptional": "Wishes & allergies (optional)",
             "wishesPlaceholder": "Diet, allergies, or a special occasion",
             "contactDetails": "Your contact details",
             "send": "Send booking request",

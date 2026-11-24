@@ -345,6 +345,7 @@
             "subtitle": "Controlliamo la data desiderata e allineiamo il menu con voi.",
             "subtitleVenue": "La vostra sera da {venue}. Controlliamo la data desiderata e allineiamo il menu con voi.",
             "wishes": "Desideri e allergie",
+            "wishesOptional": "Desideri e allergie (facoltativo)",
             "wishesPlaceholder": "Alimentazione, allergie o un’occasione speciale",
             "contactDetails": "I tuoi dati di contatto",
             "send": "Invia richiesta di prenotazione",

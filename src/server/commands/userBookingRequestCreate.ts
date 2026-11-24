@@ -24,6 +24,7 @@ import { bookingRequestParticipantsPrepareForWrite } from '../utils/bookingReque
 import { bookingRequestPoolCooksPublish } from '../utils/bookingRequestPoolCooksPublish';
 import { bookingRequestSettingPrepareForWrite } from '../utils/bookingRequestSettingPrepareForWrite';
 import { cookIdsCanCreateOffersFind } from '../utils/cookIdsCanCreateOffersFind';
+import { featureToggleIsEnabled } from '../utils/featureToggleIsEnabled';
 import { sessionEventCreate } from '../utils/sessionEventCreate';
 
 export async function userBookingRequestCreate(
@@ -46,7 +47,10 @@ export async function userBookingRequestCreate(
         throw new Error('userBookingRequestCreate: occasion must not be empty');
     }
     if (originalMessage.length === 0) {
-        throw new Error('userBookingRequestCreate: originalMessage must not be empty');
+        const optionalMessageEnabled = await featureToggleIsEnabled('BOOKING_REQUEST_OPTIONAL_MESSAGE', serverRuntime, userId);
+        if (!optionalMessageEnabled) {
+            throw new Error('userBookingRequestCreate: originalMessage must not be empty');
+        }
     }
 
     const participants = await bookingRequestParticipantsPrepareForWrite(

@@ -5,21 +5,21 @@ Customers create booking requests; the platform publishes them to cooks (or hold
 ## Behavior
 
 1. Customer opens `/booking-request/form` and walks a multi-step wizard: occasion → party → venue → datetime → price class → preferences →
-   (when `BOOKING_REQUEST_RESTRICTIONS` is on) dietary restrictions per guest → message (optional redeem code). Price class uses the same
-   three cards as the plan page: one column until that card row is 50rem wide, then three, so the step sidebar does not squeeze them into a
-   row. On the venue step, signed-in customers with prior requests see up to five distinct previous event addresses as quick-select chips
-   (newest first); they can still enter a new address via the Combobox. When `BOOKING_REQUEST_SETTING` is on and an address is chosen,
-   Outdoor / Indoor cards appear under the selected-address banner (where guests dine, not where the chef cooks). Later is a skip under
-   those two until the picker is ~42rem wide, then Outdoor / Later / Indoor sit in one row. Next stays gated only on the address. Later and
-   skipping both store `setting` null. This is not a new funnel step; location `step_completed` records `INDOOR` / `OUTDOOR` / `LATER` /
-   `skipped`. On the datetime step, a success banner praises early booking when the selected date is more than 3 weeks out (Europe/Berlin
-   calendar days). Time uses `TimePicker`: native `type="time"` on small viewports; from `md` up, hour (8–23) and minute (`:00` / `:15` /
-   `:30` / `:45`) dropdowns. Optional `?minDateTime=` / `?maxDateTime=` ISO query params (inclusive) limit the selectable calendar days and
-   hour/minute options and clamp a seeded `dateTime` into range; past days stay blocked regardless. Draft answers survive refresh and auth
-   redirects via the URL (restriction selections stay in form state only; bounds are preserved across draft sync). Cooks are redirected to
-   `/profile` (header **Send request** CTA is already hidden for them); `UserMutation.bookingRequestCreate` also rejects cook callers. An
-   event address in the Netherlands or Switzerland is rejected (guest launch early 2027); the form shows a coming-to notice instead. See
-   [market-expansion.md](./market-expansion.md).
+   (when `BOOKING_REQUEST_RESTRICTIONS` is on) dietary restrictions per guest → message (optional redeem code; message itself is required
+   unless `BOOKING_REQUEST_OPTIONAL_MESSAGE` is on). Price class uses the same three cards as the plan page: one column until that card row
+   is 50rem wide, then three, so the step sidebar does not squeeze them into a row. On the venue step, signed-in customers with prior
+   requests see up to five distinct previous event addresses as quick-select chips (newest first); they can still enter a new address via
+   the Combobox. When `BOOKING_REQUEST_SETTING` is on and an address is chosen, Outdoor / Indoor cards appear under the selected-address
+   banner (where guests dine, not where the chef cooks). Later is a skip under those two until the picker is ~42rem wide, then Outdoor /
+   Later / Indoor sit in one row. Next stays gated only on the address. Later and skipping both store `setting` null. This is not a new
+   funnel step; location `step_completed` records `INDOOR` / `OUTDOOR` / `LATER` / `skipped`. On the datetime step, a success banner praises
+   early booking when the selected date is more than 3 weeks out (Europe/Berlin calendar days). Time uses `TimePicker`: native `type="time"`
+   on small viewports; from `md` up, hour (8–23) and minute (`:00` / `:15` / `:30` / `:45`) dropdowns. Optional `?minDateTime=` /
+   `?maxDateTime=` ISO query params (inclusive) limit the selectable calendar days and hour/minute options and clamp a seeded `dateTime`
+   into range; past days stay blocked regardless. Draft answers survive refresh and auth redirects via the URL (restriction selections stay
+   in form state only; bounds are preserved across draft sync). Cooks are redirected to `/profile` (header **Send request** CTA is already
+   hidden for them); `UserMutation.bookingRequestCreate` also rejects cook callers. An event address in the Netherlands or Switzerland is
+   rejected (guest launch early 2027); the form shows a coming-to notice instead. See [market-expansion.md](./market-expansion.md).
 2. Anonymous users complete identity before submit: email OTP (+ profile for new accounts), or passkey for existing users who already
    registered one (skips OTP). Helper copy explains passkeys are not for first-time users. Returning users whose stored terms/privacy
    acceptance is stale see an inline **Updated legal terms** panel in the same auth step (change summaries, full-text links in a new tab,
@@ -63,6 +63,7 @@ Admin create / publication approve / notify flows: [admin-booking-requests.md](.
 | Auto-publish every group size               | Rejected — large groups need selective cook outreach               |
 | Per-participant dietary step always on      | Rejected — gate with `BOOKING_REQUEST_RESTRICTIONS`                |
 | Per-participant dietary step (feature flag) | **Chosen** — progressive disclosure chips + optional custom text   |
+| Message always required                     | Default; optional behind `BOOKING_REQUEST_OPTIONAL_MESSAGE`        |
 
 ### Chosen
 
@@ -70,7 +71,9 @@ Multi-step public form with URL draft sync, email-OTP or passkey gate for anonym
 publication for large groups. Dietary restrictions are an optional wizard step (and customer/admin edit section) when
 `BOOKING_REQUEST_RESTRICTIONS` is enabled; create/update strip non-empty restrictions when the toggle is off. Indoor/outdoor is an optional
 picker on the location step (`BOOKING_REQUEST_SETTING`: Outdoor / Indoor, Later as a skip on narrow widths); kitchen details are collected
-after send (`BOOKING_REQUEST_KITCHEN_DETAILS`). The two toggles are independent. Intake chat remains a later idea under [Ideas](#ideas).
+after send (`BOOKING_REQUEST_KITCHEN_DETAILS`). The free-text message stays required unless `BOOKING_REQUEST_OPTIONAL_MESSAGE` is on (empty
+stores `''` and skips AI adjusted-message generation). Those toggles are independent. Intake chat remains a later idea under
+[Ideas](#ideas).
 
 ## Next steps
 

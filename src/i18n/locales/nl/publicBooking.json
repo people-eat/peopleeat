@@ -345,6 +345,7 @@
             "subtitle": "We controleren je gewenste datum en stemmen het menu met je af.",
             "subtitleVenue": "Jouw avond bij {venue}. We controleren je gewenste datum en stemmen het menu met je af.",
             "wishes": "Wensen en allergieën",
+            "wishesOptional": "Wensen en allergieën (optioneel)",
             "wishesPlaceholder": "Dieet, allergieën of een bijzondere gelegenheid",
             "contactDetails": "Jouw contactgegevens",
             "send": "Boekingsaanvraag versturen",

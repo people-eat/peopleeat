@@ -25,6 +25,8 @@ Keys today:
 - Booking request kitchen details
 - Booking request plan expected menu price range (`BOOKING_REQUEST_EXPECTED_MENU_PRICE_RANGE`: plan funnel estimated total instead of
   price-class cards; creates without `priceClassType`)
+- Booking request optional message (`BOOKING_REQUEST_OPTIONAL_MESSAGE`: plan + form create allow empty `originalMessage`; empty skips AI
+  cook-facing rewrite)
 - Chef-page exclusive booking request (`BOOKING_REQUEST_COOK_DIRECT`: public chef CTA and form `cookId` only; existing direct rows stay
   visible)
 - Offer chat emoji reactions
@@ -120,6 +122,10 @@ Wired today:
 - **Booking request plan expected menu price range** (`BOOKING_REQUEST_EXPECTED_MENU_PRICE_RANGE`) — on `/booking-request/plan`, hides
   price-class cards and shows the public expected menu-price range as an estimated total above the sidebar CTA; create stores
   `priceClassType` null. Missing row stays off. See [booking-request-plan.md](./booking-request-plan.md)
+- **Booking request optional message** (`BOOKING_REQUEST_OPTIONAL_MESSAGE`) — on `/booking-request/plan` and `/booking-request/form`, allows
+  an empty customer message. Create stores `originalMessage` as `''` and skips `booking-request-adjusted-message-generate`. When off, empty
+  messages are rejected (client + server). Missing row stays off. See [booking-request-create.md](./booking-request-create.md),
+  [booking-request-plan.md](./booking-request-plan.md), [ai-booking-request-message.md](./ai-booking-request-message.md)
 - **Offer chat emoji reactions** (`BOOKING_REQUEST_OFFER_CHAT_REACTIONS`) — smile control on peer `*_MESSAGE_SIMPLE` bubbles in customer /
   cook **and admin** offer chat; admin shells mount the session toggle provider and gate this key with `gateInAdminShell` (unlike
   publication / restrictions, which stay visible for ops when the end-user rollout is off). Mutation

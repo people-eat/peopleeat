@@ -31,13 +31,13 @@ Signed-in cooks manage these areas under `/profile/*`:
    an additional picture the public About column shows the peopleeat benefits fallback — [public-chefs.md](./public-chefs.md). Published
    meals without an image, and published menus that are incomplete or have no dish picture, are omitted from the preview and called out with
    warning banners when `PUBLICATION_MEALS` / `PUBLICATION_MENUS` are on (menu banner also requires `COOK_PUBLIC_PROFILE_MENUS`). A
-   photo/biography readiness alert links to Overview setup. When `COOK_PUBLIC_PROFILE_PATH_NAME` is on, edit includes
-   **Public URL** (`/chefs/<pathName>` with slug input and live availability). Changing the slug keeps the old address as a redirect; the
-   last name in the URL is public even though guests see first name or stage name. When the toggle is off, the section is hidden and
-   `cookUpdate` rejects `pathName`. Public `/chefs/<pathName>` still works. The edit footer is dirty-gated (Save only when the form is
-   dirty; otherwise **Back to chef page**). The default offer note has three states: **not set** (`null`, Getting started item; offer create
-   still uses the peopleeat greeting), **empty** (start blank each offer), or **custom text** (prefill). Saving chef page without changing
-   that section leaves `null` as `null`. Profile picture can be changed or removed there (same crop/upload flow as account —
+   photo/biography readiness alert links to Overview setup. When `COOK_PUBLIC_PROFILE_PATH_NAME` is on, edit includes **Public URL**
+   (`/chefs/<pathName>` with slug input and live availability). Changing the slug keeps the old address as a redirect; the last name in the
+   URL is public even though guests see first name or stage name. When the toggle is off, the section is hidden and `cookUpdate` rejects
+   `pathName`. Public `/chefs/<pathName>` still works. The edit footer is dirty-gated (Save only when the form is dirty; otherwise **Back to
+   chef page**). The default offer note has three states: **not set** (`null`, Getting started item; offer create still uses the peopleeat
+   greeting), **empty** (start blank each offer), or **custom text** (prefill). Saving chef page without changing that section leaves `null`
+   as `null`. Profile picture can be changed or removed there (same crop/upload flow as account —
    [profile-pictures.md](./profile-pictures.md)). When `COOK_BIOGRAPHY_AI_WRITE` is on, cooks can **Write with AI** / **Improve with AI**
    (spinner while generating): the suggestion opens a **side-by-side review** (textarea hidden while reviewing); **Accept** fills the
    biography field so the cook can edit further before Save; **Discard** leaves the form unchanged. When the toggle is off, the button is

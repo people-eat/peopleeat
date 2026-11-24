@@ -345,6 +345,7 @@
             "subtitle": "Wir prüfen euren Wunschtermin und stimmen das Menü mit euch ab.",
             "subtitleVenue": "Euer Abend bei {venue}. Wir prüfen euren Wunschtermin und stimmen das Menü mit euch ab.",
             "wishes": "Wünsche & Allergien",
+            "wishesOptional": "Wünsche & Allergien (optional)",
             "wishesPlaceholder": "Ernährung, Allergien oder ein besonderer Anlass",
             "contactDetails": "Deine Kontaktdaten",
             "send": "Buchungsanfrage senden",

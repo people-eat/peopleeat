@@ -143,9 +143,9 @@ function bookingRequestPlanCuisinePreference(key: BookingRequestPlanCuisineKey, 
     return bookingRequestPlanCuisineLabel(key, locale);
 }
 
-function bookingRequestPlanCreateMessage(values: BookingRequestPlanValues, locale: Locale): string | null {
+function bookingRequestPlanCreateMessage(values: BookingRequestPlanValues, locale: Locale, allowEmptyMessage: boolean): string | null {
     const notes = values.originalMessage.trim();
-    if (notes.length === 0) return null;
+    if (notes.length === 0) return allowEmptyMessage ? '' : null;
     const cuisine = bookingRequestPlanCuisineLabel(values.cuisine, locale);
     return t(locale, 'publicBooking', 'plan.createMessage', { cuisine, notes });
 }
@@ -153,12 +153,13 @@ function bookingRequestPlanCreateMessage(values: BookingRequestPlanValues, local
 export function bookingRequestPlanCreateInputFromValues(
     values: BookingRequestPlanValues,
     locale: Locale,
-    options?: { includePriceClassType?: boolean },
+    options?: { includePriceClassType?: boolean; allowEmptyMessage?: boolean },
 ): GqlCUserBookingRequestCreate | null {
     if (!values.exactEventAddress) return null;
     if (values.adultCount < 1) return null;
-    const originalMessage = bookingRequestPlanCreateMessage(values, locale);
-    if (!originalMessage) return null;
+    const allowEmptyMessage = options?.allowEmptyMessage === true;
+    const originalMessage = bookingRequestPlanCreateMessage(values, locale, allowEmptyMessage);
+    if (originalMessage == null) return null;
     const occasion = values.occasion.trim() || t(locale, 'publicBooking', 'plan.defaultOccasion');
     const includePriceClassType = options?.includePriceClassType !== false;
     return {

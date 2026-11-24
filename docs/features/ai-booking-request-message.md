@@ -6,7 +6,8 @@ strip phone / email / street address, light polish, keep personality. Cooks alwa
 ## Behavior
 
 1. After user or admin create, if `AI_BOOKING_REQUEST_MESSAGE` is enabled for the customer and `originalMessage` is non-empty, the server
-   enqueues `booking-request-adjusted-message-generate`.
+   enqueues `booking-request-adjusted-message-generate`. Empty `originalMessage` (allowed when `BOOKING_REQUEST_OPTIONAL_MESSAGE` is on)
+   never enqueues.
 2. The job runs a one-shot LLM rewrite, writes `BookingRequests.adjustedMessage`, records `AiGenerations`
    (`BOOKING_REQUEST_ADJUSTED_MESSAGE`), and publishes `adminUpdates` plus `userUpdates` for cooks already on the request.
 3. Create never waits on the model. Failure leaves `adjustedMessage` null so cooks keep seeing `originalMessage`.

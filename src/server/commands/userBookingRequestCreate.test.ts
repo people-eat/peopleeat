@@ -347,4 +347,48 @@ describe('userBookingRequestCreate', () => {
             ),
         ).rejects.toThrow(/bookingRequestMarketClosed:netherlands/);
     });
+
+    it('rejects an empty originalMessage when BOOKING_REQUEST_OPTIONAL_MESSAGE is off', async () => {
+        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({
+            phoneNumber: phoneNumberCreate(),
+            birthDate: '1990-05-01',
+            preferredCommunication: 'WHATS_APP',
+        });
+
+        await expect(
+            userBookingRequestCreate(
+                userMutationParent(user.userId),
+                { input: { ...sampleCreateInput, originalMessage: '   ' } },
+                requestingSession,
+                serverRuntime,
+            ),
+        ).rejects.toThrow(/userBookingRequestCreate: originalMessage must not be empty/);
+    });
+
+    it('allows an empty originalMessage when BOOKING_REQUEST_OPTIONAL_MESSAGE is on', async () => {
+        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({
+            phoneNumber: phoneNumberCreate(),
+            birthDate: '1990-05-01',
+            preferredCommunication: 'WHATS_APP',
+        });
+        await testDb
+            .insert(featureToggles)
+            .values({ featureToggleKey: 'BOOKING_REQUEST_OPTIONAL_MESSAGE', enabled: true })
+            .onConflictDoUpdate({
+                target: featureToggles.featureToggleKey,
+                set: { enabled: true },
+            });
+
+        const result = await userBookingRequestCreate(
+            userMutationParent(user.userId),
+            { input: { ...sampleCreateInput, originalMessage: '' } },
+            requestingSession,
+            serverRuntime,
+        );
+
+        expect(result.success).toBe(true);
+        const [row] = await testDb.select().from(bookingRequests).where(eq(bookingRequests.bookingRequestId, result.referenceId!));
+        expect(row?.originalMessage).toBe('');
+        expect(row?.adjustedMessage).toBeNull();
+    });
 });

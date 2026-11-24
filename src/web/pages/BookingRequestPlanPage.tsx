@@ -366,6 +366,7 @@ export function BookingRequestPlanPage({
         session.activeFeatureToggleKeys,
         'BOOKING_REQUEST_EXPECTED_MENU_PRICE_RANGE',
     );
+    const optionalMessageEnabled = featureToggleIsActive(session.activeFeatureToggleKeys, 'BOOKING_REQUEST_OPTIONAL_MESSAGE');
     const [step, setStep] = useState<BookingRequestPlanStep>(() => (search.step === 'contact' ? 'contact' : 'details'));
     const [detailsEditorOpen, setDetailsEditorOpen] = useState(false);
     const isMobile = useIsMobile();
@@ -514,12 +515,13 @@ export function BookingRequestPlanPage({
             toast.error(tBooking('marketClosed.toast', { comingTo: marketComingTo(closedMarket, locale) }));
             return;
         }
-        if (values.originalMessage.trim().length === 0) {
+        if (!optionalMessageEnabled && values.originalMessage.trim().length === 0) {
             toast.error(tBooking('plan.contact.messageRequired'));
             return;
         }
         const input = bookingRequestPlanCreateInputFromValues(values, locale, {
             includePriceClassType: !expectedMenuPriceRangeEnabled,
+            allowEmptyMessage: optionalMessageEnabled,
         });
         if (!input) {
             toast.error(tBooking('requiredFields'));
@@ -1279,9 +1281,13 @@ export function BookingRequestPlanPage({
                                     <form.Field name="originalMessage">
                                         {(field) => (
                                             <label className="grid gap-1.5 text-sm">
-                                                <span className="font-medium">{tBooking('plan.contact.wishes')}</span>
+                                                <span className="font-medium">
+                                                    {optionalMessageEnabled
+                                                        ? tBooking('plan.contact.wishesOptional')
+                                                        : tBooking('plan.contact.wishes')}
+                                                </span>
                                                 <Textarea
-                                                    required
+                                                    required={!optionalMessageEnabled}
                                                     rows={4}
                                                     value={field.state.value}
                                                     onChange={(event) => field.handleChange(event.target.value)}
@@ -1316,7 +1322,11 @@ export function BookingRequestPlanPage({
                                                             type="button"
                                                             size="lg"
                                                             className="w-full"
-                                                            disabled={busy || authBusy || values.originalMessage.trim().length === 0}
+                                                            disabled={
+                                                                busy ||
+                                                                authBusy ||
+                                                                (!optionalMessageEnabled && values.originalMessage.trim().length === 0)
+                                                            }
                                                             onClick={() => void submitBooking()}
                                                         >
                                                             {busy ? tBooking('plan.contact.sending') : tBooking('plan.contact.send')}
@@ -1335,7 +1345,11 @@ export function BookingRequestPlanPage({
                                                 type="button"
                                                 size="lg"
                                                 className="w-full"
-                                                disabled={busy || authBusy || values.originalMessage.trim().length === 0}
+                                                disabled={
+                                                    busy ||
+                                                    authBusy ||
+                                                    (!optionalMessageEnabled && values.originalMessage.trim().length === 0)
+                                                }
                                                 onClick={() => void submitBooking()}
                                             >
                                                 {tBooking('plan.contact.send')}
