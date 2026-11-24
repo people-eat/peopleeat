@@ -10,6 +10,7 @@ export type AdminOverviewLineChartSeries = {
     dataKey: string;
     label: string;
     color: string;
+    dashed?: boolean;
 };
 
 export type AdminOverviewLineChartPoint = {
@@ -68,9 +69,10 @@ export function AdminOverviewLineChart({
                                 type="monotone"
                                 dataKey={entry.dataKey}
                                 stroke={`var(--color-${entry.dataKey})`}
-                                strokeWidth={2}
+                                strokeWidth={entry.dashed ? 1.5 : 2}
+                                strokeDasharray={entry.dashed ? '4 4' : undefined}
                                 dot={false}
-                                activeDot={{ r: 3 }}
+                                activeDot={entry.dashed ? false : { r: 3 }}
                             />
                         ))}
                     </LineChart>

@@ -1,12 +1,16 @@
 import { Link } from '@tanstack/react-router';
 import { ChevronRightIcon } from 'lucide-react';
 
+import { Button } from '../../components/base/button';
 import { Card, CardContent } from '../../components/base/card';
 import { useLocale } from '../../hooks/useLocale';
 import { cn } from '../../utils/cn';
-import { adminOverviewLinkCardChevronClassName, adminOverviewLinkCardClassName } from './adminOverviewLinkCard';
+import { adminOverviewLinkCardChevronClassName } from './adminOverviewLinkCard';
 
 const labelClassName = 'min-w-0 hyphens-auto break-words text-xs font-medium tracking-wide text-muted-foreground uppercase';
+const valueClassName = 'font-serif text-3xl/tight font-normal tabular-nums text-foreground';
+const interactiveCardClassName =
+    'group relative h-auto min-h-9 w-full flex-col items-start justify-start gap-1 rounded-xl p-4 text-left whitespace-normal shadow-sm';
 
 /**
  * When `to` is set the card is a list deep-link. Typed `Link` wrappers lose
@@ -20,6 +24,8 @@ export function AdminOverviewStatCard({
     to,
     search,
     attention = false,
+    pressed,
+    onClick,
 }: {
     label: string;
     value: number;
@@ -28,26 +34,43 @@ export function AdminOverviewStatCard({
     to?: string;
     search?: Record<string, unknown>;
     attention?: boolean;
+    pressed?: boolean;
+    onClick?: () => void;
 }) {
     const locale = useLocale();
     const shown = displayValue ?? String(value);
     const ariaLabel = `${label}, ${shown}`;
     const attentionClassName = attention ? 'border-yellow-400/70 bg-yellow-50/50' : undefined;
 
+    if (onClick) {
+        return (
+            <Button
+                type="button"
+                variant={pressed ? 'secondary' : 'outline'}
+                aria-label={ariaLabel}
+                aria-pressed={pressed}
+                onClick={onClick}
+                className={cn(interactiveCardClassName, attentionClassName)}
+            >
+                <span lang={locale} className={labelClassName}>
+                    {label}
+                </span>
+                <span className={valueClassName}>{shown}</span>
+            </Button>
+        );
+    }
+
     if (to != null) {
         return (
-            <Link
-                to={to}
-                search={search}
-                aria-label={ariaLabel}
-                className={adminOverviewLinkCardClassName(cn('relative grid min-w-0 gap-1 p-4', attentionClassName))}
-            >
-                <dt lang={locale} className={cn(labelClassName, 'pr-5')}>
-                    {label}
-                </dt>
-                <dd className="font-serif text-3xl/tight tabular-nums text-foreground">{shown}</dd>
-                <ChevronRightIcon className={`absolute top-4 right-3 ${adminOverviewLinkCardChevronClassName}`} aria-hidden />
-            </Link>
+            <Button asChild variant="outline" className={cn(interactiveCardClassName, attentionClassName)}>
+                <Link to={to} search={search} aria-label={ariaLabel}>
+                    <span lang={locale} className={cn(labelClassName, 'pr-5')}>
+                        {label}
+                    </span>
+                    <span className={valueClassName}>{shown}</span>
+                    <ChevronRightIcon className={`absolute top-4 right-3 ${adminOverviewLinkCardChevronClassName}`} aria-hidden />
+                </Link>
+            </Button>
         );
     }
 
@@ -57,7 +80,7 @@ export function AdminOverviewStatCard({
                 <dt lang={locale} className={labelClassName}>
                     {label}
                 </dt>
-                <dd className="font-serif text-3xl/tight tabular-nums text-foreground">{shown}</dd>
+                <dd className={valueClassName}>{shown}</dd>
             </CardContent>
         </Card>
     );

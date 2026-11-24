@@ -361,6 +361,7 @@ import { adminUserUpcomingBirthdaysFindMany } from '../queries/adminUserUpcoming
 import { adminWebPageFindMany } from '../queries/adminWebPageFindMany';
 import { adminWebPageFindOne } from '../queries/adminWebPageFindOne';
 import { adminWebPageVisitCountFindMany } from '../queries/adminWebPageVisitCountFindMany';
+import { adminWebPageVisitEntitySearch } from '../queries/adminWebPageVisitEntitySearch';
 import { adminWebPageVisitTrafficFindOne } from '../queries/adminWebPageVisitTrafficFindOne';
 import { adminWhatsAppConversationFindMany } from '../queries/adminWhatsAppConversationFindMany';
 import { adminWhatsAppConversationFindManyCounts } from '../queries/adminWhatsAppConversationFindManyCounts';
@@ -676,6 +677,7 @@ import type {
     GqlSAdminUsersArgs,
     GqlSAdminWebPageArgs,
     GqlSAdminWebPageVisitCountsArgs,
+    GqlSAdminWebPageVisitEntitySearchArgs,
     GqlSAdminWebPageVisitTrafficArgs,
     GqlSAdminWhatsAppConversation,
     GqlSAdminWhatsAppConversationArgs,
@@ -1301,6 +1303,18 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
                         metric: args.metric ?? 'PAGEVIEWS',
                         scope: args.scope ?? 'ALL',
                         entity: args.entity ?? null,
+                    },
+                    requestingSession,
+                    serverRuntime,
+                );
+            },
+            webPageVisitEntitySearch(_parent: GqlSAdmin, args: GqlSAdminWebPageVisitEntitySearchArgs, requestingSession: GqlSSession) {
+                return adminWebPageVisitEntitySearch(
+                    {
+                        webPageKey: args.webPageKey,
+                        query: args.query,
+                        range: args.range,
+                        audience: args.audience ?? 'HUMAN',
                     },
                     requestingSession,
                     serverRuntime,

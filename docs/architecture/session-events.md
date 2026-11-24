@@ -133,7 +133,8 @@ Admin descriptions mark these with “(Legacy)” / “(legacy)”.
    via `Admin.sessionEventWebPageVisitCreations`; filterable visit explorer via `Admin.webPageVisitTraffic` / `Admin.webPageVisitCounts`
    ([admin-traffic.md](../features/admin-traffic.md)). Detail visits for chefs, cities, venues, occasions, and blog posts store a stable
    entity id (slug resolved on write). Historical `PARTNERS` keys and `params.partnerId` / `params.venueId` map onto `VENUES` /
-   `partnerVenueId`. A one-shot job backfills historical rows from stored `path`.
+   `partnerVenueId`. Traffic can overlay up to 8 entities of the same catalog (`Admin.webPageVisitEntitySearch` adds ids outside the top
+   20). A one-shot job backfills historical rows from stored `path`.
 
 ## Key files
 
@@ -145,7 +146,8 @@ Admin descriptions mark these with “(Legacy)” / “(legacy)”.
 - Commands: `sessionWebPageVisitCreate`, `sessionWebPageInteractionCreate`, auth / user-create / legal / booking lifecycle emitters
 - Queries: `adminSessionEventFindMany`, `adminSessionEventCounts`, `adminAnalyticsBookingRequestFormFlow`, `adminAnalyticsGiftCardFlow`,
   `adminAnalyticsChefSignUpFlow`, `adminAnalyticsBookingRequestCheckoutFlow`, `adminAnalyticsCookBookingRequestOfferFlow`,
-  `adminSessionEventWebPageVisitCreationsFindMany`, `adminWebPageVisitTrafficFindOne`, `adminWebPageVisitCountFindMany`,
-  `cookAnalyticsFind`, `sessionLastVisitedCookProfilesFindMany`, `adminBookingRequestCreatingSessionFindOne`
+  `adminSessionEventWebPageVisitCreationsFindMany`, `adminWebPageVisitTrafficFindOne`, `adminWebPageVisitEntitySearch`,
+  `adminWebPageVisitCountFindMany`, `cookAnalyticsFind`, `sessionLastVisitedCookProfilesFindMany`,
+  `adminBookingRequestCreatingSessionFindOne`
 - Feature UI: [admin-analytics.md](../features/admin-analytics.md), [admin-traffic.md](../features/admin-traffic.md),
   [cook-analytics.md](../features/cook-analytics.md)

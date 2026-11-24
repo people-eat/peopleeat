@@ -1,7 +1,3 @@
-/** Internal type. DO NOT USE DIRECTLY. */
-type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
-/** Internal type. DO NOT USE DIRECTLY. */
-export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
 import type * as Schema from './generated';
 
 import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
@@ -129,6 +125,7 @@ export interface GqlCAdmin {
     users: Array<GqlCAdminUser>;
     webPage: GqlCAdminWebPage;
     webPageVisitCounts: Array<GqlCAdminWebPageVisitCount>;
+    webPageVisitEntitySearch: Array<GqlCAdminWebPageVisitEntityRank>;
     webPageVisitTraffic: GqlCAdminWebPageVisitTraffic;
     webPages: Array<GqlCAdminWebPage>;
     whatsAppConversation?: Maybe<GqlCAdminWhatsAppConversation>;
@@ -504,6 +501,13 @@ export type GqlCAdminWebPageArgs = {
 export type GqlCAdminWebPageVisitCountsArgs = {
     audience?: GqlCAdminWebPageVisitAudience;
     range: GqlCDateTimeRange;
+};
+
+export type GqlCAdminWebPageVisitEntitySearchArgs = {
+    audience?: GqlCAdminWebPageVisitAudience;
+    query: Scalars['String']['input'];
+    range: GqlCDateTimeRange;
+    webPageKey: GqlCWebPageKey;
 };
 
 export type GqlCAdminWebPageVisitTrafficArgs = {
@@ -2589,11 +2593,11 @@ export interface GqlCAdminWebPageVisitCount {
 }
 
 export type GqlCAdminWebPageVisitEntity = {
-    blogPostId?: InputMaybe<Scalars['ID']['input']>;
-    cityId?: InputMaybe<Scalars['ID']['input']>;
-    cookId?: InputMaybe<Scalars['ID']['input']>;
-    occasionId?: InputMaybe<Scalars['ID']['input']>;
-    partnerVenueId?: InputMaybe<Scalars['ID']['input']>;
+    blogPostIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+    cityIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+    cookIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+    occasionIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+    partnerVenueIds?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
 
 export interface GqlCAdminWebPageVisitEntityRank {
@@ -2602,6 +2606,8 @@ export interface GqlCAdminWebPageVisitEntityRank {
     label: Scalars['String']['output'];
     pageviews: Scalars['Int']['output'];
     pathName?: Maybe<Scalars['String']['output']>;
+    previousPageviews: Scalars['Int']['output'];
+    previousUniqueSessions: Scalars['Int']['output'];
     uniqueSessions: Scalars['Int']['output'];
 }
 
@@ -2610,6 +2616,8 @@ export type GqlCAdminWebPageVisitMetric = 'PAGEVIEWS' | 'UNIQUE_SESSIONS';
 export interface GqlCAdminWebPageVisitRank {
     __typename?: 'AdminWebPageVisitRank';
     pageviews: Scalars['Int']['output'];
+    previousPageviews: Scalars['Int']['output'];
+    previousUniqueSessions: Scalars['Int']['output'];
     uniqueSessions: Scalars['Int']['output'];
     webPageKey: GqlCWebPageKey;
 }
@@ -2619,7 +2627,12 @@ export type GqlCAdminWebPageVisitScope = 'ALL' | 'DETAIL' | 'INDEX';
 export interface GqlCAdminWebPageVisitSeries {
     __typename?: 'AdminWebPageVisitSeries';
     buckets: Array<GqlCAdminTimeBucket>;
+    entityId?: Maybe<Scalars['ID']['output']>;
+    label: Scalars['String']['output'];
     pageviews: Scalars['Int']['output'];
+    previousBuckets: Array<GqlCAdminTimeBucket>;
+    previousPageviews: Scalars['Int']['output'];
+    previousUniqueSessions: Scalars['Int']['output'];
     uniqueSessions: Scalars['Int']['output'];
     webPageKey?: Maybe<GqlCWebPageKey>;
 }
@@ -2630,6 +2643,8 @@ export interface GqlCAdminWebPageVisitTraffic {
     entityVisitCount: Scalars['Int']['output'];
     pageRanks: Array<GqlCAdminWebPageVisitRank>;
     pageviews: Scalars['Int']['output'];
+    previousPageviews: Scalars['Int']['output'];
+    previousUniqueSessions: Scalars['Int']['output'];
     series: Array<GqlCAdminWebPageVisitSeries>;
     uniqueSessions: Scalars['Int']['output'];
     untaggedDetailVisitCount: Scalars['Int']['output'];
@@ -6065,6 +6080,10 @@ export type GqlCWebPageKey =
     | 'TERMS_AND_CONDITIONS'
     | 'VENUES';
 
+/** Internal type. DO NOT USE DIRECTLY. */
+type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
+/** Internal type. DO NOT USE DIRECTLY. */
+export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
 type GqlCChatMessagePartFields_ChatMessageDataPart_Fragment = {
     __typename: 'ChatMessageDataPart';
     partId: string;
@@ -17561,17 +17580,62 @@ export type GqlCAdminTrafficPageQuery = {
                 webPageVisitTraffic: {
                     pageviews: number;
                     uniqueSessions: number;
+                    previousPageviews: number;
+                    previousUniqueSessions: number;
                     entityVisitCount: number;
                     untaggedDetailVisitCount: number;
                     series: Array<{
                         webPageKey: Schema.GqlCWebPageKey | null;
+                        entityId: string | null;
+                        label: string;
                         pageviews: number;
                         uniqueSessions: number;
+                        previousPageviews: number;
+                        previousUniqueSessions: number;
                         buckets: Array<{ bucketStart: string; count: number }>;
+                        previousBuckets: Array<{ bucketStart: string; count: number }>;
                     }>;
-                    pageRanks: Array<{ webPageKey: Schema.GqlCWebPageKey; pageviews: number; uniqueSessions: number }>;
-                    entityRanks: Array<{ id: string; label: string; pathName: string | null; pageviews: number; uniqueSessions: number }>;
+                    pageRanks: Array<{
+                        webPageKey: Schema.GqlCWebPageKey;
+                        pageviews: number;
+                        uniqueSessions: number;
+                        previousPageviews: number;
+                        previousUniqueSessions: number;
+                    }>;
+                    entityRanks: Array<{
+                        id: string;
+                        label: string;
+                        pathName: string | null;
+                        pageviews: number;
+                        uniqueSessions: number;
+                        previousPageviews: number;
+                        previousUniqueSessions: number;
+                    }>;
                 };
+            } | null;
+        } | null;
+    };
+};
+
+export type GqlCAdminTrafficEntitySearchQueryVariables = Exact<{
+    webPageKey: Schema.GqlCWebPageKey;
+    query: string;
+    range: Schema.GqlCDateTimeRange;
+    audience: Schema.GqlCAdminWebPageVisitAudience;
+}>;
+
+export type GqlCAdminTrafficEntitySearchQuery = {
+    currentSession: {
+        user: {
+            admin: {
+                adminId: string;
+                webPageVisitEntitySearch: Array<{
+                    id: string;
+                    label: string;
+                    pathName: string | null;
+                    pageviews: number;
+                    uniqueSessions: number;
+                }>;
             } | null;
         } | null;
     };
@@ -73358,6 +73422,11 @@ export const AdminTrafficPageDocument = {
                                                                 selections: [
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'pageviews' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'uniqueSessions' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'previousPageviews' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'previousUniqueSessions' },
+                                                                    },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'entityVisitCount' } },
                                                                     {
                                                                         kind: 'Field',
@@ -73375,6 +73444,11 @@ export const AdminTrafficPageDocument = {
                                                                                 },
                                                                                 {
                                                                                     kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'entityId' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                                                                                {
+                                                                                    kind: 'Field',
                                                                                     name: { kind: 'Name', value: 'pageviews' },
                                                                                 },
                                                                                 {
@@ -73383,7 +73457,35 @@ export const AdminTrafficPageDocument = {
                                                                                 },
                                                                                 {
                                                                                     kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'previousPageviews' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'previousUniqueSessions' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
                                                                                     name: { kind: 'Name', value: 'buckets' },
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: {
+                                                                                                    kind: 'Name',
+                                                                                                    value: 'bucketStart',
+                                                                                                },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'count' },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'previousBuckets' },
                                                                                     selectionSet: {
                                                                                         kind: 'SelectionSet',
                                                                                         selections: [
@@ -73422,6 +73524,14 @@ export const AdminTrafficPageDocument = {
                                                                                     kind: 'Field',
                                                                                     name: { kind: 'Name', value: 'uniqueSessions' },
                                                                                 },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'previousPageviews' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'previousUniqueSessions' },
+                                                                                },
                                                                             ],
                                                                         },
                                                                     },
@@ -73445,6 +73555,14 @@ export const AdminTrafficPageDocument = {
                                                                                     kind: 'Field',
                                                                                     name: { kind: 'Name', value: 'uniqueSessions' },
                                                                                 },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'previousPageviews' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'previousUniqueSessions' },
+                                                                                },
                                                                             ],
                                                                         },
                                                                     },
@@ -73465,6 +73583,110 @@ export const AdminTrafficPageDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminTrafficPageQuery, GqlCAdminTrafficPageQueryVariables>;
+export const AdminTrafficEntitySearchDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'AdminTrafficEntitySearch' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'webPageKey' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'WebPageKey' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'query' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'DateTimeRange' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'audience' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminWebPageVisitAudience' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'user' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'admin' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'adminId' } },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'webPageVisitEntitySearch' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'webPageKey' },
+                                                                    value: {
+                                                                        kind: 'Variable',
+                                                                        name: { kind: 'Name', value: 'webPageKey' },
+                                                                    },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'query' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'query' } },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'range' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'audience' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'audience' } },
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'pageviews' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'uniqueSessions' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminTrafficEntitySearchQuery, GqlCAdminTrafficEntitySearchQueryVariables>;
 export const AdminUserCookProfileEditPageDocument = {
     kind: 'Document',
     definitions: [

@@ -33,8 +33,7 @@ const webPageKeysSeoOnly = ['PROFILE', 'ADMINISTRATION'] as const satisfies read
 
 const webPageKeysSeoOnlySet = new Set<string>(webPageKeysSeoOnly);
 
-export const webPageKeysTracked = webPageKeys.filter((key) => !webPageKeysSeoOnlySet.has(key));
-export type WebPageKeyTracked = (typeof webPageKeysTracked)[number];
+export type WebPageKeyTracked = Exclude<WebPageKey, (typeof webPageKeysSeoOnly)[number]>;
 
 const webPageKeysWithVisitEntity = ['CHEFS', 'CITIES', 'VENUES', 'OCCASIONS', 'BLOG_POSTS'] as const;
 export type WebPageKeyWithVisitEntity = (typeof webPageKeysWithVisitEntity)[number];
@@ -58,6 +57,76 @@ export const webPageVisitDetailPathPatternByKey = {
 export const WEB_PAGE_VISIT_TRAFFIC_SERIES_MAX = 8;
 export const WEB_PAGE_VISIT_ENTITY_RANK_MAX = 20;
 export const WEB_PAGE_VISIT_INDEX_RANK_ID = 'overview';
+export const WEB_PAGE_VISIT_ENTITY_SEARCH_MIN_QUERY = 2;
+
+export const webPageKeyPublicPathByKey = {
+    LANDING: '/',
+    CITIES: '/cities',
+    VENUES: '/venues',
+    OCCASIONS: '/occasions',
+    CHEFS: '/chefs',
+    BLOG_POSTS: '/blog-posts',
+    ABOUT_US: '/about-us',
+    GIFT_CARD: '/gift-cards',
+    HOW_TO_BECOME_A_CHEF: '/how-to-become-a-chef',
+    COMING_TO: '/coming-to/netherlands',
+    FOUNDING_CHEF: '/how-to-become-a-chef/netherlands',
+    BOOKING_REQUEST: '/booking-request',
+    BOOKING_REQUEST_FORM: '/booking-request/form',
+    BOOKING_REQUEST_CHAT: '/booking-request/chat',
+    CHEF_SIGN_UP: '/chef-sign-up',
+    IMPRINT: '/imprint',
+    TERMS_AND_CONDITIONS: '/terms-and-conditions',
+    PRIVACY_POLICY: '/privacy-policy',
+    SIGN_IN: '/log-on',
+} as const satisfies Record<WebPageKeyTracked, string>;
+
+const webPageVisitEntityDetailPathPrefixByKey = {
+    CHEFS: '/chefs',
+    CITIES: '/cities',
+    VENUES: '/venues',
+    OCCASIONS: '/occasions',
+    BLOG_POSTS: '/blog-posts',
+} as const satisfies Record<WebPageKeyWithVisitEntity, string>;
+
+export const webPageKeysTrafficDiscovery = [
+    'LANDING',
+    'CITIES',
+    'VENUES',
+    'OCCASIONS',
+    'CHEFS',
+    'BLOG_POSTS',
+    'ABOUT_US',
+    'HOW_TO_BECOME_A_CHEF',
+    'COMING_TO',
+    'FOUNDING_CHEF',
+] as const satisfies readonly WebPageKeyTracked[];
+
+export const webPageKeysTrafficConversion = [
+    'BOOKING_REQUEST',
+    'BOOKING_REQUEST_FORM',
+    'BOOKING_REQUEST_CHAT',
+    'GIFT_CARD',
+    'CHEF_SIGN_UP',
+] as const satisfies readonly WebPageKeyTracked[];
+
+export const webPageKeysTrafficAccount = ['SIGN_IN'] as const satisfies readonly WebPageKeyTracked[];
+
+export const webPageKeysTrafficLegal = [
+    'IMPRINT',
+    'TERMS_AND_CONDITIONS',
+    'PRIVACY_POLICY',
+] as const satisfies readonly WebPageKeyTracked[];
+
+export const webPageKeysAnalyticsFunnel = [
+    'BOOKING_REQUEST_FORM',
+    'GIFT_CARD',
+    'CHEF_SIGN_UP',
+] as const satisfies readonly WebPageKeyTracked[];
+
+export function webPageVisitEntityPublicPath(key: WebPageKeyWithVisitEntity, pathName: string): `/${string}` {
+    return `${webPageVisitEntityDetailPathPrefixByKey[key]}/${pathName}` as `/${string}`;
+}
 
 export type WebPageVisitStoredParams = {
     cityId?: string;
@@ -84,6 +153,11 @@ export function webPageKeyIsTracked(key: WebPageKey): key is WebPageKeyTracked {
 
 export function webPageKeyHasVisitEntity(key: WebPageKey): key is WebPageKeyWithVisitEntity {
     return (webPageKeysWithVisitEntity as readonly string[]).includes(key);
+}
+
+/** Cities, venues, occasions, and posts are small catalogs. Chefs stay visit top-20 plus search. */
+export function webPageKeyRanksFullCatalog(key: WebPageKeyWithVisitEntity): boolean {
+    return key !== 'CHEFS';
 }
 
 /** Historical visit rows stored `PARTNERS` before the key became `VENUES`. */

@@ -2,12 +2,22 @@ import type { Locale } from 'date-fns';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import type { ComponentProps } from 'react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
 import { cn } from '../../utils/cn';
 import { Button } from './button';
 import { Calendar } from './calendar';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
+
+function rangeIsComplete(range: DateRange | undefined): range is { from: Date; to: Date } {
+    return Boolean(range?.from && range.to);
+}
+
+function rangeEquals(a: DateRange | undefined, b: DateRange | undefined): boolean {
+    if (!a?.from && !b?.from) return a?.to?.getTime() === b?.to?.getTime();
+    if (!a?.from || !b?.from) return false;
+    return a.from.getTime() === b.from.getTime() && a.to?.getTime() === b.to?.getTime();
+}
 
 function DateRangePicker({
     value,
@@ -45,13 +55,28 @@ function DateRangePicker({
     'aria-invalid'?: boolean | 'true' | 'false';
 }) {
     const [open, setOpen] = useState(false);
-    // Draft selection while the popover is open. Parents often ignore incomplete ranges
-    // (from without to); without a draft the calendar snaps back to `value` on the first click.
     const [draft, setDraft] = useState<DateRange | undefined>(value);
+    // Latest draft for close handlers without stale closures.
+    const draftRef = useRef(draft);
+    draftRef.current = draft;
 
     function handleOpenChange(nextOpen: boolean) {
-        setDraft(value);
-        setOpen(nextOpen);
+        if (nextOpen) {
+            setDraft(value);
+            draftRef.current = value;
+            setOpen(true);
+            return;
+        }
+
+        // Commit only when the popover closes with a complete, changed range.
+        const next = draftRef.current;
+        if (rangeIsComplete(next) && !rangeEquals(next, value)) {
+            onValueChange?.(next);
+        } else {
+            setDraft(value);
+            draftRef.current = value;
+        }
+        setOpen(false);
     }
 
     const display = open ? (draft ?? value) : value;
@@ -99,13 +124,14 @@ function DateRangePicker({
             >
                 <Calendar
                     mode="range"
+                    resetOnSelect
                     defaultMonth={display?.from ?? value?.from}
                     selected={display}
                     onSelect={(range) => {
                         setDraft(range);
-                        onValueChange?.(range);
-                        if (range?.from && range.to) {
-                            setOpen(false);
+                        draftRef.current = range;
+                        if (rangeIsComplete(range)) {
+                            handleOpenChange(false);
                         }
                     }}
                     numberOfMonths={numberOfMonths}

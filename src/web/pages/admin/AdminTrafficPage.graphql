@@ -25,13 +25,23 @@ query AdminTrafficPage(
                 ) {
                     pageviews
                     uniqueSessions
+                    previousPageviews
+                    previousUniqueSessions
                     entityVisitCount
                     untaggedDetailVisitCount
                     series {
                         webPageKey
+                        entityId
+                        label
                         pageviews
                         uniqueSessions
+                        previousPageviews
+                        previousUniqueSessions
                         buckets {
+                            bucketStart
+                            count
+                        }
+                        previousBuckets {
                             bucketStart
                             count
                         }
@@ -40,6 +50,8 @@ query AdminTrafficPage(
                         webPageKey
                         pageviews
                         uniqueSessions
+                        previousPageviews
+                        previousUniqueSessions
                     }
                     entityRanks {
                         id
@@ -47,7 +59,26 @@ query AdminTrafficPage(
                         pathName
                         pageviews
                         uniqueSessions
+                        previousPageviews
+                        previousUniqueSessions
                     }
+                }
+            }
+        }
+    }
+}
+
+query AdminTrafficEntitySearch($webPageKey: WebPageKey!, $query: String!, $range: DateTimeRange!, $audience: AdminWebPageVisitAudience!) {
+    currentSession {
+        user {
+            admin {
+                adminId
+                webPageVisitEntitySearch(webPageKey: $webPageKey, query: $query, range: $range, audience: $audience) {
+                    id
+                    label
+                    pathName
+                    pageviews
+                    uniqueSessions
                 }
             }
         }

@@ -4183,26 +4183,36 @@ enum AdminWebPageVisitScope {
     DETAIL
 }
 
-# Optional drill-in for exactly one entity-capable WebPageKey.
+# Optional comparison set for exactly one entity-capable WebPageKey.
+# Lists are capped at 8 ids. `overview` is a synthetic index-page id.
 input AdminWebPageVisitEntity {
-    cookId: ID
-    cityId: ID
-    partnerVenueId: ID
-    occasionId: ID
-    blogPostId: ID
+    cookIds: [ID!]
+    cityIds: [ID!]
+    partnerVenueIds: [ID!]
+    occasionIds: [ID!]
+    blogPostIds: [ID!]
 }
 
 type AdminWebPageVisitSeries {
     webPageKey: WebPageKey
+    entityId: ID
+    label: String!
     buckets: [AdminTimeBucket!]!
+    # Same length as `buckets`; `bucketStart` matches the current window so the
+    # previous period can overlay on the same x-axis.
+    previousBuckets: [AdminTimeBucket!]!
     pageviews: Int!
     uniqueSessions: Int!
+    previousPageviews: Int!
+    previousUniqueSessions: Int!
 }
 
 type AdminWebPageVisitRank {
     webPageKey: WebPageKey!
     pageviews: Int!
     uniqueSessions: Int!
+    previousPageviews: Int!
+    previousUniqueSessions: Int!
 }
 
 type AdminWebPageVisitEntityRank {
@@ -4211,12 +4221,16 @@ type AdminWebPageVisitEntityRank {
     pathName: String
     pageviews: Int!
     uniqueSessions: Int!
+    previousPageviews: Int!
+    previousUniqueSessions: Int!
 }
 
 type AdminWebPageVisitTraffic {
     series: [AdminWebPageVisitSeries!]!
     pageviews: Int!
     uniqueSessions: Int!
+    previousPageviews: Int!
+    previousUniqueSessions: Int!
     pageRanks: [AdminWebPageVisitRank!]!
     entityRanks: [AdminWebPageVisitEntityRank!]!
     # Visits in range for the focused catalog key that already carry an entity id.
@@ -4513,6 +4527,14 @@ type Admin {
         scope: AdminWebPageVisitScope! = ALL
         entity: AdminWebPageVisitEntity
     ): AdminWebPageVisitTraffic!
+    # Name search for catalog entities to add to a Traffic comparison.
+    # `query` must be at least 2 characters. Visit counts use `range` / `audience`.
+    webPageVisitEntitySearch(
+        webPageKey: WebPageKey!
+        query: String!
+        range: DateTimeRange!
+        audience: AdminWebPageVisitAudience! = HUMAN
+    ): [AdminWebPageVisitEntityRank!]!
     # Per-key pageview totals for admin web-page cards.
     webPageVisitCounts(range: DateTimeRange!, audience: AdminWebPageVisitAudience! = HUMAN): [AdminWebPageVisitCount!]!
     # Assistant chats (any surface, any owner). Sorted by criterion (default

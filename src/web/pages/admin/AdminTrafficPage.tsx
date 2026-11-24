@@ -1,28 +1,63 @@
-import { useNavigate } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
+import { CopyIcon, MinusIcon, MoreHorizontalIcon, PlusIcon, ShareIcon, XIcon } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
+import { toast } from 'sonner';
 
 import { t } from '../../../i18n/t';
-import { formatIsoDate } from '../../../shared';
-import { WEB_PAGE_VISIT_INDEX_RANK_ID, WEB_PAGE_VISIT_TRAFFIC_SERIES_MAX, webPageKeysTracked } from '../../../shared/webPage';
+import { formatDateRange, formatIsoDate } from '../../../shared';
+import {
+    WEB_PAGE_VISIT_TRAFFIC_SERIES_MAX,
+    webPageKeysTrafficAccount,
+    webPageKeysTrafficConversion,
+    webPageKeysTrafficDiscovery,
+    webPageKeysTrafficLegal,
+} from '../../../shared/webPage';
 import type { WebPageKey } from '../../../shared/webPage';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { Button } from '../../components/base/button';
 import { DateRangePicker } from '../../components/base/date-range-picker';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../components/base/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/base/select';
+import { Switch } from '../../components/base/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/base/table';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/base/tooltip';
 import type { GqlCAdminTrafficPageQuery } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
+import { cn } from '../../utils/cn';
 import { DATE_FNS_LOCALE } from '../../utils/dateFnsLocale';
 import type { Locale } from '../../utils/locale';
 import { AdminOverviewLineChart } from './AdminOverviewLineChart';
-import type { AdminOverviewLineChartPoint } from './AdminOverviewLineChart';
+import type { AdminOverviewLineChartPoint, AdminOverviewLineChartSeries } from './AdminOverviewLineChart';
 import { AdminOverviewStatCard } from './AdminOverviewStatCard';
-import { adminTrafficPageVariables, adminTrafficSearchResolve, adminTrafficSearchToUrl } from './adminTrafficSearch';
+import { AdminTrafficEntitySearch } from './AdminTrafficEntitySearch';
+import type { AdminTrafficLink } from './adminTrafficLinks';
+import {
+    adminTrafficChangePercent,
+    adminTrafficEntityActions,
+    adminTrafficPageKeyActions,
+    adminTrafficViewsPerSession,
+} from './adminTrafficLinks';
+import {
+    adminTrafficClearCompare,
+    adminTrafficPageVariables,
+    adminTrafficPreviousRange,
+    adminTrafficRangeLastDays,
+    adminTrafficSearchResolve,
+    adminTrafficSearchToUrl,
+    adminTrafficToggleCompareId,
+} from './adminTrafficSearch';
 import type { AdminTrafficSearch } from './adminTrafficSearch';
 import { adminWebPageLabel } from './adminWebPages';
 
 const CHART_COLORS = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)'] as const;
+
+const CHIP_GROUPS = [
+    { id: 'discovery', keys: webPageKeysTrafficDiscovery, labelKey: 'traffic.groupDiscovery' },
+    { id: 'conversion', keys: webPageKeysTrafficConversion, labelKey: 'traffic.groupConversion' },
+    { id: 'account', keys: webPageKeysTrafficAccount, labelKey: 'traffic.groupAccount' },
+    { id: 'legal', keys: webPageKeysTrafficLegal, labelKey: 'traffic.groupLegal' },
+] as const;
 
 export function adminTrafficPageTitle(locale: Locale): string {
     return t(locale, 'admin', 'nav.traffic.title');
@@ -32,6 +67,72 @@ export function adminTrafficPageDescription(locale: Locale): string {
 }
 
 export { adminTrafficPageVariables };
+
+function seriesDataKey(item: { webPageKey?: WebPageKey | null; entityId?: string | null }): string {
+    return item.entityId ?? item.webPageKey ?? 'all';
+}
+
+function TrafficRowMenu({ links }: { links: AdminTrafficLink[] }) {
+    const locale = useLocale();
+    if (links.length === 0) return null;
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button type="button" variant="ghost" size="icon" aria-label={t(locale, 'admin', 'copy.moreActions')}>
+                    <MoreHorizontalIcon className="size-4" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                {links.map((link) => {
+                    if (link.href) {
+                        return (
+                            <DropdownMenuItem key={link.label} asChild>
+                                <a href={link.href} target="_blank" rel="noreferrer">
+                                    {link.label}
+                                </a>
+                            </DropdownMenuItem>
+                        );
+                    }
+                    if (link.to) {
+                        return (
+                            <DropdownMenuItem key={link.label} asChild>
+                                <Link to={link.to as never} params={link.params as never} search={link.search as never}>
+                                    {link.label}
+                                </Link>
+                            </DropdownMenuItem>
+                        );
+                    }
+                    return null;
+                })}
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+}
+
+function TrafficCompareToggle({ selected, disabled, onToggle }: { selected: boolean; disabled: boolean; onToggle: () => void }) {
+    const locale = useLocale();
+    const label = selected ? t(locale, 'admin', 'traffic.removeFromChart') : t(locale, 'admin', 'traffic.addToChart');
+    return (
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <span className="inline-flex">
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        aria-label={label}
+                        aria-pressed={selected}
+                        disabled={disabled}
+                        onClick={onToggle}
+                    >
+                        {selected ? <MinusIcon className="size-4" /> : <PlusIcon className="size-4" />}
+                    </Button>
+                </span>
+            </TooltipTrigger>
+            <TooltipContent>{label}</TooltipContent>
+        </Tooltip>
+    );
+}
 
 export function AdminTrafficPage({ data, search }: { data: GqlCAdminTrafficPageQuery; search: AdminTrafficSearch }) {
     const locale = useLocale();
@@ -57,29 +158,45 @@ export function AdminTrafficPage({ data, search }: { data: GqlCAdminTrafficPageQ
     }
 
     function toggleKey(key: WebPageKey) {
-        const selected = resolved.keys.includes(key)
+        const already = resolved.keys.includes(key);
+        const selected = already
             ? resolved.keys.filter((item) => item !== key)
             : [...resolved.keys, key].slice(0, WEB_PAGE_VISIT_TRAFFIC_SERIES_MAX);
+        const turningSecondSeries = !already && resolved.keys.length === 1 && selected.length === 2;
         updateSearch({
             keys: selected,
-            cookId: undefined,
-            cityId: undefined,
-            partnerVenueId: undefined,
-            occasionId: undefined,
-            blogPostId: undefined,
+            ...adminTrafficClearCompare(),
+            ...(turningSecondSeries ? { previous: false } : {}),
         });
     }
 
     const series = traffic?.series ?? [];
-    const chartSeries = series.map((item, index) => ({
-        dataKey: item.webPageKey ?? 'all',
-        label: item.webPageKey ? adminWebPageLabel(item.webPageKey, locale) : t(locale, 'admin', 'traffic.allPages'),
-        color: CHART_COLORS[index % CHART_COLORS.length]!,
-    }));
+    const comparing = resolved.compareIds.length > 0;
+    const priorRange = adminTrafficPreviousRange(resolved.from, resolved.to);
+    const priorRangeLabel = formatDateRange(priorRange.from, priorRange.to, { locale, timeZone, dateStyle: 'short' });
+    const chartSeries: AdminOverviewLineChartSeries[] = series.flatMap((item, index) => {
+        const color = CHART_COLORS[index % CHART_COLORS.length]!;
+        const dataKey = seriesDataKey(item);
+        const current: AdminOverviewLineChartSeries = {
+            dataKey,
+            label: item.label,
+            color,
+        };
+        if (!resolved.previous) return [current];
+        const previous: AdminOverviewLineChartSeries = {
+            dataKey: `${dataKey}__prev`,
+            label: `${item.label} (${priorRangeLabel})`,
+            color,
+            dashed: true,
+        };
+        return [current, previous];
+    });
     const chartData: AdminOverviewLineChartPoint[] = (series[0]?.buckets ?? []).map((bucket, index) => {
         const row: AdminOverviewLineChartPoint = { bucketStart: bucket.bucketStart };
         for (const item of series) {
-            row[item.webPageKey ?? 'all'] = item.buckets[index]?.count ?? 0;
+            const dataKey = seriesDataKey(item);
+            row[dataKey] = item.buckets[index]?.count ?? 0;
+            row[`${dataKey}__prev`] = item.previousBuckets[index]?.count ?? 0;
         }
         return row;
     });
@@ -88,27 +205,62 @@ export function AdminTrafficPage({ data, search }: { data: GqlCAdminTrafficPageQ
     const uniqueSessions = traffic?.uniqueSessions ?? 0;
     const pageRanks = traffic?.pageRanks ?? [];
     const entityRanks = traffic?.entityRanks ?? [];
-    const selectedEntityId = resolved.cookId ?? resolved.cityId ?? resolved.partnerVenueId ?? resolved.occasionId ?? resolved.blogPostId;
-    const overviewSelected = Boolean(resolved.focusedKey) && resolved.scope === 'INDEX' && !selectedEntityId;
     const showEntityPending = Boolean(resolved.focusedKey) && (traffic?.untaggedDetailVisitCount ?? 0) > 0;
     const showPageRanks = !resolved.focusedKey;
+    const metricValue = (row: { pageviews: number; uniqueSessions: number }) =>
+        resolved.metric === 'UNIQUE_SESSIONS' ? row.uniqueSessions : row.pageviews;
+
+    async function copyLink() {
+        try {
+            await navigator.clipboard.writeText(window.location.href);
+            toast.success(t(locale, 'admin', 'copy.copiedToClipboard'));
+        } catch {
+            toast.error(t(locale, 'admin', 'copy.couldNotCopyToClipboard'));
+        }
+    }
 
     return (
         <AdminPathPageChrome>
             <main id="main-content" className="grid w-full content-start gap-8">
-                <div className="flex flex-wrap items-end justify-between gap-4">
-                    <div className="grid gap-2">
+                <div className="grid gap-4">
+                    <div className="flex items-center justify-between gap-3">
                         <h1 className="font-serif text-4xl/tight text-foreground">{adminTrafficPageTitle(locale)}</h1>
-                        <p className="text-muted-foreground">{adminTrafficPageDescription(locale)}</p>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button type="button" variant="ghost" size="icon" aria-label={t(locale, 'admin', 'traffic.share')}>
+                                    <ShareIcon className="size-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onSelect={() => void copyLink()}>
+                                    <CopyIcon />
+                                    {t(locale, 'admin', 'traffic.copyLink')}
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
-                    <DateRangePicker
-                        value={pickerValue}
-                        onValueChange={onRangeChange}
-                        locale={DATE_FNS_LOCALE[locale]}
-                        placeholder={t(locale, 'admin', 'copy.pickADateRange')}
-                        className="w-auto"
-                        aria-label={t(locale, 'admin', 'traffic.dateRange')}
-                    />
+                    <div className="flex flex-wrap items-end justify-between gap-4">
+                        <p className="text-muted-foreground">{adminTrafficPageDescription(locale)}</p>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <Button type="button" size="xs" variant="outline" onClick={() => updateSearch(adminTrafficRangeLastDays(7))}>
+                                {t(locale, 'admin', 'traffic.last7Days')}
+                            </Button>
+                            <Button type="button" size="xs" variant="outline" onClick={() => updateSearch(adminTrafficRangeLastDays(30))}>
+                                {t(locale, 'admin', 'traffic.last30Days')}
+                            </Button>
+                            <Button type="button" size="xs" variant="outline" onClick={() => updateSearch(adminTrafficRangeLastDays(90))}>
+                                {t(locale, 'admin', 'traffic.last90Days')}
+                            </Button>
+                            <DateRangePicker
+                                value={pickerValue}
+                                onValueChange={onRangeChange}
+                                locale={DATE_FNS_LOCALE[locale]}
+                                placeholder={t(locale, 'admin', 'copy.pickADateRange')}
+                                className="w-auto"
+                                aria-label={t(locale, 'admin', 'traffic.dateRange')}
+                            />
+                        </div>
+                    </div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
@@ -158,7 +310,7 @@ export function AdminTrafficPage({ data, search }: { data: GqlCAdminTrafficPageQ
                             </SelectContent>
                         </Select>
                     </label>
-                    {resolved.focusedKey ? (
+                    {resolved.focusedKey && !comparing ? (
                         <label className="flex shrink-0 items-center gap-2 text-sm">
                             <span className="text-muted-foreground">{t(locale, 'admin', 'traffic.scope')}</span>
                             <Select
@@ -178,41 +330,113 @@ export function AdminTrafficPage({ data, search }: { data: GqlCAdminTrafficPageQ
                     ) : null}
                 </div>
 
-                <div className="flex flex-wrap gap-2" role="group" aria-label={t(locale, 'admin', 'traffic.pages')}>
-                    {webPageKeysTracked.map((key) => {
-                        const selected = resolved.keys.includes(key);
-                        const disabled = !selected && resolved.keys.length >= WEB_PAGE_VISIT_TRAFFIC_SERIES_MAX;
-                        return (
-                            <Button
-                                key={key}
-                                type="button"
-                                size="xs"
-                                variant={selected ? 'default' : 'outline'}
-                                disabled={disabled}
-                                aria-pressed={selected}
-                                onClick={() => toggleKey(key)}
-                            >
-                                {adminWebPageLabel(key, locale)}
-                            </Button>
-                        );
-                    })}
+                <div className="grid gap-4">
+                    {CHIP_GROUPS.map((group) => (
+                        <div key={group.id} className="grid gap-2">
+                            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                                {t(locale, 'admin', group.labelKey)}
+                            </p>
+                            <div className="flex flex-wrap gap-2" role="group" aria-label={t(locale, 'admin', group.labelKey)}>
+                                {group.keys.map((key) => {
+                                    const selected = resolved.keys.includes(key);
+                                    const disabled = !selected && resolved.keys.length >= WEB_PAGE_VISIT_TRAFFIC_SERIES_MAX;
+                                    return (
+                                        <Button
+                                            key={key}
+                                            type="button"
+                                            size="xs"
+                                            variant={selected ? 'default' : 'outline'}
+                                            disabled={disabled}
+                                            aria-pressed={selected}
+                                            onClick={() => toggleKey(key)}
+                                        >
+                                            {adminWebPageLabel(key, locale)}
+                                        </Button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    ))}
                 </div>
 
-                <dl className="grid gap-3 sm:grid-cols-2">
-                    <AdminOverviewStatCard label={t(locale, 'admin', 'traffic.pageviews')} value={pageviews} />
-                    <AdminOverviewStatCard label={t(locale, 'admin', 'traffic.uniqueSessions')} value={uniqueSessions} />
-                </dl>
+                {comparing ? (
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        {series.map((item) => (
+                            <AdminOverviewStatCard
+                                key={seriesDataKey(item)}
+                                label={item.label}
+                                value={metricValue(item)}
+                                displayValue={`${item.pageviews} / ${item.uniqueSessions}`}
+                            />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                        <AdminOverviewStatCard
+                            label={t(locale, 'admin', 'traffic.pageviews')}
+                            value={pageviews}
+                            pressed={resolved.metric === 'PAGEVIEWS'}
+                            onClick={() => updateSearch({ metric: 'PAGEVIEWS' })}
+                        />
+                        <AdminOverviewStatCard
+                            label={t(locale, 'admin', 'traffic.uniqueSessions')}
+                            value={uniqueSessions}
+                            pressed={resolved.metric === 'UNIQUE_SESSIONS'}
+                            onClick={() => updateSearch({ metric: 'UNIQUE_SESSIONS' })}
+                        />
+                    </div>
+                )}
 
-                {pageviews === 0 ? (
+                {pageviews === 0 && !comparing ? (
                     <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'traffic.noVisits')}</p>
                 ) : (
-                    <AdminOverviewLineChart
-                        data={chartData}
-                        series={chartSeries}
-                        locale={locale}
-                        timeZone={timeZone}
-                        ariaLabel={t(locale, 'admin', 'traffic.chart')}
-                    />
+                    <div className="grid gap-3">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="flex flex-wrap gap-2">
+                                {comparing
+                                    ? series.map((item, index) => (
+                                          <Button
+                                              key={item.entityId ?? item.label}
+                                              type="button"
+                                              size="xs"
+                                              variant="outline"
+                                              className="bg-muted"
+                                              onClick={() => {
+                                                  if (!item.entityId) return;
+                                                  updateSearch(adminTrafficToggleCompareId(resolved, item.entityId));
+                                              }}
+                                          >
+                                              <span
+                                                  className="size-2 rounded-full"
+                                                  style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
+                                                  aria-hidden
+                                              />
+                                              {item.label}
+                                              <XIcon className="size-3" />
+                                          </Button>
+                                      ))
+                                    : null}
+                            </div>
+                            <label className="flex shrink-0 items-center gap-2 text-sm">
+                                <Switch
+                                    size="sm"
+                                    checked={resolved.previous}
+                                    onCheckedChange={(checked) => updateSearch({ previous: checked })}
+                                    aria-label={t(locale, 'admin', 'traffic.previousPeriod', { range: priorRangeLabel })}
+                                />
+                                <span className="text-muted-foreground">
+                                    {t(locale, 'admin', 'traffic.previousPeriod', { range: priorRangeLabel })}
+                                </span>
+                            </label>
+                        </div>
+                        <AdminOverviewLineChart
+                            data={chartData}
+                            series={chartSeries}
+                            locale={locale}
+                            timeZone={timeZone}
+                            ariaLabel={t(locale, 'admin', 'traffic.chart')}
+                        />
+                    </div>
                 )}
 
                 {showPageRanks ? (
@@ -223,29 +447,55 @@ export function AdminTrafficPage({ data, search }: { data: GqlCAdminTrafficPageQ
                             <Table aria-label={t(locale, 'admin', 'traffic.pages')}>
                                 <TableHeader>
                                     <TableRow>
+                                        <TableHead className="w-10">
+                                            <span className="sr-only">{t(locale, 'admin', 'traffic.addToChart')}</span>
+                                        </TableHead>
                                         <TableHead>{t(locale, 'admin', 'traffic.page')}</TableHead>
                                         <TableHead className="text-right">{t(locale, 'admin', 'traffic.pageviews')}</TableHead>
                                         <TableHead className="text-right">{t(locale, 'admin', 'traffic.uniqueSessions')}</TableHead>
+                                        <TableHead className="text-right">{t(locale, 'admin', 'traffic.viewsPerSession')}</TableHead>
+                                        <TableHead className="text-right">
+                                            {t(locale, 'admin', 'traffic.change', { range: priorRangeLabel })}
+                                        </TableHead>
+                                        <TableHead className="w-10">
+                                            <span className="sr-only">{t(locale, 'admin', 'copy.moreActions')}</span>
+                                        </TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {pageRanks.map((row) => {
                                         const selected = resolved.keys.includes(row.webPageKey);
                                         return (
-                                            <TableRow key={row.webPageKey}>
+                                            <TableRow
+                                                key={row.webPageKey}
+                                                data-state={selected ? 'selected' : undefined}
+                                                className={cn(selected && 'bg-muted/40')}
+                                            >
                                                 <TableCell>
-                                                    <Button
-                                                        type="button"
-                                                        variant="link"
-                                                        className="h-auto px-0"
-                                                        aria-pressed={selected}
-                                                        onClick={() => toggleKey(row.webPageKey)}
-                                                    >
-                                                        {adminWebPageLabel(row.webPageKey, locale)}
-                                                    </Button>
+                                                    <TrafficCompareToggle
+                                                        selected={selected}
+                                                        disabled={!selected && resolved.keys.length >= WEB_PAGE_VISIT_TRAFFIC_SERIES_MAX}
+                                                        onToggle={() => toggleKey(row.webPageKey)}
+                                                    />
                                                 </TableCell>
+                                                <TableCell>{adminWebPageLabel(row.webPageKey, locale)}</TableCell>
                                                 <TableCell className="text-right tabular-nums">{row.pageviews}</TableCell>
                                                 <TableCell className="text-right tabular-nums">{row.uniqueSessions}</TableCell>
+                                                <TableCell className="text-right tabular-nums">
+                                                    {adminTrafficViewsPerSession(row.pageviews, row.uniqueSessions)}
+                                                </TableCell>
+                                                <TableCell className="text-right tabular-nums">
+                                                    {adminTrafficChangePercent(
+                                                        metricValue(row),
+                                                        resolved.metric === 'UNIQUE_SESSIONS'
+                                                            ? row.previousUniqueSessions
+                                                            : row.previousPageviews,
+                                                        locale,
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <TrafficRowMenu links={adminTrafficPageKeyActions(locale, row.webPageKey, resolved)} />
+                                                </TableCell>
                                             </TableRow>
                                         );
                                     })}
@@ -257,7 +507,14 @@ export function AdminTrafficPage({ data, search }: { data: GqlCAdminTrafficPageQ
 
                 {resolved.focusedKey ? (
                     <section className="grid gap-3">
-                        <h2 className="font-serif text-2xl text-foreground">{adminWebPageLabel(resolved.focusedKey, locale)}</h2>
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <h2 className="font-serif text-2xl text-foreground">{adminWebPageLabel(resolved.focusedKey, locale)}</h2>
+                            <AdminTrafficEntitySearch
+                                focusedKey={resolved.focusedKey}
+                                resolved={resolved}
+                                onSelect={(id) => updateSearch(adminTrafficToggleCompareId(resolved, id))}
+                            />
+                        </div>
                         {showEntityPending ? (
                             <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'traffic.entityBreakdownPending')}</p>
                         ) : null}
@@ -268,51 +525,57 @@ export function AdminTrafficPage({ data, search }: { data: GqlCAdminTrafficPageQ
                             <Table aria-label={t(locale, 'admin', 'traffic.entities')}>
                                 <TableHeader>
                                     <TableRow>
+                                        <TableHead className="w-10">
+                                            <span className="sr-only">{t(locale, 'admin', 'traffic.addToChart')}</span>
+                                        </TableHead>
                                         <TableHead>{t(locale, 'admin', 'traffic.entity')}</TableHead>
                                         <TableHead className="text-right">{t(locale, 'admin', 'traffic.pageviews')}</TableHead>
                                         <TableHead className="text-right">{t(locale, 'admin', 'traffic.uniqueSessions')}</TableHead>
+                                        <TableHead className="text-right">{t(locale, 'admin', 'traffic.viewsPerSession')}</TableHead>
+                                        <TableHead className="text-right">
+                                            {t(locale, 'admin', 'traffic.change', { range: priorRangeLabel })}
+                                        </TableHead>
+                                        <TableHead className="w-10">
+                                            <span className="sr-only">{t(locale, 'admin', 'copy.moreActions')}</span>
+                                        </TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {entityRanks.map((row) => {
-                                        const isOverview = row.id === WEB_PAGE_VISIT_INDEX_RANK_ID;
-                                        const selected = isOverview ? overviewSelected : selectedEntityId === row.id;
+                                        const selected = resolved.compareIds.includes(row.id);
                                         return (
-                                            <TableRow key={row.id}>
+                                            <TableRow
+                                                key={row.id}
+                                                data-state={selected ? 'selected' : undefined}
+                                                className={cn(selected && 'bg-muted/40')}
+                                            >
                                                 <TableCell>
-                                                    <Button
-                                                        type="button"
-                                                        variant="link"
-                                                        className="h-auto px-0"
-                                                        aria-pressed={selected}
-                                                        onClick={() => {
-                                                            if (isOverview) {
-                                                                updateSearch({
-                                                                    scope: selected ? 'ALL' : 'INDEX',
-                                                                    cookId: undefined,
-                                                                    cityId: undefined,
-                                                                    partnerVenueId: undefined,
-                                                                    occasionId: undefined,
-                                                                    blogPostId: undefined,
-                                                                });
-                                                                return;
-                                                            }
-                                                            const nextId = selected ? undefined : row.id;
-                                                            updateSearch({
-                                                                scope: nextId ? 'DETAIL' : 'ALL',
-                                                                cookId: resolved.focusedKey === 'CHEFS' ? nextId : undefined,
-                                                                cityId: resolved.focusedKey === 'CITIES' ? nextId : undefined,
-                                                                partnerVenueId: resolved.focusedKey === 'VENUES' ? nextId : undefined,
-                                                                occasionId: resolved.focusedKey === 'OCCASIONS' ? nextId : undefined,
-                                                                blogPostId: resolved.focusedKey === 'BLOG_POSTS' ? nextId : undefined,
-                                                            });
-                                                        }}
-                                                    >
-                                                        {row.label}
-                                                    </Button>
+                                                    <TrafficCompareToggle
+                                                        selected={selected}
+                                                        disabled={
+                                                            !selected && resolved.compareIds.length >= WEB_PAGE_VISIT_TRAFFIC_SERIES_MAX
+                                                        }
+                                                        onToggle={() => updateSearch(adminTrafficToggleCompareId(resolved, row.id))}
+                                                    />
                                                 </TableCell>
+                                                <TableCell>{row.label}</TableCell>
                                                 <TableCell className="text-right tabular-nums">{row.pageviews}</TableCell>
                                                 <TableCell className="text-right tabular-nums">{row.uniqueSessions}</TableCell>
+                                                <TableCell className="text-right tabular-nums">
+                                                    {adminTrafficViewsPerSession(row.pageviews, row.uniqueSessions)}
+                                                </TableCell>
+                                                <TableCell className="text-right tabular-nums">
+                                                    {adminTrafficChangePercent(
+                                                        metricValue(row),
+                                                        resolved.metric === 'UNIQUE_SESSIONS'
+                                                            ? row.previousUniqueSessions
+                                                            : row.previousPageviews,
+                                                        locale,
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <TrafficRowMenu links={adminTrafficEntityActions(locale, resolved.focusedKey!, row)} />
+                                                </TableCell>
                                             </TableRow>
                                         );
                                     })}
