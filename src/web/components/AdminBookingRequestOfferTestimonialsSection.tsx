@@ -350,7 +350,7 @@ function TestimonialSide({
             <div className="flex flex-wrap items-start justify-between gap-2">
                 <div className="grid min-w-0 gap-2">
                     <h3 className="text-sm font-medium text-foreground">{title}</h3>
-                    {partyName ? (
+                    {showForm && partyName ? (
                         <div className="flex min-w-0 items-center gap-2">
                             <Avatar className="size-8 shrink-0">
                                 {partyPictureUrl ? <AvatarImage src={partyPictureUrl} alt="" /> : null}
@@ -386,6 +386,7 @@ function TestimonialSide({
                     <TestimonialCardFace
                         testimonial={{
                             authorName: existing.displayAuthorName,
+                            authorProfilePictureUrl: party?.profilePictureUrl ?? null,
                             location: existing.displayLocation,
                             occasion: existing.displayOccasion,
                             body: existing.body.trim() || t(locale, 'admin', 'copy.noBody'),

@@ -48,9 +48,10 @@ existing follow-up answers unless the cook fills them again; dropping from 5 to 
   numeric dropdowns. **Public view** alone opens `TestimonialDetailDialog`. Publication uses `StatusBadge` (green published / yellow
   pending).
 - Offer detail **Review** tab when completed or either side already has a testimonial — side-by-side Customer → cook and Cook → guest
-  columns (`AdminBookingRequestOfferTestimonialsSection`). Missing side shows the create form (including draft photo upload via
-  `imageFileUploadIds`); existing side is a read-only `TestimonialCardFace` with photo manager, Edit / publish / delete, plus a link to the
-  dedicated admin customer/cook testimonial page. Publish/unpublish/delete use AlertDialogs.
+  columns (`AdminBookingRequestOfferTestimonialsSection`). Missing side / edit mode shows the party avatar under the column title;
+  read-only mode uses `TestimonialCardFace` with that same party profile picture in the author row (no duplicate header avatar), plus
+  photo manager, Edit / publish / delete, and a link to the dedicated admin customer/cook testimonial page. Create includes draft photo
+  upload via `imageFileUploadIds`. Publish/unpublish/delete use AlertDialogs.
 - City, partner, and occasion editors: ordered picker across customer and cook testimonials; shared `AdminPageTestimonial.isPubliclyListed`
   (like `AdminFeaturedCook.isPubliclyListed`) flags curated rows that are not yet public. Admin live preview keeps those rows visible with a
   card `StatusBadge` and section `StatusAlert` (public pages still omit them).
