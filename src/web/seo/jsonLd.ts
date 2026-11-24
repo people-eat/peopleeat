@@ -223,12 +223,7 @@ export function jsonLdCountryService(input: {
     });
 }
 
-function cityAreaServed(input: {
-    cityName: string;
-    countryCode: string;
-    latitude: number;
-    longitude: number;
-}): Record<string, unknown> {
+function cityAreaServed(input: { cityName: string; countryCode: string; latitude: number; longitude: number }): Record<string, unknown> {
     return {
         '@type': 'Place',
         name: input.cityName,

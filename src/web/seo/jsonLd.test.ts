@@ -164,7 +164,7 @@ describe('jsonLdCityService', () => {
             jsonLdCityService({
                 webPageUrl: 'https://example.com',
                 locale: 'de',
-                path: '/cities/ludwigsburg',
+                path: '/cities/Ludwigsburg',
                 name: 'Privatkoch in Ludwigsburg',
                 description: 'Köche für Ludwigsburg.',
                 cityName: 'Ludwigsburg',
