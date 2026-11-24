@@ -275,31 +275,42 @@ function AdminUserCookProfileBody({
     const stripeAccountId = cook.stripeAccountId?.trim() || null;
     const stageName = cook.stageName?.trim() || null;
     const publicProfileLive = approved && visible;
-    const hasRating = cook.rating.reviewCount > 0 && cook.rating.averageRating != null;
+    const averageRating = cook.rating.averageRating ?? 0;
+    const reviewCount = cook.rating.reviewCount;
     const callRules = cook.callAvailabilityRules;
     const featuredOn = cook.featuredOn;
 
     return (
         <div className="@container grid w-full min-w-0 gap-8">
             <div className="flex flex-wrap items-center gap-2">
-                <Badge variant={approved ? 'default' : 'outline'}>
+                <Badge variant={approved ? 'default' : 'outline'} className={approved ? undefined : 'bg-muted'}>
                     {approved ? t(locale, 'admin', 'copy.approved') : t(locale, 'admin', 'copy.notApproved')}
                 </Badge>
-                <Badge variant={visible ? 'secondary' : 'outline'}>
+                <Badge variant="outline" className="bg-muted">
                     {visible ? t(locale, 'admin', 'copy.publiclyVisible') : t(locale, 'admin', 'copy.hidden')}
                 </Badge>
-                {cook.canCreateOffers ? <Badge variant="outline">{t(locale, 'admin', 'copy.canCreateOffers')}</Badge> : null}
-                {cook.stripeAccountActive ? <Badge variant="secondary">{t(locale, 'admin', 'copy.stripeActive')}</Badge> : null}
-                {cook.stripeAccountActiveWasReset ? <Badge variant="outline">{t(locale, 'admin', 'copy.stripeReset')}</Badge> : null}
-                {hasRating ? (
-                    <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
-                        <TestimonialRatingStars rating={Math.round(cook.rating.averageRating!)} />
-                        <span>
-                            {cook.rating.averageRating!.toFixed(1)} · {cook.rating.reviewCount}{' '}
-                            {cook.rating.reviewCount === 1 ? t(locale, 'admin', 'copy.review') : t(locale, 'admin', 'copy.reviews')}
-                        </span>
-                    </span>
+                {cook.canCreateOffers ? (
+                    <Badge variant="outline" className="bg-muted">
+                        {t(locale, 'admin', 'copy.canCreateOffers')}
+                    </Badge>
                 ) : null}
+                {cook.stripeAccountActive ? (
+                    <Badge variant="outline" className="bg-muted">
+                        {t(locale, 'admin', 'copy.stripeActive')}
+                    </Badge>
+                ) : null}
+                {cook.stripeAccountActiveWasReset ? (
+                    <Badge variant="outline" className="bg-muted">
+                        {t(locale, 'admin', 'copy.stripeReset')}
+                    </Badge>
+                ) : null}
+                <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <TestimonialRatingStars rating={Math.round(averageRating)} />
+                    <span>
+                        {averageRating.toFixed(1)} · {reviewCount}{' '}
+                        {reviewCount === 1 ? t(locale, 'admin', 'copy.review') : t(locale, 'admin', 'copy.reviews')}
+                    </span>
+                </span>
             </div>
 
             <dl className="grid gap-6">
