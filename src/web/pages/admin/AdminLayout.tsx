@@ -2,9 +2,9 @@ import { Outlet, useRouterState } from '@tanstack/react-router';
 import { createContext, lazy, Suspense, useContext, useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 
+import { ADMIN_I18N_NAMESPACES } from '../../../i18n/namespacesForPath';
 import { ASSISTANT_SIDEBAR_WIDTH_DEFAULT_REM } from '../../chat/assistantSidebarWidth';
 import { isAssistantFullscreenPath } from '../../chat/isAssistantFullscreenPath';
-import { ADMIN_I18N_NAMESPACES } from '../../../i18n/namespacesForPath';
 import { AdminSidebar } from '../../components/AdminSidebar';
 import { SidebarInset, SidebarProvider, useSidebar } from '../../components/base/sidebar';
 import { I18nProvider } from '../../components/I18nProvider';
