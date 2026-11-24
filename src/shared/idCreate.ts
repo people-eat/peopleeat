@@ -19,4 +19,4 @@ export function isNanoId(value: string): boolean {
 }
 
 /** Zod schema for entity ids (and JSONB-embedded ids such as content section ids). */
-export const zNanoId = z.string().regex(nanoIdPattern, { message: 'Expected a 20-character nanoId' });
+export const zNanoId = z.string().regex(nanoIdPattern, { error: 'Expected a 20-character nanoId' });
