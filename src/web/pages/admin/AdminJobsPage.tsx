@@ -1,4 +1,5 @@
 import { Link, useNavigate, useRouter } from '@tanstack/react-router';
+import { MoreHorizontalIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -18,10 +19,10 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    AlertDialogTrigger,
 } from '../../components/base/alert-dialog';
 import { Badge } from '../../components/base/badge';
 import { Button } from '../../components/base/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../components/base/dropdown-menu';
 import { StatusBadge } from '../../components/base/status-badge';
 import { Tabs, TabsList, TabsTrigger } from '../../components/base/tabs';
 import type { GqlCAdminJobsPageQuery } from '../../graphql/generated';
@@ -84,29 +85,31 @@ function jobRelatedLinks(job: AdminJobsRow, locale: Locale): { key: string; node
         links.push({
             key: 'offer',
             node: (
-                <Link
-                    to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId"
-                    params={{
-                        bookingRequestId: job.bookingRequestId,
-                        bookingRequestOfferId: job.bookingRequestOfferId,
-                    }}
-                    className="font-medium text-foreground hover:underline"
-                >
-                    {t(locale, 'admin', 'copy.viewOffer')}
-                </Link>
+                <Button asChild variant="outline" size="sm">
+                    <Link
+                        to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId"
+                        params={{
+                            bookingRequestId: job.bookingRequestId,
+                            bookingRequestOfferId: job.bookingRequestOfferId,
+                        }}
+                    >
+                        {t(locale, 'admin', 'copy.viewOffer')}
+                    </Link>
+                </Button>
             ),
         });
     } else if (job.bookingRequestId) {
         links.push({
             key: 'request',
             node: (
-                <Link
-                    to="/{-$locale}/admin/booking-requests/$bookingRequestId"
-                    params={{ bookingRequestId: job.bookingRequestId }}
-                    className="font-medium text-foreground hover:underline"
-                >
-                    {t(locale, 'admin', 'copy.viewRequest')}
-                </Link>
+                <Button asChild variant="outline" size="sm">
+                    <Link
+                        to="/{-$locale}/admin/booking-requests/$bookingRequestId"
+                        params={{ bookingRequestId: job.bookingRequestId }}
+                    >
+                        {t(locale, 'admin', 'copy.viewRequest')}
+                    </Link>
+                </Button>
             ),
         });
     }
@@ -115,13 +118,11 @@ function jobRelatedLinks(job: AdminJobsRow, locale: Locale): { key: string; node
         links.push({
             key: 'gift-card',
             node: (
-                <Link
-                    to="/{-$locale}/admin/gift-cards/$giftCardId"
-                    params={{ giftCardId: job.giftCardId }}
-                    className="font-medium text-foreground hover:underline"
-                >
-                    {t(locale, 'admin', 'copy.viewGiftCard')}
-                </Link>
+                <Button asChild variant="outline" size="sm">
+                    <Link to="/{-$locale}/admin/gift-cards/$giftCardId" params={{ giftCardId: job.giftCardId }}>
+                        {t(locale, 'admin', 'copy.viewGiftCard')}
+                    </Link>
+                </Button>
             ),
         });
     }
@@ -130,13 +131,14 @@ function jobRelatedLinks(job: AdminJobsRow, locale: Locale): { key: string; node
         links.push({
             key: 'support',
             node: (
-                <Link
-                    to="/{-$locale}/admin/support-requests/$supportRequestId"
-                    params={{ supportRequestId: job.supportRequestId }}
-                    className="font-medium text-foreground hover:underline"
-                >
-                    {t(locale, 'admin', 'copy.viewSupport')}
-                </Link>
+                <Button asChild variant="outline" size="sm">
+                    <Link
+                        to="/{-$locale}/admin/support-requests/$supportRequestId"
+                        params={{ supportRequestId: job.supportRequestId }}
+                    >
+                        {t(locale, 'admin', 'copy.viewSupport')}
+                    </Link>
+                </Button>
             ),
         });
     }
@@ -145,13 +147,11 @@ function jobRelatedLinks(job: AdminJobsRow, locale: Locale): { key: string; node
         links.push({
             key: 'chat',
             node: (
-                <Link
-                    to="/{-$locale}/admin/assistant-chats/$chatId"
-                    params={{ chatId: job.chatId }}
-                    className="font-medium text-foreground hover:underline"
-                >
-                    {t(locale, 'admin', 'copy.viewChat')}
-                </Link>
+                <Button asChild variant="outline" size="sm">
+                    <Link to="/{-$locale}/admin/assistant-chats/$chatId" params={{ chatId: job.chatId }}>
+                        {t(locale, 'admin', 'copy.viewChat')}
+                    </Link>
+                </Button>
             ),
         });
     }
@@ -161,9 +161,11 @@ function jobRelatedLinks(job: AdminJobsRow, locale: Locale): { key: string; node
         links.push({
             key: 'user',
             node: (
-                <Link to="/{-$locale}/admin/users/$userId" params={{ userId }} className="font-medium text-foreground hover:underline">
-                    {t(locale, 'admin', 'copy.viewUser')}
-                </Link>
+                <Button asChild variant="outline" size="sm">
+                    <Link to="/{-$locale}/admin/users/$userId" params={{ userId }}>
+                        {t(locale, 'admin', 'copy.viewUser')}
+                    </Link>
+                </Button>
             ),
         });
     }
@@ -179,6 +181,7 @@ export function AdminJobsPage({ data, search }: { data: GqlCAdminJobsPageQuery; 
     const jobs = data.currentSession.user?.admin?.queuedJobs ?? [];
     const [nameFilter, setNameFilter] = useState<string | undefined>(undefined);
     const [cancellingJobId, setCancellingJobId] = useState<string | null>(null);
+    const [cancelConfirmJob, setCancelConfirmJob] = useState<AdminJobsRow | null>(null);
     const [, queuedJobCancel] = useMutation(AdminQueuedJobCancelDocument);
 
     const nameTabs = useMemo(() => {
@@ -227,7 +230,7 @@ export function AdminJobsPage({ data, search }: { data: GqlCAdminJobsPageQuery; 
     return (
         <AdminPathPageChrome contentClassName="min-h-0 overflow-hidden gap-0">
             <AdminPinnedFooterLayout
-                contentClassName="grid w-full content-start gap-6"
+                contentClassName="@container grid w-full content-start gap-6"
                 footer={
                     <AdminListPaginationBar
                         page={page}
@@ -276,71 +279,59 @@ export function AdminJobsPage({ data, search }: { data: GqlCAdminJobsPageQuery; 
                                     return (
                                         <li
                                             key={job.jobId}
-                                            className="grid gap-3 px-4 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-6"
+                                            className="grid gap-3 px-4 py-3 @md:grid-cols-[minmax(0,1fr)_auto] @md:items-center @md:gap-6"
                                         >
                                             <div className="min-w-0 space-y-1">
-                                                <div className="flex flex-wrap items-center gap-2">
+                                                <div className="flex flex-col gap-2 @md:flex-row @md:flex-wrap @md:items-center">
                                                     <span className="font-medium text-foreground">
                                                         {adminQueuedJobNameLabel(job.name, locale)}
                                                     </span>
-                                                    <StatusBadge tone={adminQueuedJobStateTone(job.state)}>
-                                                        {adminQueuedJobStateLabel(job.state, locale)}
-                                                    </StatusBadge>
-                                                    {detail ? (
-                                                        <Badge variant="outline" className="font-normal">
-                                                            {detail}
-                                                        </Badge>
-                                                    ) : null}
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                        <StatusBadge tone={adminQueuedJobStateTone(job.state)}>
+                                                            {adminQueuedJobStateLabel(job.state, locale)}
+                                                        </StatusBadge>
+                                                        {detail ? (
+                                                            <Badge variant="outline" className="font-normal">
+                                                                {detail}
+                                                            </Badge>
+                                                        ) : null}
+                                                    </div>
                                                 </div>
                                                 {description ? (
                                                     <p className="line-clamp-2 text-sm text-muted-foreground">{description}</p>
                                                 ) : null}
-                                                {relatedLinks.length > 0 ? (
-                                                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
-                                                        {relatedLinks.map((link) => (
-                                                            <span key={link.key}>{link.node}</span>
-                                                        ))}
-                                                    </div>
-                                                ) : null}
                                             </div>
-                                            <div className="flex flex-wrap items-center gap-3 sm:flex-col sm:items-end sm:gap-2">
-                                                <p className="text-xs text-muted-foreground sm:text-right">
-                                                    <span className="block sm:mb-0.5">{t(locale, 'admin', 'copy.due')}</span>
-                                                    <span className="tabular-nums text-sm text-foreground">
-                                                        {formatJobDue(job.startAfter, locale, timeZone)}
-                                                    </span>
+                                            <div className="flex items-center justify-between gap-3 @md:flex-col @md:items-end @md:justify-start @md:gap-2">
+                                                <p className="tabular-nums text-sm text-foreground @md:text-right">
+                                                    {formatJobDue(job.startAfter, locale, timeZone)}
                                                 </p>
-                                                <AlertDialog>
-                                                    <AlertDialogTrigger asChild>
-                                                        <Button type="button" variant="outline" size="sm" disabled={busy}>
-                                                            {t(locale, 'admin', 'copy.cancel')}
-                                                        </Button>
-                                                    </AlertDialogTrigger>
-                                                    <AlertDialogContent>
-                                                        <AlertDialogHeader>
-                                                            <AlertDialogTitle>{t(locale, 'admin', 'copy.cancelThisJob')}</AlertDialogTitle>
-                                                            <AlertDialogDescription>
-                                                                {t(
-                                                                    locale,
-                                                                    'admin',
-                                                                    'copy.theScheduledJobWillNotRunWorkThatAlreadyStartedCannotBeUndon',
-                                                                )}
-                                                            </AlertDialogDescription>
-                                                        </AlertDialogHeader>
-                                                        <AlertDialogFooter>
-                                                            <AlertDialogCancel disabled={busy}>
-                                                                {t(locale, 'admin', 'copy.back2')}
-                                                            </AlertDialogCancel>
-                                                            <AlertDialogAction
+                                                <div className="flex flex-wrap items-center justify-end gap-2">
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button
+                                                                type="button"
+                                                                variant="outline"
+                                                                size="icon"
+                                                                disabled={busy}
+                                                                aria-label={t(locale, 'admin', 'copy.moreActions')}
+                                                            >
+                                                                <MoreHorizontalIcon className="size-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuItem
                                                                 variant="destructive"
                                                                 disabled={busy}
-                                                                onClick={() => void onCancelJob(job)}
+                                                                onSelect={() => setCancelConfirmJob(job)}
                                                             >
-                                                                {t(locale, 'admin', 'copy.cancelJob')}
-                                                            </AlertDialogAction>
-                                                        </AlertDialogFooter>
-                                                    </AlertDialogContent>
-                                                </AlertDialog>
+                                                                {t(locale, 'admin', 'copy.cancel')}
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                    {relatedLinks.map((link) => (
+                                                        <span key={link.key}>{link.node}</span>
+                                                    ))}
+                                                </div>
                                             </div>
                                         </li>
                                     );
@@ -350,6 +341,30 @@ export function AdminJobsPage({ data, search }: { data: GqlCAdminJobsPageQuery; 
                     </div>
                 )}
             </AdminPinnedFooterLayout>
+
+            <AlertDialog open={cancelConfirmJob != null} onOpenChange={(open) => !open && setCancelConfirmJob(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>{t(locale, 'admin', 'copy.cancelThisJob')}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {t(locale, 'admin', 'copy.theScheduledJobWillNotRunWorkThatAlreadyStartedCannotBeUndon')}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={cancellingJobId != null}>{t(locale, 'admin', 'copy.back2')}</AlertDialogCancel>
+                        <AlertDialogAction
+                            variant="destructive"
+                            disabled={cancellingJobId != null || cancelConfirmJob == null}
+                            onClick={() => {
+                                if (cancelConfirmJob == null) return;
+                                void onCancelJob(cancelConfirmJob).then(() => setCancelConfirmJob(null));
+                            }}
+                        >
+                            {t(locale, 'admin', 'copy.cancelJob')}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AdminPathPageChrome>
     );
 }
