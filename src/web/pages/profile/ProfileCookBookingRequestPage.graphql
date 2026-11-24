@@ -3,6 +3,7 @@
 
 fragment ProfileCookBookingRequestPageUser on User {
     userId
+    status
     cook {
         cookId
         canCreateOffers

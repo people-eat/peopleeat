@@ -16,17 +16,18 @@ create / negotiate and for customer booking / accept / pay paths; a ban auto-dec
    is already used for travel expense calculations. The pinned footer repeats the same approximate payout (soft suggested price × paid
    participants, travel, cook platform fee — same breakdown as offer create). Footer stacks payout above equal-width decline / make-offer on
    narrow panes; from `@md` payout sits left of the button pair. Opening a request marks it viewed (which stamps Google Routes travel
-   distance onto `BookingRequestCooks` so estimated travel expenses match offer create); they may decline with a reason, or start **Make
-   offer** when Stripe Connect and travel origin are ready. When the guest asked for a published menu, pool cards and detail name it and
-   offer create preselects that library menu when it still exists and is complete (banner; cook can add or swap; gone/incomplete menus stay
-   as snapshot copy so the cook can pick a replacement). After decline, if more open requests remain they return to the open pool
-   (Tinder-style review); if that was the last open request, decline lands on the declined tab, never an empty open pool. After offer
-   create, a non-dismissible success alert confirms the guest was notified and offers **Go to offer**; when more open pool items remain it
-   also offers **Review more requests** (opens the open pool). Stale notify-email deep links use `Cook.bookingRequestLookup`: pool-eligible
-   cooks (auto-approved + in radius, or admin-approved + `notifiedAt`) get a differentiated unavailable state (canceled / taken / expired /
-   already offered) with **no** request PII; every other denial is identical not-found (no existence oracle). Admin analytics tracks this
-   path as a cook × request funnel (notified → opened → declined or offer create → menus → price → message → created); see
-   [admin-analytics.md](./admin-analytics.md).
+   distance onto `BookingRequestCooks` so estimated travel expenses match offer create) only when `Users.status` is `ACTIVE`; banned /
+   anonymized cooks may still read pool detail (shell restriction banner) but the page skips the open stamp and hides decline / make-offer
+   so cook writes do not error. Active cooks may decline with a reason, or start **Make offer** when Stripe Connect and travel origin are
+   ready. When the guest asked for a published menu, pool cards and detail name it and offer create preselects that library menu when it
+   still exists and is complete (banner; cook can add or swap; gone/incomplete menus stay as snapshot copy so the cook can pick a
+   replacement). After decline, if more open requests remain they return to the open pool (Tinder-style review); if that was the last open
+   request, decline lands on the declined tab, never an empty open pool. After offer create, a non-dismissible success alert confirms the
+   guest was notified and offers **Go to offer**; when more open pool items remain it also offers **Review more requests** (opens the open
+   pool). Stale notify-email deep links use `Cook.bookingRequestLookup`: pool-eligible cooks (auto-approved + in radius, or admin-approved +
+   `notifiedAt`) get a differentiated unavailable state (canceled / taken / expired / already offered) with **no** request PII; every other
+   denial is identical not-found (no existence oracle). Admin analytics tracks this path as a cook × request funnel (notified → opened →
+   declined or offer create → menus → price → message → created); see [admin-analytics.md](./admin-analytics.md).
 2. Offer create (`/profile/booking-request-pool/$id/create`): no request summary (pool detail already covered that). Three steps with a thin
    progress bar (same visual as the public booking-request form) and concise step headers (**Suggest menus** / **Choose your price** /
    **Personal note**): (1) pick menus (or **New menu** / **Edit**; Empty still opens `/profile/menus/$menuId/edit` with safe `returnTo`;

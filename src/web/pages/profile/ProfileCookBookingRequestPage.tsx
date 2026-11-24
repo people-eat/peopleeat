@@ -101,6 +101,9 @@ export function ProfileCookBookingRequestPage({
         });
     });
 
+    const accountStatus = (user ?? seedUser)?.status;
+    const accountActive = accountStatus === 'ACTIVE';
+
     useEffect(() => {
         if (request == null) return;
         if (openedRef.current) return;
@@ -108,9 +111,15 @@ export function ProfileCookBookingRequestPage({
             openedRef.current = true;
             return;
         }
+        // Banned / anonymized cooks can still read the pool; cook writes require ACTIVE.
+        // Skip the auto-open stamp so we do not hit guardCookMutation error noise.
+        if (!accountActive) {
+            openedRef.current = true;
+            return;
+        }
         openedRef.current = true;
         void openRequest({ bookingRequestId });
-    }, [bookingRequestId, openRequest, request]);
+    }, [accountActive, bookingRequestId, openRequest, request]);
 
     if (cook == null || lookup == null) {
         return null;
@@ -203,7 +212,7 @@ export function ProfileCookBookingRequestPage({
                 className="@container"
                 contentClassName="grid content-start gap-6"
                 footer={
-                    !isDeclined ? (
+                    !isDeclined && accountActive ? (
                         <div className="grid w-full gap-3 @md:grid-cols-[minmax(0,1fr)_auto] @md:items-center">
                             <p className="text-sm font-semibold text-foreground">
                                 {t(locale, 'profileCook', 'poolRequest.makeAbout')}{' '}
@@ -250,7 +259,7 @@ export function ProfileCookBookingRequestPage({
                     </ul>
                 </StatusAlert>
 
-                {!stripeReady ? (
+                {accountActive && !stripeReady ? (
                     <StatusAlert
                         tone="warning"
                         title={t(locale, 'profileCook', 'poolRequest.setupPayouts')}
@@ -264,7 +273,7 @@ export function ProfileCookBookingRequestPage({
                     </StatusAlert>
                 ) : null}
 
-                {stripeReady && !hasTravelOrigin ? (
+                {accountActive && stripeReady && !hasTravelOrigin ? (
                     <StatusAlert
                         tone="warning"
                         title={t(locale, 'profileCook', 'poolRequest.travelMissing')}

@@ -20464,6 +20464,7 @@ export type GqlCProfileCookBookingRequestOffersPageUpdatesSubscription = {
 
 export type GqlCProfileCookBookingRequestPageUserFragment = {
     userId: string;
+    status: Schema.GqlCUserStatus;
     cook: {
         cookId: string;
         canCreateOffers: boolean;
@@ -20527,6 +20528,7 @@ export type GqlCProfileCookBookingRequestPageQuery = {
     currentSession: {
         user: {
             userId: string;
+            status: Schema.GqlCUserStatus;
             cook: {
                 cookId: string;
                 canCreateOffers: boolean;
@@ -20591,6 +20593,7 @@ export type GqlCProfileCookBookingRequestPageUpdatesSubscriptionVariables = Exac
 export type GqlCProfileCookBookingRequestPageUpdatesSubscription = {
     userUpdates: {
         userId: string;
+        status: Schema.GqlCUserStatus;
         cook: {
             cookId: string;
             canCreateOffers: boolean;
@@ -35007,6 +35010,7 @@ export const ProfileCookBookingRequestPageUserFragmentDoc = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'cook' },
@@ -83144,6 +83148,7 @@ export const ProfileCookBookingRequestPageDocument = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'cook' },
@@ -83489,6 +83494,7 @@ export const ProfileCookBookingRequestPageUpdatesDocument = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'cook' },
