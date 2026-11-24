@@ -101,6 +101,8 @@ export function ProfileCookChefProfilePage({
     const locale = useLocale();
     const shareEnabled = useFeatureToggleActive('COOK_PUBLIC_PROFILE_SHARE');
     const menusEnabled = useFeatureToggleActive('COOK_PUBLIC_PROFILE_MENUS');
+    const mealPublicationEnabled = useFeatureToggleActive('PUBLICATION_MEALS');
+    const menuPublicationEnabled = useFeatureToggleActive('PUBLICATION_MENUS');
     const cookDirectEnabled = useFeatureToggleActive('BOOKING_REQUEST_COOK_DIRECT');
     const seedUser = data.currentSession.user ?? null;
     const user = useUserUpdatesSeed(seedUser, ProfileCookChefProfilePageUpdatesDocument);
@@ -243,7 +245,7 @@ export function ProfileCookChefProfilePage({
                                 </Link>
                             </StatusAlert>
                         ) : null}
-                        {publishedWithoutImageCount > 0 ? (
+                        {mealPublicationEnabled && publishedWithoutImageCount > 0 ? (
                             <StatusAlert
                                 tone="warning"
                                 title={t(locale, 'profileCook', 'meals.withoutPictureTitle', { count: publishedWithoutImageCount })}
@@ -256,7 +258,7 @@ export function ProfileCookChefProfilePage({
                                 {t(locale, 'profileCook', 'public.mealsWithoutPicture')}
                             </StatusAlert>
                         ) : null}
-                        {publishedMenusNotCatalogCount > 0 ? (
+                        {menuPublicationEnabled && menusEnabled && publishedMenusNotCatalogCount > 0 ? (
                             <StatusAlert
                                 tone="warning"
                                 title={t(locale, 'profileCook', 'public.menusWithoutPictureTitle', {

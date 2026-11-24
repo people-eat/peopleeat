@@ -134,7 +134,7 @@ export function ProfileCookMealsPage({ data, search }: { data: GqlCProfileCookMe
 
     return (
         <main id="main-content" className="@container grid w-full min-w-0 content-start gap-6">
-            {publishedWithoutImageCount > 0 ? (
+            {publicationEnabled && publishedWithoutImageCount > 0 ? (
                 <StatusAlert
                     tone="warning"
                     title={t(locale, 'profileCook', 'meals.withoutPictureTitle', { count: publishedWithoutImageCount })}
