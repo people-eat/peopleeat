@@ -21,6 +21,11 @@
         "body": "You can sign in, but bookings and offers are blocked. Contact us if you have questions.",
         "whatsapp": "WhatsApp support"
     },
+    "accessDenied": {
+        "title": "No access",
+        "body": "This area is only available to cooks.",
+        "back": "Back to profile"
+    },
     "actions": {
         "saving": "Saving…",
         "sending": "Sending…",

@@ -1,6 +1,7 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
 
 import { i18nResourcesLoad } from '../../i18n/catalogCache';
+import { namespacesLoadedForProfileSession, PROFILE_I18N_NAMESPACES } from '../../i18n/namespacesForPath';
 import { contentLocaleText } from '../../shared/contentSection';
 import { ProfilePageDocument } from '../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../web/graphql/routeLoaderGraphqlClient';
@@ -8,7 +9,7 @@ import { ProfileLayout } from '../../web/pages/profile/ProfileLayout';
 import { profileShellPreload } from '../../web/pages/profile/profileShellPreload';
 import { seoMeta } from '../../web/seo/seoMeta';
 import { webPageUrlGet } from '../../web/seo/webPageUrlGet';
-import { localeFromParam } from '../../web/utils/locale';
+import { localeFromParam, pathWithoutLocale } from '../../web/utils/locale';
 import { returnToFromLocation } from '../../web/utils/returnTo';
 
 export const Route = createFileRoute('/{-$locale}/profile')({
@@ -28,7 +29,7 @@ export const Route = createFileRoute('/{-$locale}/profile')({
         const locale = localeFromParam(params);
         await Promise.all([
             profileShellPreload(isCook),
-            i18nResourcesLoad(locale, ['common', 'public', 'profile', isCook ? 'profileCook' : 'profileCustomer']),
+            i18nResourcesLoad(locale, namespacesLoadedForProfileSession(pathWithoutLocale(location.pathname), isCook)),
         ]);
         return data;
     },
@@ -40,8 +41,9 @@ export const Route = createFileRoute('/{-$locale}/profile')({
         const locale = localeFromParam(params);
         const user = loaderData?.currentSession.user;
         if (user) {
-            const isCook = Boolean(user.cook);
-            await i18nResourcesLoad(locale, ['common', 'public', 'profile', isCook ? 'profileCook' : 'profileCustomer']);
+            // Hydrate restores loader data without the path, so load both role
+            // catalogs here. Path extras (`publicBooking`) come from the locale layout.
+            await i18nResourcesLoad(locale, [...PROFILE_I18N_NAMESPACES, 'profileCook', 'profileCustomer']);
         }
         const webPage = loaderData?.publicWebPage.findOne;
         if (!webPage) {

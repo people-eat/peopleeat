@@ -2,7 +2,7 @@ import { Outlet, useRouterState } from '@tanstack/react-router';
 import { createContext, lazy, Suspense, useContext, useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 
-import { ADMIN_I18N_NAMESPACES } from '../../../i18n/namespacesForPath';
+import { namespacesForPath } from '../../../i18n/namespacesForPath';
 import { ASSISTANT_SIDEBAR_WIDTH_DEFAULT_REM } from '../../chat/assistantSidebarWidth';
 import { isAssistantFullscreenPath } from '../../chat/isAssistantFullscreenPath';
 import { AdminSidebar } from '../../components/AdminSidebar';
@@ -11,18 +11,7 @@ import { I18nProvider } from '../../components/I18nProvider';
 import type { GqlCAdminPageQuery } from '../../graphql/generated';
 import { FeatureToggleAdminShellProvider, FeatureToggleKeysProvider } from '../../hooks/useFeatureToggleActive';
 import { useLocale } from '../../hooks/useLocale';
-import type { Locale } from '../../utils/locale';
-import { DEFAULT_LOCALE } from '../../utils/locale';
-
-function pathWithoutLocale(pathname: string, locale: Locale): string {
-    if (locale !== DEFAULT_LOCALE && pathname.startsWith(`/${locale}/`)) {
-        return pathname.slice(locale.length + 1) || '/';
-    }
-    if (locale !== DEFAULT_LOCALE && pathname === `/${locale}`) {
-        return '/';
-    }
-    return pathname;
-}
+import { pathWithoutLocale } from '../../utils/locale';
 
 const AdminAssistantSidebar = lazy(async () => {
     const mod = await import('../../components/AdminAssistantSidebar');
@@ -52,13 +41,15 @@ export function useAdminNavSidebar(): AdminNavSidebar {
 
 export function AdminLayout({ loaderData }: { loaderData: GqlCAdminPageQuery }) {
     const locale = useLocale();
+    const pathname = useRouterState({ select: (state) => state.location.pathname });
+    const namespaces = namespacesForPath(pathWithoutLocale(pathname, locale));
     const supportUnreadCount = loaderData.currentSession.user?.admin?.unreadSupportRequestsCounts[0] ?? 0;
     const offerChatReviewCount = loaderData.currentSession.user?.admin?.pendingOfferChatReviewsCounts[0] ?? 0;
     const whatsAppUnreadCount = loaderData.currentSession.user?.admin?.whatsAppConversationsAdminUnreadCount ?? 0;
     const activeFeatureToggleKeys = loaderData.currentSession.activeFeatureToggleKeys;
 
     return (
-        <I18nProvider locale={locale} namespaces={ADMIN_I18N_NAMESPACES}>
+        <I18nProvider locale={locale} namespaces={namespaces}>
             <FeatureToggleAdminShellProvider value={true}>
                 <FeatureToggleKeysProvider value={activeFeatureToggleKeys}>
                     <SidebarProvider style={{ '--sidebar-width': '19rem' } as CSSProperties}>

@@ -119,10 +119,12 @@ Stub catalog shared until real pages land.
 
 ## Implementation
 
-- Gate: `/admin` loader — unsigned → sign-in; non-admin → `/profile`. Loader + `head()` also
-  `await i18nResourcesLoad(…, ADMIN_I18N_NAMESPACES)` (`common`+`public`+`admin`+`profileCook`); `AdminLayout` nests `I18nProvider` with
-  those namespaces so landing → admin client nav does not throw `i18n catalog not loaded`, and shared cook inventory cards can resolve
-  `profileCook` keys (locale layout blocking stay-reload is the other half — see [i18n.md](../architecture/i18n.md)).
+- Gate: `/admin` loader — unsigned → sign-in; non-admin → `/profile`. Loader `await i18nResourcesLoad(…, namespacesLoadedForPath)` (base
+  `ADMIN_I18N_NAMESPACES` plus extras: `publicBooking` on booking create/edit, `profile` on account / user forms); `head()` hydrate reloads
+  `ADMIN_I18N_NAMESPACES` (path extras come from the locale layout). `AdminLayout` nests `I18nProvider` with `namespacesForPath` so those
+  extras stay in the React instance, landing → admin client nav does not throw `i18n catalog not loaded`, and shared cook inventory cards
+  can resolve `profileCook` keys (locale layout blocking stay-reload is the other half — see [i18n.md](../architecture/i18n.md)).
+  `npm run i18n:check` walks each admin route’s import graph against that path list.
 - `SidebarInset` as `<div>`; viewport-locked; chat pages pass overflow-hidden content class.
 - Assistant: nested provider; `useAdminNavSidebar()` for left nav toggle; chat persists across admin route changes —
   [chat.md](../architecture/chat.md).

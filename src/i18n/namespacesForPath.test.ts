@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { namespacesForPath } from './namespacesForPath';
+import { namespacesForPath, namespacesLoadedForPath, namespacesLoadedForProfileSession } from './namespacesForPath';
 
 describe('namespacesForPath', () => {
     it('loads common and public on marketing pages', () => {
@@ -24,8 +24,8 @@ describe('namespacesForPath', () => {
     });
 
     it('adds publicBooking on customer booking request detail and edit', () => {
-        expect(namespacesForPath('/profile/booking-requests/abc')).toEqual(['common', 'public', 'publicBooking', 'profile']);
-        expect(namespacesForPath('/profile/booking-requests/abc/edit')).toEqual(['common', 'public', 'publicBooking', 'profile']);
+        expect(namespacesForPath('/profile/booking-requests/abc')).toEqual(['common', 'public', 'profile', 'publicBooking']);
+        expect(namespacesForPath('/profile/booking-requests/abc/edit')).toEqual(['common', 'public', 'profile', 'publicBooking']);
         expect(namespacesForPath('/profile/booking-requests/abc/offers/def')).toEqual(['common', 'public', 'profile']);
     });
 
@@ -46,5 +46,52 @@ describe('namespacesForPath', () => {
         ]);
         expect(namespacesForPath('/admin/booking-requests/abc')).toEqual(['common', 'public', 'admin', 'profileCook']);
         expect(namespacesForPath('/admin/booking-requests')).toEqual(['common', 'public', 'admin', 'profileCook']);
+    });
+
+    it('adds profile role catalogs to the loaded set', () => {
+        expect(namespacesLoadedForPath('/profile')).toEqual(['common', 'public', 'profile', 'profileCook', 'profileCustomer']);
+        expect(namespacesLoadedForPath('/profile/account')).toEqual(['common', 'public', 'profile', 'profileCook', 'profileCustomer']);
+        expect(namespacesLoadedForPath('/profile/booking-requests/abc/edit')).toEqual([
+            'common',
+            'public',
+            'profile',
+            'publicBooking',
+            'profileCustomer',
+        ]);
+        expect(namespacesLoadedForPath('/admin/account')).toEqual(['common', 'public', 'admin', 'profileCook', 'profile']);
+        expect(namespacesLoadedForPath('/profile/booking-requests/abc/offers/def')).toEqual([
+            'common',
+            'public',
+            'profile',
+            'profileCook',
+            'profileCustomer',
+        ]);
+        expect(namespacesLoadedForPath('/profile/booking-request-pool/abc/create')).toEqual([
+            'common',
+            'public',
+            'profile',
+            'profileCook',
+            'profileCustomer',
+        ]);
+        expect(namespacesLoadedForPath('/profile/meals')).toEqual(['common', 'public', 'profile', 'profileCook']);
+        expect(namespacesLoadedForPath('/admin/users')).toEqual(['common', 'public', 'admin', 'profileCook']);
+    });
+
+    it('unions the signed-in role onto the path list', () => {
+        expect(namespacesLoadedForProfileSession('/profile/meals', true)).toEqual(['common', 'public', 'profile', 'profileCook']);
+        expect(namespacesLoadedForProfileSession('/profile/booking-request-pool/abc/create', true)).toEqual([
+            'common',
+            'public',
+            'profile',
+            'profileCook',
+            'profileCustomer',
+        ]);
+        expect(namespacesLoadedForProfileSession('/profile/booking-requests/abc/offers/def', false)).toEqual([
+            'common',
+            'public',
+            'profile',
+            'profileCook',
+            'profileCustomer',
+        ]);
     });
 });

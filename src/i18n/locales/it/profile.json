@@ -21,6 +21,11 @@
         "body": "Puoi accedere, ma prenotazioni e offerte sono bloccate. Contattaci se hai domande.",
         "whatsapp": "Supporto WhatsApp"
     },
+    "accessDenied": {
+        "title": "Nessun accesso",
+        "body": "Quest’area è riservata agli chef.",
+        "back": "Torna al profilo"
+    },
     "actions": {
         "saving": "Salvataggio…",
         "sending": "Invio…",

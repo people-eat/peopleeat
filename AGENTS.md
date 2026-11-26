@@ -148,7 +148,9 @@ in `docs/styles/`.
 1. Add the key to `src/i18n/locales/de/{namespace}.json` and every complete catalog locale (`en` / `fr` / `it` / `ru` / `nl`, same key tree)
 2. Use `useT('namespace')` in React or `t(locale, 'namespace', 'key')` in `head()` / emails / `src/shared`
 3. Pick the namespace that matches the lazy-load boundary — see [docs/architecture/i18n.md](./docs/architecture/i18n.md)
-4. Run `npm run i18n:check` after catalog edits
+4. If the page or a shared helper needs a catalog that path does not already preload, extend `namespacesForPath` /
+   `profileRoleCatalogsForPath` in `src/i18n/namespacesForPath.ts`
+5. Run `npm run i18n:check` after catalog or namespace-list edits (key parity plus route import-graph coverage)
 
 ### New Background Job
 

@@ -21,6 +21,11 @@
         "body": "Tu peux te connecter, mais les réservations et les offres sont bloquées. Contacte-nous si tu as des questions.",
         "whatsapp": "Support WhatsApp"
     },
+    "accessDenied": {
+        "title": "Aucun accès",
+        "body": "Cette zone est réservée aux chefs.",
+        "back": "Retour au profil"
+    },
     "actions": {
         "saving": "Enregistrement…",
         "sending": "Envoi…",

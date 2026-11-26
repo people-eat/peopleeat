@@ -1,6 +1,8 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
+import { findRouteNamespaceMismatches, formatRouteNamespaceMismatches } from './i18nRouteNamespaces';
+
 const LOCALES_DIR = path.join(process.cwd(), 'src/i18n/locales');
 const SOURCE_LOCALE = 'de';
 const COMPLETE_LOCALES = ['en', 'fr', 'it', 'ru', 'nl'] as const;
@@ -91,6 +93,8 @@ async function main(): Promise<void> {
             }
         }
     }
+
+    errors.push(...formatRouteNamespaceMismatches(findRouteNamespaceMismatches()));
 
     if (errors.length > 0) {
         console.error(errors.join('\n'));

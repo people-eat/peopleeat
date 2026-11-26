@@ -21,6 +21,11 @@
         "body": "Je kunt inloggen, maar boekingen en offertes zijn geblokkeerd. Neem contact met ons op als je vragen hebt.",
         "whatsapp": "WhatsApp-support"
     },
+    "accessDenied": {
+        "title": "Geen toegang",
+        "body": "Dit gedeelte is alleen beschikbaar voor chefs.",
+        "back": "Terug naar profiel"
+    },
     "actions": {
         "saving": "Opslaan…",
         "sending": "Versturen…",

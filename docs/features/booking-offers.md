@@ -267,5 +267,7 @@ promo / gift (+ participant count) on the customer path. Never hardcode `de` / `
   create + edit-menus)
 - Status: `BookingStatusPill.tsx` (hue → classes); labels + hues in `src/shared/bookingRequestStatus.ts` /
   `src/shared/bookingRequestOfferStatus.ts` (audience `customer` / `cook` / `admin`)
+- i18n: cook offer-create also loads `profileCustomer` (`CustomerBookingRequestOfferCard`); customer offer detail also loads `profileCook`
+  (cook menu cards). Declared in `profileRoleCatalogsForPath` — see [i18n.md](../architecture/i18n.md).
 - Related: [booking-offer-chat.md](./booking-offer-chat.md), [booking-payment.md](./booking-payment.md),
   [booking-request-create.md](./booking-request-create.md)

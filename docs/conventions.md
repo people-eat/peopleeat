@@ -280,9 +280,10 @@ namespace that matches the lazy-load boundary (`common`, `public`, `publicBookin
 `email`). Keys are stable English identifiers (`about.title`). ICU message format for plurals, selects, and interpolation (`{name}`, not
 `{{name}}`). Interpolate already-formatted dates and money from `src/shared`; do not format inside the message.
 
-Never write TypeScript, JSX, or `{ de:` maps into catalog values. `npm run i18n:check` fails if a value looks like source. Spell check is
-English-only outside catalogs; quoted `de:` / `*De` CMS values are ignored, but new German in source still fails
-([Spell check](#spell-check)).
+Never write TypeScript, JSX, or `{ de:` maps into catalog values. `npm run i18n:check` fails if a value looks like source, and if a
+`{-$locale}` route’s import graph calls `t` / `useT` / a sync helper for a namespace `namespacesLoadedForPath` does not preload. Fix
+coverage by extending `namespacesForPath` or `profileRoleCatalogsForPath`, not by skipping the check. Spell check is English-only outside
+catalogs; quoted `de:` / `*De` CMS values are ignored, but new German in source still fails ([Spell check](#spell-check)).
 
 **Caller-facing string props are mandatory.** Shared components that accept user-visible copy (`DatePicker` / `DateField` `placeholder`,
 `MessageComposer` `ariaLabel` / `placeholder`, etc.) must require those props — never default to an English-only string. Callers pass

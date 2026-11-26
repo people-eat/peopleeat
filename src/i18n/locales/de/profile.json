@@ -21,6 +21,11 @@
         "body": "Du kannst dich anmelden, aber Buchungen und Angebote sind gesperrt. Melde dich bei uns, wenn du Fragen hast.",
         "whatsapp": "WhatsApp Support"
     },
+    "accessDenied": {
+        "title": "Kein Zugriff",
+        "body": "Dieser Bereich ist nur für Köche verfügbar.",
+        "back": "Zum Profil"
+    },
     "actions": {
         "saving": "Speichert…",
         "sending": "Sendet…",

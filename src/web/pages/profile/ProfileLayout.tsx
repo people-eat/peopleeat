@@ -1,6 +1,8 @@
+import { useRouterState } from '@tanstack/react-router';
 import { lazy, Suspense } from 'react';
 import type { ReactNode } from 'react';
 
+import { namespacesLoadedForProfileSession } from '../../../i18n/namespacesForPath';
 import { featureToggleIsActive } from '../../../shared/featureToggle';
 import { I18nProvider } from '../../components/I18nProvider';
 import { ProfileBanStatusUpdatesDocument } from '../../graphql/generated';
@@ -8,6 +10,7 @@ import type { GqlCProfilePageQuery } from '../../graphql/generated';
 import { FeatureToggleKeysProvider } from '../../hooks/useFeatureToggleActive';
 import { useLocale } from '../../hooks/useLocale';
 import { useUserUpdatesSeed } from '../../hooks/useUserUpdatesSeed';
+import { pathWithoutLocale } from '../../utils/locale';
 import { ProfileBanBanner } from './ProfileBanBanner';
 
 // Profile shell — cooks and customers get a floating sidebar. Account lives at
@@ -31,6 +34,7 @@ const ProfileCustomerShell = lazy(async () => {
 
 export function ProfileLayout({ loaderData }: { loaderData: GqlCProfilePageQuery }) {
     const locale = useLocale();
+    const pathname = useRouterState({ select: (state) => state.location.pathname });
     const seedUser = loaderData.currentSession.user;
     // Seed from the loader user (stable identity). Do not wrap `{ userId, status }`
     // inline — a new object each render re-triggers useUserUpdatesSeed's setState
@@ -75,14 +79,13 @@ export function ProfileLayout({ loaderData }: { loaderData: GqlCProfilePageQuery
         );
     }
 
-    // `public` matches `namespacesForPath` and AdminLayout: cook `/profile/chef-profile`
-    // embeds Header / Footer / ChefProfileView / PublicCookCard (`useT('public')`).
-    const roleNamespaces = user.cook
-        ? (['common', 'public', 'profile', 'profileCook'] as const)
-        : (['common', 'public', 'profile', 'profileCustomer'] as const);
+    // Path extras (`publicBooking` on booking edit, the other role on offer cards)
+    // plus the signed-in role catalog so cook/customer chrome always resolves.
+    // `public` stays for cook `/profile/chef-profile` Preview (`useT('public')`).
+    const namespaces = namespacesLoadedForProfileSession(pathWithoutLocale(pathname, locale), Boolean(user.cook));
 
     return (
-        <I18nProvider locale={locale} namespaces={roleNamespaces}>
+        <I18nProvider locale={locale} namespaces={namespaces}>
             <FeatureToggleKeysProvider value={activeFeatureToggleKeys}>{shell}</FeatureToggleKeysProvider>
         </I18nProvider>
     );
