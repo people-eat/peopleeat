@@ -302,6 +302,13 @@
             "when": 1795525763254,
             "tag": "0042_lowly_quicksilver",
             "breakpoints": true
+        },
+        {
+            "idx": 43,
+            "version": "7",
+            "when": 1795709743678,
+            "tag": "0043_gifted_sleeper",
+            "breakpoints": true
         }
     ]
 }

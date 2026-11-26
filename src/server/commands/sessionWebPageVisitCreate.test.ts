@@ -223,4 +223,34 @@ describe('sessionWebPageVisitCreate', () => {
         expect(occasionRow?.payload).toMatchObject({ params: { occasionId } });
         expect(blogRow?.payload).toMatchObject({ params: { blogPostId } });
     });
+
+    it('resolves a booking-request plan venueId to the stable partnerVenueId', async () => {
+        const { serverRuntime, requestingSession } = await commandSetup();
+        const venue = await partnerVenueInsert({ name: 'Loft' });
+
+        const result = await sessionWebPageVisitCreate(
+            {
+                input: {
+                    webPageKey: 'BOOKING_REQUEST_PLAN',
+                    path: `/booking-request/plan?venueId=${venue.partnerVenueId}`,
+                    cityId: null,
+                    cookId: null,
+                    blogPostId: null,
+                    partnerVenueId: venue.partnerVenueId,
+                    occasionId: null,
+                    bookingRequestId: null,
+                },
+            },
+            requestingSession,
+            serverRuntime,
+        );
+
+        expect(result.success).toBe(true);
+        const [row] = await testDb.select().from(sessionEvents).where(eq(sessionEvents.sessionEventId, result.referenceId!));
+        expect(row?.payload).toMatchObject({
+            webPageKey: 'BOOKING_REQUEST_PLAN',
+            path: `/booking-request/plan?venueId=${venue.partnerVenueId}`,
+            params: { partnerVenueId: venue.partnerVenueId },
+        });
+    });
 });

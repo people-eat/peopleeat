@@ -1,0 +1,1 @@
+CREATE INDEX "SessionEvents_webPageVisit_plan_partnerVenueId_createdAt_idx" ON "SessionEvents" USING btree (("payload"->'params'->>'partnerVenueId'),"createdAt") WHERE "SessionEvents"."type" = 'WEB_PAGE_VISITED' AND "SessionEvents"."payload"->>'webPageKey' = 'BOOKING_REQUEST_PLAN';

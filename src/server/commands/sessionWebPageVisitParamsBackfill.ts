@@ -35,7 +35,10 @@ export async function sessionWebPageVisitParamsBackfill(
         SELECT "sessionEventId" AS "sessionEventId", payload
         FROM "SessionEvents"
         WHERE type = 'WEB_PAGE_VISITED'
-          AND payload->>'path' ~ '^/(cities|venues|partners|occasions|blog-posts|chefs)/[^/]+/?$'
+          AND (
+            payload->>'path' ~ '^/(cities|venues|partners|occasions|blog-posts|chefs)/[^/]+/?$'
+            OR payload->>'path' ~ '^/booking-request/plan/?\\?(?:[^#]*&)?(?:venueId|partnerId)='
+          )
           AND (
             payload->'params' IS NULL
             OR (
@@ -43,6 +46,9 @@ export async function sessionWebPageVisitParamsBackfill(
             )
             OR (
                 payload->>'webPageKey' = 'VENUES' AND payload->'params'->>'partnerVenueId' IS NULL
+            )
+            OR (
+                payload->>'webPageKey' = 'BOOKING_REQUEST_PLAN' AND payload->'params'->>'partnerVenueId' IS NULL
             )
             OR (
                 payload->>'webPageKey' = 'OCCASIONS' AND payload->'params'->>'occasionId' IS NULL

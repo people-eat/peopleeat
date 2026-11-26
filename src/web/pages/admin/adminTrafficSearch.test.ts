@@ -61,4 +61,13 @@ describe('adminTrafficSearch', () => {
     it('maps the prior window to the same-length days immediately before from', () => {
         expect(adminTrafficPreviousRange('2026-11-01', '2026-11-24')).toEqual({ from: '2026-10-08', to: '2026-10-31' });
     });
+
+    it('splits booking-request plan by partnerVenueId', () => {
+        const search = parseAdminTrafficSearch({ keys: 'BOOKING_REQUEST_PLAN', partnerVenueId: 'venue_a,venue_b' });
+        const resolved = adminTrafficSearchResolve(search);
+        expect(resolved.focusedKey).toBe('BOOKING_REQUEST_PLAN');
+        expect(resolved.partnerVenueIds).toEqual(['venue_a', 'venue_b']);
+        expect(resolved.compareIds).toEqual(['venue_a', 'venue_b']);
+        expect(adminTrafficSearchToUrl(resolved).partnerVenueId).toBe('venue_a,venue_b');
+    });
 });

@@ -13,6 +13,7 @@ import {
     webPageKeyRanksFullCatalog,
     webPageVisitDetailPathPatternByKey,
     webPageVisitEntityParamByKey,
+    webPageVisitEntityUsesPartnerVenue,
 } from '../../shared/webPage';
 import type { WebPageKey, WebPageKeyWithVisitEntity } from '../../shared/webPage';
 import { blogPosts, cities, cooks, occasions, partnerVenues, users } from '../db/schema';
@@ -110,7 +111,7 @@ async function catalogIdsForRank(key: WebPageKeyWithVisitEntity, serverRuntime: 
         const rows = await serverRuntime.db.select({ id: cities.cityId }).from(cities);
         return rows.map((row) => row.id);
     }
-    if (key === 'VENUES') {
+    if (webPageVisitEntityUsesPartnerVenue(key)) {
         const rows = await serverRuntime.db.select({ id: partnerVenues.partnerVenueId }).from(partnerVenues);
         return rows.map((row) => row.id);
     }
@@ -124,14 +125,15 @@ async function catalogIdsForRank(key: WebPageKeyWithVisitEntity, serverRuntime: 
 
 function entityIdsFromInput(key: WebPageKeyWithVisitEntity, entity: GqlSAdminWebPageVisitEntity | null | undefined): string[] {
     if (!entity) return [];
+    const param = webPageVisitEntityParamByKey[key];
     const raw =
-        key === 'CHEFS'
+        param === 'cookId'
             ? entity.cookIds
-            : key === 'CITIES'
+            : param === 'cityId'
               ? entity.cityIds
-              : key === 'VENUES'
+              : param === 'partnerVenueId'
                 ? entity.partnerVenueIds
-                : key === 'OCCASIONS'
+                : param === 'occasionId'
                   ? entity.occasionIds
                   : entity.blogPostIds;
     const ids: string[] = [];
@@ -256,7 +258,7 @@ async function entityRanksLabel(
                 pathName: city.pathName,
             });
         }
-    } else if (key === 'VENUES') {
+    } else if (webPageVisitEntityUsesPartnerVenue(key)) {
         const venueRows = await serverRuntime.db
             .select({
                 partnerVenueId: partnerVenues.partnerVenueId,

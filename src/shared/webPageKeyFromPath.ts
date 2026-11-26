@@ -12,12 +12,33 @@ export type WebPageVisitMatch = {
     };
 };
 
+function visitSearchParams(pathWithoutLocale: string, search = ''): URLSearchParams {
+    const queryInPath = pathWithoutLocale.indexOf('?');
+    const fromPath = queryInPath === -1 ? '' : pathWithoutLocale.slice(queryInPath + 1);
+    const fromSearch = search.startsWith('?') ? search.slice(1) : search;
+    return new URLSearchParams(fromSearch || fromPath);
+}
+
+function visitPathname(pathWithoutLocale: string): string {
+    const queryInPath = pathWithoutLocale.indexOf('?');
+    const pathOnly = queryInPath === -1 ? pathWithoutLocale : pathWithoutLocale.slice(0, queryInPath);
+    return pathOnly.replace(/\/+$/, '') || '/';
+}
+
+function visitSearchParam(searchParams: URLSearchParams, name: string): string | undefined {
+    const value = searchParams.get(name)?.trim();
+    return value ? value : undefined;
+}
+
 /**
  * Maps a locale-stripped public pathname to a WebPageKey for session visit
- * tracking. Returns null for admin/profile/workspace routes and unknown paths.
+ * tracking. `search` is the query string (`?venueId=…`); a query already on
+ * `pathWithoutLocale` is used when `search` is empty (stored / backfill paths).
+ * Returns null for admin/profile/workspace routes and unknown paths.
  */
-export function webPageKeyFromPath(pathWithoutLocale: string): WebPageVisitMatch | null {
-    const path = pathWithoutLocale.replace(/\/+$/, '') || '/';
+export function webPageKeyFromPath(pathWithoutLocale: string, search = ''): WebPageVisitMatch | null {
+    const path = visitPathname(pathWithoutLocale);
+    const searchParams = visitSearchParams(pathWithoutLocale, search);
 
     if (path === '/admin' || path.startsWith('/admin/')) return null;
     if (path === '/profile' || path.startsWith('/profile/')) return null;
@@ -38,7 +59,12 @@ export function webPageKeyFromPath(pathWithoutLocale: string): WebPageVisitMatch
     if (path === '/booking-request') return { webPageKey: 'BOOKING_REQUEST' };
     if (path === '/booking-request/form') return { webPageKey: 'BOOKING_REQUEST_FORM' };
     if (path === '/booking-request/chat') return { webPageKey: 'BOOKING_REQUEST_CHAT' };
-    if (path === '/booking-request/plan') return { webPageKey: 'BOOKING_REQUEST_PLAN' };
+    if (path === '/booking-request/plan') {
+        const venueId = visitSearchParam(searchParams, 'venueId') ?? visitSearchParam(searchParams, 'partnerId');
+        return venueId
+            ? { webPageKey: 'BOOKING_REQUEST_PLAN', params: { partnerVenueId: venueId } }
+            : { webPageKey: 'BOOKING_REQUEST_PLAN' };
+    }
     if (path === '/chef-sign-up') return { webPageKey: 'CHEF_SIGN_UP' };
     if (path === '/imprint') return { webPageKey: 'IMPRINT' };
     if (path === '/terms-and-conditions') return { webPageKey: 'TERMS_AND_CONDITIONS' };

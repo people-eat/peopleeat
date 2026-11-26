@@ -230,6 +230,9 @@ export const sessionEvents = pgTable(
         index('SessionEvents_webPageVisit_venues_partnerVenueId_createdAt_idx')
             .using('btree', sql`(${table.payload}->'params'->>'partnerVenueId')`, table.createdAt)
             .where(sql`${table.type} = 'WEB_PAGE_VISITED' AND ${table.payload}->>'webPageKey' = 'VENUES'`),
+        index('SessionEvents_webPageVisit_plan_partnerVenueId_createdAt_idx')
+            .using('btree', sql`(${table.payload}->'params'->>'partnerVenueId')`, table.createdAt)
+            .where(sql`${table.type} = 'WEB_PAGE_VISITED' AND ${table.payload}->>'webPageKey' = 'BOOKING_REQUEST_PLAN'`),
         index('SessionEvents_webPageVisit_occasions_occasionId_createdAt_idx')
             .using('btree', sql`(${table.payload}->'params'->>'occasionId')`, table.createdAt)
             .where(sql`${table.type} = 'WEB_PAGE_VISITED' AND ${table.payload}->>'webPageKey' = 'OCCASIONS'`),

@@ -374,4 +374,53 @@ describe('adminWebPageVisitTrafficFindOne', () => {
             expect.arrayContaining([expect.objectContaining({ id: cityId, pageviews: 0, uniqueSessions: 0 })]),
         );
     });
+
+    it('ranks booking-request plan visits by venueId query param', async () => {
+        const { serverRuntime, requestingSession } = await commandSetup();
+        const venue = await partnerVenueInsert({ name: 'Loft' });
+        const range = isolatedRange();
+        await testDb.insert(sessionEvents).values([
+            {
+                sessionEventId: idCreate(),
+                sessionId: requestingSession.sessionId,
+                type: 'WEB_PAGE_VISITED',
+                payload: { webPageKey: 'BOOKING_REQUEST_PLAN', path: '/booking-request/plan' },
+                createdAt: range.at,
+            },
+            {
+                sessionEventId: idCreate(),
+                sessionId: requestingSession.sessionId,
+                type: 'WEB_PAGE_VISITED',
+                payload: {
+                    webPageKey: 'BOOKING_REQUEST_PLAN',
+                    path: `/booking-request/plan?venueId=${venue.partnerVenueId}`,
+                    params: { partnerVenueId: venue.partnerVenueId },
+                },
+                createdAt: range.at,
+            },
+        ]);
+
+        const traffic = await adminWebPageVisitTrafficFindOne(
+            {
+                range,
+                granularity: 'day',
+                webPageKeys: ['BOOKING_REQUEST_PLAN'],
+                audience: 'HUMAN',
+                metric: 'PAGEVIEWS',
+                scope: 'ALL',
+                entity: null,
+            },
+            requestingSession,
+            serverRuntime,
+        );
+
+        expect(traffic.pageviews).toBe(2);
+        expect(traffic.entityVisitCount).toBe(1);
+        expect(traffic.entityRanks[0]).toEqual(
+            expect.objectContaining({ id: WEB_PAGE_VISIT_INDEX_RANK_ID, pageviews: 1, uniqueSessions: 1 }),
+        );
+        expect(traffic.entityRanks).toEqual(
+            expect.arrayContaining([expect.objectContaining({ id: venue.partnerVenueId, pageviews: 1, uniqueSessions: 1 })]),
+        );
+    });
 });

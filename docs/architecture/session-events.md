@@ -24,7 +24,7 @@ are **never** accepted by `sessionEventCreate` (password sign-in, phone confirm,
 
 | Key                                                  | Emitter                                                              | Payload (summary)                                                                                                                 |
 | ---------------------------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `WEB_PAGE_VISITED`                                   | `SessionWebPageVisitTracker` → `sessionWebPageVisitCreate`           | `webPageKey`, optional `path` / entity ids                                                                                        |
+| `WEB_PAGE_VISITED`                                   | `SessionWebPageVisitTracker` → `sessionWebPageVisitCreate`           | `webPageKey`, optional `path` / entity ids (`params.partnerVenueId` from plan `?venueId=`)                                        |
 | `WEB_PAGE_INTERACTION`                               | Booking form / cook offer create → `sessionWebPageInteractionCreate` | `webPageKey`, `area`, optional `bookingRequestId`, structured `interaction`                                                       |
 | `BOOKING_REQUEST_CREATED`                            | `userBookingRequestCreate`                                           | `bookingRequestId`, optional `requestedCookId`, optional `requestedMenuId`                                                        |
 | `BOOKING_REQUEST_OPENED_TO_OTHER_COOKS`              | `userBookingRequestOpenToOtherCooks`                                 | `bookingRequestId`                                                                                                                |
@@ -105,7 +105,8 @@ Admin descriptions mark these with “(Legacy)” / “(legacy)”.
   `webPageKey = 'CHEFS'`, and `params.cookId` is present, so a session-scoped MRU scan does not walk unrelated pageviews. See
   [last-visited-cook-profiles.md](../features/last-visited-cook-profiles.md).
 - Admin traffic entity ranking uses matching partial indexes on `params.cityId` / `partnerVenueId` / `occasionId` / `blogPostId` +
-  `createdAt` for those `webPageKey`s. See [admin-traffic.md](../features/admin-traffic.md).
+  `createdAt` for those `webPageKey`s, including `BOOKING_REQUEST_PLAN` × `partnerVenueId`. See
+  [admin-traffic.md](../features/admin-traffic.md).
 - Admin booking-request Origin (`AdminBookingRequest.creatingSession`) reverse-looks up the earliest `BOOKING_REQUEST_CREATED` row by
   `payload->>'bookingRequestId'`. Partial index `SessionEvents_bookingRequestCreated_bookingRequestId_createdAt_idx` on
   `(payload->>'bookingRequestId', createdAt)` where `type = 'BOOKING_REQUEST_CREATED'` and that JSON key is present. Predecessor
@@ -123,7 +124,8 @@ Admin descriptions mark these with “(Legacy)” / “(legacy)”.
 ## How it works
 
 1. Client route tracker maps locale-stripped paths → `WebPageKey` (`webPageKeyFromPath`) and calls `sessionWebPageVisitCreate` (skips
-   `/admin/*`, `/profile/*`). `/log-on` and legacy `/sign-in` both map to `SIGN_IN`.
+   `/admin/*`, `/profile/*`). `/log-on` and legacy `/sign-in` both map to `SIGN_IN`. `/booking-request/plan?venueId=` (legacy `partnerId`)
+   stores `params.partnerVenueId`.
 2. Booking form emits funnel interactions; cook pool detail / offer create emit cook offer funnel interactions; create/cancel and
    marketplace accept/decline/payment commands emit booking lifecycle events. Booking checkout UI emits checkout funnel interactions.
 3. Auth commands emit `AUTH_*` (and user-create / legal-accept) events.
@@ -132,8 +134,9 @@ Admin descriptions mark these with “(Legacy)” / “(legacy)”.
    booking-checkout funnels via the matching `Admin.*Flow` fields; cook offer funnel via `Admin.cookBookingRequestOfferFlow`; visit buckets
    via `Admin.sessionEventWebPageVisitCreations`; filterable visit explorer via `Admin.webPageVisitTraffic` / `Admin.webPageVisitCounts`
    ([admin-traffic.md](../features/admin-traffic.md)). Detail visits for chefs, cities, venues, occasions, and blog posts store a stable
-   entity id (slug resolved on write). Traffic can overlay up to 8 entities of the same catalog (`Admin.webPageVisitEntitySearch` adds ids
-   outside the top 20). A one-shot job backfills historical rows from stored `path`. Live `/partners` URLs still map onto `VENUES`.
+   entity id (slug resolved on write). Plan-page visits store `params.partnerVenueId` from the query. Traffic can overlay up to 8 entities
+   of the same catalog (`Admin.webPageVisitEntitySearch` adds ids outside the top 20). A one-shot job backfills historical rows from stored
+   `path`. Live `/partners` URLs still map onto `VENUES`.
 
 ## Key files
 

@@ -5,6 +5,7 @@ import {
     webPageKeyPublicPathByKey,
     webPageKeysAnalyticsFunnel,
     webPageVisitEntityPublicPath,
+    webPageVisitEntityUsesPartnerVenue,
 } from '../../../shared/webPage';
 import type { WebPageKey, WebPageKeyTracked, WebPageKeyWithVisitEntity } from '../../../shared/webPage';
 import type { Locale } from '../../utils/locale';
@@ -36,6 +37,9 @@ function adminTrafficPublicPageHref(
 ): string {
     if (entityId === WEB_PAGE_VISIT_INDEX_RANK_ID || (!pathName && !entityId)) {
         return localePath(locale, webPageKeyPublicPathByKey[webPageKey]);
+    }
+    if (webPageKey === 'BOOKING_REQUEST_PLAN' && entityId) {
+        return localePath(locale, webPageVisitEntityPublicPath('BOOKING_REQUEST_PLAN', entityId));
     }
     if (pathName && webPageKey === 'CITIES') return localePath(locale, webPageVisitEntityPublicPath('CITIES', pathName));
     if (pathName && webPageKey === 'VENUES') return localePath(locale, webPageVisitEntityPublicPath('VENUES', pathName));
@@ -84,7 +88,7 @@ export function adminTrafficEntityActions(
             params: { cityId: row.id },
             label: t(locale, 'admin', 'traffic.editRecord'),
         });
-    } else if (focusedKey === 'VENUES') {
+    } else if (webPageVisitEntityUsesPartnerVenue(focusedKey)) {
         links.push({
             to: '/{-$locale}/admin/partner-venues/$partnerVenueId',
             params: { partnerVenueId: row.id },
@@ -115,7 +119,7 @@ export function adminTrafficEntityActions(
 
 export function adminTrafficAddEntityLabel(locale: Locale, key: WebPageKeyWithVisitEntity): string {
     if (key === 'CITIES') return t(locale, 'admin', 'traffic.addCity');
-    if (key === 'VENUES') return t(locale, 'admin', 'traffic.addVenue');
+    if (webPageVisitEntityUsesPartnerVenue(key)) return t(locale, 'admin', 'traffic.addVenue');
     if (key === 'CHEFS') return t(locale, 'admin', 'traffic.addChef');
     if (key === 'OCCASIONS') return t(locale, 'admin', 'traffic.addOccasion');
     return t(locale, 'admin', 'traffic.addBlogPost');

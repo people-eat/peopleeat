@@ -3567,6 +3567,7 @@ input SessionWebPageVisitCreateInput {
     cityId: ID
     cookId: ID
     blogPostId: ID
+    # Catalog venue pages use the URL slug; booking-request plan uses `?venueId=` (legacy `partnerId`).
     partnerVenueId: ID
     occasionId: ID
     bookingRequestId: ID

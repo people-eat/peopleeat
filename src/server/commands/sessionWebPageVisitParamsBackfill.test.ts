@@ -81,4 +81,28 @@ describe('sessionWebPageVisitParamsBackfill', () => {
             params: { partnerVenueId: venue.partnerVenueId },
         });
     });
+
+    it('fills missing partnerVenueId from a plan-page venueId query', async () => {
+        const { serverRuntime, requestingSession } = await commandSetup();
+        const venue = await partnerVenueInsert({ name: 'Loft' });
+        const sessionEventId = idCreate();
+        await testDb.insert(sessionEvents).values({
+            sessionEventId,
+            sessionId: requestingSession.sessionId,
+            type: 'WEB_PAGE_VISITED',
+            payload: {
+                webPageKey: 'BOOKING_REQUEST_PLAN',
+                path: `/booking-request/plan?venueId=${venue.partnerVenueId}`,
+            },
+        });
+
+        await sessionWebPageVisitParamsBackfill(serverRuntime, { limit: 50 });
+
+        const [row] = await testDb.select().from(sessionEvents).where(eq(sessionEvents.sessionEventId, sessionEventId));
+        expect(row?.payload).toMatchObject({
+            webPageKey: 'BOOKING_REQUEST_PLAN',
+            path: `/booking-request/plan?venueId=${venue.partnerVenueId}`,
+            params: { partnerVenueId: venue.partnerVenueId },
+        });
+    });
 });

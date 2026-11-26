@@ -36,7 +36,7 @@ const webPageKeysSeoOnlySet = new Set<string>(webPageKeysSeoOnly);
 
 export type WebPageKeyTracked = Exclude<WebPageKey, (typeof webPageKeysSeoOnly)[number]>;
 
-const webPageKeysWithVisitEntity = ['CHEFS', 'CITIES', 'VENUES', 'OCCASIONS', 'BLOG_POSTS'] as const;
+const webPageKeysWithVisitEntity = ['CHEFS', 'CITIES', 'VENUES', 'OCCASIONS', 'BLOG_POSTS', 'BOOKING_REQUEST_PLAN'] as const;
 export type WebPageKeyWithVisitEntity = (typeof webPageKeysWithVisitEntity)[number];
 
 export const webPageVisitEntityParamByKey = {
@@ -45,6 +45,7 @@ export const webPageVisitEntityParamByKey = {
     VENUES: 'partnerVenueId',
     OCCASIONS: 'occasionId',
     BLOG_POSTS: 'blogPostId',
+    BOOKING_REQUEST_PLAN: 'partnerVenueId',
 } as const satisfies Record<WebPageKeyWithVisitEntity, 'cookId' | 'cityId' | 'partnerVenueId' | 'occasionId' | 'blogPostId'>;
 
 export const webPageVisitDetailPathPatternByKey = {
@@ -53,6 +54,7 @@ export const webPageVisitDetailPathPatternByKey = {
     VENUES: '^/(venues|partners)/[^/]+/?$',
     OCCASIONS: '^/occasions/[^/]+/?$',
     BLOG_POSTS: '^/blog-posts/[^/]+/?$',
+    BOOKING_REQUEST_PLAN: '^/booking-request/plan/?\\?(?:[^#]*&)?(?:venueId|partnerId)=',
 } as const satisfies Record<WebPageKeyWithVisitEntity, string>;
 
 export const WEB_PAGE_VISIT_TRAFFIC_SERIES_MAX = 8;
@@ -89,6 +91,7 @@ const webPageVisitEntityDetailPathPrefixByKey = {
     VENUES: '/venues',
     OCCASIONS: '/occasions',
     BLOG_POSTS: '/blog-posts',
+    BOOKING_REQUEST_PLAN: '/booking-request/plan',
 } as const satisfies Record<WebPageKeyWithVisitEntity, string>;
 
 export const webPageKeysTrafficDiscovery = [
@@ -128,7 +131,14 @@ export const webPageKeysAnalyticsFunnel = [
 ] as const satisfies readonly WebPageKeyTracked[];
 
 export function webPageVisitEntityPublicPath(key: WebPageKeyWithVisitEntity, pathName: string): `/${string}` {
+    if (key === 'BOOKING_REQUEST_PLAN') {
+        return `/booking-request/plan?venueId=${pathName}` as `/${string}`;
+    }
     return `${webPageVisitEntityDetailPathPrefixByKey[key]}/${pathName}` as `/${string}`;
+}
+
+export function webPageVisitEntityUsesPartnerVenue(key: WebPageKeyWithVisitEntity): boolean {
+    return webPageVisitEntityParamByKey[key] === 'partnerVenueId';
 }
 
 export function webPageKeyIsTracked(key: WebPageKey): key is WebPageKeyTracked {
@@ -139,7 +149,7 @@ export function webPageKeyHasVisitEntity(key: WebPageKey): key is WebPageKeyWith
     return (webPageKeysWithVisitEntity as readonly string[]).includes(key);
 }
 
-/** Cities, venues, occasions, and posts are small catalogs. Chefs stay visit top-20 plus search. */
+/** Cities, venues, plan-page venues, occasions, and posts are small catalogs. Chefs stay visit top-20 plus search. */
 export function webPageKeyRanksFullCatalog(key: WebPageKeyWithVisitEntity): boolean {
     return key !== 'CHEFS';
 }

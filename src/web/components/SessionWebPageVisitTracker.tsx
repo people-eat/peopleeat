@@ -14,6 +14,7 @@ import { pathWithoutLocale } from '../utils/locale';
 export function SessionWebPageVisitTracker() {
     const locale = useLocale();
     const pathname = useLocation({ select: (location) => location.pathname });
+    const searchStr = useLocation({ select: (location) => location.searchStr ?? '' });
     const isLoading = useRouterState({ select: (state) => state.isLoading });
     const [, visitCreate] = useMutation(SessionWebPageVisitTrackerCreateDocument);
     const lastKeyRef = useRef<string | null>(null);
@@ -22,12 +23,17 @@ export function SessionWebPageVisitTracker() {
         if (isLoading) return;
 
         const stripped = pathWithoutLocale(pathname, locale);
-        const match = webPageKeyFromPath(stripped);
+        const match = webPageKeyFromPath(stripped, searchStr);
         if (!match) return;
+
+        const storedPath =
+            match.webPageKey === 'BOOKING_REQUEST_PLAN' && match.params?.partnerVenueId
+                ? `${stripped}?venueId=${encodeURIComponent(match.params.partnerVenueId)}`
+                : stripped;
 
         const dedupeKey = JSON.stringify({
             webPageKey: match.webPageKey,
-            path: stripped,
+            path: storedPath,
             params: match.params ?? null,
         });
         if (lastKeyRef.current === dedupeKey) return;
@@ -36,7 +42,7 @@ export function SessionWebPageVisitTracker() {
         void visitCreate({
             input: {
                 webPageKey: match.webPageKey,
-                path: stripped,
+                path: storedPath,
                 cityId: match.params?.cityId,
                 cookId: match.params?.cookId,
                 blogPostId: match.params?.blogPostId,
@@ -45,7 +51,7 @@ export function SessionWebPageVisitTracker() {
                 bookingRequestId: match.params?.bookingRequestId,
             },
         });
-    }, [isLoading, locale, pathname, visitCreate]);
+    }, [isLoading, locale, pathname, searchStr, visitCreate]);
 
     return null;
 }

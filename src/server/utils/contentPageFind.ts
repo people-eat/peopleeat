@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, isNotNull, lte, sql } from 'drizzle-orm';
 
 import type { CityCountryCode } from '../../shared/cityCountryCode';
+import { isNanoId } from '../../shared/idCreate';
 import type { Database } from '../db';
 import { blogPosts, cities, occasions, partnerVenues } from '../db/schema';
 import type { BlogPost, City, Occasion, PartnerVenue } from '../db/schema';
@@ -28,7 +29,10 @@ export async function partnerVenueFindByPathNameAny(db: Database, pathName: stri
         .from(partnerVenues)
         .where(sql`${pathName} = any(${partnerVenues.previousPathNames})`)
         .limit(1);
-    return byPrevious ?? null;
+    if (byPrevious) return byPrevious;
+    if (!isNanoId(pathName)) return null;
+    const [byId] = await db.select().from(partnerVenues).where(eq(partnerVenues.partnerVenueId, pathName)).limit(1);
+    return byId ?? null;
 }
 
 export async function occasionFindByPathNameAny(db: Database, pathName: string): Promise<Occasion | null> {

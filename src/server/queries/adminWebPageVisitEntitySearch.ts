@@ -2,7 +2,12 @@ import { and, eq, ilike, or, sql } from 'drizzle-orm';
 
 import { contentLocaleText } from '../../shared/contentSection';
 import { DEFAULT_LOCALE } from '../../shared/locale';
-import { WEB_PAGE_VISIT_ENTITY_RANK_MAX, WEB_PAGE_VISIT_ENTITY_SEARCH_MIN_QUERY, webPageKeyHasVisitEntity } from '../../shared/webPage';
+import {
+    WEB_PAGE_VISIT_ENTITY_RANK_MAX,
+    WEB_PAGE_VISIT_ENTITY_SEARCH_MIN_QUERY,
+    webPageKeyHasVisitEntity,
+    webPageVisitEntityUsesPartnerVenue,
+} from '../../shared/webPage';
 import type { WebPageKeyWithVisitEntity } from '../../shared/webPage';
 import { blogPosts, cities, cooks, occasions, partnerVenues, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -79,7 +84,7 @@ async function searchNamedEntities(
         }));
     }
 
-    if (key === 'VENUES') {
+    if (webPageVisitEntityUsesPartnerVenue(key)) {
         const rows = await serverRuntime.db
             .select({ partnerVenueId: partnerVenues.partnerVenueId, pathName: partnerVenues.pathName, name: partnerVenues.name })
             .from(partnerVenues)

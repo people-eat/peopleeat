@@ -22,11 +22,12 @@ explore ranking, overlay comparable catalog pages, then open the live page, CMS,
    includes bots and staff for local checks.
 7. **Metric** chooses what the line plots and how tables sort (page views vs unique sessions). KPIs always show both unless a comparison is
    active.
-8. When exactly one selected key is chefs, cities, venues, occasions, or blog posts:
+8. When exactly one selected key is chefs, cities, venues, occasions, blog posts, or the booking-request plan:
    - **Scope** can limit index pages vs detail pages while no entities are compared.
    - The global page-key ranking hides so Landing is not mixed into that catalog. A table titled with the page label lists the **overview
-     page** (index visits) first, then labeled cities / chefs / venues / occasions / posts. Cities, locations, occasions, and posts include
-     the full catalog even at 0 visits. Chefs stay a visit top-20; search covers the rest.
+     page** (index visits) first, then labeled cities / chefs / venues / occasions / posts. Cities, locations, occasions, posts, and
+     plan-page venues include the full catalog even at 0 visits. Chefs stay a visit top-20; search covers the rest. Plan ranking is by
+     `?venueId=` (legacy `?partnerId=`); overview is visits with no venue query.
    - A plus on the row **toggles** it into a comparison set (max 8), including overview. The chart overlays one labeled line per selected
      entity. Unique sessions are **not** summed across rows. Selected entities outside the visit ranking stay pinned after overview.
    - **Add city / location / chef / …** searches records by name (2+ characters) so operators can compare pages that are not in the table.
@@ -55,7 +56,9 @@ Cross-catalog overlay (a city vs a venue) is out of scope.
 ### Chosen
 
 First-party `WEB_PAGE_VISITED` aggregates on a Traffic hub. Catalog detail visits store stable entity ids (resolved from the URL slug) so
-operators can drill into a city, chef, venue, occasion, or blog post and compare up to 8 of the same catalog. Web Pages only links here.
+operators can drill into a city, chef, venue, occasion, or blog post and compare up to 8 of the same catalog. Booking-request plan visits
+store `params.partnerVenueId` from `?venueId=` / `?partnerId=` so operators can see which venue brought the visitor. Web Pages only links
+here.
 
 ## Next steps
 
@@ -69,9 +72,13 @@ operators can drill into a city, chef, venue, occasion, or blog post and compare
 - SDL: `AdminWebPageVisitTraffic`, `Admin.webPageVisitTraffic`, `Admin.webPageVisitEntitySearch`, `Admin.webPageVisitCounts`, audience /
   metric / scope enums. `AdminWebPageVisitEntity` takes id lists. Series carry `entityId`, `label`, and previous-period buckets.
 - Queries: `adminWebPageVisitTrafficFindOne`, `adminWebPageVisitEntitySearch`, `adminWebPageVisitCountFindMany`
-- Visit write: `webPageKeyFromPath` captures catalog path segments; `sessionWebPageVisitParamsResolve` maps slugs to stable ids in
-  `sessionWebPageVisitCreate`. Public `/partners` 301s to `/venues`; the path map still records those URLs as `VENUES`.
-- Backfill: `sessionWebPageVisitParamsBackfill` (chunked), queued job `session-web-page-visit-params-backfill` enqueued once on worker start
-- Indexes: partial `(params.cityId|partnerVenueId|occasionId|blogPostId, createdAt)` on `WEB_PAGE_VISITED` for those keys
+- Visit write: `webPageKeyFromPath` captures catalog path segments and the plan-page `venueId` / `partnerId` query;
+  `sessionWebPageVisitParamsResolve` maps slugs or ids to stable ids in `sessionWebPageVisitCreate`. Public `/partners` 301s to `/venues`;
+  the path map still records those URLs as `VENUES`. Plan visits store a sanitized `/booking-request/plan?venueId=…` path (not the full
+  search, which can include `firstName`).
+- Backfill: `sessionWebPageVisitParamsBackfill` (chunked), queued job `session-web-page-visit-params-backfill` enqueued once on worker
+  start. Historical plan visits that stored pathname only cannot recover venue attribution.
+- Indexes: partial `(params.cityId|partnerVenueId|occasionId|blogPostId, createdAt)` on `WEB_PAGE_VISITED` for those keys, plus
+  `BOOKING_REQUEST_PLAN` × `partnerVenueId`
 - UI: `AdminTrafficPage`, `AdminTrafficEntitySearch`, `AdminOverviewLineChart`, route `traffic.tsx`, nav via `adminCatalog` (`traffic`)
 - Architecture: [session-events.md](../architecture/session-events.md)

@@ -1,7 +1,12 @@
 import { differenceInCalendarDays, parseISO, subDays } from 'date-fns';
 
 import { formatIsoDate } from '../../../shared';
-import { WEB_PAGE_VISIT_TRAFFIC_SERIES_MAX, webPageKeyHasVisitEntity, webPageKeyIsTracked } from '../../../shared/webPage';
+import {
+    WEB_PAGE_VISIT_TRAFFIC_SERIES_MAX,
+    webPageKeyHasVisitEntity,
+    webPageKeyIsTracked,
+    webPageVisitEntityUsesPartnerVenue,
+} from '../../../shared/webPage';
 import type { WebPageKey, WebPageKeyWithVisitEntity } from '../../../shared/webPage';
 import type {
     GqlCAdminTimeBucketGranularity,
@@ -112,7 +117,7 @@ export function adminTrafficSearchResolve(search: AdminTrafficSearch): AdminTraf
     const focusedKey = keys.length === 1 && webPageKeyHasVisitEntity(keys[0]!) ? keys[0]! : null;
     const cookIds = focusedKey === 'CHEFS' ? parseIdList(search.cookId) : [];
     const cityIds = focusedKey === 'CITIES' ? parseIdList(search.cityId) : [];
-    const partnerVenueIds = focusedKey === 'VENUES' ? parseIdList(search.partnerVenueId) : [];
+    const partnerVenueIds = focusedKey && webPageVisitEntityUsesPartnerVenue(focusedKey) ? parseIdList(search.partnerVenueId) : [];
     const occasionIds = focusedKey === 'OCCASIONS' ? parseIdList(search.occasionId) : [];
     const blogPostIds = focusedKey === 'BLOG_POSTS' ? parseIdList(search.blogPostId) : [];
     const compareIds =
@@ -120,7 +125,7 @@ export function adminTrafficSearchResolve(search: AdminTrafficSearch): AdminTraf
             ? cookIds
             : focusedKey === 'CITIES'
               ? cityIds
-              : focusedKey === 'VENUES'
+              : focusedKey && webPageVisitEntityUsesPartnerVenue(focusedKey)
                 ? partnerVenueIds
                 : focusedKey === 'OCCASIONS'
                   ? occasionIds
@@ -163,7 +168,9 @@ export function adminTrafficSearchToUrl(resolved: AdminTrafficResolved): AdminTr
         cookId: resolved.focusedKey === 'CHEFS' && resolved.cookIds.length > 0 ? resolved.cookIds.join(',') : undefined,
         cityId: resolved.focusedKey === 'CITIES' && resolved.cityIds.length > 0 ? resolved.cityIds.join(',') : undefined,
         partnerVenueId:
-            resolved.focusedKey === 'VENUES' && resolved.partnerVenueIds.length > 0 ? resolved.partnerVenueIds.join(',') : undefined,
+            resolved.focusedKey && webPageVisitEntityUsesPartnerVenue(resolved.focusedKey) && resolved.partnerVenueIds.length > 0
+                ? resolved.partnerVenueIds.join(',')
+                : undefined,
         occasionId: resolved.focusedKey === 'OCCASIONS' && resolved.occasionIds.length > 0 ? resolved.occasionIds.join(',') : undefined,
         blogPostId: resolved.focusedKey === 'BLOG_POSTS' && resolved.blogPostIds.length > 0 ? resolved.blogPostIds.join(',') : undefined,
         previous: resolved.previous ? undefined : '0',
@@ -173,7 +180,7 @@ export function adminTrafficSearchToUrl(resolved: AdminTrafficResolved): AdminTr
 function adminTrafficCompareIdsForKey(resolved: AdminTrafficResolved, key: WebPageKeyWithVisitEntity): string[] {
     if (key === 'CHEFS') return resolved.cookIds;
     if (key === 'CITIES') return resolved.cityIds;
-    if (key === 'VENUES') return resolved.partnerVenueIds;
+    if (webPageVisitEntityUsesPartnerVenue(key)) return resolved.partnerVenueIds;
     if (key === 'OCCASIONS') return resolved.occasionIds;
     return resolved.blogPostIds;
 }
@@ -206,7 +213,7 @@ function adminTrafficCompareIdsPatch(key: WebPageKeyWithVisitEntity, ids: string
     return {
         cookIds: key === 'CHEFS' ? ids : [],
         cityIds: key === 'CITIES' ? ids : [],
-        partnerVenueIds: key === 'VENUES' ? ids : [],
+        partnerVenueIds: webPageVisitEntityUsesPartnerVenue(key) ? ids : [],
         occasionIds: key === 'OCCASIONS' ? ids : [],
         blogPostIds: key === 'BLOG_POSTS' ? ids : [],
         scope: 'ALL',

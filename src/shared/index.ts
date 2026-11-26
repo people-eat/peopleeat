@@ -239,6 +239,7 @@ export {
     webPageKeyIsTracked,
     webPageKeys,
     webPageVisitEntityParamByKey,
+    webPageVisitEntityUsesPartnerVenue,
 } from './webPage';
 export type { WebPageKey, WebPageKeyTracked, WebPageKeyWithVisitEntity, WebPageSeoDefaults } from './webPage';
 export { webPageKeyFromPath } from './webPageKeyFromPath';

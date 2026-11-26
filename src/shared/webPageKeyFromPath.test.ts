@@ -8,6 +8,14 @@ describe('webPageKeyFromPath', () => {
         expect(webPageKeyFromPath('/booking-request/form')).toEqual({ webPageKey: 'BOOKING_REQUEST_FORM' });
         expect(webPageKeyFromPath('/booking-request/chat')).toEqual({ webPageKey: 'BOOKING_REQUEST_CHAT' });
         expect(webPageKeyFromPath('/booking-request/plan')).toEqual({ webPageKey: 'BOOKING_REQUEST_PLAN' });
+        expect(webPageKeyFromPath('/booking-request/plan', '?venueId=venue_abc')).toEqual({
+            webPageKey: 'BOOKING_REQUEST_PLAN',
+            params: { partnerVenueId: 'venue_abc' },
+        });
+        expect(webPageKeyFromPath('/booking-request/plan?partnerId=legacy_venue')).toEqual({
+            webPageKey: 'BOOKING_REQUEST_PLAN',
+            params: { partnerVenueId: 'legacy_venue' },
+        });
         expect(webPageKeyFromPath('/log-on')).toEqual({ webPageKey: 'SIGN_IN' });
         expect(webPageKeyFromPath('/sign-in')).toEqual({ webPageKey: 'SIGN_IN' });
     });
