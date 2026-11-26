@@ -58,7 +58,7 @@ describe('sessionWebPageVisitParamsBackfill', () => {
         expect(row?.payload).toEqual({ webPageKey: 'CITIES', path: '/cities' });
     });
 
-    it('copies a legacy partnerId onto partnerVenueId', async () => {
+    it('fills missing partnerVenueId from the stored path', async () => {
         const { serverRuntime, requestingSession } = await commandSetup();
         const venue = await partnerVenueInsert({ name: 'Loft' });
         const sessionEventId = idCreate();
@@ -68,8 +68,7 @@ describe('sessionWebPageVisitParamsBackfill', () => {
             type: 'WEB_PAGE_VISITED',
             payload: {
                 webPageKey: 'VENUES',
-                path: `/partners/${venue.pathName}`,
-                params: { partnerId: venue.partnerVenueId } as never,
+                path: `/venues/${venue.pathName}`,
             },
         });
 
@@ -77,7 +76,9 @@ describe('sessionWebPageVisitParamsBackfill', () => {
 
         const [row] = await testDb.select().from(sessionEvents).where(eq(sessionEvents.sessionEventId, sessionEventId));
         expect(row?.payload).toMatchObject({
-            params: { partnerId: venue.partnerVenueId, partnerVenueId: venue.partnerVenueId },
+            webPageKey: 'VENUES',
+            path: `/venues/${venue.pathName}`,
+            params: { partnerVenueId: venue.partnerVenueId },
         });
     });
 });

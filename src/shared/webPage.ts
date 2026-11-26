@@ -131,25 +131,6 @@ export function webPageVisitEntityPublicPath(key: WebPageKeyWithVisitEntity, pat
     return `${webPageVisitEntityDetailPathPrefixByKey[key]}/${pathName}` as `/${string}`;
 }
 
-export type WebPageVisitStoredParams = {
-    cityId?: string;
-    cookId?: string;
-    blogPostId?: string;
-    partnerVenueId?: string;
-    partnerId?: string;
-    venueId?: string;
-    occasionId?: string;
-    bookingRequestId?: string;
-};
-
-/** Live writes use `partnerVenueId`. Older public partner pages stored `partnerId` or `venueId`. */
-export function webPageVisitVenueIdFromParams(
-    params?: { partnerVenueId?: string | null; partnerId?: string | null; venueId?: string | null } | null,
-): string | undefined {
-    const value = params?.partnerVenueId ?? params?.partnerId ?? params?.venueId;
-    return value && value.length > 0 ? value : undefined;
-}
-
 export function webPageKeyIsTracked(key: WebPageKey): key is WebPageKeyTracked {
     return !webPageKeysSeoOnlySet.has(key);
 }
@@ -163,15 +144,9 @@ export function webPageKeyRanksFullCatalog(key: WebPageKeyWithVisitEntity): bool
     return key !== 'CHEFS';
 }
 
-/** Historical visit rows stored `PARTNERS` before the key became `VENUES`. */
 export function webPageKeyParse(value: string | null | undefined): WebPageKey | null {
     if (!value) return null;
-    if (value === 'PARTNERS') return 'VENUES';
     return (webPageKeys as readonly string[]).includes(value) ? (value as WebPageKey) : null;
-}
-
-export function webPageKeyStoredValues(key: WebPageKey): readonly string[] {
-    return key === 'VENUES' ? ['VENUES', 'PARTNERS'] : [key];
 }
 
 export type WebPageSeoDefaults = {

@@ -80,14 +80,14 @@ describe('adminWebPageVisitTrafficFindOne', () => {
         expect(cityList.entityRanks[0]?.id).toBe(cityId);
     });
 
-    it('maps historical PARTNERS visits onto VENUES', async () => {
+    it('ranks venue index visits', async () => {
         const { serverRuntime, requestingSession } = await commandSetup();
         const range = isolatedRange();
         await testDb.insert(sessionEvents).values({
             sessionEventId: idCreate(),
             sessionId: requestingSession.sessionId,
             type: 'WEB_PAGE_VISITED',
-            payload: { webPageKey: 'PARTNERS' as never, path: '/partners' },
+            payload: { webPageKey: 'VENUES', path: '/venues' },
             createdAt: range.at,
         });
 
@@ -155,7 +155,7 @@ describe('adminWebPageVisitTrafficFindOne', () => {
         expect(chefs.entityRanks[1]).toEqual(expect.objectContaining({ id: cookId, pageviews: 1 }));
     });
 
-    it('ranks historical partnerId venue visits with the stable venue id', async () => {
+    it('ranks venue detail visits with the stable venue id', async () => {
         const { serverRuntime, requestingSession } = await commandSetup();
         const venue = await partnerVenueInsert({ name: 'Loft' });
         const range = isolatedRange();
@@ -164,9 +164,9 @@ describe('adminWebPageVisitTrafficFindOne', () => {
             sessionId: requestingSession.sessionId,
             type: 'WEB_PAGE_VISITED',
             payload: {
-                webPageKey: 'PARTNERS' as never,
-                path: `/partners/${venue.pathName}`,
-                params: { partnerId: venue.partnerVenueId } as never,
+                webPageKey: 'VENUES',
+                path: `/venues/${venue.pathName}`,
+                params: { partnerVenueId: venue.partnerVenueId },
             },
             createdAt: range.at,
         });

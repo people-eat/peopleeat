@@ -21,7 +21,7 @@ export async function adminWebPageVisitCountFindMany(
         const audience = adminWebPageVisitAudienceSql(args.audience);
         const result = await serverRuntime.db.execute<CountRow>(sql`
             SELECT
-                CASE e.payload->>'webPageKey' WHEN 'PARTNERS' THEN 'VENUES' ELSE e.payload->>'webPageKey' END AS web_page_key,
+                e.payload->>'webPageKey' AS web_page_key,
                 COUNT(*)::int AS pageviews
             FROM "SessionEvents" e
             ${audience.join}

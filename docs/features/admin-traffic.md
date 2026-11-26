@@ -70,8 +70,7 @@ operators can drill into a city, chef, venue, occasion, or blog post and compare
   metric / scope enums. `AdminWebPageVisitEntity` takes id lists. Series carry `entityId`, `label`, and previous-period buckets.
 - Queries: `adminWebPageVisitTrafficFindOne`, `adminWebPageVisitEntitySearch`, `adminWebPageVisitCountFindMany`
 - Visit write: `webPageKeyFromPath` captures catalog path segments; `sessionWebPageVisitParamsResolve` maps slugs to stable ids in
-  `sessionWebPageVisitCreate`. Historical `PARTNERS` visit keys rank as `VENUES`. Legacy visit params `partnerId` / `venueId` coalesce to
-  `partnerVenueId` (public `/partners` 301s to `/venues`; old partner ids match venue ids).
+  `sessionWebPageVisitCreate`. Public `/partners` 301s to `/venues`; the path map still records those URLs as `VENUES`.
 - Backfill: `sessionWebPageVisitParamsBackfill` (chunked), queued job `session-web-page-visit-params-backfill` enqueued once on worker start
 - Indexes: partial `(params.cityId|partnerVenueId|occasionId|blogPostId, createdAt)` on `WEB_PAGE_VISITED` for those keys
 - UI: `AdminTrafficPage`, `AdminTrafficEntitySearch`, `AdminOverviewLineChart`, route `traffic.tsx`, nav via `adminCatalog` (`traffic`)

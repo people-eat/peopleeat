@@ -1,4 +1,3 @@
-import { webPageVisitVenueIdFromParams } from '../../shared/webPage';
 import type { Database } from '../db';
 import type { SessionEventWebPageVisitedPayload } from '../domain/sessionEvent';
 import {
@@ -14,8 +13,6 @@ export type SessionWebPageVisitParamsInput = {
     cookId?: string | null;
     blogPostId?: string | null;
     partnerVenueId?: string | null;
-    partnerId?: string | null;
-    venueId?: string | null;
     occasionId?: string | null;
     bookingRequestId?: string | null;
 };
@@ -43,10 +40,9 @@ export async function sessionWebPageVisitParamsResolve(
         const blogPost = await blogPostFindByPathNameAny(db, input.blogPostId);
         params.blogPostId = blogPost?.blogPostId ?? input.blogPostId;
     }
-    const venueId = webPageVisitVenueIdFromParams(input);
-    if (venueId) {
-        const venue = await partnerVenueFindByPathNameAny(db, venueId);
-        params.partnerVenueId = venue?.partnerVenueId ?? venueId;
+    if (input.partnerVenueId) {
+        const venue = await partnerVenueFindByPathNameAny(db, input.partnerVenueId);
+        params.partnerVenueId = venue?.partnerVenueId ?? input.partnerVenueId;
     }
     if (input.occasionId) {
         const occasion = await occasionFindByPathNameAny(db, input.occasionId);

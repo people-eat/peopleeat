@@ -11,7 +11,6 @@ import {
     webPageKeyHasVisitEntity,
     webPageKeyParse,
     webPageKeyRanksFullCatalog,
-    webPageKeyStoredValues,
     webPageVisitDetailPathPatternByKey,
     webPageVisitEntityParamByKey,
 } from '../../shared/webPage';
@@ -94,24 +93,15 @@ function previousWindow(startDateTime: Date, endDateTime: Date): { startDateTime
 }
 
 export function entityParamExpr(key: WebPageKeyWithVisitEntity): ReturnType<typeof sql.raw> {
-    if (key === 'VENUES') {
-        return sql.raw(
-            `COALESCE(e.payload->'params'->>'partnerVenueId', e.payload->'params'->>'partnerId', e.payload->'params'->>'venueId')`,
-        );
-    }
     return sql.raw(`e.payload->'params'->>'${webPageVisitEntityParamByKey[key]}'`);
 }
 
-function canonicalWebPageKeySql() {
-    return sql`CASE e.payload->>'webPageKey' WHEN 'PARTNERS' THEN 'VENUES' ELSE e.payload->>'webPageKey' END`;
+function webPageKeySql() {
+    return sql`e.payload->>'webPageKey'`;
 }
 
 export function storedWebPageKeyMatchSql(key: WebPageKey) {
-    const storedKeys = webPageKeyStoredValues(key);
-    return sql`e.payload->>'webPageKey' IN (${sql.join(
-        storedKeys.map((stored) => sql`${stored}`),
-        sql`, `,
-    )})`;
+    return sql`e.payload->>'webPageKey' = ${key}`;
 }
 
 async function catalogIdsForRank(key: WebPageKeyWithVisitEntity, serverRuntime: ServerRuntime): Promise<string[]> {
@@ -167,12 +157,11 @@ function visitWhereSql(args: {
     focusedKey: WebPageKeyWithVisitEntity | null;
     compareIds: string[];
 }): ReturnType<typeof sql> {
-    const storedKeys = args.keys.flatMap((key) => webPageKeyStoredValues(key));
     const keyFilter =
-        storedKeys.length === 0
+        args.keys.length === 0
             ? sql`true`
             : sql`e.payload->>'webPageKey' IN (${sql.join(
-                  storedKeys.map((key) => sql`${key}`),
+                  args.keys.map((key) => sql`${key}`),
                   sql`, `,
               )})`;
 
@@ -461,7 +450,7 @@ export async function adminWebPageVisitTrafficFindOne(
 
         const rankResult = await serverRuntime.db.execute<RankRow>(sql`
             SELECT
-                ${canonicalWebPageKeySql()} AS web_page_key,
+                ${webPageKeySql()} AS web_page_key,
                 COUNT(*)::int AS pageviews,
                 COUNT(DISTINCT e."sessionId")::int AS unique_sessions
             FROM "SessionEvents" e
@@ -475,7 +464,7 @@ export async function adminWebPageVisitTrafficFindOne(
         `);
         const previousRankResult = await serverRuntime.db.execute<RankRow>(sql`
             SELECT
-                ${canonicalWebPageKeySql()} AS web_page_key,
+                ${webPageKeySql()} AS web_page_key,
                 COUNT(*)::int AS pageviews,
                 COUNT(DISTINCT e."sessionId")::int AS unique_sessions
             FROM "SessionEvents" e
@@ -752,7 +741,7 @@ export async function adminWebPageVisitTrafficFindOne(
                           sql`, `,
                       )}]::text[]) AS series_key) AS keys`;
             const seriesSelectKey = keys.length === 0 ? sql`NULL::text` : sql`keys.series_key`;
-            const countsGroupKey = keys.length === 0 ? sql`NULL::text` : canonicalWebPageKeySql();
+            const countsGroupKey = keys.length === 0 ? sql`NULL::text` : webPageKeySql();
             const countsJoinKey = keys.length === 0 ? sql`true` : sql`counts.series_key = keys.series_key`;
             const currentBuckets = await fetchBucketSeries(
                 serverRuntime,
