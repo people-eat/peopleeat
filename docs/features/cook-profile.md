@@ -216,7 +216,8 @@ reviews stay out of the cook-facing summary until published, matching public rul
   scroll the shell, not the map.
 - Travel distance select: shared `cookTravelDistanceSelectOptions` / `cookTravelDistanceSelectValue` in `src/shared/cookTravelDistance.ts`
   (50/100/150/200 + current legacy km when needed). Used by `CookCreateFields`, chef sign-up, cook travel edit, and admin cook-profile edit;
-  `SelectValue` children render `{km} km` so the trigger is never blank when the value is set.
+  `SelectValue` children render `{km} km` so the trigger is never blank when the value is set. `CookCreateFields` copy is
+  `public.chefSignUp.*` (not `profileCook`) so `/chef-sign-up` works with the public catalog only.
 - Cook GraphQL: `mealsCounts` / `menusCounts` (`CookMealCriterion` / `CookMenuCriterion`);
   `callSlotBookings(criterion: CookCallSlotBookingCriterion)` for status + `startAt` window
 - Admin: pending-approval queue on `/admin`; cook-profile tab (read-only + approval/visibility; edit at

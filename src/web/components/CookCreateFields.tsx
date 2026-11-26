@@ -87,7 +87,7 @@ export function CookCreateFields({
     disabled?: boolean;
     idPrefix?: string;
 }) {
-    const { t } = useT('profileCook');
+    const { t } = useT('public');
     const debouncedLocationSearch = useDebouncedValue(value.locationSearchText, 300);
     const [{ data: suggestionsData, fetching: suggestionsFetching }] = useQuery({
         query: CookCreateLocationSuggestionsDocument,
@@ -100,8 +100,8 @@ export function CookCreateFields({
         <div className="grid gap-5">
             <div className="grid gap-3">
                 <div className="grid gap-1.5">
-                    <span className="text-sm font-medium">{t('travel.origin')}</span>
-                    <p className="text-sm/relaxed text-muted-foreground">{t('travel.originHostsHint')}</p>
+                    <span className="text-sm font-medium">{t('chefSignUp.originAddress')}</span>
+                    <p className="text-sm/relaxed text-muted-foreground">{t('chefSignUp.originHint')}</p>
                 </div>
                 <Combobox
                     filter={null}
@@ -129,9 +129,9 @@ export function CookCreateFields({
                     }}
                     itemToStringLabel={(item: string) => item}
                 >
-                    <ComboboxInput className="w-full" disabled={disabled} placeholder={t('actions.searchAddress')} showClear={false} />
+                    <ComboboxInput className="w-full" disabled={disabled} placeholder={t('chefSignUp.searchAddress')} showClear={false} />
                     <ComboboxContent>
-                        <ComboboxEmpty>{suggestionsFetching ? t('actions.searching') : t('actions.noMatches')}</ComboboxEmpty>
+                        <ComboboxEmpty>{suggestionsFetching ? t('chefSignUp.searching') : t('chefSignUp.noMatches')}</ComboboxEmpty>
                         <ComboboxList>
                             {(item: string) => (
                                 <ComboboxItem key={item} value={item}>
@@ -143,14 +143,14 @@ export function CookCreateFields({
                 </Combobox>
                 {value.selectedLocation?.structuredAddress ? (
                     <p className="text-sm text-muted-foreground">
-                        {t('travel.hostsSee', { city: value.selectedLocation.structuredAddress.city })}
+                        {t('chefSignUp.hostsSeeCity', { city: value.selectedLocation.structuredAddress.city })}
                     </p>
                 ) : null}
             </div>
 
             <div className="grid gap-5 sm:grid-cols-2">
                 <div className="grid gap-2">
-                    <span className="text-sm font-medium">{t('travel.maxDistance')}</span>
+                    <span className="text-sm font-medium">{t('chefSignUp.maxDistance')}</span>
                     <Select
                         value={value.maximumTravelDistanceText}
                         disabled={disabled}
@@ -170,7 +170,7 @@ export function CookCreateFields({
                 </div>
                 <div className="grid gap-2">
                     <label htmlFor={`${idPrefix}-travel-expenses`} className="text-sm font-medium">
-                        {t('travel.expensesPerKm')}
+                        {t('chefSignUp.travelPerKm')}
                     </label>
                     <div className="relative">
                         <Input
