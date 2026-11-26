@@ -75,5 +75,15 @@ describe('observabilityOpsAlert Metabase filter', () => {
                 'SELECT ("Sessions - SessionId"."geoInformation"#>> array[$1 /, ... /]::text[])::text AS "Sessions - SessionId__geoInfo',
             ),
         ).toBe(true);
+        expect(
+            databaseSlowStatementIsMetabase(
+                'SELECT ("createdAt" AT TIME ZONE $1)::date AS "Visit day", regexp_replace("landingPath", $2, $3) AS "Landing path" FROM public."Sessions"',
+            ),
+        ).toBe(true);
+        expect(
+            databaseSlowStatementIsMetabase(
+                'SELECT COUNT(DISTINCT event."sessionId") AS "Unique visitors" FROM public."SessionEvents" AS event LEFT JOIN public."Sessions" AS session ON session."sessionId" = event."sessionId"',
+            ),
+        ).toBe(true);
     });
 });
