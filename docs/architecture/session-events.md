@@ -119,7 +119,8 @@ Admin descriptions mark these with “(Legacy)” / “(legacy)”.
 - Admin descriptions are generated UI copy: GraphQL `AdminSessionEvent.description` is the viewing admin's `Users.locale` via `t()`. Raw
   payload stays off the GraphQL surface unless a deep link is needed (`link`). CMS `*De` / `*En` columns are unrelated.
 - Historical keys stay in the domain map so imported timelines remain typed.
-- Webhook payment paths attach lifecycle events to the customer’s latest non-terminated session when no requesting session exists.
+- Webhook / job payment paths prefer the customer session that already has checkout funnel interactions for that booking request; otherwise
+  they attach to the latest non-terminated session.
 
 ## How it works
 

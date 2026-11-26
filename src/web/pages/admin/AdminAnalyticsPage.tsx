@@ -73,6 +73,7 @@ export function adminAnalyticsPageVariables(search: AdminOverviewRangeSearch = {
 
 function dropOffPercent(previousCompleted: number, completed: number): number | null {
     if (previousCompleted <= 0) return null;
+    if (completed >= previousCompleted) return null;
     return Math.round(((previousCompleted - completed) / previousCompleted) * 100);
 }
 
@@ -84,7 +85,8 @@ const COOK_FUNNEL_DROP_OFF_PARENT: Record<string, string | null> = {
     offer_create: 'opened',
     menus: 'offer_create',
     price: 'menus',
-    created: 'price',
+    message: 'price',
+    created: 'message',
 };
 
 function cookFunnelDropOffPercent(
@@ -404,7 +406,10 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
                             label={t(locale, 'admin', 'copy.sessionsWithCompletion')}
                             value={giftCardFlow?.sessionsWithCompletion ?? 0}
                         />
-                        <AdminOverviewStatCard label={t(locale, 'admin', 'copy.paid')} value={giftCardFlow?.terminalCount ?? 0} />
+                        <AdminOverviewStatCard
+                            label={t(locale, 'admin', 'copy.paid')}
+                            value={giftCardSteps.find((step) => step.id === 'paid')?.completedCount ?? 0}
+                        />
                     </dl>
                     {giftCardStepsWithActivity.length > 0 ? (
                         <Card>

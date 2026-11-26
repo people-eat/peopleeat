@@ -121,6 +121,7 @@ describe('adminAnalyticsSessionFunnelFlow', () => {
         // Assert
         expect(flow.nodes).toEqual([{ id: 'configure', label: 'Konfig DE' }]);
         expect(flow.links).toEqual([]);
+        expect(flow.steps.find((step) => step.id === 'configure')).toMatchObject({ enteredCount: 1, completedCount: 1 });
         expect(flow.sessionsWithCompletion).toBe(1);
         expect(flow.terminalCount).toBe(0);
     });
@@ -322,5 +323,87 @@ describe('adminAnalyticsSessionFunnelFlow', () => {
         expect(flow.sessionsWithCompletion).toBe(0);
         expect(flow.terminalCount).toBe(0);
         expect(flow.steps.every((step) => step.enteredCount === 0 && step.completedCount === 0)).toBe(true);
+    });
+
+    it('counts a completed step as reached when there is no step_entered', async () => {
+        const setup = await commandSetup();
+        const config = funnelConfigCreate();
+        const window = windowCreate();
+        await recordStep(setup.serverRuntime, setup.requestingSession.sessionId, 'auth', 'step_completed', window.at(0), config.area);
+
+        const flow = await adminAnalyticsSessionFunnelFlow(window.range, setup.requestingSession, setup.serverRuntime, config);
+
+        expect(flow.steps.find((step) => step.id === 'auth')).toMatchObject({ enteredCount: 1, completedCount: 1 });
+        expect(flow.steps.find((step) => step.id === 'paid')?.enteredCount).toBe(0);
+    });
+
+    it('orders sankey edges by catalog even when paid arrives before checkout completed', async () => {
+        const setup = await commandSetup();
+        const config = funnelConfigCreate();
+        const window = windowCreate();
+        const sessionId = setup.requestingSession.sessionId;
+        const paid = await sessionEventCreate(setup.serverRuntime, {
+            sessionId,
+            type: 'GIFT_CARD_PAYED',
+            payload: { giftCardId: idCreate() },
+        });
+        await stamp(paid.sessionEventId, window.at(0));
+        await recordStep(setup.serverRuntime, sessionId, 'checkout', 'step_completed', window.at(1), config.area);
+
+        const flow = await adminAnalyticsSessionFunnelFlow(window.range, setup.requestingSession, setup.serverRuntime, config);
+
+        expect(flow.links).toEqual([{ source: 'checkout', target: 'paid', value: 1 }]);
+        expect(flow.terminalCount).toBe(1);
+    });
+
+    it('counts each session once on a catalog edge even after A→B→A→B edits', async () => {
+        const setup = await commandSetup();
+        const config = funnelConfigCreate();
+        const window = windowCreate();
+        const sessionId = setup.requestingSession.sessionId;
+        await recordStep(setup.serverRuntime, sessionId, 'configure', 'step_completed', window.at(0), config.area);
+        await recordStep(setup.serverRuntime, sessionId, 'auth', 'step_completed', window.at(1), config.area);
+        await recordStep(setup.serverRuntime, sessionId, 'configure', 'step_completed', window.at(2), config.area);
+        await recordStep(setup.serverRuntime, sessionId, 'auth', 'step_completed', window.at(3), config.area);
+
+        const flow = await adminAnalyticsSessionFunnelFlow(window.range, setup.requestingSession, setup.serverRuntime, config);
+
+        expect(flow.links).toEqual([{ source: 'configure', target: 'auth', value: 1 }]);
+    });
+
+    it('counts terminalCount only on the last lifecycle step', async () => {
+        const setup = await commandSetup();
+        const config: AdminAnalyticsSessionFunnelConfig = {
+            ...funnelConfigCreate(),
+            steps: ['configure', 'created', 'checkout', 'paid'],
+            labels: {
+                configure: 'Konfig DE',
+                created: 'Created DE',
+                checkout: 'Checkout DE',
+                paid: 'Paid DE',
+            },
+            lifecycleTypes: [
+                { type: 'GIFT_CARD_CREATED', step: 'created' },
+                { type: 'GIFT_CARD_PAYED', step: 'paid' },
+            ],
+        };
+        const window = windowCreate();
+        const sessionId = setup.requestingSession.sessionId;
+        await recordStep(setup.serverRuntime, sessionId, 'configure', 'step_completed', window.at(0), config.area);
+        const created = await sessionEventCreate(setup.serverRuntime, {
+            sessionId,
+            type: 'GIFT_CARD_CREATED',
+            payload: { giftCardId: idCreate() },
+        });
+        await stamp(created.sessionEventId, window.at(1));
+
+        const flow = await adminAnalyticsSessionFunnelFlow(window.range, setup.requestingSession, setup.serverRuntime, config);
+
+        expect(flow.steps.find((step) => step.id === 'created')).toMatchObject({
+            enteredCount: 0,
+            completedCount: 1,
+        });
+        expect(flow.terminalCount).toBe(0);
+        expect(flow.links).toEqual([{ source: 'configure', target: 'created', value: 1 }]);
     });
 });

@@ -138,7 +138,9 @@ describe('adminAnalyticsGiftCardFlow', () => {
             completedCount: 1,
         });
         expect(flow.links).toEqual([{ source: 'configure', target: 'created', value: 1 }]);
-        expect(flow.terminalCount).toBe(1);
+        expect(flow.terminalCount).toBe(0);
+        expect(flow.steps.find((step) => step.id === 'created')?.completedCount).toBe(1);
+        expect(flow.steps.find((step) => step.id === 'paid')?.completedCount).toBe(0);
     });
 });
 

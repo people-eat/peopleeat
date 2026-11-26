@@ -4403,8 +4403,10 @@ type AdminAnalyticsSankeyLink {
 }
 
 # Per-step funnel reach vs pass for human non-cook/non-admin sessions.
-# `enteredCount` / `completedCount` are distinct sessions. `created` has no
-# `step_entered` (completedCount comes from BOOKING_REQUEST_CREATED).
+# `completedCount` is distinct sessions with `step_completed` (or a mapped
+# lifecycle event). `enteredCount` is distinct sessions with `step_entered` ∪
+# `step_completed`, except lifecycle terminals (`created` / `paid`) which have
+# no client enter and keep enteredCount at the raw `step_entered` size (0).
 type AdminAnalyticsFunnelStepStats {
     id: String!
     # Catalog copy in the viewing admin's Users.locale.
@@ -4423,8 +4425,9 @@ type AdminAnalyticsBookingRequestFormFlow {
     bookingRequestsCreated: Int!
 }
 
-# Session-grain funnel shared by gift-card and chef sign-up analytics.
-# `terminalCount` is distinct sessions that hit the lifecycle terminal step(s).
+# Session-grain funnel shared by gift-card, booking-checkout, and chef sign-up.
+# `terminalCount` is distinct sessions that completed the last lifecycle step
+# (gift-card / checkout `paid`, chef `created`).
 type AdminAnalyticsSessionFunnelFlow {
     nodes: [AdminAnalyticsSankeyNode!]!
     links: [AdminAnalyticsSankeyLink!]!

@@ -120,6 +120,7 @@ export async function adminAnalyticsCookBookingRequestOfferFlow(
             }
         }
 
+        const clientSteps = ['offer_create', 'menus', 'price', 'message'] as const;
         const sequences: string[][] = [];
         let openedCount = 0;
         let declinedCount = 0;
@@ -130,10 +131,9 @@ export async function adminAnalyticsCookBookingRequestOfferFlow(
             const hasOffer = row.offer_id != null;
             const declined = row.declined_at != null;
             const reached = clientReached.get(key) ?? new Set<string>();
-            const hasCreateUi =
-                reached.has('offer_create') || reached.has('menus') || reached.has('price') || reached.has('message') || hasOffer;
+            const hasCreateUi = clientSteps.some((step) => reached.has(step));
             // Legacy rows often lack firstOpenedAt; treat any later activity as opened.
-            const opened = row.first_opened_at != null || declined || hasCreateUi;
+            const opened = row.first_opened_at != null || declined || hasCreateUi || hasOffer;
 
             mark(completedByStep, 'notified', key);
             if (opened) {
@@ -148,7 +148,7 @@ export async function adminAnalyticsCookBookingRequestOfferFlow(
             const sequence: string[] = ['notified'];
             if (opened) sequence.push('opened');
 
-            if (declined && !hasCreateUi) {
+            if (declined && !hasCreateUi && !hasOffer) {
                 declinedCount += 1;
                 mark(completedByStep, 'declined', key);
                 sequence.push('declined');
@@ -156,31 +156,14 @@ export async function adminAnalyticsCookBookingRequestOfferFlow(
                 continue;
             }
 
-            if (hasCreateUi) {
-                sequence.push('offer_create');
-                if (
-                    !completedByStep.get('offer_create')?.has(key) &&
-                    (reached.has('menus') || reached.has('price') || reached.has('message') || hasOffer)
-                ) {
-                    mark(completedByStep, 'offer_create', key);
+            for (let index = 0; index < clientSteps.length; index += 1) {
+                const step = clientSteps[index]!;
+                const laterReached = clientSteps.slice(index + 1).some((later) => reached.has(later));
+                if (laterReached && !completedByStep.get(step)?.has(key)) {
+                    mark(completedByStep, step, key);
                 }
-            }
-            if (reached.has('menus') || reached.has('price') || reached.has('message') || hasOffer) {
-                sequence.push('menus');
-                if (!completedByStep.get('menus')?.has(key) && (reached.has('price') || reached.has('message') || hasOffer)) {
-                    mark(completedByStep, 'menus', key);
-                }
-            }
-            if (reached.has('price') || reached.has('message') || hasOffer) {
-                sequence.push('price');
-                if (!completedByStep.get('price')?.has(key) && (reached.has('message') || hasOffer)) {
-                    mark(completedByStep, 'price', key);
-                }
-            }
-            if (reached.has('message') || hasOffer) {
-                sequence.push('message');
-                if (!completedByStep.get('message')?.has(key) && hasOffer) {
-                    mark(completedByStep, 'message', key);
+                if (completedByStep.get(step)?.has(key)) {
+                    sequence.push(step);
                 }
             }
             if (hasOffer) {
@@ -222,12 +205,18 @@ export async function adminAnalyticsCookBookingRequestOfferFlow(
             return { source: source!, target: target!, value };
         });
 
-        const steps = cookBookingRequestOfferFunnelSteps.map((step) => ({
-            id: step,
-            label: funnelLabel(locale, step),
-            enteredCount: enteredByStep.get(step)?.size ?? 0,
-            completedCount: completedByStep.get(step)?.size ?? 0,
-        }));
+        const clientStepIds = new Set<string>(clientSteps);
+        const steps = cookBookingRequestOfferFunnelSteps.map((step) => {
+            const completedSessions = completedByStep.get(step) ?? new Set<PathKey>();
+            const enteredSessions = enteredByStep.get(step) ?? new Set<PathKey>();
+            const reachedSessions = clientStepIds.has(step) ? new Set([...enteredSessions, ...completedSessions]) : enteredSessions;
+            return {
+                id: step,
+                label: funnelLabel(locale, step),
+                enteredCount: reachedSessions.size,
+                completedCount: completedSessions.size,
+            };
+        });
 
         return {
             nodes,

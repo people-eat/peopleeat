@@ -35,9 +35,25 @@ async function insertCustomerBookingRequest() {
     return bookingRequestId;
 }
 
+async function insertOffer(bookingRequestId: string, cookId: string) {
+    await testDb.insert(bookingRequestOffers).values({
+        bookingRequestOfferId: idCreate(),
+        bookingRequestId,
+        cookId,
+        menuPriceCents: 5000,
+        travelExpensesCents: 0,
+        paymentProviderFeeCents: 0,
+        platformFeePercentCook: 10,
+        platformFeePercentCustomer: 10,
+        platformFeeCentsCook: 500,
+        platformFeeCentsCustomer: 500,
+        payoutCentsCook: 4500,
+        totalWithoutDiscountsCentsCustomer: 5500,
+    });
+}
+
 describe('adminAnalyticsCookBookingRequestOfferFlow', () => {
     it('builds notified → opened → declined for cooks who decline without create UI', async () => {
-        // Arrange
         const admin = await commandSetup.withUser({ firstName: 'analytics-admin', lastName: 'User' });
         const cook = await commandSetup.withUser({ firstName: 'Chef', lastName: 'Decline' });
         await testDb.insert(cooks).values({ cookId: cook.user.userId });
@@ -48,31 +64,102 @@ describe('adminAnalyticsCookBookingRequestOfferFlow', () => {
             cookId: cook.user.userId,
             bookingRequestId,
             notifiedAt,
-            // No firstOpenedAt: opened is inferred from declined.
             declinedAt: new Date(startMs + 3_800_000),
             declinationReason: 'Too far',
             menuEvaluationLoading: false,
         });
 
-        // Act
         const flow = await adminAnalyticsCookBookingRequestOfferFlow(
             { startDateTime: notifiedAt, endDateTime: new Date(notifiedAt.getTime() + 1) },
             admin.requestingSession,
             admin.serverRuntime,
         );
 
-        // Assert
-        expect(flow.notifiedCount).toBeGreaterThanOrEqual(1);
-        expect(flow.openedCount).toBeGreaterThanOrEqual(1);
-        expect(flow.declinedCount).toBeGreaterThanOrEqual(1);
+        expect(flow.notifiedCount).toBe(1);
+        expect(flow.openedCount).toBe(1);
+        expect(flow.declinedCount).toBe(1);
         expect(flow.offersCreatedCount).toBe(0);
-        expect(flow.steps.find((step) => step.id === 'opened')?.completedCount).toBeGreaterThanOrEqual(1);
-        expect(flow.links.some((link) => link.source === 'notified' && link.target === 'opened')).toBe(true);
-        expect(flow.links.some((link) => link.source === 'opened' && link.target === 'declined')).toBe(true);
+        expect(flow.steps.find((step) => step.id === 'opened')?.completedCount).toBe(1);
+        expect(flow.links).toEqual([
+            { source: 'notified', target: 'opened', value: 1 },
+            { source: 'opened', target: 'declined', value: 1 },
+        ]);
     });
 
-    it('joins create-UI interactions and offer rows onto the notified cohort', async () => {
-        // Arrange
+    it('does not mark create-UI steps completed for an offer with no UI events', async () => {
+        const admin = await commandSetup.withUser({ firstName: 'analytics-admin-hist', lastName: 'User' });
+        const cook = await commandSetup.withUser({ firstName: 'Chef', lastName: 'Legacy' });
+        await testDb.insert(cooks).values({ cookId: cook.user.userId });
+        const bookingRequestId = await insertCustomerBookingRequest();
+        const startMs = Date.UTC(2100, 0, 1) + Math.floor(Math.random() * 1e12);
+        const notifiedAt = new Date(startMs + 3_600_000);
+        await testDb.insert(bookingRequestCooks).values({
+            cookId: cook.user.userId,
+            bookingRequestId,
+            notifiedAt,
+            firstOpenedAt: new Date(startMs + 3_700_000),
+            menuEvaluationLoading: false,
+        });
+        await insertOffer(bookingRequestId, cook.user.userId);
+
+        const flow = await adminAnalyticsCookBookingRequestOfferFlow(
+            { startDateTime: notifiedAt, endDateTime: new Date(notifiedAt.getTime() + 1) },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        expect(flow.notifiedCount).toBe(1);
+        expect(flow.openedCount).toBe(1);
+        expect(flow.offersCreatedCount).toBe(1);
+        expect(flow.steps.find((step) => step.id === 'menus')?.completedCount).toBe(0);
+        expect(flow.steps.find((step) => step.id === 'price')?.completedCount).toBe(0);
+        expect(flow.steps.find((step) => step.id === 'message')?.completedCount).toBe(0);
+        expect(flow.links).toEqual([
+            { source: 'notified', target: 'opened', value: 1 },
+            { source: 'opened', target: 'created', value: 1 },
+        ]);
+    });
+
+    it('does not backfill message from an offer when only offer_create was entered', async () => {
+        const admin = await commandSetup.withUser({ firstName: 'analytics-admin-enter', lastName: 'User' });
+        const cook = await commandSetup.withUser({ firstName: 'Chef', lastName: 'Partial' });
+        await testDb.insert(cooks).values({ cookId: cook.user.userId });
+        const bookingRequestId = await insertCustomerBookingRequest();
+        const startMs = Date.UTC(2100, 0, 1) + Math.floor(Math.random() * 1e12);
+        const notifiedAt = new Date(startMs + 3_600_000);
+        await testDb.insert(bookingRequestCooks).values({
+            cookId: cook.user.userId,
+            bookingRequestId,
+            notifiedAt,
+            firstOpenedAt: new Date(startMs + 3_700_000),
+            menuEvaluationLoading: false,
+        });
+        await sessionEventCreate(cook.serverRuntime, {
+            sessionId: cook.requestingSession.sessionId,
+            type: 'WEB_PAGE_INTERACTION',
+            payload: {
+                webPageKey: 'PROFILE',
+                area: 'cook_booking_request_offer',
+                bookingRequestId,
+                interaction: { type: 'step_entered', step: 'offer_create' },
+            },
+        });
+        await insertOffer(bookingRequestId, cook.user.userId);
+
+        const flow = await adminAnalyticsCookBookingRequestOfferFlow(
+            { startDateTime: notifiedAt, endDateTime: new Date(notifiedAt.getTime() + 1) },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        expect(flow.offersCreatedCount).toBe(1);
+        expect(flow.steps.find((step) => step.id === 'offer_create')).toMatchObject({ enteredCount: 1, completedCount: 0 });
+        expect(flow.steps.find((step) => step.id === 'message')?.completedCount).toBe(0);
+        expect(flow.links.some((link) => link.source === 'opened' && link.target === 'created')).toBe(true);
+        expect(flow.links.some((link) => link.target === 'message')).toBe(false);
+    });
+
+    it('joins live create-UI completions onto the notified cohort without inferring from the offer', async () => {
         const admin = await commandSetup.withUser({ firstName: 'analytics-admin-offer', lastName: 'User' });
         const cook = await commandSetup.withUser({ firstName: 'Chef', lastName: 'Offer' });
         await testDb.insert(cooks).values({ cookId: cook.user.userId });
@@ -116,36 +203,23 @@ describe('adminAnalyticsCookBookingRequestOfferFlow', () => {
                 interaction: { type: 'step_entered', step: 'price' },
             },
         });
-        await testDb.insert(bookingRequestOffers).values({
-            bookingRequestOfferId: idCreate(),
-            bookingRequestId,
-            cookId: cook.user.userId,
-            menuPriceCents: 5000,
-            travelExpensesCents: 0,
-            paymentProviderFeeCents: 0,
-            platformFeePercentCook: 10,
-            platformFeePercentCustomer: 10,
-            platformFeeCentsCook: 500,
-            platformFeeCentsCustomer: 500,
-            payoutCentsCook: 4500,
-            totalWithoutDiscountsCentsCustomer: 5500,
-        });
+        await insertOffer(bookingRequestId, cook.user.userId);
 
-        // Act
         const flow = await adminAnalyticsCookBookingRequestOfferFlow(
             { startDateTime: notifiedAt, endDateTime: new Date(notifiedAt.getTime() + 1) },
             admin.requestingSession,
             admin.serverRuntime,
         );
 
-        // Assert
-        expect(flow.offersCreatedCount).toBeGreaterThanOrEqual(1);
+        expect(flow.notifiedCount).toBe(1);
+        expect(flow.offersCreatedCount).toBe(1);
+        expect(flow.steps.find((step) => step.id === 'offer_create')?.completedCount).toBe(1);
+        expect(flow.steps.find((step) => step.id === 'menus')?.completedCount).toBe(1);
+        expect(flow.steps.find((step) => step.id === 'price')?.completedCount).toBe(0);
+        expect(flow.steps.find((step) => step.id === 'message')?.completedCount).toBe(0);
         expect(flow.links.some((link) => link.source === 'opened' && link.target === 'offer_create')).toBe(true);
-        expect(flow.links.some((link) => link.source === 'price' && link.target === 'message')).toBe(true);
-        expect(flow.links.some((link) => link.source === 'message' && link.target === 'created')).toBe(true);
-        const menus = flow.steps.find((step) => step.id === 'menus');
-        expect(menus?.completedCount).toBeGreaterThanOrEqual(1);
-        const message = flow.steps.find((step) => step.id === 'message');
-        expect(message?.completedCount).toBeGreaterThanOrEqual(1);
+        expect(flow.links.some((link) => link.source === 'offer_create' && link.target === 'menus')).toBe(true);
+        expect(flow.links.some((link) => link.source === 'menus' && link.target === 'created')).toBe(true);
+        expect(flow.links.some((link) => link.source === 'price' && link.target === 'message')).toBe(false);
     });
 });

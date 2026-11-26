@@ -148,7 +148,7 @@ describe('adminAnalyticsBookingRequestFormFlow', () => {
         // Assert
         expect(flow.nodes).toEqual([{ id: 'occasion', label: 'Anlass' }]);
         expect(flow.links).toHaveLength(0);
-        expect(flow.steps.find((step) => step.id === 'occasion')?.completedCount).toBe(1);
+        expect(flow.steps.find((step) => step.id === 'occasion')).toMatchObject({ enteredCount: 1, completedCount: 1 });
         expect(flow.sessionsWithCompletion).toBe(1);
         expect(flow.bookingRequestsCreated).toBe(0);
     });

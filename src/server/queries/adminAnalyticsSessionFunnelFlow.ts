@@ -8,7 +8,7 @@ export type AdminAnalyticsSessionFunnelConfig = {
     area: string;
     steps: readonly string[];
     labels: Record<string, string>;
-    /** Lifecycle event types mapped to a terminal funnel step id. */
+    /** Lifecycle event types mapped onto funnel step ids. The last entry is the terminal. */
     lifecycleTypes: ReadonlyArray<{ type: string; step: string }>;
     /** When true, exclude sessions whose user is a cook (booking form / gift card). */
     excludeCooks: boolean;
@@ -76,17 +76,18 @@ export async function adminAnalyticsSessionFunnelFlow(
               )
             ORDER BY
                 e."sessionId",
-                e."createdAt" ASC
+                e."createdAt" ASC,
+                CASE WHEN ${lifecycleOr} THEN 1 ELSE 0 END ASC
         `);
 
         const rows = Array.isArray(result) ? result : result.rows;
         const allowed = new Set<string>(config.steps);
-        const perSessionCompleted = new Map<string, string[]>();
+        const completedStepsBySession = new Map<string, Set<string>>();
         const enteredByStep = new Map<string, Set<string>>();
         const completedByStep = new Map<string, Set<string>>();
         const sessionsWithCompletion = new Set<string>();
-        const terminalSessions = new Set<string>();
-        const terminalSteps = new Set(config.lifecycleTypes.map((entry) => entry.step));
+        const lifecycleSteps = new Set(config.lifecycleTypes.map((entry) => entry.step));
+        const terminalStep = config.lifecycleTypes.at(-1)?.step;
 
         for (const row of rows) {
             if (!allowed.has(row.step)) continue;
@@ -101,38 +102,31 @@ export async function adminAnalyticsSessionFunnelFlow(
             if (row.interaction_type !== 'step_completed') continue;
 
             sessionsWithCompletion.add(row.session_id);
-            if (terminalSteps.has(row.step)) {
-                terminalSessions.add(row.session_id);
-            }
 
             const completedSessions = completedByStep.get(row.step) ?? new Set<string>();
             completedSessions.add(row.session_id);
             completedByStep.set(row.step, completedSessions);
 
-            const existing = perSessionCompleted.get(row.session_id) ?? [];
-            if (existing.at(-1) === row.step) continue;
-            existing.push(row.step);
-            perSessionCompleted.set(row.session_id, existing);
+            const existing = completedStepsBySession.get(row.session_id) ?? new Set<string>();
+            existing.add(row.step);
+            completedStepsBySession.set(row.session_id, existing);
         }
 
         const edgeCounts = new Map<string, number>();
         const nodeIds = new Set<string>();
-        const stepOrder = new Map(config.steps.map((step, index) => [step, index]));
 
-        for (const steps of perSessionCompleted.values()) {
-            for (let index = 0; index < steps.length - 1; index += 1) {
-                const source = steps[index]!;
-                const target = steps[index + 1]!;
-                const sourceOrder = stepOrder.get(source);
-                const targetOrder = stepOrder.get(target);
-                if (sourceOrder == null || targetOrder == null || sourceOrder >= targetOrder) continue;
+        for (const completed of completedStepsBySession.values()) {
+            const ordered = config.steps.filter((step) => completed.has(step));
+            for (let index = 0; index < ordered.length - 1; index += 1) {
+                const source = ordered[index]!;
+                const target = ordered[index + 1]!;
                 nodeIds.add(source);
                 nodeIds.add(target);
                 const key = `${source}\0${target}`;
                 edgeCounts.set(key, (edgeCounts.get(key) ?? 0) + 1);
             }
-            if (steps.length === 1) {
-                nodeIds.add(steps[0]!);
+            if (ordered.length === 1) {
+                nodeIds.add(ordered[0]!);
             }
         }
 
@@ -148,19 +142,24 @@ export async function adminAnalyticsSessionFunnelFlow(
             return { source: source!, target: target!, value };
         });
 
-        const steps = config.steps.map((step) => ({
-            id: step,
-            label: config.labels[step] ?? step,
-            enteredCount: enteredByStep.get(step)?.size ?? 0,
-            completedCount: completedByStep.get(step)?.size ?? 0,
-        }));
+        const steps = config.steps.map((step) => {
+            const completedSessions = completedByStep.get(step) ?? new Set<string>();
+            const enteredSessions = enteredByStep.get(step) ?? new Set<string>();
+            const reachedSessions = lifecycleSteps.has(step) ? enteredSessions : new Set([...enteredSessions, ...completedSessions]);
+            return {
+                id: step,
+                label: config.labels[step] ?? step,
+                enteredCount: reachedSessions.size,
+                completedCount: completedSessions.size,
+            };
+        });
 
         return {
             nodes,
             links,
             steps,
             sessionsWithCompletion: sessionsWithCompletion.size,
-            terminalCount: terminalSessions.size,
+            terminalCount: terminalStep == null ? 0 : (completedByStep.get(terminalStep)?.size ?? 0),
         };
     } catch (error) {
         serverRuntime.log.error(error, requestingSession);

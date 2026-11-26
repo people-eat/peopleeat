@@ -10,16 +10,18 @@ and sign-in method usage. Page-visit time series live on [admin-traffic.md](./ad
 3. **Overview KPIs** — form visits (sum of `WEB_PAGE_VISITED` buckets for `BOOKING_REQUEST_FORM`), sessions with any funnel completion
    (`step_completed` or `BOOKING_REQUEST_CREATED`), booking requests created, and visit→create conversion %.
 4. **Booking form funnel**
-   - **Step table** — per-step distinct sessions that `step_entered` (reached) vs `step_completed` (completed), plus drop-off % from the
-     previous step’s completions. Terminal `created` comes from `BOOKING_REQUEST_CREATED` (no entered count). The **Reached** column is
-     hidden when every step’s entered count is 0 (typical for migrated traffic that only has `step_completed`).
-   - **Sankey** — forward transitions between consecutive `step_completed` steps (plus `created`) for the same session. Backward edits
-     (later step → earlier step) are dropped so the graph stays a DAG Recharts can lay out. Shown only when at least one forward link
-     exists.
-5. **Gift card funnel** — session-grain steps `configure` → `auth` → `created` → `checkout` → `paid` (human non-admin/non-cook). Terminals
-   from `GIFT_CARD_CREATED` / `GIFT_CARD_PAYED`.
+   - **Step table** — per-step distinct sessions. **Reached** is `step_entered` ∪ `step_completed` so completed never exceeds reached
+     (migrated rows and lost enter events still count as reached). **Completed** is `step_completed`. Drop-off % is from the previous
+     visible step’s completions (hidden when completed ≥ previous, so the column never goes negative). Terminal `created` comes from
+     `BOOKING_REQUEST_CREATED` (no entered count). The **Reached** column is hidden when every client step’s entered count is 0.
+   - **Sankey** — one path per session: the unique completed steps in catalog order, consecutive pairs (skips allowed). Each session
+     contributes at most 1 to any edge. Shown only when at least one forward link exists.
+5. **Gift card funnel** — session-grain steps `configure` → `auth` → `created` → `checkout` → `paid` (human non-admin/non-cook).
+   `GIFT_CARD_CREATED` maps to `created`; `GIFT_CARD_PAYED` maps to `paid`. **Paid** KPI / `terminalCount` is sessions that paid, not
+   sessions that only created a prepared card.
 6. **Booking checkout funnel** — session-grain steps `checkout` → `paid` (human non-admin/non-cook). Client mid-step on the customer offer
-   checkout page; terminal from `BOOKING_REQUEST_OFFER_PAYMENT_SUCCEEDED`.
+   checkout page; terminal from `BOOKING_REQUEST_OFFER_PAYMENT_SUCCEEDED`. Webhook / pull-payment jobs attach `paid` to the session that
+   already has checkout interactions for that request when no GraphQL `sessionId` is present.
 7. **Chef sign-up funnel** — session-grain steps `auth` → `profile` → `created` (human non-admin; cooks included). Terminal from
    `COOK_CREATED`.
 8. **Cook offer funnel** (cook × booking-request grain)
@@ -29,10 +31,12 @@ and sign-in method usage. Page-visit time series live on [admin-traffic.md](./ad
      `firstOpenedAt`).
    - **Steps** — `notified` → `opened` → either `declined` **or** `offer_create` → `menus` → `price` → `message` → `created`. Early/terminal
      steps from `BookingRequestCooks` / `BookingRequestOffers`; create-UI mid-steps from `WEB_PAGE_INTERACTION` with
-     `area: cook_booking_request_offer` and `bookingRequestId`.
-   - **Drop-off %** — vs the graph parent (`declined` and `offer_create` both vs `opened`), not vs the previous table row. Negative values
-     meant the UI was wrongly comparing the offer branch to the decline branch.
-   - **Sankey** — forward-only edges on that per-row sequence (decline branches off opened).
+     `area: cook_booking_request_offer` and `bookingRequestId`. Historical offers with no UI events skip mid-steps (`notified` → `opened` →
+     `created`). Completing a later client step infers earlier client steps as passed through; the offer row itself does not.
+   - **Drop-off %** — vs the graph parent (`declined` and `offer_create` both vs `opened`; `created` vs `message`), not vs the previous
+     table row.
+   - **Sankey** — completed steps only, consecutive pairs on that per-row sequence (decline branches off opened; skip-edges when mid-steps
+     are missing).
 9. **Sign-in methods** — human non-impersonation sessions in range (cooks included, bots and admin impersonation excluded). Per-method table
    for Email OTP, Passkey, and Google: sign-ins, registration tickets, accounts created, failures. Daily grouped bar chart of sign-ins.
    Google account creates are `AUTH_OAUTH_ACCOUNT_CREATED`; email account creates are `USER_CREATE_SUCCESSFUL` minus those Google creates.
@@ -49,10 +53,10 @@ and sign-in method usage. Page-visit time series live on [admin-traffic.md](./ad
 - Empty Sankey copy distinguishes: no structured completions yet; completions but no multi-step transitions; or no data at all.
 - Booking-form funnel aggregation only counts the structured `{ area: booking_request_form, interaction: { type, step } }` shape (plus
   `BOOKING_REQUEST_CREATED`). Imported historical clicks were reshaped into `step_completed` where mapping was known; unmatched free-form
-  clicks still do not appear. Migrated rows have no `step_entered`, so the Reached column is omitted until live instrumentation produces
-  entered events.
+  clicks still do not appear. Completing a step counts as reaching it, so mixed live + migrated ranges do not show completed > reached. The
+  Reached column is omitted only when every client step’s entered count is 0.
 - Cook create-UI mid-steps (`offer_create` / `menus` / `price` / `message`) only appear after live instrumentation; historical cohorts still
-  show notified / opened / declined / created from DB timestamps.
+  show notified / opened / declined / created from DB timestamps (Sankey skip-edge to `created`).
 
 Session and user event timelines live on session detail and the user **session-events** tab (see [admin-sessions.md](./admin-sessions.md)
 and [admin-users.md](./admin-users.md)). Offer accept / decline / payment lifecycle events also appear there.
