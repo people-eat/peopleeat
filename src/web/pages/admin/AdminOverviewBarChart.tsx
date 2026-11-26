@@ -1,6 +1,6 @@
 import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
 
-import { formatDate } from '../../../shared';
+import { formatDate, formatMonthYear } from '../../../shared';
 import type { Locale } from '../../../shared';
 import { Card, CardContent } from '../../components/base/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../../components/base/chart';
@@ -18,6 +18,8 @@ export type AdminOverviewBarChartPoint = {
     [key: string]: string | Date | number | undefined;
 };
 
+export type AdminOverviewBarChartBucketLabel = 'short' | 'monthYear';
+
 const defaultSeries: AdminOverviewBarChartSeries[] = [
     {
         dataKey: 'count',
@@ -26,18 +28,41 @@ const defaultSeries: AdminOverviewBarChartSeries[] = [
     },
 ];
 
+function formatBucketLabel(
+    bucketStart: string | Date,
+    locale: Locale,
+    timeZone: string,
+    bucketLabel: AdminOverviewBarChartBucketLabel,
+    style: 'tick' | 'tooltip',
+): string {
+    if (bucketLabel === 'monthYear') {
+        return formatMonthYear(bucketStart, {
+            locale,
+            timeZone,
+            month: style === 'tooltip' ? 'long' : 'short',
+        });
+    }
+    return formatDate(bucketStart, {
+        locale,
+        timeZone,
+        dateStyle: style === 'tooltip' ? 'medium' : 'short',
+    });
+}
+
 export function AdminOverviewBarChart({
     data,
     locale,
     timeZone,
     ariaLabel,
     series = defaultSeries,
+    bucketLabel = 'short',
 }: {
     data: readonly AdminOverviewBarChartPoint[];
     locale: Locale;
     timeZone: string;
     ariaLabel: string;
     series?: readonly AdminOverviewBarChartSeries[];
+    bucketLabel?: AdminOverviewBarChartBucketLabel;
 }) {
     const chartConfig = Object.fromEntries(
         series.map((entry) => [entry.dataKey, { label: entry.label, color: entry.color }]),
@@ -45,7 +70,7 @@ export function AdminOverviewBarChart({
     const chartData = data.map((point) => {
         const row: Record<string, string | Date | number | undefined> = {
             bucketStart: point.bucketStart,
-            label: formatDate(point.bucketStart, { locale, timeZone, dateStyle: 'short' }),
+            label: formatBucketLabel(point.bucketStart, locale, timeZone, bucketLabel, 'tick'),
         };
         for (const entry of series) {
             const value = point[entry.dataKey];
@@ -66,7 +91,7 @@ export function AdminOverviewBarChart({
                                 <ChartTooltipContent
                                     labelFormatter={(_, payload) => {
                                         const bucketStart = payload[0]?.payload?.bucketStart as string | Date | undefined;
-                                        return bucketStart ? formatDate(bucketStart, { locale, timeZone, dateStyle: 'medium' }) : '';
+                                        return bucketStart ? formatBucketLabel(bucketStart, locale, timeZone, bucketLabel, 'tooltip') : '';
                                     }}
                                 />
                             }

@@ -37,6 +37,8 @@ export interface GqlSAdmin {
     bookingRequest?: Maybe<GqlSAdminBookingRequest>;
     bookingRequestAverageParticipants: Scalars['Int']['output'];
     bookingRequestCheckoutFlow: GqlSAdminAnalyticsSessionFunnelFlow;
+    bookingRequestConversionMonthStats: Array<GqlSAdminBookingRequestConversionMonthBucket>;
+    bookingRequestConversionRate: GqlSAdminBookingRequestConversionRate;
     bookingRequestCookOfferStats: Array<GqlSAdminBookingRequestCookOfferStat>;
     bookingRequestCreationMonthStats: Array<GqlSAdminBookingRequestCreationMonthStat>;
     bookingRequestCreations: Array<GqlSAdminTimeBucket>;
@@ -179,6 +181,16 @@ export type GqlSAdminBookingRequestArgs = {
 };
 
 export type GqlSAdminBookingRequestCheckoutFlowArgs = {
+    range: GqlSDateTimeRange;
+};
+
+export type GqlSAdminBookingRequestConversionMonthStatsArgs = {
+    dateBasis?: GqlSAdminBookingRequestDateBasis;
+    range: GqlSDateTimeRange;
+};
+
+export type GqlSAdminBookingRequestConversionRateArgs = {
+    dateBasis?: GqlSAdminBookingRequestDateBasis;
     range: GqlSDateTimeRange;
 };
 
@@ -728,6 +740,21 @@ export type GqlSAdminBookingRequestTravelImpactArgs = {
     exactEventAddress: GqlSAdminBookingRequestExactEventAddressInput;
 };
 
+export interface GqlSAdminBookingRequestConversionMonthBucket {
+    __typename?: 'AdminBookingRequestConversionMonthBucket';
+    convertedCount: Scalars['Int']['output'];
+    monthStart: Scalars['DateTime']['output'];
+    rate: Scalars['Float']['output'];
+    requestCount: Scalars['Int']['output'];
+}
+
+export interface GqlSAdminBookingRequestConversionRate {
+    __typename?: 'AdminBookingRequestConversionRate';
+    convertedCount: Scalars['Int']['output'];
+    rate?: Maybe<Scalars['Float']['output']>;
+    requestCount: Scalars['Int']['output'];
+}
+
 export interface GqlSAdminBookingRequestCookInTravelRadius {
     __typename?: 'AdminBookingRequestCookInTravelRadius';
     cook: GqlSAdminCook;
@@ -783,6 +810,8 @@ export type GqlSAdminBookingRequestCriterion = {
     take?: Scalars['Int']['input'];
     userIds?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
+
+export type GqlSAdminBookingRequestDateBasis = 'createdAt' | 'dateTime';
 
 export type GqlSAdminBookingRequestExactEventAddressInput = {
     addressLine1: Scalars['String']['input'];
@@ -6328,12 +6357,15 @@ export type GqlSResolversTypes = ResolversObject<{
             offers: Array<GqlSResolversTypes['AdminBookingRequestOffer']>;
         }
     >;
+    AdminBookingRequestConversionMonthBucket: ResolverTypeWrapper<GqlSAdminBookingRequestConversionMonthBucket>;
+    AdminBookingRequestConversionRate: ResolverTypeWrapper<GqlSAdminBookingRequestConversionRate>;
     AdminBookingRequestCookInTravelRadius: ResolverTypeWrapper<GqlSAdminBookingRequestCookInTravelRadius>;
     AdminBookingRequestCookOfferStat: ResolverTypeWrapper<GqlSAdminBookingRequestCookOfferStat>;
     AdminBookingRequestCookOfferStatSortField: GqlSAdminBookingRequestCookOfferStatSortField;
     AdminBookingRequestCreate: GqlSAdminBookingRequestCreate;
     AdminBookingRequestCreationMonthStat: ResolverTypeWrapper<GqlSAdminBookingRequestCreationMonthStat>;
     AdminBookingRequestCriterion: GqlSAdminBookingRequestCriterion;
+    AdminBookingRequestDateBasis: GqlSAdminBookingRequestDateBasis;
     AdminBookingRequestExactEventAddressInput: GqlSAdminBookingRequestExactEventAddressInput;
     AdminBookingRequestOccasionStat: ResolverTypeWrapper<GqlSAdminBookingRequestOccasionStat>;
     AdminBookingRequestOffer: ResolverTypeWrapper<
@@ -6994,6 +7026,8 @@ export type GqlSResolversParentTypes = ResolversObject<{
         cooksInTravelRadius: Array<GqlSResolversParentTypes['AdminBookingRequestCookInTravelRadius']>;
         offers: Array<GqlSResolversParentTypes['AdminBookingRequestOffer']>;
     };
+    AdminBookingRequestConversionMonthBucket: GqlSAdminBookingRequestConversionMonthBucket;
+    AdminBookingRequestConversionRate: GqlSAdminBookingRequestConversionRate;
     AdminBookingRequestCookInTravelRadius: GqlSAdminBookingRequestCookInTravelRadius;
     AdminBookingRequestCookOfferStat: GqlSAdminBookingRequestCookOfferStat;
     AdminBookingRequestCreate: GqlSAdminBookingRequestCreate;
@@ -7515,6 +7549,18 @@ export type GqlSAdminResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSAdminBookingRequestCheckoutFlowArgs, 'range'>
+    >;
+    bookingRequestConversionMonthStats?: Resolver<
+        Array<GqlSResolversTypes['AdminBookingRequestConversionMonthBucket']>,
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminBookingRequestConversionMonthStatsArgs, 'dateBasis' | 'range'>
+    >;
+    bookingRequestConversionRate?: Resolver<
+        GqlSResolversTypes['AdminBookingRequestConversionRate'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminBookingRequestConversionRateArgs, 'dateBasis' | 'range'>
     >;
     bookingRequestCookOfferStats?: Resolver<
         Array<GqlSResolversTypes['AdminBookingRequestCookOfferStat']>,
@@ -8158,6 +8204,27 @@ export type GqlSAdminBookingRequestResolvers<
         RequireFields<GqlSAdminBookingRequestTravelImpactArgs, 'exactEventAddress'>
     >;
     userId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+}>;
+
+export type GqlSAdminBookingRequestConversionMonthBucketResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminBookingRequestConversionMonthBucket'] =
+        GqlSResolversParentTypes['AdminBookingRequestConversionMonthBucket'],
+> = ResolversObject<{
+    convertedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    monthStart?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
+    rate?: Resolver<GqlSResolversTypes['Float'], ParentType, ContextType>;
+    requestCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type GqlSAdminBookingRequestConversionRateResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminBookingRequestConversionRate'] =
+        GqlSResolversParentTypes['AdminBookingRequestConversionRate'],
+> = ResolversObject<{
+    convertedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    rate?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
+    requestCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
 export type GqlSAdminBookingRequestCookInTravelRadiusResolvers<
@@ -13032,6 +13099,8 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     AdminAuthOauthIdentity?: GqlSAdminAuthOauthIdentityResolvers<ContextType>;
     AdminBlogPost?: GqlSAdminBlogPostResolvers<ContextType>;
     AdminBookingRequest?: GqlSAdminBookingRequestResolvers<ContextType>;
+    AdminBookingRequestConversionMonthBucket?: GqlSAdminBookingRequestConversionMonthBucketResolvers<ContextType>;
+    AdminBookingRequestConversionRate?: GqlSAdminBookingRequestConversionRateResolvers<ContextType>;
     AdminBookingRequestCookInTravelRadius?: GqlSAdminBookingRequestCookInTravelRadiusResolvers<ContextType>;
     AdminBookingRequestCookOfferStat?: GqlSAdminBookingRequestCookOfferStatResolvers<ContextType>;
     AdminBookingRequestCreationMonthStat?: GqlSAdminBookingRequestCreationMonthStatResolvers<ContextType>;
@@ -13350,6 +13419,11 @@ export const GqlSAdminBookingRequestCookOfferStatSortFieldSchema: z.ZodType<
     'conversionCount' | 'offerCount',
     'conversionCount' | 'offerCount'
 > = z.enum(['conversionCount', 'offerCount']);
+
+export const GqlSAdminBookingRequestDateBasisSchema: z.ZodType<'createdAt' | 'dateTime', 'createdAt' | 'dateTime'> = z.enum([
+    'createdAt',
+    'dateTime',
+]);
 
 export const GqlSAdminBookingRequestSortFieldSchema: z.ZodType<
     'createdAt' | 'dateTime' | 'occasion',

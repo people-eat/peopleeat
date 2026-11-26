@@ -339,7 +339,18 @@
             "description": "Boekingsaanvragen bladeren en bekijken."
         },
         "bookingRequestsOverview": {
-            "description": "Verdeling, ontvangen aanvragen, gelegenheden, offertes en chefrankings."
+            "description": "Verdeling, ontvangen aanvragen, conversie, gelegenheden, offertes en chefrankings.",
+            "conversion": {
+                "title": "Conversieratio",
+                "description": "Aandeel boekingsaanvragen met een wederzijds geaccepteerde offerte in de periode van het diagram hierboven. Wissel tussen aanmaakdatum en datum van het evenement.",
+                "avgRate": "Gem. conversie",
+                "rateSeries": "Conversie %",
+                "dateBasisLabel": "Datumbasis voor conversieratio",
+                "createdAt": "Aanmaakdatum",
+                "dateTime": "Datum van het evenement",
+                "chartAriaLabel": "Staafdiagram van de maandelijkse conversieratio van boekingsaanvragen in het geselecteerde bereik",
+                "na": "n.v.t."
+            }
         },
         "usersOverview": {
             "description": "Accountverdeling, inzichten en registraties."

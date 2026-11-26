@@ -36,6 +36,8 @@ export interface GqlCAdmin {
     bookingRequest?: Maybe<GqlCAdminBookingRequest>;
     bookingRequestAverageParticipants: Scalars['Int']['output'];
     bookingRequestCheckoutFlow: GqlCAdminAnalyticsSessionFunnelFlow;
+    bookingRequestConversionMonthStats: Array<GqlCAdminBookingRequestConversionMonthBucket>;
+    bookingRequestConversionRate: GqlCAdminBookingRequestConversionRate;
     bookingRequestCookOfferStats: Array<GqlCAdminBookingRequestCookOfferStat>;
     bookingRequestCreationMonthStats: Array<GqlCAdminBookingRequestCreationMonthStat>;
     bookingRequestCreations: Array<GqlCAdminTimeBucket>;
@@ -178,6 +180,16 @@ export type GqlCAdminBookingRequestArgs = {
 };
 
 export type GqlCAdminBookingRequestCheckoutFlowArgs = {
+    range: GqlCDateTimeRange;
+};
+
+export type GqlCAdminBookingRequestConversionMonthStatsArgs = {
+    dateBasis?: GqlCAdminBookingRequestDateBasis;
+    range: GqlCDateTimeRange;
+};
+
+export type GqlCAdminBookingRequestConversionRateArgs = {
+    dateBasis?: GqlCAdminBookingRequestDateBasis;
     range: GqlCDateTimeRange;
 };
 
@@ -727,6 +739,21 @@ export type GqlCAdminBookingRequestTravelImpactArgs = {
     exactEventAddress: GqlCAdminBookingRequestExactEventAddressInput;
 };
 
+export interface GqlCAdminBookingRequestConversionMonthBucket {
+    __typename?: 'AdminBookingRequestConversionMonthBucket';
+    convertedCount: Scalars['Int']['output'];
+    monthStart: Scalars['DateTime']['output'];
+    rate: Scalars['Float']['output'];
+    requestCount: Scalars['Int']['output'];
+}
+
+export interface GqlCAdminBookingRequestConversionRate {
+    __typename?: 'AdminBookingRequestConversionRate';
+    convertedCount: Scalars['Int']['output'];
+    rate?: Maybe<Scalars['Float']['output']>;
+    requestCount: Scalars['Int']['output'];
+}
+
 export interface GqlCAdminBookingRequestCookInTravelRadius {
     __typename?: 'AdminBookingRequestCookInTravelRadius';
     cook: GqlCAdminCook;
@@ -782,6 +809,8 @@ export type GqlCAdminBookingRequestCriterion = {
     take?: Scalars['Int']['input'];
     userIds?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
+
+export type GqlCAdminBookingRequestDateBasis = 'createdAt' | 'dateTime';
 
 export type GqlCAdminBookingRequestExactEventAddressInput = {
     addressLine1: Scalars['String']['input'];
@@ -13075,6 +13104,7 @@ export type GqlCAdminBookingRequestsOverviewPageQueryVariables = Exact<{
     criteria: Array<Schema.GqlCAdminBookingRequestCriterion> | Schema.GqlCAdminBookingRequestCriterion;
     range: Schema.GqlCDateTimeRange;
     granularity?: Schema.GqlCAdminTimeBucketGranularity;
+    dateBasis?: Schema.GqlCAdminBookingRequestDateBasis;
     occasionStatsTake?: number;
     creationMonthStatsTake?: number;
     cookOfferStatsTake?: number;
@@ -13102,6 +13132,13 @@ export type GqlCAdminBookingRequestsOverviewPageQuery = {
                     rangeTotalPaidCustomerTotalCents: number;
                     rangeTotalPaidPlatformRevenueCents: number;
                 };
+                bookingRequestConversionRate: { rate: number | null; convertedCount: number; requestCount: number };
+                bookingRequestConversionMonthStats: Array<{
+                    monthStart: string;
+                    rate: number;
+                    convertedCount: number;
+                    requestCount: number;
+                }>;
                 cooksByOffers: Array<{ cookId: string; displayName: string; offerCount: number; conversionCount: number }>;
                 cooksByConversions: Array<{ cookId: string; displayName: string; offerCount: number; conversionCount: number }>;
             } | null;
@@ -57797,6 +57834,15 @@ export const AdminBookingRequestsOverviewPageDocument = {
                 },
                 {
                     kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'dateBasis' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminBookingRequestDateBasis' } },
+                    },
+                    defaultValue: { kind: 'EnumValue', value: 'createdAt' },
+                },
+                {
+                    kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'occasionStatsTake' } },
                     type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } } },
                     defaultValue: { kind: 'IntValue', value: '5' },
@@ -57968,6 +58014,55 @@ export const AdminBookingRequestsOverviewPageDocument = {
                                                                         kind: 'Field',
                                                                         name: { kind: 'Name', value: 'rangeTotalPaidPlatformRevenueCents' },
                                                                     },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'bookingRequestConversionRate' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'range' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'dateBasis' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'dateBasis' } },
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'rate' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'convertedCount' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'requestCount' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'bookingRequestConversionMonthStats' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'range' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'dateBasis' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'dateBasis' } },
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'monthStart' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'rate' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'convertedCount' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'requestCount' } },
                                                                 ],
                                                             },
                                                         },

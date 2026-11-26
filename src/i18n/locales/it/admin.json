@@ -2150,7 +2150,18 @@
             "description": "Sfoglia e consulta le richieste di prenotazione."
         },
         "bookingRequestsOverview": {
-            "description": "Distribuzione, richieste ricevute, occasioni, offerte e classifiche cuochi."
+            "description": "Distribuzione, richieste ricevute, conversione, occasioni, offerte e classifiche cuochi.",
+            "conversion": {
+                "title": "Tasso di conversione",
+                "description": "Quota di richieste di prenotazione con un'offerta accettata da entrambe le parti nell'intervallo del grafico sopra. Passa tra data di creazione e data dell'evento.",
+                "avgRate": "Conversione media",
+                "rateSeries": "Conversione %",
+                "dateBasisLabel": "Base data per il tasso di conversione",
+                "createdAt": "Data di creazione",
+                "dateTime": "Data evento",
+                "chartAriaLabel": "Grafico a barre del tasso di conversione mensile delle richieste di prenotazione nell'intervallo selezionato",
+                "na": "n/d"
+            }
         },
         "usersOverview": {
             "description": "Distribuzione, analisi e registrazioni degli account."

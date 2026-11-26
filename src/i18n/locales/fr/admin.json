@@ -2150,7 +2150,18 @@
             "description": "Parcourir et consulter les demandes de réservation."
         },
         "bookingRequestsOverview": {
-            "description": "Répartition, demandes reçues, occasions, offres et classements des chefs."
+            "description": "Répartition, demandes reçues, conversion, occasions, offres et classements des chefs.",
+            "conversion": {
+                "title": "Taux de conversion",
+                "description": "Part des demandes de réservation avec une offre acceptée des deux côtés dans la période du graphique ci-dessus. Basculer entre date de création et date de l'événement.",
+                "avgRate": "Conversion moy.",
+                "rateSeries": "Conversion %",
+                "dateBasisLabel": "Base de date pour le taux de conversion",
+                "createdAt": "Date de création",
+                "dateTime": "Date de l'événement",
+                "chartAriaLabel": "Graphique en barres du taux de conversion mensuel des demandes de réservation sur la période sélectionnée",
+                "na": "n/d"
+            }
         },
         "usersOverview": {
             "description": "Répartition des comptes, aperçus et inscriptions."

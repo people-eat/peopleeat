@@ -6,8 +6,10 @@ import { t } from '../../../i18n/t';
 import { formatCurrency, formatIsoDate, formatMonthYear } from '../../../shared';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { DateRangePicker } from '../../components/base/date-range-picker';
+import { Tabs, TabsList, TabsTrigger } from '../../components/base/tabs';
 import type {
     GqlCAdminBookingRequestCriterion,
+    GqlCAdminBookingRequestDateBasis,
     GqlCAdminBookingRequestsOverviewPageQuery,
     GqlCBookingRequestPublicationStatus,
 } from '../../graphql/generated';
@@ -17,11 +19,15 @@ import { DATE_FNS_LOCALE } from '../../utils/dateFnsLocale';
 import type { Locale } from '../../utils/locale';
 import { adminBookingRequestsSectionTo } from './adminBookingRequests';
 import { adminBookingRequestPublicationStatusLabel } from './adminBookingRequestsColumns';
+import {
+    adminBookingRequestsOverviewDateBasisResolve,
+    adminBookingRequestsOverviewSearchForNavigate,
+} from './adminBookingRequestsOverviewSearch';
+import type { AdminBookingRequestsOverviewSearch } from './adminBookingRequestsOverviewSearch';
 import { AdminOverviewBarChart } from './AdminOverviewBarChart';
 import { adminOverviewLinkCardClassName } from './adminOverviewLinkCard';
 import { AdminOverviewNavCard } from './AdminOverviewNavCard';
 import { adminOverviewRangeResolve, adminOverviewRangeToGraphQlVariables } from './adminOverviewRange';
-import type { AdminOverviewRangeSearch } from './adminOverviewRange';
 import { AdminOverviewStatCard } from './AdminOverviewStatCard';
 
 export function adminBookingRequestsOverviewPageTitle(locale: Locale): string {
@@ -42,10 +48,14 @@ const ADMIN_BOOKING_REQUEST_COUNT_CRITERIA: GqlCAdminBookingRequestCriterion[] =
 
 const ADMIN_BOOKING_REQUEST_RANKING_TAKE = 5;
 
-export function adminBookingRequestsOverviewPageVariables(search: AdminOverviewRangeSearch = {}) {
+const ADMIN_BOOKING_REQUEST_DATE_BASIS_OPTIONS: GqlCAdminBookingRequestDateBasis[] = ['createdAt', 'dateTime'];
+
+export function adminBookingRequestsOverviewPageVariables(search: AdminBookingRequestsOverviewSearch = {}) {
+    const dateBasis = adminBookingRequestsOverviewDateBasisResolve(search);
     return {
         criteria: ADMIN_BOOKING_REQUEST_COUNT_CRITERIA,
         ...adminOverviewRangeToGraphQlVariables(adminOverviewRangeResolve(search)),
+        dateBasis,
         occasionStatsTake: ADMIN_BOOKING_REQUEST_RANKING_TAKE,
         creationMonthStatsTake: ADMIN_BOOKING_REQUEST_RANKING_TAKE,
         cookOfferStatsTake: ADMIN_BOOKING_REQUEST_RANKING_TAKE,
@@ -75,17 +85,31 @@ function formatAverageOffers(value: number, locale: Locale): string {
     });
 }
 
+function formatConversionRatePercent(rate: number | null | undefined, locale: Locale): string {
+    if (rate == null || !Number.isFinite(rate)) {
+        return t(locale, 'admin', 'pages.bookingRequestsOverview.conversion.na');
+    }
+    return `${Math.round(rate * 100)}\u00a0%`;
+}
+
+function dateBasisLabel(dateBasis: GqlCAdminBookingRequestDateBasis, locale: Locale): string {
+    return dateBasis === 'dateTime'
+        ? t(locale, 'admin', 'pages.bookingRequestsOverview.conversion.dateTime')
+        : t(locale, 'admin', 'pages.bookingRequestsOverview.conversion.createdAt');
+}
+
 export function AdminBookingRequestsOverviewPage({
     data,
     search,
 }: {
     data: GqlCAdminBookingRequestsOverviewPageQuery;
-    search: AdminOverviewRangeSearch;
+    search: AdminBookingRequestsOverviewSearch;
 }) {
     const locale = useLocale();
     const timeZone = useTimeZone();
     const navigate = useNavigate({ from: '/{-$locale}/admin/booking-requests' });
     const range = adminOverviewRangeResolve(search);
+    const dateBasis = adminBookingRequestsOverviewDateBasisResolve(search);
     const admin = data.currentSession.user?.admin;
     const [total = 0, blocked = 0, autoApproved = 0, adminApproved = 0, directToCook = 0] = admin?.bookingRequestsCounts ?? [];
     const buckets = admin?.bookingRequestCreations ?? [];
@@ -93,6 +117,8 @@ export function AdminBookingRequestsOverviewPage({
     const creationMonthStats = admin?.bookingRequestCreationMonthStats ?? [];
     const averageParticipants = admin?.bookingRequestAverageParticipants ?? 0;
     const economics = admin?.bookingRequestOfferEconomics;
+    const conversionRate = admin?.bookingRequestConversionRate;
+    const conversionMonthStats = admin?.bookingRequestConversionMonthStats ?? [];
     const cooksByOffers = admin?.cooksByOffers ?? [];
     const cooksByConversions = admin?.cooksByConversions ?? [];
 
@@ -139,13 +165,18 @@ export function AdminBookingRequestsOverviewPage({
         to: new Date(`${range.to}T00:00:00`),
     };
 
+    function navigateOverviewSearch(next: { from: string; to: string; dateBasis: GqlCAdminBookingRequestDateBasis }) {
+        void navigate({
+            search: adminBookingRequestsOverviewSearchForNavigate(next),
+        });
+    }
+
     function onRangeChange(next: DateRange | undefined) {
         if (!next?.from || !next.to) return;
-        void navigate({
-            search: {
-                from: formatIsoDate(next.from),
-                to: formatIsoDate(next.to),
-            },
+        navigateOverviewSearch({
+            from: formatIsoDate(next.from),
+            to: formatIsoDate(next.to),
+            dateBasis,
         });
     }
 
@@ -292,6 +323,62 @@ export function AdminBookingRequestsOverviewPage({
                             })}
                         />
                     </dl>
+                </section>
+
+                <section className="grid gap-3">
+                    <div className="flex flex-wrap items-end justify-between gap-3">
+                        <div className="grid gap-1">
+                            <h2 className="text-lg font-medium">{t(locale, 'admin', 'pages.bookingRequestsOverview.conversion.title')}</h2>
+                            <p className="text-sm text-muted-foreground">
+                                {t(locale, 'admin', 'pages.bookingRequestsOverview.conversion.description')}
+                            </p>
+                        </div>
+                        <Tabs
+                            value={dateBasis}
+                            onValueChange={(value) => {
+                                navigateOverviewSearch({
+                                    from: range.from,
+                                    to: range.to,
+                                    dateBasis: value as GqlCAdminBookingRequestDateBasis,
+                                });
+                            }}
+                        >
+                            <TabsList
+                                variant="line"
+                                aria-label={t(locale, 'admin', 'pages.bookingRequestsOverview.conversion.dateBasisLabel')}
+                            >
+                                {ADMIN_BOOKING_REQUEST_DATE_BASIS_OPTIONS.map((option) => (
+                                    <TabsTrigger key={option} value={option}>
+                                        {dateBasisLabel(option, locale)}
+                                    </TabsTrigger>
+                                ))}
+                            </TabsList>
+                        </Tabs>
+                    </div>
+                    <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                        <AdminOverviewStatCard
+                            label={t(locale, 'admin', 'pages.bookingRequestsOverview.conversion.avgRate')}
+                            value={conversionRate?.rate == null ? 0 : Math.round(conversionRate.rate * 100)}
+                            displayValue={formatConversionRatePercent(conversionRate?.rate, locale)}
+                        />
+                    </dl>
+                    <AdminOverviewBarChart
+                        data={conversionMonthStats.map((bucket) => ({
+                            bucketStart: bucket.monthStart,
+                            ratePercent: Math.round(bucket.rate * 100),
+                        }))}
+                        locale={locale}
+                        timeZone={timeZone}
+                        bucketLabel="monthYear"
+                        series={[
+                            {
+                                dataKey: 'ratePercent',
+                                label: t(locale, 'admin', 'pages.bookingRequestsOverview.conversion.rateSeries'),
+                                color: 'var(--foreground)',
+                            },
+                        ]}
+                        ariaLabel={t(locale, 'admin', 'pages.bookingRequestsOverview.conversion.chartAriaLabel')}
+                    />
                 </section>
 
                 <section className="grid gap-3">

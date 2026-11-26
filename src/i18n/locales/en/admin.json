@@ -339,7 +339,18 @@
             "description": "Browse and inspect booking requests."
         },
         "bookingRequestsOverview": {
-            "description": "Distribution, received requests, occasions, offers, and cook rankings."
+            "description": "Distribution, received requests, conversion, occasions, offers, and cook rankings.",
+            "conversion": {
+                "title": "Conversion rate",
+                "description": "Share of booking requests with a dual-accepted offer in the chart range above. Toggle created date or event date.",
+                "avgRate": "Avg. conversion",
+                "rateSeries": "Conversion %",
+                "dateBasisLabel": "Date basis for conversion rate",
+                "createdAt": "Created date",
+                "dateTime": "Event date",
+                "chartAriaLabel": "Bar chart of monthly booking-request conversion rate in the selected range",
+                "na": "n/a"
+            }
         },
         "usersOverview": {
             "description": "Account distribution, insights, and registrations."

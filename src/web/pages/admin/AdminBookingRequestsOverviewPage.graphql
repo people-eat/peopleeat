@@ -8,6 +8,7 @@ query AdminBookingRequestsOverviewPage(
     $criteria: [AdminBookingRequestCriterion!]!
     $range: DateTimeRange!
     $granularity: AdminTimeBucketGranularity! = day
+    $dateBasis: AdminBookingRequestDateBasis! = createdAt
     $occasionStatsTake: Int! = 5
     $creationMonthStatsTake: Int! = 5
     $cookOfferStatsTake: Int! = 5
@@ -43,6 +44,17 @@ query AdminBookingRequestsOverviewPage(
                     totalPaidPlatformRevenueCents
                     rangeTotalPaidCustomerTotalCents
                     rangeTotalPaidPlatformRevenueCents
+                }
+                bookingRequestConversionRate(range: $range, dateBasis: $dateBasis) {
+                    rate
+                    convertedCount
+                    requestCount
+                }
+                bookingRequestConversionMonthStats(range: $range, dateBasis: $dateBasis) {
+                    monthStart
+                    rate
+                    convertedCount
+                    requestCount
                 }
                 cooksByOffers: bookingRequestCookOfferStats(take: $cookOfferStatsTake, sortBy: offerCount) {
                     cookId

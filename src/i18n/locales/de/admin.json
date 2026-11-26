@@ -339,7 +339,18 @@
             "description": "Buchungsanfragen durchsuchen und einsehen."
         },
         "bookingRequestsOverview": {
-            "description": "Verteilung, eingegangene Anfragen, Anlässe, Angebote und Koch-Rankings."
+            "description": "Verteilung, eingegangene Anfragen, Conversion, Anlässe, Angebote und Koch-Rankings.",
+            "conversion": {
+                "title": "Conversion-Rate",
+                "description": "Anteil der Buchungsanfragen mit beidseitig akzeptiertem Angebot im Diagrammzeitraum oben. Umschalten zwischen Erstellungsdatum und Veranstaltungsdatum.",
+                "avgRate": "Ø Conversion",
+                "rateSeries": "Conversion %",
+                "dateBasisLabel": "Datumsbasis für die Conversion-Rate",
+                "createdAt": "Erstellungsdatum",
+                "dateTime": "Veranstaltungsdatum",
+                "chartAriaLabel": "Balkendiagramm der monatlichen Conversion-Rate von Buchungsanfragen im gewählten Zeitraum",
+                "na": "k. A."
+            }
         },
         "usersOverview": {
             "description": "Verteilung, Einblicke und Registrierungen der Konten."

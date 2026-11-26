@@ -246,6 +246,8 @@ import { adminAssistantChatsCounts } from '../queries/adminAssistantChatsCounts'
 import { adminBlogPostFindMany } from '../queries/adminBlogPostFindMany';
 import { adminBlogPostFindOne } from '../queries/adminBlogPostFindOne';
 import { adminBookingRequestAverageParticipantsFindOne } from '../queries/adminBookingRequestAverageParticipantsFindOne';
+import { adminBookingRequestConversionMonthStatsFindMany } from '../queries/adminBookingRequestConversionMonthStatsFindMany';
+import { adminBookingRequestConversionRateFindOne } from '../queries/adminBookingRequestConversionRateFindOne';
 import { adminBookingRequestCookOfferStatsFindMany } from '../queries/adminBookingRequestCookOfferStatsFindMany';
 import { adminBookingRequestCooksInTravelRadiusFindMany } from '../queries/adminBookingRequestCooksInTravelRadiusFindMany';
 import { adminBookingRequestCounts } from '../queries/adminBookingRequestCounts';
@@ -488,6 +490,8 @@ import type {
     GqlSAdminBookingRequest,
     GqlSAdminBookingRequestArgs,
     GqlSAdminBookingRequestCheckoutFlowArgs,
+    GqlSAdminBookingRequestConversionMonthStatsArgs,
+    GqlSAdminBookingRequestConversionRateArgs,
     GqlSAdminBookingRequestCookOfferStatsArgs,
     GqlSAdminBookingRequestCreationMonthStatsArgs,
     GqlSAdminBookingRequestCreationsArgs,
@@ -1440,6 +1444,20 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
                 requestingSession: GqlSSession,
             ) {
                 return adminBookingRequestCookOfferStatsFindMany(args, requestingSession, serverRuntime);
+            },
+            bookingRequestConversionRate(
+                _parent: GqlSAdmin,
+                args: GqlSAdminBookingRequestConversionRateArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return adminBookingRequestConversionRateFindOne(args, requestingSession, serverRuntime);
+            },
+            bookingRequestConversionMonthStats(
+                _parent: GqlSAdmin,
+                args: GqlSAdminBookingRequestConversionMonthStatsArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return adminBookingRequestConversionMonthStatsFindMany(args, requestingSession, serverRuntime);
             },
             bookingRequest(_parent: GqlSAdmin, args: GqlSAdminBookingRequestArgs, requestingSession: GqlSSession) {
                 return adminBookingRequestFindOne(args, requestingSession, serverRuntime);

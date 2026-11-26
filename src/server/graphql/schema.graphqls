@@ -2959,6 +2959,31 @@ enum AdminBookingRequestCookOfferStatSortField {
     conversionCount
 }
 
+# Which `BookingRequests` timestamp scopes conversion rate / monthly series.
+enum AdminBookingRequestDateBasis {
+    createdAt
+    dateTime
+}
+
+# Request-level conversion in a range: dual-accepted requests ÷ all requests.
+type AdminBookingRequestConversionRate {
+    # `convertedCount / requestCount`. Null when `requestCount` is 0.
+    rate: Float
+    # Requests with at least one dual-accepted offer.
+    convertedCount: Int!
+    requestCount: Int!
+}
+
+# Zero-filled calendar-month conversion bucket for the overview chart.
+type AdminBookingRequestConversionMonthBucket {
+    # First instant of the month (`date_trunc('month', …)`).
+    monthStart: DateTime!
+    # `convertedCount / requestCount`, or 0 when `requestCount` is 0.
+    rate: Float!
+    convertedCount: Int!
+    requestCount: Int!
+}
+
 # Sortable columns for `Admin.bookingRequests`. Default when omitted: `createdAt` DESC.
 enum AdminBookingRequestSortField {
     createdAt
@@ -4722,6 +4747,18 @@ type Admin {
         take: Int! = 3
         sortBy: AdminBookingRequestCookOfferStatSortField! = offerCount
     ): [AdminBookingRequestCookOfferStat!]!
+    # Request-level conversion rate in `range` (dual-accept ÷ all requests).
+    # `dateBasis` chooses `createdAt` (default) or event `dateTime`.
+    bookingRequestConversionRate(
+        range: DateTimeRange!
+        dateBasis: AdminBookingRequestDateBasis! = createdAt
+    ): AdminBookingRequestConversionRate!
+    # Monthly conversion series in `range`, zero-filled by calendar month.
+    # Same metric and `dateBasis` as `bookingRequestConversionRate`.
+    bookingRequestConversionMonthStats(
+        range: DateTimeRange!
+        dateBasis: AdminBookingRequestDateBasis! = createdAt
+    ): [AdminBookingRequestConversionMonthBucket!]!
     # Single booking-request detail. Null when the id is unknown.
     bookingRequest(bookingRequestId: ID!): AdminBookingRequest
     # Offer-capable cooks whose travel radius covers the point (admin create picker).

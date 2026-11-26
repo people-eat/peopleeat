@@ -8,13 +8,13 @@ import {
     adminBookingRequestsOverviewPageTitle,
     adminBookingRequestsOverviewPageVariables,
 } from '../../../web/pages/admin/AdminBookingRequestsOverviewPage';
-import { parseAdminOverviewRangeSearch } from '../../../web/pages/admin/adminOverviewRange';
+import { parseAdminBookingRequestsOverviewSearch } from '../../../web/pages/admin/adminBookingRequestsOverviewSearch';
 import { seoMeta } from '../../../web/seo/seoMeta';
 import { webPageUrlGet } from '../../../web/seo/webPageUrlGet';
 import { localeFromParam } from '../../../web/utils/locale';
 
 export const Route = createFileRoute('/{-$locale}/admin/booking-requests')({
-    validateSearch: (search: Record<string, unknown>) => parseAdminOverviewRangeSearch(search),
+    validateSearch: (search: Record<string, unknown>) => parseAdminBookingRequestsOverviewSearch(search),
     loaderDeps: ({ search }) => search,
     loader: ({ deps }) =>
         routeLoaderGraphqlClient(AdminBookingRequestsOverviewPageDocument, adminBookingRequestsOverviewPageVariables(deps))(),
