@@ -1,0 +1,1 @@
+CREATE INDEX "Sessions_lastInteractionAt_idx" ON "Sessions" USING btree ("lastInteractionAt");

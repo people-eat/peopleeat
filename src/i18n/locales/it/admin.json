@@ -1658,7 +1658,63 @@
                 "created": "Account cuoco creato"
             }
         },
-        "cookConversion": "Conversione da notifica a offerta: {percent}%."
+        "cookConversion": "Conversione da notifica a offerta: {percent}%.",
+        "tabs": {
+            "aria": "Sezioni analytics",
+            "booking": "Prenotazioni",
+            "cooks": "Cuochi",
+            "signIn": "Accesso",
+            "giftCards": "Buoni"
+        },
+        "cookSessionActivity": {
+            "title": "Cuochi attivi",
+            "activeCooks": "Cuochi attivi",
+            "productiveCooks": "Cuochi produttivi",
+            "byMonth": "Per mese",
+            "byWeek": "Per settimana",
+            "caption": "Un cuoco è attivo quando una sessione umana, non admin e senza accesso impersonato, ha interagito l’ultima volta nel periodo. I cuochi non approvati contano. Una sessione lunga compare solo nel mese o nella settimana dell’ultima attività. I cuochi produttivi hanno creato almeno un’offerta nel periodo."
+        },
+        "cookOfferMedianTimeToOffer": "Mediana da notifica a offerta",
+        "customerSessionActivity": {
+            "title": "Clienti attivi",
+            "activeCustomers": "Clienti attivi",
+            "byMonth": "Per mese",
+            "byWeek": "Per settimana",
+            "caption": "Un cliente è attivo quando una sessione umana che non è cuoco, admin, bot o accesso impersonato ha interagito l’ultima volta nel periodo. Una sessione lunga compare solo nel mese o nella settimana dell’ultima attività."
+        },
+        "funnelView": {
+            "aria": "Vista del funnel",
+            "sankey": "Sankey",
+            "table": "Tabella"
+        },
+        "links": {
+            "visitGrain": "Le visite al modulo contano ogni sessione. I conteggi del funnel sono sessioni umane non admin e non cuoco. Le richieste di prenotazione contano le righe nel database, anche quelle create da un admin."
+        },
+        "marketplace": {
+            "title": "Marketplace dopo la creazione",
+            "caption": "Righe di richiesta create nel periodo, non sessioni. Tasso di doppia accettazione e GMV restano in Richieste di prenotazione.",
+            "requests": "Richieste",
+            "withOffer": "Con un’offerta",
+            "dualAccepted": "Accettate da entrambi",
+            "paid": "Pagate",
+            "paymentFailed": "Pagamento non riuscito",
+            "chefDirect": "Pagina cuoco",
+            "radius": "Raggio"
+        },
+        "signIn": {
+            "failureRate": "Tasso di errore"
+        },
+        "giftCards": {
+            "visits": "Visite buono regalo",
+            "visitToPaid": "Da visita a pagato",
+            "paidInRange": "Pagato nel periodo",
+            "paidChartCaption": "Acquisti pagati per data di pagamento. Senza data di pagamento si usa la data di creazione."
+        },
+        "countPercent": "{count} · {percent}%",
+        "format": {
+            "hours": "{hours} h",
+            "underOneHour": "Meno di 1 h"
+        }
     },
     "traffic": {
         "allPages": "Tutte le pagine pubbliche",
@@ -1999,7 +2055,7 @@
         },
         "analytics": {
             "title": "Analytics",
-            "description": "Funnel del modulo di prenotazione, buoni, checkout e cuochi, più metodi di accesso."
+            "description": "Analisi su prenotazioni, cuochi, buoni e accesso, compresi i cuochi attivi."
         },
         "sessions": {
             "title": "Sessioni",
@@ -2193,7 +2249,7 @@
             "description": "Grafici a linee filtrabili delle visite alle pagine pubbliche dagli eventi di sessione."
         },
         "analytics": {
-            "description": "Funnel del modulo di prenotazione, buoni, checkout e cuochi, più metodi di accesso."
+            "description": "Analisi su prenotazioni, cuochi, buoni e accesso, compresi i cuochi attivi."
         },
         "offerAddonTemplate": {
             "title": "Extra",

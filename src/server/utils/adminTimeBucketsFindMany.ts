@@ -17,7 +17,7 @@ type AdminTimeBucketTable =
     | '"OutboundEmails"'
     | '"GiftCards"';
 
-type AdminTimeBucketTimestampColumn = '"createdAt"' | '"startedAt"';
+type AdminTimeBucketTimestampColumn = '"createdAt"' | '"startedAt"' | 'COALESCE("payedAt", "createdAt")';
 
 export async function adminTimeBucketsFindMany(
     table: AdminTimeBucketTable,

@@ -17,12 +17,14 @@ import type {
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { DATE_FNS_LOCALE } from '../../utils/dateFnsLocale';
+import { adminAnalyticsSearchForRange } from './adminAnalyticsSearch';
 import { AdminOverviewBarChart } from './AdminOverviewBarChart';
 import { adminOverviewLinkCardClassName } from './adminOverviewLinkCard';
 import { AdminOverviewNavCard } from './AdminOverviewNavCard';
 import { adminOverviewRangeResolve, adminOverviewRangeToGraphQlVariables } from './adminOverviewRange';
 import type { AdminOverviewRangeSearch } from './adminOverviewRange';
 import { AdminOverviewStatCard } from './AdminOverviewStatCard';
+import { AdminRelatedPageLinks } from './AdminRelatedPageLink';
 import { adminUsersSectionTo } from './adminUsers';
 import { adminUserTypeBadgeClassName, adminUserTypeLabel } from './adminUsersColumns';
 
@@ -199,7 +201,18 @@ export function AdminUsersOverviewPage({ data, search }: { data: GqlCAdminUsersO
                 </section>
 
                 <section className="grid gap-3">
-                    <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.distribution')}</h2>
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.distribution')}</h2>
+                        <AdminRelatedPageLinks
+                            links={[
+                                {
+                                    to: '/{-$locale}/admin/analytics',
+                                    search: adminAnalyticsSearchForRange(range, 'cooks'),
+                                    label: t(locale, 'admin', 'traffic.viewAnalytics'),
+                                },
+                            ]}
+                        />
+                    </div>
                     <p className="text-sm text-muted-foreground">
                         {t(locale, 'admin', 'copy.labelsCanOverlapEGAnAdminWithoutACookRowCountsAsBothAdminAnd')}
                     </p>
@@ -219,14 +232,25 @@ export function AdminUsersOverviewPage({ data, search }: { data: GqlCAdminUsersO
                 <section className="grid gap-3">
                     <div className="flex flex-wrap items-end justify-between gap-3">
                         <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.registrations')}</h2>
-                        <DateRangePicker
-                            value={pickerValue}
-                            onValueChange={onRangeChange}
-                            locale={DATE_FNS_LOCALE[locale]}
-                            placeholder={t(locale, 'admin', 'copy.pickADateRange')}
-                            className="w-auto"
-                            aria-label={t(locale, 'admin', 'copy.dateRangeForRegistrations')}
-                        />
+                        <div className="flex flex-wrap items-end gap-2">
+                            <AdminRelatedPageLinks
+                                links={[
+                                    {
+                                        to: '/{-$locale}/admin/analytics',
+                                        search: adminAnalyticsSearchForRange(range, 'sign-in'),
+                                        label: t(locale, 'admin', 'traffic.viewAnalytics'),
+                                    },
+                                ]}
+                            />
+                            <DateRangePicker
+                                value={pickerValue}
+                                onValueChange={onRangeChange}
+                                locale={DATE_FNS_LOCALE[locale]}
+                                placeholder={t(locale, 'admin', 'copy.pickADateRange')}
+                                className="w-auto"
+                                aria-label={t(locale, 'admin', 'copy.dateRangeForRegistrations')}
+                            />
+                        </div>
                     </div>
                     <AdminOverviewBarChart
                         data={buckets.map((bucket) => ({ bucketStart: bucket.bucketStart, count: bucket.count }))}

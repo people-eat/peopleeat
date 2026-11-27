@@ -11,7 +11,8 @@ Admins manage sessions under `/admin/sessions` (overview + list + detail; no cre
 Kind distribution (total, human, bot) and session-creation bar chart. Date range drives zero-filled buckets. Section card links to the list.
 Distribution cards deep-link into the list with `kind` preselected (Total clears the filter).
 
-Below the chart, **insights** for human non-impersonation sessions created in the same range:
+The insights heading has an **Analytics** button to `/admin/analytics?tab=sign-in` with the same `from` / `to`. Below the chart,
+**insights** for human non-impersonation sessions created in the same range:
 
 - Top first-touch landing paths and referrers (blank referrer = Direct; rows deep-link into the human list with `q`)
 - Device class (mobile / tablet / desktop), operating system, and browser family inferred from `userAgent` (coarse Postgres heuristics, not
@@ -63,7 +64,8 @@ list layout.
   `schema.graphqls`
 - Queries: find many, counts, creations, insights, find one; `adminSessionCriterionWhere`
 - Mapper: `toGqlAdminSession`; field resolver `AdminSession.user` → `adminUserFindOne`
-- UI: overview (distribution + chart + insights), list with kind tabs + data table, detail page
+- UI: overview (distribution + chart + insights; range-preserving link to Analytics `tab=sign-in`), list with kind tabs + data table, detail
+  page
 - Routes: `sessions.tsx`, `sessions_.list.tsx`, `sessions_.$sessionId.tsx`
 - Nav: `adminSessions.ts` — [admin-shell.md](./admin-shell.md)
 

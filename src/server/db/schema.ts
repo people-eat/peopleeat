@@ -158,6 +158,7 @@ export const sessions = pgTable(
             .onDelete('set null'),
         index('Sessions_ipHash_idx').on(table.ipHash),
         index('Sessions_createdAt_idx').on(table.createdAt),
+        index('Sessions_lastInteractionAt_idx').on(table.lastInteractionAt),
         index('Sessions_pendingTotpUserId_idx').on(table.pendingTotpUserId),
         index('Sessions_impersonationReturnSessionId_idx').on(table.impersonationReturnSessionId),
     ],

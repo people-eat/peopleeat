@@ -18,12 +18,14 @@ import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { DATE_FNS_LOCALE } from '../../utils/dateFnsLocale';
 import type { Locale } from '../../utils/locale';
+import { adminAnalyticsSearchForRange } from './adminAnalyticsSearch';
 import { AdminOverviewBarChart } from './AdminOverviewBarChart';
 import { adminOverviewLinkCardClassName } from './adminOverviewLinkCard';
 import { AdminOverviewNavCard } from './AdminOverviewNavCard';
 import { adminOverviewRangeResolve, adminOverviewRangeToGraphQlVariables } from './adminOverviewRange';
 import type { AdminOverviewRangeSearch } from './adminOverviewRange';
 import { AdminOverviewStatCard } from './AdminOverviewStatCard';
+import { AdminRelatedPageLinks } from './AdminRelatedPageLink';
 import { adminSessionKindLabel, adminSessionsSectionTo } from './adminSessions';
 
 export function adminSessionsOverviewPageTitle(locale: Locale): string {
@@ -258,7 +260,18 @@ export function AdminSessionsOverviewPage({
                 </section>
 
                 <section className="grid gap-3">
-                    <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.insights')}</h2>
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.insights')}</h2>
+                        <AdminRelatedPageLinks
+                            links={[
+                                {
+                                    to: '/{-$locale}/admin/analytics',
+                                    search: adminAnalyticsSearchForRange(range, 'sign-in'),
+                                    label: t(locale, 'admin', 'traffic.viewAnalytics'),
+                                },
+                            ]}
+                        />
+                    </div>
                     <p className="text-sm text-muted-foreground">
                         {t(locale, 'admin', 'copy.humanSessionsCreatedInTheSelectedRangeBotsAndImpersonationEx')}
                     </p>

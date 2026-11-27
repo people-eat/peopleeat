@@ -35,7 +35,7 @@ async function insertCustomerBookingRequest() {
     return bookingRequestId;
 }
 
-async function insertOffer(bookingRequestId: string, cookId: string) {
+async function insertOffer(bookingRequestId: string, cookId: string, createdAt?: Date) {
     await testDb.insert(bookingRequestOffers).values({
         bookingRequestOfferId: idCreate(),
         bookingRequestId,
@@ -49,6 +49,7 @@ async function insertOffer(bookingRequestId: string, cookId: string) {
         platformFeeCentsCustomer: 500,
         payoutCentsCook: 4500,
         totalWithoutDiscountsCentsCustomer: 5500,
+        ...(createdAt ? { createdAt } : {}),
     });
 }
 
@@ -221,5 +222,30 @@ describe('adminAnalyticsCookBookingRequestOfferFlow', () => {
         expect(flow.links.some((link) => link.source === 'offer_create' && link.target === 'menus')).toBe(true);
         expect(flow.links.some((link) => link.source === 'menus' && link.target === 'created')).toBe(true);
         expect(flow.links.some((link) => link.source === 'price' && link.target === 'message')).toBe(false);
+    });
+
+    it('returns median notify-to-offer minutes for the notified cohort', async () => {
+        const admin = await commandSetup.withUser({ firstName: 'analytics-admin-median', lastName: 'User' });
+        const cook = await commandSetup.withUser({ firstName: 'Chef', lastName: 'Median' });
+        await testDb.insert(cooks).values({ cookId: cook.user.userId });
+        const bookingRequestId = await insertCustomerBookingRequest();
+        const notifiedAt = new Date('2035-01-10T12:00:00.000Z');
+        const offerCreatedAt = new Date('2035-01-10T18:00:00.000Z');
+        await testDb.insert(bookingRequestCooks).values({
+            cookId: cook.user.userId,
+            bookingRequestId,
+            notifiedAt,
+            firstOpenedAt: new Date('2035-01-10T13:00:00.000Z'),
+            menuEvaluationLoading: false,
+        });
+        await insertOffer(bookingRequestId, cook.user.userId, offerCreatedAt);
+
+        const flow = await adminAnalyticsCookBookingRequestOfferFlow(
+            { startDateTime: notifiedAt, endDateTime: new Date(notifiedAt.getTime() + 1) },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        expect(flow.medianNotifyToOfferMinutes).toBe(360);
     });
 });

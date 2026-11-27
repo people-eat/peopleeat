@@ -1,6 +1,7 @@
 # Admin gift-cards overview hub — payment distribution, paid purchases over time,
-# top occasions, top sales months, and average paid purchase value.
-# Chart uses `$range` (picker). Rankings and average are all-time (no range).
+# top occasions, top sales months, average paid purchase value, and range paid GMV.
+# Chart uses `$range` (picker) and buckets by COALESCE(payedAt, createdAt).
+# Rankings and average are all-time (no range). Range GMV uses the same picker.
 # `giftCardsCounts` order matches `ADMIN_GIFT_CARD_COUNT_CRITERIA` in
 # AdminGiftCardsOverviewPage.tsx.
 
@@ -33,6 +34,7 @@ query AdminGiftCardsOverviewPage(
                     totalOriginalBalanceCents
                 }
                 giftCardPaidPurchaseAverageCents
+                giftCardPaidPurchaseRangeCents(range: $range)
             }
         }
     }

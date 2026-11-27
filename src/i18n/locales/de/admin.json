@@ -188,7 +188,7 @@
         },
         "analytics": {
             "title": "Analysen",
-            "description": "Buchungsformular-, Geschenkkarten-, Checkout- und Koch-Funnels sowie Anmeldemethoden."
+            "description": "Analysen zu Buchung, Köchen, Geschenkkarten und Anmeldung, inklusive aktiver Köche."
         },
         "sessions": {
             "title": "Sitzungen",
@@ -382,7 +382,7 @@
             "description": "Filterbare Liniendiagramme öffentlicher Seitenbesuche aus Session-Events."
         },
         "analytics": {
-            "description": "Buchungsformular-, Geschenkkarten-, Checkout- und Koch-Funnels sowie Anmeldemethoden."
+            "description": "Analysen zu Buchung, Köchen, Geschenkkarten und Anmeldung, inklusive aktiver Köche."
         },
         "offerAddonTemplate": {
             "title": "Zusatzleistung",
@@ -2214,7 +2214,63 @@
                 "created": "Koch-Konto erstellt"
             }
         },
-        "cookConversion": "Conversion benachrichtigt → Angebot: {percent}%."
+        "cookConversion": "Conversion benachrichtigt → Angebot: {percent}%.",
+        "tabs": {
+            "aria": "Analyse-Bereiche",
+            "booking": "Buchung",
+            "cooks": "Köche",
+            "signIn": "Anmeldung",
+            "giftCards": "Geschenkkarten"
+        },
+        "cookSessionActivity": {
+            "title": "Aktive Köche",
+            "activeCooks": "Aktive Köche",
+            "productiveCooks": "Produktive Köche",
+            "byMonth": "Nach Monat",
+            "byWeek": "Nach Woche",
+            "caption": "Ein Koch gilt als aktiv, wenn eine menschliche Sitzung ohne Admin und ohne Impersonation in diesem Zeitraum zuletzt aktiv war. Nicht freigegebene Köche zählen. Langlebige Sitzungen erscheinen nur im Monat oder in der Woche ihrer letzten Aktivität. Produktive Köche haben im Zeitraum mindestens ein Angebot erstellt."
+        },
+        "cookOfferMedianTimeToOffer": "Median Benachrichtigung bis Angebot",
+        "customerSessionActivity": {
+            "title": "Aktive Kunden",
+            "activeCustomers": "Aktive Kunden",
+            "byMonth": "Nach Monat",
+            "byWeek": "Nach Woche",
+            "caption": "Ein Kunde gilt als aktiv, wenn eine menschliche Sitzung, die kein Koch, Admin, Bot oder Impersonation ist, in diesem Zeitraum zuletzt aktiv war. Langlebige Sitzungen erscheinen nur im Monat oder in der Woche ihrer letzten Aktivität."
+        },
+        "funnelView": {
+            "aria": "Funnel-Ansicht",
+            "sankey": "Sankey",
+            "table": "Tabelle"
+        },
+        "links": {
+            "visitGrain": "Formularbesuche zählen jede Sitzung. Funnel-Zahlen sind menschliche Sitzungen ohne Admin und ohne Koch. Buchungsanfragen zählen Datenbankzeilen, auch von Admins erstellte Anfragen."
+        },
+        "marketplace": {
+            "title": "Marktplatz nach Erstellung",
+            "caption": "Anfragen im Zeitraum, keine Sitzungen. Dual-Accept-Quote und GMV bleiben unter Buchungsanfragen.",
+            "requests": "Anfragen",
+            "withOffer": "Mit Angebot",
+            "dualAccepted": "Beidseitig akzeptiert",
+            "paid": "Bezahlt",
+            "paymentFailed": "Zahlung fehlgeschlagen",
+            "chefDirect": "Kochseite",
+            "radius": "Radius"
+        },
+        "signIn": {
+            "failureRate": "Fehlerquote"
+        },
+        "giftCards": {
+            "visits": "Geschenkkarten-Besuche",
+            "visitToPaid": "Besuch zu bezahlt",
+            "paidInRange": "Bezahlt im Zeitraum",
+            "paidChartCaption": "Bezahlte Käufe nach Zahlungsdatum. Ohne Zahlungsdatum gilt das Erstellungsdatum."
+        },
+        "countPercent": "{count} · {percent}%",
+        "format": {
+            "hours": "{hours} Std.",
+            "underOneHour": "Unter 1 Std."
+        }
     },
     "traffic": {
         "allPages": "Alle öffentlichen Seiten",

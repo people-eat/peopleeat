@@ -10,7 +10,8 @@ Admins manage accounts under `/admin/users` (overview + list + create + detail),
 
 Section order matches other admin overviews: section cards, membership distribution, registration bar chart, then demographic insights and
 upcoming birthdays. Date range in URL drives zero-filled daily buckets for registrations only. Distribution cards deep-link into the list
-with `type` preselected (Total clears the filter).
+with `type` preselected (Total clears the filter). Membership distribution has an **Analytics** button to `/admin/analytics?tab=cooks`; the
+registrations heading has an **Analytics** button to `/admin/analytics?tab=sign-in` with the same `from` / `to`.
 
 **Insights** (all non-anonymized accounts, independent of the chart range): ranked breakdowns for preferred communication, locale, and top
 time zones (count + share of non-anonymized accounts), plus overlapping linked-method counts (Google linked, Facebook linked, passkey
@@ -136,13 +137,14 @@ detail with URL tabs; manual create with optional admin and cook payloads.
   `adminCookBiographySuggest`; `adminCookBiographySummarySuggest`; `adminCookMealUpsert`; `adminCookMenuUpsert`
 - Mapper: `toGqlAdminUser` (`profilePicture` resolved like public `User`)
 - Resolvers under `Admin` / `AdminMutation`
-- UI: overview with stat cards, insights breakdowns, upcoming birthdays, + chart; list with type tabs, status select, data table, and pinned
-  `AdminListPaginationBar`; create form; detail with `@include` per tab; session-events tab uses `Admin.sessionEvents` +
-  `Admin.sessionEventsCounts` with pinned `AdminListPaginationBar`; `AdminUserGeneralSection`, `AdminUserSignInSection`,
-  `AdminUserCookProfileSection`, `AdminUserCookProfileEditPage`; booking-requests / pool / offers tabs reuse `AdminBookingRequestListCard` /
-  `AdminBookingRequestOfferCard`; testimonials tab reuses `AdminTestimonialListCard`; calls tab uses a compact `callTraffic` list. Account
-  status / type badges: `adminUserStatusBadgeClassName` (status tones) and `adminUserTypeBadgeClassName` (`outline` + `bg-muted`) in
-  `adminUsersColumns.tsx` — never `Badge variant="secondary"` on the white table / cards. Type pills stay on one row (`flex w-max`).
+- UI: overview with stat cards, insights breakdowns, upcoming birthdays, + chart; range-preserving links to Analytics (`tab=cooks` /
+  `tab=sign-in`); list with type tabs, status select, data table, and pinned `AdminListPaginationBar`; create form; detail with `@include`
+  per tab; session-events tab uses `Admin.sessionEvents` + `Admin.sessionEventsCounts` with pinned `AdminListPaginationBar`;
+  `AdminUserGeneralSection`, `AdminUserSignInSection`, `AdminUserCookProfileSection`, `AdminUserCookProfileEditPage`; booking-requests /
+  pool / offers tabs reuse `AdminBookingRequestListCard` / `AdminBookingRequestOfferCard`; testimonials tab reuses
+  `AdminTestimonialListCard`; calls tab uses a compact `callTraffic` list. Account status / type badges: `adminUserStatusBadgeClassName`
+  (status tones) and `adminUserTypeBadgeClassName` (`outline` + `bg-muted`) in `adminUsersColumns.tsx` — never `Badge variant="secondary"`
+  on the white table / cards. Type pills stay on one row (`flex w-max`).
 - `AdminCook` field resolvers: `logo`, `rating`, `callAvailabilityRules`, `featuredOn` (city/venue/occasion reverse index),
   `stripeAccountDetails` / `stripeWallet` (live Stripe; admin loaders, not cook ownership / balance toggle)
 - `Admin.customerTestimonials` / `cookTestimonials` accept optional criterion (`cookIds`, skip/take); omit criterion = full catalog

@@ -1,14 +1,24 @@
 # Admin analytics overview. Loaded by `/admin/analytics`.
-# See `docs/features/admin-analytics.md`.
+# See `docs/features/admin-analytics.md`. URL `tab` selects Booking / Cooks /
+# Sign-in / Gift cards; each tab’s aggregations load only via `@include`.
 
-query AdminAnalyticsPage($range: DateTimeRange!, $granularity: AdminTimeBucketGranularity! = day, $formVisitWebPageKey: WebPageKey!) {
+query AdminAnalyticsPage(
+    $range: DateTimeRange!
+    $granularity: AdminTimeBucketGranularity! = day
+    $formVisitWebPageKey: WebPageKey!
+    $giftCardVisitWebPageKey: WebPageKey!
+    $includeBooking: Boolean!
+    $includeCooks: Boolean!
+    $includeSignIn: Boolean!
+    $includeGiftCards: Boolean!
+) {
     currentSession {
         sessionId
         user {
             userId
             admin {
                 adminId
-                bookingRequestFormFlow(range: $range) {
+                bookingRequestFormFlow(range: $range) @include(if: $includeBooking) {
                     nodes {
                         id
                         label
@@ -27,7 +37,12 @@ query AdminAnalyticsPage($range: DateTimeRange!, $granularity: AdminTimeBucketGr
                     sessionsWithCompletion
                     bookingRequestsCreated
                 }
-                giftCardFlow(range: $range) {
+                formVisits: sessionEventWebPageVisitCreations(webPageKey: $formVisitWebPageKey, range: $range, granularity: $granularity)
+                    @include(if: $includeBooking) {
+                    bucketStart
+                    count
+                }
+                bookingRequestCheckoutFlow(range: $range) @include(if: $includeBooking) {
                     nodes {
                         id
                         label
@@ -46,7 +61,39 @@ query AdminAnalyticsPage($range: DateTimeRange!, $granularity: AdminTimeBucketGr
                     sessionsWithCompletion
                     terminalCount
                 }
-                chefSignUpFlow(range: $range) {
+                bookingRequestMarketplaceStats(range: $range) @include(if: $includeBooking) {
+                    requestCount
+                    withOfferCount
+                    dualAcceptedCount
+                    paidCount
+                    paymentFailedCount
+                    chefDirectCount
+                    radiusCount
+                }
+                customerSessionActivity(range: $range) @include(if: $includeBooking) {
+                    customerCount
+                    weekBuckets {
+                        bucketStart
+                        count
+                    }
+                    monthBuckets {
+                        bucketStart
+                        count
+                    }
+                }
+                cookSessionActivity(range: $range) @include(if: $includeCooks) {
+                    cookCount
+                    productiveCookCount
+                    weekBuckets {
+                        bucketStart
+                        count
+                    }
+                    monthBuckets {
+                        bucketStart
+                        count
+                    }
+                }
+                chefSignUpFlow(range: $range) @include(if: $includeCooks) {
                     nodes {
                         id
                         label
@@ -65,26 +112,7 @@ query AdminAnalyticsPage($range: DateTimeRange!, $granularity: AdminTimeBucketGr
                     sessionsWithCompletion
                     terminalCount
                 }
-                bookingRequestCheckoutFlow(range: $range) {
-                    nodes {
-                        id
-                        label
-                    }
-                    links {
-                        source
-                        target
-                        value
-                    }
-                    steps {
-                        id
-                        label
-                        enteredCount
-                        completedCount
-                    }
-                    sessionsWithCompletion
-                    terminalCount
-                }
-                cookBookingRequestOfferFlow(range: $range) {
+                cookBookingRequestOfferFlow(range: $range) @include(if: $includeCooks) {
                     nodes {
                         id
                         label
@@ -104,12 +132,9 @@ query AdminAnalyticsPage($range: DateTimeRange!, $granularity: AdminTimeBucketGr
                     openedCount
                     declinedCount
                     offersCreatedCount
+                    medianNotifyToOfferMinutes
                 }
-                formVisits: sessionEventWebPageVisitCreations(webPageKey: $formVisitWebPageKey, range: $range, granularity: $granularity) {
-                    bucketStart
-                    count
-                }
-                signInMethodStats(range: $range) {
+                signInMethodStats(range: $range) @include(if: $includeSignIn) {
                     methods {
                         method
                         signInCount
@@ -122,6 +147,33 @@ query AdminAnalyticsPage($range: DateTimeRange!, $granularity: AdminTimeBucketGr
                         method
                         signInCount
                     }
+                }
+                giftCardVisits: sessionEventWebPageVisitCreations(
+                    webPageKey: $giftCardVisitWebPageKey
+                    range: $range
+                    granularity: $granularity
+                ) @include(if: $includeGiftCards) {
+                    bucketStart
+                    count
+                }
+                giftCardFlow(range: $range) @include(if: $includeGiftCards) {
+                    nodes {
+                        id
+                        label
+                    }
+                    links {
+                        source
+                        target
+                        value
+                    }
+                    steps {
+                        id
+                        label
+                        enteredCount
+                        completedCount
+                    }
+                    sessionsWithCompletion
+                    terminalCount
                 }
             }
         }

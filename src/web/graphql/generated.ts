@@ -42,6 +42,7 @@ export interface GqlCAdmin {
     bookingRequestCreationMonthStats: Array<GqlCAdminBookingRequestCreationMonthStat>;
     bookingRequestCreations: Array<GqlCAdminTimeBucket>;
     bookingRequestFormFlow: GqlCAdminAnalyticsBookingRequestFormFlow;
+    bookingRequestMarketplaceStats: GqlCAdminAnalyticsBookingRequestMarketplaceStats;
     bookingRequestOccasionStats: Array<GqlCAdminBookingRequestOccasionStat>;
     bookingRequestOffer?: Maybe<GqlCAdminBookingRequestOffer>;
     bookingRequestOfferEconomics: GqlCAdminBookingRequestOfferEconomics;
@@ -67,8 +68,10 @@ export interface GqlCAdmin {
     cookMenus: Array<GqlCAdminCookMenu>;
     cookMenusCounts: Array<Scalars['Int']['output']>;
     cookPathNameAvailable: GqlCCookPathNameAvailability;
+    cookSessionActivity: GqlCAdminAnalyticsCookSessionActivity;
     cookTestimonial?: Maybe<GqlCAdminCookTestimonial>;
     cooksInTravelRadius: Array<GqlCAdminCookInTravelRadiusPreview>;
+    customerSessionActivity: GqlCAdminAnalyticsCustomerSessionActivity;
     customerTestimonial?: Maybe<GqlCAdminCustomerTestimonial>;
     databaseSlowStatements: Array<GqlCAdminDatabaseSlowStatement>;
     featureToggles: Array<GqlCAdminFeatureToggle>;
@@ -77,6 +80,7 @@ export interface GqlCAdmin {
     giftCardFlow: GqlCAdminAnalyticsSessionFunnelFlow;
     giftCardOccasionStats: Array<GqlCAdminGiftCardOccasionStat>;
     giftCardPaidPurchaseAverageCents: Scalars['Int']['output'];
+    giftCardPaidPurchaseRangeCents: Scalars['Int']['output'];
     giftCardSalesMonthStats: Array<GqlCAdminGiftCardSalesMonthStat>;
     giftCards: Array<GqlCAdminGiftCard>;
     giftCardsCounts: Array<Scalars['Int']['output']>;
@@ -212,6 +216,10 @@ export type GqlCAdminBookingRequestFormFlowArgs = {
     range: GqlCDateTimeRange;
 };
 
+export type GqlCAdminBookingRequestMarketplaceStatsArgs = {
+    range: GqlCDateTimeRange;
+};
+
 export type GqlCAdminBookingRequestOccasionStatsArgs = {
     range?: InputMaybe<GqlCDateTimeRange>;
     take?: Scalars['Int']['input'];
@@ -310,6 +318,10 @@ export type GqlCAdminCookPathNameAvailableArgs = {
     pathName: Scalars['String']['input'];
 };
 
+export type GqlCAdminCookSessionActivityArgs = {
+    range: GqlCDateTimeRange;
+};
+
 export type GqlCAdminCookTestimonialArgs = {
     cookTestimonialId: Scalars['ID']['input'];
 };
@@ -318,6 +330,10 @@ export type GqlCAdminCooksInTravelRadiusArgs = {
     excludeUserId?: InputMaybe<Scalars['ID']['input']>;
     latitude: Scalars['Latitude']['input'];
     longitude: Scalars['Longitude']['input'];
+};
+
+export type GqlCAdminCustomerSessionActivityArgs = {
+    range: GqlCDateTimeRange;
 };
 
 export type GqlCAdminCustomerTestimonialArgs = {
@@ -344,6 +360,10 @@ export type GqlCAdminGiftCardFlowArgs = {
 export type GqlCAdminGiftCardOccasionStatsArgs = {
     range?: InputMaybe<GqlCDateTimeRange>;
     take?: Scalars['Int']['input'];
+};
+
+export type GqlCAdminGiftCardPaidPurchaseRangeCentsArgs = {
+    range: GqlCDateTimeRange;
 };
 
 export type GqlCAdminGiftCardSalesMonthStatsArgs = {
@@ -602,15 +622,42 @@ export interface GqlCAdminAnalyticsBookingRequestFormFlow {
     steps: Array<GqlCAdminAnalyticsFunnelStepStats>;
 }
 
+export interface GqlCAdminAnalyticsBookingRequestMarketplaceStats {
+    __typename?: 'AdminAnalyticsBookingRequestMarketplaceStats';
+    chefDirectCount: Scalars['Int']['output'];
+    dualAcceptedCount: Scalars['Int']['output'];
+    paidCount: Scalars['Int']['output'];
+    paymentFailedCount: Scalars['Int']['output'];
+    radiusCount: Scalars['Int']['output'];
+    requestCount: Scalars['Int']['output'];
+    withOfferCount: Scalars['Int']['output'];
+}
+
 export interface GqlCAdminAnalyticsCookBookingRequestOfferFlow {
     __typename?: 'AdminAnalyticsCookBookingRequestOfferFlow';
     declinedCount: Scalars['Int']['output'];
     links: Array<GqlCAdminAnalyticsSankeyLink>;
+    medianNotifyToOfferMinutes?: Maybe<Scalars['Float']['output']>;
     nodes: Array<GqlCAdminAnalyticsSankeyNode>;
     notifiedCount: Scalars['Int']['output'];
     offersCreatedCount: Scalars['Int']['output'];
     openedCount: Scalars['Int']['output'];
     steps: Array<GqlCAdminAnalyticsFunnelStepStats>;
+}
+
+export interface GqlCAdminAnalyticsCookSessionActivity {
+    __typename?: 'AdminAnalyticsCookSessionActivity';
+    cookCount: Scalars['Int']['output'];
+    monthBuckets: Array<GqlCAdminTimeBucket>;
+    productiveCookCount: Scalars['Int']['output'];
+    weekBuckets: Array<GqlCAdminTimeBucket>;
+}
+
+export interface GqlCAdminAnalyticsCustomerSessionActivity {
+    __typename?: 'AdminAnalyticsCustomerSessionActivity';
+    customerCount: Scalars['Int']['output'];
+    monthBuckets: Array<GqlCAdminTimeBucket>;
+    weekBuckets: Array<GqlCAdminTimeBucket>;
 }
 
 export interface GqlCAdminAnalyticsFunnelStepStats {
@@ -10657,6 +10704,11 @@ export type GqlCAdminAnalyticsPageQueryVariables = Exact<{
     range: Schema.GqlCDateTimeRange;
     granularity?: Schema.GqlCAdminTimeBucketGranularity;
     formVisitWebPageKey: Schema.GqlCWebPageKey;
+    giftCardVisitWebPageKey: Schema.GqlCWebPageKey;
+    includeBooking: boolean;
+    includeCooks: boolean;
+    includeSignIn: boolean;
+    includeGiftCards: boolean;
 }>;
 
 export type GqlCAdminAnalyticsPageQuery = {
@@ -10666,45 +10718,59 @@ export type GqlCAdminAnalyticsPageQuery = {
             userId: string;
             admin: {
                 adminId: string;
-                bookingRequestFormFlow: {
+                bookingRequestFormFlow?: {
                     sessionsWithCompletion: number;
                     bookingRequestsCreated: number;
                     nodes: Array<{ id: string; label: string }>;
                     links: Array<{ source: string; target: string; value: number }>;
                     steps: Array<{ id: string; label: string; enteredCount: number; completedCount: number }>;
                 };
-                giftCardFlow: {
+                formVisits?: Array<{ bucketStart: string; count: number }>;
+                bookingRequestCheckoutFlow?: {
                     sessionsWithCompletion: number;
                     terminalCount: number;
                     nodes: Array<{ id: string; label: string }>;
                     links: Array<{ source: string; target: string; value: number }>;
                     steps: Array<{ id: string; label: string; enteredCount: number; completedCount: number }>;
                 };
-                chefSignUpFlow: {
+                bookingRequestMarketplaceStats?: {
+                    requestCount: number;
+                    withOfferCount: number;
+                    dualAcceptedCount: number;
+                    paidCount: number;
+                    paymentFailedCount: number;
+                    chefDirectCount: number;
+                    radiusCount: number;
+                };
+                customerSessionActivity?: {
+                    customerCount: number;
+                    weekBuckets: Array<{ bucketStart: string; count: number }>;
+                    monthBuckets: Array<{ bucketStart: string; count: number }>;
+                };
+                cookSessionActivity?: {
+                    cookCount: number;
+                    productiveCookCount: number;
+                    weekBuckets: Array<{ bucketStart: string; count: number }>;
+                    monthBuckets: Array<{ bucketStart: string; count: number }>;
+                };
+                chefSignUpFlow?: {
                     sessionsWithCompletion: number;
                     terminalCount: number;
                     nodes: Array<{ id: string; label: string }>;
                     links: Array<{ source: string; target: string; value: number }>;
                     steps: Array<{ id: string; label: string; enteredCount: number; completedCount: number }>;
                 };
-                bookingRequestCheckoutFlow: {
-                    sessionsWithCompletion: number;
-                    terminalCount: number;
-                    nodes: Array<{ id: string; label: string }>;
-                    links: Array<{ source: string; target: string; value: number }>;
-                    steps: Array<{ id: string; label: string; enteredCount: number; completedCount: number }>;
-                };
-                cookBookingRequestOfferFlow: {
+                cookBookingRequestOfferFlow?: {
                     notifiedCount: number;
                     openedCount: number;
                     declinedCount: number;
                     offersCreatedCount: number;
+                    medianNotifyToOfferMinutes: number | null;
                     nodes: Array<{ id: string; label: string }>;
                     links: Array<{ source: string; target: string; value: number }>;
                     steps: Array<{ id: string; label: string; enteredCount: number; completedCount: number }>;
                 };
-                formVisits: Array<{ bucketStart: string; count: number }>;
-                signInMethodStats: {
+                signInMethodStats?: {
                     methods: Array<{
                         method: Schema.GqlCAdminSignInMethod;
                         signInCount: number;
@@ -10713,6 +10779,14 @@ export type GqlCAdminAnalyticsPageQuery = {
                         failedCount: number;
                     }>;
                     buckets: Array<{ date: string; method: Schema.GqlCAdminSignInMethod; signInCount: number }>;
+                };
+                giftCardVisits?: Array<{ bucketStart: string; count: number }>;
+                giftCardFlow?: {
+                    sessionsWithCompletion: number;
+                    terminalCount: number;
+                    nodes: Array<{ id: string; label: string }>;
+                    links: Array<{ source: string; target: string; value: number }>;
+                    steps: Array<{ id: string; label: string; enteredCount: number; completedCount: number }>;
                 };
             } | null;
         } | null;
@@ -14457,6 +14531,7 @@ export type GqlCAdminGiftCardsOverviewPageQuery = {
                 adminId: string;
                 giftCardsCounts: Array<number>;
                 giftCardPaidPurchaseAverageCents: number;
+                giftCardPaidPurchaseRangeCents: number;
                 giftCardCreations: Array<{ bucketStart: string; count: number }>;
                 giftCardOccasionStats: Array<{ occasion: string; count: number; totalOriginalBalanceCents: number }>;
                 giftCardSalesMonthStats: Array<{ monthStart: string; count: number; totalOriginalBalanceCents: number }>;
@@ -50491,6 +50566,31 @@ export const AdminAnalyticsPageDocument = {
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'formVisitWebPageKey' } },
                     type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'WebPageKey' } } },
                 },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'giftCardVisitWebPageKey' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'WebPageKey' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'includeBooking' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'includeCooks' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'includeSignIn' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'includeGiftCards' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } } },
+                },
             ],
             selectionSet: {
                 kind: 'SelectionSet',
@@ -50524,6 +50624,22 @@ export const AdminAnalyticsPageDocument = {
                                                                     kind: 'Argument',
                                                                     name: { kind: 'Name', value: 'range' },
                                                                     value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                                                                },
+                                                            ],
+                                                            directives: [
+                                                                {
+                                                                    kind: 'Directive',
+                                                                    name: { kind: 'Name', value: 'include' },
+                                                                    arguments: [
+                                                                        {
+                                                                            kind: 'Argument',
+                                                                            name: { kind: 'Name', value: 'if' },
+                                                                            value: {
+                                                                                kind: 'Variable',
+                                                                                name: { kind: 'Name', value: 'includeBooking' },
+                                                                            },
+                                                                        },
+                                                                    ],
                                                                 },
                                                             ],
                                                             selectionSet: {
@@ -50584,12 +50700,79 @@ export const AdminAnalyticsPageDocument = {
                                                         },
                                                         {
                                                             kind: 'Field',
-                                                            name: { kind: 'Name', value: 'giftCardFlow' },
+                                                            alias: { kind: 'Name', value: 'formVisits' },
+                                                            name: { kind: 'Name', value: 'sessionEventWebPageVisitCreations' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'webPageKey' },
+                                                                    value: {
+                                                                        kind: 'Variable',
+                                                                        name: { kind: 'Name', value: 'formVisitWebPageKey' },
+                                                                    },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'range' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'granularity' },
+                                                                    value: {
+                                                                        kind: 'Variable',
+                                                                        name: { kind: 'Name', value: 'granularity' },
+                                                                    },
+                                                                },
+                                                            ],
+                                                            directives: [
+                                                                {
+                                                                    kind: 'Directive',
+                                                                    name: { kind: 'Name', value: 'include' },
+                                                                    arguments: [
+                                                                        {
+                                                                            kind: 'Argument',
+                                                                            name: { kind: 'Name', value: 'if' },
+                                                                            value: {
+                                                                                kind: 'Variable',
+                                                                                name: { kind: 'Name', value: 'includeBooking' },
+                                                                            },
+                                                                        },
+                                                                    ],
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'bucketStart' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'bookingRequestCheckoutFlow' },
                                                             arguments: [
                                                                 {
                                                                     kind: 'Argument',
                                                                     name: { kind: 'Name', value: 'range' },
                                                                     value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                                                                },
+                                                            ],
+                                                            directives: [
+                                                                {
+                                                                    kind: 'Directive',
+                                                                    name: { kind: 'Name', value: 'include' },
+                                                                    arguments: [
+                                                                        {
+                                                                            kind: 'Argument',
+                                                                            name: { kind: 'Name', value: 'if' },
+                                                                            value: {
+                                                                                kind: 'Variable',
+                                                                                name: { kind: 'Name', value: 'includeBooking' },
+                                                                            },
+                                                                        },
+                                                                    ],
                                                                 },
                                                             ],
                                                             selectionSet: {
@@ -50642,6 +50825,168 @@ export const AdminAnalyticsPageDocument = {
                                                                         name: { kind: 'Name', value: 'sessionsWithCompletion' },
                                                                     },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'terminalCount' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'bookingRequestMarketplaceStats' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'range' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                                                                },
+                                                            ],
+                                                            directives: [
+                                                                {
+                                                                    kind: 'Directive',
+                                                                    name: { kind: 'Name', value: 'include' },
+                                                                    arguments: [
+                                                                        {
+                                                                            kind: 'Argument',
+                                                                            name: { kind: 'Name', value: 'if' },
+                                                                            value: {
+                                                                                kind: 'Variable',
+                                                                                name: { kind: 'Name', value: 'includeBooking' },
+                                                                            },
+                                                                        },
+                                                                    ],
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'requestCount' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'withOfferCount' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'dualAcceptedCount' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'paidCount' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'paymentFailedCount' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'chefDirectCount' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'radiusCount' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'customerSessionActivity' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'range' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                                                                },
+                                                            ],
+                                                            directives: [
+                                                                {
+                                                                    kind: 'Directive',
+                                                                    name: { kind: 'Name', value: 'include' },
+                                                                    arguments: [
+                                                                        {
+                                                                            kind: 'Argument',
+                                                                            name: { kind: 'Name', value: 'if' },
+                                                                            value: {
+                                                                                kind: 'Variable',
+                                                                                name: { kind: 'Name', value: 'includeBooking' },
+                                                                            },
+                                                                        },
+                                                                    ],
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'customerCount' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'weekBuckets' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'bucketStart' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'monthBuckets' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'bucketStart' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'cookSessionActivity' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'range' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                                                                },
+                                                            ],
+                                                            directives: [
+                                                                {
+                                                                    kind: 'Directive',
+                                                                    name: { kind: 'Name', value: 'include' },
+                                                                    arguments: [
+                                                                        {
+                                                                            kind: 'Argument',
+                                                                            name: { kind: 'Name', value: 'if' },
+                                                                            value: {
+                                                                                kind: 'Variable',
+                                                                                name: { kind: 'Name', value: 'includeCooks' },
+                                                                            },
+                                                                        },
+                                                                    ],
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'cookCount' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'productiveCookCount' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'weekBuckets' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'bucketStart' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'monthBuckets' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'bucketStart' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                                                                            ],
+                                                                        },
+                                                                    },
                                                                 ],
                                                             },
                                                         },
@@ -50655,67 +51000,20 @@ export const AdminAnalyticsPageDocument = {
                                                                     value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
                                                                 },
                                                             ],
-                                                            selectionSet: {
-                                                                kind: 'SelectionSet',
-                                                                selections: [
-                                                                    {
-                                                                        kind: 'Field',
-                                                                        name: { kind: 'Name', value: 'nodes' },
-                                                                        selectionSet: {
-                                                                            kind: 'SelectionSet',
-                                                                            selections: [
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
-                                                                            ],
-                                                                        },
-                                                                    },
-                                                                    {
-                                                                        kind: 'Field',
-                                                                        name: { kind: 'Name', value: 'links' },
-                                                                        selectionSet: {
-                                                                            kind: 'SelectionSet',
-                                                                            selections: [
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'source' } },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'target' } },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'value' } },
-                                                                            ],
-                                                                        },
-                                                                    },
-                                                                    {
-                                                                        kind: 'Field',
-                                                                        name: { kind: 'Name', value: 'steps' },
-                                                                        selectionSet: {
-                                                                            kind: 'SelectionSet',
-                                                                            selections: [
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
-                                                                                {
-                                                                                    kind: 'Field',
-                                                                                    name: { kind: 'Name', value: 'enteredCount' },
-                                                                                },
-                                                                                {
-                                                                                    kind: 'Field',
-                                                                                    name: { kind: 'Name', value: 'completedCount' },
-                                                                                },
-                                                                            ],
-                                                                        },
-                                                                    },
-                                                                    {
-                                                                        kind: 'Field',
-                                                                        name: { kind: 'Name', value: 'sessionsWithCompletion' },
-                                                                    },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'terminalCount' } },
-                                                                ],
-                                                            },
-                                                        },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: { kind: 'Name', value: 'bookingRequestCheckoutFlow' },
-                                                            arguments: [
+                                                            directives: [
                                                                 {
-                                                                    kind: 'Argument',
-                                                                    name: { kind: 'Name', value: 'range' },
-                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                                                                    kind: 'Directive',
+                                                                    name: { kind: 'Name', value: 'include' },
+                                                                    arguments: [
+                                                                        {
+                                                                            kind: 'Argument',
+                                                                            name: { kind: 'Name', value: 'if' },
+                                                                            value: {
+                                                                                kind: 'Variable',
+                                                                                name: { kind: 'Name', value: 'includeCooks' },
+                                                                            },
+                                                                        },
+                                                                    ],
                                                                 },
                                                             ],
                                                             selectionSet: {
@@ -50781,6 +51079,22 @@ export const AdminAnalyticsPageDocument = {
                                                                     value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
                                                                 },
                                                             ],
+                                                            directives: [
+                                                                {
+                                                                    kind: 'Directive',
+                                                                    name: { kind: 'Name', value: 'include' },
+                                                                    arguments: [
+                                                                        {
+                                                                            kind: 'Argument',
+                                                                            name: { kind: 'Name', value: 'if' },
+                                                                            value: {
+                                                                                kind: 'Variable',
+                                                                                name: { kind: 'Name', value: 'includeCooks' },
+                                                                            },
+                                                                        },
+                                                                    ],
+                                                                },
+                                                            ],
                                                             selectionSet: {
                                                                 kind: 'SelectionSet',
                                                                 selections: [
@@ -50830,41 +51144,10 @@ export const AdminAnalyticsPageDocument = {
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'openedCount' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'declinedCount' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'offersCreatedCount' } },
-                                                                ],
-                                                            },
-                                                        },
-                                                        {
-                                                            kind: 'Field',
-                                                            alias: { kind: 'Name', value: 'formVisits' },
-                                                            name: { kind: 'Name', value: 'sessionEventWebPageVisitCreations' },
-                                                            arguments: [
-                                                                {
-                                                                    kind: 'Argument',
-                                                                    name: { kind: 'Name', value: 'webPageKey' },
-                                                                    value: {
-                                                                        kind: 'Variable',
-                                                                        name: { kind: 'Name', value: 'formVisitWebPageKey' },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'medianNotifyToOfferMinutes' },
                                                                     },
-                                                                },
-                                                                {
-                                                                    kind: 'Argument',
-                                                                    name: { kind: 'Name', value: 'range' },
-                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
-                                                                },
-                                                                {
-                                                                    kind: 'Argument',
-                                                                    name: { kind: 'Name', value: 'granularity' },
-                                                                    value: {
-                                                                        kind: 'Variable',
-                                                                        name: { kind: 'Name', value: 'granularity' },
-                                                                    },
-                                                                },
-                                                            ],
-                                                            selectionSet: {
-                                                                kind: 'SelectionSet',
-                                                                selections: [
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'bucketStart' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'count' } },
                                                                 ],
                                                             },
                                                         },
@@ -50876,6 +51159,22 @@ export const AdminAnalyticsPageDocument = {
                                                                     kind: 'Argument',
                                                                     name: { kind: 'Name', value: 'range' },
                                                                     value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                                                                },
+                                                            ],
+                                                            directives: [
+                                                                {
+                                                                    kind: 'Directive',
+                                                                    name: { kind: 'Name', value: 'include' },
+                                                                    arguments: [
+                                                                        {
+                                                                            kind: 'Argument',
+                                                                            name: { kind: 'Name', value: 'if' },
+                                                                            value: {
+                                                                                kind: 'Variable',
+                                                                                name: { kind: 'Name', value: 'includeSignIn' },
+                                                                            },
+                                                                        },
+                                                                    ],
                                                                 },
                                                             ],
                                                             selectionSet: {
@@ -50925,6 +51224,136 @@ export const AdminAnalyticsPageDocument = {
                                                                             ],
                                                                         },
                                                                     },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            alias: { kind: 'Name', value: 'giftCardVisits' },
+                                                            name: { kind: 'Name', value: 'sessionEventWebPageVisitCreations' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'webPageKey' },
+                                                                    value: {
+                                                                        kind: 'Variable',
+                                                                        name: { kind: 'Name', value: 'giftCardVisitWebPageKey' },
+                                                                    },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'range' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'granularity' },
+                                                                    value: {
+                                                                        kind: 'Variable',
+                                                                        name: { kind: 'Name', value: 'granularity' },
+                                                                    },
+                                                                },
+                                                            ],
+                                                            directives: [
+                                                                {
+                                                                    kind: 'Directive',
+                                                                    name: { kind: 'Name', value: 'include' },
+                                                                    arguments: [
+                                                                        {
+                                                                            kind: 'Argument',
+                                                                            name: { kind: 'Name', value: 'if' },
+                                                                            value: {
+                                                                                kind: 'Variable',
+                                                                                name: { kind: 'Name', value: 'includeGiftCards' },
+                                                                            },
+                                                                        },
+                                                                    ],
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'bucketStart' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'giftCardFlow' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'range' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                                                                },
+                                                            ],
+                                                            directives: [
+                                                                {
+                                                                    kind: 'Directive',
+                                                                    name: { kind: 'Name', value: 'include' },
+                                                                    arguments: [
+                                                                        {
+                                                                            kind: 'Argument',
+                                                                            name: { kind: 'Name', value: 'if' },
+                                                                            value: {
+                                                                                kind: 'Variable',
+                                                                                name: { kind: 'Name', value: 'includeGiftCards' },
+                                                                            },
+                                                                        },
+                                                                    ],
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'nodes' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'links' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'target' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'value' } },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'steps' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'enteredCount' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'completedCount' },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'sessionsWithCompletion' },
+                                                                    },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'terminalCount' } },
                                                                 ],
                                                             },
                                                         },
@@ -62695,6 +63124,17 @@ export const AdminGiftCardsOverviewPageDocument = {
                                                         {
                                                             kind: 'Field',
                                                             name: { kind: 'Name', value: 'giftCardPaidPurchaseAverageCents' },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'giftCardPaidPurchaseRangeCents' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'range' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                                                                },
+                                                            ],
                                                         },
                                                     ],
                                                 },

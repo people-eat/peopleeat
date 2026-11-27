@@ -4472,6 +4472,41 @@ type AdminAnalyticsCookBookingRequestOfferFlow {
     openedCount: Int!
     declinedCount: Int!
     offersCreatedCount: Int!
+    # Median minutes from notify to first offer for the notified-in-range cohort.
+    # Null when no offer in the cohort has `createdAt >= notifiedAt`.
+    medianNotifyToOfferMinutes: Float
+}
+
+# Distinct cooks with a human, non-impersonation, non-admin session whose
+# `lastInteractionAt` falls in `range`. Week / month series are zero-filled.
+# See docs/features/admin-analytics.md.
+type AdminAnalyticsCookSessionActivity {
+    cookCount: Int!
+    # Distinct cooks who created at least one offer in `range` (admins excluded).
+    productiveCookCount: Int!
+    weekBuckets: [AdminTimeBucket!]!
+    monthBuckets: [AdminTimeBucket!]!
+}
+
+# Distinct customers (not cooks, not admins) with a human non-impersonation
+# session whose `lastInteractionAt` falls in `range`. Same last-touch caveats
+# as cook session activity.
+type AdminAnalyticsCustomerSessionActivity {
+    customerCount: Int!
+    weekBuckets: [AdminTimeBucket!]!
+    monthBuckets: [AdminTimeBucket!]!
+}
+
+# Request-row marketplace health in `range` (`BookingRequests.createdAt`).
+# Not session grain and not GMV. See docs/features/admin-analytics.md.
+type AdminAnalyticsBookingRequestMarketplaceStats {
+    requestCount: Int!
+    withOfferCount: Int!
+    dualAcceptedCount: Int!
+    paidCount: Int!
+    paymentFailedCount: Int!
+    chefDirectCount: Int!
+    radiusCount: Int!
 }
 
 # Admin view of an owned assistant chat. Legacy rows without `userId` /
@@ -4617,6 +4652,15 @@ type Admin {
     bookingRequestCheckoutFlow(range: DateTimeRange!): AdminAnalyticsSessionFunnelFlow!
     # Cook × booking-request offer funnel for cooks notified in `range`.
     cookBookingRequestOfferFlow(range: DateTimeRange!): AdminAnalyticsCookBookingRequestOfferFlow!
+    # Distinct cooks active in `range` by session `lastInteractionAt`, plus
+    # zero-filled week and month buckets. Admins, bots, and impersonation excluded.
+    cookSessionActivity(range: DateTimeRange!): AdminAnalyticsCookSessionActivity!
+    # Distinct customers active in `range` by session `lastInteractionAt`
+    # (humans who are not cooks or admins). Same last-touch caveats as cooks.
+    customerSessionActivity(range: DateTimeRange!): AdminAnalyticsCustomerSessionActivity!
+    # Request-row marketplace counts in `range` (createdAt). Dual-accept % and
+    # GMV stay on the booking-requests overview.
+    bookingRequestMarketplaceStats(range: DateTimeRange!): AdminAnalyticsBookingRequestMarketplaceStats!
     # Primary-auth method mix for human non-impersonation sessions in `range`.
     # Cooks included; bots and admin impersonation excluded.
     signInMethodStats(range: DateTimeRange!): AdminSignInMethodStats!
@@ -4706,8 +4750,8 @@ type Admin {
     # `take` / `sort*` ignored. Empty criteria rejected; max 20.
     giftCardsCounts(criteria: [AdminGiftCardCriterion!]!): [Int!]!
     # Paid purchase time series for the overview chart (`paymentStatus = PAYED`).
-    # Buckets are zero-filled across `range` at the given `granularity` (default
-    # `day`). Span capped at 366 days.
+    # Buckets use `COALESCE(payedAt, createdAt)`. Zero-filled across `range` at
+    # the given `granularity` (default `day`). Span capped at 366 days.
     giftCardCreations(range: DateTimeRange!, granularity: AdminTimeBucketGranularity! = day): [AdminTimeBucket!]!
     # Top occasions among paid purchases, by count (then occasion). Omit `range` for
     # all-time (overview default; independent of the chart picker). Default take is 3.
@@ -4717,6 +4761,9 @@ type Admin {
     giftCardSalesMonthStats(range: DateTimeRange, take: Int! = 3): [AdminGiftCardSalesMonthStat!]!
     # Average `originalBalanceCents` among paid purchases (all-time). 0 when none paid.
     giftCardPaidPurchaseAverageCents: Int!
+    # Sum of `originalBalanceCents` among paid purchases whose payment time
+    # (`COALESCE(payedAt, createdAt)`) falls in `range`. 0 when none.
+    giftCardPaidPurchaseRangeCents(range: DateTimeRange!): Int!
     # Single gift-card detail. Null when the id is unknown.
     giftCard(giftCardId: ID!): AdminGiftCard
 

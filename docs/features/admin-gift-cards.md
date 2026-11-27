@@ -8,10 +8,13 @@ Admins manage gift cards under `/admin/gift-cards` (overview + list + detail; no
 
 ### Overview — `/admin/gift-cards`
 
-Payment-status distribution (total, paid, prepared), all-time average paid purchase value, paid-purchases bar chart over a date range, top 3
-occasions, and top 3 sales months. Distribution cards deep-link into the list with `status` preselected (Total clears the filter). Chart and
-rankings use paid rows only (`paymentStatus = PAYED`). The chart date picker scopes only the purchases series; average, occasion, and
-sales-month rankings are all-time (omit `range` on the stats fields; independent of that picker and of the 366-day chart span cap).
+Payment-status distribution (total, paid, prepared), all-time average paid purchase value, paid-purchases bar chart over a date range, paid
+GMV in that range (`SUM(originalBalanceCents)` on `PAYED`, by `COALESCE(payedAt, createdAt)`), top 3 occasions, and top 3 sales months.
+Distribution cards deep-link into the list with `status` preselected (Total clears the filter). Chart and rankings use paid rows only
+(`paymentStatus = PAYED`). Chart buckets use payment date, falling back to created date. The chart date picker scopes the purchases series
+and range GMV; average, occasion, and sales-month rankings are all-time (omit `range` on the stats fields; independent of that picker and of
+the 366-day chart span cap). The purchases heading has an **Analytics** button to `/admin/analytics?tab=gift-cards` with the same `from` /
+`to`.
 
 ### List — `/admin/gift-cards/list`
 
@@ -47,16 +50,17 @@ Overview hub with paid purchase time series, all-time average purchase value, an
 ## Implementation
 
 - SDL: `AdminGiftCard`, criterion, `giftCardCreations`, `giftCardOccasionStats`, `giftCardSalesMonthStats`,
-  `giftCardPaidPurchaseAverageCents` in `schema.graphqls`; `AdminMutation.giftCardPdfsRegenerate`
-- Queries: find many, counts, creations, occasion stats, sales-month stats, paid-purchase average, find one
+  `giftCardPaidPurchaseAverageCents`, `giftCardPaidPurchaseRangeCents` in `schema.graphqls`; `AdminMutation.giftCardPdfsRegenerate`
+- Queries: find many, counts, creations (bucket by `COALESCE(payedAt, createdAt)`), occasion stats, sales-month stats, paid-purchase
+  average, paid-purchase range cents, find one
 - Commands: `adminGiftCardPdfsRegenerate`
 - UI: overview, list with status tabs + data table, detail page (+ regenerate PDFs)
 - Routes: `gift-cards.tsx`, `gift-cards_.list.tsx`, `gift-cards_.$giftCardId.tsx`
 - Nav: `adminGiftCards.ts` — [admin-shell.md](./admin-shell.md)
 
 GraphQL: `giftCards(criterion)` — search, optional `giftCardIds`, payment statuses, sort, paginate; `giftCardsCounts`; `giftCardCreations`
-(PAYED, zero-filled buckets, picker `range`); `giftCardOccasionStats` / `giftCardSalesMonthStats` (PAYED; omit `range` for all-time, take
-3); `giftCardPaidPurchaseAverageCents` (PAYED all-time); `giftCard(id)`. Admin assistant list tool `adminGiftCardsFindMany` →
-`admin.giftCardList` cards.
+(PAYED, zero-filled buckets by `COALESCE(payedAt, createdAt)`, picker `range`); `giftCardOccasionStats` / `giftCardSalesMonthStats` (PAYED;
+omit `range` for all-time, take 3); `giftCardPaidPurchaseAverageCents` (PAYED all-time); `giftCardPaidPurchaseRangeCents` (PAYED, picker
+`range`); `giftCard(id)`. Admin assistant list tool `adminGiftCardsFindMany` → `admin.giftCardList` cards.
 
 Gate: [authorization-admin.md](../architecture/authorization-admin.md).

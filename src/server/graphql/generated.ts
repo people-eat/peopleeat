@@ -43,6 +43,7 @@ export interface GqlSAdmin {
     bookingRequestCreationMonthStats: Array<GqlSAdminBookingRequestCreationMonthStat>;
     bookingRequestCreations: Array<GqlSAdminTimeBucket>;
     bookingRequestFormFlow: GqlSAdminAnalyticsBookingRequestFormFlow;
+    bookingRequestMarketplaceStats: GqlSAdminAnalyticsBookingRequestMarketplaceStats;
     bookingRequestOccasionStats: Array<GqlSAdminBookingRequestOccasionStat>;
     bookingRequestOffer?: Maybe<GqlSAdminBookingRequestOffer>;
     bookingRequestOfferEconomics: GqlSAdminBookingRequestOfferEconomics;
@@ -68,8 +69,10 @@ export interface GqlSAdmin {
     cookMenus: Array<GqlSAdminCookMenu>;
     cookMenusCounts: Array<Scalars['Int']['output']>;
     cookPathNameAvailable: GqlSCookPathNameAvailability;
+    cookSessionActivity: GqlSAdminAnalyticsCookSessionActivity;
     cookTestimonial?: Maybe<GqlSAdminCookTestimonial>;
     cooksInTravelRadius: Array<GqlSAdminCookInTravelRadiusPreview>;
+    customerSessionActivity: GqlSAdminAnalyticsCustomerSessionActivity;
     customerTestimonial?: Maybe<GqlSAdminCustomerTestimonial>;
     databaseSlowStatements: Array<GqlSAdminDatabaseSlowStatement>;
     featureToggles: Array<GqlSAdminFeatureToggle>;
@@ -78,6 +81,7 @@ export interface GqlSAdmin {
     giftCardFlow: GqlSAdminAnalyticsSessionFunnelFlow;
     giftCardOccasionStats: Array<GqlSAdminGiftCardOccasionStat>;
     giftCardPaidPurchaseAverageCents: Scalars['Int']['output'];
+    giftCardPaidPurchaseRangeCents: Scalars['Int']['output'];
     giftCardSalesMonthStats: Array<GqlSAdminGiftCardSalesMonthStat>;
     giftCards: Array<GqlSAdminGiftCard>;
     giftCardsCounts: Array<Scalars['Int']['output']>;
@@ -213,6 +217,10 @@ export type GqlSAdminBookingRequestFormFlowArgs = {
     range: GqlSDateTimeRange;
 };
 
+export type GqlSAdminBookingRequestMarketplaceStatsArgs = {
+    range: GqlSDateTimeRange;
+};
+
 export type GqlSAdminBookingRequestOccasionStatsArgs = {
     range?: InputMaybe<GqlSDateTimeRange>;
     take?: Scalars['Int']['input'];
@@ -311,6 +319,10 @@ export type GqlSAdminCookPathNameAvailableArgs = {
     pathName: Scalars['String']['input'];
 };
 
+export type GqlSAdminCookSessionActivityArgs = {
+    range: GqlSDateTimeRange;
+};
+
 export type GqlSAdminCookTestimonialArgs = {
     cookTestimonialId: Scalars['ID']['input'];
 };
@@ -319,6 +331,10 @@ export type GqlSAdminCooksInTravelRadiusArgs = {
     excludeUserId?: InputMaybe<Scalars['ID']['input']>;
     latitude: Scalars['Latitude']['input'];
     longitude: Scalars['Longitude']['input'];
+};
+
+export type GqlSAdminCustomerSessionActivityArgs = {
+    range: GqlSDateTimeRange;
 };
 
 export type GqlSAdminCustomerTestimonialArgs = {
@@ -345,6 +361,10 @@ export type GqlSAdminGiftCardFlowArgs = {
 export type GqlSAdminGiftCardOccasionStatsArgs = {
     range?: InputMaybe<GqlSDateTimeRange>;
     take?: Scalars['Int']['input'];
+};
+
+export type GqlSAdminGiftCardPaidPurchaseRangeCentsArgs = {
+    range: GqlSDateTimeRange;
 };
 
 export type GqlSAdminGiftCardSalesMonthStatsArgs = {
@@ -603,15 +623,42 @@ export interface GqlSAdminAnalyticsBookingRequestFormFlow {
     steps: Array<GqlSAdminAnalyticsFunnelStepStats>;
 }
 
+export interface GqlSAdminAnalyticsBookingRequestMarketplaceStats {
+    __typename?: 'AdminAnalyticsBookingRequestMarketplaceStats';
+    chefDirectCount: Scalars['Int']['output'];
+    dualAcceptedCount: Scalars['Int']['output'];
+    paidCount: Scalars['Int']['output'];
+    paymentFailedCount: Scalars['Int']['output'];
+    radiusCount: Scalars['Int']['output'];
+    requestCount: Scalars['Int']['output'];
+    withOfferCount: Scalars['Int']['output'];
+}
+
 export interface GqlSAdminAnalyticsCookBookingRequestOfferFlow {
     __typename?: 'AdminAnalyticsCookBookingRequestOfferFlow';
     declinedCount: Scalars['Int']['output'];
     links: Array<GqlSAdminAnalyticsSankeyLink>;
+    medianNotifyToOfferMinutes?: Maybe<Scalars['Float']['output']>;
     nodes: Array<GqlSAdminAnalyticsSankeyNode>;
     notifiedCount: Scalars['Int']['output'];
     offersCreatedCount: Scalars['Int']['output'];
     openedCount: Scalars['Int']['output'];
     steps: Array<GqlSAdminAnalyticsFunnelStepStats>;
+}
+
+export interface GqlSAdminAnalyticsCookSessionActivity {
+    __typename?: 'AdminAnalyticsCookSessionActivity';
+    cookCount: Scalars['Int']['output'];
+    monthBuckets: Array<GqlSAdminTimeBucket>;
+    productiveCookCount: Scalars['Int']['output'];
+    weekBuckets: Array<GqlSAdminTimeBucket>;
+}
+
+export interface GqlSAdminAnalyticsCustomerSessionActivity {
+    __typename?: 'AdminAnalyticsCustomerSessionActivity';
+    customerCount: Scalars['Int']['output'];
+    monthBuckets: Array<GqlSAdminTimeBucket>;
+    weekBuckets: Array<GqlSAdminTimeBucket>;
 }
 
 export interface GqlSAdminAnalyticsFunnelStepStats {
@@ -6342,7 +6389,10 @@ export type GqlSResolversTypes = ResolversObject<{
     AdminAiGenerationKind: GqlSAdminAiGenerationKind;
     AdminAiGenerationSortField: GqlSAdminAiGenerationSortField;
     AdminAnalyticsBookingRequestFormFlow: ResolverTypeWrapper<GqlSAdminAnalyticsBookingRequestFormFlow>;
+    AdminAnalyticsBookingRequestMarketplaceStats: ResolverTypeWrapper<GqlSAdminAnalyticsBookingRequestMarketplaceStats>;
     AdminAnalyticsCookBookingRequestOfferFlow: ResolverTypeWrapper<GqlSAdminAnalyticsCookBookingRequestOfferFlow>;
+    AdminAnalyticsCookSessionActivity: ResolverTypeWrapper<GqlSAdminAnalyticsCookSessionActivity>;
+    AdminAnalyticsCustomerSessionActivity: ResolverTypeWrapper<GqlSAdminAnalyticsCustomerSessionActivity>;
     AdminAnalyticsFunnelStepStats: ResolverTypeWrapper<GqlSAdminAnalyticsFunnelStepStats>;
     AdminAnalyticsSankeyLink: ResolverTypeWrapper<GqlSAdminAnalyticsSankeyLink>;
     AdminAnalyticsSankeyNode: ResolverTypeWrapper<GqlSAdminAnalyticsSankeyNode>;
@@ -7013,7 +7063,10 @@ export type GqlSResolversParentTypes = ResolversObject<{
     AdminAiGeneration: GqlSAdminAiGeneration;
     AdminAiGenerationCriterion: GqlSAdminAiGenerationCriterion;
     AdminAnalyticsBookingRequestFormFlow: GqlSAdminAnalyticsBookingRequestFormFlow;
+    AdminAnalyticsBookingRequestMarketplaceStats: GqlSAdminAnalyticsBookingRequestMarketplaceStats;
     AdminAnalyticsCookBookingRequestOfferFlow: GqlSAdminAnalyticsCookBookingRequestOfferFlow;
+    AdminAnalyticsCookSessionActivity: GqlSAdminAnalyticsCookSessionActivity;
+    AdminAnalyticsCustomerSessionActivity: GqlSAdminAnalyticsCustomerSessionActivity;
     AdminAnalyticsFunnelStepStats: GqlSAdminAnalyticsFunnelStepStats;
     AdminAnalyticsSankeyLink: GqlSAdminAnalyticsSankeyLink;
     AdminAnalyticsSankeyNode: GqlSAdminAnalyticsSankeyNode;
@@ -7586,6 +7639,12 @@ export type GqlSAdminResolvers<
         ContextType,
         RequireFields<GqlSAdminBookingRequestFormFlowArgs, 'range'>
     >;
+    bookingRequestMarketplaceStats?: Resolver<
+        GqlSResolversTypes['AdminAnalyticsBookingRequestMarketplaceStats'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminBookingRequestMarketplaceStatsArgs, 'range'>
+    >;
     bookingRequestOccasionStats?: Resolver<
         Array<GqlSResolversTypes['AdminBookingRequestOccasionStat']>,
         ParentType,
@@ -7721,6 +7780,12 @@ export type GqlSAdminResolvers<
         ContextType,
         RequireFields<GqlSAdminCookPathNameAvailableArgs, 'cookId' | 'pathName'>
     >;
+    cookSessionActivity?: Resolver<
+        GqlSResolversTypes['AdminAnalyticsCookSessionActivity'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminCookSessionActivityArgs, 'range'>
+    >;
     cookTestimonial?: Resolver<
         Maybe<GqlSResolversTypes['AdminCookTestimonial']>,
         ParentType,
@@ -7732,6 +7797,12 @@ export type GqlSAdminResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSAdminCooksInTravelRadiusArgs, 'latitude' | 'longitude'>
+    >;
+    customerSessionActivity?: Resolver<
+        GqlSResolversTypes['AdminAnalyticsCustomerSessionActivity'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminCustomerSessionActivityArgs, 'range'>
     >;
     customerTestimonial?: Resolver<
         Maybe<GqlSResolversTypes['AdminCustomerTestimonial']>,
@@ -7771,6 +7842,12 @@ export type GqlSAdminResolvers<
         RequireFields<GqlSAdminGiftCardOccasionStatsArgs, 'take'>
     >;
     giftCardPaidPurchaseAverageCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    giftCardPaidPurchaseRangeCents?: Resolver<
+        GqlSResolversTypes['Int'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminGiftCardPaidPurchaseRangeCentsArgs, 'range'>
+    >;
     giftCardSalesMonthStats?: Resolver<
         Array<GqlSResolversTypes['AdminGiftCardSalesMonthStat']>,
         ParentType,
@@ -8055,6 +8132,20 @@ export type GqlSAdminAnalyticsBookingRequestFormFlowResolvers<
     steps?: Resolver<Array<GqlSResolversTypes['AdminAnalyticsFunnelStepStats']>, ParentType, ContextType>;
 }>;
 
+export type GqlSAdminAnalyticsBookingRequestMarketplaceStatsResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminAnalyticsBookingRequestMarketplaceStats'] =
+        GqlSResolversParentTypes['AdminAnalyticsBookingRequestMarketplaceStats'],
+> = ResolversObject<{
+    chefDirectCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    dualAcceptedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    paidCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    paymentFailedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    radiusCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    requestCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    withOfferCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
 export type GqlSAdminAnalyticsCookBookingRequestOfferFlowResolvers<
     ContextType = any,
     ParentType extends GqlSResolversParentTypes['AdminAnalyticsCookBookingRequestOfferFlow'] =
@@ -8062,11 +8153,33 @@ export type GqlSAdminAnalyticsCookBookingRequestOfferFlowResolvers<
 > = ResolversObject<{
     declinedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     links?: Resolver<Array<GqlSResolversTypes['AdminAnalyticsSankeyLink']>, ParentType, ContextType>;
+    medianNotifyToOfferMinutes?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
     nodes?: Resolver<Array<GqlSResolversTypes['AdminAnalyticsSankeyNode']>, ParentType, ContextType>;
     notifiedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     offersCreatedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     openedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     steps?: Resolver<Array<GqlSResolversTypes['AdminAnalyticsFunnelStepStats']>, ParentType, ContextType>;
+}>;
+
+export type GqlSAdminAnalyticsCookSessionActivityResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminAnalyticsCookSessionActivity'] =
+        GqlSResolversParentTypes['AdminAnalyticsCookSessionActivity'],
+> = ResolversObject<{
+    cookCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    monthBuckets?: Resolver<Array<GqlSResolversTypes['AdminTimeBucket']>, ParentType, ContextType>;
+    productiveCookCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    weekBuckets?: Resolver<Array<GqlSResolversTypes['AdminTimeBucket']>, ParentType, ContextType>;
+}>;
+
+export type GqlSAdminAnalyticsCustomerSessionActivityResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminAnalyticsCustomerSessionActivity'] =
+        GqlSResolversParentTypes['AdminAnalyticsCustomerSessionActivity'],
+> = ResolversObject<{
+    customerCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    monthBuckets?: Resolver<Array<GqlSResolversTypes['AdminTimeBucket']>, ParentType, ContextType>;
+    weekBuckets?: Resolver<Array<GqlSResolversTypes['AdminTimeBucket']>, ParentType, ContextType>;
 }>;
 
 export type GqlSAdminAnalyticsFunnelStepStatsResolvers<
@@ -13090,7 +13203,10 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     Admin?: GqlSAdminResolvers<ContextType>;
     AdminAiGeneration?: GqlSAdminAiGenerationResolvers<ContextType>;
     AdminAnalyticsBookingRequestFormFlow?: GqlSAdminAnalyticsBookingRequestFormFlowResolvers<ContextType>;
+    AdminAnalyticsBookingRequestMarketplaceStats?: GqlSAdminAnalyticsBookingRequestMarketplaceStatsResolvers<ContextType>;
     AdminAnalyticsCookBookingRequestOfferFlow?: GqlSAdminAnalyticsCookBookingRequestOfferFlowResolvers<ContextType>;
+    AdminAnalyticsCookSessionActivity?: GqlSAdminAnalyticsCookSessionActivityResolvers<ContextType>;
+    AdminAnalyticsCustomerSessionActivity?: GqlSAdminAnalyticsCustomerSessionActivityResolvers<ContextType>;
     AdminAnalyticsFunnelStepStats?: GqlSAdminAnalyticsFunnelStepStatsResolvers<ContextType>;
     AdminAnalyticsSankeyLink?: GqlSAdminAnalyticsSankeyLinkResolvers<ContextType>;
     AdminAnalyticsSankeyNode?: GqlSAdminAnalyticsSankeyNodeResolvers<ContextType>;

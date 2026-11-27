@@ -12,7 +12,8 @@ explore ranking, overlay comparable catalog pages, then open the live page, CMS,
    cards use the shared `Button` hover, focus, and pressed states), one line for all public visits, and a ranking table of page keys
    (pageviews, unique sessions, views per session, change vs the same-length window immediately before `from`). A plus (tooltip **Add to
    chart**) on each rank row, or a page chip, toggles that key into the chart, up to 8 series. Selected rows show a minus (**Remove from
-   chart**). Each row has View page, SEO, and Analytics (funnel keys only) actions.
+   chart**). Each row has View page, SEO, and Analytics actions for `BOOKING_REQUEST_FORM` (Booking tab), `GIFT_CARD` (Gift cards),
+   `CHEF_SIGN_UP` (Cooks), and `SIGN_IN` (Sign-in), preserving `from` / `to`.
 4. Page chips are grouped Discovery / Conversion / Account / Legal, including keys with no visits in range. Deselecting every page chip
    returns to the all-pages view.
 5. A switch above the chart toggles the dashed prior-range overlay. The switch label and the ranking **vs {range}** column spell out that
@@ -80,5 +81,6 @@ here.
   start. Historical plan visits that stored pathname only cannot recover venue attribution.
 - Indexes: partial `(params.cityId|partnerVenueId|occasionId|blogPostId, createdAt)` on `WEB_PAGE_VISITED` for those keys, plus
   `BOOKING_REQUEST_PLAN` × `partnerVenueId`
-- UI: `AdminTrafficPage`, `AdminTrafficEntitySearch`, `AdminOverviewLineChart`, route `traffic.tsx`, nav via `adminCatalog` (`traffic`)
+- UI: `AdminTrafficPage`, `AdminTrafficEntitySearch`, `AdminOverviewLineChart`, `adminTrafficLinks.ts` (Analytics action uses
+  `adminAnalyticsSearchForPageKey`), route `traffic.tsx`, nav via `adminCatalog` (`traffic`)
 - Architecture: [session-events.md](../architecture/session-events.md)

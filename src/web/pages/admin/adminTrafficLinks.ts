@@ -1,14 +1,14 @@
 import { t } from '../../../i18n/t';
 import { localePath } from '../../../shared/locale';
+import type { WebPageKey, WebPageKeyTracked, WebPageKeyWithVisitEntity } from '../../../shared/webPage';
 import {
     WEB_PAGE_VISIT_INDEX_RANK_ID,
     webPageKeyPublicPathByKey,
-    webPageKeysAnalyticsFunnel,
     webPageVisitEntityPublicPath,
     webPageVisitEntityUsesPartnerVenue,
 } from '../../../shared/webPage';
-import type { WebPageKey, WebPageKeyTracked, WebPageKeyWithVisitEntity } from '../../../shared/webPage';
 import type { Locale } from '../../utils/locale';
+import { adminAnalyticsSearchForPageKey } from './adminAnalyticsSearch';
 
 export type AdminTrafficLink = {
     href?: string;
@@ -60,10 +60,11 @@ export function adminTrafficPageKeyActions(
         { href: adminTrafficPublicPageHref(locale, tracked), label: t(locale, 'admin', 'traffic.viewPage') },
         { to: '/{-$locale}/admin/web-pages/$webPageKey', params: { webPageKey }, label: t(locale, 'admin', 'traffic.viewSeo') },
     ];
-    if ((webPageKeysAnalyticsFunnel as readonly string[]).includes(webPageKey)) {
+    const analyticsSearch = adminAnalyticsSearchForPageKey(range, webPageKey);
+    if (analyticsSearch) {
         links.push({
             to: '/{-$locale}/admin/analytics',
-            search: { from: range.from, to: range.to },
+            search: analyticsSearch,
             label: t(locale, 'admin', 'traffic.viewAnalytics'),
         });
     }

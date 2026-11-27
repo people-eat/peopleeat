@@ -235,8 +235,11 @@ import { adminAiGenerationFindMany } from '../queries/adminAiGenerationFindMany'
 import { adminAiGenerationFindOne } from '../queries/adminAiGenerationFindOne';
 import { adminAnalyticsBookingRequestCheckoutFlow } from '../queries/adminAnalyticsBookingRequestCheckoutFlow';
 import { adminAnalyticsBookingRequestFormFlow } from '../queries/adminAnalyticsBookingRequestFormFlow';
+import { adminAnalyticsBookingRequestMarketplaceStatsFindOne } from '../queries/adminAnalyticsBookingRequestMarketplaceStatsFindOne';
 import { adminAnalyticsChefSignUpFlow } from '../queries/adminAnalyticsChefSignUpFlow';
 import { adminAnalyticsCookBookingRequestOfferFlow } from '../queries/adminAnalyticsCookBookingRequestOfferFlow';
+import { adminAnalyticsCookSessionActivityFindOne } from '../queries/adminAnalyticsCookSessionActivityFindOne';
+import { adminAnalyticsCustomerSessionActivityFindOne } from '../queries/adminAnalyticsCustomerSessionActivityFindOne';
 import { adminAnalyticsGiftCardFlow } from '../queries/adminAnalyticsGiftCardFlow';
 import { adminAnalyticsSignInMethodStats } from '../queries/adminAnalyticsSignInMethodStats';
 import { adminAssistantChatCreationsFindMany } from '../queries/adminAssistantChatCreationsFindMany';
@@ -301,6 +304,7 @@ import { adminGiftCardFindMany } from '../queries/adminGiftCardFindMany';
 import { adminGiftCardFindOne } from '../queries/adminGiftCardFindOne';
 import { adminGiftCardOccasionStatsFindMany } from '../queries/adminGiftCardOccasionStatsFindMany';
 import { adminGiftCardPaidPurchaseAverageCentsFindOne } from '../queries/adminGiftCardPaidPurchaseAverageCentsFindOne';
+import { adminGiftCardPaidPurchaseRangeCentsFindOne } from '../queries/adminGiftCardPaidPurchaseRangeCentsFindOne';
 import { adminGiftCardSalesMonthStatsFindMany } from '../queries/adminGiftCardSalesMonthStatsFindMany';
 import { adminLegalImprintFindMany } from '../queries/adminLegalImprintFindMany';
 import { adminLegalPrivacyPolicyFindMany } from '../queries/adminLegalPrivacyPolicyFindMany';
@@ -496,6 +500,7 @@ import type {
     GqlSAdminBookingRequestCreationMonthStatsArgs,
     GqlSAdminBookingRequestCreationsArgs,
     GqlSAdminBookingRequestFormFlowArgs,
+    GqlSAdminBookingRequestMarketplaceStatsArgs,
     GqlSAdminBookingRequestOccasionStatsArgs,
     GqlSAdminBookingRequestOffer,
     GqlSAdminBookingRequestOfferArgs,
@@ -525,9 +530,11 @@ import type {
     GqlSAdminCookMenusArgs,
     GqlSAdminCookMenusCountsArgs,
     GqlSAdminCookPathNameAvailableArgs,
+    GqlSAdminCookSessionActivityArgs,
     GqlSAdminCooksInTravelRadiusArgs,
     GqlSAdminCookTestimonial,
     GqlSAdminCookTestimonialArgs,
+    GqlSAdminCustomerSessionActivityArgs,
     GqlSAdminCustomerTestimonial,
     GqlSAdminCustomerTestimonialArgs,
     GqlSAdminDatabaseSlowStatementsArgs,
@@ -538,6 +545,7 @@ import type {
     GqlSAdminGiftCardCreationsArgs,
     GqlSAdminGiftCardFlowArgs,
     GqlSAdminGiftCardOccasionStatsArgs,
+    GqlSAdminGiftCardPaidPurchaseRangeCentsArgs,
     GqlSAdminGiftCardSalesMonthStatsArgs,
     GqlSAdminGiftCardsArgs,
     GqlSAdminGiftCardsCountsArgs,
@@ -1286,6 +1294,19 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             ) {
                 return adminAnalyticsCookBookingRequestOfferFlow(args.range, requestingSession, serverRuntime);
             },
+            cookSessionActivity(_parent: GqlSAdmin, args: GqlSAdminCookSessionActivityArgs, requestingSession: GqlSSession) {
+                return adminAnalyticsCookSessionActivityFindOne(args.range, requestingSession, serverRuntime);
+            },
+            customerSessionActivity(_parent: GqlSAdmin, args: GqlSAdminCustomerSessionActivityArgs, requestingSession: GqlSSession) {
+                return adminAnalyticsCustomerSessionActivityFindOne(args.range, requestingSession, serverRuntime);
+            },
+            bookingRequestMarketplaceStats(
+                _parent: GqlSAdmin,
+                args: GqlSAdminBookingRequestMarketplaceStatsArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return adminAnalyticsBookingRequestMarketplaceStatsFindOne(args.range, requestingSession, serverRuntime);
+            },
             signInMethodStats(_parent: GqlSAdmin, args: GqlSAdminSignInMethodStatsArgs, requestingSession: GqlSSession) {
                 return adminAnalyticsSignInMethodStats(args.range, requestingSession, serverRuntime);
             },
@@ -1401,6 +1422,13 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             giftCardPaidPurchaseAverageCents(_parent: GqlSAdmin, _args: unknown, requestingSession: GqlSSession) {
                 return adminGiftCardPaidPurchaseAverageCentsFindOne(requestingSession, serverRuntime);
+            },
+            giftCardPaidPurchaseRangeCents(
+                _parent: GqlSAdmin,
+                args: GqlSAdminGiftCardPaidPurchaseRangeCentsArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return adminGiftCardPaidPurchaseRangeCentsFindOne(args, requestingSession, serverRuntime);
             },
             giftCard(_parent: GqlSAdmin, args: GqlSAdminGiftCardArgs, requestingSession: GqlSSession) {
                 return adminGiftCardFindOne(args, requestingSession, serverRuntime);

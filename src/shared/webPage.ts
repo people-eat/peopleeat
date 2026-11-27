@@ -124,12 +124,6 @@ export const webPageKeysTrafficLegal = [
     'PRIVACY_POLICY',
 ] as const satisfies readonly WebPageKeyTracked[];
 
-export const webPageKeysAnalyticsFunnel = [
-    'BOOKING_REQUEST_FORM',
-    'GIFT_CARD',
-    'CHEF_SIGN_UP',
-] as const satisfies readonly WebPageKeyTracked[];
-
 export function webPageVisitEntityPublicPath(key: WebPageKeyWithVisitEntity, pathName: string): `/${string}` {
     if (key === 'BOOKING_REQUEST_PLAN') {
         return `/booking-request/plan?venueId=${pathName}` as `/${string}`;

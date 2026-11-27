@@ -218,6 +218,26 @@ export async function adminAnalyticsCookBookingRequestOfferFlow(
             };
         });
 
+        const medianResult = await serverRuntime.db.execute<{ median_minutes: string | number | null }>(sql`
+            SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (
+                ORDER BY EXTRACT(EPOCH FROM (o."createdAt" - brc."notifiedAt")) / 60.0
+            ) AS median_minutes
+            FROM "BookingRequestCooks" brc
+            INNER JOIN "BookingRequestOffers" o
+                ON o."cookId" = brc."cookId"
+               AND o."bookingRequestId" = brc."bookingRequestId"
+            LEFT JOIN "Admins" a ON a."adminId" = brc."cookId"
+            WHERE brc."notifiedAt" IS NOT NULL
+              AND brc."notifiedAt" >= ${startDateTime}
+              AND brc."notifiedAt" < ${endDateTime}
+              AND a."adminId" IS NULL
+              AND o."createdAt" >= brc."notifiedAt"
+        `);
+        const medianRows = Array.isArray(medianResult) ? medianResult : medianResult.rows;
+        const medianRaw = medianRows[0]?.median_minutes;
+        const medianNotifyToOfferMinutes =
+            medianRaw == null || medianRaw === '' ? null : typeof medianRaw === 'number' ? medianRaw : Number(medianRaw);
+
         return {
             nodes,
             links,
@@ -226,6 +246,8 @@ export async function adminAnalyticsCookBookingRequestOfferFlow(
             openedCount,
             declinedCount,
             offersCreatedCount,
+            medianNotifyToOfferMinutes:
+                medianNotifyToOfferMinutes == null || !Number.isFinite(medianNotifyToOfferMinutes) ? null : medianNotifyToOfferMinutes,
         };
     } catch (error) {
         serverRuntime.log.error(error, requestingSession);

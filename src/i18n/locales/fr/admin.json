@@ -1658,7 +1658,63 @@
                 "created": "Compte chef créé"
             }
         },
-        "cookConversion": "Conversion notifié → offre : {percent} %."
+        "cookConversion": "Conversion notifié → offre : {percent} %.",
+        "tabs": {
+            "aria": "Sections d’analytics",
+            "booking": "Réservation",
+            "cooks": "Chefs",
+            "signIn": "Connexion",
+            "giftCards": "Cartes cadeaux"
+        },
+        "cookSessionActivity": {
+            "title": "Chefs actifs",
+            "activeCooks": "Chefs actifs",
+            "productiveCooks": "Chefs productifs",
+            "byMonth": "Par mois",
+            "byWeek": "Par semaine",
+            "caption": "Un chef est actif quand une session humaine, hors admin et hors impersonation, a interagi pour la dernière fois dans la période. Les chefs non approuvés comptent. Une session longue n’apparaît que dans le mois ou la semaine de sa dernière activité. Les chefs productifs ont créé au moins une offre dans la période."
+        },
+        "cookOfferMedianTimeToOffer": "Médiane notification → offre",
+        "customerSessionActivity": {
+            "title": "Clients actifs",
+            "activeCustomers": "Clients actifs",
+            "byMonth": "Par mois",
+            "byWeek": "Par semaine",
+            "caption": "Un client est actif quand une session humaine qui n’est pas chef, admin, bot ou impersonation a interagi pour la dernière fois dans la période. Une session longue n’apparaît que dans le mois ou la semaine de sa dernière activité."
+        },
+        "funnelView": {
+            "aria": "Vue du funnel",
+            "sankey": "Sankey",
+            "table": "Tableau"
+        },
+        "links": {
+            "visitGrain": "Les visites du formulaire comptent chaque session. Les comptes funnel sont des sessions humaines hors admin et hors chef. Les demandes de réservation comptent les lignes en base, y compris celles créées par un admin."
+        },
+        "marketplace": {
+            "title": "Place de marché après création",
+            "caption": "Lignes de demande créées dans la période, pas des sessions. Le taux d’acceptation croisée et le GMV restent dans Demandes de réservation.",
+            "requests": "Demandes",
+            "withOffer": "Avec une offre",
+            "dualAccepted": "Acceptées des deux côtés",
+            "paid": "Payées",
+            "paymentFailed": "Paiement échoué",
+            "chefDirect": "Page chef",
+            "radius": "Rayon"
+        },
+        "signIn": {
+            "failureRate": "Taux d’échec"
+        },
+        "giftCards": {
+            "visits": "Visites carte cadeau",
+            "visitToPaid": "Visite vers payé",
+            "paidInRange": "Payé sur la période",
+            "paidChartCaption": "Achats payés selon la date de paiement. Sans date de paiement, la date de création est utilisée."
+        },
+        "countPercent": "{count} · {percent} %",
+        "format": {
+            "hours": "{hours} h",
+            "underOneHour": "Moins d’1 h"
+        }
     },
     "traffic": {
         "allPages": "Toutes les pages publiques",
@@ -1999,7 +2055,7 @@
         },
         "analytics": {
             "title": "Analytics",
-            "description": "Parcours formulaire de réservation, carte cadeau, paiement et chef, plus méthodes de connexion."
+            "description": "Analyses réservation, chefs, cartes cadeaux et connexion, y compris les chefs actifs."
         },
         "sessions": {
             "title": "Sessions",
@@ -2193,7 +2249,7 @@
             "description": "Graphiques linéaires filtrables des visites de pages publiques à partir des événements de session."
         },
         "analytics": {
-            "description": "Parcours formulaire de réservation, carte cadeau, paiement et chef, plus méthodes de connexion."
+            "description": "Analyses réservation, chefs, cartes cadeaux et connexion, y compris les chefs actifs."
         },
         "offerAddonTemplate": {
             "title": "Prestation supplémentaire",

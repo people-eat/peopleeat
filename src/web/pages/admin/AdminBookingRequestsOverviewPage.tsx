@@ -17,6 +17,7 @@ import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { DATE_FNS_LOCALE } from '../../utils/dateFnsLocale';
 import type { Locale } from '../../utils/locale';
+import { adminAnalyticsSearchForRange } from './adminAnalyticsSearch';
 import { adminBookingRequestsSectionTo } from './adminBookingRequests';
 import { adminBookingRequestPublicationStatusLabel } from './adminBookingRequestsColumns';
 import {
@@ -29,6 +30,7 @@ import { adminOverviewLinkCardClassName } from './adminOverviewLinkCard';
 import { AdminOverviewNavCard } from './AdminOverviewNavCard';
 import { adminOverviewRangeResolve, adminOverviewRangeToGraphQlVariables } from './adminOverviewRange';
 import { AdminOverviewStatCard } from './AdminOverviewStatCard';
+import { AdminRelatedPageLinks } from './AdminRelatedPageLink';
 
 export function adminBookingRequestsOverviewPageTitle(locale: Locale): string {
     return t(locale, 'admin', 'nav.bookingRequests.title');
@@ -234,14 +236,25 @@ export function AdminBookingRequestsOverviewPage({
                 <section className="grid gap-3">
                     <div className="flex flex-wrap items-end justify-between gap-3">
                         <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.receivedBookingRequests')}</h2>
-                        <DateRangePicker
-                            value={pickerValue}
-                            onValueChange={onRangeChange}
-                            locale={DATE_FNS_LOCALE[locale]}
-                            placeholder={t(locale, 'admin', 'copy.pickADateRange')}
-                            className="w-auto"
-                            aria-label={t(locale, 'admin', 'copy.dateRangeForReceivedBookingRequestsAndRevenue')}
-                        />
+                        <div className="flex flex-wrap items-end gap-2">
+                            <AdminRelatedPageLinks
+                                links={[
+                                    {
+                                        to: '/{-$locale}/admin/analytics',
+                                        search: adminAnalyticsSearchForRange(range, 'booking'),
+                                        label: t(locale, 'admin', 'traffic.viewAnalytics'),
+                                    },
+                                ]}
+                            />
+                            <DateRangePicker
+                                value={pickerValue}
+                                onValueChange={onRangeChange}
+                                locale={DATE_FNS_LOCALE[locale]}
+                                placeholder={t(locale, 'admin', 'copy.pickADateRange')}
+                                className="w-auto"
+                                aria-label={t(locale, 'admin', 'copy.dateRangeForReceivedBookingRequestsAndRevenue')}
+                            />
+                        </div>
                     </div>
                     <AdminOverviewBarChart
                         data={buckets.map((bucket) => ({ bucketStart: bucket.bucketStart, count: bucket.count }))}

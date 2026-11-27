@@ -20,6 +20,8 @@ Date range in URL drives daily received-request chart buckets (zero-filled), pai
 are unchanged. Conversion rate = requests with at least one dual-accepted offer ÷ all requests in the window (canceled / expired stay in the
 denominator). Rankings and cook leaderboards stay all-time (independent of that picker). Section cards link to list and create. Distribution
 cards deep-link into the list with `publicationStatus` preselected (Total clears the filter). Cook rows deep-link to the admin user detail.
+The received-requests heading has an **Analytics** button to `/admin/analytics` (Booking tab) with the same `from` / `to`. Dual-accept
+conversion and GMV stay on this overview.
 
 ### List — `/admin/booking-requests/list`
 
@@ -180,7 +182,7 @@ soft suggested menu price total (same guidance as cook pool / offer create).
 
 | Area     | Notes                                                                                                                                                                                                 |
 | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pages    | Overview, list (grid/table), create, edit, detail, offer (+ create / edit accept / edit-price / edit-configured-menu), calls overview/list                                                            |
+| Pages    | Overview (range-preserving link to Analytics Booking tab), list (grid/table), create, edit, detail, offer (+ create / edit accept / edit-price / edit-configured-menu), calls overview/list           |
 | Queries  | Request/offer finders, counts, creations, occasion/month stats, average participants, offer economics, conversion rate / month stats, cook offer stats, calls, call traffic, cook stats               |
 | Commands | Create/update/cancel request; discount apply/clear; create/update/handover offer; configured-menu update; publication approve; cook notify; payout release / already-took-place check / out-of-system |
 | Nav      | `adminBookingRequests.ts`, `adminCalls.ts`, sidebar subs                                                                                                                                              |

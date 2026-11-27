@@ -188,7 +188,7 @@
         },
         "analytics": {
             "title": "Analytics",
-            "description": "Booking form, gift card, checkout, and chef funnels, plus sign-in methods."
+            "description": "Booking, cook, gift card, and sign-in analytics, including active cooks."
         },
         "sessions": {
             "title": "Sessions",
@@ -382,7 +382,7 @@
             "description": "Filterable line charts of public page visits from session events."
         },
         "analytics": {
-            "description": "Booking form, gift card, checkout, and chef funnels, plus sign-in methods."
+            "description": "Booking, cook, gift card, and sign-in analytics, including active cooks."
         },
         "offerAddonTemplate": {
             "title": "Offer extra",
@@ -2214,7 +2214,63 @@
                 "created": "Chef account created"
             }
         },
-        "cookConversion": "Conversion notified → offer: {percent}%."
+        "cookConversion": "Conversion notified → offer: {percent}%.",
+        "tabs": {
+            "aria": "Analytics sections",
+            "booking": "Booking",
+            "cooks": "Cooks",
+            "signIn": "Sign-in",
+            "giftCards": "Gift cards"
+        },
+        "cookSessionActivity": {
+            "title": "Active cooks",
+            "activeCooks": "Active cooks",
+            "productiveCooks": "Productive cooks",
+            "byMonth": "By month",
+            "byWeek": "By week",
+            "caption": "A cook is active when a human, non-admin, non-impersonation session last interacted in the range. Unapproved cooks count. Long-lived sessions only appear in the bucket of their latest activity. Productive cooks created at least one offer in the range."
+        },
+        "cookOfferMedianTimeToOffer": "Median notify to offer",
+        "customerSessionActivity": {
+            "title": "Active customers",
+            "activeCustomers": "Active customers",
+            "byMonth": "By month",
+            "byWeek": "By week",
+            "caption": "A customer is active when a human session that is not a cook, admin, bot, or impersonation last interacted in the range. Long-lived sessions only appear in the bucket of their latest activity."
+        },
+        "funnelView": {
+            "aria": "Funnel view",
+            "sankey": "Sankey",
+            "table": "Table"
+        },
+        "links": {
+            "visitGrain": "Form visits include every session. Funnel counts are human, non-admin, non-cook sessions. Booking requests counts database rows, including admin-created requests."
+        },
+        "marketplace": {
+            "title": "Marketplace after create",
+            "caption": "Request rows created in the range, not sessions. Dual-accept rate and GMV stay on Booking requests.",
+            "requests": "Requests",
+            "withOffer": "With an offer",
+            "dualAccepted": "Dual-accepted",
+            "paid": "Paid",
+            "paymentFailed": "Payment failed",
+            "chefDirect": "Chef page",
+            "radius": "Radius"
+        },
+        "signIn": {
+            "failureRate": "Failure rate"
+        },
+        "giftCards": {
+            "visits": "Gift card visits",
+            "visitToPaid": "Visit to paid",
+            "paidInRange": "Paid in range",
+            "paidChartCaption": "Paid purchases by payment date. Uses created date when payment date is missing."
+        },
+        "countPercent": "{count} · {percent}%",
+        "format": {
+            "hours": "{hours} h",
+            "underOneHour": "Under 1 h"
+        }
     },
     "traffic": {
         "allPages": "All public pages",

@@ -16,7 +16,7 @@ export async function adminGiftCardCreationsFindMany(
         args.granularity ?? 'day',
         requestingSession,
         serverRuntime,
-        '"createdAt"',
+        'COALESCE("payedAt", "createdAt")',
         sql`"paymentStatus" = 'PAYED'`,
     );
 }

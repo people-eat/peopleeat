@@ -188,7 +188,7 @@
         },
         "analytics": {
             "title": "Analytics",
-            "description": "Funnels voor boekingsformulier, tegoedbon, checkout en chef, plus inlogmethoden."
+            "description": "Analytics voor boekingen, chefs, tegoedbonnen en inloggen, inclusief actieve chefs."
         },
         "sessions": {
             "title": "Sessies",
@@ -382,7 +382,7 @@
             "description": "Filterbare lijndiagrammen van openbare paginabezoeken uit sessie-events."
         },
         "analytics": {
-            "description": "Funnels voor boekingsformulier, tegoedbon, checkout en chef, plus inlogmethoden."
+            "description": "Analytics voor boekingen, chefs, tegoedbonnen en inloggen, inclusief actieve chefs."
         },
         "offerAddonTemplate": {
             "title": "Offerte-extra",
@@ -2214,7 +2214,63 @@
                 "created": "Chefaccount aangemaakt"
             }
         },
-        "cookConversion": "Conversie geïnformeerd → offerte: {percent}%."
+        "cookConversion": "Conversie geïnformeerd → offerte: {percent}%.",
+        "tabs": {
+            "aria": "Analytics-onderdelen",
+            "booking": "Boekingen",
+            "cooks": "Chefs",
+            "signIn": "Inloggen",
+            "giftCards": "Tegoedbonnen"
+        },
+        "cookSessionActivity": {
+            "title": "Actieve chefs",
+            "activeCooks": "Actieve chefs",
+            "productiveCooks": "Productieve chefs",
+            "byMonth": "Per maand",
+            "byWeek": "Per week",
+            "caption": "Een chef is actief als een menselijke sessie zonder admin en zonder impersonatie voor het laatst in de periode interactie had. Niet-goedgekeurde chefs tellen mee. Een langlevende sessie verschijnt alleen in de maand of week van de laatste activiteit. Productieve chefs hebben in de periode minstens één offerte gemaakt."
+        },
+        "cookOfferMedianTimeToOffer": "Mediaan van melding tot offerte",
+        "customerSessionActivity": {
+            "title": "Actieve gasten",
+            "activeCustomers": "Actieve gasten",
+            "byMonth": "Per maand",
+            "byWeek": "Per week",
+            "caption": "Een gast is actief als een menselijke sessie die geen chef, admin, bot of impersonatie is voor het laatst in de periode interactie had. Een langlevende sessie verschijnt alleen in de maand of week van de laatste activiteit."
+        },
+        "funnelView": {
+            "aria": "Weergave van de funnel",
+            "sankey": "Sankey",
+            "table": "Tabel"
+        },
+        "links": {
+            "visitGrain": "Formulierbezoeken tellen elke sessie. Funnel-cijfers zijn menselijke sessies zonder admin en zonder chef. Boekingsaanvragen tellen databaseregels, ook aanvragen die een admin heeft aangemaakt."
+        },
+        "marketplace": {
+            "title": "Marktplaats na aanmaken",
+            "caption": "Aanvraagregels in de periode, geen sessies. Dual-acceptpercentage en GMV blijven bij Boekingsaanvragen.",
+            "requests": "Aanvragen",
+            "withOffer": "Met een offerte",
+            "dualAccepted": "Door beide geaccepteerd",
+            "paid": "Betaald",
+            "paymentFailed": "Betaling mislukt",
+            "chefDirect": "Chefpagina",
+            "radius": "Radius"
+        },
+        "signIn": {
+            "failureRate": "Foutpercentage"
+        },
+        "giftCards": {
+            "visits": "Bezoeken aan tegoedbonnen",
+            "visitToPaid": "Van bezoek naar betaald",
+            "paidInRange": "Betaald in periode",
+            "paidChartCaption": "Betaalde aankopen op betaaldatum. Zonder betaaldatum geldt de aanmaakdatum."
+        },
+        "countPercent": "{count} · {percent}%",
+        "format": {
+            "hours": "{hours} u",
+            "underOneHour": "Minder dan 1 u"
+        }
     },
     "traffic": {
         "allPages": "Alle openbare pagina’s",

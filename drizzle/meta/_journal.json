@@ -309,6 +309,13 @@
             "when": 1795709743678,
             "tag": "0043_gifted_sleeper",
             "breakpoints": true
+        },
+        {
+            "idx": 44,
+            "version": "7",
+            "when": 1795713495902,
+            "tag": "0044_cloudy_lionheart",
+            "breakpoints": true
         }
     ]
 }

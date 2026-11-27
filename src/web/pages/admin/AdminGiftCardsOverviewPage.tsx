@@ -11,6 +11,7 @@ import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { DATE_FNS_LOCALE } from '../../utils/dateFnsLocale';
 import type { Locale } from '../../utils/locale';
+import { adminAnalyticsSearchForRange } from './adminAnalyticsSearch';
 import { adminGiftCardOccasionLabel, adminGiftCardsSectionTo } from './adminGiftCards';
 import { adminGiftCardPaymentStatusLabel } from './adminGiftCardsColumns';
 import { AdminOverviewBarChart } from './AdminOverviewBarChart';
@@ -19,6 +20,7 @@ import { AdminOverviewNavCard } from './AdminOverviewNavCard';
 import { adminOverviewRangeResolve, adminOverviewRangeToGraphQlVariables } from './adminOverviewRange';
 import type { AdminOverviewRangeSearch } from './adminOverviewRange';
 import { AdminOverviewStatCard } from './AdminOverviewStatCard';
+import { AdminRelatedPageLinks } from './AdminRelatedPageLink';
 
 export function adminGiftCardsOverviewPageTitle(locale: Locale): string {
     return t(locale, 'admin', 'nav.giftCards.title');
@@ -72,6 +74,7 @@ export function AdminGiftCardsOverviewPage({
     const occasionStats = admin?.giftCardOccasionStats ?? [];
     const salesMonthStats = admin?.giftCardSalesMonthStats ?? [];
     const averageCents = admin?.giftCardPaidPurchaseAverageCents ?? 0;
+    const rangePaidCents = admin?.giftCardPaidPurchaseRangeCents ?? 0;
 
     const distribution: {
         key: 'total' | 'payed' | 'prepared';
@@ -163,15 +166,34 @@ export function AdminGiftCardsOverviewPage({
                 <section className="grid gap-3">
                     <div className="flex flex-wrap items-end justify-between gap-3">
                         <h2 className="text-lg font-medium">{t(locale, 'admin', 'copy.purchases')}</h2>
-                        <DateRangePicker
-                            value={pickerValue}
-                            onValueChange={onRangeChange}
-                            locale={DATE_FNS_LOCALE[locale]}
-                            placeholder={t(locale, 'admin', 'copy.pickADateRange')}
-                            className="w-auto"
-                            aria-label={t(locale, 'admin', 'copy.dateRangeForGiftCardPurchases')}
-                        />
+                        <div className="flex flex-wrap items-end gap-2">
+                            <AdminRelatedPageLinks
+                                links={[
+                                    {
+                                        to: '/{-$locale}/admin/analytics',
+                                        search: adminAnalyticsSearchForRange(range, 'gift-cards'),
+                                        label: t(locale, 'admin', 'traffic.viewAnalytics'),
+                                    },
+                                ]}
+                            />
+                            <DateRangePicker
+                                value={pickerValue}
+                                onValueChange={onRangeChange}
+                                locale={DATE_FNS_LOCALE[locale]}
+                                placeholder={t(locale, 'admin', 'copy.pickADateRange')}
+                                className="w-auto"
+                                aria-label={t(locale, 'admin', 'copy.dateRangeForGiftCardPurchases')}
+                            />
+                        </div>
                     </div>
+                    <p className="text-sm text-muted-foreground">{t(locale, 'admin', 'analytics.giftCards.paidChartCaption')}</p>
+                    <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                        <AdminOverviewStatCard
+                            label={t(locale, 'admin', 'analytics.giftCards.paidInRange')}
+                            value={rangePaidCents}
+                            displayValue={formatCurrency(rangePaidCents, { locale, maximumFractionDigits: 0 })}
+                        />
+                    </dl>
                     <AdminOverviewBarChart
                         data={buckets.map((bucket) => ({ bucketStart: bucket.bucketStart, count: bucket.count }))}
                         locale={locale}
