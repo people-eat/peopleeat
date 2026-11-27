@@ -129,6 +129,32 @@ describe('userBookingRequestOfferPaymentStatusUpdate', () => {
         expect(request!.invoiceAddress?.firstName).toBe('Customer');
     });
 
+    it('still stores invoice address when the webhook already marked PAYED', async () => {
+        const { customer, offerId } = await dualAcceptWithPaymentIntent(7);
+
+        await testDb
+            .update(bookingRequestOffers)
+            .set({ paymentStatus: 'PAYED', paymentDateTime: new Date() })
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, offerId));
+
+        vi.mocked(customer.serverRuntime.stripe.customerUpdate).mockResolvedValue(undefined);
+
+        const result = await userBookingRequestOfferPaymentStatusUpdate(
+            userMutationParent(customer.user.userId),
+            { bookingRequestOfferId: offerId, invoiceAddress },
+            customer.requestingSession,
+            customer.serverRuntime,
+        );
+        expect(result.success).toBe(true);
+
+        const [offer] = await testDb.select().from(bookingRequestOffers).where(eq(bookingRequestOffers.bookingRequestOfferId, offerId));
+        expect(offer!.paymentStatus).toBe('PAYED');
+
+        const [request] = await testDb.select().from(bookingRequests).where(eq(bookingRequests.bookingRequestId, offer!.bookingRequestId));
+        expect(request!.invoiceAddress?.firstName).toBe('Customer');
+        expect(request!.invoiceAddress?.line1).toBe('Street 1');
+    });
+
     it('marks SetupIntent offers SETUP and enqueues pull jobs', async () => {
         const { cook, customer, offerId } = await dualAcceptWithPaymentIntent(30);
 

@@ -44,6 +44,17 @@ const berlin = {
     country: 'DE',
 };
 
+const invoiceAddress = {
+    companyName: 'Acme GmbH',
+    firstName: 'Ada',
+    lastName: 'Lovelace',
+    country: 'DE',
+    city: 'Berlin',
+    postalCode: '10115',
+    line1: 'Street 1',
+    line2: '',
+};
+
 async function seedOffer(options: {
     paymentStatus?: 'EMPTY' | 'SETUP' | 'PAYED' | 'FAILED';
     paymentData: BookingRequestOfferPaymentData;
@@ -217,6 +228,61 @@ describe('bookingRequestOfferPaymentFinalize', () => {
         expect(slackNotifyPaymentConfirmed).not.toHaveBeenCalled();
         expect(bookingRequestOfferPaymentConfirmedEmailSend).not.toHaveBeenCalled();
         expect(slackNotifyPaymentFinalizeMismatch).not.toHaveBeenCalled();
+    });
+
+    it('lost PaymentIntent claim still persists invoice address from checkout', async () => {
+        const paymentIntentId = `pi_${idCreate()}`;
+        const seeded = await seedOffer({
+            paymentData: { paymentIntentId, clientSecret: 'sec' },
+        });
+        vi.mocked(seeded.serverRuntime.stripe.paymentIntentSucceededCheck).mockResolvedValue(true);
+        vi.mocked(seeded.serverRuntime.stripe.paymentIntentDestinationTransferIdFindOne).mockResolvedValue(`tr_${idCreate()}`);
+
+        await testDb
+            .update(bookingRequestOffers)
+            .set({ paymentStatus: 'PAYED', paymentDateTime: new Date() })
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, seeded.bookingRequestOfferId));
+
+        const result = await bookingRequestOfferPaymentFinalize(seeded.serverRuntime, {
+            offer: seeded.offer,
+            bookingRequest: seeded.bookingRequest,
+            customerUserId: seeded.customerUserId,
+            cookStripeAccountId: seeded.stripeAccountId,
+            invoiceAddress,
+        });
+
+        expect(result).toEqual({ advanced: false });
+        expect(slackNotifyPaymentConfirmed).not.toHaveBeenCalled();
+
+        const [request] = await testDb.select().from(bookingRequests).where(eq(bookingRequests.bookingRequestId, seeded.bookingRequestId));
+        expect(request!.invoiceAddress).toEqual(invoiceAddress);
+    });
+
+    it('lost SetupIntent claim still persists invoice address from checkout', async () => {
+        const setupIntentId = `si_${idCreate()}`;
+        const seeded = await seedOffer({
+            paymentData: { setupIntentId, clientSecret: 'sec' },
+        });
+        vi.mocked(seeded.serverRuntime.stripe.setupIntentSucceededCheck).mockResolvedValue(true);
+
+        await testDb
+            .update(bookingRequestOffers)
+            .set({ paymentStatus: 'SETUP' })
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, seeded.bookingRequestOfferId));
+
+        const result = await bookingRequestOfferPaymentFinalize(seeded.serverRuntime, {
+            offer: seeded.offer,
+            bookingRequest: seeded.bookingRequest,
+            customerUserId: seeded.customerUserId,
+            cookStripeAccountId: seeded.stripeAccountId,
+            invoiceAddress,
+        });
+
+        expect(result).toEqual({ advanced: false });
+        expect(slackNotifyPaymentConfirmed).not.toHaveBeenCalled();
+
+        const [request] = await testDb.select().from(bookingRequests).where(eq(bookingRequests.bookingRequestId, seeded.bookingRequestId));
+        expect(request!.invoiceAddress).toEqual(invoiceAddress);
     });
 
     it('lost claim with mismatched intent warns on Slack', async () => {

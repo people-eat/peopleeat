@@ -161,6 +161,7 @@ export type BookingRequestOfferPaymentFinalizeInput = {
  * `paymentStatus`, optionally stores invoice address, and enqueues pull jobs
  * for SetupIntent flows. Dual channel (checkout mutation + webhook) is fine:
  * status transition is an atomic claim — only the winner sends Slack/email/jobs.
+ * The losing checkout call still writes `invoiceAddress` when present.
  */
 export async function bookingRequestOfferPaymentFinalize(
     serverRuntime: ServerRuntime,
@@ -341,10 +342,12 @@ export async function bookingRequestOfferPaymentFinalize(
     });
 
     if (!claimed) {
-        // Invoice address (if any) was already applied in the claim transaction above.
+        // Webhook often claims PAYED/SETUP first. The checkout mutation still holds
+        // the EMPTY snapshot, so persist invoice address on the losing call.
         return paymentFinalizeAlreadyAdvancedHandle(serverRuntime, {
             bookingRequestId: bookingRequest.bookingRequestId,
             bookingRequestOfferId: offer.bookingRequestOfferId,
+            invoiceAddress,
             expected: {
                 nextPaymentStatus,
                 amountCents,

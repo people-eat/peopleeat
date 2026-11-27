@@ -65,7 +65,8 @@ same webhook endpoint but their own finalize (`giftCardPayFinalize`), not the bo
   success; fail/cancel mark `paymentStatus: FAILED`. Dual channel is intentional: the status transition is an atomic claim (conditional
   `paymentStatus` update). Only the winner sends Slack ("Zahlung bestätigt"), confirmation email, session event, offer-timeline milestones,
   and pull / testimonial / event-tomorrow jobs. A second matching call is silent; mismatched amount / intent ids → `log.warn` + Slack
-  "Zahlung Hinweis: Abweichung". Event catalog + Dashboard setup:
+  "Zahlung Hinweis: Abweichung". The webhook has no billing address; if it wins the claim, the losing checkout mutation still writes
+  `BookingRequests.invoiceAddress`. Event catalog + Dashboard setup:
   [stripe-payment.md](../architecture/stripe-payment.md#webhooks--dashboard-setup)
 - **Checkout sad path:** `FAILED` is recoverable, not “event pending”. Derived offer/request status stays `USER_NEEDS_DEPOSIT_PAYMENT` /
   `DEPOSIT_PAYMENT_PENDING` so the customer still has a checkout CTA and overview to-do. GraphQL still exposes the Stripe client secret. 3-D

@@ -251,5 +251,6 @@ Attention lane — see [cook-profile.md](../features/cook-profile.md).
   when `offer.payment` is present (`USER_NEEDS_DEPOSIT_PAYMENT`). The offer page surfaces a pending-payment attention banner (and offer-tab
   alert) that links to that route; accept navigates there once payment is ready. After Elements confirm,
   `bookingRequestOfferPaymentStatusUpdate` persists the invoice address (ISO country) on the booking request and advances `paymentStatus`
-  via the same `bookingRequestOfferPaymentFinalize` helper as the webhook (single-winner Slack/email). Shared helper `toStripeCountryCode`
-  maps long country names when copying the event venue into the Address Element.
+  via the same `bookingRequestOfferPaymentFinalize` helper as the webhook (single-winner Slack/email). The webhook does not carry the
+  address; a lost claim still writes it from the checkout mutation. Shared helper `toStripeCountryCode` maps long country names when copying
+  the event venue into the Address Element.
