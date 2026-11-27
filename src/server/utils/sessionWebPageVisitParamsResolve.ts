@@ -1,3 +1,4 @@
+import { expansionMarketFromCountry, expansionMarketFromParam } from '../../shared/expansionMarkets';
 import type { Database } from '../db';
 import type { SessionEventWebPageVisitedPayload } from '../domain/sessionEvent';
 import {
@@ -15,6 +16,7 @@ export type SessionWebPageVisitParamsInput = {
     partnerVenueId?: string | null;
     occasionId?: string | null;
     bookingRequestId?: string | null;
+    countryId?: string | null;
 };
 
 type VisitParams = NonNullable<SessionEventWebPageVisitedPayload['params']>;
@@ -49,6 +51,10 @@ export async function sessionWebPageVisitParamsResolve(
         params.occasionId = occasion?.occasionId ?? input.occasionId;
     }
     if (input.bookingRequestId) params.bookingRequestId = input.bookingRequestId;
+    if (input.countryId) {
+        const market = expansionMarketFromParam(input.countryId) ?? expansionMarketFromCountry(input.countryId);
+        params.countryId = market?.slug ?? input.countryId;
+    }
 
     return Object.keys(params).length > 0 ? params : undefined;
 }

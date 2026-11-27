@@ -4,15 +4,18 @@ import { t } from '../../i18n/t';
 import { contentLocaleText } from '../../shared/contentSection';
 import { DEFAULT_LOCALE } from '../../shared/locale';
 import type { Locale } from '../../shared/locale';
+import { expansionMarketFromParam, expansionMarketList } from '../../shared/expansionMarkets';
 import {
     WEB_PAGE_VISIT_ENTITY_RANK_MAX,
     WEB_PAGE_VISIT_INDEX_RANK_ID,
     WEB_PAGE_VISIT_TRAFFIC_SERIES_MAX,
     webPageKeyHasVisitEntity,
+    webPageKeyHasVisitIndex,
     webPageKeyParse,
     webPageKeyRanksFullCatalog,
     webPageVisitDetailPathPatternByKey,
     webPageVisitEntityParamByKey,
+    webPageVisitEntityUsesCountry,
     webPageVisitEntityUsesPartnerVenue,
 } from '../../shared/webPage';
 import type { WebPageKey, WebPageKeyWithVisitEntity } from '../../shared/webPage';
@@ -119,6 +122,9 @@ async function catalogIdsForRank(key: WebPageKeyWithVisitEntity, serverRuntime: 
         const rows = await serverRuntime.db.select({ id: occasions.occasionId }).from(occasions);
         return rows.map((row) => row.id);
     }
+    if (webPageVisitEntityUsesCountry(key)) {
+        return expansionMarketList.map((market) => market.slug);
+    }
     const rows = await serverRuntime.db.select({ id: blogPosts.blogPostId }).from(blogPosts);
     return rows.map((row) => row.id);
 }
@@ -135,7 +141,9 @@ function entityIdsFromInput(key: WebPageKeyWithVisitEntity, entity: GqlSAdminWeb
                 ? entity.partnerVenueIds
                 : param === 'occasionId'
                   ? entity.occasionIds
-                  : entity.blogPostIds;
+                  : param === 'blogPostId'
+                    ? entity.blogPostIds
+                    : entity.countryIds;
     const ids: string[] = [];
     for (const value of raw ?? []) {
         if (typeof value !== 'string') continue;
@@ -277,6 +285,15 @@ async function entityRanksLabel(
             .where(inArray(occasions.occasionId, ids));
         for (const occasion of occasionRows) {
             labels.set(occasion.occasionId, { label: occasion.name, pathName: occasion.pathName });
+        }
+    } else if (webPageVisitEntityUsesCountry(key)) {
+        for (const id of ids) {
+            const market = expansionMarketFromParam(id);
+            if (!market) continue;
+            labels.set(id, {
+                label: contentLocaleText(market.nameDe, market.nameEn, locale),
+                pathName: market.slug,
+            });
         }
     } else {
         const postRows = await serverRuntime.db
@@ -599,7 +616,7 @@ export async function adminWebPageVisitTrafficFindOne(
             `);
             untaggedDetailVisitCount = asInt(executeRows(untaggedResult)[0]?.untagged_detail_visit_count);
 
-            if (comparing || args.scope !== 'DETAIL') {
+            if (webPageKeyHasVisitIndex(focusedKey) && (comparing || args.scope !== 'DETAIL')) {
                 const indexResult = await serverRuntime.db.execute<{ pageviews: string | number; unique_sessions: string | number }>(sql`
                     SELECT
                         COUNT(*)::int AS pageviews,

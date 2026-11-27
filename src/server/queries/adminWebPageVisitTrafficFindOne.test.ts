@@ -7,7 +7,7 @@ import { commandSetup, partnerVenueInsert, testDb } from '../test/commandTestUti
 import { adminWebPageVisitTrafficFindOne } from './adminWebPageVisitTrafficFindOne';
 
 function isolatedRange() {
-    const startMs = Date.UTC(2400, 0, 1) + Math.floor(Math.random() * 1e12);
+    const startMs = Date.UTC(2600, 0, 1) + Math.floor(Math.random() * 1.5e13);
     return {
         startDateTime: new Date(startMs),
         endDateTime: new Date(startMs + 86_400_000),
@@ -422,5 +422,48 @@ describe('adminWebPageVisitTrafficFindOne', () => {
         expect(traffic.entityRanks).toEqual(
             expect.arrayContaining([expect.objectContaining({ id: venue.partnerVenueId, pageviews: 1, uniqueSessions: 1 })]),
         );
+    });
+
+    it('ranks coming-to visits by country and zero-fills the other market', async () => {
+        const { serverRuntime, requestingSession } = await commandSetup();
+        const range = isolatedRange();
+        await testDb.insert(sessionEvents).values({
+            sessionEventId: idCreate(),
+            sessionId: requestingSession.sessionId,
+            type: 'WEB_PAGE_VISITED',
+            payload: {
+                webPageKey: 'COMING_TO',
+                path: '/coming-to/netherlands',
+                params: { countryId: 'netherlands' },
+            },
+            createdAt: range.at,
+        });
+
+        const traffic = await adminWebPageVisitTrafficFindOne(
+            {
+                range,
+                granularity: 'day',
+                webPageKeys: ['COMING_TO'],
+                audience: 'HUMAN',
+                metric: 'PAGEVIEWS',
+                scope: 'ALL',
+                entity: null,
+            },
+            requestingSession,
+            serverRuntime,
+        );
+
+        expect(traffic.pageviews).toBe(1);
+        expect(traffic.entityVisitCount).toBe(1);
+        expect(traffic.untaggedDetailVisitCount).toBe(0);
+        expect(traffic.entityRanks.map((row) => row.id).sort()).toEqual(['netherlands', 'switzerland']);
+        expect(traffic.entityRanks.find((row) => row.id === 'netherlands')).toEqual(
+            expect.objectContaining({ id: 'netherlands', pathName: 'netherlands', pageviews: 1, uniqueSessions: 1 }),
+        );
+        expect(traffic.entityRanks.find((row) => row.id === 'switzerland')).toEqual(
+            expect.objectContaining({ id: 'switzerland', pathName: 'switzerland', pageviews: 0, uniqueSessions: 0 }),
+        );
+        expect(traffic.entityRanks.some((row) => row.id === WEB_PAGE_VISIT_INDEX_RANK_ID)).toBe(false);
+        expect(traffic.entityRanks.find((row) => row.id === 'netherlands')?.label).toBeTruthy();
     });
 });

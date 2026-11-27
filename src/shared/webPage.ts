@@ -36,7 +36,16 @@ const webPageKeysSeoOnlySet = new Set<string>(webPageKeysSeoOnly);
 
 export type WebPageKeyTracked = Exclude<WebPageKey, (typeof webPageKeysSeoOnly)[number]>;
 
-const webPageKeysWithVisitEntity = ['CHEFS', 'CITIES', 'VENUES', 'OCCASIONS', 'BLOG_POSTS', 'BOOKING_REQUEST_PLAN'] as const;
+const webPageKeysWithVisitEntity = [
+    'CHEFS',
+    'CITIES',
+    'VENUES',
+    'OCCASIONS',
+    'BLOG_POSTS',
+    'BOOKING_REQUEST_PLAN',
+    'COMING_TO',
+    'FOUNDING_CHEF',
+] as const;
 export type WebPageKeyWithVisitEntity = (typeof webPageKeysWithVisitEntity)[number];
 
 export const webPageVisitEntityParamByKey = {
@@ -46,7 +55,9 @@ export const webPageVisitEntityParamByKey = {
     OCCASIONS: 'occasionId',
     BLOG_POSTS: 'blogPostId',
     BOOKING_REQUEST_PLAN: 'partnerVenueId',
-} as const satisfies Record<WebPageKeyWithVisitEntity, 'cookId' | 'cityId' | 'partnerVenueId' | 'occasionId' | 'blogPostId'>;
+    COMING_TO: 'countryId',
+    FOUNDING_CHEF: 'countryId',
+} as const satisfies Record<WebPageKeyWithVisitEntity, 'cookId' | 'cityId' | 'partnerVenueId' | 'occasionId' | 'blogPostId' | 'countryId'>;
 
 export const webPageVisitDetailPathPatternByKey = {
     CHEFS: '^/chefs/[^/]+/?$',
@@ -55,6 +66,8 @@ export const webPageVisitDetailPathPatternByKey = {
     OCCASIONS: '^/occasions/[^/]+/?$',
     BLOG_POSTS: '^/blog-posts/[^/]+/?$',
     BOOKING_REQUEST_PLAN: '^/booking-request/plan/?\\?(?:[^#]*&)?(?:venueId|partnerId)=',
+    COMING_TO: '^/coming-to/(netherlands|switzerland)/?$',
+    FOUNDING_CHEF: '^/how-to-become-a-chef/(netherlands|switzerland)/?$',
 } as const satisfies Record<WebPageKeyWithVisitEntity, string>;
 
 export const WEB_PAGE_VISIT_TRAFFIC_SERIES_MAX = 8;
@@ -92,6 +105,8 @@ const webPageVisitEntityDetailPathPrefixByKey = {
     OCCASIONS: '/occasions',
     BLOG_POSTS: '/blog-posts',
     BOOKING_REQUEST_PLAN: '/booking-request/plan',
+    COMING_TO: '/coming-to',
+    FOUNDING_CHEF: '/how-to-become-a-chef',
 } as const satisfies Record<WebPageKeyWithVisitEntity, string>;
 
 export const webPageKeysTrafficDiscovery = [
@@ -135,6 +150,15 @@ export function webPageVisitEntityUsesPartnerVenue(key: WebPageKeyWithVisitEntit
     return webPageVisitEntityParamByKey[key] === 'partnerVenueId';
 }
 
+export function webPageVisitEntityUsesCountry(key: WebPageKeyWithVisitEntity): boolean {
+    return webPageVisitEntityParamByKey[key] === 'countryId';
+}
+
+/** Coming-to and founding-chef hubs have no catalog index, only country pages. */
+export function webPageKeyHasVisitIndex(key: WebPageKeyWithVisitEntity): boolean {
+    return !webPageVisitEntityUsesCountry(key);
+}
+
 export function webPageKeyIsTracked(key: WebPageKey): key is WebPageKeyTracked {
     return !webPageKeysSeoOnlySet.has(key);
 }
@@ -143,7 +167,7 @@ export function webPageKeyHasVisitEntity(key: WebPageKey): key is WebPageKeyWith
     return (webPageKeysWithVisitEntity as readonly string[]).includes(key);
 }
 
-/** Cities, venues, plan-page venues, occasions, and posts are small catalogs. Chefs stay visit top-20 plus search. */
+/** Cities, venues, plan-page venues, occasions, posts, and expansion countries are small catalogs. Chefs stay visit top-20 plus search. */
 export function webPageKeyRanksFullCatalog(key: WebPageKeyWithVisitEntity): boolean {
     return key !== 'CHEFS';
 }

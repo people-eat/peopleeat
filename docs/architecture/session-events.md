@@ -22,39 +22,39 @@ are **never** accepted by `sessionEventCreate` (password sign-in, phone confirm,
 
 ### Emitted by peopleeat
 
-| Key                                                  | Emitter                                                              | Payload (summary)                                                                                                                 |
-| ---------------------------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `WEB_PAGE_VISITED`                                   | `SessionWebPageVisitTracker` → `sessionWebPageVisitCreate`           | `webPageKey`, optional `path` / entity ids (`params.partnerVenueId` from plan `?venueId=`)                                        |
-| `WEB_PAGE_INTERACTION`                               | Booking form / cook offer create → `sessionWebPageInteractionCreate` | `webPageKey`, `area`, optional `bookingRequestId`, structured `interaction`                                                       |
-| `BOOKING_REQUEST_CREATED`                            | `userBookingRequestCreate`                                           | `bookingRequestId`, optional `requestedCookId`, optional `requestedMenuId`                                                        |
-| `BOOKING_REQUEST_OPENED_TO_OTHER_COOKS`              | `userBookingRequestOpenToOtherCooks`                                 | `bookingRequestId`                                                                                                                |
-| `BOOKING_REQUEST_CANCELED`                           | `userBookingRequestCancel`                                           | `bookingRequestId`                                                                                                                |
-| `BOOKING_REQUEST_OFFER_ACCEPTED`                     | `userBookingRequestOfferAccept` / `cookBookingRequestOfferAccept`    | `bookingRequestId`, `bookingRequestOfferId`, `actor`: `customer` \| `cook`                                                        |
-| `BOOKING_REQUEST_OFFER_DECLINED`                     | `userBookingRequestOfferDecline` / `cookBookingRequestOfferDecline`  | `bookingRequestId`, `bookingRequestOfferId`, `actor`: `customer` \| `cook`                                                        |
-| `BOOKING_REQUEST_OFFER_PAYMENT_SUCCEEDED`            | payment finalize / immediate €0 accept                               | `bookingRequestId`, `bookingRequestOfferId`                                                                                       |
-| `BOOKING_REQUEST_OFFER_PAYMENT_FAILED`               | `bookingRequestOfferPaymentFailedApply`                              | `bookingRequestId`, `bookingRequestOfferId`                                                                                       |
-| `GIFT_CARD_CREATED`                                  | `giftCardCreate`                                                     | `giftCardId`                                                                                                                      |
-| `GIFT_CARD_PAYED`                                    | `giftCardPay`                                                        | `giftCardId`                                                                                                                      |
-| `COOK_CREATED`                                       | `userCookCreate`                                                     | empty                                                                                                                             |
-| `USER_CREATE_SUCCESSFUL`                             | `userCreate`                                                         | empty                                                                                                                             |
-| `USER_CREATE_FAILED`                                 | `userCreate`                                                         | empty                                                                                                                             |
-| `USER_CREATE_USER_WITH_EMAIL_ADDRESS_ALREADY_EXISTS` | `userCreate`                                                         | empty                                                                                                                             |
-| `USER_TERMS_ACCEPTED`                                | `userLegalAccept`                                                    | empty                                                                                                                             |
-| `USER_PRIVACY_POLICY_ACCEPTED`                       | `userLegalAccept`                                                    | empty                                                                                                                             |
-| `AUTH_EMAIL_OTP_REQUESTED`                           | `authEmailOtpRequest`                                                | empty                                                                                                                             |
-| `AUTH_EMAIL_OTP_VERIFY_FAILED`                       | `authEmailOtpVerify`                                                 | empty                                                                                                                             |
-| `AUTH_EMAIL_OTP_VERIFY_SUCCEEDED`                    | `authEmailOtpVerify`                                                 | `outcome`: `sign_in` \| `registration_ticket`                                                                                     |
-| `AUTH_PASSKEY_SIGN_IN_SUCCEEDED`                     | `authPasskeyAuthenticateVerify`                                      | empty                                                                                                                             |
-| `AUTH_PASSKEY_SIGN_IN_FAILED`                        | `authPasskeyAuthenticateVerify`                                      | empty                                                                                                                             |
-| `AUTH_TOTP_CHALLENGE_PENDING`                        | `sessionPrimaryAuthComplete`                                         | empty                                                                                                                             |
-| `AUTH_TOTP_VERIFY_SUCCEEDED`                         | `authTotpVerify`                                                     | `via`: `code` \| `recovery`                                                                                                       |
-| `AUTH_TOTP_VERIFY_FAILED`                            | `authTotpVerify`                                                     | empty                                                                                                                             |
-| `AUTH_OAUTH_SIGN_IN_SUCCEEDED`                       | `authGoogleCallback` / `authFacebookCallback`                        | `provider`, `outcome`: `sign_in` \| `registration_ticket`                                                                         |
-| `AUTH_OAUTH_SIGN_IN_FAILED`                          | `authGoogleCallback` / `authFacebookCallback`                        | `provider`, `reason` (`denied` \| `unverified_email` \| `anonymized` \| `conflict` \| `toggle_off` \| `invalid_state` \| `token`) |
-| `AUTH_OAUTH_ACCOUNT_CREATED`                         | `userCreate` (OAuth ticket consume)                                  | `provider`                                                                                                                        |
-| `NEWSLETTER_SUBSCRIPTION_CREATED`                    | `sessionNewsletterSubscriptionCreate`                                | empty                                                                                                                             |
-| `NEWSLETTER_SUBSCRIPTION_FAILED`                     | `sessionNewsletterSubscriptionCreate`                                | empty                                                                                                                             |
-| `NEWSLETTER_SUBSCRIPTION_ALREADY_EXISTS`             | `sessionNewsletterSubscriptionCreate`                                | empty                                                                                                                             |
+| Key                                                  | Emitter                                                              | Payload (summary)                                                                                                                             |
+| ---------------------------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `WEB_PAGE_VISITED`                                   | `SessionWebPageVisitTracker` → `sessionWebPageVisitCreate`           | `webPageKey`, optional `path` / entity ids (`params.partnerVenueId` from plan `?venueId=`; `params.countryId` from coming-to / founding-chef) |
+| `WEB_PAGE_INTERACTION`                               | Booking form / cook offer create → `sessionWebPageInteractionCreate` | `webPageKey`, `area`, optional `bookingRequestId`, structured `interaction`                                                                   |
+| `BOOKING_REQUEST_CREATED`                            | `userBookingRequestCreate`                                           | `bookingRequestId`, optional `requestedCookId`, optional `requestedMenuId`                                                                    |
+| `BOOKING_REQUEST_OPENED_TO_OTHER_COOKS`              | `userBookingRequestOpenToOtherCooks`                                 | `bookingRequestId`                                                                                                                            |
+| `BOOKING_REQUEST_CANCELED`                           | `userBookingRequestCancel`                                           | `bookingRequestId`                                                                                                                            |
+| `BOOKING_REQUEST_OFFER_ACCEPTED`                     | `userBookingRequestOfferAccept` / `cookBookingRequestOfferAccept`    | `bookingRequestId`, `bookingRequestOfferId`, `actor`: `customer` \| `cook`                                                                    |
+| `BOOKING_REQUEST_OFFER_DECLINED`                     | `userBookingRequestOfferDecline` / `cookBookingRequestOfferDecline`  | `bookingRequestId`, `bookingRequestOfferId`, `actor`: `customer` \| `cook`                                                                    |
+| `BOOKING_REQUEST_OFFER_PAYMENT_SUCCEEDED`            | payment finalize / immediate €0 accept                               | `bookingRequestId`, `bookingRequestOfferId`                                                                                                   |
+| `BOOKING_REQUEST_OFFER_PAYMENT_FAILED`               | `bookingRequestOfferPaymentFailedApply`                              | `bookingRequestId`, `bookingRequestOfferId`                                                                                                   |
+| `GIFT_CARD_CREATED`                                  | `giftCardCreate`                                                     | `giftCardId`                                                                                                                                  |
+| `GIFT_CARD_PAYED`                                    | `giftCardPay`                                                        | `giftCardId`                                                                                                                                  |
+| `COOK_CREATED`                                       | `userCookCreate`                                                     | empty                                                                                                                                         |
+| `USER_CREATE_SUCCESSFUL`                             | `userCreate`                                                         | empty                                                                                                                                         |
+| `USER_CREATE_FAILED`                                 | `userCreate`                                                         | empty                                                                                                                                         |
+| `USER_CREATE_USER_WITH_EMAIL_ADDRESS_ALREADY_EXISTS` | `userCreate`                                                         | empty                                                                                                                                         |
+| `USER_TERMS_ACCEPTED`                                | `userLegalAccept`                                                    | empty                                                                                                                                         |
+| `USER_PRIVACY_POLICY_ACCEPTED`                       | `userLegalAccept`                                                    | empty                                                                                                                                         |
+| `AUTH_EMAIL_OTP_REQUESTED`                           | `authEmailOtpRequest`                                                | empty                                                                                                                                         |
+| `AUTH_EMAIL_OTP_VERIFY_FAILED`                       | `authEmailOtpVerify`                                                 | empty                                                                                                                                         |
+| `AUTH_EMAIL_OTP_VERIFY_SUCCEEDED`                    | `authEmailOtpVerify`                                                 | `outcome`: `sign_in` \| `registration_ticket`                                                                                                 |
+| `AUTH_PASSKEY_SIGN_IN_SUCCEEDED`                     | `authPasskeyAuthenticateVerify`                                      | empty                                                                                                                                         |
+| `AUTH_PASSKEY_SIGN_IN_FAILED`                        | `authPasskeyAuthenticateVerify`                                      | empty                                                                                                                                         |
+| `AUTH_TOTP_CHALLENGE_PENDING`                        | `sessionPrimaryAuthComplete`                                         | empty                                                                                                                                         |
+| `AUTH_TOTP_VERIFY_SUCCEEDED`                         | `authTotpVerify`                                                     | `via`: `code` \| `recovery`                                                                                                                   |
+| `AUTH_TOTP_VERIFY_FAILED`                            | `authTotpVerify`                                                     | empty                                                                                                                                         |
+| `AUTH_OAUTH_SIGN_IN_SUCCEEDED`                       | `authGoogleCallback` / `authFacebookCallback`                        | `provider`, `outcome`: `sign_in` \| `registration_ticket`                                                                                     |
+| `AUTH_OAUTH_SIGN_IN_FAILED`                          | `authGoogleCallback` / `authFacebookCallback`                        | `provider`, `reason` (`denied` \| `unverified_email` \| `anonymized` \| `conflict` \| `toggle_off` \| `invalid_state` \| `token`)             |
+| `AUTH_OAUTH_ACCOUNT_CREATED`                         | `userCreate` (OAuth ticket consume)                                  | `provider`                                                                                                                                    |
+| `NEWSLETTER_SUBSCRIPTION_CREATED`                    | `sessionNewsletterSubscriptionCreate`                                | empty                                                                                                                                         |
+| `NEWSLETTER_SUBSCRIPTION_FAILED`                     | `sessionNewsletterSubscriptionCreate`                                | empty                                                                                                                                         |
+| `NEWSLETTER_SUBSCRIPTION_ALREADY_EXISTS`             | `sessionNewsletterSubscriptionCreate`                                | empty                                                                                                                                         |
 
 Booking-form funnel interactions use stable step ids from `src/shared/bookingRequestFormFunnel.ts` (`step_entered` / `step_completed`), not
 UI label strings. Indoor/outdoor is not a funnel step. When `BOOKING_REQUEST_SETTING` is on, `location` `step_completed` carries `setting`:
@@ -104,9 +104,9 @@ Admin descriptions mark these with “(Legacy)” / “(legacy)”.
   `SessionEvents_webPageVisit_chefs_sessionId_createdAt_idx` on `(sessionId, createdAt)` where `type = 'WEB_PAGE_VISITED'`,
   `webPageKey = 'CHEFS'`, and `params.cookId` is present, so a session-scoped MRU scan does not walk unrelated pageviews. See
   [last-visited-cook-profiles.md](../features/last-visited-cook-profiles.md).
-- Admin traffic entity ranking uses matching partial indexes on `params.cityId` / `partnerVenueId` / `occasionId` / `blogPostId` +
-  `createdAt` for those `webPageKey`s, including `BOOKING_REQUEST_PLAN` × `partnerVenueId`. See
-  [admin-traffic.md](../features/admin-traffic.md).
+- Admin traffic entity ranking uses matching partial indexes on `params.cityId` / `partnerVenueId` / `occasionId` / `blogPostId` /
+  `countryId` + `createdAt` for those `webPageKey`s, including `BOOKING_REQUEST_PLAN` × `partnerVenueId`, `COMING_TO` × `countryId`, and
+  `FOUNDING_CHEF` × `countryId`. See [admin-traffic.md](../features/admin-traffic.md).
 - Admin booking-request Origin (`AdminBookingRequest.creatingSession`) reverse-looks up the earliest `BOOKING_REQUEST_CREATED` row by
   `payload->>'bookingRequestId'`. Partial index `SessionEvents_bookingRequestCreated_bookingRequestId_createdAt_idx` on
   `(payload->>'bookingRequestId', createdAt)` where `type = 'BOOKING_REQUEST_CREATED'` and that JSON key is present. Predecessor
@@ -126,7 +126,8 @@ Admin descriptions mark these with “(Legacy)” / “(legacy)”.
 
 1. Client route tracker maps locale-stripped paths → `WebPageKey` (`webPageKeyFromPath`) and calls `sessionWebPageVisitCreate` (skips
    `/admin/*`, `/profile/*`). `/log-on` and legacy `/sign-in` both map to `SIGN_IN`. `/booking-request/plan?venueId=` (legacy `partnerId`)
-   stores `params.partnerVenueId`.
+   stores `params.partnerVenueId`. `/coming-to/{country}` and `/how-to-become-a-chef/{country}` store `params.countryId` (expansion-market
+   slug).
 2. Booking form emits funnel interactions; cook pool detail / offer create emit cook offer funnel interactions; create/cancel and
    marketplace accept/decline/payment commands emit booking lifecycle events. Booking checkout UI emits checkout funnel interactions.
 3. Auth commands emit `AUTH_*` (and user-create / legal-accept) events.
@@ -135,9 +136,10 @@ Admin descriptions mark these with “(Legacy)” / “(legacy)”.
    booking-checkout funnels via the matching `Admin.*Flow` fields; cook offer funnel via `Admin.cookBookingRequestOfferFlow`; visit buckets
    via `Admin.sessionEventWebPageVisitCreations`; filterable visit explorer via `Admin.webPageVisitTraffic` / `Admin.webPageVisitCounts`
    ([admin-traffic.md](../features/admin-traffic.md)). Detail visits for chefs, cities, venues, occasions, and blog posts store a stable
-   entity id (slug resolved on write). Plan-page visits store `params.partnerVenueId` from the query. Traffic can overlay up to 8 entities
-   of the same catalog (`Admin.webPageVisitEntitySearch` adds ids outside the top 20). A one-shot job backfills historical rows from stored
-   `path`. Live `/partners` URLs still map onto `VENUES`.
+   entity id (slug resolved on write). Plan-page visits store `params.partnerVenueId` from the query. Coming-to and founding-chef visits
+   store `params.countryId` as the expansion-market slug. Traffic can overlay up to 8 entities of the same catalog
+   (`Admin.webPageVisitEntitySearch` adds ids outside the top 20). A one-shot job backfills historical rows from stored `path`. Live
+   `/partners` URLs still map onto `VENUES`.
 
 ## Key files
 

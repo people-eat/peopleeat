@@ -16,6 +16,7 @@ export type SessionEventWebPageVisitedPayload = {
         partnerVenueId?: string;
         occasionId?: string;
         bookingRequestId?: string;
+        countryId?: string;
     };
 };
 

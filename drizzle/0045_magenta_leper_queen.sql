@@ -1,0 +1,2 @@
+CREATE INDEX "SessionEvents_webPageVisit_comingTo_countryId_createdAt_idx" ON "SessionEvents" USING btree (("payload"->'params'->>'countryId'),"createdAt") WHERE "SessionEvents"."type" = 'WEB_PAGE_VISITED' AND "SessionEvents"."payload"->>'webPageKey' = 'COMING_TO';--> statement-breakpoint
+CREATE INDEX "SessionEvents_webPageVisit_foundingChef_countryId_createdAt_idx" ON "SessionEvents" USING btree (("payload"->'params'->>'countryId'),"createdAt") WHERE "SessionEvents"."type" = 'WEB_PAGE_VISITED' AND "SessionEvents"."payload"->>'webPageKey' = 'FOUNDING_CHEF';

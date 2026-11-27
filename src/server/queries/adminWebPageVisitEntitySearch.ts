@@ -1,11 +1,13 @@
 import { and, eq, ilike, or, sql } from 'drizzle-orm';
 
 import { contentLocaleText } from '../../shared/contentSection';
+import { expansionMarketList } from '../../shared/expansionMarkets';
 import { DEFAULT_LOCALE } from '../../shared/locale';
 import {
     WEB_PAGE_VISIT_ENTITY_RANK_MAX,
     WEB_PAGE_VISIT_ENTITY_SEARCH_MIN_QUERY,
     webPageKeyHasVisitEntity,
+    webPageVisitEntityUsesCountry,
     webPageVisitEntityUsesPartnerVenue,
 } from '../../shared/webPage';
 import type { WebPageKeyWithVisitEntity } from '../../shared/webPage';
@@ -100,6 +102,25 @@ async function searchNamedEntities(
             .where(or(ilike(occasions.name, pattern), ilike(occasions.pathName, pattern)))
             .limit(WEB_PAGE_VISIT_ENTITY_RANK_MAX);
         return rows.map((row) => ({ id: row.occasionId, label: row.name, pathName: row.pathName }));
+    }
+
+    if (webPageVisitEntityUsesCountry(key)) {
+        const needle = query.trim().toLowerCase();
+        return expansionMarketList
+            .filter((market) => {
+                return (
+                    market.slug.includes(needle) ||
+                    market.countryCode.toLowerCase().includes(needle) ||
+                    market.nameDe.toLowerCase().includes(needle) ||
+                    market.nameEn.toLowerCase().includes(needle)
+                );
+            })
+            .slice(0, WEB_PAGE_VISIT_ENTITY_RANK_MAX)
+            .map((market) => ({
+                id: market.slug,
+                label: contentLocaleText(market.nameDe, market.nameEn, locale),
+                pathName: market.slug,
+            }));
     }
 
     const rows = await serverRuntime.db

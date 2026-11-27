@@ -3596,6 +3596,8 @@ input SessionWebPageVisitCreateInput {
     partnerVenueId: ID
     occasionId: ID
     bookingRequestId: ID
+    # Expansion-market slug (`netherlands` | `switzerland`) on coming-to / founding-chef visits.
+    countryId: ID
 }
 
 input SessionWebPageInteractionCreateInput {
@@ -4217,6 +4219,7 @@ input AdminWebPageVisitEntity {
     partnerVenueIds: [ID!]
     occasionIds: [ID!]
     blogPostIds: [ID!]
+    countryIds: [ID!]
 }
 
 type AdminWebPageVisitSeries {

@@ -105,4 +105,24 @@ describe('sessionWebPageVisitParamsBackfill', () => {
             params: { partnerVenueId: venue.partnerVenueId },
         });
     });
+
+    it('fills missing countryId from a coming-to path', async () => {
+        const { serverRuntime, requestingSession } = await commandSetup();
+        const sessionEventId = idCreate();
+        await testDb.insert(sessionEvents).values({
+            sessionEventId,
+            sessionId: requestingSession.sessionId,
+            type: 'WEB_PAGE_VISITED',
+            payload: { webPageKey: 'COMING_TO', path: '/coming-to/netherlands' },
+        });
+
+        await sessionWebPageVisitParamsBackfill(serverRuntime, { limit: 50 });
+
+        const [row] = await testDb.select().from(sessionEvents).where(eq(sessionEvents.sessionEventId, sessionEventId));
+        expect(row?.payload).toMatchObject({
+            webPageKey: 'COMING_TO',
+            path: '/coming-to/netherlands',
+            params: { countryId: 'netherlands' },
+        });
+    });
 });

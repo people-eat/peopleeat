@@ -240,6 +240,12 @@ export const sessionEvents = pgTable(
         index('SessionEvents_webPageVisit_blogPosts_blogPostId_createdAt_idx')
             .using('btree', sql`(${table.payload}->'params'->>'blogPostId')`, table.createdAt)
             .where(sql`${table.type} = 'WEB_PAGE_VISITED' AND ${table.payload}->>'webPageKey' = 'BLOG_POSTS'`),
+        index('SessionEvents_webPageVisit_comingTo_countryId_createdAt_idx')
+            .using('btree', sql`(${table.payload}->'params'->>'countryId')`, table.createdAt)
+            .where(sql`${table.type} = 'WEB_PAGE_VISITED' AND ${table.payload}->>'webPageKey' = 'COMING_TO'`),
+        index('SessionEvents_webPageVisit_foundingChef_countryId_createdAt_idx')
+            .using('btree', sql`(${table.payload}->'params'->>'countryId')`, table.createdAt)
+            .where(sql`${table.type} = 'WEB_PAGE_VISITED' AND ${table.payload}->>'webPageKey' = 'FOUNDING_CHEF'`),
         // Admin booking-request Origin: reverse lookup of the creating session
         // from BOOKING_REQUEST_CREATED.payload.bookingRequestId. Predecessor
         // empty-payload rows are excluded. See adminBookingRequestCreatingSessionFindOne.

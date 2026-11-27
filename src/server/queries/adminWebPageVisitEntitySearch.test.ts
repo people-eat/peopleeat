@@ -6,7 +6,7 @@ import { commandSetup, testDb } from '../test/commandTestUtils';
 import { adminWebPageVisitEntitySearch } from './adminWebPageVisitEntitySearch';
 
 function isolatedRange() {
-    const startMs = Date.UTC(2400, 0, 1) + Math.floor(Math.random() * 1e12);
+    const startMs = Date.UTC(2600, 0, 1) + Math.floor(Math.random() * 1.5e13);
     return {
         startDateTime: new Date(startMs),
         endDateTime: new Date(startMs + 86_400_000),
@@ -51,6 +51,39 @@ describe('adminWebPageVisitEntitySearch', () => {
         await expect(
             adminWebPageVisitEntitySearch(
                 { webPageKey: 'CITIES', query: 'Nowhere', range, audience: 'HUMAN' },
+                requestingSession,
+                serverRuntime,
+            ),
+        ).resolves.toEqual([]);
+    });
+
+    it('finds an expansion country by name', async () => {
+        const { serverRuntime, requestingSession } = await commandSetup();
+        const range = isolatedRange();
+        await testDb.insert(sessionEvents).values({
+            sessionEventId: idCreate(),
+            sessionId: requestingSession.sessionId,
+            type: 'WEB_PAGE_VISITED',
+            payload: {
+                webPageKey: 'COMING_TO',
+                path: '/coming-to/netherlands',
+                params: { countryId: 'netherlands' },
+            },
+            createdAt: range.at,
+        });
+
+        const rows = await adminWebPageVisitEntitySearch(
+            { webPageKey: 'COMING_TO', query: 'netherlands', range, audience: 'HUMAN' },
+            requestingSession,
+            serverRuntime,
+        );
+
+        expect(rows).toEqual(
+            expect.arrayContaining([expect.objectContaining({ id: 'netherlands', pathName: 'netherlands', pageviews: 1 })]),
+        );
+        await expect(
+            adminWebPageVisitEntitySearch(
+                { webPageKey: 'COMING_TO', query: 'Nowhere', range, audience: 'HUMAN' },
                 requestingSession,
                 serverRuntime,
             ),

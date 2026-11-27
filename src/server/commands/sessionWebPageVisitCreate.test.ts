@@ -253,4 +253,52 @@ describe('sessionWebPageVisitCreate', () => {
             params: { partnerVenueId: venue.partnerVenueId },
         });
     });
+
+    it('persists a coming-to country slug', async () => {
+        const { serverRuntime, requestingSession } = await commandSetup();
+
+        const result = await sessionWebPageVisitCreate(
+            {
+                input: {
+                    webPageKey: 'COMING_TO',
+                    path: '/coming-to/netherlands',
+                    countryId: 'netherlands',
+                },
+            },
+            requestingSession,
+            serverRuntime,
+        );
+
+        expect(result.success).toBe(true);
+        const [row] = await testDb.select().from(sessionEvents).where(eq(sessionEvents.sessionEventId, result.referenceId!));
+        expect(row?.payload).toMatchObject({
+            webPageKey: 'COMING_TO',
+            path: '/coming-to/netherlands',
+            params: { countryId: 'netherlands' },
+        });
+    });
+
+    it('canonicalizes an ISO country code to the expansion-market slug', async () => {
+        const { serverRuntime, requestingSession } = await commandSetup();
+
+        const result = await sessionWebPageVisitCreate(
+            {
+                input: {
+                    webPageKey: 'FOUNDING_CHEF',
+                    path: '/how-to-become-a-chef/switzerland',
+                    countryId: 'CH',
+                },
+            },
+            requestingSession,
+            serverRuntime,
+        );
+
+        expect(result.success).toBe(true);
+        const [row] = await testDb.select().from(sessionEvents).where(eq(sessionEvents.sessionEventId, result.referenceId!));
+        expect(row?.payload).toMatchObject({
+            webPageKey: 'FOUNDING_CHEF',
+            path: '/how-to-become-a-chef/switzerland',
+            params: { countryId: 'switzerland' },
+        });
+    });
 });

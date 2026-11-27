@@ -236,9 +236,11 @@ export {
     WEB_PAGE_VISIT_TRAFFIC_SERIES_MAX,
     webPageDefaults,
     webPageKeyHasVisitEntity,
+    webPageKeyHasVisitIndex,
     webPageKeyIsTracked,
     webPageKeys,
     webPageVisitEntityParamByKey,
+    webPageVisitEntityUsesCountry,
     webPageVisitEntityUsesPartnerVenue,
 } from './webPage';
 export type { WebPageKey, WebPageKeyTracked, WebPageKeyWithVisitEntity, WebPageSeoDefaults } from './webPage';

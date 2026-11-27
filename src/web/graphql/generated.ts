@@ -2724,6 +2724,7 @@ export type GqlCAdminWebPageVisitEntity = {
     blogPostIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     cityIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     cookIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+    countryIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     occasionIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     partnerVenueIds?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
@@ -5475,6 +5476,7 @@ export type GqlCSessionWebPageVisitCreateInput = {
     bookingRequestId?: InputMaybe<Scalars['ID']['input']>;
     cityId?: InputMaybe<Scalars['ID']['input']>;
     cookId?: InputMaybe<Scalars['ID']['input']>;
+    countryId?: InputMaybe<Scalars['ID']['input']>;
     occasionId?: InputMaybe<Scalars['ID']['input']>;
     partnerVenueId?: InputMaybe<Scalars['ID']['input']>;
     path?: InputMaybe<Scalars['String']['input']>;

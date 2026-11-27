@@ -4,7 +4,9 @@ import { formatIsoDate } from '../../../shared';
 import {
     WEB_PAGE_VISIT_TRAFFIC_SERIES_MAX,
     webPageKeyHasVisitEntity,
+    webPageKeyHasVisitIndex,
     webPageKeyIsTracked,
+    webPageVisitEntityUsesCountry,
     webPageVisitEntityUsesPartnerVenue,
 } from '../../../shared/webPage';
 import type { WebPageKey, WebPageKeyWithVisitEntity } from '../../../shared/webPage';
@@ -69,6 +71,7 @@ export type AdminTrafficSearch = AdminOverviewRangeSearch & {
     partnerVenueId?: string;
     occasionId?: string;
     blogPostId?: string;
+    countryId?: string;
     previous?: string;
 };
 
@@ -85,6 +88,7 @@ export type AdminTrafficResolved = {
     partnerVenueIds: string[];
     occasionIds: string[];
     blogPostIds: string[];
+    countryIds: string[];
     focusedKey: WebPageKeyWithVisitEntity | null;
     compareIds: string[];
     previous: boolean;
@@ -103,6 +107,7 @@ export function parseAdminTrafficSearch(search: Record<string, unknown>): AdminT
         partnerVenueId: parseOptionalIdList(search.partnerVenueId),
         occasionId: parseOptionalIdList(search.occasionId),
         blogPostId: parseOptionalIdList(search.blogPostId),
+        countryId: parseOptionalIdList(search.countryId),
         previous: previousIsOff(search.previous) ? '0' : undefined,
     };
 }
@@ -120,6 +125,7 @@ export function adminTrafficSearchResolve(search: AdminTrafficSearch): AdminTraf
     const partnerVenueIds = focusedKey && webPageVisitEntityUsesPartnerVenue(focusedKey) ? parseIdList(search.partnerVenueId) : [];
     const occasionIds = focusedKey === 'OCCASIONS' ? parseIdList(search.occasionId) : [];
     const blogPostIds = focusedKey === 'BLOG_POSTS' ? parseIdList(search.blogPostId) : [];
+    const countryIds = focusedKey && webPageVisitEntityUsesCountry(focusedKey) ? parseIdList(search.countryId) : [];
     const compareIds =
         focusedKey === 'CHEFS'
             ? cookIds
@@ -131,7 +137,9 @@ export function adminTrafficSearchResolve(search: AdminTrafficSearch): AdminTraf
                   ? occasionIds
                   : focusedKey === 'BLOG_POSTS'
                     ? blogPostIds
-                    : [];
+                    : focusedKey && webPageVisitEntityUsesCountry(focusedKey)
+                      ? countryIds
+                      : [];
     return {
         from: range.from,
         to: range.to,
@@ -139,12 +147,13 @@ export function adminTrafficSearchResolve(search: AdminTrafficSearch): AdminTraf
         keys,
         audience: search.audience ?? 'HUMAN',
         metric: search.metric ?? 'PAGEVIEWS',
-        scope: focusedKey && compareIds.length === 0 ? (search.scope ?? 'ALL') : 'ALL',
+        scope: focusedKey && webPageKeyHasVisitIndex(focusedKey) && compareIds.length === 0 ? (search.scope ?? 'ALL') : 'ALL',
         cookIds,
         cityIds,
         partnerVenueIds,
         occasionIds,
         blogPostIds,
+        countryIds,
         focusedKey,
         compareIds,
         previous: !previousIsOff(search.previous),
@@ -173,6 +182,10 @@ export function adminTrafficSearchToUrl(resolved: AdminTrafficResolved): AdminTr
                 : undefined,
         occasionId: resolved.focusedKey === 'OCCASIONS' && resolved.occasionIds.length > 0 ? resolved.occasionIds.join(',') : undefined,
         blogPostId: resolved.focusedKey === 'BLOG_POSTS' && resolved.blogPostIds.length > 0 ? resolved.blogPostIds.join(',') : undefined,
+        countryId:
+            resolved.focusedKey && webPageVisitEntityUsesCountry(resolved.focusedKey) && resolved.countryIds.length > 0
+                ? resolved.countryIds.join(',')
+                : undefined,
         previous: resolved.previous ? undefined : '0',
     };
 }
@@ -182,7 +195,8 @@ function adminTrafficCompareIdsForKey(resolved: AdminTrafficResolved, key: WebPa
     if (key === 'CITIES') return resolved.cityIds;
     if (webPageVisitEntityUsesPartnerVenue(key)) return resolved.partnerVenueIds;
     if (key === 'OCCASIONS') return resolved.occasionIds;
-    return resolved.blogPostIds;
+    if (key === 'BLOG_POSTS') return resolved.blogPostIds;
+    return resolved.countryIds;
 }
 
 export function adminTrafficToggleCompareId(resolved: AdminTrafficResolved, id: string): Partial<AdminTrafficResolved> {
@@ -216,6 +230,7 @@ function adminTrafficCompareIdsPatch(key: WebPageKeyWithVisitEntity, ids: string
         partnerVenueIds: webPageVisitEntityUsesPartnerVenue(key) ? ids : [],
         occasionIds: key === 'OCCASIONS' ? ids : [],
         blogPostIds: key === 'BLOG_POSTS' ? ids : [],
+        countryIds: webPageVisitEntityUsesCountry(key) ? ids : [],
         scope: 'ALL',
     };
 }
@@ -227,6 +242,7 @@ export function adminTrafficClearCompare(): Partial<AdminTrafficResolved> {
         partnerVenueIds: [],
         occasionIds: [],
         blogPostIds: [],
+        countryIds: [],
         scope: 'ALL',
     };
 }
@@ -249,6 +265,7 @@ export function adminTrafficPageVariables(search: AdminTrafficSearch = {}) {
                   partnerVenueIds: resolved.partnerVenueIds,
                   occasionIds: resolved.occasionIds,
                   blogPostIds: resolved.blogPostIds,
+                  countryIds: resolved.countryIds,
               }
             : null;
     return {

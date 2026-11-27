@@ -38,6 +38,8 @@ export async function sessionWebPageVisitParamsBackfill(
           AND (
             payload->>'path' ~ '^/(cities|venues|partners|occasions|blog-posts|chefs)/[^/]+/?$'
             OR payload->>'path' ~ '^/booking-request/plan/?\\?(?:[^#]*&)?(?:venueId|partnerId)='
+            OR payload->>'path' ~ '^/coming-to/(netherlands|switzerland)/?$'
+            OR payload->>'path' ~ '^/how-to-become-a-chef/(netherlands|switzerland)/?$'
           )
           AND (
             payload->'params' IS NULL
@@ -58,6 +60,12 @@ export async function sessionWebPageVisitParamsBackfill(
             )
             OR (
                 payload->>'webPageKey' = 'CHEFS' AND payload->'params'->>'cookId' IS NULL
+            )
+            OR (
+                payload->>'webPageKey' = 'COMING_TO' AND payload->'params'->>'countryId' IS NULL
+            )
+            OR (
+                payload->>'webPageKey' = 'FOUNDING_CHEF' AND payload->'params'->>'countryId' IS NULL
             )
           )
         ORDER BY "sessionEventId" ASC

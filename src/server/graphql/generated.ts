@@ -2725,6 +2725,7 @@ export type GqlSAdminWebPageVisitEntity = {
     blogPostIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     cityIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     cookIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+    countryIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     occasionIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     partnerVenueIds?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
@@ -5476,6 +5477,7 @@ export type GqlSSessionWebPageVisitCreateInput = {
     bookingRequestId?: InputMaybe<Scalars['ID']['input']>;
     cityId?: InputMaybe<Scalars['ID']['input']>;
     cookId?: InputMaybe<Scalars['ID']['input']>;
+    countryId?: InputMaybe<Scalars['ID']['input']>;
     occasionId?: InputMaybe<Scalars['ID']['input']>;
     partnerVenueId?: InputMaybe<Scalars['ID']['input']>;
     path?: InputMaybe<Scalars['String']['input']>;
@@ -14966,6 +14968,7 @@ export function GqlSAdminWebPageVisitEntitySchema(): z.ZodObject<Properties<GqlS
         blogPostIds: z.array(z.string()).nullish(),
         cityIds: z.array(z.string()).nullish(),
         cookIds: z.array(z.string()).nullish(),
+        countryIds: z.array(z.string()).nullish(),
         occasionIds: z.array(z.string()).nullish(),
         partnerVenueIds: z.array(z.string()).nullish(),
     });
@@ -15529,6 +15532,7 @@ export function GqlSSessionWebPageVisitCreateInputSchema(): z.ZodObject<Properti
         bookingRequestId: z.string().nullish(),
         cityId: z.string().nullish(),
         cookId: z.string().nullish(),
+        countryId: z.string().nullish(),
         occasionId: z.string().nullish(),
         partnerVenueId: z.string().nullish(),
         path: z.string().nullish(),

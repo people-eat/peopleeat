@@ -49,6 +49,7 @@ export function SessionWebPageVisitTracker() {
                 partnerVenueId: match.params?.partnerVenueId,
                 occasionId: match.params?.occasionId,
                 bookingRequestId: match.params?.bookingRequestId,
+                countryId: match.params?.countryId,
             },
         });
     }, [isLoading, locale, pathname, searchStr, visitCreate]);

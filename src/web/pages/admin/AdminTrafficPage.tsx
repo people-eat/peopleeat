@@ -7,6 +7,7 @@ import { t } from '../../../i18n/t';
 import { formatDateRange, formatIsoDate } from '../../../shared';
 import {
     WEB_PAGE_VISIT_TRAFFIC_SERIES_MAX,
+    webPageKeyHasVisitIndex,
     webPageKeysTrafficAccount,
     webPageKeysTrafficConversion,
     webPageKeysTrafficDiscovery,
@@ -310,7 +311,7 @@ export function AdminTrafficPage({ data, search }: { data: GqlCAdminTrafficPageQ
                             </SelectContent>
                         </Select>
                     </label>
-                    {resolved.focusedKey && !comparing ? (
+                    {resolved.focusedKey && !comparing && webPageKeyHasVisitIndex(resolved.focusedKey) ? (
                         <label className="flex shrink-0 items-center gap-2 text-sm">
                             <span className="text-muted-foreground">{t(locale, 'admin', 'traffic.scope')}</span>
                             <Select

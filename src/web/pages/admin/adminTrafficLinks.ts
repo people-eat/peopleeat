@@ -3,8 +3,10 @@ import { localePath } from '../../../shared/locale';
 import type { WebPageKey, WebPageKeyTracked, WebPageKeyWithVisitEntity } from '../../../shared/webPage';
 import {
     WEB_PAGE_VISIT_INDEX_RANK_ID,
+    webPageKeyHasVisitEntity,
     webPageKeyPublicPathByKey,
     webPageVisitEntityPublicPath,
+    webPageVisitEntityUsesCountry,
     webPageVisitEntityUsesPartnerVenue,
 } from '../../../shared/webPage';
 import type { Locale } from '../../utils/locale';
@@ -41,11 +43,9 @@ function adminTrafficPublicPageHref(
     if (webPageKey === 'BOOKING_REQUEST_PLAN' && entityId) {
         return localePath(locale, webPageVisitEntityPublicPath('BOOKING_REQUEST_PLAN', entityId));
     }
-    if (pathName && webPageKey === 'CITIES') return localePath(locale, webPageVisitEntityPublicPath('CITIES', pathName));
-    if (pathName && webPageKey === 'VENUES') return localePath(locale, webPageVisitEntityPublicPath('VENUES', pathName));
-    if (pathName && webPageKey === 'CHEFS') return localePath(locale, webPageVisitEntityPublicPath('CHEFS', pathName));
-    if (pathName && webPageKey === 'OCCASIONS') return localePath(locale, webPageVisitEntityPublicPath('OCCASIONS', pathName));
-    if (pathName && webPageKey === 'BLOG_POSTS') return localePath(locale, webPageVisitEntityPublicPath('BLOG_POSTS', pathName));
+    if (pathName && webPageKeyHasVisitEntity(webPageKey) && webPageKey !== 'BOOKING_REQUEST_PLAN') {
+        return localePath(locale, webPageVisitEntityPublicPath(webPageKey, pathName));
+    }
     return localePath(locale, webPageKeyPublicPathByKey[webPageKey]);
 }
 
@@ -83,6 +83,7 @@ export function adminTrafficEntityActions(
         },
     ];
     if (row.id === WEB_PAGE_VISIT_INDEX_RANK_ID) return links;
+    if (webPageVisitEntityUsesCountry(focusedKey)) return links;
     if (focusedKey === 'CITIES') {
         links.push({
             to: '/{-$locale}/admin/cities/$cityId',
@@ -108,7 +109,7 @@ export function adminTrafficEntityActions(
             params: { occasionId: row.id },
             label: t(locale, 'admin', 'traffic.editRecord'),
         });
-    } else {
+    } else if (focusedKey === 'BLOG_POSTS') {
         links.push({
             to: '/{-$locale}/admin/blog-posts/$blogPostId',
             params: { blogPostId: row.id },
@@ -123,5 +124,6 @@ export function adminTrafficAddEntityLabel(locale: Locale, key: WebPageKeyWithVi
     if (webPageVisitEntityUsesPartnerVenue(key)) return t(locale, 'admin', 'traffic.addVenue');
     if (key === 'CHEFS') return t(locale, 'admin', 'traffic.addChef');
     if (key === 'OCCASIONS') return t(locale, 'admin', 'traffic.addOccasion');
+    if (webPageVisitEntityUsesCountry(key)) return t(locale, 'admin', 'traffic.addCountry');
     return t(locale, 'admin', 'traffic.addBlogPost');
 }

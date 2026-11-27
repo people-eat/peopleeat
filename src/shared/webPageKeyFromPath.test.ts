@@ -30,8 +30,14 @@ describe('webPageKeyFromPath', () => {
         expect(webPageKeyFromPath('/occasions/birthday')).toEqual({ webPageKey: 'OCCASIONS', params: { occasionId: 'birthday' } });
         expect(webPageKeyFromPath('/blog-posts/hello')).toEqual({ webPageKey: 'BLOG_POSTS', params: { blogPostId: 'hello' } });
         expect(webPageKeyFromPath('/gift-card/abc123/checkout')).toEqual({ webPageKey: 'GIFT_CARD' });
-        expect(webPageKeyFromPath('/coming-to/netherlands')).toEqual({ webPageKey: 'COMING_TO' });
-        expect(webPageKeyFromPath('/how-to-become-a-chef/switzerland')).toEqual({ webPageKey: 'FOUNDING_CHEF' });
+        expect(webPageKeyFromPath('/coming-to/netherlands')).toEqual({
+            webPageKey: 'COMING_TO',
+            params: { countryId: 'netherlands' },
+        });
+        expect(webPageKeyFromPath('/how-to-become-a-chef/switzerland')).toEqual({
+            webPageKey: 'FOUNDING_CHEF',
+            params: { countryId: 'switzerland' },
+        });
         expect(webPageKeyFromPath('/coming-to/germany')).toBeNull();
     });
 

@@ -70,4 +70,16 @@ describe('adminTrafficSearch', () => {
         expect(resolved.compareIds).toEqual(['venue_a', 'venue_b']);
         expect(adminTrafficSearchToUrl(resolved).partnerVenueId).toBe('venue_a,venue_b');
     });
+
+    it('splits coming-to by countryId', () => {
+        const search = parseAdminTrafficSearch({ keys: 'COMING_TO', countryId: 'netherlands,switzerland', scope: 'INDEX' });
+        const resolved = adminTrafficSearchResolve(search);
+        expect(resolved.focusedKey).toBe('COMING_TO');
+        expect(resolved.countryIds).toEqual(['netherlands', 'switzerland']);
+        expect(resolved.compareIds).toEqual(['netherlands', 'switzerland']);
+        expect(adminTrafficSearchToUrl(resolved).countryId).toBe('netherlands,switzerland');
+        expect(adminTrafficPageVariables(search).entity).toEqual(expect.objectContaining({ countryIds: ['netherlands', 'switzerland'] }));
+        expect(resolved.scope).toBe('ALL');
+        expect(adminTrafficSearchResolve({ keys: 'COMING_TO', scope: 'INDEX' }).scope).toBe('ALL');
+    });
 });

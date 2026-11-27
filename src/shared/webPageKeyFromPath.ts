@@ -9,6 +9,7 @@ export type WebPageVisitMatch = {
         partnerVenueId?: string;
         occasionId?: string;
         bookingRequestId?: string;
+        countryId?: string;
     };
 };
 
@@ -54,8 +55,10 @@ export function webPageKeyFromPath(pathWithoutLocale: string, search = ''): WebP
     if (path === '/gift-cards' || path === '/gift-card') return { webPageKey: 'GIFT_CARD' };
     if (/^\/gift-card\/[^/]+\/checkout$/.test(path)) return { webPageKey: 'GIFT_CARD' };
     if (path === '/how-to-become-a-chef') return { webPageKey: 'HOW_TO_BECOME_A_CHEF' };
-    if (/^\/how-to-become-a-chef\/(netherlands|switzerland)$/.test(path)) return { webPageKey: 'FOUNDING_CHEF' };
-    if (/^\/coming-to\/(netherlands|switzerland)$/.test(path)) return { webPageKey: 'COMING_TO' };
+    const foundingChefMatch = /^\/how-to-become-a-chef\/(netherlands|switzerland)$/.exec(path);
+    if (foundingChefMatch?.[1]) return { webPageKey: 'FOUNDING_CHEF', params: { countryId: foundingChefMatch[1] } };
+    const comingToMatch = /^\/coming-to\/(netherlands|switzerland)$/.exec(path);
+    if (comingToMatch?.[1]) return { webPageKey: 'COMING_TO', params: { countryId: comingToMatch[1] } };
     if (path === '/booking-request') return { webPageKey: 'BOOKING_REQUEST' };
     if (path === '/booking-request/form') return { webPageKey: 'BOOKING_REQUEST_FORM' };
     if (path === '/booking-request/chat') return { webPageKey: 'BOOKING_REQUEST_CHAT' };
