@@ -293,7 +293,7 @@
         "created": "Chefaccount aangemaakt.",
         "inviteTitle": "Uitgenodigd door een chef",
         "inviteBody": "Een peopleeat-chef heeft je uitgenodigd. Je registratie wordt aan die chef toegeschreven.",
-        "marketBody": "Je sluit je aan als oprichtende chef {inCountry}. Nu profiel en menu. Aanvragen van gasten vanaf begin 2027.",
+        "marketBody": "Je sluit je aan als een van de eerste chefs {inCountry}. Nu profiel en menu. Aanvragen van gasten vanaf begin 2027.",
         "alreadyCookIntro": "Welkom bij peopleeat! Ga naar je profiel om de volgende stappen af te ronden",
         "intro": "Log in en maak in één stap je chefprofiel aan, of upgrade een bestaand account.",
         "registeredTitle": "Je bent geregistreerd als chef",
@@ -411,18 +411,18 @@
         "fact1": "Chefs kunnen zich nu al aansluiten.",
         "fact2": "Gastheren kunnen nog niet boeken.",
         "fact3": "Start voor gasten: begin 2027.",
-        "joinFounding": "Sluit je aan als oprichtende chef",
+        "joinFounding": "Sluit je aan als een van de eerste chefs",
         "chefsFirst": "Eerst de chefs.",
         "chefsFirstBody": "Nu profiel en eerste menu. Wanneer gastheren begin 2027 boeken, ben jij al klaar.",
-        "joinTitle": "Sluit je aan als oprichtende chef",
+        "joinTitle": "Wees een van de eerste chefs",
         "joinIntro": "Voordelen van vroeg registreren: klaar bij de start, eerste netwerk, zichtbaarheid, directe ondersteuning.",
-        "howToFounding": "Zo word je oprichtende chef",
+        "howToFounding": "Zo word je peopleeat-chef",
         "benefitReady": "Klaar bij de start",
         "benefitReadyBody": "Je profiel en eerste menu staan live zodra gastheren kunnen boeken.",
         "benefitNetwork": "Eerste lokale netwerk",
         "benefitNetworkBody": "Je bent een van de eerste chefs ter plekke.",
         "benefitCities": "Eerste stadspagina's",
-        "benefitCitiesBody": "Bij de start lichten we oprichtende chefs uit op de stadspagina's.",
+        "benefitCitiesBody": "Bij de start lichten we de eerste chefs uit op de stadspagina's.",
         "benefitSupport": "Directe ondersteuning",
         "benefitSupportBody": "We begeleiden je persoonlijk bij de onboarding.",
         "timelineTitle": "Hoe de start verloopt",
@@ -437,16 +437,17 @@
         "hostsCanBook": "Gastheren kunnen boeken",
         "hostsCanBookBody": "Boekingsaanvragen {inCountry} starten dan. Jij bent al klaar.",
         "citiesTitle": "Steden {inCountry}",
-        "citiesFounding": "We zoeken oprichtende chefs in {cities}. Gastheren kunnen daar vanaf begin 2027 boeken.",
+        "citiesFounding": "We zoeken de eerste chefs in {cities}. Gastheren kunnen daar vanaf begin 2027 boeken.",
         "citiesComingTo": "Bij de start zoeken we chefs in {cities}. Stel je reisradius in wanneer je je registreert. Stadspagina's voor gastheren volgen begin 2027.",
-        "expansionTitle": "peopleeat komt naar nieuwe landen",
+        "expansionTitle": "Wees als eerste in nieuwe landen",
+        "flagMarkAlt": "peopleeat {country}",
         "expansionIntro": "Chefs in Nederland en Zwitserland kunnen zich nu al aansluiten. Gastheren boeken daar vanaf begin 2027.",
-        "chefsNowHosts2027": "Nu chefs. Gastheren begin 2027.",
+        "chefsNowHosts2027": "Nu chefs. Eerste events verwacht begin 2027.",
         "learnMore": "Meer informatie",
         "cityListJoin": "{head} en {last}",
         "pageTitle": "peopleeat komt {comingTo}",
         "pageDescription": "Chefs kunnen zich nu al aansluiten. Gastheren boeken vanaf begin 2027. {cities}.",
-        "foundingTitle": "Word oprichtende chef {inCountry}",
+        "foundingTitle": "Word een van de eerste chefs {inCountry}",
         "foundingDescription": "Sluit je vroeg aan als privéchef {inCountry}. Nu profiel, aanvragen van gasten vanaf begin 2027.",
         "markets": {
             "netherlands": {
@@ -479,7 +480,7 @@
             },
             "registerNow": {
                 "question": "Kan ik me nu al als chef registreren?",
-                "answer": "Ja. Oprichtende chefs in {cities} kunnen nu een profiel en eerste menu aanmaken. Aanvragen van gasten volgen begin 2027."
+                "answer": "Ja. Chefs in {cities} kunnen nu een profiel en eerste menu aanmaken. Aanvragen van gasten volgen begin 2027."
             },
             "whichCities": {
                 "question": "In welke steden start peopleeat?",
@@ -504,7 +505,7 @@
                 "answer": "Stel je vertrekpunt en radius in. Typische steden zijn {cities}."
             },
             "priceBenefit": {
-                "question": "Is er een prijsvoordeel voor oprichtende chefs?",
+                "question": "Is er een prijsvoordeel voor vroege chefs?",
                 "answer": "De voordelen nu zijn je plek bij de start, zichtbaarheid op de eerste stadspagina's en directe ondersteuning. We noemen hier geen aparte vergoedingsregeling."
             }
         }
@@ -522,7 +523,7 @@
         "marketIntro": "Sluit je vroeg aan, maak je profiel en eerste menu aan en wees {inCountry} op dag één klaar. Aanvragen van gasten starten begin 2027. Gastheren kunnen daar nog niet boeken.",
         "toProfile": "Naar je chefprofiel",
         "signUpNow": "Nu aanmelden",
-        "joinFoundingNow": "Sluit je nu aan als oprichtende chef",
+        "joinFoundingNow": "Sluit je nu aan als een van de eerste chefs",
         "breadcrumb": "Chef worden",
         "onboardingTitle": "Aan de slag in een paar stappen",
         "onboardingIntro": "Of je nu zzp-chef, privéchef of chef in loondienst bent: we begeleiden je bij de onboarding, zodat je succesvol kunt starten.",
@@ -557,7 +558,7 @@
         "marketNetwork": "Eerste lokale netwerk",
         "marketNetworkBody": "Je bent een van de eerste chefs ter plekke, voordat de gastheren komen.",
         "marketCities": "Uitgelicht op de eerste stadspagina's",
-        "marketCitiesBody": "Bij de start lichten we oprichtende chefs uit op de eerste stadspagina's.",
+        "marketCitiesBody": "Bij de start lichten we de eerste chefs uit op de eerste stadspagina's.",
         "marketCare": "Directe ondersteuning",
         "marketCareBody": "We begeleiden je persoonlijk bij de onboarding.",
         "benefitsAlt1": "Privéchef die zalmtartaar op blauwe borden aanricht in een thuiskeuken",
@@ -565,7 +566,7 @@
         "benefitsAlt3": "Privéchef die een opgemaakt gerecht aan lachende gasten aan tafel serveert",
         "readyHeadline": "Ben je klaar om te beginnen?",
         "readySubheadline": "Word onderdeel van het snelst groeiende chefnetwerk.",
-        "foundingHeadline": "Klaar om oprichtende chef te worden?",
+        "foundingHeadline": "Klaar om een van de eersten te zijn?",
         "foundingSubheadline": "Nu profiel. Gasten begin 2027.",
         "invitePromoEyebrow": "Beloningen voor uitnodigingen",
         "invitePromoHeadline": "Deel jouw experience",

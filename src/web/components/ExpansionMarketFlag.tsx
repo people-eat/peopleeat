@@ -1,4 +1,7 @@
+import { cityCountryCodeLabel } from '../../shared/cityCountryCode';
 import type { ExpansionMarket } from '../../shared/expansionMarkets';
+import { useLocale } from '../hooks/useLocale';
+import { useT } from '../hooks/useT';
 import { cn } from '../utils/cn';
 import { AppImage } from './AppImage';
 
@@ -21,12 +24,14 @@ export function ExpansionMarketFlag({
     variant?: 'badge' | 'panel';
     priority?: boolean;
 }) {
+    const locale = useLocale();
+    const { t } = useT('public');
+
     if (variant === 'panel') {
         return (
             <div className={cn('px-6 pt-6', className)}>
                 <AppImage
-                    alt=""
-                    aria-hidden
+                    alt={t('comingTo.flagMarkAlt', { country: cityCountryCodeLabel(market.countryCode, locale) })}
                     className="mx-auto h-auto w-full max-w-[455px]"
                     height={134}
                     priority={priority}

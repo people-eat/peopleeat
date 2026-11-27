@@ -293,7 +293,7 @@
         "created": "Koch-Konto erstellt.",
         "inviteTitle": "Einladung von einem Koch",
         "inviteBody": "Du wurdest von einem peopleeat-Koch eingeladen. Deine Registrierung wird dem einladenden Koch zugeordnet.",
-        "marketBody": "Du meldest dich als Gründungskoch {inCountry} an. Profil und Menü jetzt. Gastanfragen ab Anfang 2027.",
+        "marketBody": "Du meldest dich als einer der ersten Köche {inCountry} an. Profil und Menü jetzt. Gastanfragen ab Anfang 2027.",
         "alreadyCookIntro": "Willkommen bei peopleeat! Gehe zu deinem Profil, um die nächsten Schritte abzuschließen.",
         "intro": "Log-on und Koch-Profil in einem Schritt, oder bestehendes Konto zum Koch erweitern.",
         "registeredTitle": "Du bist als Koch registriert",
@@ -411,18 +411,18 @@
         "fact1": "Köche können sich jetzt anmelden.",
         "fact2": "Gastgeber können noch nicht buchen.",
         "fact3": "Start für Gäste: Anfang 2027.",
-        "joinFounding": "Als Gründungskoch beitreten",
+        "joinFounding": "Als einer der ersten Köche beitreten",
         "chefsFirst": "Köche zuerst.",
         "chefsFirstBody": "Profil und erstes Menü jetzt. Wenn Gastgeber Anfang 2027 buchen, bist du bereits startklar.",
-        "joinTitle": "Als Gründungskoch beitreten",
+        "joinTitle": "Sei unter den ersten Köchen",
         "joinIntro": "Vorteile für frühe Anmeldungen: bereit zum Start, erstes Netzwerk, Sichtbarkeit, direkte Betreuung.",
-        "howToFounding": "So wirst du Gründungskoch",
+        "howToFounding": "So wirst du peopleeat-Koch",
         "benefitReady": "Profil zum Start",
         "benefitReadyBody": "Dein Profil und erstes Menü stehen, wenn Gastgeber buchen können.",
         "benefitNetwork": "Erstes lokales Netzwerk",
         "benefitNetworkBody": "Du gehörst zu den ersten Köchen vor Ort.",
         "benefitCities": "Erste Stadtseiten",
-        "benefitCitiesBody": "Zum Start heben wir Gründungsköche auf den Stadtseiten hervor.",
+        "benefitCitiesBody": "Zum Start heben wir die ersten Köche auf den Stadtseiten hervor.",
         "benefitSupport": "Direkte Betreuung",
         "benefitSupportBody": "Wir begleiten dich persönlich durch das Onboarding.",
         "timelineTitle": "So läuft der Start",
@@ -437,16 +437,17 @@
         "hostsCanBook": "Gäste können buchen",
         "hostsCanBookBody": "Dann starten Buchungsanfragen {inCountry}. Du bist bereits startklar.",
         "citiesTitle": "Städte {inCountry}",
-        "citiesFounding": "Wir suchen Gründungsköche in {cities}. Gastgeber können dort Anfang 2027 buchen.",
+        "citiesFounding": "Wir suchen die ersten Köche in {cities}. Gastgeber können dort Anfang 2027 buchen.",
         "citiesComingTo": "Zum Start suchen wir Köche in {cities}. Nenne deinen Radius bei der Registrierung. Stadtseiten für Gastgeber folgen Anfang 2027.",
-        "expansionTitle": "peopleeat kommt in neue Länder",
+        "expansionTitle": "Sei unter den Ersten in neuen Ländern",
+        "flagMarkAlt": "peopleeat {country}",
         "expansionIntro": "In den Niederlanden und der Schweiz können sich Köche jetzt anmelden. Gastgeber buchen dort Anfang 2027.",
-        "chefsNowHosts2027": "Köche jetzt. Gäste Anfang 2027.",
+        "chefsNowHosts2027": "Köche jetzt. Erste Events voraussichtlich Anfang 2027.",
         "learnMore": "Mehr erfahren",
         "cityListJoin": "{head} und {last}",
         "pageTitle": "peopleeat kommt {comingTo}",
         "pageDescription": "Köche können sich jetzt anmelden. Gastgeber buchen Anfang 2027. {cities}.",
-        "foundingTitle": "Gründungskoch {inCountry}",
+        "foundingTitle": "Einer der ersten Köche {inCountry}",
         "foundingDescription": "Melde dich früh als Privatkoch {inCountry} an. Profil jetzt, Gastanfragen ab Anfang 2027.",
         "markets": {
             "netherlands": {
@@ -479,7 +480,7 @@
             },
             "registerNow": {
                 "question": "Kann ich mich als Koch jetzt registrieren?",
-                "answer": "Ja. Gründungsköche in {cities} können Profil und erstes Menü jetzt anlegen. Gastanfragen folgen Anfang 2027."
+                "answer": "Ja. Köche in {cities} können Profil und erstes Menü jetzt anlegen. Gastanfragen folgen Anfang 2027."
             },
             "whichCities": {
                 "question": "In welchen Städten startet peopleeat?",
@@ -504,7 +505,7 @@
                 "answer": "Trage deinen Startort und Radius ein. Typische Städte sind {cities}."
             },
             "priceBenefit": {
-                "question": "Gibt es einen Preisvorteil für Gründungsköche?",
+                "question": "Gibt es einen Preisvorteil für frühe Köche?",
                 "answer": "Die Vorteile jetzt sind Startplatz, Sichtbarkeit auf den ersten Stadtseiten und direkte Betreuung. Eine gesonderte Gebührenregel nennen wir hier nicht."
             }
         }
@@ -522,7 +523,7 @@
         "marketIntro": "Melde dich früh an, lege Profil und erstes Menü an, und sei {inCountry} am ersten Tag startklar. Gastanfragen beginnen Anfang 2027. Gastgeber können dort noch nicht buchen.",
         "toProfile": "Zu deinem Kochprofil",
         "signUpNow": "Jetzt registrieren",
-        "joinFoundingNow": "Jetzt als Gründungskoch anmelden",
+        "joinFoundingNow": "Jetzt als einer der ersten Köche anmelden",
         "breadcrumb": "Koch werden",
         "onboardingTitle": "Beginne in nur wenigen Schritten",
         "onboardingIntro": "Egal ob Mietkoch, Privatkoch oder angestellter Koch: wir unterstützen dich im Onboarding, damit du erfolgreich starten kannst.",
@@ -557,7 +558,7 @@
         "marketNetwork": "Erstes lokales Netzwerk",
         "marketNetworkBody": "Du gehörst zu den ersten Köchen vor Ort, bevor Gastgeber dazu kommen.",
         "marketCities": "Sichtbar auf den ersten Stadtseiten",
-        "marketCitiesBody": "Zum Start heben wir Gründungsköche auf den ersten Stadtseiten hervor.",
+        "marketCitiesBody": "Zum Start heben wir die ersten Köche auf den ersten Stadtseiten hervor.",
         "marketCare": "Direkte Betreuung",
         "marketCareBody": "Wir begleiten dich persönlich durch das Onboarding.",
         "benefitsAlt1": "Privatkoch richtet Lachstatar auf blauen Tellern in einer Privatküche an",
@@ -565,7 +566,7 @@
         "benefitsAlt3": "Privatkoch serviert Gästen ein angerichtetes Gericht am Tisch",
         "readyHeadline": "Bist du bereit zu starten?",
         "readySubheadline": "Werde Teil des am schnellsten wachsenden Kochnetzwerks.",
-        "foundingHeadline": "Bist du bereit, Gründungskoch zu werden?",
+        "foundingHeadline": "Bereit, einer der Ersten zu sein?",
         "foundingSubheadline": "Profil jetzt. Gäste Anfang 2027.",
         "invitePromoEyebrow": "Belohnungen für Einladungen",
         "invitePromoHeadline": "Teile deine Experience",

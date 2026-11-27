@@ -78,8 +78,8 @@ Customer-side fee is unchanged. No cash wallet bonus in v1.
 
 ### Expansion markets (NL / CH)
 
-Founding chefs can be **invited and attributed now**. Fee credits that unlock on **first event** cannot fire until guest booking is live. Do
-not put invite commission numbers on founding-chef marketing pages until commercial confirms — same stance as
+Early chefs in new markets can be **invited and attributed now**. Fee credits that unlock on **first event** cannot fire until guest booking
+is live. Do not put invite commission numbers on early-chef marketing pages until commercial confirms, same stance as
 [market-expansion.md](./market-expansion.md).
 
 ### Out of scope for v1
@@ -188,7 +188,7 @@ v1 live program writes `unlockKind: 'FIRST_EVENT'` and `benefit.kind: 'COOK_PLAT
 
 - **Reward ladder:** recognition at earlier milestones, full fee credit at first event (multiple benefit mints or staged JSON).
 - **Double-sided:** invitee gets a one-booking fee cut on their first event.
-- **Founding-chef stacking:** NL/CH invites attributed now; unlock waits for guest launch when unlock is first-event.
+- **Early-chef stacking:** NL/CH invites attributed now; unlock waits for guest launch when unlock is first-event.
 - **Richer nurture:** surface “still needs a menu” without exposing private PII beyond first name / stage name.
 - **Public recruitment:** optional “invited by a chef?” field on how-to-become-a-chef (same attribution).
 - **Leaderboard / ops:** admin list of top inviters for market expansion pushes (not cook-facing in v1).
@@ -203,7 +203,7 @@ v1 live program writes `unlockKind: 'FIRST_EVENT'` and `benefit.kind: 'COOK_PLAT
 - Fee apply: `cookBookingRequestOfferCreate` stamps open fee-booking credit; consume on `PAYED` via `bookingRequestOfferPaymentFinalize`
 - GraphQL: `Cook.invitees`, `Cook.inviteOpenFeeCreditRemainingBookings`; `AdminCook.invitedByCookId` / `inviteReward` / `inviteRewards`;
   `AdminMutation.cookInviteRewardRevoke`
-- Toggle `COOK_INVITE`: entry only (sidebar + `/profile/invite` + recruitment promo on how-to-become-a-chef / founding-chef country pages).
+- Toggle `COOK_INVITE`: entry only (sidebar + `/profile/invite` + recruitment promo on how-to-become-a-chef / early-chef country pages).
   Attribution/rewards stay on when off
 - UI: [`ProfileCookInvitePage`](../../src/web/pages/profile/ProfileCookInvitePage.tsx) (hero illustration
   `public/illustrations/cook-invite.png`); public [`SectionCookInvitePromo`](../../src/web/sections/SectionCookInvitePromo.tsx);

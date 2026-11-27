@@ -13,13 +13,13 @@ Visitors open `/how-to-become-a-chef` (or `/en/how-to-become-a-chef`) and see st
 5. **Cook invite promo** — when `COOK_INVITE` is on: accent-framed reward band (eyebrow, share + reward cues, framed illustration; no fee
    numbers). Cooks go to `/profile/invite`; guests get an outline “start as chef” CTA plus unlock hint so it does not twin the Ready primary
    signup. Same toggle as the cook-shell invite entry — see [cook-invite.md](./cook-invite.md)
-6. **Expansion markets** — Netherlands and Switzerland founding-chef band
+6. **Expansion markets** — Netherlands and Switzerland early-chef band
 7. **Testimonials** — two static chef quotes
 8. **FAQ** — host-oriented booking FAQs (shared accordion with the landing page)
 
 Header and footer match other public pages. FAQ answers feed FAQ structured data on the route.
 
-Country founding-chef URLs under `/how-to-become-a-chef/netherlands` and `/how-to-become-a-chef/switzerland` reuse the invite promo when
+Country early-chef URLs under `/how-to-become-a-chef/netherlands` and `/how-to-become-a-chef/switzerland` reuse the invite promo when
 `COOK_INVITE` is on. See [market-expansion.md](./market-expansion.md).
 
 ## Decisions

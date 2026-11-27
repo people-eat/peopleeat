@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 
-import { expansionMarketComingToTitle, expansionMarketInCountryPhrase } from '../../shared/expansionMarkets';
+import { cityCountryCodeLabel } from '../../shared/cityCountryCode';
+import { expansionMarketInCountryPhrase } from '../../shared/expansionMarkets';
 import type { ExpansionMarket } from '../../shared/expansionMarkets';
 import { Button } from '../components/base/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '../components/base/card';
@@ -24,7 +25,7 @@ export function SectionComingToCountryMain({ market }: { market: ExpansionMarket
                             {t('comingTo.newMarket')}
                         </p>
                         <h1 className="font-serif text-4xl font-light tracking-tight @sm:text-6xl">
-                            {expansionMarketComingToTitle(market, locale)}
+                            {cityCountryCodeLabel(market.countryCode, locale)}
                         </h1>
                         <p className="max-w-xl text-lg/8 text-muted-foreground">{t('comingTo.networkIntro', { inCountry })}</p>
                         <ol className="mt-2 max-w-xl divide-y divide-border border-y border-border">
@@ -37,8 +38,8 @@ export function SectionComingToCountryMain({ market }: { market: ExpansionMarket
                                 </li>
                             ))}
                         </ol>
-                        <div className="mt-2">
-                            <Button asChild size="lg">
+                        <div className="mt-2 min-w-0">
+                            <Button asChild size="lg" className="h-auto min-h-10 w-full whitespace-normal @sm:w-auto">
                                 <Link to="/{-$locale}/how-to-become-a-chef/$country" params={{ country: market.slug }}>
                                     {t('comingTo.joinFounding')}
                                 </Link>

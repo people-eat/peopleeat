@@ -293,7 +293,7 @@
         "created": "Chef account created.",
         "inviteTitle": "Invited by a chef",
         "inviteBody": "A peopleeat chef invited you. Your registration will be attributed to that chef.",
-        "marketBody": "You are joining as a founding chef {inCountry}. Profile and menu now. Guest requests from early 2027.",
+        "marketBody": "You are joining among the first chefs {inCountry}. Profile and menu now. Guest requests from early 2027.",
         "alreadyCookIntro": "Welcome to peopleeat! Go to your profile to finalise next steps",
         "intro": "Log on and create your chef profile in one step, or upgrade an existing account.",
         "registeredTitle": "You are registered as a chef",
@@ -411,18 +411,18 @@
         "fact1": "Chefs can join now.",
         "fact2": "Hosts cannot book yet.",
         "fact3": "Guest launch: early 2027.",
-        "joinFounding": "Join as a founding chef",
+        "joinFounding": "Join as one of the first chefs",
         "chefsFirst": "Chefs first.",
         "chefsFirstBody": "Profile and first menu now. When hosts book in early 2027, you are already ready.",
-        "joinTitle": "Join as a founding chef",
+        "joinTitle": "Be among the first chefs",
         "joinIntro": "Benefits for early registration: ready at launch, first network, visibility, direct support.",
-        "howToFounding": "How to become a founding chef",
+        "howToFounding": "How to become a chef here",
         "benefitReady": "Ready at launch",
         "benefitReadyBody": "Your profile and first menu are live when hosts can book.",
         "benefitNetwork": "First local network",
         "benefitNetworkBody": "You are among the first chefs on the ground.",
         "benefitCities": "First city pages",
-        "benefitCitiesBody": "At launch we highlight founding chefs on the city pages.",
+        "benefitCitiesBody": "At launch we highlight early chefs on the city pages.",
         "benefitSupport": "Direct support",
         "benefitSupportBody": "We support you personally through onboarding.",
         "timelineTitle": "How the launch works",
@@ -437,16 +437,17 @@
         "hostsCanBook": "Hosts can book",
         "hostsCanBookBody": "Booking requests {inCountry} start then. You are already ready.",
         "citiesTitle": "Cities {inCountry}",
-        "citiesFounding": "We are looking for founding chefs in {cities}. Hosts can book there from early 2027.",
+        "citiesFounding": "We are looking for the first chefs in {cities}. Hosts can book there from early 2027.",
         "citiesComingTo": "At launch we are looking for chefs in {cities}. Set your travel radius when you register. City pages for hosts follow in early 2027.",
-        "expansionTitle": "peopleeat is coming to new countries",
+        "expansionTitle": "Be first in new countries",
+        "flagMarkAlt": "peopleeat {country}",
         "expansionIntro": "Chefs in the Netherlands and Switzerland can join now. Hosts there book from early 2027.",
-        "chefsNowHosts2027": "Chefs now. Hosts in early 2027.",
+        "chefsNowHosts2027": "Chefs now. First events expected in early 2027.",
         "learnMore": "Learn more",
         "cityListJoin": "{head}, and {last}",
         "pageTitle": "peopleeat is coming {comingTo}",
         "pageDescription": "Chefs can join now. Hosts book from early 2027. {cities}.",
-        "foundingTitle": "Become a founding chef {inCountry}",
+        "foundingTitle": "Be among the first chefs {inCountry}",
         "foundingDescription": "Join early as a private chef {inCountry}. Profile now, guest requests from early 2027.",
         "markets": {
             "netherlands": {
@@ -479,7 +480,7 @@
             },
             "registerNow": {
                 "question": "Can I register as a chef now?",
-                "answer": "Yes. Founding chefs in {cities} can set up a profile and first menu now. Guest requests follow in early 2027."
+                "answer": "Yes. Chefs in {cities} can set up a profile and first menu now. Guest requests follow in early 2027."
             },
             "whichCities": {
                 "question": "Which cities is peopleeat launching in?",
@@ -504,7 +505,7 @@
                 "answer": "Set your travel origin and radius. Typical cities are {cities}."
             },
             "priceBenefit": {
-                "question": "Is there a price benefit for founding chefs?",
+                "question": "Is there a price benefit for early chefs?",
                 "answer": "The benefits now are your place at launch, visibility on the first city pages, and direct support. We do not name a separate fee arrangement here."
             }
         }
@@ -522,7 +523,7 @@
         "marketIntro": "Join early, set up your profile and first menu, and be ready {inCountry} on day one. Guest requests start in early 2027. Hosts cannot book there yet.",
         "toProfile": "To your chef profile",
         "signUpNow": "Sign up now",
-        "joinFoundingNow": "Join as a founding chef now",
+        "joinFoundingNow": "Join as one of the first chefs now",
         "breadcrumb": "How to become a chef",
         "onboardingTitle": "Get started in just a few steps",
         "onboardingIntro": "Whether you're a freelance chef, private chef, or employed chef: we support you in your onboarding so you can start successfully.",
@@ -557,7 +558,7 @@
         "marketNetwork": "First local network",
         "marketNetworkBody": "You are among the first chefs on the ground before hosts arrive.",
         "marketCities": "Featured on the first city pages",
-        "marketCitiesBody": "At launch we highlight founding chefs on the first city pages.",
+        "marketCitiesBody": "At launch we highlight early chefs on the first city pages.",
         "marketCare": "Direct support",
         "marketCareBody": "We support you personally through onboarding.",
         "benefitsAlt1": "Private chef plating salmon tartare on blue plates in a home kitchen",
@@ -565,7 +566,7 @@
         "benefitsAlt3": "Private chef serving a plated dish to smiling guests at the table",
         "readyHeadline": "Are you ready to get started?",
         "readySubheadline": "Become part of the fastest-growing chef network.",
-        "foundingHeadline": "Ready to become a founding chef?",
+        "foundingHeadline": "Ready to be among the first?",
         "foundingSubheadline": "Profile now. Guests in early 2027.",
         "invitePromoEyebrow": "Rewards for invites",
         "invitePromoHeadline": "Share your experience",

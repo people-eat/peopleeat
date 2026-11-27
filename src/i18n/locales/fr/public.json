@@ -293,7 +293,7 @@
         "created": "Compte chef créé.",
         "inviteTitle": "Invitation d’un chef",
         "inviteBody": "Un chef peopleeat t’a invité. Ton inscription sera liée à ce chef.",
-        "marketBody": "Tu t’inscris comme chef fondateur {inCountry}. Profil et menu maintenant. Demandes d’hôtes à partir de début 2027.",
+        "marketBody": "Tu t’inscris parmi les premiers chefs {inCountry}. Profil et menu maintenant. Demandes d’hôtes à partir de début 2027.",
         "alreadyCookIntro": "Bienvenue chez peopleeat ! Va sur ton profil pour terminer les prochaines étapes.",
         "intro": "Connecte-toi et crée ton profil chef en une étape, ou passe ton compte existant en compte chef.",
         "registeredTitle": "Tu es inscrit comme chef",
@@ -411,18 +411,18 @@
         "fact1": "Les chefs peuvent s’inscrire maintenant.",
         "fact2": "Les hôtes ne peuvent pas encore réserver.",
         "fact3": "Lancement pour les hôtes : début 2027.",
-        "joinFounding": "Rejoindre comme chef fondateur",
+        "joinFounding": "Rejoindre parmi les premiers chefs",
         "chefsFirst": "Les chefs d’abord.",
         "chefsFirstBody": "Profil et premier menu maintenant. Quand les hôtes réserveront début 2027, tu seras déjà prêt.",
-        "joinTitle": "Rejoindre comme chef fondateur",
+        "joinTitle": "Sois parmi les premiers chefs",
         "joinIntro": "Avantages d’une inscription précoce : prêt au lancement, premier réseau, visibilité, accompagnement direct.",
-        "howToFounding": "Comment devenir chef fondateur",
+        "howToFounding": "Comment devenir chef ici",
         "benefitReady": "Profil au lancement",
         "benefitReadyBody": "Ton profil et ton premier menu sont prêts quand les hôtes peuvent réserver.",
         "benefitNetwork": "Premier réseau local",
         "benefitNetworkBody": "Tu fais partie des premiers chefs sur place.",
         "benefitCities": "Premières pages villes",
-        "benefitCitiesBody": "Au lancement, nous mettons en avant les chefs fondateurs sur les pages villes.",
+        "benefitCitiesBody": "Au lancement, nous mettons en avant les premiers chefs sur les pages villes.",
         "benefitSupport": "Accompagnement direct",
         "benefitSupportBody": "Nous t’accompagnons personnellement pendant la mise en route.",
         "timelineTitle": "Comment se passe le lancement",
@@ -437,16 +437,17 @@
         "hostsCanBook": "Les hôtes peuvent réserver",
         "hostsCanBookBody": "Les demandes de réservation {inCountry} commencent alors. Tu es déjà prêt.",
         "citiesTitle": "Villes {inCountry}",
-        "citiesFounding": "Nous cherchons des chefs fondateurs à {cities}. Les hôtes pourront y réserver à partir de début 2027.",
+        "citiesFounding": "Nous cherchons les premiers chefs à {cities}. Les hôtes pourront y réserver à partir de début 2027.",
         "citiesComingTo": "Au lancement, nous cherchons des chefs à {cities}. Indique ton rayon à l’inscription. Les pages villes pour les hôtes suivront début 2027.",
-        "expansionTitle": "peopleeat arrive dans de nouveaux pays",
+        "expansionTitle": "Sois parmi les premiers dans de nouveaux pays",
+        "flagMarkAlt": "peopleeat {country}",
         "expansionIntro": "Aux Pays-Bas et en Suisse, les chefs peuvent s’inscrire maintenant. Les hôtes y réserveront à partir de début 2027.",
-        "chefsNowHosts2027": "Chefs maintenant. Hôtes début 2027.",
+        "chefsNowHosts2027": "Chefs maintenant. Premiers événements attendus début 2027.",
         "learnMore": "En savoir plus",
         "cityListJoin": "{head} et {last}",
         "pageTitle": "peopleeat arrive {comingTo}",
         "pageDescription": "Les chefs peuvent s’inscrire maintenant. Les hôtes réservent à partir de début 2027. {cities}.",
-        "foundingTitle": "Deviens chef fondateur {inCountry}",
+        "foundingTitle": "Sois parmi les premiers chefs {inCountry}",
         "foundingDescription": "Inscris-toi tôt comme chef privé {inCountry}. Profil maintenant, demandes d’hôtes à partir de début 2027.",
         "markets": {
             "netherlands": {
@@ -479,7 +480,7 @@
             },
             "registerNow": {
                 "question": "Puis-je m’inscrire comme chef maintenant ?",
-                "answer": "Oui. Les chefs fondateurs à {cities} peuvent déjà créer leur profil et leur premier menu. Les demandes d’hôtes suivront début 2027."
+                "answer": "Oui. Les chefs à {cities} peuvent déjà créer leur profil et leur premier menu. Les demandes d’hôtes suivront début 2027."
             },
             "whichCities": {
                 "question": "Dans quelles villes peopleeat démarre-t-il ?",
@@ -504,7 +505,7 @@
                 "answer": "Indique ton point de départ et ton rayon. Les villes typiques sont {cities}."
             },
             "priceBenefit": {
-                "question": "Y a-t-il un avantage tarifaire pour les chefs fondateurs ?",
+                "question": "Y a-t-il un avantage tarifaire pour les chefs qui s’inscrivent tôt ?",
                 "answer": "Les avantages maintenant sont ta place au lancement, la visibilité sur les premières pages villes et un accompagnement direct. Nous ne précisons pas ici de barème de frais distinct."
             }
         }
@@ -522,7 +523,7 @@
         "marketIntro": "Inscris-toi tôt, crée ton profil et ton premier menu, et sois prêt {inCountry} dès le premier jour. Les demandes d’hôtes commencent début 2027. Les hôtes ne peuvent pas encore y réserver.",
         "toProfile": "Vers ton profil chef",
         "signUpNow": "S’inscrire maintenant",
-        "joinFoundingNow": "S’inscrire maintenant comme chef fondateur",
+        "joinFoundingNow": "S’inscrire maintenant parmi les premiers chefs",
         "breadcrumb": "Devenir chef",
         "onboardingTitle": "Commence en quelques étapes",
         "onboardingIntro": "Que tu sois chef à domicile, chef privé ou chef salarié : nous t’accompagnons à la mise en route pour bien démarrer.",
@@ -557,7 +558,7 @@
         "marketNetwork": "Premier réseau local",
         "marketNetworkBody": "Tu fais partie des premiers chefs sur place, avant l’arrivée des hôtes.",
         "marketCities": "Visible sur les premières pages villes",
-        "marketCitiesBody": "Au lancement, nous mettons en avant les chefs fondateurs sur les premières pages villes.",
+        "marketCitiesBody": "Au lancement, nous mettons en avant les premiers chefs sur les premières pages villes.",
         "marketCare": "Accompagnement direct",
         "marketCareBody": "Nous t’accompagnons personnellement pendant la mise en route.",
         "benefitsAlt1": "Chef privé qui dresse un tartare de saumon dans des assiettes bleues dans une cuisine privée",
@@ -565,7 +566,7 @@
         "benefitsAlt3": "Chef privé qui sert un plat dressé à des invités souriants à table",
         "readyHeadline": "Tu es prêt à commencer ?",
         "readySubheadline": "Rejoins le réseau de chefs qui grandit le plus vite.",
-        "foundingHeadline": "Tu es prêt à devenir chef fondateur ?",
+        "foundingHeadline": "Tu es prêt à faire partie des premiers ?",
         "foundingSubheadline": "Profil maintenant. Hôtes début 2027.",
         "invitePromoEyebrow": "Récompenses pour les invitations",
         "invitePromoHeadline": "Partage ton expérience",

@@ -223,8 +223,8 @@ export const webPageDefaults: Record<WebPageKey, WebPageSeoDefaults> = {
         descriptionEn: 'Chefs can join now. Hosts book from early 2027.',
     },
     FOUNDING_CHEF: {
-        titleDe: 'Gründungskoch werden',
-        titleEn: 'Become a founding chef',
+        titleDe: 'Einer der ersten Köche werden',
+        titleEn: 'Be among the first chefs',
         descriptionDe: 'Melde dich früh als Privatkoch in einem neuen Markt an.',
         descriptionEn: 'Join early as a private chef in a new market.',
     },

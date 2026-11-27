@@ -18,24 +18,24 @@ export function SectionComingToCountryJoin({ market }: { market: ExpansionMarket
 
     return (
         <section className="mx-auto w-full max-w-7xl px-4 @lg:px-6">
-            <Card className="overflow-hidden pt-0">
+            <Card className="@container overflow-hidden pt-0">
                 <ExpansionMarketFlag market={market} variant="panel" />
-                <div className="grid @lg:grid-cols-2 @lg:items-start">
-                    <CardHeader>
+                <div className="grid min-w-0 gap-8 @3xl:grid-cols-2 @3xl:items-start @3xl:gap-0">
+                    <CardHeader className="min-w-0">
                         <CardTitle className="font-serif text-3xl font-light tracking-tight @md:text-5xl">
                             <h2>{t('comingTo.joinTitle')}</h2>
                         </CardTitle>
                         <CardDescription className="text-base/7">{t('comingTo.joinIntro')}</CardDescription>
-                        <div className="pt-2">
-                            <Button asChild size="lg">
+                        <div className="min-w-0 pt-2">
+                            <Button asChild size="lg" className="h-auto min-h-10 w-full whitespace-normal @3xl:w-auto">
                                 <Link to="/{-$locale}/how-to-become-a-chef/$country" params={{ country: market.slug }}>
                                     {t('comingTo.howToFounding')}
                                 </Link>
                             </Button>
                         </div>
                     </CardHeader>
-                    <CardContent className="@lg:pt-6">
-                        <dl className="grid grid-cols-1 gap-x-6 gap-y-8 @sm:grid-cols-2">
+                    <CardContent className="@container min-w-0 @3xl:pt-6">
+                        <dl className="grid grid-cols-1 gap-x-6 gap-y-8 @md:grid-cols-2">
                             {benefits.map((benefit) => (
                                 <div className="border-t border-border pt-4" key={benefit.name}>
                                     <dt className="font-medium text-foreground">{benefit.name}</dt>

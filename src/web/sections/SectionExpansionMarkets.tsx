@@ -1,7 +1,8 @@
 import { Link } from '@tanstack/react-router';
 
-import { expansionMarketCityList, expansionMarketComingToTitle, expansionMarketList } from '../../shared/expansionMarkets';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/base/card';
+import { cityCountryCodeLabel } from '../../shared/cityCountryCode';
+import { expansionMarketCityList, expansionMarketList } from '../../shared/expansionMarkets';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../components/base/card';
 import { ExpansionMarketFlag } from '../components/ExpansionMarketFlag';
 import { useLocale } from '../hooks/useLocale';
 import { useT } from '../hooks/useT';
@@ -25,12 +26,8 @@ export function SectionExpansionMarkets() {
                             <Card className="h-full overflow-hidden pt-0 transition-colors hover:bg-muted/50 active:bg-muted">
                                 <ExpansionMarketFlag market={market} variant="panel" />
                                 <CardHeader>
-                                    <CardDescription className="flex items-center gap-2">
-                                        <ExpansionMarketFlag market={market} />
-                                        {t('comingTo.newMarket')}
-                                    </CardDescription>
                                     <CardTitle className="font-serif text-2xl font-light tracking-tight @md:text-3xl">
-                                        <h3>{expansionMarketComingToTitle(market, locale)}</h3>
+                                        <h3>{cityCountryCodeLabel(market.countryCode, locale)}</h3>
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="flex flex-1 flex-col gap-2">

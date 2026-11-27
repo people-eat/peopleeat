@@ -13,8 +13,8 @@ peopleeat is a private-chef booking marketplace that connects hosts with cooks w
 
 **What is live today**
 
-- Public marketing and content: home, about us, chef recruitment (including Netherlands and Switzerland founding-chef pages), cities,
-  venues, occasions, blog, public chef directory, legal pages, gift-card purchase.
+- Public marketing and content: home, about us, chef recruitment (including Netherlands and Switzerland early-chef pages), cities, venues,
+  occasions, blog, public chef directory, legal pages, gift-card purchase.
 - Identity and profiles: passwordless log-on, account settings, cook vs customer profile shells, meals, menus, chef profile, call
   availability, finances.
 - **Booking path**: request form and publication rules, cook pool, offer create and dual accept, offer chat with concierge, Stripe checkout
