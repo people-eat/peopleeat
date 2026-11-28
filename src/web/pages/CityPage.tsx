@@ -43,22 +43,28 @@ export function CityPage({ data }: { data: GqlCPublicCityPageQuery }) {
             page={{
                 headlineDe: city.headlineDe,
                 headlineEn: city.headlineEn,
+                headlineNl: city.headlineNl,
                 subHeadlineDe: city.subHeadlineDe,
                 subHeadlineEn: city.subHeadlineEn,
+                subHeadlineNl: city.subHeadlineNl,
                 heroImageUrl: city.heroImageUrl,
                 heroImageFallbackUrl: CITY_HERO_FALLBACK_IMAGE,
                 sections: contentSectionsFromGql(city.sections),
                 featuredCooks: city.featuredCooks,
                 testimonials: city.testimonials,
                 chefForAnyOccasion: {
-                    displayName: contentLocaleText(city.nameDe, city.nameEn, locale),
+                    displayName: contentLocaleText(city.nameDe, city.nameEn, locale, city.nameNl),
                     headlineDe: city.firstSectionHeadlineDe,
                     headlineEn: city.firstSectionHeadlineEn,
+                    headlineNl: city.firstSectionHeadlineNl,
                     bodyDe: city.firstSectionBodyDe,
                     bodyEn: city.firstSectionBodyEn,
+                    bodyNl: city.firstSectionBodyNl,
                     imageUrl: city.firstSectionImageUrl ?? CITY_CHEF_CTA_FALLBACK_IMAGE,
                     imageAlt: city.firstSectionImageUrl
-                        ? t(locale, 'common', 'imageAlt.photoOf', { name: contentLocaleText(city.nameDe, city.nameEn, locale) })
+                        ? t(locale, 'common', 'imageAlt.photoOf', {
+                              name: contentLocaleText(city.nameDe, city.nameEn, locale, city.nameNl),
+                          })
                         : t(locale, 'public', 'cities.ctaFallbackAlt'),
                 },
                 howItWorks: true,

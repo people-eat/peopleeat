@@ -8,6 +8,7 @@ query AdminCitiesPage {
                     pathName
                     nameDe
                     nameEn
+                    nameNl
                     countryCode
                     titleDe
                     publishedAt
@@ -49,6 +50,7 @@ subscription AdminCitiesPageUpdates {
             pathName
             nameDe
             nameEn
+            nameNl
             countryCode
             titleDe
             publishedAt

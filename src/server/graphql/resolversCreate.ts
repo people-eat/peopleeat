@@ -40,6 +40,7 @@ import { adminBookingRequestOfferUpdate } from '../commands/adminBookingRequestO
 import { adminBookingRequestPublicationApprove } from '../commands/adminBookingRequestPublicationApprove';
 import { adminBookingRequestUpdate } from '../commands/adminBookingRequestUpdate';
 import { adminCityCooksUpdate } from '../commands/adminCityCooksUpdate';
+import { adminCityCopyTranslate } from '../commands/adminCityCopyTranslate';
 import { adminCityDelete } from '../commands/adminCityDelete';
 import { adminCityTestimonialsUpdate } from '../commands/adminCityTestimonialsUpdate';
 import { adminCityUpsert } from '../commands/adminCityUpsert';
@@ -590,6 +591,7 @@ import type {
     GqlSAdminMutationBookingRequestPublicationApproveArgs,
     GqlSAdminMutationBookingRequestUpdateArgs,
     GqlSAdminMutationCityCooksUpdateArgs,
+    GqlSAdminMutationCityCopyTranslateArgs,
     GqlSAdminMutationCityDeleteArgs,
     GqlSAdminMutationCityTestimonialsUpdateArgs,
     GqlSAdminMutationCityUpsertArgs,
@@ -2358,6 +2360,9 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             cityUpsert(parent: GqlSAdminMutation, args: GqlSAdminMutationCityUpsertArgs, requestingSession: GqlSSession) {
                 return adminCityUpsert(parent, args, requestingSession, serverRuntime);
+            },
+            cityCopyTranslate(parent: GqlSAdminMutation, args: GqlSAdminMutationCityCopyTranslateArgs, requestingSession: GqlSSession) {
+                return adminCityCopyTranslate(parent, args, requestingSession, serverRuntime);
             },
             cityDelete(parent: GqlSAdminMutation, args: GqlSAdminMutationCityDeleteArgs, requestingSession: GqlSSession) {
                 return adminCityDelete(parent, args, requestingSession, serverRuntime);

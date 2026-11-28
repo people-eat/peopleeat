@@ -606,6 +606,7 @@ export type GqlSAdminAiGenerationKind =
     | 'BOOKING_REQUEST_OFFER_CALL_RECORDING_SUMMARY'
     | 'BOOKING_REQUEST_OFFER_CALL_RECORDING_TRANSCRIPT'
     | 'CHAT_TITLE'
+    | 'CITY_COPY_TRANSLATE'
     | 'COOK_BIOGRAPHY_SUGGESTION'
     | 'COOK_BIOGRAPHY_SUMMARY'
     | 'COOK_MENU_SUGGESTION_FROM_INVENTORY'
@@ -1125,30 +1126,58 @@ export interface GqlSAdminCity {
     createdAt: Scalars['DateTime']['output'];
     descriptionDe: Scalars['String']['output'];
     descriptionEn: Scalars['String']['output'];
+    descriptionNl: Scalars['String']['output'];
     firstSectionBodyDe: Scalars['String']['output'];
     firstSectionBodyEn: Scalars['String']['output'];
+    firstSectionBodyNl: Scalars['String']['output'];
     firstSectionHeadlineDe: Scalars['String']['output'];
     firstSectionHeadlineEn: Scalars['String']['output'];
+    firstSectionHeadlineNl: Scalars['String']['output'];
     firstSectionImageFileUploadId?: Maybe<Scalars['ID']['output']>;
     firstSectionImageUrl?: Maybe<Scalars['String']['output']>;
     headlineDe: Scalars['String']['output'];
     headlineEn: Scalars['String']['output'];
+    headlineNl: Scalars['String']['output'];
     heroImageFileUploadId?: Maybe<Scalars['ID']['output']>;
     heroImageUrl?: Maybe<Scalars['String']['output']>;
     latitude: Scalars['Latitude']['output'];
     longitude: Scalars['Longitude']['output'];
     nameDe: Scalars['String']['output'];
     nameEn: Scalars['String']['output'];
+    nameNl: Scalars['String']['output'];
     pathName: Scalars['String']['output'];
     previousPathNames: Array<Scalars['String']['output']>;
     publishedAt?: Maybe<Scalars['DateTime']['output']>;
     sections: Array<GqlSContentSection>;
     subHeadlineDe: Scalars['String']['output'];
     subHeadlineEn: Scalars['String']['output'];
+    subHeadlineNl: Scalars['String']['output'];
     testimonials: Array<GqlSAdminPageTestimonial>;
     titleDe: Scalars['String']['output'];
     titleEn: Scalars['String']['output'];
+    titleNl: Scalars['String']['output'];
     updatedAt: Scalars['DateTime']['output'];
+}
+
+export type GqlSAdminCityCopyTranslateInput = {
+    descriptionDe: Scalars['String']['input'];
+    firstSectionBodyDe: Scalars['String']['input'];
+    firstSectionHeadlineDe: Scalars['String']['input'];
+    headlineDe: Scalars['String']['input'];
+    nameDe: Scalars['String']['input'];
+    subHeadlineDe: Scalars['String']['input'];
+    titleDe: Scalars['String']['input'];
+};
+
+export interface GqlSAdminCityCopyTranslation {
+    __typename?: 'AdminCityCopyTranslation';
+    description: Scalars['String']['output'];
+    firstSectionBody: Scalars['String']['output'];
+    firstSectionHeadline: Scalars['String']['output'];
+    headline: Scalars['String']['output'];
+    name: Scalars['String']['output'];
+    subHeadline: Scalars['String']['output'];
+    title: Scalars['String']['output'];
 }
 
 export interface GqlSAdminCook {
@@ -1621,6 +1650,7 @@ export interface GqlSAdminMutation {
     bookingRequestPublicationApprove: GqlSMutationResult;
     bookingRequestUpdate: GqlSMutationResult;
     cityCooksUpdate: GqlSMutationResult;
+    cityCopyTranslate: GqlSAdminCityCopyTranslation;
     cityDelete: GqlSMutationResult;
     cityTestimonialsUpdate: GqlSMutationResult;
     cityUpsert: GqlSMutationResult;
@@ -1828,6 +1858,11 @@ export type GqlSAdminMutationBookingRequestUpdateArgs = {
 export type GqlSAdminMutationCityCooksUpdateArgs = {
     cityId: Scalars['ID']['input'];
     cookIds: Array<Scalars['ID']['input']>;
+};
+
+export type GqlSAdminMutationCityCopyTranslateArgs = {
+    input: GqlSAdminCityCopyTranslateInput;
+    locale: GqlSLocale;
 };
 
 export type GqlSAdminMutationCityDeleteArgs = {
@@ -3456,25 +3491,32 @@ export type GqlSCityUpsert = {
     countryCode: GqlSCityCountryCode;
     descriptionDe: Scalars['String']['input'];
     descriptionEn: Scalars['String']['input'];
+    descriptionNl: Scalars['String']['input'];
     firstSectionBodyDe: Scalars['String']['input'];
     firstSectionBodyEn: Scalars['String']['input'];
+    firstSectionBodyNl: Scalars['String']['input'];
     firstSectionHeadlineDe: Scalars['String']['input'];
     firstSectionHeadlineEn: Scalars['String']['input'];
+    firstSectionHeadlineNl: Scalars['String']['input'];
     firstSectionImageFileUploadId?: InputMaybe<Scalars['ID']['input']>;
     headlineDe: Scalars['String']['input'];
     headlineEn: Scalars['String']['input'];
+    headlineNl: Scalars['String']['input'];
     heroImageFileUploadId?: InputMaybe<Scalars['ID']['input']>;
     latitude: Scalars['Latitude']['input'];
     longitude: Scalars['Longitude']['input'];
     nameDe: Scalars['String']['input'];
     nameEn: Scalars['String']['input'];
+    nameNl: Scalars['String']['input'];
     pathName: Scalars['String']['input'];
     publishedAt?: InputMaybe<Scalars['DateTime']['input']>;
     sections: Array<GqlSContentSectionInput>;
     subHeadlineDe: Scalars['String']['input'];
     subHeadlineEn: Scalars['String']['input'];
+    subHeadlineNl: Scalars['String']['input'];
     titleDe: Scalars['String']['input'];
     titleEn: Scalars['String']['input'];
+    titleNl: Scalars['String']['input'];
 };
 
 export type GqlSClientObservabilityKind = 'GRAPHQL_ERROR' | 'ROUTE_ERROR' | 'WEB_VITAL';
@@ -5116,30 +5158,37 @@ export interface GqlSPublicCity {
     createdAt: Scalars['DateTime']['output'];
     descriptionDe: Scalars['String']['output'];
     descriptionEn: Scalars['String']['output'];
+    descriptionNl: Scalars['String']['output'];
     featuredCooks: Array<GqlSPublicCook>;
     firstSectionBodyDe: Scalars['String']['output'];
     firstSectionBodyEn: Scalars['String']['output'];
+    firstSectionBodyNl: Scalars['String']['output'];
     firstSectionHeadlineDe: Scalars['String']['output'];
     firstSectionHeadlineEn: Scalars['String']['output'];
+    firstSectionHeadlineNl: Scalars['String']['output'];
     firstSectionImageFileUploadId?: Maybe<Scalars['ID']['output']>;
     firstSectionImageUrl?: Maybe<Scalars['String']['output']>;
     headlineDe: Scalars['String']['output'];
     headlineEn: Scalars['String']['output'];
+    headlineNl: Scalars['String']['output'];
     heroImageFileUploadId?: Maybe<Scalars['ID']['output']>;
     heroImageUrl?: Maybe<Scalars['String']['output']>;
     latitude: Scalars['Latitude']['output'];
     longitude: Scalars['Longitude']['output'];
     nameDe: Scalars['String']['output'];
     nameEn: Scalars['String']['output'];
+    nameNl: Scalars['String']['output'];
     pathName: Scalars['String']['output'];
     previousPathNames: Array<Scalars['String']['output']>;
     publishedAt?: Maybe<Scalars['DateTime']['output']>;
     sections: Array<GqlSContentSection>;
     subHeadlineDe: Scalars['String']['output'];
     subHeadlineEn: Scalars['String']['output'];
+    subHeadlineNl: Scalars['String']['output'];
     testimonials: Array<GqlSPageTestimonial>;
     titleDe: Scalars['String']['output'];
     titleEn: Scalars['String']['output'];
+    titleNl: Scalars['String']['output'];
     updatedAt: Scalars['DateTime']['output'];
 }
 
@@ -5194,6 +5243,7 @@ export interface GqlSPublicCookCityPage {
     __typename?: 'PublicCookCityPage';
     nameDe: Scalars['String']['output'];
     nameEn: Scalars['String']['output'];
+    nameNl: Scalars['String']['output'];
     pathName: Scalars['String']['output'];
 }
 
@@ -6474,6 +6524,8 @@ export type GqlSResolversTypes = ResolversObject<{
             testimonials: Array<GqlSResolversTypes['AdminPageTestimonial']>;
         }
     >;
+    AdminCityCopyTranslateInput: GqlSAdminCityCopyTranslateInput;
+    AdminCityCopyTranslation: ResolverTypeWrapper<GqlSAdminCityCopyTranslation>;
     AdminCook: ResolverTypeWrapper<GqlSAdminCook>;
     AdminCookFeaturedLanding: ResolverTypeWrapper<GqlSAdminCookFeaturedLanding>;
     AdminCookFeaturedLandingKind: GqlSAdminCookFeaturedLandingKind;
@@ -7137,6 +7189,8 @@ export type GqlSResolversParentTypes = ResolversObject<{
         sections: Array<GqlSResolversParentTypes['ContentSection']>;
         testimonials: Array<GqlSResolversParentTypes['AdminPageTestimonial']>;
     };
+    AdminCityCopyTranslateInput: GqlSAdminCityCopyTranslateInput;
+    AdminCityCopyTranslation: GqlSAdminCityCopyTranslation;
     AdminCook: GqlSAdminCook;
     AdminCookFeaturedLanding: GqlSAdminCookFeaturedLanding;
     AdminCookInTravelRadiusPreview: GqlSAdminCookInTravelRadiusPreview;
@@ -8567,30 +8621,50 @@ export type GqlSAdminCityResolvers<
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     descriptionDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     descriptionEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    descriptionNl?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     firstSectionBodyDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     firstSectionBodyEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    firstSectionBodyNl?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     firstSectionHeadlineDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     firstSectionHeadlineEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    firstSectionHeadlineNl?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     firstSectionImageFileUploadId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
     firstSectionImageUrl?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     headlineDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     headlineEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    headlineNl?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     heroImageFileUploadId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
     heroImageUrl?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     latitude?: Resolver<GqlSResolversTypes['Latitude'], ParentType, ContextType>;
     longitude?: Resolver<GqlSResolversTypes['Longitude'], ParentType, ContextType>;
     nameDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     nameEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    nameNl?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     pathName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     previousPathNames?: Resolver<Array<GqlSResolversTypes['String']>, ParentType, ContextType>;
     publishedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     sections?: Resolver<Array<GqlSResolversTypes['ContentSection']>, ParentType, ContextType>;
     subHeadlineDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     subHeadlineEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    subHeadlineNl?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     testimonials?: Resolver<Array<GqlSResolversTypes['AdminPageTestimonial']>, ParentType, ContextType>;
     titleDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     titleEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    titleNl?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     updatedAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
+}>;
+
+export type GqlSAdminCityCopyTranslationResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminCityCopyTranslation'] = GqlSResolversParentTypes['AdminCityCopyTranslation'],
+> = ResolversObject<{
+    description?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    firstSectionBody?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    firstSectionHeadline?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    headline?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    name?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    subHeadline?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    title?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type GqlSAdminCookResolvers<
@@ -9168,6 +9242,12 @@ export type GqlSAdminMutationResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSAdminMutationCityCooksUpdateArgs, 'cityId' | 'cookIds'>
+    >;
+    cityCopyTranslate?: Resolver<
+        GqlSResolversTypes['AdminCityCopyTranslation'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminMutationCityCopyTranslateArgs, 'input' | 'locale'>
     >;
     cityDelete?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -12167,30 +12247,37 @@ export type GqlSPublicCityResolvers<
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     descriptionDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     descriptionEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    descriptionNl?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     featuredCooks?: Resolver<Array<GqlSResolversTypes['PublicCook']>, ParentType, ContextType>;
     firstSectionBodyDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     firstSectionBodyEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    firstSectionBodyNl?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     firstSectionHeadlineDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     firstSectionHeadlineEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    firstSectionHeadlineNl?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     firstSectionImageFileUploadId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
     firstSectionImageUrl?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     headlineDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     headlineEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    headlineNl?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     heroImageFileUploadId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
     heroImageUrl?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     latitude?: Resolver<GqlSResolversTypes['Latitude'], ParentType, ContextType>;
     longitude?: Resolver<GqlSResolversTypes['Longitude'], ParentType, ContextType>;
     nameDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     nameEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    nameNl?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     pathName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     previousPathNames?: Resolver<Array<GqlSResolversTypes['String']>, ParentType, ContextType>;
     publishedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     sections?: Resolver<Array<GqlSResolversTypes['ContentSection']>, ParentType, ContextType>;
     subHeadlineDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     subHeadlineEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    subHeadlineNl?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     testimonials?: Resolver<Array<GqlSResolversTypes['PageTestimonial']>, ParentType, ContextType>;
     titleDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     titleEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    titleNl?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     updatedAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
 }>;
 
@@ -12248,6 +12335,7 @@ export type GqlSPublicCookCityPageResolvers<
 > = ResolversObject<{
     nameDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     nameEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    nameNl?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     pathName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
 }>;
 
@@ -13272,6 +13360,7 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     AdminCallListItem?: GqlSAdminCallListItemResolvers<ContextType>;
     AdminCallParty?: GqlSAdminCallPartyResolvers<ContextType>;
     AdminCity?: GqlSAdminCityResolvers<ContextType>;
+    AdminCityCopyTranslation?: GqlSAdminCityCopyTranslationResolvers<ContextType>;
     AdminCook?: GqlSAdminCookResolvers<ContextType>;
     AdminCookFeaturedLanding?: GqlSAdminCookFeaturedLandingResolvers<ContextType>;
     AdminCookInTravelRadiusPreview?: GqlSAdminCookInTravelRadiusPreviewResolvers<ContextType>;
@@ -13542,6 +13631,7 @@ export const GqlSAdminAiGenerationKindSchema: z.ZodType<
     | 'BOOKING_REQUEST_OFFER_CALL_RECORDING_SUMMARY'
     | 'BOOKING_REQUEST_OFFER_CALL_RECORDING_TRANSCRIPT'
     | 'CHAT_TITLE'
+    | 'CITY_COPY_TRANSLATE'
     | 'COOK_BIOGRAPHY_SUGGESTION'
     | 'COOK_BIOGRAPHY_SUMMARY'
     | 'COOK_MENU_SUGGESTION_FROM_INVENTORY'
@@ -13553,6 +13643,7 @@ export const GqlSAdminAiGenerationKindSchema: z.ZodType<
     | 'BOOKING_REQUEST_OFFER_CALL_RECORDING_SUMMARY'
     | 'BOOKING_REQUEST_OFFER_CALL_RECORDING_TRANSCRIPT'
     | 'CHAT_TITLE'
+    | 'CITY_COPY_TRANSLATE'
     | 'COOK_BIOGRAPHY_SUGGESTION'
     | 'COOK_BIOGRAPHY_SUMMARY'
     | 'COOK_MENU_SUGGESTION_FROM_INVENTORY'
@@ -13565,6 +13656,7 @@ export const GqlSAdminAiGenerationKindSchema: z.ZodType<
     'BOOKING_REQUEST_OFFER_CALL_RECORDING_SUMMARY',
     'BOOKING_REQUEST_OFFER_CALL_RECORDING_TRANSCRIPT',
     'CHAT_TITLE',
+    'CITY_COPY_TRANSLATE',
     'COOK_BIOGRAPHY_SUGGESTION',
     'COOK_BIOGRAPHY_SUMMARY',
     'COOK_MENU_SUGGESTION_FROM_INVENTORY',
@@ -14768,6 +14860,18 @@ export function GqlSAdminCallTrafficCriterionSchema(): z.ZodType<GqlSAdminCallTr
     });
 }
 
+export function GqlSAdminCityCopyTranslateInputSchema(): z.ZodObject<Properties<GqlSAdminCityCopyTranslateInput>> {
+    return z.object({
+        descriptionDe: z.string(),
+        firstSectionBodyDe: z.string(),
+        firstSectionHeadlineDe: z.string(),
+        headlineDe: z.string(),
+        nameDe: z.string(),
+        subHeadlineDe: z.string(),
+        titleDe: z.string(),
+    });
+}
+
 export function GqlSAdminCookMealCriterionSchema(): z.ZodType<GqlSAdminCookMealCriterion> {
     return z.object({
         cookIds: z.array(z.string()).nullish(),
@@ -15145,25 +15249,32 @@ export function GqlSCityUpsertSchema(): z.ZodObject<Properties<GqlSCityUpsert>> 
         countryCode: GqlSCityCountryCodeSchema,
         descriptionDe: z.string(),
         descriptionEn: z.string(),
+        descriptionNl: z.string(),
         firstSectionBodyDe: z.string(),
         firstSectionBodyEn: z.string(),
+        firstSectionBodyNl: z.string(),
         firstSectionHeadlineDe: z.string(),
         firstSectionHeadlineEn: z.string(),
+        firstSectionHeadlineNl: z.string(),
         firstSectionImageFileUploadId: z.string().nullish(),
         headlineDe: z.string(),
         headlineEn: z.string(),
+        headlineNl: z.string(),
         heroImageFileUploadId: z.string().nullish(),
         latitude: z.number().min(-90).max(90),
         longitude: z.number().min(-180).max(180),
         nameDe: z.string(),
         nameEn: z.string(),
+        nameNl: z.string(),
         pathName: z.string(),
         publishedAt: z.date().nullish(),
         sections: z.array(GqlSContentSectionInputSchema()),
         subHeadlineDe: z.string(),
         subHeadlineEn: z.string(),
+        subHeadlineNl: z.string(),
         titleDe: z.string(),
         titleEn: z.string(),
+        titleNl: z.string(),
     }) as z.ZodObject<Properties<GqlSCityUpsert>>;
 }
 

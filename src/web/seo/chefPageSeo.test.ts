@@ -5,15 +5,17 @@ import { chefPageCityLabel, chefPageDescription, chefPageTitle } from './chefPag
 describe('chefPageCityLabel', () => {
     it('prefers the localized city-page name when a page matches', () => {
         // Arrange
-        const cityPage = { nameDe: 'München', nameEn: 'Munich' };
+        const cityPage = { nameDe: 'München', nameEn: 'Munich', nameNl: 'Munich NL' };
 
         // Act
         const de = chefPageCityLabel('de', 'Munich', cityPage);
         const en = chefPageCityLabel('en', 'Munich', cityPage);
+        const nl = chefPageCityLabel('nl', 'Munich', cityPage);
 
         // Assert
         expect(de).toBe('München');
         expect(en).toBe('Munich');
+        expect(nl).toBe('Munich NL');
     });
 
     it('falls back to the travel-origin city when no page matches', () => {

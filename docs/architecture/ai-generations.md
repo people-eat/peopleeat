@@ -63,6 +63,7 @@ Kinds today:
 - `BOOKING_REQUEST_COOK_MENU_EVALUATION` → `ai.cookMenuEvaluationModel`
 - `BOOKING_REQUEST_ADJUSTED_MESSAGE` → `ai.bookingRequestAdjustedMessageModel`
 - `WEB_PAGE_SEO_TRANSLATE` → `ai.webPageSeoTranslateModel`
+- `CITY_COPY_TRANSLATE` → `ai.cityCopyTranslateModel`
 
 Add a kind when a new one-shot use case ships (GraphQL enum + domain union + dedicated `ServerRuntime.ai` factory). Never reuse
 `*AssistantModel` slots for one-shots — those are chat-agent only.

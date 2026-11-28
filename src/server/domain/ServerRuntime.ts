@@ -132,6 +132,7 @@ export interface ServerRuntime {
         cookMenuEvaluationModel: () => LanguageModel;
         bookingRequestAdjustedMessageModel: () => LanguageModel;
         webPageSeoTranslateModel: () => LanguageModel;
+        cityCopyTranslateModel: () => LanguageModel;
         // Provider-executed web search (Gemini Google Search grounding).
         // Exposed as a factory so `@ai-sdk/google` stays out of agent files.
         webSearchTool: () => Tool;

@@ -33,9 +33,9 @@ Split by editing cadence:
 
 - Agents and humans must pick the right store up front — moving a field later means a migration or a content rewrite.
 - Public bilingual lists pay the `*De` / `*En` typing cost; admin-only lists may skip it (see below). **UI chrome is a different store**:
-  product strings live in `src/i18n` catalogs ([i18n.md](./i18n.md)), not CMS columns. `contentLocaleText` prefers EN for non-`de` locales
-  until these columns become a locale map. Fixed-route chrome SEO is the exception: `WebPages` also stores `*Nl`, and `webPageSeoText` reads
-  CMS Dutch before catalog `*.seo.*` for `nl`. FR/IT/RU chrome SEO stays on catalogs.
+  product strings live in `src/i18n` catalogs ([i18n.md](./i18n.md)), not CMS columns. `contentLocaleText` prefers EN for non-`de` locales,
+  and optional Dutch (`nl` argument) on cities and web pages. Fixed-route chrome SEO also uses `WebPages` `*Nl` via `webPageSeoText` (CMS
+  Dutch before catalog `*.seo.*` for `nl`). FR/IT/RU chrome SEO stays on catalogs.
 - Conventions below are the day-to-day shape of DB-backed lists; feature docs cover each surface's behaviour.
 
 ## Conventions for DB-backed editable lists

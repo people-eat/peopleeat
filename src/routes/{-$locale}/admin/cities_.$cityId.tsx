@@ -6,6 +6,7 @@ import {
     AdminCityPage,
     adminCityPageDescription,
     adminCityPageTitle,
+    adminCityPageVariables,
     parseAdminCityPageSearch,
 } from '../../../web/pages/admin/AdminCityPage';
 import { seoMeta } from '../../../web/seo/seoMeta';
@@ -15,7 +16,7 @@ import { localeFromParam } from '../../../web/utils/locale';
 export const Route = createFileRoute('/{-$locale}/admin/cities_/$cityId')({
     validateSearch: (search: Record<string, unknown>) => parseAdminCityPageSearch(search),
     loader: async (ctx) => {
-        const data = await routeLoaderGraphqlClient(AdminCityPageDocument, { cityId: ctx.params.cityId })();
+        const data = await routeLoaderGraphqlClient(AdminCityPageDocument, adminCityPageVariables(ctx.params.cityId))();
         if (!data.currentSession.user?.admin?.city) {
             throw notFound();
         }

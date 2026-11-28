@@ -27,10 +27,11 @@ List shows every key as a shared admin list card with bilingual label, current-l
 persisted, a 30-day human visit count, and last updated when persisted. A debounced search field filters the in-memory list by label, key,
 or title. Detail per key edits DE/EN/NL title and description with a pinned Save footer (`AdminPinnedFooterLayout`) that appears only while
 the form is dirty; first save upserts. Tracked keys show a 90-day human pageviews line chart and a **View traffic** link to
-[admin-traffic.md](./admin-traffic.md) with that key and the same 90-day window. English and Dutch cards show **Translate from German** when
-German is filled and that locale still has an empty title or description; the mutation fills only empty fields and does not save. Live
-updates via admin updates seed-and-subscribe (no refetch after save; dirty edits are not overwritten). Visit counts and the chart come from
-the initial loader, not the SEO subscription.
+[admin-traffic.md](./admin-traffic.md) with that key and the same 90-day window. City CMS SEO uses the same
+`AdminWebPageVisitTrafficPreview` for one city. English and Dutch cards show **Translate from German** when German is filled and that locale
+still has an empty title or description; the mutation fills only empty fields and does not save. Live updates via admin updates
+seed-and-subscribe (no refetch after save; dirty edits are not overwritten). Visit counts and the chart come from the initial loader, not
+the SEO subscription.
 
 ## Decisions
 

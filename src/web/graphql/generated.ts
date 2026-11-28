@@ -605,6 +605,7 @@ export type GqlCAdminAiGenerationKind =
     | 'BOOKING_REQUEST_OFFER_CALL_RECORDING_SUMMARY'
     | 'BOOKING_REQUEST_OFFER_CALL_RECORDING_TRANSCRIPT'
     | 'CHAT_TITLE'
+    | 'CITY_COPY_TRANSLATE'
     | 'COOK_BIOGRAPHY_SUGGESTION'
     | 'COOK_BIOGRAPHY_SUMMARY'
     | 'COOK_MENU_SUGGESTION_FROM_INVENTORY'
@@ -1124,30 +1125,58 @@ export interface GqlCAdminCity {
     createdAt: Scalars['DateTime']['output'];
     descriptionDe: Scalars['String']['output'];
     descriptionEn: Scalars['String']['output'];
+    descriptionNl: Scalars['String']['output'];
     firstSectionBodyDe: Scalars['String']['output'];
     firstSectionBodyEn: Scalars['String']['output'];
+    firstSectionBodyNl: Scalars['String']['output'];
     firstSectionHeadlineDe: Scalars['String']['output'];
     firstSectionHeadlineEn: Scalars['String']['output'];
+    firstSectionHeadlineNl: Scalars['String']['output'];
     firstSectionImageFileUploadId?: Maybe<Scalars['ID']['output']>;
     firstSectionImageUrl?: Maybe<Scalars['String']['output']>;
     headlineDe: Scalars['String']['output'];
     headlineEn: Scalars['String']['output'];
+    headlineNl: Scalars['String']['output'];
     heroImageFileUploadId?: Maybe<Scalars['ID']['output']>;
     heroImageUrl?: Maybe<Scalars['String']['output']>;
     latitude: Scalars['Latitude']['output'];
     longitude: Scalars['Longitude']['output'];
     nameDe: Scalars['String']['output'];
     nameEn: Scalars['String']['output'];
+    nameNl: Scalars['String']['output'];
     pathName: Scalars['String']['output'];
     previousPathNames: Array<Scalars['String']['output']>;
     publishedAt?: Maybe<Scalars['DateTime']['output']>;
     sections: Array<GqlCContentSection>;
     subHeadlineDe: Scalars['String']['output'];
     subHeadlineEn: Scalars['String']['output'];
+    subHeadlineNl: Scalars['String']['output'];
     testimonials: Array<GqlCAdminPageTestimonial>;
     titleDe: Scalars['String']['output'];
     titleEn: Scalars['String']['output'];
+    titleNl: Scalars['String']['output'];
     updatedAt: Scalars['DateTime']['output'];
+}
+
+export type GqlCAdminCityCopyTranslateInput = {
+    descriptionDe: Scalars['String']['input'];
+    firstSectionBodyDe: Scalars['String']['input'];
+    firstSectionHeadlineDe: Scalars['String']['input'];
+    headlineDe: Scalars['String']['input'];
+    nameDe: Scalars['String']['input'];
+    subHeadlineDe: Scalars['String']['input'];
+    titleDe: Scalars['String']['input'];
+};
+
+export interface GqlCAdminCityCopyTranslation {
+    __typename?: 'AdminCityCopyTranslation';
+    description: Scalars['String']['output'];
+    firstSectionBody: Scalars['String']['output'];
+    firstSectionHeadline: Scalars['String']['output'];
+    headline: Scalars['String']['output'];
+    name: Scalars['String']['output'];
+    subHeadline: Scalars['String']['output'];
+    title: Scalars['String']['output'];
 }
 
 export interface GqlCAdminCook {
@@ -1620,6 +1649,7 @@ export interface GqlCAdminMutation {
     bookingRequestPublicationApprove: GqlCMutationResult;
     bookingRequestUpdate: GqlCMutationResult;
     cityCooksUpdate: GqlCMutationResult;
+    cityCopyTranslate: GqlCAdminCityCopyTranslation;
     cityDelete: GqlCMutationResult;
     cityTestimonialsUpdate: GqlCMutationResult;
     cityUpsert: GqlCMutationResult;
@@ -1827,6 +1857,11 @@ export type GqlCAdminMutationBookingRequestUpdateArgs = {
 export type GqlCAdminMutationCityCooksUpdateArgs = {
     cityId: Scalars['ID']['input'];
     cookIds: Array<Scalars['ID']['input']>;
+};
+
+export type GqlCAdminMutationCityCopyTranslateArgs = {
+    input: GqlCAdminCityCopyTranslateInput;
+    locale: GqlCLocale;
 };
 
 export type GqlCAdminMutationCityDeleteArgs = {
@@ -3455,25 +3490,32 @@ export type GqlCCityUpsert = {
     countryCode: GqlCCityCountryCode;
     descriptionDe: Scalars['String']['input'];
     descriptionEn: Scalars['String']['input'];
+    descriptionNl: Scalars['String']['input'];
     firstSectionBodyDe: Scalars['String']['input'];
     firstSectionBodyEn: Scalars['String']['input'];
+    firstSectionBodyNl: Scalars['String']['input'];
     firstSectionHeadlineDe: Scalars['String']['input'];
     firstSectionHeadlineEn: Scalars['String']['input'];
+    firstSectionHeadlineNl: Scalars['String']['input'];
     firstSectionImageFileUploadId?: InputMaybe<Scalars['ID']['input']>;
     headlineDe: Scalars['String']['input'];
     headlineEn: Scalars['String']['input'];
+    headlineNl: Scalars['String']['input'];
     heroImageFileUploadId?: InputMaybe<Scalars['ID']['input']>;
     latitude: Scalars['Latitude']['input'];
     longitude: Scalars['Longitude']['input'];
     nameDe: Scalars['String']['input'];
     nameEn: Scalars['String']['input'];
+    nameNl: Scalars['String']['input'];
     pathName: Scalars['String']['input'];
     publishedAt?: InputMaybe<Scalars['DateTime']['input']>;
     sections: Array<GqlCContentSectionInput>;
     subHeadlineDe: Scalars['String']['input'];
     subHeadlineEn: Scalars['String']['input'];
+    subHeadlineNl: Scalars['String']['input'];
     titleDe: Scalars['String']['input'];
     titleEn: Scalars['String']['input'];
+    titleNl: Scalars['String']['input'];
 };
 
 export type GqlCClientObservabilityKind = 'GRAPHQL_ERROR' | 'ROUTE_ERROR' | 'WEB_VITAL';
@@ -5115,30 +5157,37 @@ export interface GqlCPublicCity {
     createdAt: Scalars['DateTime']['output'];
     descriptionDe: Scalars['String']['output'];
     descriptionEn: Scalars['String']['output'];
+    descriptionNl: Scalars['String']['output'];
     featuredCooks: Array<GqlCPublicCook>;
     firstSectionBodyDe: Scalars['String']['output'];
     firstSectionBodyEn: Scalars['String']['output'];
+    firstSectionBodyNl: Scalars['String']['output'];
     firstSectionHeadlineDe: Scalars['String']['output'];
     firstSectionHeadlineEn: Scalars['String']['output'];
+    firstSectionHeadlineNl: Scalars['String']['output'];
     firstSectionImageFileUploadId?: Maybe<Scalars['ID']['output']>;
     firstSectionImageUrl?: Maybe<Scalars['String']['output']>;
     headlineDe: Scalars['String']['output'];
     headlineEn: Scalars['String']['output'];
+    headlineNl: Scalars['String']['output'];
     heroImageFileUploadId?: Maybe<Scalars['ID']['output']>;
     heroImageUrl?: Maybe<Scalars['String']['output']>;
     latitude: Scalars['Latitude']['output'];
     longitude: Scalars['Longitude']['output'];
     nameDe: Scalars['String']['output'];
     nameEn: Scalars['String']['output'];
+    nameNl: Scalars['String']['output'];
     pathName: Scalars['String']['output'];
     previousPathNames: Array<Scalars['String']['output']>;
     publishedAt?: Maybe<Scalars['DateTime']['output']>;
     sections: Array<GqlCContentSection>;
     subHeadlineDe: Scalars['String']['output'];
     subHeadlineEn: Scalars['String']['output'];
+    subHeadlineNl: Scalars['String']['output'];
     testimonials: Array<GqlCPageTestimonial>;
     titleDe: Scalars['String']['output'];
     titleEn: Scalars['String']['output'];
+    titleNl: Scalars['String']['output'];
     updatedAt: Scalars['DateTime']['output'];
 }
 
@@ -5193,6 +5242,7 @@ export interface GqlCPublicCookCityPage {
     __typename?: 'PublicCookCityPage';
     nameDe: Scalars['String']['output'];
     nameEn: Scalars['String']['output'];
+    nameNl: Scalars['String']['output'];
     pathName: Scalars['String']['output'];
 }
 
@@ -7250,23 +7300,30 @@ export type GqlCAdminCityFieldsFragment = {
     previousPathNames: Array<string>;
     nameDe: string;
     nameEn: string;
+    nameNl: string;
     countryCode: Schema.GqlCCityCountryCode;
     latitude: number;
     longitude: number;
     titleDe: string;
     titleEn: string;
+    titleNl: string;
     descriptionDe: string;
     descriptionEn: string;
+    descriptionNl: string;
     headlineDe: string;
     headlineEn: string;
+    headlineNl: string;
     subHeadlineDe: string;
     subHeadlineEn: string;
+    subHeadlineNl: string;
     heroImageFileUploadId: string | null;
     heroImageUrl: string | null;
     firstSectionHeadlineDe: string;
     firstSectionHeadlineEn: string;
+    firstSectionHeadlineNl: string;
     firstSectionBodyDe: string;
     firstSectionBodyEn: string;
+    firstSectionBodyNl: string;
     firstSectionImageFileUploadId: string | null;
     firstSectionImageUrl: string | null;
     publishedAt: string | null;
@@ -7380,23 +7437,30 @@ export type GqlCPublicCityFieldsFragment = {
     previousPathNames: Array<string>;
     nameDe: string;
     nameEn: string;
+    nameNl: string;
     countryCode: Schema.GqlCCityCountryCode;
     latitude: number;
     longitude: number;
     titleDe: string;
     titleEn: string;
+    titleNl: string;
     descriptionDe: string;
     descriptionEn: string;
+    descriptionNl: string;
     headlineDe: string;
     headlineEn: string;
+    headlineNl: string;
     subHeadlineDe: string;
     subHeadlineEn: string;
+    subHeadlineNl: string;
     heroImageFileUploadId: string | null;
     heroImageUrl: string | null;
     firstSectionHeadlineDe: string;
     firstSectionHeadlineEn: string;
+    firstSectionHeadlineNl: string;
     firstSectionBodyDe: string;
     firstSectionBodyEn: string;
+    firstSectionBodyNl: string;
     firstSectionImageFileUploadId: string | null;
     firstSectionImageUrl: string | null;
     publishedAt: string | null;
@@ -9489,7 +9553,7 @@ export type GqlCChefPageQuery = {
             callSchedulingEnabled: boolean;
             canReceiveDirectRequests: boolean;
             logo: { url: string } | null;
-            cityPage: { pathName: string; nameDe: string; nameEn: string } | null;
+            cityPage: { pathName: string; nameDe: string; nameEn: string; nameNl: string } | null;
             user: { display: string; profilePicture: { url: string } | null };
             meals: Array<{ mealId: string; title: string; description: string; imageUrl: string | null }>;
             menus: Array<{
@@ -9617,8 +9681,10 @@ export type GqlCPublicCitiesPageQuery = {
             countryCode: Schema.GqlCCityCountryCode;
             titleDe: string;
             titleEn: string;
+            titleNl: string;
             descriptionDe: string;
             descriptionEn: string;
+            descriptionNl: string;
             heroImageUrl: string | null;
         }>;
     };
@@ -9640,23 +9706,30 @@ export type GqlCPublicCityPageQuery = {
             previousPathNames: Array<string>;
             nameDe: string;
             nameEn: string;
+            nameNl: string;
             countryCode: Schema.GqlCCityCountryCode;
             latitude: number;
             longitude: number;
             titleDe: string;
             titleEn: string;
+            titleNl: string;
             descriptionDe: string;
             descriptionEn: string;
+            descriptionNl: string;
             headlineDe: string;
             headlineEn: string;
+            headlineNl: string;
             subHeadlineDe: string;
             subHeadlineEn: string;
+            subHeadlineNl: string;
             heroImageFileUploadId: string | null;
             heroImageUrl: string | null;
             firstSectionHeadlineDe: string;
             firstSectionHeadlineEn: string;
+            firstSectionHeadlineNl: string;
             firstSectionBodyDe: string;
             firstSectionBodyEn: string;
+            firstSectionBodyNl: string;
             firstSectionImageFileUploadId: string | null;
             firstSectionImageUrl: string | null;
             publishedAt: string | null;
@@ -9753,7 +9826,7 @@ export type GqlCPublicCityPageQuery = {
                       };
             }>;
         } | null;
-        findMany: Array<{ pathName: string; nameDe: string; nameEn: string; countryCode: Schema.GqlCCityCountryCode }>;
+        findMany: Array<{ pathName: string; nameDe: string; nameEn: string; nameNl: string; countryCode: Schema.GqlCCityCountryCode }>;
     };
 };
 
@@ -9771,6 +9844,7 @@ export type GqlCExpansionCountryPageQuery = {
             pathName: string;
             nameDe: string;
             nameEn: string;
+            nameNl: string;
             countryCode: Schema.GqlCCityCountryCode;
             latitude: number;
             longitude: number;
@@ -10037,7 +10111,9 @@ export type GqlCHomePageQuery = {
             cook: { cookId: string } | null;
         } | null;
     };
-    publicCity: { findMany: Array<{ pathName: string; nameDe: string; nameEn: string; countryCode: Schema.GqlCCityCountryCode }> };
+    publicCity: {
+        findMany: Array<{ pathName: string; nameDe: string; nameEn: string; nameNl: string; countryCode: Schema.GqlCCityCountryCode }>;
+    };
     publicWebPage: {
         findOne: { titleDe: string; titleEn: string; titleNl: string; descriptionDe: string; descriptionEn: string; descriptionNl: string };
     };
@@ -13615,6 +13691,7 @@ export type GqlCAdminCitiesPageQuery = {
                     pathName: string;
                     nameDe: string;
                     nameEn: string;
+                    nameNl: string;
                     countryCode: Schema.GqlCCityCountryCode;
                     titleDe: string;
                     publishedAt: string | null;
@@ -13658,6 +13735,7 @@ export type GqlCAdminCitiesPageUpdatesSubscription = {
             pathName: string;
             nameDe: string;
             nameEn: string;
+            nameNl: string;
             countryCode: Schema.GqlCCityCountryCode;
             titleDe: string;
             publishedAt: string | null;
@@ -13669,6 +13747,8 @@ export type GqlCAdminCitiesPageUpdatesSubscription = {
 
 export type GqlCAdminCityPageQueryVariables = Exact<{
     cityId: string;
+    range: Schema.GqlCDateTimeRange;
+    granularity?: Schema.GqlCAdminTimeBucketGranularity;
 }>;
 
 export type GqlCAdminCityPageQuery = {
@@ -13682,23 +13762,30 @@ export type GqlCAdminCityPageQuery = {
                     previousPathNames: Array<string>;
                     nameDe: string;
                     nameEn: string;
+                    nameNl: string;
                     countryCode: Schema.GqlCCityCountryCode;
                     latitude: number;
                     longitude: number;
                     titleDe: string;
                     titleEn: string;
+                    titleNl: string;
                     descriptionDe: string;
                     descriptionEn: string;
+                    descriptionNl: string;
                     headlineDe: string;
                     headlineEn: string;
+                    headlineNl: string;
                     subHeadlineDe: string;
                     subHeadlineEn: string;
+                    subHeadlineNl: string;
                     heroImageFileUploadId: string | null;
                     heroImageUrl: string | null;
                     firstSectionHeadlineDe: string;
                     firstSectionHeadlineEn: string;
+                    firstSectionHeadlineNl: string;
                     firstSectionBodyDe: string;
                     firstSectionBodyEn: string;
+                    firstSectionBodyNl: string;
                     firstSectionImageFileUploadId: string | null;
                     firstSectionImageUrl: string | null;
                     publishedAt: string | null;
@@ -13833,10 +13920,20 @@ export type GqlCAdminCityPageQuery = {
                           publicationStatus: Schema.GqlCTestimonialPublicationStatus;
                       }
                 >;
+                webPageVisitTraffic: {
+                    series: Array<{
+                        entityId: string | null;
+                        label: string;
+                        pageviews: number;
+                        buckets: Array<{ bucketStart: string; count: number }>;
+                    }>;
+                };
             } | null;
         } | null;
     };
-    publicCity: { findMany: Array<{ pathName: string; nameDe: string; nameEn: string; countryCode: Schema.GqlCCityCountryCode }> };
+    publicCity: {
+        findMany: Array<{ pathName: string; nameDe: string; nameEn: string; nameNl: string; countryCode: Schema.GqlCCityCountryCode }>;
+    };
 };
 
 export type GqlCAdminCityUpsertMutationVariables = Exact<{
@@ -13844,6 +13941,25 @@ export type GqlCAdminCityUpsertMutationVariables = Exact<{
 }>;
 
 export type GqlCAdminCityUpsertMutation = { admin: { cityUpsert: { success: boolean; referenceId: string | null } } };
+
+export type GqlCAdminCityCopyTranslateMutationVariables = Exact<{
+    locale: Schema.GqlCLocale;
+    input: Schema.GqlCAdminCityCopyTranslateInput;
+}>;
+
+export type GqlCAdminCityCopyTranslateMutation = {
+    admin: {
+        cityCopyTranslate: {
+            name: string;
+            title: string;
+            description: string;
+            headline: string;
+            subHeadline: string;
+            firstSectionHeadline: string;
+            firstSectionBody: string;
+        };
+    };
+};
 
 export type GqlCAdminCityCooksUpdateMutationVariables = Exact<{
     cityId: string;
@@ -13890,23 +14006,30 @@ export type GqlCAdminCityPageUpdatesSubscription = {
             previousPathNames: Array<string>;
             nameDe: string;
             nameEn: string;
+            nameNl: string;
             countryCode: Schema.GqlCCityCountryCode;
             latitude: number;
             longitude: number;
             titleDe: string;
             titleEn: string;
+            titleNl: string;
             descriptionDe: string;
             descriptionEn: string;
+            descriptionNl: string;
             headlineDe: string;
             headlineEn: string;
+            headlineNl: string;
             subHeadlineDe: string;
             subHeadlineEn: string;
+            subHeadlineNl: string;
             heroImageFileUploadId: string | null;
             heroImageUrl: string | null;
             firstSectionHeadlineDe: string;
             firstSectionHeadlineEn: string;
+            firstSectionHeadlineNl: string;
             firstSectionBodyDe: string;
             firstSectionBodyEn: string;
+            firstSectionBodyNl: string;
             firstSectionImageFileUploadId: string | null;
             firstSectionImageUrl: string | null;
             publishedAt: string | null;
@@ -25727,23 +25850,30 @@ export const AdminCityFieldsFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'nameDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'nameEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'nameNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'countryCode' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'titleNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'descriptionNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'headlineDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'headlineEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'headlineNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'subHeadlineDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'subHeadlineEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'subHeadlineNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'heroImageFileUploadId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'heroImageUrl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionHeadlineDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionHeadlineEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionHeadlineNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionBodyDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionBodyEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionBodyNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageFileUploadId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageUrl' } },
                     {
@@ -26193,23 +26323,30 @@ export const PublicCityFieldsFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'nameDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'nameEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'nameNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'countryCode' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'titleNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'descriptionNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'headlineDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'headlineEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'headlineNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'subHeadlineDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'subHeadlineEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'subHeadlineNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'heroImageFileUploadId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'heroImageUrl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionHeadlineDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionHeadlineEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionHeadlineNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionBodyDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionBodyEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionBodyNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageFileUploadId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageUrl' } },
                     {
@@ -45874,6 +46011,7 @@ export const ChefPageDocument = {
                                                         { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'nameDe' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'nameEn' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'nameNl' } },
                                                     ],
                                                 },
                                             },
@@ -46592,8 +46730,10 @@ export const PublicCitiesPageDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'countryCode' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'titleNl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionNl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'heroImageUrl' } },
                                         ],
                                     },
@@ -46721,6 +46861,7 @@ export const PublicCityPageDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'nameDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'nameEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'nameNl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'countryCode' } },
                                         ],
                                     },
@@ -47006,23 +47147,30 @@ export const PublicCityPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'nameDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'nameEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'nameNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'countryCode' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'titleNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'descriptionNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'headlineDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'headlineEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'headlineNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'subHeadlineDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'subHeadlineEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'subHeadlineNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'heroImageFileUploadId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'heroImageUrl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionHeadlineDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionHeadlineEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionHeadlineNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionBodyDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionBodyEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionBodyNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageFileUploadId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageUrl' } },
                     {
@@ -47124,6 +47272,7 @@ export const ExpansionCountryPageDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'nameDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'nameEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'nameNl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'countryCode' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
@@ -48118,6 +48267,7 @@ export const HomePageDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'nameDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'nameEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'nameNl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'countryCode' } },
                                         ],
                                     },
@@ -59841,6 +59991,7 @@ export const AdminCitiesPageDocument = {
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'nameDe' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'nameEn' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'nameNl' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'countryCode' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
@@ -60008,6 +60159,7 @@ export const AdminCitiesPageUpdatesDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'nameDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'nameEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'nameNl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'countryCode' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
@@ -60036,6 +60188,17 @@ export const AdminCityPageDocument = {
                     kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'cityId' } },
                     type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'DateTimeRange' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'granularity' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminTimeBucketGranularity' } } },
+                    defaultValue: { kind: 'EnumValue', value: 'week' },
                 },
             ],
             selectionSet: {
@@ -60093,6 +60256,113 @@ export const AdminCityPageDocument = {
                                                                 ],
                                                             },
                                                         },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'webPageVisitTraffic' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'range' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'granularity' },
+                                                                    value: {
+                                                                        kind: 'Variable',
+                                                                        name: { kind: 'Name', value: 'granularity' },
+                                                                    },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'webPageKeys' },
+                                                                    value: {
+                                                                        kind: 'ListValue',
+                                                                        values: [{ kind: 'EnumValue', value: 'CITIES' }],
+                                                                    },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'audience' },
+                                                                    value: { kind: 'EnumValue', value: 'HUMAN' },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'metric' },
+                                                                    value: { kind: 'EnumValue', value: 'PAGEVIEWS' },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'scope' },
+                                                                    value: { kind: 'EnumValue', value: 'ALL' },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'entity' },
+                                                                    value: {
+                                                                        kind: 'ObjectValue',
+                                                                        fields: [
+                                                                            {
+                                                                                kind: 'ObjectField',
+                                                                                name: { kind: 'Name', value: 'cityIds' },
+                                                                                value: {
+                                                                                    kind: 'ListValue',
+                                                                                    values: [
+                                                                                        {
+                                                                                            kind: 'Variable',
+                                                                                            name: { kind: 'Name', value: 'cityId' },
+                                                                                        },
+                                                                                    ],
+                                                                                },
+                                                                            },
+                                                                        ],
+                                                                    },
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'series' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'entityId' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'pageviews' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'buckets' },
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: {
+                                                                                                    kind: 'Name',
+                                                                                                    value: 'bucketStart',
+                                                                                                },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'count' },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
                                                     ],
                                                 },
                                             },
@@ -60117,6 +60387,7 @@ export const AdminCityPageDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'nameDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'nameEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'nameNl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'countryCode' } },
                                         ],
                                     },
@@ -60355,23 +60626,30 @@ export const AdminCityPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'nameDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'nameEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'nameNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'countryCode' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'titleNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'descriptionNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'headlineDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'headlineEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'headlineNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'subHeadlineDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'subHeadlineEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'subHeadlineNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'heroImageFileUploadId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'heroImageUrl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionHeadlineDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionHeadlineEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionHeadlineNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionBodyDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionBodyEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionBodyNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageFileUploadId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageUrl' } },
                     {
@@ -60487,6 +60765,73 @@ export const AdminCityUpsertDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminCityUpsertMutation, GqlCAdminCityUpsertMutationVariables>;
+export const AdminCityCopyTranslateDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AdminCityCopyTranslate' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'locale' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Locale' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminCityCopyTranslateInput' } },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cityCopyTranslate' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'locale' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'locale' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'input' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'headline' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'subHeadline' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'firstSectionHeadline' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'firstSectionBody' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminCityCopyTranslateMutation, GqlCAdminCityCopyTranslateMutationVariables>;
 export const AdminCityCooksUpdateDocument = {
     kind: 'Document',
     definitions: [
@@ -60962,23 +61307,30 @@ export const AdminCityPageUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'nameDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'nameEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'nameNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'countryCode' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'titleNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'descriptionNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'headlineDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'headlineEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'headlineNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'subHeadlineDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'subHeadlineEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'subHeadlineNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'heroImageFileUploadId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'heroImageUrl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionHeadlineDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionHeadlineEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionHeadlineNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionBodyDe' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionBodyEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionBodyNl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageFileUploadId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageUrl' } },
                     {

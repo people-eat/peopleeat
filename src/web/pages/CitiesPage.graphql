@@ -10,8 +10,10 @@ query PublicCitiesPage {
             countryCode
             titleDe
             titleEn
+            titleNl
             descriptionDe
             descriptionEn
+            descriptionNl
             heroImageUrl
         }
     }

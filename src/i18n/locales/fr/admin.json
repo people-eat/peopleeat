@@ -31,6 +31,7 @@
         "title": "Titre",
         "bodyDe": "Body(DE)",
         "bodyEn": "Body(EN)",
+        "bodyNl": "Body(NL)",
         "time2": "Heure",
         "notConfigured": "Non configuré",
         "pleaseChooseAFullAddress": "Choisis une adresse complète.",
@@ -69,6 +70,7 @@
         "firstSection": "Première section",
         "headlineDe": "Headline(DE)",
         "headlineEn": "Headline(EN)",
+        "headlineNl": "Headline(NL)",
         "sectionImage": "Image de section",
         "removeSectionImage": "Retirer section image?",
         "cookPayout": "Cuisinier versement",
@@ -2706,7 +2708,8 @@
             "COOK_BIOGRAPHY_SUMMARY": "Résumé de biographie",
             "BOOKING_REQUEST_COOK_MENU_EVALUATION": "Évaluation de menu (demande)",
             "BOOKING_REQUEST_ADJUSTED_MESSAGE": "Message de demande adapté",
-            "WEB_PAGE_SEO_TRANSLATE": "Traduction SEO"
+            "WEB_PAGE_SEO_TRANSLATE": "Traduction SEO",
+            "CITY_COPY_TRANSLATE": "Traduction ville"
         }
     },
     "list": {

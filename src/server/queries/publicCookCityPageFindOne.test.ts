@@ -52,7 +52,7 @@ describe('publicCookCityPageFindOne', () => {
         const draft = await publicCookCityPageFindOne(draftName, serverRuntime);
 
         // Assert
-        expect(match).toEqual({ pathName: published.pathName, nameDe: publishedName, nameEn: publishedName });
+        expect(match).toEqual({ pathName: published.pathName, nameDe: publishedName, nameEn: publishedName, nameNl: '' });
         expect(draft).toBeNull();
     });
 });

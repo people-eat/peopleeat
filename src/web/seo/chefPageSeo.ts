@@ -9,10 +9,10 @@ const DESCRIPTION_MAX = 160;
 export function chefPageCityLabel(
     locale: Locale,
     city: string | null | undefined,
-    cityPage: { nameDe: string; nameEn: string } | null | undefined,
+    cityPage: { nameDe: string; nameEn: string; nameNl?: string | null } | null | undefined,
 ): string | null {
     if (cityPage) {
-        const name = contentLocaleText(cityPage.nameDe, cityPage.nameEn, locale).trim();
+        const name = contentLocaleText(cityPage.nameDe, cityPage.nameEn, locale, cityPage.nameNl).trim();
         if (name.length > 0) return name;
     }
     const raw = city?.trim() ?? '';

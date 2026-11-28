@@ -43,11 +43,11 @@ export const Route = createFileRoute('/{-$locale}/cities_/$pathName')({
         }
         const webPageUrl = webPageUrlGet();
         const path = `/cities/${city.pathName}`;
-        const title = contentLocaleText(city.titleDe, city.titleEn, locale);
-        const description = contentLocaleText(city.descriptionDe, city.descriptionEn, locale);
-        const headline = contentLocaleText(city.headlineDe, city.headlineEn, locale).trim();
-        const subheadline = contentLocaleText(city.subHeadlineDe, city.subHeadlineEn, locale).trim();
-        const cityName = contentLocaleText(city.nameDe, city.nameEn, locale);
+        const title = contentLocaleText(city.titleDe, city.titleEn, locale, city.titleNl);
+        const description = contentLocaleText(city.descriptionDe, city.descriptionEn, locale, city.descriptionNl);
+        const headline = contentLocaleText(city.headlineDe, city.headlineEn, locale, city.headlineNl).trim();
+        const subheadline = contentLocaleText(city.subHeadlineDe, city.subHeadlineEn, locale, city.subHeadlineNl).trim();
+        const cityName = contentLocaleText(city.nameDe, city.nameEn, locale, city.nameNl);
         const productName = headline || title;
         const productDescription = subheadline || description;
         const countryHubPath = cityCountryHubPath(city.countryCode);

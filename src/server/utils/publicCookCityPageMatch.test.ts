@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { publicCookCityPageMatch } from './publicCookCityPageMatch';
 import type { PublicCookCityPageCandidate } from './publicCookCityPageMatch';
 
-const berlin: PublicCookCityPageCandidate = { pathName: 'berlin', nameDe: 'Berlin', nameEn: 'Berlin' };
-const munich: PublicCookCityPageCandidate = { pathName: 'muenchen', nameDe: 'München', nameEn: 'Munich' };
+const berlin: PublicCookCityPageCandidate = { pathName: 'berlin', nameDe: 'Berlin', nameEn: 'Berlin', nameNl: '' };
+const munich: PublicCookCityPageCandidate = { pathName: 'muenchen', nameDe: 'München', nameEn: 'Munich', nameNl: '' };
 
 describe('publicCookCityPageMatch', () => {
     it('matches a diacritic-insensitive German name', () => {
@@ -29,7 +29,7 @@ describe('publicCookCityPageMatch', () => {
 
     it('returns null when the city is blank, unknown, or ambiguous', () => {
         // Arrange
-        const secondBerlin: PublicCookCityPageCandidate = { pathName: 'berlin-mitte', nameDe: 'Berlin', nameEn: '' };
+        const secondBerlin: PublicCookCityPageCandidate = { pathName: 'berlin-mitte', nameDe: 'Berlin', nameEn: '', nameNl: '' };
 
         // Act
         const blank = publicCookCityPageMatch('   ', [berlin]);
@@ -42,12 +42,26 @@ describe('publicCookCityPageMatch', () => {
         expect(ambiguous).toBeNull();
     });
 
+    it('matches the Dutch name', () => {
+        const dutchCity: PublicCookCityPageCandidate = {
+            pathName: 'city-nl',
+            nameDe: 'City DE',
+            nameEn: 'City EN',
+            nameNl: 'Dutch City',
+        };
+
+        const match = publicCookCityPageMatch('Dutch City', [dutchCity]);
+
+        expect(match?.pathName).toBe('city-nl');
+    });
+
     it('does not prefix-match a longer city name', () => {
         // Arrange
         const frankfurt: PublicCookCityPageCandidate = {
             pathName: 'frankfurt-am-main',
             nameDe: 'Frankfurt am Main',
             nameEn: 'Frankfurt am Main',
+            nameNl: '',
         };
 
         // Act

@@ -587,6 +587,7 @@
         "title": "Название",
         "bodyDe": "Текст (DE)",
         "bodyEn": "Текст (EN)",
+        "bodyNl": "Текст (NL)",
         "time2": "Время",
         "notConfigured": "Не настроено",
         "pleaseChooseAFullAddress": "Выберите полный адрес.",
@@ -625,6 +626,7 @@
         "firstSection": "Первый раздел",
         "headlineDe": "Заголовок (DE)",
         "headlineEn": "Заголовок (EN)",
+        "headlineNl": "Заголовок (NL)",
         "sectionImage": "Изображение раздела",
         "removeSectionImage": "Удалить изображение раздела?",
         "cookPayout": "Выплата повару",
@@ -2706,7 +2708,8 @@
             "COOK_BIOGRAPHY_SUMMARY": "Краткая биография",
             "BOOKING_REQUEST_COOK_MENU_EVALUATION": "Оценка меню (заявка)",
             "BOOKING_REQUEST_ADJUSTED_MESSAGE": "Изменённое сообщение заявки",
-            "WEB_PAGE_SEO_TRANSLATE": "SEO-перевод"
+            "WEB_PAGE_SEO_TRANSLATE": "SEO-перевод",
+            "CITY_COPY_TRANSLATE": "Перевод города"
         }
     },
     "list": {

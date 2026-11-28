@@ -1,5 +1,4 @@
 import { useForm, useSelector } from '@tanstack/react-form';
-import { Link } from '@tanstack/react-router';
 import { SparklesIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -19,12 +18,11 @@ import { Textarea } from '../../components/base/textarea';
 import type { GqlCAdminWebPagePageQuery, GqlCLocale, GqlCWebPageKey } from '../../graphql/generated';
 import { AdminWebPagePageUpdatesDocument, AdminWebPageSeoTranslateDocument, AdminWebPageUpsertDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
-import { useTimeZone } from '../../hooks/useTimeZone';
 import type { Locale } from '../../utils/locale';
-import { AdminOverviewLineChart } from './AdminOverviewLineChart';
 import { adminOverviewRangeToGraphQlVariables } from './adminOverviewRange';
 import { adminTrafficRangeLastDays } from './adminTrafficSearch';
 import { adminWebPageLabel } from './adminWebPages';
+import { AdminWebPageVisitTrafficPreview } from './AdminWebPageVisitTrafficPreview';
 
 export function adminWebPagePageTitle(locale: Locale): string {
     return t(locale, 'admin', 'pages.webPage.title');
@@ -76,7 +74,6 @@ function fieldIsEmpty(value: string): boolean {
 
 export function AdminWebPagePage({ data, webPageKey }: { data: GqlCAdminWebPagePageQuery; webPageKey: GqlCWebPageKey }) {
     const locale = useLocale();
-    const timeZone = useTimeZone();
     const client = useClient();
     const seedAdmin = data.currentSession.user?.admin ?? null;
     const seedWebPage = seedAdmin?.webPage;
@@ -169,18 +166,6 @@ export function AdminWebPagePage({ data, webPageKey }: { data: GqlCAdminWebPageP
         }
     }
 
-    const chartSeries = [
-        {
-            dataKey: webPageKey,
-            label: adminWebPageLabel(webPageKey, locale),
-            color: 'var(--chart-1)',
-        },
-    ];
-    const chartData = (traffic?.series[0]?.buckets ?? []).map((bucket) => ({
-        bucketStart: bucket.bucketStart,
-        [webPageKey]: bucket.count,
-    }));
-
     return (
         <AdminPageChrome
             crumbs={[
@@ -206,35 +191,17 @@ export function AdminWebPagePage({ data, webPageKey }: { data: GqlCAdminWebPageP
                     <p className="text-sm text-muted-foreground">{adminWebPagePageDescription(locale)}</p>
                 </div>
                 {showTraffic ? (
-                    <div className="flex flex-col gap-3">
-                        <div className="flex flex-wrap items-baseline justify-between gap-2">
-                            <div>
-                                <h2 className="text-sm font-medium">{t(locale, 'admin', 'traffic.last90Days')}</h2>
-                                <p className="text-sm text-muted-foreground">
-                                    {t(locale, 'admin', 'traffic.visits90d', { count: traffic?.pageviews ?? 0 })}
-                                </p>
-                            </div>
-                            <Link
-                                to="/{-$locale}/admin/traffic"
-                                search={{
-                                    keys: webPageKey,
-                                    from: trafficRange.from,
-                                    to: trafficRange.to,
-                                    granularity: 'week',
-                                }}
-                                className="text-sm text-muted-foreground underline-offset-4 hover:underline"
-                            >
-                                {t(locale, 'admin', 'traffic.viewTraffic')}
-                            </Link>
-                        </div>
-                        <AdminOverviewLineChart
-                            data={chartData}
-                            locale={locale}
-                            timeZone={timeZone}
-                            ariaLabel={t(locale, 'admin', 'traffic.chart')}
-                            series={chartSeries}
-                        />
-                    </div>
+                    <AdminWebPageVisitTrafficPreview
+                        pageviews={traffic?.pageviews ?? 0}
+                        seriesLabel={adminWebPageLabel(webPageKey, locale)}
+                        buckets={traffic?.series[0]?.buckets ?? []}
+                        trafficSearch={{
+                            keys: webPageKey,
+                            from: trafficRange.from,
+                            to: trafficRange.to,
+                            granularity: 'week',
+                        }}
+                    />
                 ) : null}
                 <form
                     id="admin-web-page-form"

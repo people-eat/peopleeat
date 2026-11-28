@@ -257,12 +257,18 @@ async function entityRanksLabel(
         }
     } else if (key === 'CITIES') {
         const cityRows = await serverRuntime.db
-            .select({ cityId: cities.cityId, pathName: cities.pathName, nameDe: cities.nameDe, nameEn: cities.nameEn })
+            .select({
+                cityId: cities.cityId,
+                pathName: cities.pathName,
+                nameDe: cities.nameDe,
+                nameEn: cities.nameEn,
+                nameNl: cities.nameNl,
+            })
             .from(cities)
             .where(inArray(cities.cityId, ids));
         for (const city of cityRows) {
             labels.set(city.cityId, {
-                label: contentLocaleText(city.nameDe, city.nameEn, locale),
+                label: contentLocaleText(city.nameDe, city.nameEn, locale, city.nameNl),
                 pathName: city.pathName,
             });
         }

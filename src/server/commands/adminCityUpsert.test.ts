@@ -13,21 +13,28 @@ function cityInput(overrides: Partial<GqlSCityUpsert> = {}): GqlSCityUpsert {
         pathName: `city-${suffix}`,
         nameDe: 'Berlin',
         nameEn: 'Berlin',
+        nameNl: '',
         countryCode: 'DE',
         latitude: 52.52,
         longitude: 13.405,
         titleDe: 'Titel',
         titleEn: 'Title',
+        titleNl: '',
         descriptionDe: 'Beschreibung',
         descriptionEn: 'Description',
+        descriptionNl: '',
         headlineDe: 'Headline DE',
         headlineEn: 'Headline EN',
+        headlineNl: '',
         subHeadlineDe: 'Sub DE',
         subHeadlineEn: 'Sub EN',
+        subHeadlineNl: '',
         firstSectionHeadlineDe: '',
         firstSectionHeadlineEn: '',
+        firstSectionHeadlineNl: '',
         firstSectionBodyDe: '',
         firstSectionBodyEn: '',
+        firstSectionBodyNl: '',
         sections: [],
         ...overrides,
     };
@@ -92,6 +99,31 @@ describe('adminCityUpsert', () => {
 
         const [row] = await testDb.select().from(cities).where(eq(cities.cityId, result.referenceId!));
         expect(row?.countryCode).toBe('NL');
+    });
+
+    it('persists Dutch copy on create', async () => {
+        const admin = await commandSetup.withUser({ firstName: 'city-upsert-copy-nl', lastName: 'User' });
+        await testDb.insert(admins).values({ adminId: admin.user.userId });
+        const input = cityInput({
+            nameDe: 'Amsterdam',
+            nameNl: '  Amsterdam  ',
+            titleNl: '  Private chefs in Amsterdam  ',
+            descriptionNl: '  Book a private chef in Amsterdam.  ',
+            headlineNl: 'Private chef in Amsterdam',
+            subHeadlineNl: 'For every occasion',
+        });
+
+        const result = await adminCityUpsert(
+            adminMutationParent(admin.user.userId),
+            { input },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        const [row] = await testDb.select().from(cities).where(eq(cities.cityId, result.referenceId!));
+        expect(row?.nameNl).toBe('Amsterdam');
+        expect(row?.titleNl).toBe('Private chefs in Amsterdam');
+        expect(row?.descriptionNl).toBe('Book a private chef in Amsterdam.');
     });
 
     it('updates an existing city and archives the previous pathName', async () => {

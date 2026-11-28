@@ -1969,6 +1969,7 @@ type PublicCookCityPage {
     pathName: String!
     nameDe: String!
     nameEn: String!
+    nameNl: String!
 }
 
 # Lean public cook profile — no street address, no Stripe. Nested on customer offers
@@ -5368,6 +5369,7 @@ enum AdminAiGenerationKind {
     BOOKING_REQUEST_COOK_MENU_EVALUATION
     BOOKING_REQUEST_ADJUSTED_MESSAGE
     WEB_PAGE_SEO_TRANSLATE
+    CITY_COPY_TRANSLATE
 }
 
 # Admin-only view of a one-shot LLM call. Written by `ServerRuntime.aiGenerations`;
@@ -5498,6 +5500,8 @@ type AdminMutation {
     # Publish the open draft identified by `documentId` for `kind`.
     legalDocumentPublish(kind: LegalDocumentKind!, documentId: ID!): MutationResult!
     cityUpsert(input: CityUpsert!): MutationResult!
+    # One-shot German → English/Dutch city copy. Does not persist.
+    cityCopyTranslate(locale: Locale!, input: AdminCityCopyTranslateInput!): AdminCityCopyTranslation!
     cityDelete(cityId: ID!): MutationResult!
     # Full-list replace of curated city cooks (ordered). Empty clears assignment
     # so the public city page falls back to travel-radius discovery.
@@ -6061,24 +6065,31 @@ type AdminCity {
     previousPathNames: [String!]!
     nameDe: String!
     nameEn: String!
+    nameNl: String!
     countryCode: CityCountryCode!
     latitude: Latitude!
     longitude: Longitude!
     titleDe: String!
     titleEn: String!
+    titleNl: String!
     descriptionDe: String!
     descriptionEn: String!
+    descriptionNl: String!
     headlineDe: String!
     headlineEn: String!
+    headlineNl: String!
     subHeadlineDe: String!
     subHeadlineEn: String!
+    subHeadlineNl: String!
     heroImageFileUploadId: ID
     heroImageUrl: String
     # Fixed first-section slot (ChefForAnyOccasion) above free sections.
     firstSectionHeadlineDe: String!
     firstSectionHeadlineEn: String!
+    firstSectionHeadlineNl: String!
     firstSectionBodyDe: String!
     firstSectionBodyEn: String!
+    firstSectionBodyNl: String!
     firstSectionImageFileUploadId: ID
     firstSectionImageUrl: String
     sections: [ContentSection!]!
@@ -6098,24 +6109,31 @@ type PublicCity {
     previousPathNames: [String!]!
     nameDe: String!
     nameEn: String!
+    nameNl: String!
     countryCode: CityCountryCode!
     latitude: Latitude!
     longitude: Longitude!
     titleDe: String!
     titleEn: String!
+    titleNl: String!
     descriptionDe: String!
     descriptionEn: String!
+    descriptionNl: String!
     headlineDe: String!
     headlineEn: String!
+    headlineNl: String!
     subHeadlineDe: String!
     subHeadlineEn: String!
+    subHeadlineNl: String!
     heroImageFileUploadId: ID
     heroImageUrl: String
     # Fixed first-section slot (ChefForAnyOccasion) above free sections.
     firstSectionHeadlineDe: String!
     firstSectionHeadlineEn: String!
+    firstSectionHeadlineNl: String!
     firstSectionBodyDe: String!
     firstSectionBodyEn: String!
+    firstSectionBodyNl: String!
     firstSectionImageFileUploadId: ID
     firstSectionImageUrl: String
     sections: [ContentSection!]!
@@ -6403,25 +6421,54 @@ input CityUpsert {
     pathName: String!
     nameDe: String!
     nameEn: String!
+    nameNl: String!
     countryCode: CityCountryCode!
     latitude: Latitude!
     longitude: Longitude!
     titleDe: String!
     titleEn: String!
+    titleNl: String!
     descriptionDe: String!
     descriptionEn: String!
+    descriptionNl: String!
     headlineDe: String!
     headlineEn: String!
+    headlineNl: String!
     subHeadlineDe: String!
     subHeadlineEn: String!
+    subHeadlineNl: String!
     heroImageFileUploadId: ID
     firstSectionHeadlineDe: String!
     firstSectionHeadlineEn: String!
+    firstSectionHeadlineNl: String!
     firstSectionBodyDe: String!
     firstSectionBodyEn: String!
+    firstSectionBodyNl: String!
     firstSectionImageFileUploadId: ID
     sections: [ContentSectionInput!]!
     publishedAt: DateTime
+}
+
+# German source for `cityCopyTranslate`. Review in the editor; not written until Save.
+input AdminCityCopyTranslateInput {
+    nameDe: String!
+    titleDe: String!
+    descriptionDe: String!
+    headlineDe: String!
+    subHeadlineDe: String!
+    firstSectionHeadlineDe: String!
+    firstSectionBodyDe: String!
+}
+
+# Result of `cityCopyTranslate`. Review in the editor; not written until Save.
+type AdminCityCopyTranslation {
+    name: String!
+    title: String!
+    description: String!
+    headline: String!
+    subHeadline: String!
+    firstSectionHeadline: String!
+    firstSectionBody: String!
 }
 
 input PartnerUpsert {

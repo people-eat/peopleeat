@@ -41,8 +41,9 @@ explore ranking, overlay comparable catalog pages, then open the live page, CMS,
    visits for that key show "no tagged detail pages", not the backfill pending message.
 10. Analytics keeps funnels and the booking-form visit KPI, and links here for page-visit charts.
 11. Web Pages (SEO) list cards show a 30-day human visit count and link through to Traffic for that key. The SEO editor for a tracked key
-    also shows a 90-day human pageviews sparkline and the same Traffic link (key + last 90 days, weekly buckets). That chart is a shortcut,
-    not a second explorer: no locale split (visits store a locale-stripped path), no ranking table.
+    also shows a 90-day human pageviews sparkline and the same Traffic link (key + last 90 days, weekly buckets). City CMS **SEO** does the
+    same for that city (`CITIES` + `cityId`). Those charts are a shortcut, not a second explorer: no locale split (visits store a
+    locale-stripped path), no ranking table.
 
 Visit tracking skips `/admin/*` and `/profile/*`. `PROFILE` and `ADMINISTRATION` are SEO-only and never appear in the picker.
 
@@ -89,6 +90,7 @@ visitor. Coming-to and founding-chef visits store `params.countryId` as the expa
   recover `countryId` from the stored path.
 - Indexes: partial `(params.cityId|partnerVenueId|occasionId|blogPostId|countryId, createdAt)` on `WEB_PAGE_VISITED` for those keys, plus
   `BOOKING_REQUEST_PLAN` × `partnerVenueId`, `COMING_TO` × `countryId`, and `FOUNDING_CHEF` × `countryId`
-- UI: `AdminTrafficPage`, `AdminTrafficEntitySearch`, `AdminOverviewLineChart`, `adminTrafficLinks.ts` (Analytics action uses
-  `adminAnalyticsSearchForPageKey`), route `traffic.tsx`, nav via `adminCatalog` (`traffic`)
+- UI: `AdminTrafficPage`, `AdminTrafficEntitySearch`, `AdminOverviewLineChart`, `AdminWebPageVisitTrafficPreview` (Web Pages SEO and city
+  CMS SEO), `adminTrafficLinks.ts` (Analytics action uses `adminAnalyticsSearchForPageKey`), route `traffic.tsx`, nav via `adminCatalog`
+  (`traffic`)
 - Architecture: [session-events.md](../architecture/session-events.md)

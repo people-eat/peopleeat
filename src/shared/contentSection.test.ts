@@ -83,6 +83,13 @@ describe('contentLocaleText', () => {
         expect(contentLocaleText('Deutsch', 'English', 'fr')).toBe('English');
         expect(contentLocaleText('Deutsch', '', 'fr')).toBe('Deutsch');
     });
+
+    it('uses NL when present, otherwise EN, otherwise DE', () => {
+        expect(contentLocaleText('Deutsch', 'English', 'nl', 'Dutch copy')).toBe('Dutch copy');
+        expect(contentLocaleText('Deutsch', 'English', 'nl', '  ')).toBe('English');
+        expect(contentLocaleText('Deutsch', '', 'nl')).toBe('Deutsch');
+        expect(contentLocaleText('Deutsch', 'English', 'en', 'Dutch copy')).toBe('English');
+    });
 });
 
 describe('pathNameSlugify', () => {

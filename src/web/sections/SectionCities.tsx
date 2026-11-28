@@ -12,6 +12,7 @@ export type SectionCitiesCity = {
     pathName: string;
     nameDe: string;
     nameEn: string;
+    nameNl?: string;
     countryCode: CityCountryCode;
 };
 
@@ -83,7 +84,7 @@ export function SectionCities({
                                     params={{ pathName: city.pathName }}
                                     className="text-sm/6 text-muted-foreground transition-colors hover:text-foreground focus-visible:rounded-sm focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none active:text-foreground/80"
                                 >
-                                    {contentLocaleText(city.nameDe, city.nameEn, locale)}
+                                    {contentLocaleText(city.nameDe, city.nameEn, locale, city.nameNl)}
                                 </Link>
                             </li>
                         ))}

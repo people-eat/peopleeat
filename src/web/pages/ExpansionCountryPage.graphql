@@ -10,6 +10,7 @@ query ExpansionCountryPage($countryCode: CityCountryCode!) {
             pathName
             nameDe
             nameEn
+            nameNl
             countryCode
             latitude
             longitude

@@ -15,6 +15,7 @@ export type ComingToCountryCity = {
     pathName: string;
     nameDe: string;
     nameEn: string;
+    nameNl?: string;
     latitude: number;
     longitude: number;
 };
@@ -30,7 +31,7 @@ export function SectionComingToCountryCities({
 }) {
     const locale = useLocale();
     const { t } = useT('public');
-    const cityNames = cities.map((city) => contentLocaleText(city.nameDe, city.nameEn, locale));
+    const cityNames = cities.map((city) => contentLocaleText(city.nameDe, city.nameEn, locale, city.nameNl));
     const cityList = cityNames.length > 0 ? expansionMarketCityNamesJoin(cityNames, locale) : expansionMarketCityList(market, locale);
     const foundingChef = audience === 'founding-chef';
     const inCountry = expansionMarketInCountryPhrase(market, locale);
@@ -46,7 +47,7 @@ export function SectionComingToCountryCities({
                     {cities.map((city) => (
                         <li key={city.pathName}>
                             <h3 className="py-5 font-serif text-3xl font-light tracking-tight @md:py-7 @md:text-5xl">
-                                {contentLocaleText(city.nameDe, city.nameEn, locale)}
+                                {contentLocaleText(city.nameDe, city.nameEn, locale, city.nameNl)}
                             </h3>
                         </li>
                     ))}

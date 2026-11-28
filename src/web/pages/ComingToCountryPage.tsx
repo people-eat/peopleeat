@@ -17,7 +17,7 @@ export function ComingToCountryPage({ data, market }: { data: GqlCExpansionCount
     const citiesOverride =
         cities.length > 0
             ? expansionMarketCityNamesJoin(
-                  cities.map((city) => contentLocaleText(city.nameDe, city.nameEn, locale)),
+                  cities.map((city) => contentLocaleText(city.nameDe, city.nameEn, locale, city.nameNl)),
                   locale,
               )
             : undefined;

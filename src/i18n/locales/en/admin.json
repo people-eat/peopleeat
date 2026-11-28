@@ -587,6 +587,7 @@
         "title": "Title",
         "bodyDe": "Body (DE)",
         "bodyEn": "Body (EN)",
+        "bodyNl": "Body (NL)",
         "time2": "Time",
         "notConfigured": "Not configured",
         "pleaseChooseAFullAddress": "Please choose a full address.",
@@ -625,6 +626,7 @@
         "firstSection": "First section",
         "headlineDe": "Headline (DE)",
         "headlineEn": "Headline (EN)",
+        "headlineNl": "Headline (NL)",
         "sectionImage": "Section image",
         "removeSectionImage": "Remove section image?",
         "cookPayout": "Cook payout",
@@ -2706,7 +2708,8 @@
             "COOK_BIOGRAPHY_SUMMARY": "Biography summary",
             "BOOKING_REQUEST_COOK_MENU_EVALUATION": "Menu evaluation (request)",
             "BOOKING_REQUEST_ADJUSTED_MESSAGE": "Adjusted booking-request message",
-            "WEB_PAGE_SEO_TRANSLATE": "SEO translation"
+            "WEB_PAGE_SEO_TRANSLATE": "SEO translation",
+            "CITY_COPY_TRANSLATE": "City translation"
         }
     },
     "list": {

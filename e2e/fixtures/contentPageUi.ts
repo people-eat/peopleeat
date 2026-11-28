@@ -10,8 +10,16 @@ function contentPageSavedToast(page: Page) {
 
 /** Edit SEO path/title + hero headline (DE fields; editor defaults to DE content locale). */
 export async function contentPageIdentityFill(page: Page, input: { pathName: string; title: string; headline: string }): Promise<void> {
-    await page.getByRole('textbox', { name: 'Path (slug)' }).fill(input.pathName);
-    await page.getByRole('textbox', { name: 'Title', exact: true }).fill(input.title);
+    const seoTab = page.getByRole('tab', { name: 'SEO' });
+    if ((await seoTab.count()) > 0) {
+        await seoTab.click();
+        await page.getByRole('textbox', { name: 'Path (slug)' }).fill(input.pathName);
+        await page.getByRole('textbox', { name: 'Title', exact: true }).fill(input.title);
+        await page.getByRole('tab', { name: 'Edit' }).click();
+    } else {
+        await page.getByRole('textbox', { name: 'Path (slug)' }).fill(input.pathName);
+        await page.getByRole('textbox', { name: 'Title', exact: true }).fill(input.title);
+    }
     // exact: true — "Subheadline" also matches a loose "Headline" label query.
     await page.getByRole('textbox', { name: 'Headline', exact: true }).fill(input.headline);
 }

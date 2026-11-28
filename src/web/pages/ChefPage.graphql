@@ -24,6 +24,7 @@ query ChefPage($pathName: String!, $includeLastVisitedCookProfiles: Boolean!, $e
                 pathName
                 nameDe
                 nameEn
+                nameNl
             }
             minimumPriceAmount
             maximumPriceAmount

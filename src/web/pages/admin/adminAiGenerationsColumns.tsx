@@ -34,6 +34,7 @@ export const ADMIN_AI_GENERATION_KINDS: GqlCAdminAiGenerationKind[] = [
     'BOOKING_REQUEST_COOK_MENU_EVALUATION',
     'BOOKING_REQUEST_ADJUSTED_MESSAGE',
     'WEB_PAGE_SEO_TRANSLATE',
+    'CITY_COPY_TRANSLATE',
 ];
 
 const columnHelper = createColumnHelper<AdminAiGenerationsDataTableFeatures, AdminAiGenerationsTableRow>();

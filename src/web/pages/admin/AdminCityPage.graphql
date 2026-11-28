@@ -1,4 +1,8 @@
-query AdminCityPage($cityId: ID!) {
+# City CMS detail. Seed-and-subscribe on `adminUpdates`. 90-day visit sparkline
+# on the SEO tab uses `webPageVisitTraffic` (not the subscription).
+# See docs/features/cities.md.
+
+query AdminCityPage($cityId: ID!, $range: DateTimeRange!, $granularity: AdminTimeBucketGranularity! = week) {
     currentSession {
         user {
             admin {
@@ -9,6 +13,25 @@ query AdminCityPage($cityId: ID!) {
                 testimonials {
                     ...AdminTestimonialCardFields
                 }
+                webPageVisitTraffic(
+                    range: $range
+                    granularity: $granularity
+                    webPageKeys: [CITIES]
+                    audience: HUMAN
+                    metric: PAGEVIEWS
+                    scope: ALL
+                    entity: { cityIds: [$cityId] }
+                ) {
+                    series {
+                        entityId
+                        label
+                        pageviews
+                        buckets {
+                            bucketStart
+                            count
+                        }
+                    }
+                }
             }
         }
     }
@@ -17,6 +40,7 @@ query AdminCityPage($cityId: ID!) {
             pathName
             nameDe
             nameEn
+            nameNl
             countryCode
         }
     }
@@ -27,6 +51,20 @@ mutation AdminCityUpsert($input: CityUpsert!) {
         cityUpsert(input: $input) {
             success
             referenceId
+        }
+    }
+}
+
+mutation AdminCityCopyTranslate($locale: Locale!, $input: AdminCityCopyTranslateInput!) {
+    admin {
+        cityCopyTranslate(locale: $locale, input: $input) {
+            name
+            title
+            description
+            headline
+            subHeadline
+            firstSectionHeadline
+            firstSectionBody
         }
     }
 }

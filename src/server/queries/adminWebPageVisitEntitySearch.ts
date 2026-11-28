@@ -75,13 +75,26 @@ async function searchNamedEntities(
 
     if (key === 'CITIES') {
         const rows = await serverRuntime.db
-            .select({ cityId: cities.cityId, pathName: cities.pathName, nameDe: cities.nameDe, nameEn: cities.nameEn })
+            .select({
+                cityId: cities.cityId,
+                pathName: cities.pathName,
+                nameDe: cities.nameDe,
+                nameEn: cities.nameEn,
+                nameNl: cities.nameNl,
+            })
             .from(cities)
-            .where(or(ilike(cities.nameDe, pattern), ilike(cities.nameEn, pattern), ilike(cities.pathName, pattern)))
+            .where(
+                or(
+                    ilike(cities.nameDe, pattern),
+                    ilike(cities.nameEn, pattern),
+                    ilike(cities.nameNl, pattern),
+                    ilike(cities.pathName, pattern),
+                ),
+            )
             .limit(WEB_PAGE_VISIT_ENTITY_RANK_MAX);
         return rows.map((row) => ({
             id: row.cityId,
-            label: contentLocaleText(row.nameDe, row.nameEn, locale),
+            label: contentLocaleText(row.nameDe, row.nameEn, locale, row.nameNl),
             pathName: row.pathName,
         }));
     }

@@ -91,13 +91,19 @@ export const contentSectionsSchema = z.array(contentSectionSchema);
 export type ContentSection = z.infer<typeof contentSectionSchema>;
 
 /**
- * CMS columns are still paired `*De` / `*En` only, except fixed-route `WebPages` which also store `*Nl`.
+ * CMS columns are paired `*De` / `*En`, plus optional `*Nl` on cities and web pages.
  * - `de` → German
+ * - `nl` → Dutch when non-empty, otherwise English, otherwise German
  * - every other catalog locale → English when non-empty, otherwise German
  * Route chrome should use `webPageSeoText` so Dutch CMS and FR/IT/RU catalog SEO apply.
  */
-export function contentLocaleText(de: string, en: string | null | undefined, locale: Locale): string {
+export function contentLocaleText(de: string, en: string | null | undefined, locale: Locale, nl?: string | null | undefined): string {
     if (locale === 'de') return de;
+    if (locale === 'nl') {
+        if (nl?.trim()) return nl;
+        if (en?.trim()) return en;
+        return de;
+    }
     if (en?.trim()) return en;
     return de;
 }

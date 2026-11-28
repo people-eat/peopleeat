@@ -31,6 +31,7 @@
         "title": "Titolo",
         "bodyDe": "Body(DE)",
         "bodyEn": "Body(EN)",
+        "bodyNl": "Body(NL)",
         "time2": "Ora",
         "notConfigured": "Non configurato",
         "pleaseChooseAFullAddress": "Scegli un indirizzo completo.",
@@ -69,6 +70,7 @@
         "firstSection": "Prima sezione",
         "headlineDe": "Headline(DE)",
         "headlineEn": "Headline(EN)",
+        "headlineNl": "Headline(NL)",
         "sectionImage": "Section immagine",
         "removeSectionImage": "Rimuovi section immagine?",
         "cookPayout": "Cuoco payout",
@@ -2706,7 +2708,8 @@
             "COOK_BIOGRAPHY_SUMMARY": "Riassunto biografia",
             "BOOKING_REQUEST_COOK_MENU_EVALUATION": "Valutazione menu (richiesta)",
             "BOOKING_REQUEST_ADJUSTED_MESSAGE": "Messaggio richiesta adattato",
-            "WEB_PAGE_SEO_TRANSLATE": "Traduzione SEO"
+            "WEB_PAGE_SEO_TRANSLATE": "Traduzione SEO",
+            "CITY_COPY_TRANSLATE": "Traduzione città"
         }
     },
     "list": {

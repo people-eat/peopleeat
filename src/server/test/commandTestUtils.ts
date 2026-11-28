@@ -65,6 +65,7 @@ function aiForTest(): ServerRuntime['ai'] {
         cookMenuEvaluationModel: () => new MockLanguageModelV3(),
         bookingRequestAdjustedMessageModel: () => new MockLanguageModelV3(),
         webPageSeoTranslateModel: () => new MockLanguageModelV3(),
+        cityCopyTranslateModel: () => new MockLanguageModelV3(),
         webSearchTool: () => tool({ description: 'web search (test stub)', inputSchema: z.object({}) }),
     };
 }

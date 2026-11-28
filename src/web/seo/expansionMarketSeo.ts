@@ -19,6 +19,7 @@ import { webPageUrlGet } from './webPageUrlGet';
 export type ExpansionMarketSeoCity = {
     nameDe: string;
     nameEn: string;
+    nameNl?: string;
     latitude: number;
     longitude: number;
 };
@@ -26,7 +27,7 @@ export type ExpansionMarketSeoCity = {
 function expansionMarketJsonLdCities(market: ExpansionMarket, locale: Locale, cities: readonly ExpansionMarketSeoCity[]) {
     if (cities.length > 0) {
         return cities.map((city) => ({
-            name: contentLocaleText(city.nameDe, city.nameEn, locale),
+            name: contentLocaleText(city.nameDe, city.nameEn, locale, city.nameNl),
             latitude: city.latitude,
             longitude: city.longitude,
         }));
@@ -42,7 +43,7 @@ function expansionMarketJsonLdCities(market: ExpansionMarket, locale: Locale, ci
 function expansionMarketCitiesOverride(cities: readonly ExpansionMarketSeoCity[], locale: Locale): string | undefined {
     if (cities.length === 0) return undefined;
     return expansionMarketCityNamesJoin(
-        cities.map((city) => contentLocaleText(city.nameDe, city.nameEn, locale)),
+        cities.map((city) => contentLocaleText(city.nameDe, city.nameEn, locale, city.nameNl)),
         locale,
     );
 }

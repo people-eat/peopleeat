@@ -192,23 +192,30 @@ fragment AdminCityFields on AdminCity {
     previousPathNames
     nameDe
     nameEn
+    nameNl
     countryCode
     latitude
     longitude
     titleDe
     titleEn
+    titleNl
     descriptionDe
     descriptionEn
+    descriptionNl
     headlineDe
     headlineEn
+    headlineNl
     subHeadlineDe
     subHeadlineEn
+    subHeadlineNl
     heroImageFileUploadId
     heroImageUrl
     firstSectionHeadlineDe
     firstSectionHeadlineEn
+    firstSectionHeadlineNl
     firstSectionBodyDe
     firstSectionBodyEn
+    firstSectionBodyNl
     firstSectionImageFileUploadId
     firstSectionImageUrl
     sections {
@@ -242,23 +249,30 @@ fragment PublicCityFields on PublicCity {
     previousPathNames
     nameDe
     nameEn
+    nameNl
     countryCode
     latitude
     longitude
     titleDe
     titleEn
+    titleNl
     descriptionDe
     descriptionEn
+    descriptionNl
     headlineDe
     headlineEn
+    headlineNl
     subHeadlineDe
     subHeadlineEn
+    subHeadlineNl
     heroImageFileUploadId
     heroImageUrl
     firstSectionHeadlineDe
     firstSectionHeadlineEn
+    firstSectionHeadlineNl
     firstSectionBodyDe
     firstSectionBodyEn
+    firstSectionBodyNl
     firstSectionImageFileUploadId
     firstSectionImageUrl
     sections {

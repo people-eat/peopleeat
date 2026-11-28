@@ -36,8 +36,10 @@ type ContentPageHeroVariant = 'fullBleed' | 'article';
 export type ContentPageViewModel = {
     headlineDe: string;
     headlineEn: string;
+    headlineNl?: string;
     subHeadlineDe: string;
     subHeadlineEn: string;
+    subHeadlineNl?: string;
     heroImageUrl: string | null | undefined;
     /** Used when `heroImageUrl` is missing (city pages ship a stock fallback). */
     heroImageFallbackUrl?: string;
@@ -57,8 +59,10 @@ export type ContentPageViewModel = {
         displayName: string;
         headlineDe: string;
         headlineEn: string;
+        headlineNl?: string;
         bodyDe: string;
         bodyEn: string;
+        bodyNl?: string;
         imageUrl?: string | null;
         imageAlt?: string;
         /** Partner-only CTA override for first-section + header; omit / null keeps the booking form. */
@@ -128,8 +132,8 @@ function ContentPageViewBody({
     const { t } = useT('common');
     const { t: tPublic } = useT('public');
     const heroVariant = page.heroVariant ?? 'fullBleed';
-    const headline = contentLocaleText(page.headlineDe, page.headlineEn, locale).trim();
-    const subheadline = contentLocaleText(page.subHeadlineDe, page.subHeadlineEn, locale).trim();
+    const headline = contentLocaleText(page.headlineDe, page.headlineEn, locale, page.headlineNl).trim();
+    const subheadline = contentLocaleText(page.subHeadlineDe, page.subHeadlineEn, locale, page.subHeadlineNl).trim();
     const uploadedHero = page.heroImageUrl?.trim() || null;
     const heroSrc = uploadedHero ?? page.heroImageFallbackUrl ?? null;
     const heroAlt = uploadedHero
@@ -181,8 +185,10 @@ function ContentPageViewBody({
                             displayName={page.chefForAnyOccasion.displayName}
                             headlineDe={page.chefForAnyOccasion.headlineDe}
                             headlineEn={page.chefForAnyOccasion.headlineEn}
+                            headlineNl={page.chefForAnyOccasion.headlineNl}
                             bodyDe={page.chefForAnyOccasion.bodyDe}
                             bodyEn={page.chefForAnyOccasion.bodyEn}
+                            bodyNl={page.chefForAnyOccasion.bodyNl}
                             imageUrl={page.chefForAnyOccasion.imageUrl}
                             imageAlt={page.chefForAnyOccasion.imageAlt}
                             ctaUrl={page.chefForAnyOccasion.ctaUrl}

@@ -17,8 +17,10 @@ export function SectionChefForAnyOccasion({
     displayName,
     headlineDe,
     headlineEn,
+    headlineNl,
     bodyDe,
     bodyEn,
+    bodyNl,
     imageUrl,
     imageAlt,
     ctaUrl,
@@ -31,8 +33,10 @@ export function SectionChefForAnyOccasion({
     displayName: string;
     headlineDe: string;
     headlineEn: string;
+    headlineNl?: string;
     bodyDe: string;
     bodyEn: string;
+    bodyNl?: string;
     imageUrl?: string | null;
     imageAlt?: string;
     /** Partner-only override for the primary CTA; omit for the booking form. */
@@ -42,8 +46,8 @@ export function SectionChefForAnyOccasion({
     imageOverlay?: boolean;
     className?: string;
 }) {
-    const headline = contentLocaleText(headlineDe, headlineEn, locale).trim();
-    const body = contentLocaleText(bodyDe, bodyEn, locale).trim();
+    const headline = contentLocaleText(headlineDe, headlineEn, locale, headlineNl).trim();
+    const body = contentLocaleText(bodyDe, bodyEn, locale, bodyNl).trim();
     const formattedAmount = promo ? formatCurrency(promo.amountCents, { locale }) : null;
 
     return (

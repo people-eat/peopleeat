@@ -10,7 +10,8 @@ section stack per entity.
 
 1. **Canonical type** — `ContentSection` in [`src/shared/contentSection.ts`](../../src/shared/contentSection.ts), validated with Zod on
    write (`contentSectionsSchema`). Paired `*De` / `*En` fields; non-`de` locales prefer EN when present (`contentLocaleText` /
-   `contentLocaleItems`).
+   `contentLocaleItems`). City entity-owned copy (name, SEO, hero, first section) also stores `*Nl`; the city editor DE/EN/NL toggle edits
+   those columns. Free-form section blocks stay DE/EN, so the NL tab shows English section fields.
 2. **Persistence** — jsonb `sections` column on `Cities`, `PartnerVenues`, `Occasions`, and `BlogPosts`.
 3. **GraphQL** — one `ContentSection` union; mappers stamp `gqlTypeName` (see [`extensions.ts`](../../src/server/graphql/extensions.ts));
    `__resolveType` returns `obj.gqlTypeName`. Write path uses flat `ContentSectionInput` + Zod narrowing.

@@ -55,8 +55,13 @@ export function CitiesPage({ data }: { data: GqlCPublicCitiesPageQuery }) {
                                 </h2>
                                 <ul className="grid grid-cols-1 gap-8 @md:grid-cols-2">
                                     {group.cities.map((city) => {
-                                        const title = contentLocaleText(city.titleDe, city.titleEn, locale);
-                                        const description = contentLocaleText(city.descriptionDe, city.descriptionEn, locale);
+                                        const title = contentLocaleText(city.titleDe, city.titleEn, locale, city.titleNl);
+                                        const description = contentLocaleText(
+                                            city.descriptionDe,
+                                            city.descriptionEn,
+                                            locale,
+                                            city.descriptionNl,
+                                        );
                                         return (
                                             <li key={city.pathName}>
                                                 <Link

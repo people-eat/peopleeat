@@ -77,6 +77,7 @@ function citiesFilteredSorted({ cities, search, locale }: { cities: CityRow[]; s
         return (
             city.nameDe.toLowerCase().includes(q) ||
             city.nameEn.toLowerCase().includes(q) ||
+            city.nameNl.toLowerCase().includes(q) ||
             city.pathName.toLowerCase().includes(q) ||
             city.titleDe.toLowerCase().includes(q)
         );
@@ -189,21 +190,28 @@ export function AdminCitiesPage({ data, search }: { data: GqlCAdminCitiesPageQue
                     pathName: `stadt-${Date.now()}`,
                     nameDe: trimmedName,
                     nameEn: '',
+                    nameNl: '',
                     countryCode,
                     latitude: center.latitude,
                     longitude: center.longitude,
                     titleDe: `Privatkoch in ${trimmedName}`,
                     titleEn: '',
+                    titleNl: '',
                     descriptionDe: 'Beschreibung',
                     descriptionEn: '',
+                    descriptionNl: '',
                     headlineDe: 'Privatkoch buchen',
                     headlineEn: '',
+                    headlineNl: '',
                     subHeadlineDe: 'Für jeden Anlass',
                     subHeadlineEn: '',
+                    subHeadlineNl: '',
                     firstSectionHeadlineDe: '',
                     firstSectionHeadlineEn: '',
+                    firstSectionHeadlineNl: '',
                     firstSectionBodyDe: '',
                     firstSectionBodyEn: '',
+                    firstSectionBodyNl: '',
                     sections: [],
                     publishedAt: null,
                 },

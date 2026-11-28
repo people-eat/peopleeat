@@ -38,30 +38,78 @@ export type ContentPageEditorValues = {
     pathName: string;
     titleDe: string;
     titleEn: string;
+    titleNl?: string;
     descriptionDe: string;
     descriptionEn: string;
+    descriptionNl?: string;
     headlineDe: string;
     headlineEn: string;
+    headlineNl?: string;
     subHeadlineDe: string;
     subHeadlineEn: string;
+    subHeadlineNl?: string;
     heroImageFileUploadId: string | null;
     sections: ContentSection[];
     publishedAt: string | null;
 };
 
-export type ContentPageEditorTab = 'edit' | 'preview';
+export type ContentPageCmsLocale = 'de' | 'en' | 'nl';
+
+const CONTENT_PAGE_CMS_LOCALE_LABEL: Record<ContentPageCmsLocale, string> = {
+    de: 'DE',
+    en: 'EN',
+    nl: 'NL',
+};
+
+const CONTENT_PAGE_CMS_LOCALES_DEFAULT: readonly ContentPageCmsLocale[] = ['de', 'en'];
+
+export function contentPageCmsLocale(locale: Locale): ContentPageCmsLocale {
+    if (locale === 'en' || locale === 'nl') return locale;
+    return 'de';
+}
+
+function contentPageEditorFieldLocale(locale: Locale, cmsLocales: readonly ContentPageCmsLocale[]): ContentPageCmsLocale {
+    const cms = contentPageCmsLocale(locale);
+    if (cms === 'nl' && !cmsLocales.includes('nl')) return 'en';
+    return cms;
+}
+
+type ContentPageCopyStem = 'title' | 'description' | 'headline' | 'subHeadline';
+
+function contentPageCopyGet(values: ContentPageEditorValues, locale: ContentPageCmsLocale, stem: ContentPageCopyStem): string {
+    if (locale === 'nl') return values[`${stem}Nl`] ?? '';
+    if (locale === 'en') return values[`${stem}En`];
+    return values[`${stem}De`];
+}
+
+function contentPageCopyPatch(locale: ContentPageCmsLocale, stem: ContentPageCopyStem, value: string): Partial<ContentPageEditorValues> {
+    if (locale === 'nl') return { [`${stem}Nl`]: value };
+    if (locale === 'en') return { [`${stem}En`]: value };
+    return { [`${stem}De`]: value };
+}
+
+type ContentPageEditorSlot = React.ReactNode | ((editLocale: Locale) => React.ReactNode);
+
+function renderEditorSlot(slot: ContentPageEditorSlot | undefined, editLocale: Locale): React.ReactNode {
+    if (typeof slot === 'function') return slot(editLocale);
+    return slot;
+}
+
+export type ContentPageEditorTab = 'edit' | 'preview' | 'seo';
 
 export type ContentPageEditorSearch = {
     tab?: ContentPageEditorTab;
 };
 
 export function parseContentPageEditorSearch(search: Record<string, unknown>): ContentPageEditorSearch {
-    const tab = search.tab === 'preview' ? 'preview' : search.tab === 'edit' ? 'edit' : undefined;
+    const tab = search.tab === 'preview' || search.tab === 'edit' || search.tab === 'seo' ? search.tab : undefined;
     return { tab };
 }
 
-export function contentPageEditorTabFromSearch(search: ContentPageEditorSearch): ContentPageEditorTab {
-    return search.tab === 'preview' ? 'preview' : 'edit';
+export function contentPageEditorTabFromSearch(search: ContentPageEditorSearch, options: { seoTab?: boolean } = {}): ContentPageEditorTab {
+    if (search.tab === 'preview') return 'preview';
+    if (search.tab === 'seo' && options.seoTab) return 'seo';
+    return 'edit';
 }
 
 type ContentPageEditorDetail =
@@ -116,11 +164,15 @@ export function ContentPageEditor({
     onSave,
     onDelete,
     busy,
+    cmsLocales = CONTENT_PAGE_CMS_LOCALES_DEFAULT,
+    localeActions,
     identityFields,
     extraFields,
     listTo,
     detail,
     tab,
+    seoTab = false,
+    seoTabContent,
     user,
     featuredCooks,
     featuredCooksShowCity,
@@ -146,13 +198,21 @@ export function ContentPageEditor({
     onSave: (values: ContentPageEditorValues) => Promise<void>;
     onDelete?: () => Promise<void>;
     busy: boolean;
+    /** CMS locales shown in the editor language toggle. Cities pass DE/EN/NL. */
+    cmsLocales?: readonly ContentPageCmsLocale[];
+    /** Extra controls next to the DE/EN/NL toggle (city translate-from-German). */
+    localeActions?: (editLocale: Locale) => React.ReactNode;
     /** Entity identity (name, geo, …) — rendered after SEO, before Hero. */
-    identityFields?: React.ReactNode;
+    identityFields?: ContentPageEditorSlot;
     /** Page-body extras (first section, cooks, testimonials, …) — after Hero, before configurable sections. */
-    extraFields?: React.ReactNode;
+    extraFields?: ContentPageEditorSlot;
     listTo: ContentPageEditorListTo;
     detail: ContentPageEditorDetail;
     tab: ContentPageEditorTab;
+    /** When true, path/title/description move onto an SEO tab (city traffic + meta). */
+    seoTab?: boolean;
+    /** Rendered above the SEO fields (90-day visit sparkline). */
+    seoTabContent?: React.ReactNode;
     user: PublicHeaderUser;
     featuredCooks?: ContentPageViewModel['featuredCooks'];
     featuredCooksShowCity?: ContentPageViewModel['featuredCooksShowCity'];
@@ -183,12 +243,19 @@ export function ContentPageEditor({
     const previewScrollRef = useRef<HTMLDivElement>(null);
     const status = publishStatusFrom(values.publishedAt);
     const publicDetail = values.pathName.trim() ? contentPagePublicDetail(listTo, values.pathName.trim()) : null;
+    const fieldLocale = contentPageEditorFieldLocale(editLocale, cmsLocales);
+    const sectionEditLocale = fieldLocale === 'nl' ? 'en' : fieldLocale;
 
     // Warm EN catalogs while the editor is still on DE so the first DE→EN preview
     // flip does not blank the pane waiting on Suspense inside ContentPageView.
     useEffect(() => {
         void i18nResourcesLoadPromise('en', ['common', 'public']);
     }, []);
+    useEffect(() => {
+        if (cmsLocales.includes('nl')) {
+            void i18nResourcesLoadPromise('nl', ['common', 'public']);
+        }
+    }, [cmsLocales]);
 
     useContentPageEditorPreviewSync({
         editorColumnRef,
@@ -270,8 +337,10 @@ export function ContentPageEditor({
             page={{
                 headlineDe: values.headlineDe,
                 headlineEn: values.headlineEn,
+                headlineNl: values.headlineNl,
                 subHeadlineDe: values.subHeadlineDe,
                 subHeadlineEn: values.subHeadlineEn,
+                subHeadlineNl: values.subHeadlineNl,
                 heroImageUrl: values.heroImageFileUploadId ? fileUploadPublicUrl(values.heroImageFileUploadId) : null,
                 heroImageFallbackUrl,
                 heroImageOverlay,
@@ -294,6 +363,105 @@ export function ContentPageEditor({
         />
     );
 
+    const editorToolbar = (
+        <div className="flex flex-col gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+                <span className="w-full text-sm text-muted-foreground sm:w-auto">
+                    {t('contentPage.statusLabel')}: {statusLabel}
+                </span>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button type="button" variant="outline" size="icon" disabled={busy} aria-label={t('contentPage.moreActions')}>
+                            <MoreHorizontalIcon className="size-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        {publicDetail ? (
+                            <DropdownMenuItem asChild>
+                                <Link to={publicDetail.to} params={publicDetail.params} target="_blank">
+                                    {t('contentPage.publicPage')}
+                                </Link>
+                            </DropdownMenuItem>
+                        ) : null}
+                        {status !== 'published' ? (
+                            <DropdownMenuItem
+                                disabled={busy}
+                                onSelect={() => {
+                                    setScheduleDate(publishedAtToDate(values.publishedAt) ?? undefined);
+                                    setScheduleOpen(true);
+                                }}
+                            >
+                                {t('contentPage.schedule')}
+                            </DropdownMenuItem>
+                        ) : null}
+                        {status !== 'draft' ? (
+                            <DropdownMenuItem disabled={busy} onSelect={() => setConfirm('unpublish')}>
+                                {t('contentPage.unpublish')}
+                            </DropdownMenuItem>
+                        ) : null}
+                        {onDelete ? (
+                            <DropdownMenuItem variant="destructive" disabled={busy} onSelect={() => setConfirm('delete')}>
+                                {t('contentPage.delete')}
+                            </DropdownMenuItem>
+                        ) : null}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+                {status !== 'published' ? (
+                    <Button type="button" variant="outline" disabled={busy} onClick={() => setConfirm('publish')}>
+                        {t('contentPage.publish')}
+                    </Button>
+                ) : null}
+                <Button type="button" disabled={busy} onClick={() => void handleSave()}>
+                    {t('save')}
+                </Button>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+                {cmsLocales.map((cmsLocale) => (
+                    <Button
+                        key={cmsLocale}
+                        type="button"
+                        variant={editLocale === cmsLocale ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setEditLocale(cmsLocale)}
+                    >
+                        {CONTENT_PAGE_CMS_LOCALE_LABEL[cmsLocale]}
+                    </Button>
+                ))}
+                {localeActions?.(editLocale)}
+            </div>
+        </div>
+    );
+
+    const seoCard = (
+        <Card className="gap-4 py-4" data-content-editor-anchor="top">
+            <CardHeader className="px-4">
+                <CardTitle>{t('contentPage.seo')}</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3 px-4">
+                <Field label={t('contentPage.pathSlug')}>
+                    <Input
+                        value={values.pathName}
+                        onChange={(e) => patch({ pathName: pathNameSlugify(e.target.value) || e.target.value })}
+                        onBlur={() => patch({ pathName: pathNameSlugify(values.pathName) })}
+                    />
+                </Field>
+                <Field label={t('contentPage.title')}>
+                    <Input
+                        value={contentPageCopyGet(values, fieldLocale, 'title')}
+                        onChange={(e) => patch(contentPageCopyPatch(fieldLocale, 'title', e.target.value))}
+                    />
+                </Field>
+                <Field label={t('contentPage.description')}>
+                    <Textarea
+                        rows={3}
+                        value={contentPageCopyGet(values, fieldLocale, 'description')}
+                        onChange={(e) => patch(contentPageCopyPatch(fieldLocale, 'description', e.target.value))}
+                    />
+                </Field>
+            </CardContent>
+        </Card>
+    );
+
     return (
         <div className="flex flex-col gap-6">
             <Tabs value={tab}>
@@ -308,6 +476,13 @@ export function ContentPageEditor({
                             {t('contentPage.preview')}
                         </Link>
                     </TabsTrigger>
+                    {seoTab ? (
+                        <TabsTrigger value="seo" asChild>
+                            <Link to={detail.to} params={detail.params} search={{ tab: 'seo' }} replace>
+                                {t('contentPage.seo')}
+                            </Link>
+                        </TabsTrigger>
+                    ) : null}
                 </TabsList>
             </Tabs>
 
@@ -315,121 +490,20 @@ export function ContentPageEditor({
                 // `translateZ(0)` makes Header's over-media `fixed` relative to this
                 // pane so chrome stays inside the preview instead of the viewport.
                 <div className="overflow-hidden border border-border transform-[translateZ(0)]">{pageView}</div>
+            ) : tab === 'seo' && seoTab ? (
+                <div className="flex max-w-2xl flex-col gap-6">
+                    {editorToolbar}
+                    {seoTabContent}
+                    {seoCard}
+                </div>
             ) : (
                 <div className="grid gap-8 lg:grid-cols-2">
                     <div ref={editorColumnRef} className="flex min-w-0 flex-col gap-6">
-                        <div className="flex flex-col gap-3">
-                            <div className="flex flex-wrap items-center gap-2">
-                                <span className="w-full text-sm text-muted-foreground sm:w-auto">
-                                    {t('contentPage.statusLabel')}: {statusLabel}
-                                </span>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="icon"
-                                            disabled={busy}
-                                            aria-label={t('contentPage.moreActions')}
-                                        >
-                                            <MoreHorizontalIcon className="size-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        {publicDetail ? (
-                                            <DropdownMenuItem asChild>
-                                                <Link to={publicDetail.to} params={publicDetail.params} target="_blank">
-                                                    {t('contentPage.publicPage')}
-                                                </Link>
-                                            </DropdownMenuItem>
-                                        ) : null}
-                                        {status !== 'published' ? (
-                                            <DropdownMenuItem
-                                                disabled={busy}
-                                                onSelect={() => {
-                                                    setScheduleDate(publishedAtToDate(values.publishedAt) ?? undefined);
-                                                    setScheduleOpen(true);
-                                                }}
-                                            >
-                                                {t('contentPage.schedule')}
-                                            </DropdownMenuItem>
-                                        ) : null}
-                                        {status !== 'draft' ? (
-                                            <DropdownMenuItem disabled={busy} onSelect={() => setConfirm('unpublish')}>
-                                                {t('contentPage.unpublish')}
-                                            </DropdownMenuItem>
-                                        ) : null}
-                                        {onDelete ? (
-                                            <DropdownMenuItem variant="destructive" disabled={busy} onSelect={() => setConfirm('delete')}>
-                                                {t('contentPage.delete')}
-                                            </DropdownMenuItem>
-                                        ) : null}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                                {status !== 'published' ? (
-                                    <Button type="button" variant="outline" disabled={busy} onClick={() => setConfirm('publish')}>
-                                        {t('contentPage.publish')}
-                                    </Button>
-                                ) : null}
-                                <Button type="button" disabled={busy} onClick={() => void handleSave()}>
-                                    {t('save')}
-                                </Button>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                                <Button
-                                    type="button"
-                                    variant={editLocale === 'de' ? 'default' : 'outline'}
-                                    size="sm"
-                                    onClick={() => setEditLocale('de')}
-                                >
-                                    DE
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant={editLocale === 'en' ? 'default' : 'outline'}
-                                    size="sm"
-                                    onClick={() => setEditLocale('en')}
-                                >
-                                    EN
-                                </Button>
-                            </div>
-                        </div>
+                        {editorToolbar}
 
-                        <Card className="gap-4 py-4" data-content-editor-anchor="top">
-                            <CardHeader className="px-4">
-                                <CardTitle>{t('contentPage.seo')}</CardTitle>
-                            </CardHeader>
-                            <CardContent className="flex flex-col gap-3 px-4">
-                                <Field label={t('contentPage.pathSlug')}>
-                                    <Input
-                                        value={values.pathName}
-                                        onChange={(e) => patch({ pathName: pathNameSlugify(e.target.value) || e.target.value })}
-                                        onBlur={() => patch({ pathName: pathNameSlugify(values.pathName) })}
-                                    />
-                                </Field>
-                                <Field label={t('contentPage.title')}>
-                                    <Input
-                                        value={editLocale === 'en' ? values.titleEn : values.titleDe}
-                                        onChange={(e) =>
-                                            patch(editLocale === 'en' ? { titleEn: e.target.value } : { titleDe: e.target.value })
-                                        }
-                                    />
-                                </Field>
-                                <Field label={t('contentPage.description')}>
-                                    <Textarea
-                                        rows={3}
-                                        value={editLocale === 'en' ? values.descriptionEn : values.descriptionDe}
-                                        onChange={(e) =>
-                                            patch(
-                                                editLocale === 'en' ? { descriptionEn: e.target.value } : { descriptionDe: e.target.value },
-                                            )
-                                        }
-                                    />
-                                </Field>
-                            </CardContent>
-                        </Card>
+                        {seoTab ? null : seoCard}
 
-                        {identityFields}
+                        {renderEditorSlot(identityFields, editLocale)}
 
                         <Card className="gap-4 py-4" data-content-editor-anchor="hero">
                             <CardHeader className="px-4">
@@ -438,35 +512,21 @@ export function ContentPageEditor({
                             <CardContent className="flex flex-col gap-3 px-4">
                                 <Field label={t('contentPage.headline')}>
                                     <Input
-                                        value={editLocale === 'en' ? values.headlineEn : values.headlineDe}
-                                        onChange={(e) =>
-                                            patch(editLocale === 'en' ? { headlineEn: e.target.value } : { headlineDe: e.target.value })
-                                        }
+                                        value={contentPageCopyGet(values, fieldLocale, 'headline')}
+                                        onChange={(e) => patch(contentPageCopyPatch(fieldLocale, 'headline', e.target.value))}
                                     />
                                 </Field>
                                 <Field label={heroVariant === 'article' ? t('contentPage.lead') : t('contentPage.subheadline')}>
                                     {heroVariant === 'article' ? (
                                         <Textarea
                                             rows={3}
-                                            value={editLocale === 'en' ? values.subHeadlineEn : values.subHeadlineDe}
-                                            onChange={(e) =>
-                                                patch(
-                                                    editLocale === 'en'
-                                                        ? { subHeadlineEn: e.target.value }
-                                                        : { subHeadlineDe: e.target.value },
-                                                )
-                                            }
+                                            value={contentPageCopyGet(values, fieldLocale, 'subHeadline')}
+                                            onChange={(e) => patch(contentPageCopyPatch(fieldLocale, 'subHeadline', e.target.value))}
                                         />
                                     ) : (
                                         <Input
-                                            value={editLocale === 'en' ? values.subHeadlineEn : values.subHeadlineDe}
-                                            onChange={(e) =>
-                                                patch(
-                                                    editLocale === 'en'
-                                                        ? { subHeadlineEn: e.target.value }
-                                                        : { subHeadlineDe: e.target.value },
-                                                )
-                                            }
+                                            value={contentPageCopyGet(values, fieldLocale, 'subHeadline')}
+                                            onChange={(e) => patch(contentPageCopyPatch(fieldLocale, 'subHeadline', e.target.value))}
                                         />
                                     )}
                                 </Field>
@@ -480,12 +540,12 @@ export function ContentPageEditor({
                             </CardContent>
                         </Card>
 
-                        {extraFields}
+                        {renderEditorSlot(extraFields, editLocale)}
 
                         <ContentSectionsEditor
                             sections={values.sections}
                             onChange={(sections) => patch({ sections })}
-                            editLocale={editLocale}
+                            editLocale={sectionEditLocale}
                             uiLocale={uiLocale}
                         />
                     </div>

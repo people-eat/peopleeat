@@ -1480,6 +1480,7 @@ export const cities = pgTable(
         cityId: nanoId().primaryKey(),
         nameDe: varchar().notNull(),
         nameEn: varchar().notNull().default(''),
+        nameNl: varchar().notNull().default(''),
         // ISO 3166-1 alpha-2 market for list grouping / JSON-LD. Not a Countries CMS.
         // See docs/features/cities.md.
         countryCode: varchar().$type<CityCountryCode>().notNull().default('DE'),
@@ -1488,12 +1489,20 @@ export const cities = pgTable(
         latitude: doublePrecision().notNull(),
         longitude: doublePrecision().notNull(),
         ...contentPageColumns,
+        // City-only Dutch CMS copy. Venues / occasions / blog stay DE/EN on
+        // `contentPageColumns`. See docs/features/cities.md.
+        titleNl: varchar().notNull().default(''),
+        descriptionNl: varchar().notNull().default(''),
+        headlineNl: varchar().notNull().default(''),
+        subHeadlineNl: varchar().notNull().default(''),
         // Fixed first-section slot above free content sections. See
         // docs/features/cities.md (ChefForAnyOccasion / CTA card).
         firstSectionHeadlineDe: varchar().notNull().default(''),
         firstSectionHeadlineEn: varchar().notNull().default(''),
+        firstSectionHeadlineNl: varchar().notNull().default(''),
         firstSectionBodyDe: text().notNull().default(''),
         firstSectionBodyEn: text().notNull().default(''),
+        firstSectionBodyNl: text().notNull().default(''),
         firstSectionImageFileUploadId: nanoId(),
     },
     (table) => [

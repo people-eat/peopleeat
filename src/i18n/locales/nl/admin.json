@@ -587,6 +587,7 @@
         "title": "Titel",
         "bodyDe": "Tekst (DE)",
         "bodyEn": "Tekst (EN)",
+        "bodyNl": "Tekst (NL)",
         "time2": "Tijd",
         "notConfigured": "Niet geconfigureerd",
         "pleaseChooseAFullAddress": "Kies een volledig adres.",
@@ -625,6 +626,7 @@
         "firstSection": "Eerste sectie",
         "headlineDe": "Kop (DE)",
         "headlineEn": "Kop (EN)",
+        "headlineNl": "Kop (NL)",
         "sectionImage": "Sectieafbeelding",
         "removeSectionImage": "Sectieafbeelding verwijderen?",
         "cookPayout": "Uitbetaling chef",
@@ -2706,7 +2708,8 @@
             "COOK_BIOGRAPHY_SUMMARY": "Biografiesamenvatting",
             "BOOKING_REQUEST_COOK_MENU_EVALUATION": "Menuevaluatie (aanvraag)",
             "BOOKING_REQUEST_ADJUSTED_MESSAGE": "Aangepast boekingsaanvraagbericht",
-            "WEB_PAGE_SEO_TRANSLATE": "SEO-vertaling"
+            "WEB_PAGE_SEO_TRANSLATE": "SEO-vertaling",
+            "CITY_COPY_TRANSLATE": "Stadsvertaling"
         }
     },
     "list": {
