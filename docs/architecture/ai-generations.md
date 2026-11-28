@@ -62,6 +62,7 @@ Kinds today:
 - `COOK_BIOGRAPHY_SUMMARY` → `ai.cookBiographySummaryModel` (also returns a contact-stripped full `biography`; the job writes both)
 - `BOOKING_REQUEST_COOK_MENU_EVALUATION` → `ai.cookMenuEvaluationModel`
 - `BOOKING_REQUEST_ADJUSTED_MESSAGE` → `ai.bookingRequestAdjustedMessageModel`
+- `WEB_PAGE_SEO_TRANSLATE` → `ai.webPageSeoTranslateModel`
 
 Add a kind when a new one-shot use case ships (GraphQL enum + domain union + dedicated `ServerRuntime.ai` factory). Never reuse
 `*AssistantModel` slots for one-shots — those are chat-agent only.
@@ -100,4 +101,4 @@ See [features/admin-ai-generations.md](../features/admin-ai-generations.md).
   `cookBiographySuggestGenerate`, `cookBiographySummaryGenerate` (also from the `cook-biography-summary-generate` job after cook biography
   save; admin summary suggest still calls the command inline), `cookBookingRequestMenuEvaluationGenerate` (from the
   `cook-booking-request-menu-evaluation-generate` job; runs in parallel with inventory suggestion — see
-  [ai-menu-evaluation.md](../features/ai-menu-evaluation.md))
+  [ai-menu-evaluation.md](../features/ai-menu-evaluation.md)), `adminWebPageSeoTranslate`

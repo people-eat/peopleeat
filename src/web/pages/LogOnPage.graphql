@@ -6,8 +6,10 @@ query LogOnPage {
         findOne(webPageKey: SIGN_IN) {
             titleDe
             titleEn
+            titleNl
             descriptionDe
             descriptionEn
+            descriptionNl
         }
     }
 }

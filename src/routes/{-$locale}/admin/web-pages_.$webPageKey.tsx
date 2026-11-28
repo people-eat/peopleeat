@@ -3,7 +3,12 @@ import { createFileRoute, notFound } from '@tanstack/react-router';
 import type { GqlCWebPageKey } from '../../../web/graphql/generated';
 import { AdminWebPagePageDocument } from '../../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../../web/graphql/routeLoaderGraphqlClient';
-import { AdminWebPagePage, adminWebPagePageDescription, adminWebPagePageTitle } from '../../../web/pages/admin/AdminWebPagePage';
+import {
+    AdminWebPagePage,
+    adminWebPagePageDescription,
+    adminWebPagePageTitle,
+    adminWebPagePageVariables,
+} from '../../../web/pages/admin/AdminWebPagePage';
 import { parseAdminWebPageKey } from '../../../web/pages/admin/adminWebPages';
 import { seoMeta } from '../../../web/seo/seoMeta';
 import { webPageUrlGet } from '../../../web/seo/webPageUrlGet';
@@ -15,7 +20,7 @@ export const Route = createFileRoute('/{-$locale}/admin/web-pages_/$webPageKey')
         if (!webPageKey) {
             throw notFound();
         }
-        return routeLoaderGraphqlClient(AdminWebPagePageDocument, { webPageKey })();
+        return routeLoaderGraphqlClient(AdminWebPagePageDocument, adminWebPagePageVariables(webPageKey))();
     },
     staleTime: 0,
     head: ({ params }) => {

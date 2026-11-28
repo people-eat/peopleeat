@@ -8,8 +8,10 @@ export function toGqlPublicWebPage(row: WebPage): GqlSPublicWebPage {
         webPageKey: row.webPageKey,
         titleDe: row.titleDe,
         titleEn: row.titleEn,
+        titleNl: row.titleNl,
         descriptionDe: row.descriptionDe,
         descriptionEn: row.descriptionEn,
+        descriptionNl: row.descriptionNl,
     };
 }
 
@@ -19,7 +21,9 @@ export function toGqlPublicWebPageFromDefaults(webPageKey: WebPageKey): GqlSPubl
         webPageKey,
         titleDe: defaults.titleDe,
         titleEn: defaults.titleEn,
+        titleNl: defaults.titleNl,
         descriptionDe: defaults.descriptionDe,
         descriptionEn: defaults.descriptionEn,
+        descriptionNl: defaults.descriptionNl,
     };
 }

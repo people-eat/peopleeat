@@ -8,8 +8,10 @@ query BookingRequestPage {
         findOne(webPageKey: BOOKING_REQUEST) {
             titleDe
             titleEn
+            titleNl
             descriptionDe
             descriptionEn
+            descriptionNl
         }
     }
 }

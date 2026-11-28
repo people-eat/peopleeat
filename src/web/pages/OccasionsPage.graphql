@@ -18,8 +18,10 @@ query PublicOccasionsPage {
         findOne(webPageKey: OCCASIONS) {
             titleDe
             titleEn
+            titleNl
             descriptionDe
             descriptionEn
+            descriptionNl
         }
     }
 }

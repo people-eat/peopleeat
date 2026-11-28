@@ -33,6 +33,7 @@ export const ADMIN_AI_GENERATION_KINDS: GqlCAdminAiGenerationKind[] = [
     'COOK_BIOGRAPHY_SUMMARY',
     'BOOKING_REQUEST_COOK_MENU_EVALUATION',
     'BOOKING_REQUEST_ADJUSTED_MESSAGE',
+    'WEB_PAGE_SEO_TRANSLATE',
 ];
 
 const columnHelper = createColumnHelper<AdminAiGenerationsDataTableFeatures, AdminAiGenerationsTableRow>();

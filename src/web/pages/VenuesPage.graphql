@@ -18,8 +18,10 @@ query PublicVenuesPage {
         findOne(webPageKey: VENUES) {
             titleDe
             titleEn
+            titleNl
             descriptionDe
             descriptionEn
+            descriptionNl
         }
     }
 }

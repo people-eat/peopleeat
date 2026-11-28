@@ -546,6 +546,10 @@
         "post": "Articolo",
         "german": "Tedesco",
         "english": "Inglese",
+        "dutch": "Olandese",
+        "translateFromGerman": "Traduci dal tedesco",
+        "translating": "Traduzione…",
+        "couldNotTranslate": "Traduzione non riuscita.",
         "customerView": "Cliente vedi",
         "travelToAndFromTheVenueIsIncludedInTheTotalPrice": "Andata e ritorno verso la location sono inclusi nel prezzo totale",
         "cookView": "Cuoco vedi",
@@ -1773,6 +1777,7 @@
         "comparing": "Confronto",
         "searchEntities": "Cerca",
         "visits30d": "{count} visite (30 giorni)",
+        "visits90d": "{count} visite (90 giorni)",
         "pageVisitsLiveOnTraffic": "I grafici delle visite sono in Traffico."
     },
     "sessionEvents": {
@@ -2700,7 +2705,8 @@
             "COOK_BIOGRAPHY_SUGGESTION": "Proposta biografia",
             "COOK_BIOGRAPHY_SUMMARY": "Riassunto biografia",
             "BOOKING_REQUEST_COOK_MENU_EVALUATION": "Valutazione menu (richiesta)",
-            "BOOKING_REQUEST_ADJUSTED_MESSAGE": "Messaggio richiesta adattato"
+            "BOOKING_REQUEST_ADJUSTED_MESSAGE": "Messaggio richiesta adattato",
+            "WEB_PAGE_SEO_TRANSLATE": "Traduzione SEO"
         }
     },
     "list": {

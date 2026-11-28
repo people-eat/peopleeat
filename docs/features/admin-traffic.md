@@ -40,7 +40,9 @@ explore ranking, overlay comparable catalog pages, then open the live page, CMS,
 9. Empty copy distinguishes no visits in range from a catalog key whose detail-looking visits are not tagged with entity ids yet. Index-only
    visits for that key show "no tagged detail pages", not the backfill pending message.
 10. Analytics keeps funnels and the booking-form visit KPI, and links here for page-visit charts.
-11. Web Pages (SEO) list cards show a 30-day human visit count and link through to Traffic for that key. The SEO editor is unchanged.
+11. Web Pages (SEO) list cards show a 30-day human visit count and link through to Traffic for that key. The SEO editor for a tracked key
+    also shows a 90-day human pageviews sparkline and the same Traffic link (key + last 90 days, weekly buckets). That chart is a shortcut,
+    not a second explorer: no locale split (visits store a locale-stripped path), no ranking table.
 
 Visit tracking skips `/admin/*` and `/profile/*`. `PROFILE` and `ADMINISTRATION` are SEO-only and never appear in the picker.
 
@@ -50,13 +52,13 @@ Cross-catalog overlay (a city vs a venue) is out of scope.
 
 ### Alternatives considered
 
-| Option                              | Notes                                                                               |
-| ----------------------------------- | ----------------------------------------------------------------------------------- |
-| Put charts on Web Pages             | Rejected. Web Pages is SEO title/description editing.                               |
-| Expand Analytics with the explorer  | Rejected. Analytics is already a long funnel page; traffic is a different question. |
-| Dedicated `/admin/traffic` (chosen) | Insights job: explore visit volume over time, with filters.                         |
-| Click-to-replace entity filter      | Rejected. Operators need to overlay Berlin vs Munich on one chart.                  |
-| Locale / referrer filters in v1     | Locale is not on the visit; referrer is first-touch on the session. Deferred.       |
+| Option                                | Notes                                                                                                             |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Put the Traffic explorer on Web Pages | Rejected. Ranking, overlays, and filters stay on Traffic. The SEO editor may show a 90-day sparkline plus a link. |
+| Expand Analytics with the explorer    | Rejected. Analytics is already a long funnel page; traffic is a different question.                               |
+| Dedicated `/admin/traffic` (chosen)   | Insights job: explore visit volume over time, with filters.                                                       |
+| Click-to-replace entity filter        | Rejected. Operators need to overlay Berlin vs Munich on one chart.                                                |
+| Locale / referrer filters in v1       | Locale is not on the visit; referrer is first-touch on the session. Deferred.                                     |
 
 ### Chosen
 

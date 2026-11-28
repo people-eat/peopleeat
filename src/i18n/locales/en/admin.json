@@ -1110,6 +1110,10 @@
         "post": "Post",
         "german": "German",
         "english": "English",
+        "dutch": "Dutch",
+        "translateFromGerman": "Translate from German",
+        "translating": "Translating…",
+        "couldNotTranslate": "Could not translate.",
         "customerView": "Customer view",
         "travelToAndFromTheVenueIsIncludedInTheTotalPrice": "Travel to and from the venue is included in the total price",
         "cookView": "Cook view",
@@ -2329,6 +2333,7 @@
         "comparing": "Comparing",
         "searchEntities": "Search",
         "visits30d": "{count} visits (30 days)",
+        "visits90d": "{count} visits (90 days)",
         "pageVisitsLiveOnTraffic": "Page visit charts live on Traffic."
     },
     "sessionEvents": {
@@ -2700,7 +2705,8 @@
             "COOK_BIOGRAPHY_SUGGESTION": "Biography suggestion",
             "COOK_BIOGRAPHY_SUMMARY": "Biography summary",
             "BOOKING_REQUEST_COOK_MENU_EVALUATION": "Menu evaluation (request)",
-            "BOOKING_REQUEST_ADJUSTED_MESSAGE": "Adjusted booking-request message"
+            "BOOKING_REQUEST_ADJUSTED_MESSAGE": "Adjusted booking-request message",
+            "WEB_PAGE_SEO_TRANSLATE": "SEO translation"
         }
     },
     "list": {

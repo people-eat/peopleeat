@@ -44,8 +44,10 @@ query GiftCardPage {
         findOne(webPageKey: GIFT_CARD) {
             titleDe
             titleEn
+            titleNl
             descriptionDe
             descriptionEn
+            descriptionNl
         }
     }
 }

@@ -28,8 +28,10 @@ query PublicLegalDocuments($webPageKey: WebPageKey!) {
         findOne(webPageKey: $webPageKey) {
             titleDe
             titleEn
+            titleNl
             descriptionDe
             descriptionEn
+            descriptionNl
         }
     }
 }

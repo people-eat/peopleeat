@@ -20,7 +20,9 @@ export async function adminWebPageUpsert(
 
         const now = new Date();
         const titleEn = input.titleEn.trim();
+        const titleNl = input.titleNl.trim();
         const descriptionEn = input.descriptionEn.trim();
+        const descriptionNl = input.descriptionNl.trim();
 
         await serverRuntime.db
             .insert(webPages)
@@ -28,8 +30,10 @@ export async function adminWebPageUpsert(
                 webPageKey,
                 titleDe,
                 titleEn,
+                titleNl,
                 descriptionDe,
                 descriptionEn,
+                descriptionNl,
                 updatedAt: now,
             })
             .onConflictDoUpdate({
@@ -37,8 +41,10 @@ export async function adminWebPageUpsert(
                 set: {
                     titleDe,
                     titleEn,
+                    titleNl,
                     descriptionDe,
                     descriptionEn,
+                    descriptionNl,
                     updatedAt: now,
                 },
             });

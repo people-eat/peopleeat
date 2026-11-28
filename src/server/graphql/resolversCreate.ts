@@ -97,6 +97,7 @@ import { adminUserPasskeyDelete } from '../commands/adminUserPasskeyDelete';
 import { adminUserStatusUpdate } from '../commands/adminUserStatusUpdate';
 import { adminUserTotpDelete } from '../commands/adminUserTotpDelete';
 import { adminUserUpdate } from '../commands/adminUserUpdate';
+import { adminWebPageSeoTranslate } from '../commands/adminWebPageSeoTranslate';
 import { adminWebPageUpsert } from '../commands/adminWebPageUpsert';
 import { adminWhatsAppConversationUnreadCountReset } from '../commands/adminWhatsAppConversationUnreadCountReset';
 import { adminWhatsAppMessageCreate } from '../commands/adminWhatsAppMessageCreate';
@@ -646,6 +647,7 @@ import type {
     GqlSAdminMutationUserStatusUpdateArgs,
     GqlSAdminMutationUserTotpDeleteArgs,
     GqlSAdminMutationUserUpdateArgs,
+    GqlSAdminMutationWebPageSeoTranslateArgs,
     GqlSAdminMutationWebPageUpsertArgs,
     GqlSAdminMutationWhatsAppConversationUnreadCountResetArgs,
     GqlSAdminMutationWhatsAppMessageCreateArgs,
@@ -2490,6 +2492,9 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             webPageUpsert(parent: GqlSAdminMutation, args: GqlSAdminMutationWebPageUpsertArgs, requestingSession: GqlSSession) {
                 return adminWebPageUpsert(parent, args, requestingSession, serverRuntime);
+            },
+            webPageSeoTranslate(parent: GqlSAdminMutation, args: GqlSAdminMutationWebPageSeoTranslateArgs, requestingSession: GqlSSession) {
+                return adminWebPageSeoTranslate(parent, args, requestingSession, serverRuntime);
             },
             featureToggleUpsert(parent: GqlSAdminMutation, args: GqlSAdminMutationFeatureToggleUpsertArgs, requestingSession: GqlSSession) {
                 return adminFeatureToggleUpsert(parent, args, requestingSession, serverRuntime);

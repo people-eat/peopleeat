@@ -80,6 +80,7 @@ export function serverRuntimeCreate(): ServerRuntime {
             cookBiographySummaryModel: () => google('gemini-2.5-flash'),
             cookMenuEvaluationModel: () => google('gemini-2.5-flash'),
             bookingRequestAdjustedMessageModel: () => google('gemini-2.5-flash'),
+            webPageSeoTranslateModel: () => google('gemini-2.5-flash'),
             // Google Search grounding. Gemini executes the search itself and
             // rides the result back on the same tool-call channel as function
             // tools. Agents wrap this via a `delegateTo*` / web-search tool

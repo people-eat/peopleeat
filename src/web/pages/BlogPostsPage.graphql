@@ -18,8 +18,10 @@ query PublicBlogPostsPage {
         findOne(webPageKey: BLOG_POSTS) {
             titleDe
             titleEn
+            titleNl
             descriptionDe
             descriptionEn
+            descriptionNl
         }
     }
 }

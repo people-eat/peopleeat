@@ -8,8 +8,10 @@ export function toGqlAdminWebPage(row: WebPage): GqlSAdminWebPage {
         webPageKey: row.webPageKey,
         titleDe: row.titleDe,
         titleEn: row.titleEn,
+        titleNl: row.titleNl,
         descriptionDe: row.descriptionDe,
         descriptionEn: row.descriptionEn,
+        descriptionNl: row.descriptionNl,
         persisted: true,
         updatedAt: row.updatedAt,
     };
@@ -21,8 +23,10 @@ export function toGqlAdminWebPageGhost(webPageKey: WebPageKey): GqlSAdminWebPage
         webPageKey,
         titleDe: defaults.titleDe,
         titleEn: defaults.titleEn,
+        titleNl: defaults.titleNl,
         descriptionDe: defaults.descriptionDe,
         descriptionEn: defaults.descriptionEn,
+        descriptionNl: defaults.descriptionNl,
         persisted: false,
         updatedAt: null,
     };

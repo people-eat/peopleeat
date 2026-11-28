@@ -6,8 +6,10 @@ query ChefSignUpPage {
         findOne(webPageKey: CHEF_SIGN_UP) {
             titleDe
             titleEn
+            titleNl
             descriptionDe
             descriptionEn
+            descriptionNl
         }
     }
 }

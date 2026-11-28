@@ -1110,6 +1110,10 @@
         "post": "Beitrag",
         "german": "Deutsch",
         "english": "Englisch",
+        "dutch": "Niederländisch",
+        "translateFromGerman": "Aus dem Deutschen übersetzen",
+        "translating": "Übersetzen…",
+        "couldNotTranslate": "Übersetzung fehlgeschlagen.",
         "customerView": "Kundensicht",
         "travelToAndFromTheVenueIsIncludedInTheTotalPrice": "Die An- und Abreise sind im Gesamtpreis inkludiert",
         "cookView": "Kochsicht",
@@ -2329,6 +2333,7 @@
         "comparing": "Vergleich",
         "searchEntities": "Suchen",
         "visits30d": "{count} Besuche (30 Tage)",
+        "visits90d": "{count} Besuche (90 Tage)",
         "pageVisitsLiveOnTraffic": "Seitenbesuche findest du unter Traffic."
     },
     "sessionEvents": {
@@ -2700,7 +2705,8 @@
             "COOK_BIOGRAPHY_SUGGESTION": "Biografie vorschlagen",
             "COOK_BIOGRAPHY_SUMMARY": "Biografie-Kurzfassung",
             "BOOKING_REQUEST_COOK_MENU_EVALUATION": "Menübewertung (Anfrage)",
-            "BOOKING_REQUEST_ADJUSTED_MESSAGE": "Angepasste Anfrage-Nachricht"
+            "BOOKING_REQUEST_ADJUSTED_MESSAGE": "Angepasste Anfrage-Nachricht",
+            "WEB_PAGE_SEO_TRANSLATE": "SEO-Übersetzung"
         }
     },
     "list": {

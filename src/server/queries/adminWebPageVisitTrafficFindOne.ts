@@ -2,9 +2,9 @@ import { eq, inArray, sql } from 'drizzle-orm';
 
 import { t } from '../../i18n/t';
 import { contentLocaleText } from '../../shared/contentSection';
+import { expansionMarketFromParam, expansionMarketList } from '../../shared/expansionMarkets';
 import { DEFAULT_LOCALE } from '../../shared/locale';
 import type { Locale } from '../../shared/locale';
-import { expansionMarketFromParam, expansionMarketList } from '../../shared/expansionMarkets';
 import {
     WEB_PAGE_VISIT_ENTITY_RANK_MAX,
     WEB_PAGE_VISIT_INDEX_RANK_ID,

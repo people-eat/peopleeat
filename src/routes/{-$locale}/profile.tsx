@@ -2,12 +2,12 @@ import { createFileRoute, redirect } from '@tanstack/react-router';
 
 import { i18nResourcesLoad } from '../../i18n/catalogCache';
 import { namespacesLoadedForProfileSession, PROFILE_I18N_NAMESPACES } from '../../i18n/namespacesForPath';
-import { contentLocaleText } from '../../shared/contentSection';
 import { ProfilePageDocument } from '../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../web/graphql/routeLoaderGraphqlClient';
 import { ProfileLayout } from '../../web/pages/profile/ProfileLayout';
 import { profileShellPreload } from '../../web/pages/profile/profileShellPreload';
 import { seoMeta } from '../../web/seo/seoMeta';
+import { webPageSeoText } from '../../web/seo/webPageSeoText';
 import { webPageUrlGet } from '../../web/seo/webPageUrlGet';
 import { localeFromParam, pathWithoutLocale } from '../../web/utils/locale';
 import { returnToFromLocation } from '../../web/utils/returnTo';
@@ -50,8 +50,8 @@ export const Route = createFileRoute('/{-$locale}/profile')({
             return {};
         }
         return seoMeta({
-            title: contentLocaleText(webPage.titleDe, webPage.titleEn, locale),
-            description: contentLocaleText(webPage.descriptionDe, webPage.descriptionEn, locale),
+            title: webPageSeoText(locale, webPage).title,
+            description: webPageSeoText(locale, webPage).description,
             path: '/profile',
             locale,
             webPageUrl: webPageUrlGet(),

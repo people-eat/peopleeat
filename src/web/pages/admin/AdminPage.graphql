@@ -19,8 +19,10 @@ query AdminPage {
         findOne(webPageKey: ADMINISTRATION) {
             titleDe
             titleEn
+            titleNl
             descriptionDe
             descriptionEn
+            descriptionNl
         }
     }
 }

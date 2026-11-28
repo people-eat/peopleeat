@@ -8,8 +8,10 @@ query AboutUsPage {
         findOne(webPageKey: ABOUT_US) {
             titleDe
             titleEn
+            titleNl
             descriptionDe
             descriptionEn
+            descriptionNl
         }
     }
 }

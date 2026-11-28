@@ -19,8 +19,10 @@ query PublicCitiesPage {
         findOne(webPageKey: CITIES) {
             titleDe
             titleEn
+            titleNl
             descriptionDe
             descriptionEn
+            descriptionNl
         }
     }
 }

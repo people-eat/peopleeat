@@ -1,10 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router';
 
-import { contentLocaleText } from '../../shared/contentSection';
 import { PublicLegalDocumentsDocument } from '../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../web/graphql/routeLoaderGraphqlClient';
 import { TermsAndConditionsPage } from '../../web/pages/TermsAndConditionsPage';
 import { seoMeta } from '../../web/seo/seoMeta';
+import { webPageSeoText } from '../../web/seo/webPageSeoText';
 import { webPageUrlGet } from '../../web/seo/webPageUrlGet';
 import { localeFromParam } from '../../web/utils/locale';
 
@@ -18,8 +18,8 @@ export const Route = createFileRoute('/{-$locale}/terms-and-conditions')({
             return {};
         }
         return seoMeta({
-            title: contentLocaleText(webPage.titleDe, webPage.titleEn, locale),
-            description: contentLocaleText(webPage.descriptionDe, webPage.descriptionEn, locale),
+            title: webPageSeoText(locale, webPage).title,
+            description: webPageSeoText(locale, webPage).description,
             path: '/terms-and-conditions',
             locale,
             webPageUrl: webPageUrlGet(),

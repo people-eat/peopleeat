@@ -13,8 +13,10 @@ query ChefsPage($criterion: PublicCookFindManyCriterion) {
         findOne(webPageKey: CHEFS) {
             titleDe
             titleEn
+            titleNl
             descriptionDe
             descriptionEn
+            descriptionNl
         }
     }
 }

@@ -2,7 +2,7 @@
 # Ghost keys return shared defaults with persisted=false until first save.
 # See docs/features/admin-web-pages.md.
 
-query AdminWebPagePage($webPageKey: WebPageKey!) {
+query AdminWebPagePage($webPageKey: WebPageKey!, $range: DateTimeRange!, $granularity: AdminTimeBucketGranularity! = week) {
     currentSession {
         user {
             admin {
@@ -11,10 +11,30 @@ query AdminWebPagePage($webPageKey: WebPageKey!) {
                     webPageKey
                     titleDe
                     titleEn
+                    titleNl
                     descriptionDe
                     descriptionEn
+                    descriptionNl
                     persisted
                     updatedAt
+                }
+                webPageVisitTraffic(
+                    range: $range
+                    granularity: $granularity
+                    webPageKeys: [$webPageKey]
+                    audience: HUMAN
+                    metric: PAGEVIEWS
+                    scope: ALL
+                ) {
+                    pageviews
+                    series {
+                        webPageKey
+                        label
+                        buckets {
+                            bucketStart
+                            count
+                        }
+                    }
                 }
             }
         }
@@ -30,6 +50,15 @@ mutation AdminWebPageUpsert($webPageKey: WebPageKey!, $input: AdminWebPageUpsert
     }
 }
 
+mutation AdminWebPageSeoTranslate($webPageKey: WebPageKey!, $locale: Locale!, $titleDe: String!, $descriptionDe: String!) {
+    admin {
+        webPageSeoTranslate(webPageKey: $webPageKey, locale: $locale, titleDe: $titleDe, descriptionDe: $descriptionDe) {
+            title
+            description
+        }
+    }
+}
+
 subscription AdminWebPagePageUpdates($webPageKey: WebPageKey!) {
     adminUpdates {
         adminId
@@ -37,8 +66,10 @@ subscription AdminWebPagePageUpdates($webPageKey: WebPageKey!) {
             webPageKey
             titleDe
             titleEn
+            titleNl
             descriptionDe
             descriptionEn
+            descriptionNl
             persisted
             updatedAt
         }

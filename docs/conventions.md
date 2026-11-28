@@ -101,11 +101,11 @@ JSONB `{ de, en }` blob:
 - `subjectDe varchar default ''`, `subjectEn varchar default ''` — both default if the field is optional
 
 The GraphQL schema mirrors the same pair as `roleDe: String!`, `roleEn: String!`. The client picks the locale-matching half via
-`contentLocaleText` (`de` → DE; every other locale → EN if non-empty, else DE). Chrome SEO for `fr` / `it` / `ru` / `nl` uses catalog
-`*.seo.*` via `webPageSeoText`. JSONB for two-key bilingual data is Postgres-native overhead; the column-pair shape keeps
-`WHERE roleDe ILIKE …` queries trivial. **UI chrome is not CMS**: product strings live in `src/i18n/locales/` catalogs, not `*De` / `*En`
-columns. See [`docs/architecture/content-model.md`](./architecture/content-model.md). One-language values (a chat title, a log line) stay a
-single column.
+`contentLocaleText` (`de` → DE; every other locale → EN if non-empty, else DE). Chrome SEO for `fr` / `it` / `ru` uses catalog `*.seo.*` via
+`webPageSeoText`. Fixed-route `WebPages` also store `titleNl` / `descriptionNl` for Dutch public titles. JSONB for two-key bilingual data is
+Postgres-native overhead; the column-pair shape keeps `WHERE roleDe ILIKE …` queries trivial. **UI chrome is not CMS**: product strings live
+in `src/i18n/locales/` catalogs, not `*De` / `*En` columns. See [`docs/architecture/content-model.md`](./architecture/content-model.md).
+One-language values (a chat title, a log line) stay a single column.
 
 ## Icons
 

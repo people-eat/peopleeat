@@ -116,8 +116,10 @@ query ProfilePage {
         findOne(webPageKey: PROFILE) {
             titleDe
             titleEn
+            titleNl
             descriptionDe
             descriptionEn
+            descriptionNl
         }
     }
 }

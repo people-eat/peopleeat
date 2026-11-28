@@ -180,11 +180,13 @@ export function webPageKeyParse(value: string | null | undefined): WebPageKey | 
 export type WebPageSeoDefaults = {
     titleDe: string;
     titleEn: string;
+    titleNl: string;
     descriptionDe: string;
     descriptionEn: string;
+    descriptionNl: string;
 };
 
-export const webPageDefaults: Record<WebPageKey, WebPageSeoDefaults> = {
+const webPageDefaultsDeEn: Record<WebPageKey, Omit<WebPageSeoDefaults, 'titleNl' | 'descriptionNl'>> = {
     LANDING: {
         titleDe: 'Private Chefs buchen',
         titleEn: 'Book private chefs',
@@ -319,3 +321,10 @@ export const webPageDefaults: Record<WebPageKey, WebPageSeoDefaults> = {
         descriptionEn: 'Administration area.',
     },
 };
+
+export const webPageDefaults: Record<WebPageKey, WebPageSeoDefaults> = Object.fromEntries(
+    (Object.entries(webPageDefaultsDeEn) as [WebPageKey, Omit<WebPageSeoDefaults, 'titleNl' | 'descriptionNl'>][]).map(([key, value]) => [
+        key,
+        { ...value, titleNl: '', descriptionNl: '' },
+    ]),
+) as Record<WebPageKey, WebPageSeoDefaults>;

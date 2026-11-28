@@ -610,7 +610,8 @@ export type GqlSAdminAiGenerationKind =
     | 'COOK_BIOGRAPHY_SUMMARY'
     | 'COOK_MENU_SUGGESTION_FROM_INVENTORY'
     | 'COOK_MENU_SUGGESTION_FROM_TEXT'
-    | 'COOK_MENU_TITLE_DESCRIPTION';
+    | 'COOK_MENU_TITLE_DESCRIPTION'
+    | 'WEB_PAGE_SEO_TRANSLATE';
 
 export type GqlSAdminAiGenerationSortField = 'createdAt' | 'kind' | 'modelId' | 'totalTokens';
 
@@ -1677,6 +1678,7 @@ export interface GqlSAdminMutation {
     userStatusUpdate: GqlSMutationResult;
     userTotpDelete: GqlSMutationResult;
     userUpdate: GqlSMutationResult;
+    webPageSeoTranslate: GqlSAdminWebPageSeoTranslation;
     webPageUpsert: GqlSMutationResult;
     whatsAppConversationUnreadCountReset: GqlSMutationResult;
     whatsAppMessageCreate: GqlSMutationResult;
@@ -2084,6 +2086,13 @@ export type GqlSAdminMutationUserTotpDeleteArgs = {
 export type GqlSAdminMutationUserUpdateArgs = {
     user: GqlSUserUpdate;
     userId: Scalars['ID']['input'];
+};
+
+export type GqlSAdminMutationWebPageSeoTranslateArgs = {
+    descriptionDe: Scalars['String']['input'];
+    locale: GqlSLocale;
+    titleDe: Scalars['String']['input'];
+    webPageKey: GqlSWebPageKey;
 };
 
 export type GqlSAdminMutationWebPageUpsertArgs = {
@@ -2699,18 +2708,28 @@ export interface GqlSAdminWebPage {
     __typename?: 'AdminWebPage';
     descriptionDe: Scalars['String']['output'];
     descriptionEn: Scalars['String']['output'];
+    descriptionNl: Scalars['String']['output'];
     persisted: Scalars['Boolean']['output'];
     titleDe: Scalars['String']['output'];
     titleEn: Scalars['String']['output'];
+    titleNl: Scalars['String']['output'];
     updatedAt?: Maybe<Scalars['DateTime']['output']>;
     webPageKey: GqlSWebPageKey;
+}
+
+export interface GqlSAdminWebPageSeoTranslation {
+    __typename?: 'AdminWebPageSeoTranslation';
+    description: Scalars['String']['output'];
+    title: Scalars['String']['output'];
 }
 
 export type GqlSAdminWebPageUpsert = {
     descriptionDe: Scalars['String']['input'];
     descriptionEn: Scalars['String']['input'];
+    descriptionNl: Scalars['String']['input'];
     titleDe: Scalars['String']['input'];
     titleEn: Scalars['String']['input'];
+    titleNl: Scalars['String']['input'];
 };
 
 export type GqlSAdminWebPageVisitAudience = 'ALL' | 'HUMAN';
@@ -5384,8 +5403,10 @@ export interface GqlSPublicWebPage {
     __typename?: 'PublicWebPage';
     descriptionDe: Scalars['String']['output'];
     descriptionEn: Scalars['String']['output'];
+    descriptionNl: Scalars['String']['output'];
     titleDe: Scalars['String']['output'];
     titleEn: Scalars['String']['output'];
+    titleNl: Scalars['String']['output'];
     webPageKey: GqlSWebPageKey;
 }
 
@@ -6588,6 +6609,7 @@ export type GqlSResolversTypes = ResolversObject<{
     AdminUserType: GqlSAdminUserType;
     AdminUserUpcomingBirthday: ResolverTypeWrapper<GqlSAdminUserUpcomingBirthday>;
     AdminWebPage: ResolverTypeWrapper<GqlSAdminWebPage>;
+    AdminWebPageSeoTranslation: ResolverTypeWrapper<GqlSAdminWebPageSeoTranslation>;
     AdminWebPageUpsert: GqlSAdminWebPageUpsert;
     AdminWebPageVisitAudience: GqlSAdminWebPageVisitAudience;
     AdminWebPageVisitCount: ResolverTypeWrapper<GqlSAdminWebPageVisitCount>;
@@ -7213,6 +7235,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
     AdminUserTimeZoneStat: GqlSAdminUserTimeZoneStat;
     AdminUserUpcomingBirthday: GqlSAdminUserUpcomingBirthday;
     AdminWebPage: GqlSAdminWebPage;
+    AdminWebPageSeoTranslation: GqlSAdminWebPageSeoTranslation;
     AdminWebPageUpsert: GqlSAdminWebPageUpsert;
     AdminWebPageVisitCount: GqlSAdminWebPageVisitCount;
     AdminWebPageVisitEntity: GqlSAdminWebPageVisitEntity;
@@ -9488,6 +9511,12 @@ export type GqlSAdminMutationResolvers<
         ContextType,
         RequireFields<GqlSAdminMutationUserUpdateArgs, 'user' | 'userId'>
     >;
+    webPageSeoTranslate?: Resolver<
+        GqlSResolversTypes['AdminWebPageSeoTranslation'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminMutationWebPageSeoTranslateArgs, 'descriptionDe' | 'locale' | 'titleDe' | 'webPageKey'>
+    >;
     webPageUpsert?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
@@ -10013,11 +10042,21 @@ export type GqlSAdminWebPageResolvers<
 > = ResolversObject<{
     descriptionDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     descriptionEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    descriptionNl?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     persisted?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     titleDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     titleEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    titleNl?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     updatedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     webPageKey?: Resolver<GqlSResolversTypes['WebPageKey'], ParentType, ContextType>;
+}>;
+
+export type GqlSAdminWebPageSeoTranslationResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminWebPageSeoTranslation'] = GqlSResolversParentTypes['AdminWebPageSeoTranslation'],
+> = ResolversObject<{
+    description?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    title?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type GqlSAdminWebPageVisitCountResolvers<
@@ -12447,8 +12486,10 @@ export type GqlSPublicWebPageResolvers<
 > = ResolversObject<{
     descriptionDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     descriptionEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    descriptionNl?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     titleDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     titleEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    titleNl?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     webPageKey?: Resolver<GqlSResolversTypes['WebPageKey'], ParentType, ContextType>;
 }>;
 
@@ -13295,6 +13336,7 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     AdminUserTimeZoneStat?: GqlSAdminUserTimeZoneStatResolvers<ContextType>;
     AdminUserUpcomingBirthday?: GqlSAdminUserUpcomingBirthdayResolvers<ContextType>;
     AdminWebPage?: GqlSAdminWebPageResolvers<ContextType>;
+    AdminWebPageSeoTranslation?: GqlSAdminWebPageSeoTranslationResolvers<ContextType>;
     AdminWebPageVisitCount?: GqlSAdminWebPageVisitCountResolvers<ContextType>;
     AdminWebPageVisitEntityRank?: GqlSAdminWebPageVisitEntityRankResolvers<ContextType>;
     AdminWebPageVisitRank?: GqlSAdminWebPageVisitRankResolvers<ContextType>;
@@ -13504,7 +13546,8 @@ export const GqlSAdminAiGenerationKindSchema: z.ZodType<
     | 'COOK_BIOGRAPHY_SUMMARY'
     | 'COOK_MENU_SUGGESTION_FROM_INVENTORY'
     | 'COOK_MENU_SUGGESTION_FROM_TEXT'
-    | 'COOK_MENU_TITLE_DESCRIPTION',
+    | 'COOK_MENU_TITLE_DESCRIPTION'
+    | 'WEB_PAGE_SEO_TRANSLATE',
     | 'BOOKING_REQUEST_ADJUSTED_MESSAGE'
     | 'BOOKING_REQUEST_COOK_MENU_EVALUATION'
     | 'BOOKING_REQUEST_OFFER_CALL_RECORDING_SUMMARY'
@@ -13515,6 +13558,7 @@ export const GqlSAdminAiGenerationKindSchema: z.ZodType<
     | 'COOK_MENU_SUGGESTION_FROM_INVENTORY'
     | 'COOK_MENU_SUGGESTION_FROM_TEXT'
     | 'COOK_MENU_TITLE_DESCRIPTION'
+    | 'WEB_PAGE_SEO_TRANSLATE'
 > = z.enum([
     'BOOKING_REQUEST_ADJUSTED_MESSAGE',
     'BOOKING_REQUEST_COOK_MENU_EVALUATION',
@@ -13526,6 +13570,7 @@ export const GqlSAdminAiGenerationKindSchema: z.ZodType<
     'COOK_MENU_SUGGESTION_FROM_INVENTORY',
     'COOK_MENU_SUGGESTION_FROM_TEXT',
     'COOK_MENU_TITLE_DESCRIPTION',
+    'WEB_PAGE_SEO_TRANSLATE',
 ]);
 
 export const GqlSAdminAiGenerationSortFieldSchema: z.ZodType<
@@ -14958,8 +15003,10 @@ export function GqlSAdminWebPageUpsertSchema(): z.ZodObject<Properties<GqlSAdmin
     return z.object({
         descriptionDe: z.string(),
         descriptionEn: z.string(),
+        descriptionNl: z.string(),
         titleDe: z.string(),
         titleEn: z.string(),
+        titleNl: z.string(),
     });
 }
 

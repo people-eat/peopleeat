@@ -36,8 +36,8 @@ not a redundant “image of” prefix. Copy voice: [copy.md](../styles/copy.md).
 - **Dynamic entities** (meals, add-ons, public cook portraits, CMS content-block images, occasion format cards, uploaded CMS / venue heroes)
   interpolate `common.imageAlt.photoOf` with the nearby title or name. There is no stored alt on `FileUploads`.
 - **Decorative** — `alt=""`: small expansion flag badges (`aria-hidden`), film-play posters, editor previews, avatars next to a visible
-  name, menu collages that are already `aria-hidden`, standalone CMS `kind: 'image'` blocks (no title on the block). Do not invent a
-  generic “Photo” alt; empty is better for assistive tech.
+  name, menu collages that are already `aria-hidden`, standalone CMS `kind: 'image'` blocks (no title on the block). Do not invent a generic
+  “Photo” alt; empty is better for assistive tech.
 - **Expansion peopleeat marks** (`ExpansionMarketFlag` `variant="panel"`, `flag-*-peopleeat.png`) use `comingTo.flagMarkAlt` with the
   localized country name (brand + market), not an empty alt.
 - Public meal and chef-card photos still get a named alt for SEO even when the title is visible beside the image.

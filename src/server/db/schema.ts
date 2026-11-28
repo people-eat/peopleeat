@@ -1763,7 +1763,7 @@ export type BlogPostCreate = typeof blogPosts.$inferInsert;
 
 // --- Fixed-route SEO (WebPages) ----------------------------------------------
 //
-// Admin-editable title/description for fixed marketing and chrome routes.
+// Admin-editable DE/EN/NL title/description for fixed marketing and chrome routes.
 // Missing rows use shared defaults (ghost). First admin write upserts.
 // Dynamic city/partner-venue/occasion/blog detail SEO stays on those entity tables.
 // See docs/features/admin-web-pages.md.
@@ -1772,8 +1772,10 @@ export const webPages = pgTable('WebPages', {
     webPageKey: varchar().$type<WebPageKey>().primaryKey(),
     titleDe: varchar().notNull(),
     titleEn: varchar().notNull().default(''),
+    titleNl: varchar().notNull().default(''),
     descriptionDe: varchar().notNull(),
     descriptionEn: varchar().notNull().default(''),
+    descriptionNl: varchar().notNull().default(''),
     updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
 });
 

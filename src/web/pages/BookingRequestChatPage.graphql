@@ -3,8 +3,10 @@ query BookingRequestChatPage {
         findOne(webPageKey: BOOKING_REQUEST_CHAT) {
             titleDe
             titleEn
+            titleNl
             descriptionDe
             descriptionEn
+            descriptionNl
         }
     }
 }

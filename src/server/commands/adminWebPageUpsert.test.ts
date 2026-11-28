@@ -22,8 +22,10 @@ describe('adminWebPageUpsert', () => {
                 input: {
                     titleDe: 'Über peopleeat',
                     titleEn: 'About peopleeat',
+                    titleNl: 'About peopleeat NL',
                     descriptionDe: 'Neue DE Beschreibung',
                     descriptionEn: 'New EN description',
+                    descriptionNl: 'New NL description',
                 },
             },
             admin.requestingSession,
@@ -36,8 +38,10 @@ describe('adminWebPageUpsert', () => {
         const [row] = await testDb.select().from(webPages).where(eq(webPages.webPageKey, 'ABOUT_US'));
         expect(row?.titleDe).toBe('Über peopleeat');
         expect(row?.titleEn).toBe('About peopleeat');
+        expect(row?.titleNl).toBe('About peopleeat NL');
         expect(row?.descriptionDe).toBe('Neue DE Beschreibung');
         expect(row?.descriptionEn).toBe('New EN description');
+        expect(row?.descriptionNl).toBe('New NL description');
     });
 
     it('creates a row on first write when the key was missing', async () => {
@@ -52,8 +56,10 @@ describe('adminWebPageUpsert', () => {
                 input: {
                     titleDe: 'Geschenkkarte neu',
                     titleEn: 'Gift card new',
+                    titleNl: 'Gift card NL',
                     descriptionDe: 'DE Beschreibung',
                     descriptionEn: 'EN description',
+                    descriptionNl: 'NL description',
                 },
             },
             admin.requestingSession,
@@ -67,8 +73,10 @@ describe('adminWebPageUpsert', () => {
         expect(row).toMatchObject({
             titleDe: 'Geschenkkarte neu',
             titleEn: 'Gift card new',
+            titleNl: 'Gift card NL',
             descriptionDe: 'DE Beschreibung',
             descriptionEn: 'EN description',
+            descriptionNl: 'NL description',
         });
     });
 
@@ -84,8 +92,10 @@ describe('adminWebPageUpsert', () => {
                     input: {
                         titleDe: '   ',
                         titleEn: '',
+                        titleNl: '',
                         descriptionDe: 'Beschreibung',
                         descriptionEn: '',
+                        descriptionNl: '',
                     },
                 },
                 admin.requestingSession,

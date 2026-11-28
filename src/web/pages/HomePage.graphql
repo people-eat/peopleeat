@@ -21,8 +21,10 @@ query HomePage {
         findOne(webPageKey: LANDING) {
             titleDe
             titleEn
+            titleNl
             descriptionDe
             descriptionEn
+            descriptionNl
         }
     }
 }

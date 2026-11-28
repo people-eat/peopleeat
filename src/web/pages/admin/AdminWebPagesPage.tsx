@@ -6,7 +6,6 @@ import { pipe, subscribe } from 'wonka';
 
 import { t } from '../../../i18n/t';
 import { formatDate, formatIsoDate } from '../../../shared';
-import { contentLocaleText } from '../../../shared/contentSection';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { Input } from '../../components/base/input';
 import { StatusBadge } from '../../components/base/status-badge';
@@ -15,6 +14,7 @@ import { AdminWebPagesPageUpdatesDocument } from '../../graphql/generated';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
+import { webPageSeoText } from '../../seo/webPageSeoText';
 import type { Locale } from '../../utils/locale';
 import { AdminOverviewListCardLink } from './AdminOverviewListCard';
 import { adminOverviewRangeToGraphQlVariables } from './adminOverviewRange';
@@ -67,7 +67,8 @@ export function AdminWebPagesPage({ data }: { data: GqlCAdminWebPagesPageQuery }
                   label.includes(q) ||
                   webPage.webPageKey.toLowerCase().includes(q) ||
                   webPage.titleDe.toLowerCase().includes(q) ||
-                  webPage.titleEn.toLowerCase().includes(q)
+                  webPage.titleEn.toLowerCase().includes(q) ||
+                  webPage.titleNl.toLowerCase().includes(q)
               );
           })
         : webPages;
@@ -107,7 +108,7 @@ export function AdminWebPagesPage({ data }: { data: GqlCAdminWebPagesPageQuery }
                                             ) : null}
                                         </>
                                     }
-                                    description={contentLocaleText(webPage.titleDe, webPage.titleEn, locale)}
+                                    description={webPageSeoText(locale, webPage).title}
                                     meta={(() => {
                                         const visits = t(locale, 'admin', 'traffic.visits30d', {
                                             count: visitCounts.get(webPage.webPageKey) ?? 0,

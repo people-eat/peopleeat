@@ -1102,6 +1102,10 @@
         "post": "Bericht",
         "german": "Duits",
         "english": "Engels",
+        "dutch": "Nederlands",
+        "translateFromGerman": "Vertalen uit het Duits",
+        "translating": "Vertalen…",
+        "couldNotTranslate": "Vertalen mislukt.",
         "customerView": "Klantweergave",
         "travelToAndFromTheVenueIsIncludedInTheTotalPrice": "Reis van en naar de locatie is inbegrepen in de totaalprijs",
         "cookView": "Chefweergave",
@@ -2329,6 +2333,7 @@
         "comparing": "Vergelijking",
         "searchEntities": "Zoeken",
         "visits30d": "{count} bezoeken (30 dagen)",
+        "visits90d": "{count} bezoeken (90 dagen)",
         "pageVisitsLiveOnTraffic": "Grafieken van paginabezoeken staan bij Traffic."
     },
     "sessionEvents": {
@@ -2700,7 +2705,8 @@
             "COOK_BIOGRAPHY_SUGGESTION": "Biografiesuggestie",
             "COOK_BIOGRAPHY_SUMMARY": "Biografiesamenvatting",
             "BOOKING_REQUEST_COOK_MENU_EVALUATION": "Menuevaluatie (aanvraag)",
-            "BOOKING_REQUEST_ADJUSTED_MESSAGE": "Aangepast boekingsaanvraagbericht"
+            "BOOKING_REQUEST_ADJUSTED_MESSAGE": "Aangepast boekingsaanvraagbericht",
+            "WEB_PAGE_SEO_TRANSLATE": "SEO-vertaling"
         }
     },
     "list": {

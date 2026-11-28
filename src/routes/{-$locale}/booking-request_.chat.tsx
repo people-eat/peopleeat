@@ -1,11 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router';
 
 import { i18nResourcesLoad } from '../../i18n/catalogCache';
-import { contentLocaleText } from '../../shared/contentSection';
 import { BookingRequestChatPageDocument } from '../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../web/graphql/routeLoaderGraphqlClient';
 import { BookingRequestChatPage } from '../../web/pages/BookingRequestChatPage';
 import { seoMeta } from '../../web/seo/seoMeta';
+import { webPageSeoText } from '../../web/seo/webPageSeoText';
 import { webPageUrlGet } from '../../web/seo/webPageUrlGet';
 import { localeFromParam } from '../../web/utils/locale';
 
@@ -29,8 +29,8 @@ export const Route = createFileRoute('/{-$locale}/booking-request_/chat')({
             return {};
         }
         return seoMeta({
-            title: contentLocaleText(webPage.titleDe, webPage.titleEn, locale),
-            description: contentLocaleText(webPage.descriptionDe, webPage.descriptionEn, locale),
+            title: webPageSeoText(locale, webPage).title,
+            description: webPageSeoText(locale, webPage).description,
             path: '/booking-request/chat',
             locale,
             webPageUrl: webPageUrlGet(),

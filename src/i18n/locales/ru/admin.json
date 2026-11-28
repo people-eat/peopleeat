@@ -1102,6 +1102,10 @@
         "post": "Статья",
         "german": "Немецкий",
         "english": "Английский",
+        "dutch": "Нидерландский",
+        "translateFromGerman": "Перевести с немецкого",
+        "translating": "Перевод…",
+        "couldNotTranslate": "Не удалось перевести.",
         "customerView": "Вид клиента",
         "travelToAndFromTheVenueIsIncludedInTheTotalPrice": "Поездка туда и обратно включена в итоговую цену",
         "cookView": "Вид повара",
@@ -2329,6 +2333,7 @@
         "comparing": "Сравнение",
         "searchEntities": "Поиск",
         "visits30d": "{count} посещений (30 дней)",
+        "visits90d": "{count} посещений (90 дней)",
         "pageVisitsLiveOnTraffic": "Графики посещений страниц находятся в Трафике."
     },
     "sessionEvents": {
@@ -2700,7 +2705,8 @@
             "COOK_BIOGRAPHY_SUGGESTION": "Предложенная биография",
             "COOK_BIOGRAPHY_SUMMARY": "Краткая биография",
             "BOOKING_REQUEST_COOK_MENU_EVALUATION": "Оценка меню (заявка)",
-            "BOOKING_REQUEST_ADJUSTED_MESSAGE": "Изменённое сообщение заявки"
+            "BOOKING_REQUEST_ADJUSTED_MESSAGE": "Изменённое сообщение заявки",
+            "WEB_PAGE_SEO_TRANSLATE": "SEO-перевод"
         }
     },
     "list": {

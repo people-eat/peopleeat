@@ -609,7 +609,8 @@ export type GqlCAdminAiGenerationKind =
     | 'COOK_BIOGRAPHY_SUMMARY'
     | 'COOK_MENU_SUGGESTION_FROM_INVENTORY'
     | 'COOK_MENU_SUGGESTION_FROM_TEXT'
-    | 'COOK_MENU_TITLE_DESCRIPTION';
+    | 'COOK_MENU_TITLE_DESCRIPTION'
+    | 'WEB_PAGE_SEO_TRANSLATE';
 
 export type GqlCAdminAiGenerationSortField = 'createdAt' | 'kind' | 'modelId' | 'totalTokens';
 
@@ -1676,6 +1677,7 @@ export interface GqlCAdminMutation {
     userStatusUpdate: GqlCMutationResult;
     userTotpDelete: GqlCMutationResult;
     userUpdate: GqlCMutationResult;
+    webPageSeoTranslate: GqlCAdminWebPageSeoTranslation;
     webPageUpsert: GqlCMutationResult;
     whatsAppConversationUnreadCountReset: GqlCMutationResult;
     whatsAppMessageCreate: GqlCMutationResult;
@@ -2083,6 +2085,13 @@ export type GqlCAdminMutationUserTotpDeleteArgs = {
 export type GqlCAdminMutationUserUpdateArgs = {
     user: GqlCUserUpdate;
     userId: Scalars['ID']['input'];
+};
+
+export type GqlCAdminMutationWebPageSeoTranslateArgs = {
+    descriptionDe: Scalars['String']['input'];
+    locale: GqlCLocale;
+    titleDe: Scalars['String']['input'];
+    webPageKey: GqlCWebPageKey;
 };
 
 export type GqlCAdminMutationWebPageUpsertArgs = {
@@ -2698,18 +2707,28 @@ export interface GqlCAdminWebPage {
     __typename?: 'AdminWebPage';
     descriptionDe: Scalars['String']['output'];
     descriptionEn: Scalars['String']['output'];
+    descriptionNl: Scalars['String']['output'];
     persisted: Scalars['Boolean']['output'];
     titleDe: Scalars['String']['output'];
     titleEn: Scalars['String']['output'];
+    titleNl: Scalars['String']['output'];
     updatedAt?: Maybe<Scalars['DateTime']['output']>;
     webPageKey: GqlCWebPageKey;
+}
+
+export interface GqlCAdminWebPageSeoTranslation {
+    __typename?: 'AdminWebPageSeoTranslation';
+    description: Scalars['String']['output'];
+    title: Scalars['String']['output'];
 }
 
 export type GqlCAdminWebPageUpsert = {
     descriptionDe: Scalars['String']['input'];
     descriptionEn: Scalars['String']['input'];
+    descriptionNl: Scalars['String']['input'];
     titleDe: Scalars['String']['input'];
     titleEn: Scalars['String']['input'];
+    titleNl: Scalars['String']['input'];
 };
 
 export type GqlCAdminWebPageVisitAudience = 'ALL' | 'HUMAN';
@@ -5383,8 +5402,10 @@ export interface GqlCPublicWebPage {
     __typename?: 'PublicWebPage';
     descriptionDe: Scalars['String']['output'];
     descriptionEn: Scalars['String']['output'];
+    descriptionNl: Scalars['String']['output'];
     titleDe: Scalars['String']['output'];
     titleEn: Scalars['String']['output'];
+    titleNl: Scalars['String']['output'];
     webPageKey: GqlCWebPageKey;
 }
 
@@ -8571,7 +8592,9 @@ export type GqlCAboutUsPageQueryVariables = Exact<{ [key: string]: never }>;
 
 export type GqlCAboutUsPageQuery = {
     currentSession: { user: { admin: { adminId: string } | null; cook: { cookId: string } | null } | null };
-    publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
+    publicWebPage: {
+        findOne: { titleDe: string; titleEn: string; titleNl: string; descriptionDe: string; descriptionEn: string; descriptionNl: string };
+    };
 };
 
 export type GqlCAccountPageUserFragment = {
@@ -9018,13 +9041,17 @@ export type GqlCPublicBlogPostsPageQuery = {
             heroImageUrl: string | null;
         }>;
     };
-    publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
+    publicWebPage: {
+        findOne: { titleDe: string; titleEn: string; titleNl: string; descriptionDe: string; descriptionEn: string; descriptionNl: string };
+    };
 };
 
 export type GqlCBookingRequestChatPageQueryVariables = Exact<{ [key: string]: never }>;
 
 export type GqlCBookingRequestChatPageQuery = {
-    publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
+    publicWebPage: {
+        findOne: { titleDe: string; titleEn: string; titleNl: string; descriptionDe: string; descriptionEn: string; descriptionNl: string };
+    };
 };
 
 export type GqlCBookingRequestFormCookQueryVariables = Exact<{
@@ -9104,7 +9131,9 @@ export type GqlCBookingRequestFormPageQuery = {
         } | null;
         authTotpChallenge: { expiresAt: string } | null;
     };
-    publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
+    publicWebPage: {
+        findOne: { titleDe: string; titleEn: string; titleNl: string; descriptionDe: string; descriptionEn: string; descriptionNl: string };
+    };
 };
 
 export type GqlCBookingRequestFormCreateMutationVariables = Exact<{
@@ -9151,7 +9180,9 @@ export type GqlCBookingRequestPageQueryVariables = Exact<{ [key: string]: never 
 
 export type GqlCBookingRequestPageQuery = {
     currentSession: { user: { admin: { adminId: string } | null; cook: { cookId: string } | null } | null };
-    publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
+    publicWebPage: {
+        findOne: { titleDe: string; titleEn: string; titleNl: string; descriptionDe: string; descriptionEn: string; descriptionNl: string };
+    };
 };
 
 export type GqlCBookingRequestPlanPageQueryVariables = Exact<{
@@ -9199,7 +9230,9 @@ export type GqlCBookingRequestPlanPageQuery = {
         } | null;
         authTotpChallenge: { expiresAt: string } | null;
     };
-    publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
+    publicWebPage: {
+        findOne: { titleDe: string; titleEn: string; titleNl: string; descriptionDe: string; descriptionEn: string; descriptionNl: string };
+    };
     publicPartnerVenue: {
         findOne?: {
             partnerVenueId: string;
@@ -9535,7 +9568,9 @@ export type GqlCChefSignUpPageQuery = {
         } | null;
         authTotpChallenge: { expiresAt: string } | null;
     };
-    publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
+    publicWebPage: {
+        findOne: { titleDe: string; titleEn: string; titleNl: string; descriptionDe: string; descriptionEn: string; descriptionNl: string };
+    };
 };
 
 export type GqlCChefSignUpCookCreateMutationVariables = Exact<{
@@ -9567,7 +9602,9 @@ export type GqlCChefsPageQuery = {
             user: { display: string; profilePicture: { url: string } | null };
         }>;
     };
-    publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
+    publicWebPage: {
+        findOne: { titleDe: string; titleEn: string; titleNl: string; descriptionDe: string; descriptionEn: string; descriptionNl: string };
+    };
 };
 
 export type GqlCPublicCitiesPageQueryVariables = Exact<{ [key: string]: never }>;
@@ -9585,7 +9622,9 @@ export type GqlCPublicCitiesPageQuery = {
             heroImageUrl: string | null;
         }>;
     };
-    publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
+    publicWebPage: {
+        findOne: { titleDe: string; titleEn: string; titleNl: string; descriptionDe: string; descriptionEn: string; descriptionNl: string };
+    };
 };
 
 export type GqlCPublicCityPageQueryVariables = Exact<{
@@ -9898,7 +9937,9 @@ export type GqlCGiftCardPageQuery = {
         } | null;
         authTotpChallenge: { expiresAt: string } | null;
     };
-    publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
+    publicWebPage: {
+        findOne: { titleDe: string; titleEn: string; titleNl: string; descriptionDe: string; descriptionEn: string; descriptionNl: string };
+    };
 };
 
 export type GqlCGiftCardSessionUpdatesSubscriptionVariables = Exact<{ [key: string]: never }>;
@@ -9997,7 +10038,9 @@ export type GqlCHomePageQuery = {
         } | null;
     };
     publicCity: { findMany: Array<{ pathName: string; nameDe: string; nameEn: string; countryCode: Schema.GqlCCityCountryCode }> };
-    publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
+    publicWebPage: {
+        findOne: { titleDe: string; titleEn: string; titleNl: string; descriptionDe: string; descriptionEn: string; descriptionNl: string };
+    };
 };
 
 export type GqlCHowToBecomeAChefPageQueryVariables = Exact<{ [key: string]: never }>;
@@ -10007,7 +10050,9 @@ export type GqlCHowToBecomeAChefPageQuery = {
         activeFeatureToggleKeys: Array<Schema.GqlCFeatureToggleKey>;
         user: { admin: { adminId: string } | null; cook: { cookId: string } | null } | null;
     };
-    publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
+    publicWebPage: {
+        findOne: { titleDe: string; titleEn: string; titleNl: string; descriptionDe: string; descriptionEn: string; descriptionNl: string };
+    };
 };
 
 export type GqlCLogOnPageQueryVariables = Exact<{ [key: string]: never }>;
@@ -10052,7 +10097,9 @@ export type GqlCLogOnPageQuery = {
         } | null;
         authTotpChallenge: { expiresAt: string } | null;
     };
-    publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
+    publicWebPage: {
+        findOne: { titleDe: string; titleEn: string; titleNl: string; descriptionDe: string; descriptionEn: string; descriptionNl: string };
+    };
 };
 
 export type GqlCPublicOccasionPageQueryVariables = Exact<{
@@ -10215,7 +10262,9 @@ export type GqlCPublicOccasionsPageQuery = {
             heroImageUrl: string | null;
         }>;
     };
-    publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
+    publicWebPage: {
+        findOne: { titleDe: string; titleEn: string; titleNl: string; descriptionDe: string; descriptionEn: string; descriptionNl: string };
+    };
 };
 
 export type GqlCProfilePageCookStatusFragment = {
@@ -10373,7 +10422,9 @@ export type GqlCProfilePageQuery = {
             attentionCounts: { supportRequestUnreadCount: number } | null;
         } | null;
     };
-    publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
+    publicWebPage: {
+        findOne: { titleDe: string; titleEn: string; titleNl: string; descriptionDe: string; descriptionEn: string; descriptionNl: string };
+    };
 };
 
 export type GqlCProfilePageUpdatesSubscriptionVariables = Exact<{ [key: string]: never }>;
@@ -10457,7 +10508,9 @@ export type GqlCPublicLegalDocumentsQuery = {
         termsAndConditions: { termsAndConditionsId: string; bodyDe: string; changeSummaryDe: string; publishedAt: string } | null;
         imprint: { imprintId: string; bodyDe: string; changeSummaryDe: string; publishedAt: string } | null;
     };
-    publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
+    publicWebPage: {
+        findOne: { titleDe: string; titleEn: string; titleNl: string; descriptionDe: string; descriptionEn: string; descriptionNl: string };
+    };
 };
 
 export type GqlCPublicVenuePageQueryVariables = Exact<{
@@ -10619,7 +10672,9 @@ export type GqlCPublicVenuesPageQuery = {
             heroImageUrl: string | null;
         }>;
     };
-    publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
+    publicWebPage: {
+        findOne: { titleDe: string; titleEn: string; titleNl: string; descriptionDe: string; descriptionEn: string; descriptionNl: string };
+    };
 };
 
 export type GqlCAdminAiGenerationPageQueryVariables = Exact<{
@@ -16620,7 +16675,9 @@ export type GqlCAdminPageQuery = {
             } | null;
         } | null;
     };
-    publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
+    publicWebPage: {
+        findOne: { titleDe: string; titleEn: string; titleNl: string; descriptionDe: string; descriptionEn: string; descriptionNl: string };
+    };
 };
 
 export type GqlCAdminPartnerVenuePageQueryVariables = Exact<{
@@ -18605,6 +18662,8 @@ export type GqlCAdminUsersPageQuery = {
 
 export type GqlCAdminWebPagePageQueryVariables = Exact<{
     webPageKey: Schema.GqlCWebPageKey;
+    range: Schema.GqlCDateTimeRange;
+    granularity?: Schema.GqlCAdminTimeBucketGranularity;
 }>;
 
 export type GqlCAdminWebPagePageQuery = {
@@ -18616,10 +18675,20 @@ export type GqlCAdminWebPagePageQuery = {
                     webPageKey: Schema.GqlCWebPageKey;
                     titleDe: string;
                     titleEn: string;
+                    titleNl: string;
                     descriptionDe: string;
                     descriptionEn: string;
+                    descriptionNl: string;
                     persisted: boolean;
                     updatedAt: string | null;
+                };
+                webPageVisitTraffic: {
+                    pageviews: number;
+                    series: Array<{
+                        webPageKey: Schema.GqlCWebPageKey | null;
+                        label: string;
+                        buckets: Array<{ bucketStart: string; count: number }>;
+                    }>;
                 };
             } | null;
         } | null;
@@ -18633,6 +18702,15 @@ export type GqlCAdminWebPageUpsertMutationVariables = Exact<{
 
 export type GqlCAdminWebPageUpsertMutation = { admin: { webPageUpsert: { success: boolean; referenceId: string | null } } };
 
+export type GqlCAdminWebPageSeoTranslateMutationVariables = Exact<{
+    webPageKey: Schema.GqlCWebPageKey;
+    locale: Schema.GqlCLocale;
+    titleDe: string;
+    descriptionDe: string;
+}>;
+
+export type GqlCAdminWebPageSeoTranslateMutation = { admin: { webPageSeoTranslate: { title: string; description: string } } };
+
 export type GqlCAdminWebPagePageUpdatesSubscriptionVariables = Exact<{
     webPageKey: Schema.GqlCWebPageKey;
 }>;
@@ -18644,8 +18722,10 @@ export type GqlCAdminWebPagePageUpdatesSubscription = {
             webPageKey: Schema.GqlCWebPageKey;
             titleDe: string;
             titleEn: string;
+            titleNl: string;
             descriptionDe: string;
             descriptionEn: string;
+            descriptionNl: string;
             persisted: boolean;
             updatedAt: string | null;
         };
@@ -18665,8 +18745,10 @@ export type GqlCAdminWebPagesPageQuery = {
                     webPageKey: Schema.GqlCWebPageKey;
                     titleDe: string;
                     titleEn: string;
+                    titleNl: string;
                     descriptionDe: string;
                     descriptionEn: string;
+                    descriptionNl: string;
                     persisted: boolean;
                     updatedAt: string | null;
                 }>;
@@ -18685,8 +18767,10 @@ export type GqlCAdminWebPagesPageUpdatesSubscription = {
             webPageKey: Schema.GqlCWebPageKey;
             titleDe: string;
             titleEn: string;
+            titleNl: string;
             descriptionDe: string;
             descriptionEn: string;
+            descriptionNl: string;
             persisted: boolean;
             updatedAt: string | null;
         }>;
@@ -42224,8 +42308,10 @@ export const AboutUsPageDocument = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'titleNl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionNl' } },
                                         ],
                                     },
                                 },
@@ -44013,8 +44099,10 @@ export const PublicBlogPostsPageDocument = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'titleNl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionNl' } },
                                         ],
                                     },
                                 },
@@ -44077,8 +44165,10 @@ export const BookingRequestChatPageDocument = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'titleNl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionNl' } },
                                         ],
                                     },
                                 },
@@ -44280,8 +44370,10 @@ export const BookingRequestFormPageDocument = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'titleNl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionNl' } },
                                         ],
                                     },
                                 },
@@ -44641,8 +44733,10 @@ export const BookingRequestPageDocument = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'titleNl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionNl' } },
                                         ],
                                     },
                                 },
@@ -44735,8 +44829,10 @@ export const BookingRequestPlanPageDocument = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'titleNl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionNl' } },
                                         ],
                                     },
                                 },
@@ -46066,8 +46162,10 @@ export const ChefSignUpPageDocument = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'titleNl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionNl' } },
                                         ],
                                     },
                                 },
@@ -46372,8 +46470,10 @@ export const ChefsPageDocument = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'titleNl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionNl' } },
                                         ],
                                     },
                                 },
@@ -46522,8 +46622,10 @@ export const PublicCitiesPageDocument = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'titleNl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionNl' } },
                                         ],
                                     },
                                 },
@@ -47474,8 +47576,10 @@ export const GiftCardPageDocument = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'titleNl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionNl' } },
                                         ],
                                     },
                                 },
@@ -48042,8 +48146,10 @@ export const HomePageDocument = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'titleNl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionNl' } },
                                         ],
                                     },
                                 },
@@ -48124,8 +48230,10 @@ export const HowToBecomeAChefPageDocument = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'titleNl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionNl' } },
                                         ],
                                     },
                                 },
@@ -48196,8 +48304,10 @@ export const LogOnPageDocument = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'titleNl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionNl' } },
                                         ],
                                     },
                                 },
@@ -48850,8 +48960,10 @@ export const PublicOccasionsPageDocument = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'titleNl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionNl' } },
                                         ],
                                     },
                                 },
@@ -48933,8 +49045,10 @@ export const ProfilePageDocument = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'titleNl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionNl' } },
                                         ],
                                     },
                                 },
@@ -49634,8 +49748,10 @@ export const PublicLegalDocumentsDocument = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'titleNl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionNl' } },
                                         ],
                                     },
                                 },
@@ -50167,8 +50283,10 @@ export const PublicVenuesPageDocument = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'titleNl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionNl' } },
                                         ],
                                     },
                                 },
@@ -69827,8 +69945,10 @@ export const AdminPageDocument = {
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'titleNl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionNl' } },
                                         ],
                                     },
                                 },
@@ -78236,6 +78356,17 @@ export const AdminWebPagePageDocument = {
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'webPageKey' } },
                     type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'WebPageKey' } } },
                 },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'DateTimeRange' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'granularity' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminTimeBucketGranularity' } } },
+                    defaultValue: { kind: 'EnumValue', value: 'week' },
+                },
             ],
             selectionSet: {
                 kind: 'SelectionSet',
@@ -78278,10 +78409,99 @@ export const AdminWebPagePageDocument = {
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'webPageKey' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'titleNl' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'descriptionNl' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'persisted' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'webPageVisitTraffic' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'range' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'granularity' },
+                                                                    value: {
+                                                                        kind: 'Variable',
+                                                                        name: { kind: 'Name', value: 'granularity' },
+                                                                    },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'webPageKeys' },
+                                                                    value: {
+                                                                        kind: 'ListValue',
+                                                                        values: [
+                                                                            {
+                                                                                kind: 'Variable',
+                                                                                name: { kind: 'Name', value: 'webPageKey' },
+                                                                            },
+                                                                        ],
+                                                                    },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'audience' },
+                                                                    value: { kind: 'EnumValue', value: 'HUMAN' },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'metric' },
+                                                                    value: { kind: 'EnumValue', value: 'PAGEVIEWS' },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'scope' },
+                                                                    value: { kind: 'EnumValue', value: 'ALL' },
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'pageviews' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'series' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'webPageKey' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'buckets' },
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: {
+                                                                                                    kind: 'Name',
+                                                                                                    value: 'bucketStart',
+                                                                                                },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'count' },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
                                                                 ],
                                                             },
                                                         },
@@ -78358,6 +78578,85 @@ export const AdminWebPageUpsertDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminWebPageUpsertMutation, GqlCAdminWebPageUpsertMutationVariables>;
+export const AdminWebPageSeoTranslateDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AdminWebPageSeoTranslate' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'webPageKey' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'WebPageKey' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'locale' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Locale' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'titleDe' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'descriptionDe' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'webPageSeoTranslate' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'webPageKey' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'webPageKey' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'locale' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'locale' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'titleDe' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'titleDe' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'descriptionDe' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'descriptionDe' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminWebPageSeoTranslateMutation, GqlCAdminWebPageSeoTranslateMutationVariables>;
 export const AdminWebPagePageUpdatesDocument = {
     kind: 'Document',
     definitions: [
@@ -78398,8 +78697,10 @@ export const AdminWebPagePageUpdatesDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'webPageKey' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'titleNl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionNl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'persisted' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
                                         ],
@@ -78458,8 +78759,10 @@ export const AdminWebPagesPageDocument = {
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'webPageKey' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'titleNl' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'descriptionNl' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'persisted' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
                                                                 ],
@@ -78528,8 +78831,10 @@ export const AdminWebPagesPageUpdatesDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'webPageKey' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'titleNl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionNl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'persisted' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
                                         ],

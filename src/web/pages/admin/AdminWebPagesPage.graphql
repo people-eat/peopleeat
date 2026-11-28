@@ -11,8 +11,10 @@ query AdminWebPagesPage($range: DateTimeRange!) {
                     webPageKey
                     titleDe
                     titleEn
+                    titleNl
                     descriptionDe
                     descriptionEn
+                    descriptionNl
                     persisted
                     updatedAt
                 }
@@ -32,8 +34,10 @@ subscription AdminWebPagesPageUpdates {
             webPageKey
             titleDe
             titleEn
+            titleNl
             descriptionDe
             descriptionEn
+            descriptionNl
             persisted
             updatedAt
         }

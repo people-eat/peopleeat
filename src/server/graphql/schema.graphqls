@@ -5367,6 +5367,7 @@ enum AdminAiGenerationKind {
     COOK_BIOGRAPHY_SUMMARY
     BOOKING_REQUEST_COOK_MENU_EVALUATION
     BOOKING_REQUEST_ADJUSTED_MESSAGE
+    WEB_PAGE_SEO_TRANSLATE
 }
 
 # Admin-only view of a one-shot LLM call. Written by `ServerRuntime.aiGenerations`;
@@ -5539,6 +5540,8 @@ type AdminMutation {
     # Upserts fixed-route SEO title/description. Missing rows are created on
     # first write. Returns `webPageKey` as `referenceId`.
     webPageUpsert(webPageKey: WebPageKey!, input: AdminWebPageUpsert!): MutationResult!
+    # One-shot German → English/Dutch SEO title and description. Does not persist.
+    webPageSeoTranslate(webPageKey: WebPageKey!, locale: Locale!, titleDe: String!, descriptionDe: String!): AdminWebPageSeoTranslation!
     # Upserts a feature toggle. Missing rows are created on first write. Returns
     # `featureToggleKey` as `referenceId`.
     featureToggleUpsert(featureToggleKey: FeatureToggleKey!, enabled: Boolean!): MutationResult!
@@ -6597,8 +6600,10 @@ type AdminWebPage {
     webPageKey: WebPageKey!
     titleDe: String!
     titleEn: String!
+    titleNl: String!
     descriptionDe: String!
     descriptionEn: String!
+    descriptionNl: String!
     # False when no DB row exists yet (ghost; fields from shared defaults).
     persisted: Boolean!
     # Null when not persisted.
@@ -6609,15 +6614,25 @@ type PublicWebPage {
     webPageKey: WebPageKey!
     titleDe: String!
     titleEn: String!
+    titleNl: String!
     descriptionDe: String!
     descriptionEn: String!
+    descriptionNl: String!
 }
 
 input AdminWebPageUpsert {
     titleDe: String!
     titleEn: String!
+    titleNl: String!
     descriptionDe: String!
     descriptionEn: String!
+    descriptionNl: String!
+}
+
+# Result of `webPageSeoTranslate`. Review in the editor; not written until Save.
+type AdminWebPageSeoTranslation {
+    title: String!
+    description: String!
 }
 
 type PublicWebPageQuery {
