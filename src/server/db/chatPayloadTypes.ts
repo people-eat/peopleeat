@@ -28,6 +28,7 @@ export type ChatAdminBookingRequestListItem = {
     exactEventAddress: { city: string; displayText: string };
     participants: { type: string }[];
     customer: { userId: string; firstName: string; lastName: string; emailAddress: string | null };
+    creatingSession?: { sessionId: string; landingPath: string | null } | null;
     offers: Array<{
         bookingRequestOfferId: string;
         status: string;

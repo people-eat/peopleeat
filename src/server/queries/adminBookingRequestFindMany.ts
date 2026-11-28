@@ -88,6 +88,12 @@ async function adminBookingRequestListCardSnapshot(
             lastName: request.customer.lastName,
             emailAddress: request.customer.emailAddress ? request.customer.emailAddress : null,
         },
+        creatingSession: request.creatingSession
+            ? {
+                  sessionId: request.creatingSession.sessionId,
+                  landingPath: request.creatingSession.landingPath ?? null,
+              }
+            : null,
         offers: request.offers.map((offer) => {
             const cookUser = cookUserById.get(offer.cook.cookId);
             return {

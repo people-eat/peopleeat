@@ -4,6 +4,7 @@ import type {
     GqlSAdminBookingRequest,
     GqlSAdminBookingRequestOffer,
     GqlSAdminCook,
+    GqlSAdminSession,
     GqlSAdminUser,
     GqlSBookingRequestRequestedMenu,
     GqlSFileUpload,
@@ -28,6 +29,7 @@ export type ToGqlAdminBookingRequestInput = {
     kitchenDetailsPhotos?: GqlSFileUpload[];
     requestedCook?: GqlSAdminCook | null;
     requestedMenu?: GqlSBookingRequestRequestedMenu | null;
+    creatingSession?: GqlSAdminSession | null;
 };
 
 export function toGqlAdminBookingRequest(input: ToGqlAdminBookingRequestInput): GqlSAdminBookingRequest {
@@ -45,6 +47,7 @@ export function toGqlAdminBookingRequest(input: ToGqlAdminBookingRequestInput): 
         kitchenDetailsPhotos = [],
         requestedCook = null,
         requestedMenu = null,
+        creatingSession,
     } = input;
 
     const guidance = bookingRequestOfferPriceGuidanceFromRequest({
@@ -104,8 +107,9 @@ export function toGqlAdminBookingRequest(input: ToGqlAdminBookingRequestInput): 
                   balanceCents: giftCard.balanceCents,
               }
             : null,
-        // Lazy via `AdminBookingRequest.creatingSession` field resolver.
-        creatingSession: null,
+        // Hydrate sets this (null when none). Field resolver falls back to
+        // findOne when undefined (not loaded).
+        creatingSession,
         // Lazy via `AdminBookingRequest.cooksInTravelRadius` field resolver.
         cooksInTravelRadius: [],
         // Lazy via `AdminBookingRequest.queuedJobs` field resolver.

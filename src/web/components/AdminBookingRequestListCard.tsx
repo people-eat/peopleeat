@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { CalendarIcon, MapPinIcon, UserIcon, UsersIcon } from 'lucide-react';
+import { CalendarIcon, GlobeIcon, MapPinIcon, UserIcon, UsersIcon } from 'lucide-react';
 
 import { t } from '../../i18n/t';
 import { formatBookingEventDateFromCountry, formatDate, formatDateTime, formatParticipants, userDisplayName } from '../../shared';
@@ -48,6 +48,7 @@ export type AdminBookingRequestListCardRequest = {
     customer: { userId: string; firstName: string; lastName: string; emailAddress: string | null };
     requestedCook?: { cookId: string; user: { userId: string; firstName: string; lastName: string } } | null;
     requestedMenu?: { menuId: string; title: string } | null;
+    creatingSession?: { sessionId: string; landingPath: string | null } | null;
     offers: AdminBookingRequestListCardOffer[];
 };
 
@@ -316,6 +317,8 @@ export function AdminBookingRequestListCard({ request }: { request: AdminBooking
         request.exactEventAddress.city.trim().length > 0 ? request.exactEventAddress.city : request.exactEventAddress.displayText;
     const showPublicationBadge =
         request.publicationStatus === 'PUBLICATION_BLOCKED_BY_ADMIN_REVIEW' || request.publicationStatus === 'PUBLICATION_DIRECT_TO_COOK';
+    const creatingSession = request.creatingSession;
+    const landingPath = creatingSession?.landingPath?.trim() || null;
 
     return (
         <article
@@ -387,6 +390,25 @@ export function AdminBookingRequestListCard({ request }: { request: AdminBooking
                             {t(locale, 'admin', 'copy.created')} {formatDate(request.createdAt, { locale, timeZone, dateStyle: 'medium' })}
                         </p>
                     </Link>
+                    {landingPath && creatingSession ? (
+                        <p className="flex min-w-0 items-center gap-2 text-sm text-foreground">
+                            <GlobeIcon className="size-4 shrink-0 text-muted-foreground/70" aria-hidden />
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Link
+                                        to="/{-$locale}/admin/sessions/$sessionId"
+                                        params={{ sessionId: creatingSession.sessionId }}
+                                        aria-label={t(locale, 'admin', 'copy.openSession')}
+                                        className="min-w-0 truncate font-mono hover:underline"
+                                        onClick={(event) => event.stopPropagation()}
+                                    >
+                                        {landingPath}
+                                    </Link>
+                                </TooltipTrigger>
+                                <TooltipContent>{landingPath}</TooltipContent>
+                            </Tooltip>
+                        </p>
+                    ) : null}
                 </div>
             </div>
 

@@ -154,6 +154,7 @@ export const fixtureAdminRequest: AdminBookingRequestListCardRequest = {
         lastName: fixtureCustomer.lastName,
         emailAddress: fixtureCustomer.emailAddress,
     },
+    creatingSession: { sessionId: 'sessionLandingPath', landingPath: '/en/chefs/anna' },
     offers: [
         {
             bookingRequestOfferId: fixtureOfferId,

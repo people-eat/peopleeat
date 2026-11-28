@@ -329,6 +329,10 @@ query AdminUserPage(
                         lastName
                         emailAddress
                     }
+                    creatingSession {
+                        sessionId
+                        landingPath
+                    }
                 }
                 poolBookingRequests: bookingRequests(criterion: $poolBookingRequestsCriterion) @include(if: $includePool) {
                     bookingRequestId
@@ -364,6 +368,10 @@ query AdminUserPage(
                         firstName
                         lastName
                         emailAddress
+                    }
+                    creatingSession {
+                        sessionId
+                        landingPath
                     }
                 }
                 callTraffic(criterion: $callTrafficCriterion) @include(if: $includeCalls) {

@@ -65,6 +65,10 @@ query AdminBookingRequestsPage($criterion: AdminBookingRequestCriterion!) {
                         menuId
                         title
                     }
+                    creatingSession {
+                        sessionId
+                        landingPath
+                    }
                 }
                 bookingRequestsCounts(criteria: [$criterion])
             }

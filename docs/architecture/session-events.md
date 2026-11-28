@@ -153,6 +153,6 @@ Admin descriptions mark these with “(Legacy)” / “(legacy)”.
   `adminAnalyticsChefSignUpFlow`, `adminAnalyticsBookingRequestCheckoutFlow`, `adminAnalyticsCookBookingRequestOfferFlow`,
   `adminSessionEventWebPageVisitCreationsFindMany`, `adminWebPageVisitTrafficFindOne`, `adminWebPageVisitEntitySearch`,
   `adminWebPageVisitCountFindMany`, `cookAnalyticsFind`, `sessionLastVisitedCookProfilesFindMany`,
-  `adminBookingRequestCreatingSessionFindOne`
+  `adminBookingRequestCreatingSessionFindOne` (list hydrate batches via `adminBookingRequestCreatingSessionsByRequestIdFind`)
 - Feature UI: [admin-analytics.md](../features/admin-analytics.md), [admin-traffic.md](../features/admin-traffic.md),
   [cook-analytics.md](../features/cook-analytics.md)

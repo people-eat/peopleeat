@@ -24,6 +24,7 @@ import { toGqlAdminCook } from '../mappers/toGqlAdminCook';
 import { toGqlAdminUser } from '../mappers/toGqlAdminUser';
 import { toGqlBookingRequestRequestedMenu } from '../mappers/toGqlBookingRequestRequestedMenu';
 import { toGqlCookOfferAddon } from '../mappers/toGqlCookOfferAddon';
+import { adminBookingRequestCreatingSessionsByRequestIdFind } from './adminBookingRequestCreatingSessionsByRequestIdFind';
 import { adminUserTypesByUserIdFindMany } from './adminUserTypesByUserIdFindMany';
 import { bookingRequestKitchenDetailsPhotosByRequestIdFind } from './bookingRequestKitchenDetailsPhotosHydrate';
 import { bookingRequestOfferCookPayoutReadinessResolve } from './bookingRequestOfferCookPayoutReadinessResolve';
@@ -42,23 +43,32 @@ export async function adminBookingRequestHydrate(
     const promoCodeIds = [...new Set(rows.map((row) => row.promoCodeId).filter((id): id is string => id != null))];
     const giftCardIds = [...new Set(rows.map((row) => row.giftCardId).filter((id): id is string => id != null))];
 
-    const [participants, offers, customerRows, typesByUserId, promoCodeRows, giftCardRows, kitchenDetailsPhotosByRequestId] =
-        await Promise.all([
-            serverRuntime.db
-                .select()
-                .from(bookingRequestParticipants)
-                .where(inArray(bookingRequestParticipants.bookingRequestId, bookingRequestIds)),
-            serverRuntime.db.select().from(bookingRequestOffers).where(inArray(bookingRequestOffers.bookingRequestId, bookingRequestIds)),
-            serverRuntime.db.select().from(users).where(inArray(users.userId, customerIds)),
-            adminUserTypesByUserIdFindMany(customerIds, serverRuntime.db),
-            promoCodeIds.length === 0
-                ? Promise.resolve([])
-                : serverRuntime.db.select().from(promoCodes).where(inArray(promoCodes.promoCodeId, promoCodeIds)),
-            giftCardIds.length === 0
-                ? Promise.resolve([])
-                : serverRuntime.db.select().from(giftCards).where(inArray(giftCards.giftCardId, giftCardIds)),
-            bookingRequestKitchenDetailsPhotosByRequestIdFind(serverRuntime, bookingRequestIds),
-        ]);
+    const [
+        participants,
+        offers,
+        customerRows,
+        typesByUserId,
+        promoCodeRows,
+        giftCardRows,
+        kitchenDetailsPhotosByRequestId,
+        creatingSessionsByRequestId,
+    ] = await Promise.all([
+        serverRuntime.db
+            .select()
+            .from(bookingRequestParticipants)
+            .where(inArray(bookingRequestParticipants.bookingRequestId, bookingRequestIds)),
+        serverRuntime.db.select().from(bookingRequestOffers).where(inArray(bookingRequestOffers.bookingRequestId, bookingRequestIds)),
+        serverRuntime.db.select().from(users).where(inArray(users.userId, customerIds)),
+        adminUserTypesByUserIdFindMany(customerIds, serverRuntime.db),
+        promoCodeIds.length === 0
+            ? Promise.resolve([])
+            : serverRuntime.db.select().from(promoCodes).where(inArray(promoCodes.promoCodeId, promoCodeIds)),
+        giftCardIds.length === 0
+            ? Promise.resolve([])
+            : serverRuntime.db.select().from(giftCards).where(inArray(giftCards.giftCardId, giftCardIds)),
+        bookingRequestKitchenDetailsPhotosByRequestIdFind(serverRuntime, bookingRequestIds),
+        adminBookingRequestCreatingSessionsByRequestIdFind(bookingRequestIds, serverRuntime),
+    ]);
 
     const promoById = new Map(promoCodeRows.map((row) => [row.promoCodeId, row]));
     const giftById = new Map(giftCardRows.map((row) => [row.giftCardId, row]));
@@ -229,6 +239,7 @@ export async function adminBookingRequestHydrate(
                     );
                     return affinity?.requestedMenu ? toGqlBookingRequestRequestedMenu(affinity.requestedMenu) : null;
                 })(),
+                creatingSession: creatingSessionsByRequestId.get(bookingRequest.bookingRequestId) ?? null,
             }),
         );
     }

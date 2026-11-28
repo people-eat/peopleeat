@@ -34,10 +34,10 @@ pane the search takes a full row and the controls wrap underneath. A **Status** 
 admin home booking-review queue uses that pair together with the admin-review publication tab, and its links open this list with both
 filters set. Sort select is always available (grid and list); list column headers remain sortable too. **Clear filters** appears when
 search, publication, or status is set. **Card grid is default** (`view=grid` or omit); `view=list` shows a sortable table. Grid cards show
-occasion, customer link, status and publication badges, event date, location, participants, created date, and offer chips deep-linking to
-offer detail (unread accent, accepted-path ring). Sort and pinned bottom pagination (page + per-page size; default 25) via URL. Status uses
-derived booking request status with **booking lifecycle pills**; blocked-for-review also shows a publication badge. Exact event time is
-reserved for detail pages.
+occasion, customer link, status and publication badges, event date, location, participants, created date, creating-session first-touch
+landing path (links to the session; omitted when not recorded), and offer chips deep-linking to offer detail (unread accent, accepted-path
+ring). Sort and pinned bottom pagination (page + per-page size; default 25) via URL. Status uses derived booking request status with
+**booking lifecycle pills**; blocked-for-review also shows a publication badge. Exact event time is reserved for detail pages.
 
 ### Create — `/admin/booking-requests/create`
 
@@ -198,13 +198,13 @@ all-time (same pattern as gift-card overview). Economics averages and all-time p
 `rangeTotalPaid*` by payment time. Paid revenue uses `PAYED` / `TRANSFERRED` / `PAYED_OUT_OF_SYSTEM`. Cook-leaderboard conversions are
 dual-accepted offers. Request conversion rate uses the same dual-accept predicate over distinct booking requests, scoped by `dateBasis`
 (`createdAt` default or event `dateTime`). `AdminBookingRequest` exposes applied `promoCode` / `giftCard` snapshots and a lazy
-`creatingSession` (`AdminSession`) resolved from the earliest `BOOKING_REQUEST_CREATED` event with `payload.bookingRequestId`. List cards do
-not request it. Origin is first-touch of that **creating session cookie**, not the customer's first visit ever; imported predecessor
-requests stay empty. The admin home review queue (and the daily Slack snapshot) passes `PUBLICATION_BLOCKED_BY_ADMIN_REVIEW` plus
-`bookingRequestPublicationReviewQueueStatuses` (`WAITING_FOR_OFFERS`, `OFFERS_WAITING_FOR_REVIEW`). `AdminBookingRequestCriterion` supports
-optional `statuses` (derived lifecycle SQL, same rules as `bookingRequestStatusDerive`), `createdAtFrom` / `createdAtTo` (used by the admin
-assistant “past X days” list tool and available to the list API), and `bookingRequestIds` (`IN`; omit or empty = no id filter — admin
-assistant drill-in on the same list tool).
+`creatingSession` (`AdminSession`) resolved from the earliest `BOOKING_REQUEST_CREATED` event with `payload.bookingRequestId`. List cards
+and the admin-assistant list snapshot request `sessionId` / `landingPath` (hydrate batches the lookup). Origin is first-touch of that
+**creating session cookie**, not the customer's first visit ever; imported predecessor requests stay empty. The admin home review queue (and
+the daily Slack snapshot) passes `PUBLICATION_BLOCKED_BY_ADMIN_REVIEW` plus `bookingRequestPublicationReviewQueueStatuses`
+(`WAITING_FOR_OFFERS`, `OFFERS_WAITING_FOR_REVIEW`). `AdminBookingRequestCriterion` supports optional `statuses` (derived lifecycle SQL,
+same rules as `bookingRequestStatusDerive`), `createdAtFrom` / `createdAtTo` (used by the admin assistant “past X days” list tool and
+available to the list API), and `bookingRequestIds` (`IN`; omit or empty = no id filter — admin assistant drill-in on the same list tool).
 
 UI building blocks: `AdminBookingRequestListCard` (list page + admin user detail booking-requests tab + admin assistant chat via
 `admin.bookingRequestList` data parts), `AdminBookingRequestOfferCard` (request-detail offers funnel + admin user detail cook offers tab:

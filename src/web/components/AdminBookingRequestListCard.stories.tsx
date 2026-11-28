@@ -19,3 +19,9 @@ export const Default: Story = {
         request: fixtureAdminRequest,
     },
 };
+
+export const WithoutLandingPath: Story = {
+    args: {
+        request: { ...fixtureAdminRequest, creatingSession: null },
+    },
+};

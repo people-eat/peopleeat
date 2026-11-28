@@ -2745,10 +2745,10 @@ type AdminBookingRequest {
     # Currently applied promo / gift card (mutually exclusive). Null when none.
     promoCode: UserBookingRequestPromoCode
     giftCard: UserBookingRequestGiftCard
-    # Lazy — creating browser session via BOOKING_REQUEST_CREATED
+    # Creating browser session via BOOKING_REQUEST_CREATED
     # (`payload.bookingRequestId`). First-touch `landingPath` / `referrer`.
     # Null for admin-created requests and imported predecessor rows (empty
-    # payload). Do not request on list cards.
+    # payload). List cards request `sessionId` / `landingPath` (batched in hydrate).
     creatingSession: AdminSession
     # Cooks who can create offers and cover the venue (publication approve picker).
     cooksInTravelRadius: [AdminBookingRequestCookInTravelRadius!]!

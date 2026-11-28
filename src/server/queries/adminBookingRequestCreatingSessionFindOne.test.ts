@@ -5,6 +5,7 @@ import { idCreate } from '../../shared/idCreate';
 import type { SessionEventCreate } from '../db/schema';
 import { bookingRequests, sessionEvents, sessions } from '../db/schema';
 import { commandSetup, testDb } from '../test/commandTestUtils';
+import { adminBookingRequestCreatingSessionsByRequestIdFind } from '../utils/adminBookingRequestCreatingSessionsByRequestIdFind';
 import { sessionEventCreate } from '../utils/sessionEventCreate';
 import { adminBookingRequestCreatingSessionFindOne } from './adminBookingRequestCreatingSessionFindOne';
 
@@ -147,5 +148,42 @@ describe('adminBookingRequestCreatingSessionFindOne', () => {
             isImpersonation: true,
             landingPath: '/admin',
         });
+    });
+});
+
+describe('adminBookingRequestCreatingSessionsByRequestIdFind', () => {
+    it('returns the earliest creating session per booking request id', async () => {
+        const first = await commandSetup.withUser({ firstName: 'Origin', lastName: 'BatchA' });
+        const second = await commandSetup.withUser({ firstName: 'Origin', lastName: 'BatchB' });
+        await testDb.update(sessions).set({ landingPath: '/venues/a' }).where(eq(sessions.sessionId, first.requestingSession.sessionId));
+        await testDb.update(sessions).set({ landingPath: '/chefs/b' }).where(eq(sessions.sessionId, second.requestingSession.sessionId));
+        const firstBookingRequestId = await insertBookingRequest(first.user.userId);
+        const secondBookingRequestId = await insertBookingRequest(second.user.userId);
+        const missingBookingRequestId = await insertBookingRequest(first.user.userId);
+        await sessionEventCreate(first.serverRuntime, {
+            sessionId: first.requestingSession.sessionId,
+            type: 'BOOKING_REQUEST_CREATED',
+            payload: { bookingRequestId: firstBookingRequestId },
+        });
+        await sessionEventCreate(second.serverRuntime, {
+            sessionId: second.requestingSession.sessionId,
+            type: 'BOOKING_REQUEST_CREATED',
+            payload: { bookingRequestId: secondBookingRequestId },
+        });
+
+        const result = await adminBookingRequestCreatingSessionsByRequestIdFind(
+            [firstBookingRequestId, secondBookingRequestId, missingBookingRequestId],
+            first.serverRuntime,
+        );
+
+        expect(result.get(firstBookingRequestId)).toMatchObject({
+            sessionId: first.requestingSession.sessionId,
+            landingPath: '/venues/a',
+        });
+        expect(result.get(secondBookingRequestId)).toMatchObject({
+            sessionId: second.requestingSession.sessionId,
+            landingPath: '/chefs/b',
+        });
+        expect(result.has(missingBookingRequestId)).toBe(false);
     });
 });

@@ -1152,6 +1152,7 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
         },
         AdminBookingRequest: {
             creatingSession(parent: GqlSAdminBookingRequest) {
+                if (parent.creatingSession !== undefined) return parent.creatingSession;
                 return adminBookingRequestCreatingSessionFindOne(parent.bookingRequestId, serverRuntime);
             },
             cooksInTravelRadius(parent: GqlSAdminBookingRequest) {

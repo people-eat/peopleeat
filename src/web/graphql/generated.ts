@@ -13386,6 +13386,7 @@ export type GqlCAdminBookingRequestsPageQuery = {
                     cook: { cookId: string; user: { userId: string; firstName: string; lastName: string } } | null;
                     requestedCook: { cookId: string; user: { userId: string; firstName: string; lastName: string } } | null;
                     requestedMenu: { menuId: string; title: string } | null;
+                    creatingSession: { sessionId: string; landingPath: string | null } | null;
                 }>;
             } | null;
         } | null;
@@ -18468,6 +18469,7 @@ export type GqlCAdminUserPageQuery = {
                         cook: { cookId: string; user: { userId: string; firstName: string; lastName: string } };
                     }>;
                     customer: { userId: string; firstName: string; lastName: string; emailAddress: string | null };
+                    creatingSession: { sessionId: string; landingPath: string | null } | null;
                 }>;
                 poolBookingRequests?: Array<{
                     bookingRequestId: string;
@@ -18487,6 +18489,7 @@ export type GqlCAdminUserPageQuery = {
                         cook: { cookId: string; user: { userId: string; firstName: string; lastName: string } };
                     }>;
                     customer: { userId: string; firstName: string; lastName: string; emailAddress: string | null };
+                    creatingSession: { sessionId: string; landingPath: string | null } | null;
                 }>;
                 callTraffic?: Array<{
                     kind: Schema.GqlCAdminCallListItemKind;
@@ -59092,6 +59095,23 @@ export const AdminBookingRequestsPageDocument = {
                                                                             ],
                                                                         },
                                                                     },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'creatingSession' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'sessionId' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'landingPath' },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
                                                                 ],
                                                             },
                                                         },
@@ -76581,6 +76601,23 @@ export const AdminUserPageDocument = {
                                                                             ],
                                                                         },
                                                                     },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'creatingSession' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'sessionId' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'landingPath' },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
                                                                 ],
                                                             },
                                                         },
@@ -76740,6 +76777,23 @@ export const AdminUserPageDocument = {
                                                                                 {
                                                                                     kind: 'Field',
                                                                                     name: { kind: 'Name', value: 'emailAddress' },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'creatingSession' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'sessionId' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'landingPath' },
                                                                                 },
                                                                             ],
                                                                         },
